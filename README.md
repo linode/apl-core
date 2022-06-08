@@ -64,35 +64,37 @@ Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AW
 
 ### Workshops
 
-In our [workshops](https://github.com/redkubes/workshops) repository, we have prepared a comprehensive set of hands-on labs to get a good understanding/overview of Otomi.
+In our [workshops](https://github.com/redkubes/workshops) repository, we have prepared a comprehensive set of hands-on labs to get a good understanding/overview of everything Otomi has to offer.
 
 ## 🎉 Otomi Features
 
-✅ Drag and Drop apps to create your own preferred suite
+- [x] Drag and Drop apps to create your own preferred suite
 
-✅ GitOps with Argo CD out-of-the-box
+- [x] GitOps with Argo CD out-of-the-box
 
-✅ Advanced ingress architecture. Expose services with just a few clicks
+- [x] Realtime container scanning 
 
-✅ Configure network policies for internal ingress and external egress
+- [x] Advanced ingress architecture
 
-✅ Deploy Knative serverless workloads without writing any YAML
+- [x] Generate validated configuration code
 
-✅ Create and manage secrets in HashiCorp Vault and use them in your workloads
+- [x] Configure network policies for internal ingress and external egress
 
-✅ Create Kubernetes Jobs and Cron Jobs without writing any YAML
+- [x] Deploy Knative serverless workloads without writing any YAML
 
-✅ Role-based access to all integrated applications based on group membership
+- [x] Create and manage secrets in HashiCorp Vault and use them in your workloads
 
-✅ Policy enforcement based on a default set of security policies
+- [x] Create Kubernetes Jobs and Cron Jobs without writing any YAML
 
-✅ Direct access to logs and metrics of your deployed workloads
+- [x] Role-based access to all integrated applications based on group membership
 
-✅ Onboard new development teams or projects within minutes in a comprehensive multi-tenant setup
+- [x] Enforce Pod security policies
 
-✅ Make development teams self-serving by providing access to predefined automation tasks
+- [x] Onboard teams or projects within minutes in a comprehensive multi-tenant setup
 
-✅ Bring your favorite IdP, DNS and/or CA
+- [x] Predefined automation tasks
+
+- [x] Bring your favorite IdP, DNS and/or CA
 
 ## 🧑‍💻 Integrated technologies
 
@@ -120,7 +122,6 @@ Learn more about all the integrated technologies:
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
 - [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
 
-
 ## 💪 Otomi Projects
 
 `Otomi` consists out of the following projects:
@@ -140,7 +141,6 @@ Check out the [dev docs index](./docs/index.md) for developer documentation or g
 If you wish to contribute please read our [Contributor Code of Conduct](https://otomi.io/community/code-of-conduct) and [Contribution Guidelines](https://otomi.io/community/get-involved).
 
 If you want to say **thank you** or/and support the active development of `Otomi`:
-main
 
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
 - Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use `Otomi`
