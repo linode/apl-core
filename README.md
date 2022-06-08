@@ -69,32 +69,21 @@ In our [workshops](https://github.com/redkubes/workshops) repository, we have pr
 ## 🎉 Otomi Features
 
 - [x] Drag and Drop apps to create your own preferred suite
-
 - [x] GitOps with Argo CD out-of-the-box
-
-- [x] Realtime container scanning 
-
+- [x] Container image scanning
 - [x] Advanced ingress architecture
-
 - [x] Generate validated configuration code
-
 - [x] Configure network policies for internal ingress and external egress
-
 - [x] Deploy Knative serverless workloads without writing any YAML
-
 - [x] Create and manage secrets in HashiCorp Vault and use them in your workloads
-
 - [x] Create Kubernetes Jobs and Cron Jobs without writing any YAML
-
 - [x] Role-based access to all integrated applications based on group membership
-
 - [x] Enforce Pod security policies
-
 - [x] Onboard teams or projects within minutes in a comprehensive multi-tenant setup
-
 - [x] Predefined automation tasks
-
 - [x] Bring your favorite IdP, DNS and/or CA
+
+And much more...
 
 ## 🧑‍💻 Integrated technologies
 
@@ -106,6 +95,7 @@ Learn more about all the integrated technologies:
 
 - [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
+- [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
 - [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics
 - [Loki](https://github.com/grafana/loki): Collecting container application logs
