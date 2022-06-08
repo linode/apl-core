@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-<a href="https://redkubes.com/live-otomi-demo-env/"> 🚀 See Otomi live on Digital Ocean 🚀</a>
+<a href="https://marketplace.digitalocean.com/apps/otomi"> 🚀 Start using Otomi on Digital Ocean 🚀</a>
 </p>
 
 `Otomi` brings a full platform experience to Kubernetes without the constraints and abstractions. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
@@ -100,8 +100,7 @@ In our [workshops](https://github.com/redkubes/workshops) repository, we have pr
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/tech.png/?raw=true" width="100%" align="center" alt="Integrated technologies"></p>
 
-<details>
- <summary><b>Learn more about all the integrated technologies</b></summary>
+Learn more about all the integrated technologies:
 
 - [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
@@ -121,7 +120,6 @@ In our [workshops](https://github.com/redkubes/workshops) repository, we have pr
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
 - [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
 
-</details>
 
 ## 💪 Otomi Projects
 
@@ -135,7 +133,7 @@ In our [workshops](https://github.com/redkubes/workshops) repository, we have pr
 
 ## 📖 Documentation
 
-Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation and [tutorials](https://otomi.io/docs/tutorials/).
+Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
 
 ## 🤝 Contribution
 
