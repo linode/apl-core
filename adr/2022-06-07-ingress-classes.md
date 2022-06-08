@@ -11,7 +11,7 @@ To allow network segmentation of the ingress a user can define new ingress class
 1. It is possible to define additional ingress classes at `otomi.ingress.classes`
 1. All otomi services are by default exposed behind the `platform` ingress class
 
-To allow the keycloak to serve as an authentication gateway for services exposed behind both public and private LBs, the keycloak needs to be assigned to a public ingress class. If `platform` ingress class is private, then an additional public ingress class needs to be created. A public class can be assigned to keycloak at `apps.keycloak.ingressClassName`.
+To allow Keycloak to serve as an authentication gateway for services exposed behind both public and private LBs, Keycloak needs to be assigned to a public ingress class. If ingress class `platform` is private, then an additional public ingress class needs to be created. A public class can be assigned to keycloak at `apps.keycloak.ingressClassName`.
 
 To enable source IP filtering it is possible to define CIDRS at `sourceIpAddressFiltering` property for each ingress class
 
