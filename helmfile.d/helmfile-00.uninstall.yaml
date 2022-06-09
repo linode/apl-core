@@ -19,3 +19,7 @@ releases:
       init: true
       pkg: knative
     <<: *skeleton
+  - name: ingress-nginx
+    installed: false
+    namespace: ingress
+    chart: not-used

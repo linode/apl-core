@@ -404,6 +404,31 @@ definitions:
       - tag
     type: object
     title: Container image
+  ingressClassParameters:
+    type: object
+    properties:
+      network:
+        title: Load balancer type
+        type: string
+        enum:
+          - public
+          - private
+        default: public
+      loadBalancerIP:
+        title: Load balancer IP address
+        description: A static IP address assigned to a load balancer
+        type: string
+      loadBalancerRG:
+        title: Load balancer Azure resource group
+        type: string
+      loadBalancerSubnet:
+        title: Load balancer Azure subnet
+        type: string
+        description: Specify subnet provider for load balancer IP address (applies to private network only)
+      sourceIpAddressFiltering:
+        title: Source IP address filtering
+        type: string
+        description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
@@ -890,7 +915,7 @@ definitions:
         description: Unique identifier created by and used in API. Optional.
         type: string
       auth:
-        description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
+        description: Available only for core apps.
         type: boolean
       isShared:
         description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
@@ -963,6 +988,10 @@ definitions:
       port:
         $ref: '#/definitions/portNumber'
         description: Points to the backing k8s service (only used when 'svc' is set).
+      ingressClassName:
+        description: Ingress class name
+        type: string
+        default: platform
       svc:
         $ref: '#/definitions/idName'
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
@@ -976,7 +1005,6 @@ definitions:
         description: Will determine the ingress routing.
         enum:
           - public
-          - private
           - cluster
         type: string
       removeRequestHeaders:
@@ -1717,10 +1745,6 @@ properties:
             $ref: '#/definitions/rawValues'
           autoscaling:
             $ref: '#/definitions/autoscalingEnabled'
-          loadBalancerIP:
-            type: string
-          loadBalancerRG:
-            type: string
           maxBodySize:
             type: string
             default: 1024m
@@ -1754,28 +1778,6 @@ properties:
                 $ref: '#/definitions/imagePullPolicy'
           resources:
             $ref: '#/definitions/resources'
-          private:
-            description: Private loadbalancer configuration.
-            properties:
-              enabled:
-                title: Enable private loadbalancer
-                description: Enable to start an extra loadbalancer for private network traffic.
-                type: boolean
-                default: false
-              autoscaling:
-                $ref: '#/definitions/autoscalingEnabled'
-              loadBalancerIP:
-                type: string
-              loadBalancerRG:
-                type: string
-              resources:
-                $ref: '#/definitions/resources'
-              service:
-                properties:
-                  annotations:
-                    $ref: '#/definitions/annotations'
-            title: Private loadbalancer
-            type: object
           service:
             properties:
               annotations:
@@ -2761,6 +2763,27 @@ properties:
                   $ref: '#/definitions/wordCharacterPattern'
                 user:
                   $ref: '#/definitions/wordCharacterPattern'
+  ingress:
+    properties:
+      platformClass:
+        type: object
+        allOf:
+          - properties:
+              className:
+                type: string
+                enum: [platform]
+          - $ref: '#/definitions/ingressClassParameters'
+      classes:
+        type: array
+        items:
+          allOf:
+            - type: object
+              properties:
+                className:
+                  type: string
+            - $ref: '#/definitions/ingressClassParameters'
+          required:
+            - className
   smtp:
     additionalProperties: false
     properties:

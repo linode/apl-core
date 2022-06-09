@@ -20,6 +20,13 @@ bases:
 {{- end }}
 {{- end }}
 
+{{- $services := list }}
+{{- range $s := $coreAdminServices }}
+{{- $ingressClass := $v.ingress.platformClass.className }}
+{{- $svc := merge $s (dict "ingressClassName" $ingressClass ) }}
+{{- $services = append $services $svc }}
+{{- end }}
+
 releases:
   - name: team-ns-admin
     installed: true
@@ -36,6 +43,7 @@ releases:
         oidc: {{- $v.oidc | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        domain: {{ $v.cluster | get "domainSuffix" nil }}
-        services: {{- concat $coreAdminServices ($v.teamConfig | get "admin.services" list) | toYaml | nindent 10 }}
+        domain: {{ $v | get "cluster.domainSuffix" nil }}
+        services: {{- $services | toYaml | nindent 10 }}
         resourceQuota: null
+        ingress: {{- $v.ingress | toYaml | nindent 10 }}
