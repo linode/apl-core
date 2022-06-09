@@ -4,12 +4,12 @@ Jehoszafat:
 
 To allow network segmentation of the ingress a user can define new ingress classes.
 
-1. An ingress class can be private or public, meaning either a public or private load balancer is used.
-1. Each ingress class is associated with a distinct ingress controller
-1. Each ingress controller is associated with either public or private IP address
-1. There is always the `platform` ingress class defined `otomi.ingress.platform`
-1. It is possible to define additional ingress classes at `otomi.ingress.classes`
-1. All otomi services are by default exposed behind the `platform` ingress class
+- An ingress class can be private or public, meaning either a public or private load balancer is used.
+- Each ingress class is associated with a distinct ingress controller
+- Each ingress controller is associated with either public or private IP address
+- There is always the `platform` ingress class defined `otomi.ingress.platform`
+- It is possible to define additional ingress classes at `otomi.ingress.classes`
+- All otomi services are by default exposed behind the `platform` ingress class
 
 Since Keycloak is integrated to provide authentication to the platform services, we decided that it will not be available for team services anymore. This clear separation of concerns reduces surface attacks on the platform and provides more flexibility in terms of defining authentication policies for platform and business applications.
 
