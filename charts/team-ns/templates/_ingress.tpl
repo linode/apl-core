@@ -106,7 +106,7 @@ metadata:
   {{- with $ingress.sourceIpAddressFiltering }}
     nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
   {{- end}}
-{{- if $.hasAuth }}
+{{- if and $.hasAuth (eq $ingress.className $v.ingress.platformClass.className )}}
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"

@@ -23,7 +23,7 @@ resources:
         nginx.ingress.kubernetes.io/configuration-snippet: |
           # rewrite auth redirects to original hosts
           rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
-        {{- with $ingress.sourceIpAddressFiltering }}
+        {{- with $ingress | get "sourceIpAddressFiltering" nil }}
         nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
         {{- end}}
       name: oauth2-proxy

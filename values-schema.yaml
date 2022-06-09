@@ -915,7 +915,7 @@ definitions:
         description: Unique identifier created by and used in API. Optional.
         type: string
       auth:
-        description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
+        description: Available only for core apps.
         type: boolean
       isShared:
         description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
