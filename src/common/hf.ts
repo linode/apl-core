@@ -19,6 +19,7 @@ type HFParams = {
 
 const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   const paramsCopy: HFParams = { ...args }
+  const cmd = paramsCopy.args[0]
   paramsCopy.fileOpts = asArray(paramsCopy.fileOpts ?? [])
   paramsCopy.labelOpts = asArray(paramsCopy.labelOpts ?? [])
   paramsCopy.logLevel ??= 'warn'
@@ -51,6 +52,11 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
   process.env.HELM_DIFF_COLOR = 'true'
   process.env.HELM_DIFF_USE_UPGRADE_DRY_RUN = 'true'
+  // helmfile allows to find DAG style relations through it's `needs: ${release}` construct
+  // and '--include-transitive-needs' recursively finds all relations
+  // we will automatically assume we want this (TODO: when no selectors are given? I think always)
+  if (/* !labels && !files &&  */ ['destroy', 'diff', 'apply', 'sync'].includes(cmd))
+    paramsCopy.args.push('--include-transitive-needs')
   const proc = $`helmfile ${stringArray} ${paramsCopy.args}`
   return proc
 }

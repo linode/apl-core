@@ -1,0 +1,38 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: istio-operator
+    installed: true
+    namespace: istio-operator
+    disableValidationOnInstall: true
+    labels:
+      pkg: istio
+    <<: *default
+  - name: istio-operator-cr
+    installed: true
+    namespace: istio-operator
+    needs: [istio-operator]
+    labels:
+      pkg: istio
+    <<: *rawCR
+  - name: istio-artifacts
+    installed: true
+    namespace: istio-system
+    needs: [istio-operator/istio-operator-cr]
+    labels:
+      pkg: istio
+    chart: ../charts/raw
+    values:
+      - ../values/raw/istio-raw.gotmpl
+      - snippets/common.gotmpl

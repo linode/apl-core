@@ -1,0 +1,42 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: vault-operator
+    installed: {{ $a | get "vault.enabled" }}
+    disableValidationOnInstall: true
+    namespace: vault
+    labels:
+      pkg: vault
+    <<: *default
+  - name: vault-operator-artifacts
+    installed: {{ $a | get "vault.enabled" }}
+    namespace: vault
+    needs: [vault-operator]
+    labels:
+      pkg: vault
+    <<: *raw
+  - name: vault-operator-cr
+    installed: {{ $a | get "vault.enabled" }}
+    namespace: vault
+    needs: [vault-operator-artifacts]
+    labels:
+      pkg: vault
+    <<: *rawCR
+  - name: kubernetes-external-secrets
+    installed: {{ $a | get "vault.enabled" }}
+    namespace: vault
+    needs: [vault-operator]
+    labels:
+      pkg: vault
+    <<: *default

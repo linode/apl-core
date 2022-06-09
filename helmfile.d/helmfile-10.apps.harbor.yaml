@@ -1,0 +1,27 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: harbor
+    installed: {{ $a | get "harbor.enabled" }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *default
+  - name: job-harbor
+    installed: {{ $a | get "harbor.enabled" }}
+    needs: [harbor/harbor]
+    labels:
+      pkg: harbor
+      job: true
+    <<: *jobs

@@ -12,23 +12,24 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: snapshot-controller
-    installed: {{ $a | get "snapshot-controller.enabled" }}
+
+  - name: kube-descheduler
+    installed: {{ $a | get "kube-descheduler.enabled" }}
     namespace: kube-system
-    labels:
-      init: true
-      pkg: csi
-      provider: aws 
     <<: *default
+
+  - name: kured
+    installed: {{ $a | get "kured.enabled" }}
+    namespace: kube-system
+    <<: *default
+
   - name: metrics-server
     installed: {{ $a | get "metrics-server.enabled" }}
     namespace: kube-system
     <<: *default
+    
   - name: tigera-operator
     installed: {{ $a | get "tigera-operator.enabled" }}
     namespace: tigera-operator
     disableValidationOnInstall: true
-    labels:
-      init: true
-      pkg: calico
     <<: *default

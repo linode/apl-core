@@ -57,9 +57,7 @@ rules:
   - daemonsets
   - deployments
   - deployments/finalizers
-  - ingresses
   - replicasets
-  - statefulsets
   verbs:
   - '*'
 - apiGroups:
@@ -108,6 +106,7 @@ rules:
   - namespaces
   - pods
   - pods/proxy
+  - pods/portforward
   - persistentvolumeclaims
   - secrets
   - services

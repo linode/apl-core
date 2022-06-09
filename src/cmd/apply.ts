@@ -1,4 +1,5 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { isEmpty } from 'lodash'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { prepareDomainSuffix } from '../common/bootstrap'
@@ -76,7 +77,7 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   if (!env.DISABLE_SYNC)
-    if (isChart || !prevState.status)
+    if (isChart || isEmpty(prevState.status))
       // commit first time when not deployed only, always commit in chart (might have previous failure)
       await commit(true) // will set deployment state after
     else await setDeploymentState({ status: 'deployed' })
@@ -90,13 +91,14 @@ const apply = async (): Promise<void> => {
     return
   }
   d.info('Start apply')
-  const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
+  const conditionalArgs: string[] = []
+  if (argv.skipCleanup) conditionalArgs.push('--skip-cleanup')
   await hf(
     {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
-      args: ['apply', skipCleanup],
+      args: ['apply'].concat(conditionalArgs),
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )

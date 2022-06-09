@@ -12,13 +12,11 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: istio-artifacts
+  - name: otomi-api
     installed: true
-    namespace: istio-system
-    labels:
-      pkg: istio
-    chart: ../charts/raw
-    values:
-      - ../values/raw/istio-raw.gotmpl
-      - snippets/common.gotmpl
-
+    namespace: otomi
+    <<: *default
+  - name: otomi-console
+    installed: true
+    namespace: otomi
+    <<: *default

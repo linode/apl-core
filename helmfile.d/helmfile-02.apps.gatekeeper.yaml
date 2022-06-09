@@ -12,16 +12,22 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: argocd-operator-artifacts
-    installed: {{ $a | get "argocd.enabled" }}
-    namespace: argocd
+  - name: gatekeeper
+    installed: {{ $a | get "gatekeeper.enabled" }}
+    namespace: gatekeeper-system
+    chart: ../charts/gatekeeper
+    disableValidationOnInstall: true
     labels:
-      pkg: argocd
-    <<: *raw
+      pkg: gatekeeper
+    values:
+      - ../values/gatekeeper/gatekeeper.gotmpl
+      - snippets/common.gotmpl
+    <<: *preUpgrade
   - name: gatekeeper-artifacts
     installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper-artifacts
+    needs: [gatekeeper]
     labels:
       pkg: gatekeeper
     hooks:
@@ -32,22 +38,19 @@ releases:
     values:
       - ../values/gatekeeper/gatekeeper-artifacts.gotmpl
       - snippets/common.gotmpl
-  - name: istio-operator
+  - name: gatekeeper-constraints
+    installed: {{ $a | get "gatekeeper.enabled" }}
+    namespace: gatekeeper-system
+    needs: [gatekeeper-artifacts]
+    chart: ../charts/gatekeeper-constraints
+    labels:
+      pkg: gatekeeper
+    values:
+      - snippets/common.gotmpl
+  - name: ingress-nginx
     installed: true
-    namespace: default
-    disableValidationOnInstall: true
+    namespace: ingress
     labels:
-      pkg: istio
+      tag: ingress
+      stage: prep
     <<: *default
-  - name: keycloak
-    installed: true
-    namespace: keycloak
-    labels:
-      pkg: keycloak
-    <<: *default
-  - name: vault-operator-artifacts
-    installed: {{ $a | get "vault.enabled" }}
-    namespace: vault
-    labels:
-      pkg: vault
-    <<: *raw

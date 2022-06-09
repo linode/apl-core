@@ -1,0 +1,19 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: jaeger-operator
+    installed: {{ $a | get "jaeger.enabled" }}
+    namespace: jaeger-operator
+    disableValidationOnInstall: true
+    <<: *default

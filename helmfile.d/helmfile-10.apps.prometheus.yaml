@@ -25,16 +25,17 @@ releases:
       - alertmanager: {{- $a | get "alertmanager._rawValues" dict | toYaml | nindent 10 }} 
       - grafana: {{- $a | get "grafana._rawValues" dict | toYaml | nindent 10 }}
     <<: *preUpgrade 
-  - name: kured
-    installed: {{ $a | get "kured.enabled" }}
-    namespace: kube-system
+  - name: grafana-dashboards
+    installed: {{ $a | get "grafana.enabled" }}
+    namespace: grafana
     <<: *default
-  - name: kube-descheduler
-    installed: {{ $a | get "kube-descheduler.enabled" }}
-    namespace: kube-system
+  - name: prometheus-blackbox-exporter
+    installed: {{ $a | get "prometheus.enabled" }} 
+    namespace: monitoring
+    needs: [prometheus-operator]
     <<: *default
-  - name: cluster-overprovisioner
-    installed: {{ $a | get "cluster-overprovisioner.enabled" }}
-    namespace: overprovisioner
+  - name: prometheus-msteams
+    installed: {{ $a | get "prometheus-msteams.enabled" }}
+    namespace: monitoring
+    needs: [prometheus-operator]
     <<: *default
-

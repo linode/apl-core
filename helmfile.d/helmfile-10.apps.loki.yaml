@@ -1,0 +1,29 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: loki-artifacts
+    installed: {{ $a | get "loki.enabled" }}
+    namespace: monitoring
+    labels:
+      pkg: loki
+    <<: *raw
+  - name: promtail
+    installed: {{ $a | get "loki.enabled" }}
+    namespace: monitoring
+    <<: *default
+  - name: loki
+    installed: {{ $a | get "loki.enabled" }}
+    namespace: monitoring
+    needs: [loki-artifacts, promtail]
+    <<: *default

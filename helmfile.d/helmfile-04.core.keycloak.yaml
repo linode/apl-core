@@ -12,8 +12,22 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: keycloak
+    installed: true
+    namespace: keycloak
+    labels:
+      pkg: keycloak
+    <<: *default
+  - name: job-keycloak
+    installed: true
+    needs: [keycloak]
+    labels:
+      pkg: keycloak
+      job: true
+    <<: *jobs
   - name: wait-for-otomi-realm
     installed: true
+    needs: [job-keycloak]
     <<: *wait
     namespace: maintenance
     labels:

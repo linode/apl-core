@@ -1,0 +1,34 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: gitea
+    installed: {{ $a | get "gitea.enabled" }}
+    namespace: gitea
+    needs: [gitea-artifacts]
+    labels:
+      pkg: gitea
+    <<: *default
+  - name: gitea-artifacts
+    installed: {{ $a | get "gitea.enabled" }}
+    namespace: gitea
+    labels:
+      pkg: gitea
+    <<: *raw
+  - name: job-gitea-prepare
+    installed: {{ $a | get "gitea.enabled" }}
+    needs: [gitea] 
+    labels:
+      pkg: gitea
+      job: true
+    <<: *jobs    

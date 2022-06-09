@@ -1,0 +1,34 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: argocd-operator
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    labels:
+      pkg: argocd
+    <<: *default
+  - name: argocd-operator-artifacts
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    needs: [argocd-operator]
+    labels:
+      pkg: argocd
+    <<: *raw
+  - name: argocd-operator-cr
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    needs: [argocd-operator-artifacts]
+    labels:
+      pkg: argocd
+    <<: *rawCR

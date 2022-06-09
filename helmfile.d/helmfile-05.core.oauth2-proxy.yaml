@@ -1,0 +1,43 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: oauth2-proxy-redis
+    installed: true
+    namespace: istio-system
+    chart: ../charts/redis
+    labels:
+      pkg: oauth2-proxy
+    values:
+      - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
+      - snippets/common.gotmpl
+    <<: *preUpgrade
+  - name: oauth2-proxy
+    # TODO: remove oauth dependency
+    installed: {{ ne $v.cluster.provider "kind" }}
+    namespace: istio-system
+    needs: [oauth2-proxy-redis]
+    labels:
+      tag: ingress
+      pkg: oauth2-proxy
+    <<: *default
+  - name: oauth2-proxy-artifacts
+    # TODO: remove oauth dependency
+    installed: {{ ne $v.cluster.provider "kind" }}
+    namespace: istio-system
+    needs: [oauth2-proxy]
+    labels:
+      tag: ingress
+      pkg: oauth2-proxy
+    <<: *raw
+

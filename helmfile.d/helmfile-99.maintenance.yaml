@@ -16,29 +16,11 @@ releases:
     installed:  {{ $a | get "aws-alb-ingress-controller.enabled" }}
     <<: *jobs
     labels:
-      group: jobs
+      job: true
       type: cronjob
   - name: job-copy-certs
     installed:  {{ not ($a | get "aws-alb-ingress-controller.enabled") }}
     <<: *jobs
     labels:
-      group: jobs
+      job: true
       type: cronjob
-  - name: job-harbor
-    installed: {{ $a | get "harbor.enabled" }}
-    labels:
-      pkg: harbor
-      group: jobs
-    <<: *jobs
-  - name: job-ingress-azure
-    installed: {{ $a | get "ingress-azure.enabled" }}
-    <<: *jobs
-    labels:
-      pkg: ingress-azure
-      group: jobs
-  - name: host-mods
-    installed: {{ $a | get "host-mods.enabled" }}
-    namespace: kube-system
-    labels:
-      pkg: host
-    <<: *default

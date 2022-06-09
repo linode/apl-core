@@ -1,5 +1,22 @@
+# Upgrade commands between versions are configured in this file, and executed in bash (FROM ubuntu:20.04)
+# Options:
+# - blockingOperations: will break on exit code <> 0
+# - nonBlockingOperations: do not care about exit code
+#
+# Special case for development:
+#
+# When a version is set to "dev" it will be selected no matter what. This allows to test an upgrade record's effect.
+# (don't forget to set it to the next release version before releasing!)
+
 changes:
-  - version: 0.16
+  - version: dev # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
     releases:
-      prometheus-operator:
+      istio-operator:
+        blockingOperations:
+          # istio-operator is moved to "istio-operator" namespace, so remove from "default" ns beforehand
+          - helm -n default uninstall istio-operator
         nonBlockingOperations: []
+      knative-operator:
+        blockingOperations:
+          # knative-operator was called "knative-init" before and is now also in own "knative-operator" namespace
+          - helm -n default uninstall knative-init

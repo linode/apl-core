@@ -173,7 +173,7 @@ releases:
     namespace: team-{{ $teamId }}
     chart: ../charts/jobs
     labels:
-      group: jobs
+      job: true
       tag: teams
       team: {{ $teamId }}
     hooks:

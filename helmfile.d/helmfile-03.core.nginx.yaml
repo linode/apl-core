@@ -1,0 +1,31 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: ingress-nginx
+    installed: true
+    namespace: ingress
+    labels:
+      tag: ingress
+      stage: prep
+    <<: *default
+  - name: ingress-nginx-private
+    installed: {{ $a | get "ingress-nginx.private.enabled" }}
+    namespace: ingress
+    labels:
+      tag: ingress
+    chart: ../charts/ingress-nginx
+    values:
+      - ../values/ingress-nginx/ingress-nginx.gotmpl
+      - ../values/ingress-nginx/ingress-nginx-private.gotmpl
+    <<: *preUpgrade

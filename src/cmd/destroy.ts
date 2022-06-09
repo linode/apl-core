@@ -100,7 +100,7 @@ const destroy = async (): Promise<void> => {
         fileOpts: argv.file,
         labelOpts: argv.label,
         logLevel: logLevelString(),
-        args: 'destroy',
+        args: ['destroy'],
       },
       { streams: { stdout: d.stream.log, stderr: d.stream.error } },
     )

@@ -12,28 +12,33 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: cluster-autoscaler
-    installed: {{ $a | get "cluster-autoscaler.enabled" }}
-    namespace: kube-system
-    <<: *default
+  - name: knative-operator
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: knative-operator
+    labels:
+      init: true
+      pkg: knative
+    <<: *skeleton
   - name: knative-serving
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-serving
     chart: ../charts/raw-cr
+    needs:
+      - knative-serving/knative-serving-artifacts
+      - knative-operator/knative-operator
     labels:
       pkg: knative
     values:
       - ../values/knative/knative-serving-cr.gotmpl
       - snippets/common.gotmpl
     <<: *preUpgrade
-  - name: oauth2-proxy-redis
-    installed: true
-    namespace: istio-system
-    chart: ../charts/redis
+  - name: knative-serving-artifacts
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: knative-serving
+    chart: ../charts/raw
     labels:
-      pkg: oauth2-proxy
+      init: true
+      pkg: knative
     values:
-      - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
-      - snippets/common.gotmpl
+      - ../values/knative/knative-serving-raw.gotmpl
     <<: *preUpgrade
-

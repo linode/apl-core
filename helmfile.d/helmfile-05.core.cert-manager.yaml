@@ -12,9 +12,16 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: cert-manager
+    installed: true
+    namespace: cert-manager
+    labels:
+      pkg: cert-manager
+    <<: *default
   - name: cert-manager-artifacts
     installed: true
     namespace: cert-manager
+    needs: [cert-manager]
     labels:
       pkg: cert-manager
     <<: *raw

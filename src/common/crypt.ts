@@ -130,7 +130,7 @@ const matchTimestamps = (file: string) => {
 
 export const decrypt = async (...files: string[]): Promise<void> => {
   const d = terminal(`common:crypt:decrypt`)
-  if (!existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
+  if (env.DISABLE_CRYPT || !existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     d.info('Skipping decryption')
     return
   }

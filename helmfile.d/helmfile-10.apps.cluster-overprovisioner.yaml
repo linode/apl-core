@@ -1,0 +1,18 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: cluster-overprovisioner
+    installed: {{ $a | get "cluster-overprovisioner.enabled" }}
+    namespace: overprovisioner
+    <<: *default

@@ -23,6 +23,8 @@ k8s:
     - name: gitea
     - name: grafana
       app: grafana
+    - name: istio-operator
+      disableIstioInjection: true
     - name: istio-system
       disableIstioInjection: true
     - name: httpbin
@@ -41,6 +43,9 @@ k8s:
       app: kiali
     - name: kiali-operator
       app: kiali
+      disableIstioInjection: true
+    - name: knative-operator
+      app: knative
       disableIstioInjection: true
     - name: knative-serving
       app: knative
