@@ -89,7 +89,6 @@ environments:
             idp:
               alias: otomi-idp
               clientID: otomi
-            ingressClassName: platform
           kiali:
             enabled: false
           knative:

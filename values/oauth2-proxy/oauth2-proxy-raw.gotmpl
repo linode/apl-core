@@ -2,7 +2,7 @@
 {{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $name := $domain | replace "." "-" }}
-{{- $ingressClass := $v | get "apps.keycloak.ingressClassName" "$v.ingress.platformClass.className" }}
+{{- $ingress :=  $v.ingress.platformClass }}
 
 resources:
   - apiVersion: networking.k8s.io/v1
@@ -23,9 +23,12 @@ resources:
         nginx.ingress.kubernetes.io/configuration-snippet: |
           # rewrite auth redirects to original hosts
           rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
+        {{- with $ingress.sourceIpAddressFiltering }}
+        nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
+        {{- end}}
       name: oauth2-proxy
     spec:
-      ingressClassName: {{ $ingressClass }}
+      ingressClassName: {{ $ingress.className }}
       rules:
       - host: '{{ $domain }}'
         http:
