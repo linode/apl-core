@@ -54,7 +54,7 @@ extensions/v1
       {{- $names = (append $names $s.name) }}
     {{- end }}
   {{- end }}
-{{- end }}{{/* {{- range $s := $.services }} */}}
+{{- end }}
 {{- $internetFacing := or (eq $.provider "custom") (ne $.provider "nginx") (and (not $v.otomi.hasCloudLB) (eq $.provider "nginx")) }}
 {{- if and (eq $v.teamId "admin") $v.otomi.hasCloudLB (not (eq $.provider "nginx")) }}
   {{- $routes = (merge $routes (dict (printf "auth.%s" $v.cluster.domainSuffix ) list)) }}
