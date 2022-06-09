@@ -131,6 +131,11 @@ environments:
           vault:
             enabled: false
         cluster: {}
+        ingress:
+          platformClass:
+            className: platform
+            network: public
+          classes: []
         oidc: {}
         otomi:
           hasCloudLB: false

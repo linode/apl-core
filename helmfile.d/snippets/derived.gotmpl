@@ -112,6 +112,12 @@ environments:
             enabled: false #{{ eq $provider "aws" }}
           tigera-operator:
             enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
+        ingress:
+          classes:
+          - {{- $v.ingress.platformClass | toYaml | nindent 12 }}
+          {{- with $v.ingress.classes }}
+          {{- . | toYaml | nindent 10 }}
+          {{- end }}
         otomi:
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }}

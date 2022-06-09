@@ -1,9 +1,19 @@
 {{- $v := .Values }}
 {{- $n := $v.apps | get "ingress-nginx" }}
-nameOverride: ingress-nginx
+{{- $ingress := (index $v.ingress.classes (.Release.Labels.index | int)) }}
+{{- $privateNetwork := eq "private" ($ingress | get "network" "public")  }}
+nameOverride: {{ .Release.Name }}
+
+
 controller:
   # @TODO:
+  electionID: ingress-controller-leader-{{ $ingress.className }}
+  ingressClassResource: 
+    enabled: false
+    controllerValue: k8s.io/{{ $ingress.className }}
+  # ingressClass: {{ $ingress.className }}
   image:
+    tag: v1.0.5
     tag: {{ $n | get "image.tag" "v1.1.2" }}
     pullPolicy:  {{ $n | get "image.pullPolicy" "IfNotPresent" }}
   scope:
@@ -16,7 +26,6 @@ controller:
     enabled: false
     patch:
       priorityClassName: "otomi-critical"
-  ingressClass: nginx
   useComponentLabel: true
   # set fixed allocation with limits same as requests
   resources:
@@ -100,20 +109,36 @@ controller:
     externalTrafficPolicy: Local
     type: {{ if $v.otomi.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
     omitClusterIP: true
-    {{- with $n | get "loadBalancerIP" nil }}
+    {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . }}
     {{- end }}
     annotations:
       dummy: 'true'
-      {{- with $n | get "service.annotations" nil }}
+      {{- with $ingress | get "service.annotations" nil }}
       {{ toYaml . | indent 6 }}
       {{- end }}
-      {{- with $n | get "loadBalancerRG" nil }}
+      {{- if eq $v.cluster.provider "azure" }}
+      {{- with $ingress | get "loadBalancerRG" nil }}
       service.beta.kubernetes.io/azure-load-balancer-resource-group: {{ . }}
       {{- end }}
+      {{- if $privateNetwork }}
+      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+        {{- with $ingress | get "loadBalancerIP" nil }}
+      service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "{{ . }}"
+        {{- end }}
+      {{- end }}
+      {{- end }} {{/* if eq $v.cluster.provider "azure" */}}
       {{- if eq $v.cluster.provider "aws" }}
       service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
+      {{- if $privateNetwork }}
+      service.beta.kubernetes.io/aws-load-balancer-internal: true
       {{- end }}
+      {{- end }} {{/* if eq $v.cluster.provider "aws" */}}
+      {{- if eq $v.cluster.provider "google" }}
+      {{- if $privateNetwork }}
+      networking.gke.io/load-balancer-type: "Internal"
+      {{- end }}
+      {{- end }} {{/* if eq $v.cluster.provider "google" */}}
   publishService:
     enabled: true
 
@@ -137,7 +162,6 @@ defaultBackend:
 {{- end }}
   service:
     omitClusterIP: true
-
 rbac:
   create: true
 

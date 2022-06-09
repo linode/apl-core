@@ -47,10 +47,3 @@ releases:
       pkg: gatekeeper
     values:
       - snippets/common.gotmpl
-  - name: ingress-nginx
-    installed: true
-    namespace: ingress
-    labels:
-      tag: ingress
-      stage: prep
-    <<: *default

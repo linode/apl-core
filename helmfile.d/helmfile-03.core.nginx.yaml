@@ -12,20 +12,18 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: ingress-nginx
+{{- range $index, $ingress := $v.ingress.classes }}
+  - name: ingress-nginx-{{ $ingress.className }}
     installed: true
     namespace: ingress
     labels:
       tag: ingress
       stage: prep
-    <<: *default
-  - name: ingress-nginx-private
-    installed: {{ $a | get "ingress-nginx.private.enabled" }}
-    namespace: ingress
-    labels:
-      tag: ingress
+      class: {{ $ingress.className }}
+      index: {{ $index }}
+    missingFileHandler: Debug
     chart: ../charts/ingress-nginx
     values:
       - ../values/ingress-nginx/ingress-nginx.gotmpl
-      - ../values/ingress-nginx/ingress-nginx-private.gotmpl
     <<: *preUpgrade
+{{- end }}

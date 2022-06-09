@@ -24,3 +24,7 @@ changes:
       - teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode: '.prev | title'
     fileAdditions:
       - env/teams/apps.admin.yaml
+  - version: 3
+    relocations:
+      - apps.ingress-nginx.loadBalancerIP: ingress.platformClass.loadBalancerIP
+      - apps.ingress-nginx.loadBalancerRG: ingress.platformClass.loadBalancerRG

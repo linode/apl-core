@@ -45,6 +45,7 @@ releases:
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
+        ingress: {{- $v.ingress | toYaml | nindent 10 }}
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
