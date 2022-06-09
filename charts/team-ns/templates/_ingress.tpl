@@ -120,11 +120,6 @@ metadata:
   name: {{ $.provider }}-team-{{ $v.teamId }}-{{ $ingress.className }}-{{ $.type }}-{{ $.name }}
   namespace: {{ if ne $.provider "nginx" }}ingress{{ else }}istio-system{{ end }}
 spec:
-{{/*
-    kubernetes.io/ingress.class: merge
-    kubernetes.io/ingress.class: azure/application-gateway
-    kubernetes.io/ingress.class: nginx{{ if eq $.type "private" }}-private{{ end }}
-*/}}
   ingressClassName: {{ $ingress.className }}
   rules:
 {{- if $hasTlsPass }}
