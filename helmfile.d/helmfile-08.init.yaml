@@ -35,6 +35,6 @@ releases:
     <<: *default
   - name: cluster-overprovisioner
     installed: {{ $a | get "cluster-overprovisioner.enabled" }}
-    namespace: overprovisioner
+    namespace: cluster-overprovisioner
     <<: *default
 

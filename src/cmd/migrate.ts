@@ -9,12 +9,11 @@ import { cd } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env, isCi } from '../common/envalid'
+import { env } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
 import { writeValues } from '../common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
-import { commit } from './commit'
 
 const cmdName = getFilename(__filename)
 
@@ -259,10 +258,6 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    const res = await migrate()
-    if (isCi && res) {
-      setParsedArgs({ ...argv, message: 'migrated values [ci skip]' })
-      await commit()
-    }
+    await migrate()
   },
 }

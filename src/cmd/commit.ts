@@ -1,10 +1,10 @@
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, nothrow } from 'zx'
 import { bootstrapGit } from '../common/bootstrap'
 import { prepareEnvironment } from '../common/cli'
 import { encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env } from '../common/envalid'
+import { env, isCi } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { setDeploymentState, waitTillAvailable } from '../common/k8s'
 import { getFilename } from '../common/utils'
@@ -42,10 +42,11 @@ const commitAndPush = async (values: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
+  const message = isCi ? 'updated values [ci skip]' : argv.message
   cd(env.ENV_DIR)
   try {
     await $`git add -A`
-    await $`git commit -m ${argv.message || 'otomi commit'} --no-verify`
+    await $`git commit -m ${message} --no-verify`
   } catch (e) {
     d.info(e.stdout)
     d.error(e.stderr)
@@ -60,6 +61,10 @@ const commitAndPush = async (values: Record<string, any>): Promise<void> => {
     await $`git remote show origin`
     await gitPush(values)
     d.log('Successfully pushed the updated values')
+    // kill api container and let it reinflate
+    // @TODO: make this an api endpoint for internal use only
+    await nothrow($`kubectl -n otomi delete po -l app.kubernetes.io/name=otomi-api`)
+    d.log('Restarted the api to reinflate with new values')
   } catch (error) {
     d.error(error.stderr)
     throw new Error('Pushing the values failed, please read the above error message and manually try again')
@@ -86,9 +91,8 @@ export const commit = async (firstTime = false): Promise<void> => {
   await genDrone()
   await encrypt()
   await commitAndPush(values)
-
+  await setDeploymentState({ status: 'deployed' })
   if (firstTime) {
-    await setDeploymentState({ status: 'deployed' })
     const credentials = values.apps.keycloak
     const message = `
     ########################################################################################################################################
