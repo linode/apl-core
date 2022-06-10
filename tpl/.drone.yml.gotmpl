@@ -85,7 +85,7 @@ steps:
     image: otomi/core:{{ .imageTag }}
     pull: {{ .pullPolicy }}
     depends_on:
-      - migrate
+      - bootstrap
     commands:
       - cd .. && binzx/otomi test
 
