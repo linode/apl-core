@@ -1,10 +1,11 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { isEmpty } from 'lodash'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { prepareDomainSuffix } from '../common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
-import { env, isChart } from '../common/envalid'
+import { env, isCli } from '../common/envalid'
 import { hf } from '../common/hf'
 import { getDeploymentState, setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
@@ -76,7 +77,7 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   if (!env.DISABLE_SYNC)
-    if (isChart || !prevState.status)
+    if (!isCli || isEmpty(prevState.status))
       // commit first time when not deployed only, always commit in chart (might have previous failure)
       await commit(true) // will set deployment state after
     else await setDeploymentState({ status: 'deployed' })
