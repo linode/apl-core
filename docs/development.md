@@ -80,21 +80,29 @@ Once you got familiar with the otomi-core project structure, you can learn how p
 
 ```mermaid
 flowchart LR
+
+
     subgraph Helm chart
-        charts/my-app/values.yaml
+        values.yaml --> V2[.Values]
+        V2 --> chart
     end
     subgraph Helmfile release
-        values/my-app/my-app.gotmpl --> .Values.apps.my-app._rawValues --> charts/my-app/values.yaml
+        direction TB
+        .Values.apps.my-app._rawValues --> V2
+        values/my-app/my-app.gotmpl --> V2
     end
 
     subgraph Helmfile bases
-        snippets/default.yaml --> snippets/env.gotmpl
-        snippets/env.gotmpl --> snippets/derived.gotmpl --> values/my-app/my-app.gotmpl
+        snippets/derived.gotmpl --> .Values
+        snippets/env.gotmpl --> .Values
+        snippets/default.yaml --> .Values
+        .Values --> values/my-app/my-app.gotmpl
     end
 
     subgraph Values repo
-        env/* --> snippets/env.gotmpl
+        R[(env/*)] --> snippets/env.gotmpl
     end
+    chart --> test[Kubernetes manifests]
 ```
 
 # Adding new core application
