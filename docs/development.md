@@ -158,6 +158,57 @@ OIDC_VERIFY_CERT: '{{ not $v._derived.untrustedCA }}'
 
 Note: you may need to adjust variable names to match the ones expected by a given app.
 
+# Special charts
+
+There are few special charts that needs you attention.
+
+## jobs
+
+This chart is used to deploy kubernetes Jobs and CronJobs.
+When defining Helfile release you need to anchor the `jobs` alias and add `job-` prefix the release name
+
+```
+releases:
+  - name: job-myapp
+    installed: true
+    <<: *jobs
+```
+
+All jobs are deplyed to the `maintenance` namespace.
+You can define a job spec at: `values/jobs/myapp.gotmpl` file
+
+## team-ns
+
+This chart defines team environment and Ingress settings.
+While using otomi you can target a given team by appending its to the release name.
+
+```
+./binzx/otomi template -l name=team-ns-<team-name>
+```
+
+e.g.:
+
+```
+./binzx/otomi template -l name=team-ns-demo
+```
+
+You can define job spec in aw manifests in `values/myapp/myapp-raw.gotmpl` file.
+
+## raw
+
+The raw chart lets you wrap raw kubernetes manifest into deployable chart
+When defining Helfile release you need to anchor the `raw` alias and add `-artifacts` postfix to the release name
+
+```
+releases:
+  - name: myapp-artifacts
+    installed: true
+    namespace: my-namespace
+    <<: *raw
+```
+
+You can define raw manifests in `values/myapp/myapp-raw.gotmpl` file.
+
 # Development
 
 You can render templates of a given chart and validate it without having any cluster. The easiest way is to start with values from `tests/fixtures` directory.
