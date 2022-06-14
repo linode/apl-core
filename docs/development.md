@@ -22,7 +22,7 @@ otomi-core
 ├── chart                       # Helm chart for installing Otomi
 ├── charts                      # All other Helm charts that comprise Otomi
 ├── docs                        # Documentation
-├── helmfile.d/helmfile-*.yaml  # Helmfile files ordered by name and executed accordigly by otomi apply command
+├── helmfile.d/helmfile-*.yaml  # Helmfile specs ordered by name and executed accordingly by otomi commands
 ├── helmfile.d/snippets         # Reusable code snippets
 ├── helmfile.tpl                # Additional Helmfiles that do not have corresponding chartare not executed on otomi apply command
 ├── k8s                         # Kubernetes manifests that before any other chart
@@ -30,8 +30,8 @@ otomi-core
 ├── src                         # Otomi CLI source code
 ├── tests                       # Values used for testing purpose
 ├── upgrades.yaml               # Upgrade presync hooks
-├── values                      # Value templates that serves as input to coresponing Helm charts
-├── values-changes.yaml         # Definiitons for performing data migrations
+├── values                      # Value templates that serves as input to corresponding Helm charts
+├── values-changes.yaml         # Definitions for performing data migrations
 ├── values-schema.yaml          # JSON schema that defines Otomi interface
 └── versions.yaml               # Version tags of otomi-api, otomi-console and otomi-tasks
 ```
@@ -48,12 +48,12 @@ otomi-core/helmfile.d/snippets
 
 # Otomi and Helmfile
 
-Helmfile is a declarative spec for deploying helm charts. You are encouraged to read more about Helmifle at https://github.com/helmfile/helmfile
+Helmfile is a declarative spec for deploying helm charts. You are encouraged to read more about Helmfile at https://github.com/helmfile/helmfile
 
 In Otomi all Helmfile specs are defined in `helmfile.d/` directory and executed in alphabetical order. Majority of helmfile have the following structure:
 
 ```go-template
-# helmfile.d/999-helmifle.yaml
+# helmfile.d/999-Helmfile.yaml
 bases:
   - snippets/defaults.yaml
 ---
@@ -112,7 +112,7 @@ flowchart LR
 ```
 
 _Values repo_
-The values repo contains files that define input paramters for Otomi. This is where you can define teams, team, services, enabled applications and their condgurations, etc. A user sets `$ENV_DIR` env varable, so Otomi knows about its location.
+The values repo contains files that define input paramters for Otomi. This is where you can define teams, team, services, enabled applications and their configurations, etc. A user sets `$ENV_DIR` env varable, so Otomi knows about its location.
 
 _Helmfile bases_
 During execution of the Otomi CLI command Helmfile is triggered. It loads all files from values repo are merges them according to spec defined in the `snippets/env.gotmpl` file. Next, the `snippets/default.yaml`, `snippets/env.gotmpl` and `snippets/derived.gotmpl` files are merged, thus Helmfile `.Values` obtains its ultimate content.
@@ -174,7 +174,7 @@ releases:
     <<: *jobs
 ```
 
-All jobs are deplyed to the `maintenance` namespace.
+All jobs are deployed to the `maintenance` namespace.
 You can define a job spec at: `values/jobs/myapp.gotmpl` file
 
 ## team-ns
