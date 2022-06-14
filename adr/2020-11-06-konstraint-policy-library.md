@@ -1,3 +1,5 @@
+# Konstraint library to support Common Rego Language definitions
+
 Alin:
 
 Integrated Konstraint library to support Common Rego Language definitions.

@@ -6,7 +6,6 @@ import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra
 import { cloneDeep, each, get, set, unset } from 'lodash'
 import { Argv } from 'yargs'
 import { cd } from 'zx'
-import { commit } from './commit'
 import { prepareEnvironment } from '../common/cli'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
@@ -259,10 +258,6 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    const res = await migrate()
-    if (env.CI && res) {
-      setParsedArgs({ ...argv, message: 'migrated values [ci skip]' })
-      await commit()
-    }
+    await migrate()
   },
 }

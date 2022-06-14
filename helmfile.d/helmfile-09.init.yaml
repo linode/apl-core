@@ -19,11 +19,11 @@ releases:
   - name: knative-serving
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-serving
-    chart: ../charts/raw
+    chart: ../charts/raw-cr
     labels:
       pkg: knative
     values:
-      - ../values/knative/knative-serving-raw.gotmpl
+      - ../values/knative/knative-serving-cr.gotmpl
       - snippets/common.gotmpl
     <<: *preUpgrade
   - name: oauth2-proxy-redis

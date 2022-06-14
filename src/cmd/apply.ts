@@ -1,14 +1,15 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
-import { isIPv6 } from 'net'
+import { isEmpty } from 'lodash'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
+import { prepareDomainSuffix } from '../common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from '../common/cli'
 import { logLevelString, terminal } from '../common/debug'
 import { env, isCli } from '../common/envalid'
-import { hf, hfValues } from '../common/hf'
-import { getDeploymentState, getOtomiLoadBalancerIP, setDeploymentState } from '../common/k8s'
+import { hf } from '../common/hf'
+import { getDeploymentState, setDeploymentState } from '../common/k8s'
 import { getFilename } from '../common/utils'
-import { getCurrentVersion, getImageTag, writeValues } from '../common/values'
+import { getCurrentVersion, getImageTag } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { commit } from './commit'
@@ -28,37 +29,13 @@ const setup = (): void => {
   mkdirSync(dir, { recursive: true })
 }
 
-const setDomainSuffix = async (values: Record<string, any>): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:setDomainSuffix`)
-  d.debug("Create a fallback cluster.domainSuffix when it doesn't exist")
-  const ingressIP = values.apps['ingress-nginx']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
-  // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
-  const newSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
-
-  await writeValues({
-    cluster: {
-      domainSuffix: newSuffix,
-    },
-  })
-}
-
-const prepareValues = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:prepareValues`)
-
-  const values = await hfValues()
-  d.info('Checking if domainSuffix needs a fallback domain')
-  if (values && !values.cluster.domainSuffix) {
-    d.info('cluster.domainSuffix was not found, creating $loadbalancerIp.nip.io as fallback')
-    await setDomainSuffix(values)
-  }
-}
-
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
   d.info('Start apply all')
 
-  const { status } = await getDeploymentState()
+  const prevState = await getDeploymentState()
+  d.debug(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
   const version = await getCurrentVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
@@ -81,13 +58,15 @@ const applyAll = async () => {
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
+      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
+      fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: [...(argv.label || []), 'stage=prep'],
       logLevel: logLevelString(),
       args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
-  await prepareValues()
+  await prepareDomainSuffix()
   d.info('Deploying charts containing label stage!=prep')
   await hf(
     {
@@ -97,10 +76,11 @@ const applyAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
-  // commit first time only if cli, always commit in chart (might have previous failure)
-  if (!env.DISABLE_SYNC && (!isCli || !status)) {
-    await commit(true)
-  }
+  if (!env.DISABLE_SYNC)
+    if (!isCli || isEmpty(prevState.status))
+      // commit first time when not deployed only, always commit in chart (might have previous failure)
+      await commit(true) // will set deployment state after
+    else await setDeploymentState({ status: 'deployed' })
 }
 
 const apply = async (): Promise<void> => {

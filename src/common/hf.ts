@@ -1,9 +1,10 @@
 import { existsSync } from 'fs'
 import { load } from 'js-yaml'
+import { omit } from 'lodash'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { asArray, rootDir } from './utils'
+import { asArray, extract, flattenObject, getValuesSchema, rootDir } from './utils'
 import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -65,10 +66,14 @@ export const hf = async (args: HFParams, opts?: HFOptions): Promise<ProcessOutpu
   return new ProcessOutputTrimmed(await proc)
 }
 
-export type ValuesArgs = {
+export interface ValuesArgs {
   filesOnly?: boolean
+  excludeSecrets?: boolean
 }
-export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<Record<string, any> | undefined> => {
+
+export const hfValues = async ({ filesOnly = false, excludeSecrets = false }: ValuesArgs = {}): Promise<
+  Record<string, any> | undefined
+> => {
   const d = terminal('common:hf:hfValues')
   if (!(existsSync(`${env.ENV_DIR}/env/teams.yaml`) && existsSync(`${env.ENV_DIR}/env/settings.yaml`))) {
     // teams and settings file are the minimum needed files to run env.gotmpl and get the values
@@ -79,6 +84,12 @@ export const hfValues = async ({ filesOnly = false }: ValuesArgs = {}): Promise<
   if (filesOnly) output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' })
   else output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml`, args: 'build' })
   const res = (load(replaceHFPaths(output.stdout)) as any).renderedvalues
+  if (excludeSecrets) {
+    // strip secrets
+    const schema = await getValuesSchema()
+    const allSecrets = extract(schema, 'x-secret')
+    return omit(res, Object.keys(flattenObject(allSecrets)))
+  }
   return res
 }
 

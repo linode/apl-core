@@ -32,7 +32,7 @@
 {{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 
-{{- if and (not (env "CI")) (hasKey $v.cluster "k8sContext") }}
+{{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
   kubeContext: {{ $v.cluster.k8sContext }}
 {{- end }}
@@ -112,6 +112,12 @@ environments:
             enabled: false #{{ eq $provider "aws" }}
           tigera-operator:
             enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
+        ingress:
+          classes:
+          - {{- $v.ingress.platformClass | toYaml | nindent 12 }}
+          {{- with $v.ingress.classes }}
+          {{- . | toYaml | nindent 10 }}
+          {{- end }}
         otomi:
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }}

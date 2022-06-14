@@ -31,20 +31,32 @@ releases:
       - ../values/gatekeeper/gatekeeper.gotmpl
       - snippets/common.gotmpl
     <<: *preUpgrade
-  - name: ingress-nginx
+  - name: ingress-nginx-artifacts
     installed: true
     namespace: ingress
     labels:
       tag: ingress
       stage: prep
-    <<: *default
-  - name: ingress-nginx-private
-    installed: {{ $a | get "ingress-nginx.private.enabled" }}
+    <<: *raw
+{{- range $index, $ingress := $v.ingress.classes }}
+  - name: ingress-nginx-{{ $ingress.className }}
+    installed: true
     namespace: ingress
     labels:
       tag: ingress
+      stage: prep
+      class: {{ $ingress.className }}
+      index: {{ $index }}
+    missingFileHandler: Debug
     chart: ../charts/ingress-nginx
     values:
       - ../values/ingress-nginx/ingress-nginx.gotmpl
-      - ../values/ingress-nginx/ingress-nginx-private.gotmpl
     <<: *preUpgrade
+{{- end }}
+  - name: operator-lifecycle-manager
+    installed: true
+    disableValidationOnInstall: true
+    namespace: operator-lifecycle-manager
+    labels:
+      olm: true
+    <<: *default

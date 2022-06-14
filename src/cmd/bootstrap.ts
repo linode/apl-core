@@ -5,11 +5,13 @@ import { dump } from 'js-yaml'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
+import { $, nothrow } from 'zx'
+import { bootstrapGit } from '../common/bootstrap'
 import { prepareEnvironment } from '../common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
 import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
-import { env, isChart, isCli } from '../common/envalid'
+import { env, isChart, isCi, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from '../common/k8s'
 import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
@@ -132,7 +134,9 @@ export const getStoredClusterSecrets = async (
   const d = deps.terminal(`cmd:${cmdName}:getStoredClusterSecrets`)
   d.info(`Checking if ${secretId} already exists`)
   if (env.DISABLE_SYNC) return undefined
-  const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE)
+  // we might need to create the 'otomi' namespace if we are in CLI mode
+  if (isCli) await nothrow($`kubectl create ns otomi &> /dev/null`)
+  const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
   if (kubeSecretObject) {
     d.info(`Found ${secretId} secrets on cluster, recovering`)
     return kubeSecretObject
@@ -239,7 +243,7 @@ export const processValues = async (
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
-    if (!env.DISABLE_SYNC) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, env.DEPLOYMENT_NAMESPACE, allSecrets)
+    if (!env.DISABLE_SYNC) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
   } else if (originalInput)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
@@ -326,7 +330,7 @@ export const bootstrap = async (
   // so run bootstrap only when no previous deployment was done or version or tag of otomi changed
   const tag = await deps.getImageTag()
   const version = await deps.getCurrentVersion()
-  if (env.CI) {
+  if (isCi) {
     const { version: prevVersion, tag: prevTag } = await deps.getDeploymentState()
     if (prevVersion && prevTag && version === prevVersion && tag === prevTag) return
   }
@@ -387,11 +391,19 @@ export const module = {
   command: cmdName,
   hidden: true,
   describe: 'Bootstrap all necessary settings and values',
-  builder: (parser: Argv): Argv => parser,
+  builder: (parser: Argv): Argv =>
+    parser.options({
+      destroy: {
+        type: 'string',
+        hidden: true,
+        describe: 'Informs bootstrapper to check LB IP if no domainsuffix was found',
+      },
+    }),
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
     await decrypt()
     await bootstrap()
+    await bootstrapGit()
   },
 }

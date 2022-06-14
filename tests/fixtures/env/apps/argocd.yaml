@@ -1,0 +1,3 @@
+apps:
+    argocd:
+        enabled: true

@@ -1,0 +1,251 @@
+#######################################################################################
+## Global Values
+
+global:
+  ## Database password
+  ##
+  databasePassword: kubeclarity
+
+  ## Docker image
+  ##
+  docker:
+    ## Configure registry
+    ##
+    registry: "ghcr.io/openclarity"
+    tag: "v2.3.0"
+    imagePullPolicy: Always
+
+  ## Is this being installed under OpenShift restricted SCC?
+  ## NOTE: You also need to set the PostgreSQL section correctly if using the OpenShift restricted SCC
+  openShiftRestricted: false
+
+## End of Global Values
+#######################################################################################
+
+#######################################################################################
+## KubeClarity Values
+
+kubeclarity:
+  ## Docker Image values.
+  docker:
+    ## Use to overwrite the global docker params
+    ##
+    imageName: ""
+
+  ## Logging level (debug, info, warning, error, fatal, panic).
+  logLevel: warning
+
+  enableDBInfoLog: false
+
+  service:
+    type: ClusterIP
+
+  resources:
+    requests:
+      memory: "200Mi"
+      cpu: "100m"
+    limits:
+      memory: "1000Mi"
+      cpu: "1000m"
+
+## End of KubeClarity Values
+#######################################################################################
+
+#######################################################################################
+## KubeClarity Runtime Scan Values
+
+kubeclarity-runtime-scan:
+  httpsProxy: ""
+  httpProxy: ""
+  resultServicePort: 8888
+
+  registry:
+    skipVerifyTlS: "false"
+    useHTTP: "false"
+
+  cis-docker-benchmark-scanner:
+    ## Docker Image values.
+    docker:
+      ## Use to overwrite the global docker params
+      ##
+      imageName: ""
+
+    ## Scanner logging level (debug, info, warning, error, fatal, panic).
+    logLevel: warning
+
+    ## Timeout for the cis docker benchmark scanner job.
+    timeout: "2m"
+
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "50m"
+      limits:
+        memory: "1000Mi"
+        cpu: "1000m"
+
+  vulnerability-scanner:
+    ## Docker Image values.
+    docker:
+      ## Use to overwrite the global docker params
+      ##
+      imageName: ""
+
+    ## Scanner logging level (debug, info, warning, error, fatal, panic).
+    logLevel: warning
+
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "50m"
+      limits:
+        memory: "1000Mi"
+        cpu: "1000m"
+
+    ## Analyzer config.
+    analyzer:
+      ## Space seperated list of analyzers. (syft gomod)
+      analyzerList: "syft gomod"
+
+      analyzerScope: "squashed"
+
+    ## Scanner config.
+    scanner:
+      ## Space seperated list of scanners. (grype dependency-track)
+      scannerList: "grype"
+
+      grype:
+        ## Enable grype scanner, if true make sure to add it to scannerList above
+        ##
+        enabled: true
+        ## Grype scanner mode. (LOCAL, REMOTE)
+        mode: "REMOTE"
+
+        ## Remote grype scanner config.
+        remote-grype:
+          timeout: "2m"
+
+      dependency-track:
+        ## Enable dependency-track scanner, if true make sure to add it to scannerList above
+        ##
+        enabled: false
+        insecureSkipVerify: "true"
+        disableTls: "true"
+        apiserverAddress: "dependency-track-apiserver.dependency-track"
+        apiKey: ""
+
+
+## End of KubeClarity Runtime Scan Values
+#######################################################################################
+
+#######################################################################################
+## KubeClarity Grype Server Values
+
+kubeclarity-grype-server:
+  enabled: true
+
+  ## Docker Image values.
+  docker:
+    imageRepo: "gcr.io/eticloud/k8sec"
+    imageTag: "v0.1.2"
+    imagePullPolicy: Always
+
+  ## Logging level (debug, info, warning, error, fatal, panic).
+  logLevel: warning
+
+  servicePort: 9991
+
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "200Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1G"
+
+## End of KubeClarity Grype Server Values
+#######################################################################################
+
+#######################################################################################
+## KubeClarity SBOM DB Values
+
+kubeclarity-sbom-db:
+  ## Docker Image values.
+  docker:
+    ## Use to overwrite the global docker params
+    ##
+    imageName: ""
+
+  ## Logging level (debug, info, warning, error, fatal, panic).
+  logLevel: warning
+
+  servicePort: 8080
+
+  resources:
+    requests:
+      memory: "20Mi"
+      cpu: "10m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"
+
+## End of KubeClarity SBOM DB Values
+#######################################################################################
+
+#######################################################################################
+## KubeClarity Postgres Values
+
+kubeclarity-postgresql:
+  enabled: true
+
+  ## ConfigMap with scripts to be run at first boot
+  ## NOTE: This will override initdbScripts
+  # initdbScriptsConfigMap:
+
+  ## Secret with scripts to be run at first boot (in case it contains sensitive information)
+  ## NOTE: This can work along initdbScripts or initdbScriptsConfigMap
+  # initdbScriptsSecret:
+
+  ## Specify the PostgreSQL username and password to execute the initdb scripts
+  # initdbUser:
+  # initdbPassword:
+
+  ## Setup database name and password
+  existingSecret: kubeclarity-postgresql-secret
+  postgresqlDatabase: kubeclarity
+  # secretKey: postgresql-password
+
+  resources:
+    requests:
+      memory: "250Mi"
+      cpu: "250m"
+    limits:
+      memory: "500Mi"
+      cpu: "1000m"
+
+  serviceAccount:
+    enabled: true
+  securityContext:
+    # Default is true for K8s. Enabled needs to false for OpenShift restricted SCC and true for anyuid SCC
+    enabled: true
+    # fsGroup specification below is not applied if enabled=false. enabled=false is the required setting for OpenShift "restricted SCC" to work successfully.
+    fsGroup: 1001
+  containerSecurityContext:
+    # Default is true for K8s. Enabled needs to false for OpenShift restricted SCC and true for anyuid SCC
+    enabled: true
+    # runAsUser specification below is not applied if enabled=false. enabled=false is the required setting for OpenShift "restricted SCC" to work successfully.
+    runAsUser: 1001
+    runAsNonRoot: true
+  volumePermissions:
+    # Default is true for K8s. Enabled needs to false for OpenShift restricted SCC and true for anyuid SCC
+    enabled: false
+    # if using restricted SCC set runAsUser: "auto" and if running under anyuid SCC - runAsUser needs to match the line above
+    securityContext:
+      runAsUser: 1001
+  shmVolume:
+    chmod:
+      # if using restricted SCC with runAsUser: "auto" (above) then set shmVolume.chmod.enabled to false
+      enabled: true
+
+# End of KubeClarity Postgres Values
+#######################################################################################

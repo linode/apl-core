@@ -1,5 +1,5 @@
 $schema: 'http://json-schema.org/draft-07/schema'
-version: 1
+version: 3
 additionalProperties: true
 definitions:
   rawValues:
@@ -227,42 +227,56 @@ definitions:
     additionalProperties: false
     properties:
       apiName:
-        description: Only used for API/UI to show in app.
+        description:
+          Exact name of cluster as created when on AWS. Optional otherwise and will be generated for UI purposes.
+          When on AWS this name is used for chart cluster-autoscaler and aws-alb-ingress-controller (enabled if otomi.hasExternalLB).
         $ref: '#/definitions/wordCharacterPattern'
       apiServer:
-        description: Used by kubectl for local deployment to target cluster.
+        description: Used to generate KUBECONFIG for download, for local access to target cluster.
         pattern: '^https:\/\/.*'
       domainSuffix:
         $ref: '#/definitions/domain'
         description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
       entrypoint:
-        description: A Kubernetes API public IP address (provider "custom" only).
+        description: A public IP address that has a route to a private loadbalancer ip, allowing access to private clusters. (Provider "custom" only.)
         type: string
       k8sContext:
         $ref: '#/definitions/k8sContext'
+        description: Optional. Must be set for development mode and must point to an existing context in KUBECONFIG.
       k8sVersion:
         $ref: '#/definitions/k8sVersion'
       name:
         $ref: '#/definitions/clusterName'
+        description: Short name that will be used in construction of cluster domain and messaging.
       owner:
         $ref: '#/definitions/idName'
         description: The name of the organization owning the cluster.
+        default: otomi
       provider:
         $ref: '#/definitions/provider'
       region:
-        description: Dependent on provider.
+        description: 'An AWS region. Only required for AWS.'
         examples:
-          - europe-west4
           - eu-central-1
-          - westeurope
-        $ref: '#/definitions/wordCharacterPattern'
-      vpcID:
-        description: AWS only. If provided will override autodiscovery from metadata.
-        $ref: '#/definitions/wordCharacterPattern'
     required:
       - k8sVersion
       - name
       - provider
+    allOf:
+      - oneOf:
+          - properties:
+              provider:
+                enum: [aws]
+            required:
+              - apiName
+              - region
+          - not:
+              properties:
+                provider:
+                  enum: [aws]
+  clusterName:
+    $ref: '#/definitions/wordCharacterPattern'
+    type: string
   containerSpecNoSec:
     properties:
       image:
@@ -354,9 +368,6 @@ definitions:
     description: A lowercase name that starts with a letter and may contain dashes.
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
     type: string
-  clusterName:
-    $ref: '#/definitions/wordCharacterPattern'
-    type: string
   image:
     additionalProperties: false
     properties:
@@ -393,6 +404,34 @@ definitions:
       - tag
     type: object
     title: Container image
+  ingressClassParameters:
+    type: object
+    properties:
+      network:
+        title: Load balancer type
+        type: string
+        enum:
+          - public
+          - private
+        default: public
+      loadBalancerIP:
+        title: Load balancer IP address
+        description: A static IP address assigned to a load balancer
+        type: string
+      loadBalancerRG:
+        title: Load balancer Azure resource group
+        type: string
+      loadBalancerSubnet:
+        title: Load balancer Azure subnet
+        type: string
+        description: Specify subnet provider for load balancer IP address (applies to private network only)
+      sourceIpAddressFiltering:
+        title: Source IP address filtering
+        type: string
+        description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
+  ipV4Address:
+    type: string
+    pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
   jobs:
     description: You may pass an array of Job objects. The Kubernetes API accepts
       a Job specification, which is meant for run-to-completion apps (e.g. batch
@@ -463,12 +502,13 @@ definitions:
     description: The cluster k8s context as found in $KUBECONFIG.
     $ref: '#/definitions/wordCharacterPattern'
   k8sVersion:
-    description: The cluster k8s version. Otomi has compatibility with at least 2 minor versions back from the suggested default.
+    description: The cluster k8s version. Must match one of the list.
     enum:
       - '1.19'
       - '1.20'
       - '1.21'
       - '1.22'
+      - '1.23'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -510,7 +550,7 @@ definitions:
     properties:
       ingressPrivate:
         title: Internal ingress filtering
-        description: 'Pods belonging to this service must contain "app: <service name>" label'
+        description: 'Pods belonging to this service must contain "otomi.io/app: <service name>" label'
         oneOf:
           - title: Deny all
             description: Deny traffic from all teams (including this one)
@@ -537,7 +577,7 @@ definitions:
                       type: string
                     service:
                       title: Service name
-                      description: 'Allow traffic from pods with "app: <some service name>" label'
+                      description: 'Allow traffic from pods with "otomi.io/app: <some service name>" label'
                       type: string
                   required:
                     - team
@@ -875,7 +915,7 @@ definitions:
         description: Unique identifier created by and used in API. Optional.
         type: string
       auth:
-        description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
+        description: Available only for core apps.
         type: boolean
       isShared:
         description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
@@ -948,6 +988,10 @@ definitions:
       port:
         $ref: '#/definitions/portNumber'
         description: Points to the backing k8s service (only used when 'svc' is set).
+      ingressClassName:
+        description: Ingress class name
+        type: string
+        default: platform
       svc:
         $ref: '#/definitions/idName'
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
@@ -961,7 +1005,6 @@ definitions:
         description: Will determine the ingress routing.
         enum:
           - public
-          - private
           - cluster
         type: string
       removeRequestHeaders:
@@ -1047,19 +1090,23 @@ definitions:
     description: Grant team permissions to modify certain configuration parameters.
     type: object
     properties:
-      Service:
-        title: Service
+      service:
         type: array
         items:
           type: string
           enum: [ingress, networkPolicy]
         uniqueItems: true
-      Team:
-        title: Team
+      team:
         type: array
         items:
           type: string
           enum: [alerts, oidc, resourceQuota, downloadKubeConfig, networkPolicy]
+        uniqueItems: true
+      apps:
+        type: array
+        items:
+          type: string
+          enum: [argocd, gitea]
         uniqueItems: true
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
@@ -1127,11 +1174,32 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            description: Discarded as derived from otomi flags.
+            default: false
           image:
             $ref: '#/definitions/imageSimple'
           resources:
             $ref: '#/definitions/resources'
+      argocd:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          autoscaling:
+            $ref: '#/definitions/autoscalingEnabled'
+          resources:
+            additionalProperties: false
+            properties:
+              server:
+                $ref: '#/definitions/resources'
+              controller:
+                $ref: '#/definitions/resources'
+              repo:
+                $ref: '#/definitions/resources'
+              redis:
+                $ref: '#/definitions/resources'
       cert-manager:
         properties:
           _rawValues:
@@ -1178,7 +1246,6 @@ properties:
                         const: custom-ca
                     required:
                       - issuer
-
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -1678,10 +1745,6 @@ properties:
             $ref: '#/definitions/rawValues'
           autoscaling:
             $ref: '#/definitions/autoscalingEnabled'
-          loadBalancerIP:
-            type: string
-          loadBalancerRG:
-            type: string
           maxBodySize:
             type: string
             default: 1024m
@@ -1715,28 +1778,6 @@ properties:
                 $ref: '#/definitions/imagePullPolicy'
           resources:
             $ref: '#/definitions/resources'
-          private:
-            description: Private loadbalancer configuration.
-            properties:
-              enabled:
-                title: Enable private loadbalancer
-                description: Enable to start an extra loadbalancer for private network traffic.
-                type: boolean
-                default: false
-              autoscaling:
-                $ref: '#/definitions/autoscalingEnabled'
-              loadBalancerIP:
-                type: string
-              loadBalancerRG:
-                type: string
-              resources:
-                $ref: '#/definitions/resources'
-              service:
-                properties:
-                  annotations:
-                    $ref: '#/definitions/annotations'
-            title: Private loadbalancer
-            type: object
           service:
             properties:
               annotations:
@@ -1920,6 +1961,30 @@ properties:
             x-secret: 'randAlphaNum 20'
         required:
           - postgresqlPassword
+      kubeclarity:
+        description: Kubeclarity security scanning Helm chart.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          logLevel:
+            enum:
+              - debug
+              - info
+              - warning
+              - error
+              - fatal
+              - panic
+          databasePassword:
+            type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
+            x-secret: 'randAlphaNum 20'
+          resources:
+            $ref: '#/definitions/resources'
+        required:
+          - databasePassword
       kubernetes-external-secrets:
         additionalProperties: false
         properties:
@@ -2309,6 +2374,9 @@ properties:
                   - project
             required:
               - google
+      entrypoint:
+        $ref: '#/definitions/ipV4Address'
+        description: Optional. A public IP address that will override (loadbalancer) ip used for registering hosts. This allows for access to private clusters.
   home:
     $ref: '#/definitions/alerts'
   kms:
@@ -2695,6 +2763,27 @@ properties:
                   $ref: '#/definitions/wordCharacterPattern'
                 user:
                   $ref: '#/definitions/wordCharacterPattern'
+  ingress:
+    properties:
+      platformClass:
+        type: object
+        allOf:
+          - properties:
+              className:
+                type: string
+                enum: [platform]
+          - $ref: '#/definitions/ingressClassParameters'
+      classes:
+        type: array
+        items:
+          allOf:
+            - type: object
+              properties:
+                className:
+                  type: string
+            - $ref: '#/definitions/ingressClassParameters'
+          required:
+            - className
   smtp:
     additionalProperties: false
     properties:

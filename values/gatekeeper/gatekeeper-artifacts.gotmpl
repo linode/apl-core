@@ -21,3 +21,4 @@ config:
     - excludedNamespaces: {{ concat $excludedNamespaces ($gk | get "excludedNamespaces" list) | toJson }}
       processes: ["*"]
 
+otomiVersions: {{- toYaml .Values.versions | nindent 2 }}

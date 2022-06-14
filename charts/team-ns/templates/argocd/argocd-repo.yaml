@@ -1,0 +1,15 @@
+{{- $v := .Values }}
+{{- $a := $v.apps.argocd }}
+{{- $g := $v.apps.gitea }}
+{{- if and (ne $v.teamId "admin") $a.enabled $g.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: team-{{ $v.teamId }}-gitea-repo
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repo
+stringData:
+  type: git
+  url: https://gitea.{{ $v.cluster.domainSuffix }}/otomi/team-{{ $v.teamId }}-argocd.git
+{{- end }}    

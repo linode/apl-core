@@ -26,7 +26,8 @@ elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
   mkdir -p $ENV_DIR
 fi
 [[ "$ENV_DIR" == *"../"* ]] && echo "Don't provide an ENV_DIR that contains '../'!" && exit 1
-if [ -n "$CI" ]; then
+# treat CI and chart as non interactive
+if [ -z "$PS1" ]; then
   calling_args="$calling_args --non-interactive"
 fi
 if [[ $calling_args == 'x '* ]] && [[ $calling_args != 'x -- '* ]]; then
@@ -182,7 +183,7 @@ check_update() {
   fi
 }
 
-[ -z $DONT_CHECK_UPDATE ] && [ -z $CI ] && [ -z $IN_DOCKER ] && silent echo "Checking for updates" && check_update
+[ -z $DONT_CHECK_UPDATE ] && [ -z $IN_DOCKER ] && silent echo "Checking for updates" && check_update
 
 tmp_env=$(mktemp)
 

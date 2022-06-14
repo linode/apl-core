@@ -7,6 +7,13 @@ environments:
         apps:
           alertmanager:
             enabled: false
+          argocd:
+            enabled: false
+            autoscaling:
+              enabled: false
+              minReplicas: 1
+              maxReplicas: 3
+              targetCPUUtilizationPercentage: 50
           cert-manager:
             issuer: custom-ca
           demo-tlspass:
@@ -101,6 +108,9 @@ environments:
               kubeops:
                 minReplicas: 1
                 maxReplicas: 10
+          kubeclarity:
+            enabled: false
+            logLevel: "warning"
           kube-descheduler:
             enabled: false
           loki:
@@ -121,6 +131,11 @@ environments:
           vault:
             enabled: false
         cluster: {}
+        ingress:
+          platformClass:
+            className: platform
+            network: public
+          classes: []
         oidc: {}
         otomi:
           hasCloudLB: false

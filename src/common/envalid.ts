@@ -12,7 +12,6 @@ const ciBool = makeValidator((x) => {
 const cliEnvSpec = {
   CI: ciBool({ default: false }),
   DISABLE_SYNC: bool({ default: false }),
-  DEPLOYMENT_NAMESPACE: str({ default: 'default' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
   IN_DOCKER: bool({ default: false }),
@@ -47,5 +46,6 @@ export const cleanEnvironment = (spec: Record<string, any> = cliEnvSpec): Record
 
 export const env = cleanEnvironment()
 
-export const isChart: boolean = env.CI && !!env.VALUES_INPUT
+export const isChart = !!env.VALUES_INPUT
+export const isCi: boolean = env.CI
 export const isCli: boolean = !env.CI && !isChart

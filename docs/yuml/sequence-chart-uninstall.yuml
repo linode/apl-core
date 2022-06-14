@@ -1,0 +1,8 @@
+// {type:sequence}
+// {generate:true}
+
+[:User]helm uninstall>[:K8s]
+[:K8s]otomi bootstrap>[:K8s]
+[:K8s]if needed create domain suffix from LB IP>[:K8s]
+[:K8s]otomi pull>[:Git]
+[:K8s]otomi destroy>[:K8s]

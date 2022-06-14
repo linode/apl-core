@@ -25,6 +25,7 @@ trigger:
     - push
 
 environment:
+  CI: '1'
   IN_DOCKER: '1'
   VERBOSITY: '1'
   DRONE_RUNNER_VOLUMES: 
@@ -73,19 +74,19 @@ steps:
       - groupadd -r -g 999 app && useradd -r -g 999 -u 999 app
       - chmod -R a+w .* env && chown -R app .* env
 
-  - name: migrate
+  - name: bootstrap
     image: otomi/core:{{ .imageTag }}
     pull: {{ .pullPolicy }}
     depends_on:
       - prepare-env
     commands:
-      - cd .. && binzx/otomi migrate
+      - cd .. && binzx/otomi bootstrap
 
   - name: test
     image: otomi/core:{{ .imageTag }}
     pull: {{ .pullPolicy }}
     depends_on:
-      - migrate
+      - bootstrap
     commands:
       - cd .. && binzx/otomi test
 

@@ -1,7 +1,10 @@
 # NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
 k8s:
   namespaces:
+    - name: argocd
+      app: argocd
     - name: alertmanager
+      app: alertmanager
     - name: cert-manager
       disableIstioInjection: true
     - name: default
@@ -13,29 +16,43 @@ k8s:
     - name: external-dns
       disableIstioInjection: true
     - name: harbor
+      app: harbor
     - name: gatekeeper-system
+      app: gatekeeper
       disableIstioInjection: true
     - name: gitea
     - name: grafana
+      app: grafana
     - name: istio-system
       disableIstioInjection: true
+    - name: httpbin
+      app: httpbin
     - name: ingress
       # disabling istio sidecar as it does not preserve client ip (yet)
       # TODO: enable once it does
       disableIstioInjection: true
     - name: jaeger
+      app: jaeger
     - name: jaeger-operator
+      app: jaeger
       disableIstioInjection: true
     - name: keycloak
     - name: kiali
+      app: kiali
     - name: kiali-operator
+      app: kiali
       disableIstioInjection: true
     - name: knative-serving
+      app: knative
       disablePolicyChecks: true
       disableIstioInjection: true
     - name: kubeapps
+      app: kubeapps
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: kubeclarity
+      app: kubeclarity
+      disableIstioInjection: true
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
@@ -47,15 +64,20 @@ k8s:
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: otomi
-    - name: overprovisioner
+    - name: cluster-overprovisioner
+      app: cluster-overprovisioner
       disableIstioInjection: true
     - name: prometheus
-    - name: shared
+      app: prometheus
+    - name: redis
+      app: prometheus
+      disableIstioInjection: true
     - name: team-admin
     - name: tigera-operator
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: vault
+      app: vault
 
 adminApps:
   - name: alertmanager
@@ -68,6 +90,17 @@ adminApps:
         port: 9093
         type: public
         auth: true
+  - name: argocd
+    tags: [cicd, gitops]
+    isShared: true
+    ownHost: true
+    ingress:
+      - svc: argocd-server
+        namespace: argocd
+        type: public
+        auth: true
+        # removeRequestHeaders:
+        #   - authorization
   - name: cert-manager
     tags: [ingress, security, tls]
   - name: drone
@@ -193,6 +226,15 @@ adminApps:
         namespace: kubeapps
         type: public
         # auth: true
+  - name: kubeclarity
+    tags: [security]
+    ownHost: true
+    ingress:
+      - svc: kubeclarity
+        namespace: kubeclarity
+        port: 8080
+        type: public
+        auth: true
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus]

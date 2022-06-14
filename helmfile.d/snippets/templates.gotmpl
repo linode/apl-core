@@ -19,6 +19,11 @@ templates:
     chart: ../charts/raw
     values:
       - ../values/{{ .Release.Name | replace "-artifacts" "" }}/{{ .Release.Name | replace "-artifacts" "" }}-raw.gotmpl
+  rawCR: &rawCR
+    chart: ../charts/raw-cr
+    values:
+      - ../values/{{ .Release.Name | replace "-cr" "" }}/{{ .Release.Name }}.gotmpl
+      - snippets/common.gotmpl
   jobs: &jobs
     namespace: maintenance
     chart: ../charts/jobs
@@ -35,9 +40,10 @@ templates:
     chart: /tmp/charts/{{ .Release.Name }}
     hooks:
       - events: [prepare]
-        showlogs: false
+        showlogs: true
         command: ../bin/skeleton-chart.sh
-        args: ["{{ .Release.Name }}"]
+        args: ["{{ .Release.Name }}", "{{ .Values.cluster.k8sVersion }}"]
+
       - events: ["presync"]
         showlogs: true
         command: ../binzx/otomiw

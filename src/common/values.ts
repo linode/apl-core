@@ -59,6 +59,37 @@ export const getCurrentVersion = async (): Promise<string> => {
   return /^[0-9.]+/.exec(potentialVersion) ? potentialVersion : pkg.version
 }
 
+export const getRepo = (values: Record<string, any>): Record<string, string> => {
+  const giteaEnabled = values?.apps?.gitea?.enabled ?? true
+  const clusterDomain = values?.cluster?.domainSuffix
+  const byor = !!values?.apps?.['otomi-api']?.git
+  if (!giteaEnabled && !byor) {
+    throw new Error('Gitea is disabled but no apps.otomi-api.git config was given.')
+  }
+  let username = 'Otomi Admin'
+  let email: string
+  let password: string
+  let branch = 'main'
+  let remote
+  if (!giteaEnabled) {
+    const otomiApiGit = values?.apps?.['otomi-api']?.git
+    username = otomiApiGit?.user
+    password = otomiApiGit?.password
+    remote = otomiApiGit?.repoUrl
+    email = otomiApiGit?.email
+    branch = otomiApiGit?.branch ?? branch
+  } else {
+    username = 'otomi-admin'
+    password = values?.apps?.gitea?.adminPassword ?? values?.otomi?.adminPassword
+    email = `otomi-admin@${clusterDomain}`
+    const giteaUrl = `gitea.${clusterDomain}`
+    const giteaOrg = 'otomi'
+    const giteaRepo = 'values'
+    remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
+  }
+  return { remote, branch, email, username, password }
+}
+
 let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
@@ -72,7 +103,7 @@ const writeValuesToFile = async (
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
   const values = cloneDeep(inValues)
   const newValues = removeBlankAttributes(values)
-  if (isEmpty(newValues) && isSecretsFile) {
+  if (isEmpty(newValues) && isSecretsFile && overwrite) {
     // get rid of empty secrets files as those are problematic
     if (existsSync(targetPath)) unlinkSync(targetPath)
     if (existsSync(`${targetPath}.dec`)) unlinkSync(`${targetPath}.dec`)

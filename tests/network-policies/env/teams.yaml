@@ -1,24 +1,23 @@
 teamConfig:
-  teams:
-    a1:
-      networkPolicy:
-        ingressPrivate: true
-        egressPublic: true
-      selfService:
-        Service:
-          - ingress
-          - networkPolicy
-        Team:
-          - alerts
-      id: a1
-    a2:
-      networkPolicy:
-        ingressPrivate: true
-        egressPublic: true
-      selfService:
-        Service:
-          - ingress
-          - networkPolicy
-        Team:
-          - alerts
-      id: a2
+  a1:
+    networkPolicy:
+      ingressPrivate: true
+      egressPublic: true
+    selfService:
+      service:
+        - ingress
+        - networkPolicy
+      team:
+        - alerts
+    id: a1
+  a2:
+    networkPolicy:
+      ingressPrivate: true
+      egressPublic: true
+    selfService:
+      service:
+        - ingress
+        - networkPolicy
+      team:
+        - alerts
+    id: a2
