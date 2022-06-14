@@ -2,55 +2,6 @@
 
 Effective development starts with understanding of the code structure and relationship between defferent components of the system.
 
-# Helmfile
-
-All helmfiles are defined in `helmfile.d/` directory and executed in alpahbetical ordered.
-Majority of helmfile have the following structure
-
-```go-template
-bases:
-  - snippets/defaults.yaml
----
-bases:
-  - snippets/env.gotmpl
----
-bases:
-  - snippets/derived.gotmpl
----
-{{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Values }}
-{{- $a := $v.apps }}
-
-releases:
-  - name: my-app
-    installed: {{ $a | get "my-app.enabled" }}
-    namespace: my-namespace
-    <<: *default
-```
-
-```mermaid
-flowchart LR
-    subgraph Helm chart
-        charts/my-app/values.yaml
-    end
-    subgraph Helmfile release
-        values/my-app/my-app.gotmpl --> .Values.apps.my-app._rawValues --> charts/my-app/values.yaml
-    end
-
-    subgraph Helmfile bases
-        snippets/default.yaml --> snippets/env.gotmpl
-        snippets/env.gotmpl --> snippets/derived.gotmpl --> values/my-app/my-app.gotmpl
-    end
-
-    subgraph Values repo
-        env/* --> snippets/env.gotmpl
-    end
-
-
-```
-
-In the following diagram you can find out what happens after calling `otomi apply -l name=my-app-name`
-
 ## Code structure
 
 ```
@@ -87,6 +38,64 @@ otomi-core/helmfile.d/snippets
 ```
 
 Code snippets are referenced with []node anchors (e.g.: `<<: *default`). It means that before Helmfile starts processing any release the YAML engine will parse the anchor. Anchors are defined in `helmfile.d/snippets/templates.gotmpl` file (e.g.: `&default`).
+
+# Helmfile
+
+Helmfile is a declarative spec for deploying helm charts. You are encouraged to read more about Helmifle at https://github.com/helmfile/helmfile
+
+In Otomi all helmfile specs are defined in `helmfile.d/` directory and executed in alpahbetical order.
+Majority of helmfile have the following structure
+
+```go-template
+# helmfile.d/999-helmifle.yaml
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: my-app
+    installed: {{ $a | get "my-app.enabled" }}
+    namespace: my-namespace
+    <<: *default
+```
+
+From above there are three `bases`, which are merged in the following order `snippets/defaults.yaml`, `snippets/env.gotmpl` and `snippets/derived.gotmpl`.
+
+> Helmfile merges all the "base" state files before processing.
+
+Next, there is one release defined: `my-app`. The release is installed `apps.my-app.enabled` flag is set. The release is deployed to `my-namespace` with the values defined under `*default` snippet, which points to [alias](https://yaml.org/spec/1.2.2/#71-alias-nodes) defined in `snippets/templates.gotmpl`.
+
+## Data flow
+
+Once you got familiar with the otomi-core project structure, you can learn how particular files incorporate to the data flow while executin otomi CLI commands.
+
+```mermaid
+flowchart LR
+    subgraph Helm chart
+        charts/my-app/values.yaml
+    end
+    subgraph Helmfile release
+        values/my-app/my-app.gotmpl --> .Values.apps.my-app._rawValues --> charts/my-app/values.yaml
+    end
+
+    subgraph Helmfile bases
+        snippets/default.yaml --> snippets/env.gotmpl
+        snippets/env.gotmpl --> snippets/derived.gotmpl --> values/my-app/my-app.gotmpl
+    end
+
+    subgraph Values repo
+        env/* --> snippets/env.gotmpl
+    end
+```
 
 # Adding new core application
 
