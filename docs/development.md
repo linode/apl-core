@@ -103,6 +103,7 @@ flowchart LR
         snippets/env.gotmpl --> .Values
         snippets/default.yaml --> .Values
         .Values --> values/myapp/myapp.gotmpl
+        .Values --> .Values.apps.myapp._rawValues
     end
 
     subgraph Values repo
