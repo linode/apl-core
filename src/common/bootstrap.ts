@@ -69,12 +69,10 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
       d.info('We have found a clone with commits, so we use that and rsync new files onto it')
       hasCommits = true
     } catch (e) {
-      d.error(e)
-      cd(env.ENV_DIR) // cd back to be nice
-      if (!`${e}`.includes('would be overwritten by checkout')) {
-        d.info('No commits found, We should be ok to push.')
-        return
-      }
+      // for some reason we were able to clone, but not checkout any commits
+      // (could be empty clone)
+      cd(env.ENV_DIR) // to be nice
+      throw e // will be caught below and init will continue
     }
     // we know we have commits, so we replace ENV_DIR with the clone files and overwrite with new values
     // so first get the new values without secrets (as those exist already)

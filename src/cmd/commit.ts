@@ -42,13 +42,12 @@ const commitAndPush = async (values: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
-  const message = isCi ? 'updated values [ci skip]' : argv.message
+  const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
   cd(env.ENV_DIR)
   try {
     await $`git add -A`
     await $`git commit -m ${message} --no-verify`
   } catch (e) {
-    d.info(e.stdout)
     d.error(e.stderr)
     d.log('Something went wrong trying to commit. Did you make any changes?')
   }
@@ -59,15 +58,16 @@ const commitAndPush = async (values: Record<string, any>): Promise<void> => {
       process.env.GIT_SSL_NO_VERIFY = '1'
     }
     await $`git remote show origin`
-    await gitPush(values)
-    d.log('Successfully pushed the updated values')
-    // kill api container and let it reinflate
-    // @TODO: make this an api endpoint for internal use only
-    await nothrow($`kubectl -n otomi delete po -l app.kubernetes.io/name=otomi-api`)
-    d.log('Restarted the api to reinflate with new values')
+    if (await gitPush(values)) {
+      d.log('Successfully pushed the updated values')
+      // kill api container and let it reinflate
+      // @TODO: make this an api endpoint for internal use only
+      await nothrow($`kubectl -n otomi delete po -l app.kubernetes.io/name=otomi-api`)
+      d.log('Restarted the api to reinflate with new values')
+    }
   } catch (error) {
     d.error(error.stderr)
-    throw new Error('Pushing the values failed, please read the above error message and manually try again')
+    throw new Error('Origin does not exist yet')
   }
 }
 
