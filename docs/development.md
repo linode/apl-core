@@ -6,7 +6,7 @@ Effective development starts with understanding of the code structure and relati
 
 - [Code structure](#code-structure)
 - [Otomi and Helmfile](#otomi-and-helmfile)
-- [Data flow](#data-flow)
+- [Values and data flow](#data-flow)
 - [Platform apps](#platform-apps)
 - [Special charts](#special-charts)
 - [Development](#development)
@@ -84,7 +84,7 @@ The `&default` alias defines chart location and values that will be populated to
 
 # Data flow
 
-Once you got familiar with the most common Helmfile spec, let's take a look at the dataflow that happens on `otomi apply|diff|template -l name=myapp` CLI call.
+Let's examine data flow from values repo to the chart values while user performs `otomi apply|diff|template -l name=myapp` CLI command.
 
 ```mermaid
 flowchart LR
