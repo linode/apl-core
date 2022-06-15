@@ -124,7 +124,7 @@ Almost each loads `snippets/templates.gotmpl` file, which contains code snippets
 
 # Validating data from the values repo
 
-Otomi defines all parameters that a user can set in values repo. The zvalues-schema.yamlz file contains JSON schema that is used to validate the content of `.Values` object (`otomi validate-values` CLI command).
+Otomi defines all parameters that a user can set in values repo. The `values-schema.yaml` file contains JSON schema that is used to validate the content of `.Values` object (`otomi validate-values` CLI command).
 
 The schema is also a great source of documentation as most of the defined properties have corresponding documentation.
 
