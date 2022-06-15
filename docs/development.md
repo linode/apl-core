@@ -56,7 +56,7 @@ Whenever you see `<<: *somename` then it means that [node anchor](<(https://yaml
 
 # Values repo and data flow
 
-A values repo is provided by a user. If Otomi is a function then `values repo` is input arguments. It is composed by many YAML files containing configuraiton of various apps and teams.
+A values repo is provided by a user. If Otomi is a function then `values repo` is input arguments. It is composed by many YAML files containing configuration of various apps and teams.
 
 When Otomi executes Helmfile it instructs to load a spec from `helmfile.d/` directory. Each Helmfile spec consists of header that is presented in the code snippet below.
 
@@ -104,7 +104,7 @@ flowchart LR
     HC --> KM[Kubernetes manifests]
 ```
 
-From the flow diagram,there are three files that incorporate to the content of the `.Values` Helmfile variable, which is accesisble whule using Go templating. These files are merged together in the following order: `snippets/default.yaml` -> `snippets/env.gotmpl` -> `snippets/derived.gotmpl`.
+From the flow diagram,there are three files that incorporate to the content of the `.Values` Helmfile variable, which is accessible while using Go templating. These files are merged together in the following order: `snippets/default.yaml` -> `snippets/env.gotmpl` -> `snippets/derived.gotmpl`.
 
 _Values repo_: The values repo contains files that define input paramters for Otomi. This is where you can define teams, team, services, enabled applications and their configurations, etc. A user sets `$ENV_DIR` env varable, so Otomi knows about its location.
 
@@ -126,7 +126,7 @@ Almost each loads `snippets/templates.gotmpl` file, which contains code snippets
 
 # Integrating core apps
 
-In this chapter you will learn about definining a new core app. We will also and examine data flow diagrams that correspond to execution of `otomi apply|diff|template -l name=myapp` CLI command.
+In this chapter you will learn about defining a new core app. We will also and examine data flow diagrams that correspond to execution of `otomi apply|diff|template -l name=myapp` CLI command.
 
 After reading this chapter you should now how to create a deployable Helmfile release.
 
@@ -177,7 +177,7 @@ flowchart LR
 
 ## Adding app artifacts
 
-It may happens that a given app needs to be accompanied with additional Kuberentes manifests.
+It may happens that a given app needs to be accompanied with additional Kubernetes manifests.
 For example you want to deploy an operator and custom resource that tell the operator what to do. It that is the case, use `*raw` anchor to define Helmfile release.
 
 ```
