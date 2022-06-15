@@ -120,7 +120,7 @@ Let's zoom into the function of `snippets/defaults.yaml` file. It contains defau
 
 The function of the `snippets/derived.gotmpl` file is to derive those values that depend on user input (values repo). For example, you can enable an app only if a certain cluster provider is set.
 
-Almost each loads `snippets/templates.gotmpl` file, which contains code snippets used to define helmfile releases.
+Almost each HElmfile spec loads `snippets/templates.gotmpl` file, which contains code snippets used to define helmfile releases. You will learn more about them in the [Integrating core apps](#Integrating-core-apps) chapter.
 
 # Validating data from the values repo
 
