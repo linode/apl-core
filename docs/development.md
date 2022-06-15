@@ -4,14 +4,16 @@ Effective development starts with understanding of the code structure and relati
 
 # Table of Contents
 
-- [Code structure](#code-structure)
-- [Otomi and Helmfile](#otomi-and-helmfile)
-- [Values and data flow](#data-flow)
-- [Platform apps](#platform-apps)
-- [Special charts](#special-charts)
-- [Development](#development)
+- [Navigating through code](#Navigating-through-code)
+- [Values and data flow](#Values-repo-and-data-flow)
+- [Integrating core apps](#Integrating-core-apps)
+- [Working with team-ns chart](#working-with-team-ns-chart)
+- [Testing](#testing)
+- [Otomi CLI](#otomi-cli)
 
-# Code structure
+# Navigating through code
+
+## Project structure
 
 ```
 otomi-core
@@ -36,7 +38,9 @@ otomi-core
 └── versions.yaml               # Version tags of otomi-api, otomi-console and otomi-tasks
 ```
 
-It is important that you get familiar with code snippets, because most of them are reused in many places. Below I describe the most essential ones:
+## Reusable code snippets
+
+It is important that you get familiar with reusable code snippets located at `helmfile.d/snippets` Below, I describe the most essential ones:
 
 ```
 otomi-core/helmfile.d/snippets
@@ -46,14 +50,21 @@ otomi-core/helmfile.d/snippets
 └── templates.gotmpl          # define YAML aliases that are used to render specs for Helmfile releases
 ```
 
-# Otomi and Helmfile
+## YAML anchors and aliases
 
-Helmfile is a declarative spec for deploying helm charts. You are encouraged to read more about Helmfile at https://github.com/helmfile/helmfile
+Whenever you see `<<: *somename` then it means that [node anchor](<(https://yaml.org/spec/1.2.2/#692-node-anchors)>) is used. In order to find its definition ([node alias](https://yaml.org/spec/1.2.2/#71-alias-nodes)), search for `&somename` string.
+
+# Values repo and data flow
+
+A values repo is provided by a user. If Otomi is a function then `values repo` is input arguments. It is composed by many YAML files containing configuraiton of various apps and teams.
+
+When Otomi executes Helmfile it instructs to load a spec from `helmfile.d/` directory. Each Helmfile spec consists of header that is presented in the code snippet below.
+
+> Helmfile is a declarative spec for deploying helm charts. You are encouraged to read more about Helmfile at https://github.com/helmfile/helmfile.
 
 In Otomi all Helmfile specs are defined in `helmfile.d/` directory and executed in alphabetical order. Majority of helmfile have the following structure:
 
 ```go-template
-# helmfile.d/999-Helmfile.yaml
 bases:
   - snippets/defaults.yaml
 ---
@@ -62,10 +73,80 @@ bases:
 ---
 bases:
   - snippets/derived.gotmpl
+{{ readFile "snippets/templates.gotmpl" }}
+
+releases:
+  - <helmfile release>
+---
+```
+
+The above the `base` statements define loading and merging values from various sources By translating that Helmfile spec results in the following flow diagram:
+
+```mermaid
+flowchart LR
+    subgraph HC[Helm chart]
+    end
+
+    subgraph HR[Helmfile release]
+    end
+
+    subgraph HB[Helmfile bases]
+        snippets/derived.gotmpl --> HV[.Values]
+        snippets/env.gotmpl --> HV
+        snippets/default.yaml --> HV
+    end
+
+    subgraph Values repo
+        R[(env/*)] --> snippets/env.gotmpl
+    end
+    HV --> HR
+    HR --> HC
+    HC --> KM[Kubernetes manifests]
+```
+
+From the flow diagram,there are three files that incorporate to the content of the `.Values` Helmfile variable, which is accesisble whule using Go templating. These files are merged together in the following order: `snippets/default.yaml` -> `snippets/env.gotmpl` -> `snippets/derived.gotmpl`.
+
+_Values repo_: The values repo contains files that define input paramters for Otomi. This is where you can define teams, team, services, enabled applications and their configurations, etc. A user sets `$ENV_DIR` env varable, so Otomi knows about its location.
+
+_Helmfile bases_: During execution of the Otomi CLI command Helmfile is triggered. It loads all files from values repo are merges them according to spec defined in the `snippets/env.gotmpl` file. Next, all three files are merged together in the following order: `snippets/default.yaml` -> `snippets/env.gotmpl` -> `snippets/derived.gotmpl`, thus Helmfile `.Values` obtains its ultimate content.
+
+_Helmfile release_
+At this stage Helmfile is establishing path to the Helm chart and content of the Helm chart values. We will talk more about defining Helmfile releases in next chapter
+
+_Helm chart_
+Helmile executes Helm and provides chart and values as input.
+
+_Kubernetes manifests_: Helm generate kubernetes manifests that can be deployed to the cluster.
+
+Let's zoom into the function of `snippets/defaults.yaml` file. It contains default app values. For example, defining default value of app enabled flag.
+
+The function of the `snippets/derived.gotmpl` file is to derive those values that depends on user input (values repo). For example you can enable an app only if certain cluster provider is set.
+
+Almost each loads `snippets/templates.gotmpl` file, which contains code snippets used to define helmfile releases.
+
+# Integrating core apps
+
+In this chapter you will learn about definining a new core app. We will also and examine data flow diagrams that correspond to execution of `otomi apply|diff|template -l name=myapp` CLI command.
+
+After reading this chapter you should now how to create a deployable Helmfile release.
+
+In the [last chapter](#Values-repo-and-data-flow) you have learned about Helmfile spec and about loading `values repo` into Helmfile.
+
+In the [Code structure](#Code-structure) chapter you have learned about reusable code snippets located in `helmfile.d/snippets/` directory. In this chapter we will present practical examples of usning snippets from the `helmfile.d/snippets/templates.gotmpl` file.
+
+> We present `myapp` integration. The `myapp` is an arbitrary name and can be anything else.
+
+> A core apps are those defined in otomi-core. Do not confuse them with team services, which are defined in values repo.
+
+## Using default code snippet
+
+A deployable Helmfile release consits of three elements: `release name`, `helm chart`, and `chart values`. If you just want to deploy a simple Helm chart then use `default` codes snippet.
+
+```go-template
+# header with Helmfile bases
 ---
 {{ readFile "snippets/templates.gotmpl" }}
-{{- $v := .Values }}
-{{- $a := $v.apps }}
+{{- $a := .Values.apps }}
 
 releases:
   - name: myapp
@@ -74,61 +155,96 @@ releases:
     <<: *default
 ```
 
-From above there are three `bases`, which are merged in the following order `snippets/defaults.yaml`, `snippets/env.gotmpl` and `snippets/derived.gotmpl`.
-
-> Helmfile merges all the "base" state files before processing.
-
-Next, there is one release defined: `myapp`. The release is deployed to the `my-namespace` namespace only if the `apps.myapp.enabled` flag is set. The release references `*default` code snippet, which points to [alias](https://yaml.org/spec/1.2.2/#71-alias-nodes) defined in the `snippets/templates.gotmpl` file.
-
-The `&default` alias defines chart location and values that will be populated to this chart.
-
-# Data flow
-
-Let's examine data flow from values repo to the chart values while user performs `otomi apply|diff|template -l name=myapp` CLI command.
-
 ```mermaid
 flowchart LR
     subgraph Helm chart
-        values.yaml --> V2[.Values]
-        V2 --> chart
+        values.yaml --> CV[.Values]
+        CV --> CT["charts/myapp/"]
     end
     subgraph Helmfile release
         direction TB
-        .Values.apps.myapp._rawValues --> V2
-        values/myapp/myapp.gotmpl --> V2
+        .Values.apps.myapp._rawValues --> CV
+        values/myapp/myapp.gotmpl --> CV
     end
 
     subgraph Helmfile bases
-        snippets/derived.gotmpl --> .Values
-        snippets/env.gotmpl --> .Values
-        snippets/default.yaml --> .Values
         .Values --> values/myapp/myapp.gotmpl
         .Values --> .Values.apps.myapp._rawValues
     end
 
-    subgraph Values repo
-        R[(env/*)] --> snippets/env.gotmpl
-    end
-    chart --> test[Kubernetes manifests]
+    CT --> test[Kubernetes manifests]
 ```
 
-_Values repo_
-The values repo contains files that define input paramters for Otomi. This is where you can define teams, team, services, enabled applications and their configurations, etc. A user sets `$ENV_DIR` env varable, so Otomi knows about its location.
+## Adding app artifacts
 
-_Helmfile bases_
-During execution of the Otomi CLI command Helmfile is triggered. It loads all files from values repo are merges them according to spec defined in the `snippets/env.gotmpl` file. Next, the `snippets/default.yaml`, `snippets/env.gotmpl` and `snippets/derived.gotmpl` files are merged, thus Helmfile `.Values` obtains its ultimate content.
+It may happens that a given app needs to be accompanied with additional Kuberentes manifests.
+For example you want to deploy an operator and custom resource that tell the operator what to do. It that is the case, use `*raw` anchor to define Helmfile release.
 
-_Helmfile release_
-At this stage Helmfile is establishing path to the Helm chart and content of the Helm chart values (`values/myapp/myapp.gotmpl`). A user can also define app values (`_rawValues`) that are not supported by Otomi but are valid input for a given Helm chart.
+```
+# header with Helmfile bases
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $a := .Values.apps }}
+releases:
+  - name: myapp-artifacts
+    installed: {{ $a | get "myapp.enabled" }}
+    namespace: my-namespace
+    <<: *raw
+```
 
-_Helm chart_
-Helmile executes Helm and provides chart and values as input. The default Helm chart `values.yaml` is merged with the values provided from the _Helmfile release_ stage composing `.Values` object that is populated to the chart templates.
+```mermaid
+flowchart LR
+    subgraph Helm chart
+        V2[.Values] --> C["charts/raw/"]
+    end
+    subgraph Helmfile release
+        direction TB
+        R[values/myapp/myapp-raw.gotmpl] --> V2
+    end
 
-Lastly, Helm generate kubernetes manifests that can be deployed to the cluster.
+    subgraph Helmfile bases
+        .Values --> R
+    end
+    C --> test[Kubernetes manifests]
+```
 
-# Platform apps
+**Note:** whenever the `*raw` anchor is used the release name must contain `-artifacts` postfix.
 
-The platform apps are those defined in otomi-core Do not confuse them with team services, which are defined in values repo.
+## Adding maintenance Job or CronJob
+
+Sometimes it is not possible do define every app configuration parameter in a declarative way. It that is the case then you can use `*jobs` anchor to define Helmfile release for both kubernetes Job and CronJob.
+
+```
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: job-myapp
+    installed:  {{ $a | get "myapp.enabled" }}
+    <<: *jobs
+```
+
+The above helmfile release results in the following flow diagram:
+
+```mermaid
+flowchart LR
+    subgraph Helm chart
+        V2[.Values] --> C["charts/jobs/"]
+    end
+    subgraph Helmfile release
+        direction TB
+        R["values/jobs/myapp.gotmpl"] --> V2
+    end
+
+    subgraph Helmfile bases
+        .Values --> R
+    end
+    C --> test[Kubernetes manifests]
+```
+
+Form the diagram the Helmfile loads chart located at `charts/jobs/` directory and populates values rendered in the `values/jobs/myapp.gotmpl` file. In order to learn about defining custom jobs, take a look at `charts/jobs/values.yaml` file and jobs that are already defined in `values/charts/jobs/` directory.
+
+**Note:** all jobs defined with `*jobs` code snippet are deployed to the `maintenance` namespace.
 
 ## Configuring Namespaces
 
@@ -138,7 +254,7 @@ All Kubernetes namespaces are defined in `core.yaml` at `k8s.namespaces` propert
 
 Ingress for admin platform apps is defined in `core.yaml` at `adminApps` property. Ingress for team platform apps is defined in `core.yaml` at `teamApps` property.
 
-## Integration with keycloak
+## Integrating with keycloak
 
 It is possible to integrate an app with Keycloak, by leveraging the following variables:
 
@@ -159,26 +275,7 @@ OIDC_VERIFY_CERT: '{{ not $v._derived.untrustedCA }}'
 
 Note: you may need to adjust variable names to match the ones expected by a given app.
 
-# Special charts
-
-There are few special charts that needs you attention.
-
-## jobs
-
-This chart is used to deploy kubernetes Jobs and CronJobs.
-When defining Helfile release you need to anchor the `jobs` alias and add `job-` prefix the release name
-
-```
-releases:
-  - name: job-myapp
-    installed: true
-    <<: *jobs
-```
-
-All jobs are deployed to the `maintenance` namespace.
-You can define a job spec at: `values/jobs/myapp.gotmpl` file
-
-## team-ns
+# Working with team-ns chart
 
 This chart defines team environment and Ingress settings.
 While using otomi you can target a given team by appending its to the release name.
@@ -193,24 +290,19 @@ e.g.:
 ./binzx/otomi template -l name=team-ns-demo
 ```
 
-You can define job spec in aw manifests in `values/myapp/myapp-raw.gotmpl` file.
+# Testing
 
-## raw
+## Smoke testing
 
-The raw chart lets you wrap raw kubernetes manifest into deployable chart
-When defining Helfile release you need to anchor the `raw` alias and add `-artifacts` postfix to the release name
+The values repo for smoke tests is located at `tests/fixtures` directory
 
-```
-releases:
-  - name: myapp-artifacts
-    installed: true
-    namespace: my-namespace
-    <<: *raw
-```
+## Validating against policies
 
-You can define raw manifests in `values/myapp/myapp-raw.gotmpl` file.
+# Otomi CLI
 
-# Development
+## Developing CLI
+
+## Using CLI while developing templates
 
 You can render templates of a given chart and validate it without having any cluster. The easiest way is to start with values from `tests/fixtures` directory.
 
