@@ -48,8 +48,8 @@ const commitAndPush = async (values: Record<string, any>): Promise<void> => {
     await $`git add -A`
     await $`git commit -m ${message} --no-verify`
   } catch (e) {
-    d.error(e.stderr)
-    d.log('Something went wrong trying to commit. Did you make any changes?')
+    d.log('Could not commit. Did you make any changes?')
+    return
   }
   try {
     const giteaEnabled = values?.apps?.gitea?.enabled
