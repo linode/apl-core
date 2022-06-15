@@ -155,6 +155,8 @@ releases:
     <<: *default
 ```
 
+Let's examine what happens if you call `otomi template -l name=myapp`, by analysing the following flow diagram:
+
 ```mermaid
 flowchart LR
     subgraph Helm chart
@@ -191,6 +193,8 @@ releases:
     <<: *raw
 ```
 
+Let's examine what happens if you call `otomi template -l name=myapp-artifacts`, by analysing the following flow diagram:
+
 ```mermaid
 flowchart LR
     subgraph Helm chart
@@ -224,7 +228,7 @@ releases:
     <<: *jobs
 ```
 
-The above helmfile release results in the following flow diagram:
+Let's examine what happens if you call `otomi template -l name=job-myapp`, by analysing the following flow diagram:
 
 ```mermaid
 flowchart LR
