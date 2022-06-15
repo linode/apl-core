@@ -55,6 +55,8 @@ prometheusOperator:
         name: custom-ca
         kind: ClusterIssuer
   priorityClassName: "otomi-critical"
+commonLabels:
+  prometheus: system
 prometheus:
   enabled: {{ $p.enabled }}
   namespaceOverride: prometheus
@@ -65,6 +67,12 @@ prometheus:
     podMetadata:
       annotations:
         sidecar.istio.io/inject: "true"
+    podMonitorSelector:
+      matchLabels:
+        prometheus: system
+    serviceMonitorSelector:
+      matchLabels:
+        prometheus: system
     resources:
       {{- with $p | get "resources" nil }}
         {{- toYaml . | nindent 6 }}
@@ -104,8 +112,18 @@ prometheus:
     {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
   {{- end }}
 {{- end }}
-  additionalPodMonitors: {{- readFile "pod-monitors.yaml" | nindent 4 }}
-  additionalServiceMonitors: {{- readFile "service-monitors.yaml" | nindent 4 }}
+  additionalPodMonitors:
+    {{- range $m := (readFile "pod-monitors.yaml" | fromYaml) | get "additionalPodMonitors" }}
+    - {{- toYaml $m | nindent 6 }}
+      additionalLabels:
+        prometheus: system
+    {{- end }}
+  additionalServiceMonitors:
+    {{- range $m := (readFile "service-monitors.yaml" | fromYaml) | get "additionalServiceMonitors" }}
+    - {{- toYaml $m | nindent 6 }}
+      additionalLabels:
+        prometheus: system
+    {{- end }}
 {{ if eq $v.cluster.provider "aws" }}  
 additionalPrometheusRules:
   - name: cluster-autoscaler
@@ -181,6 +199,10 @@ grafana:
     pspEnabled: false
   podAnnotations:
     sidecar.istio.io/inject: "true"
+  serviceMonitor:
+    namespace: grafana
+    labels:
+      prometheus: system
 
   testFramework:
     enabled: false

@@ -81,10 +81,18 @@ releases:
             alertmanager: false
         enabled: false
         {{- end }}
+        commonLabels:
+          prometheus: team-{{ $teamId }}
         prometheus:
           namespaceOverride: team-{{ $teamId }}
           prometheusSpec:
             externalUrl: https://{{ $appsDomain }}/prometheus
+            podMonitorSelector:
+              matchLabels:
+                prometheus: team-{{ $teamId }}
+            serviceMonitorSelector:
+              matchLabels:
+                prometheus: team-{{ $teamId }}
             ruleNamespaceSelector:
               matchLabels:
                 name: team-{{ $teamId }}
