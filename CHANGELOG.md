@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.8](https://github.com/redkubes/otomi-core/compare/v0.16.6...v0.16.8) (2022-06-16)
+
+
+### Features
+
+* ingress classes ([#810](https://github.com/redkubes/otomi-core/issues/810)) ([c1220d4](https://github.com/redkubes/otomi-core/commit/c1220d41797ab7188722745343724383977e8c72))
+* kubeclarity app integration ([#800](https://github.com/redkubes/otomi-core/issues/800)) ([433099d](https://github.com/redkubes/otomi-core/commit/433099d84ad98cefe2e8cabb5d5a77c7df8c9552))
+
+
+### Bug Fixes
+
+* added types for retry as dep to async-retry to bypass version mismatch ([9f796b4](https://github.com/redkubes/otomi-core/commit/9f796b4acc40a8fda80bba3cf79192f5deec61cc))
+* added types for retry as dep to async-retry to bypass version mismatch: [#2](https://github.com/redkubes/otomi-core/issues/2) ([9607634](https://github.com/redkubes/otomi-core/commit/960763429b3370e3d87f47508e103e7c81fee6eb))
+* added types for retry as dep to async-retry to bypass version mismatch: [#3](https://github.com/redkubes/otomi-core/issues/3) ([578dcae](https://github.com/redkubes/otomi-core/commit/578dcae5e7c0fa1b503a6632c2a307802e3977ef))
+* commit logic [ci skip] ([75f4a9d](https://github.com/redkubes/otomi-core/commit/75f4a9ddd64cf57a17e26dd9e10dc4e6a23df89e))
+* commit on every apply if not isCli ([#817](https://github.com/redkubes/otomi-core/issues/817)) ([71dffc8](https://github.com/redkubes/otomi-core/commit/71dffc8c9402348b9ae8665c5f0d7bc1b4144c51))
+* knative versioning, istio peerauthentication with defaults removed ([#811](https://github.com/redkubes/otomi-core/issues/811)) ([e9e6301](https://github.com/redkubes/otomi-core/commit/e9e63014217a844709ecc98a30fd3689de2fe2a8))
+* resource logic, httpbin namespace [ci skip] ([5eda668](https://github.com/redkubes/otomi-core/commit/5eda66892cf0a074f6a9bd2a7cd0f9cfa83deb04))
+* servicemonitor labels ([#822](https://github.com/redkubes/otomi-core/issues/822)) ([827539b](https://github.com/redkubes/otomi-core/commit/827539b4fa1f09181b594d93f8fe5de3666fbe3c))
+* slack invite link [ci skip] ([0671541](https://github.com/redkubes/otomi-core/commit/0671541d924a865633d26cdd332949ffaf800078))
+* values repo should not be init-ed ([#816](https://github.com/redkubes/otomi-core/issues/816)) ([a42cc2c](https://github.com/redkubes/otomi-core/commit/a42cc2c7c6989a6b192de55811015f4090a34e28))
+
+
+### Code Refactoring
+
+* supressing expected git error for regular verbosity ([145132c](https://github.com/redkubes/otomi-core/commit/145132c5b30c5944e6723b4327056e60a843aeb6))
+
+
+### Others
+
+* **deps:** pinned api + console [ci skip] ([6dcb56b](https://github.com/redkubes/otomi-core/commit/6dcb56b255a19c78c05c8fff1c95ac6572aa93b5))
+* **deps:** update all-npm ([ac98d1d](https://github.com/redkubes/otomi-core/commit/ac98d1d77d86bb1b028a87d8e233ac85e698ffd4))
+* **deps:** update all-npm ([1613d93](https://github.com/redkubes/otomi-core/commit/1613d93333066ac710110dac27b7f10d974a7889))
+* **deps:** update all-npm ([cf0a26e](https://github.com/redkubes/otomi-core/commit/cf0a26e60b5a569a420f37fc30b0e24d18622159))
+* **release:** 0.16.7 ([94af358](https://github.com/redkubes/otomi-core/commit/94af3583df5c990ee350068789976781a275e8da))
+
+
+### Docs
+
+* code development ([#821](https://github.com/redkubes/otomi-core/issues/821)) ([2bdb636](https://github.com/redkubes/otomi-core/commit/2bdb636c18d05af4f3e9a872392c85b63193de9a))
+* **readme.md:** added referral link to DO marketplace ([#812](https://github.com/redkubes/otomi-core/issues/812)) ([723f11d](https://github.com/redkubes/otomi-core/commit/723f11d5df810e9fcb74210eb70826de0c995300))
+
 ### [0.16.7](https://github.com/redkubes/otomi-core/compare/v0.16.6...v0.16.7) (2022-06-14)
 
 
