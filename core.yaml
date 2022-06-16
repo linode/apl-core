@@ -173,7 +173,7 @@ adminApps:
     isShared: true
     ownHost: true
     ingress:
-      - namespace: shared
+      - namespace: httpbin
         svc: httpbin
         type: public
         auth: true
@@ -229,6 +229,7 @@ adminApps:
   - name: kubeclarity
     tags: [security]
     ownHost: true
+    isShared: true
     ingress:
       - svc: kubeclarity
         namespace: kubeclarity

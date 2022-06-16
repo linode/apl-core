@@ -7,7 +7,7 @@
   {{- $hasAuth := $s.auth | default false }}
   {{- $hasTlsPass := $s.tlsPass | default false }}
   {{- $ns := index $s "namespace" | default $.Release.Namespace }}
-  {{- if not (eq $type "cluster") }}
+  {{- if and (not (eq $type "cluster")) (not (and $s.ksvc (not $v.apps.knative.enabled))) }}
     {{- $name := $s.svc | default $s.name }}
     {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $name) $name) }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $ "vs" true) }}
