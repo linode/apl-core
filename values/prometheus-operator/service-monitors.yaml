@@ -1,69 +1,59 @@
-- name: blackbox
-  namespaceSelector:
-    matchNames:
-      - monitoring
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: prometheus-blackbox-exporter
-  endpoints:
-    - port: http
-      interval: 30s
-      path: /metrics
-- name: istio-ingressgateway-public
-  namespace: istio-system
-  selector:
-    matchLabels:
-      istio: ingressgateway-public
-  namespaceSelector:
-    matchNames:
-      - istio-system
-  endpoints:
-    - targetPort: http-envoy-prom
-      path: /stats/prometheus
-- name: istio-ingressgateway-private
-  namespace: istio-system
-  selector:
-    matchLabels:
-      istio: ingressgateway-private
-  namespaceSelector:
-    matchNames:
-      - istio-system
-  endpoints:
-    - targetPort: http-envoy-prom
-      path: /stats/prometheus
-- name: istiod
-  namespace: istio-system
-  selector:
-    matchLabels:
-      istio: pilot
-  namespaceSelector:
-    matchNames:
-      - istio-system
-  endpoints:
-    - port: http-monitoring
-      interval: 15s
-- name: jaeger-operator-metrics
-  namespace: jaeger-operator
-  selector:
-    matchLabels:
-      name: jaeger-operator
-  namespaceSelector:
-    matchNames:
-      - jaeger-operator
-  endpoints:
-    - bearerTokenSecret:
-        key: ''
-      port: http-metrics
-    - bearerTokenSecret:
-        key: ''
-      port: cr-metrics
-- name: argocd-metrics
-  namespace: argocd
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: argocd-metrics
-  namespaceSelector:
-    matchNames:
-      - argocd
-  endpoints:
-    - port: metrics
+additionalServiceMonitors:
+  - name: blackbox
+    namespaceSelector:
+      matchNames:
+        - monitoring
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: prometheus-blackbox-exporter
+    endpoints:
+      - port: http
+        interval: 30s
+        path: /metrics
+  - name: istio-ingressgateway-public
+    namespace: istio-system
+    selector:
+      matchLabels:
+        istio: ingressgateway-public
+    namespaceSelector:
+      matchNames:
+        - istio-system
+    endpoints:
+      - targetPort: http-envoy-prom
+        path: /stats/prometheus
+  - name: istiod
+    namespace: istio-system
+    selector:
+      matchLabels:
+        istio: pilot
+    namespaceSelector:
+      matchNames:
+        - istio-system
+    endpoints:
+      - port: http-monitoring
+        interval: 15s
+  - name: jaeger-operator-metrics
+    namespace: jaeger-operator
+    selector:
+      matchLabels:
+        name: jaeger-operator
+    namespaceSelector:
+      matchNames:
+        - jaeger-operator
+    endpoints:
+      - bearerTokenSecret:
+          key: ''
+        port: http-metrics
+      - bearerTokenSecret:
+          key: ''
+        port: cr-metrics
+  - name: argocd-metrics
+    namespace: argocd
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: argocd-metrics
+    namespaceSelector:
+      matchNames:
+        - argocd
+    endpoints:
+      - port: metrics
