@@ -38,5 +38,5 @@ spec:
       {{- include "grafana.selectorLabels" . | nindent 8 }}
   namespaceSelector:
     matchNames:
-      - {{ .Release.Namespace }}
+      - {{ template "grafana.namespace" . }}
 {{- end }}
