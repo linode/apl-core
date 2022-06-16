@@ -1,4 +1,4 @@
-# Development guide
+# Code development guide
 
 Effective development starts with an understanding the code structure and the relationship between different components of the system.
 
