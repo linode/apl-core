@@ -21,17 +21,6 @@ additionalServiceMonitors:
     endpoints:
       - targetPort: http-envoy-prom
         path: /stats/prometheus
-  - name: istio-ingressgateway-private
-    namespace: istio-system
-    selector:
-      matchLabels:
-        istio: ingressgateway-private
-    namespaceSelector:
-      matchNames:
-        - istio-system
-    endpoints:
-      - targetPort: http-envoy-prom
-        path: /stats/prometheus
   - name: istiod
     namespace: istio-system
     selector:
