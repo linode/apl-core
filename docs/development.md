@@ -124,7 +124,7 @@ Almost each Helmfile spec loads `snippets/templates.gotmpl` file, which contains
 
 # Validating data from the values repo
 
-Otomi validates all parameters that a user can set in values repo by means checking values against JSNO schema defined in the `values-schema.yaml` file. The validation can performed by calling `otomi validate-values` CLI command.
+Otomi validates all parameters that a user can set in values repo by means checking values against JSON schema defined in the `values-schema.yaml` file. The validation can performed by calling `otomi validate-values` CLI command.
 
 The schema is also a great source of documentation as most of the defined properties have corresponding documentation.
 
