@@ -122,7 +122,7 @@ Learn more about all the integrated technologies:
 
 ## 📖 Documentation
 
-Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
+Check out the [dev docs index](./docs/README.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
 
 ## 🤝 Contribution
 
