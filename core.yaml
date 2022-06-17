@@ -145,6 +145,10 @@ adminApps:
           - authorization
         type: public
         auth: true
+    shortcuts:
+      - title: NGINX
+        description: metrics from the NGINX ingress controller
+        path: /d/nginx/nginx-ingress-controller?orgId=1&refresh=5s
   - name: harbor
     tags: [security]
     isShared: true

@@ -77,7 +77,7 @@ cr:
         auth:
           insecure_skip_verify: {{ $v._derived.untrustedCA }}
           type: none
-        enabled: true
+        enabled: {{ $v.apps.jaeger.enabled }}
         in_cluster_url: http://jaeger-operator-jaeger-query.jaeger:16686/jaeger/
         is_core: false
         namespace_selector: true
@@ -87,7 +87,9 @@ cr:
     istio_component_namespaces:
       prometheus: monitoring
       grafana: monitoring
+      {{- if $v.apps.jaeger.enabled }}
       jaeger: jaeger
+      {{- end }}
     istio_namespace: istio-system
     kiali_feature_flags:
       certificates_information_indicators:

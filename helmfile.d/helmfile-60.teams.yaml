@@ -171,10 +171,11 @@ releases:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         team: {{ $teamId }}
         folders:
-          - k8s
+          - k8s-teams
           # - istio-teams
           {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
-          - azure{{ end }}
+          - azure
+          {{- end }}
   {{- end }}
   {{- range $job := $team | get "jobs" list }}
   - name: job-{{ $teamId }}-{{ $job.name }}

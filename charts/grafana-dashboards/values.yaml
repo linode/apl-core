@@ -1,7 +1,10 @@
 folders:
-  - k8s
-  - istio
   - azure
+  - istio-admin
+  - istio-teams
+  - k8s-admin
+  - k8s-teams
+  - shared
 
 sidecar:
   dashboards:
