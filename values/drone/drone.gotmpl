@@ -92,13 +92,14 @@ agent:
     {{- end }}
     {{- if and $hasGitea $v._derived.untrustedCA }}
       {{- if $dindEnabled }}
+      {{- /* DIND: We can for sure know that the runner has mounted the CA from the agent */}}
     DRONE_RUNNER_VOLUMES: '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt'
-      {{- else }}
-    {{- /*
-    We can not yet be sure wether containerd runtime is in use, because that depends on provider and version.
-    Once we know for sure we can map the host path to the cert:
-    DRONE_RUNNER_VOLUMES: '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt'.
-    But for now we have to skip ssl verification: */}}
+      {{- else }}{{- /*
+      Host CA: Only containerd has predictable CA chain location, and docker has multiple we don't know in advance.
+      We can not yet be sure wether containerd runtime is in use, because that depends on provider and version.
+      Once we know for sure we can map the host path to the cert:
+      DRONE_RUNNER_VOLUMES: '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt'.
+      But for now we have to skip ssl verification: */}}
     DRONE_VALIDATE_PLUGIN_SKIP_VERIFY: true
     GIT_SSL_NO_VERIFY: true
       {{- end }}

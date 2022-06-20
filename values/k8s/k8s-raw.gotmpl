@@ -123,7 +123,7 @@ resources:
       tls.key: {{ $cm.customRootCAKey | b64enc}}
 
   {{- if eq $v.cluster.provider "azure" }}
-  {{- /* see https://docs.microsoft.com/en-us/azure/aks/custom-certificate-authority#create-a-kubernetes-secret-with-your-ca-information */ -}}
+  {{- /* see https://docs.microsoft.com/en-us/azure/aks/custom-certificate-authority#create-a-kubernetes-secret-with-your-ca-information */}}
   - apiVersion: v1
     kind: Secret
     metadata:
