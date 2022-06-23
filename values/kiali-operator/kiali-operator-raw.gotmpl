@@ -1,9 +1,18 @@
-{{- if .Values._derived.untrustedCA }}
+{{- $v := .Values }}
+{{- $k := $v.apps.keycloak }}
+{{- if $v._derived.untrustedCA }}
 resources:
   - apiVersion: v1
     kind: ConfigMap
     metadata:
       name: kiali-cabundle
     data:
-      openid-server-ca.crt: {{ .Values._derived.caCert | b64enc }}
+      openid-server-ca.crt: |
+        {{- $v._derived.caCertRoot | nindent 8 }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: kiali
+    data:
+      oidc-secret: {{ $k.idp.clientSecret | b64enc }}
 {{- end }}

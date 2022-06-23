@@ -74,12 +74,11 @@ environments:
               ingressgateway:
                 minReplicas: 1
                 maxReplicas: 10
-              ingressgateway-private:
-                minReplicas: 1
-                maxReplicas: 10
               pilot:
                 minReplicas: 1
                 maxReplicas: 10
+            egressGateway:
+              enabled: false
           jaeger:
             enabled: false
           keycloak:

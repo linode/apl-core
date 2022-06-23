@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 
 resources:
-{{- if $v | get "apps.istio.egressGateway.enabled" false }}
+{{- if $v | get "apps.istio.egressGateway.enabled" }}
   - apiVersion: networking.istio.io/v1beta1
     kind: Gateway
     metadata:

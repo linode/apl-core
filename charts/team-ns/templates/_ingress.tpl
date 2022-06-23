@@ -60,6 +60,7 @@ extensions/v1
     {{- $routes = (merge $routes (dict (printf "auth.%s" $v.cluster.domainSuffix ) list)) }}
   {{- end }}
   {{- if or $routes $names }}
+    {{- $namesCollection := include "helm-toolkit.utils.joinListWithSep" (dict "list" $names "sep" "|") }}
 ---
 # ingress: {{ $.type }}: {{ $.name }} ({{ len $.services }})
 
@@ -98,9 +99,9 @@ metadata:
   {{- if $.isApps }}
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
     {{- if $.hasForward }}
-    nginx.ingress.kubernetes.io/rewrite-target: /$1/$2
+    nginx.ingress.kubernetes.io/rewrite-target: /$1/$3
     {{- else }}
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: /$3
     {{- end }}
   {{- end }}
     {{- with $ingress.sourceIpAddressFiltering }}
@@ -114,7 +115,9 @@ metadata:
   {{- if $.isApps }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/$ https://otomi.{{ $v.cluster.domainSuffix }}/ permanent;
-      rewrite ^(/jaeger)$ $1/ permanent;
+    {{- if $.hasForward }}
+      rewrite ^/({{ $namesCollection }})([^/]*)$ $1/$2 permanent;
+    {{- end }}
   {{- end }}
   labels: {{- include "team-ns.chart-labels" $.dot | nindent 4 }}
   name: {{ $.provider }}-team-{{ $v.teamId }}-{{ $ingress.className }}-{{ $.type }}-{{ $.name }}
@@ -134,7 +137,7 @@ spec:
       http:
         paths:
           {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc) | nindent 8 }}
-          {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc "path" (printf "/(%s)/(.*)" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $names "sep" "|")))) | nindent 8 }}
+          {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc "path" (printf "/(%s)(/|$)(.*)" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $names "sep" "|")))) | nindent 8 }}
   {{- else }}
     {{- range $domain, $paths := $routes }}
     - host: {{ $domain }}

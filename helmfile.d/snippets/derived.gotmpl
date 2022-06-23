@@ -45,7 +45,13 @@ environments:
               {{- $v.letsencryptRootCA | nindent 12 }}
               {{- $v.letsencryptCA | nindent 12 }}
             {{- else }}
-              {{- $cm | get "customRootCA" "" | nindent 12 }}
+              {{- $cm.customRootCA | nindent 12 }}
+            {{- end }}
+          caCertRoot: |
+            {{- if eq $issuer "letsencrypt" }}
+              {{- $v.letsencryptRootCA | nindent 12 }}
+            {{- else }}
+              {{- $cm.customRootCA | nindent 12 }}
             {{- end }}
           supportedCloud: {{ has $provider (list "aws" "azure" "google") }}
           untrustedCA: {{ $untrustedCA }}

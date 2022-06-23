@@ -1,9 +1,14 @@
 {{- $v := .Values }}
+{{- $k := $v.apps.keycloak }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 
 image:
   # @TODO:
-  tag: v1.47.0
+  tag: v1.49
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
@@ -13,7 +18,14 @@ cr:
   namespace: kiali
   spec:
     auth:
-      strategy: anonymous
+      strategy: openid
+      openid:
+        # TODO: check up on https://github.com/kiali/kiali/issues/5233 for authentication_timeout
+        authentication_timeout: 1800
+        client_id: {{ $k.idp.clientID }}
+        disable_rbac: true
+        issuer_uri: {{ $v._derived.oidcBaseUrl }}
+        username_claim: email
     deployment:
       accessible_namespaces:
         - '**'
@@ -34,9 +46,7 @@ cr:
       grafana:
         auth:
           insecure_skip_verify: {{ $v._derived.untrustedCA }}
-          password: {{ $v.otomi.adminPassword }}
-          type: basic
-          username: otomi-admin
+          type: bearer
         dashboards:
           - name: Istio Service Dashboard
           - name: Istio Workload Dashboard
@@ -44,10 +54,11 @@ cr:
           - name: Istio Control Plane Dashboard
           - name: Istio Performance Dashboard
           - name: Istio Wasm Extension Dashboard
-        enabled: true
-        in_cluster_url: http://po-grafana.monitoring:3000
+        # TODO: re-enable after fix for: https://github.com/kiali/kiali/issues/5230
+        enabled: false
+        in_cluster_url: http://po-grafana.grafana
         is_core: false
-        url: https://{{ $appsDomain }}/grafana/
+        url: https://grafana.{{ $v.cluster.domainSuffix }}/?orgId=1
       istio:
         component_status:
           enabled: true
@@ -57,20 +68,18 @@ cr:
           - app_label: istio-ingressgateway-public
             is_core: true
             is_proxy: true
-          - app_label: istio-ingressgateway-private
-            is_core: true
-            is_proxy: true
+          {{ if $v.apps.istio.egressGateway.enabled }}
           - app_label: istio-egressgateway
             is_core: false
             is_proxy: true
-        # url_service_version: http://istiod.istio-system:15014/version
+          {{- end }}
       prometheus:
         auth:
           insecure_skip_verify: {{ $v._derived.untrustedCA }}
           type: none
         cache_duration: 10
         cache_enabled: true
-        cache_expiration: 300
+        cache_expiration: 1800
         is_core: false
         url: http://po-prometheus.monitoring:9090/
       tracing:
@@ -108,8 +117,3 @@ resources:
   requests:
     cpu: 100m
     memory: 150Mi
-
-{{- with .Values.otomi | get "globalPullSecret" nil }}
-imagePullSecrets:
-  - name: otomi-pullsecret-global
-{{- end }}

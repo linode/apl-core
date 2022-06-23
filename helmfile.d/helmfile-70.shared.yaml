@@ -52,10 +52,14 @@ releases:
   - name: otomi-api
     installed: true
     namespace: otomi
+    labels:
+      pkg: otomi
     <<: *default
   - name: otomi-console
     installed: true
     namespace: otomi
+    labels:
+      pkg: otomi
     <<: *default
   - name: redis-shared
     installed: {{ $a | get "redis-shared.enabled" }}

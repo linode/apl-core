@@ -210,9 +210,12 @@ adminApps:
   - name: kiali
     tags: [tracing, telemetry, observability]
     deps: [istio]
+    path: /api/auth/openid_redirect
     ingress:
       - svc: kiali
         forwardPath: true
+        removeRequestHeaders:
+          - authorization
         port: 20001
         namespace: kiali
         type: public
@@ -293,10 +296,10 @@ adminApps:
     deps: [kubernetes-external-secrets]
     isShared: true
     ownHost: true
-    path: /ui/vault/secrets/secret/list/teams/#NS#/
+    path: /ui/vault/auth?redirect_to=%2Fvault%2Fsecrets%2Fsecret%2Flist%2Fteams%2F#NS#%2F&with=oidc
     ingress:
       - namespace: vault
-        svc: vault-0
+        svc: vault
         port: 8200
         type: public
         auth: true
