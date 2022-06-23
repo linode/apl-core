@@ -10,6 +10,7 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
 {{- $a := $v.apps }}
+{{- $tca := $v.teamConfig.admin }}
 {{- $coreAdminServices := list }}
 {{- range $s := $v.adminApps }}
 {{- if and ($v.apps | get $s.name dict | get "enabled" true) (hasKey $s "ingress") }}
@@ -47,3 +48,5 @@ releases:
         services: {{- $services | toYaml | nindent 10 }}
         resourceQuota: null
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
+        jobs: {{- $tca | get "jobs" list | toYaml | nindent 10 }}
+        secrets: {{- $tca | get "secrets" list | toYaml | nindent 10 }}

@@ -25,6 +25,8 @@ environments:
               username: otomi-admin
           external-dns:
             domainFilters: []
+          external-secrets:
+            pollingInterval: 60000
           gatekeeper:
             enabled: false
             auditFromCache: false
