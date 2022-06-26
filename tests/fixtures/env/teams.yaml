@@ -1,4 +1,6 @@
 teamConfig:
+    admin:
+        id: admin
     demo:
         alerts:
             receivers:

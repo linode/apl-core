@@ -1,1 +1,3 @@
-teamConfig: {}
+teamConfig:
+    admin:
+        id: admin
