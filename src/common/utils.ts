@@ -163,3 +163,21 @@ export const providerMap = (provider: string): string => {
   }
   return map[provider] ?? provider
 }
+
+/**
+ * Compare semver version strings, returning -1, 0, or 1.
+ * If the semver string a is greater than b, return 1. If the semver string b is greater than a, return -1. If a equals b, return 0
+ */
+export const semverCompare = (a, b) => {
+  const pa = a.split('.')
+  const pb = b.split('.')
+  for (let i = 0; i < 3; i++) {
+    const na = Number(pa[i])
+    const nb = Number(pb[i])
+    if (na > nb) return 1
+    if (nb > na) return -1
+    if (!Number.isNaN(na) && Number.isNaN(nb)) return 1
+    if (Number.isNaN(na) && !Number.isNaN(nb)) return -1
+  }
+  return 0
+}

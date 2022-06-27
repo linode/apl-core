@@ -2,6 +2,7 @@
 {{- $v := .Values }}
 {{- $gk := $v.apps | get "gatekeeper" }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disablePolicyChecks" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
+{{- tpl (readFile "../../helmfile.d/snippets/version-tags.gotmpl") $v.versions }}
 
 ### Config Resources for OPA Gatekeeper
 config:  

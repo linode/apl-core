@@ -1,5 +1,18 @@
+# Upgrade commands between versions are configured in this file, and executed in bash (FROM ubuntu:20.04)
+# Options:
+# - blockingOperations: will break on exit code <> 0
+# - nonBlockingOperations: do not care about exit code
+#
+# NOTE: pipes ("|") are not supported!
+#
+# Special case for development:
+#
+# When a version is set to "dev" it will be selected no matter what. This allows to test an upgrade record's effect.
+# (don't forget to set it to the next release version before releasing!)
+
 changes:
-  - version: 0.16
+  - version: 0.16.9 # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
     releases:
-      prometheus-operator:
-        nonBlockingOperations: []
+      external-secrets:
+        operations:
+          - helm -n vault list | grep kubernetes-external-secrets-6.1.0 >/dev/null && helm -n vault uninstall kubernetes-external-secrets && kubectl apply -f $PWD/charts/kubernetes-external-secrets/crds

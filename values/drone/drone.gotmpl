@@ -7,8 +7,6 @@
 {{- $hasGitea := $g | get "enabled" }}
 {{- $provider := $d | get "sourceControl.provider" }}
 {{- $giteaValuesUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $debug := $d | get "debug" false }}
-{{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $dindEnabled := false }}
@@ -49,10 +47,10 @@ server:
       memory: 32Mi
     {{- end }}
   env:
-    DRONE_LOGS_DEBUG: {{ $debug }}
-    DRONE_LOGS_TRACE: {{ $trace }}
+    DRONE_LOGS_DEBUG: {{ $d.debug }}
+    DRONE_LOGS_TRACE: {{ $d.trace }}
     DRONE_LOGS_PRETTY: false
-    DRONE_RPC_DEBUG: {{ $debug }}
+    DRONE_RPC_DEBUG: {{ $d.debug }}
     {{- if hasKey $d "orgsFilter" }}
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- end }}
@@ -80,8 +78,8 @@ agent:
       memory: 32Mi
     {{- end }}
   env:
-    DRONE_TRACE: {{ $trace }}
-    DRONE_DEBUG: {{ $debug }}
+    DRONE_TRACE: {{ $d.trace }}
+    DRONE_DEBUG: {{ $d.debug }}
   runnerEnv: |
     {{- $sopsEnv | nindent 4 }}
     {{- with $d | get "resources.runner.requests.cpu" nil }}

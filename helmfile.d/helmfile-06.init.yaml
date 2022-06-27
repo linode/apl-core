@@ -33,10 +33,13 @@ releases:
     values:
       - ../values/istio-operator/istio-operator-raw.gotmpl
       - snippets/common.gotmpl
-  - name: kubernetes-external-secrets
+  - name: external-secrets
     installed: {{ $a | get "vault.enabled" }}
     namespace: vault
     labels:
       pkg: vault
-    <<: *default
-
+    chart: ../charts/kubernetes-external-secrets
+    values:
+      - ../values/external-secrets/external-secrets.gotmpl
+      - snippets/common.gotmpl
+    <<: *preUpgrade

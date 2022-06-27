@@ -43,7 +43,9 @@ extensions/v1
   {{- if eq $ingressClassName $ingress.className }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
     {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
-      {{- $paths = concat (hasKey $s "paths" | ternary $s.paths (list "/" )) $paths }}
+      {{- $svcPaths := (hasKey $s "paths" | ternary $s.paths (list "/" )) }}
+      {{- if eq (len $svcPaths) 0 }}{{ $svcPaths = list "/" }}{{ end }}
+      {{- $paths = concat $svcPaths $paths }}
       {{- if (not (hasKey $routes $domain)) }}
         {{- $routes = merge $routes (dict $domain $paths) }}
       {{- else }}
@@ -85,7 +87,6 @@ metadata:
     appgw.ingress.kubernetes.io/backend-protocol: "http"
     {{- end }}
     {{- if eq $.provider "nginx" }}
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
     # nginx.ingress.kubernetes.io/proxy-buffering: "off"
     # nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
       {{- if not $v.otomi.hasCloudLB }}
@@ -140,20 +141,22 @@ spec:
           {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc "path" (printf "/(%s)(/|$)(.*)" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $names "sep" "|")))) | nindent 8 }}
   {{- else }}
     {{- range $domain, $paths := $routes }}
+    # paths.len > 0 : {{ $paths | len }}
     - host: {{ $domain }}
       http:
         paths:
       {{- if not (eq $.provider "nginx") }}
         {{- if eq $.provider "aws" }}
-            {{- include "ingress.path" (dict "dot" $.dot "svc" "ssl-redirect" "port" "use-annotation" "path" "/*") | nindent 8 }}
+          {{- include "ingress.path" (dict "dot" $.dot "svc" "ssl-redirect" "port" "use-annotation" "path" "/*") | nindent 8 }}
         {{- end }}
-            {{- include "ingress.path" (dict "dot" $.dot "svc" "ingress-nginx-controller") | nindent 8 }}
+        {{- include "ingress.path" (dict "dot" $.dot "svc" "ingress-nginx-controller") | nindent 8 }}
       {{- else }}
         {{- if gt (len $paths) 0 }}
           {{- range $path := $paths }}
             {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc "path" $path) | nindent 8 }}
           {{- end }}
         {{- else }}
+            # paths.len == 0
           {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc) | nindent 8 }}
         {{- end }}
       {{- end }}

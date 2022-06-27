@@ -1284,8 +1284,8 @@ properties:
             $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
           debug:
-            default: false
             type: boolean
+            default: false
           githubAdmins:
             additionalProperties: false
             properties:
@@ -1985,13 +1985,16 @@ properties:
             $ref: '#/definitions/resources'
         required:
           - databasePassword
-      kubernetes-external-secrets:
+      external-secrets:
         additionalProperties: false
         properties:
           enabled:
             type: boolean
           logLevel:
             $ref: '#/definitions/logLevel'
+          pollingInterval:
+            type: integer
+            default: 60000
       kube-descheduler:
         additionalProperties: false
         properties:

@@ -293,7 +293,7 @@ adminApps:
         auth: true
   - name: vault
     tags: [secrets, security, observability]
-    deps: [kubernetes-external-secrets]
+    deps: [external-secrets]
     isShared: true
     ownHost: true
     path: /ui/vault/auth?redirect_to=%2Fvault%2Fsecrets%2Fsecret%2Flist%2Fteams%2F#NS#%2F&with=oidc
