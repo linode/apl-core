@@ -24,7 +24,7 @@ releases:
       pkg: knative
     values:
       - ../values/knative/knative-serving-cr.gotmpl
-      - snippets/common.gotmpl
+      - {{- $v.apps.knative | get "_rawValues" dict | toYaml | nindent 8 }}
     <<: *preUpgrade
   - name: oauth2-proxy-redis
     installed: true

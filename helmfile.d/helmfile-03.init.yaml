@@ -57,6 +57,10 @@ releases:
     installed: {{ $a | get "vault.enabled" }}
     disableValidationOnInstall: true
     namespace: vault
+    chart: ../charts/vault-operator
     labels:
       pkg: vault
-    <<: *default
+    values:
+      - ../values/vault-operator/vault-operator.gotmpl
+      - {{- $v.apps.vault | get "_rawValues" dict | toYaml | nindent 8 }}
+    <<: *preUpgrade

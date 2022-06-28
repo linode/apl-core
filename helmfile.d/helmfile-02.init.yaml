@@ -23,14 +23,10 @@ releases:
   - name: gatekeeper
     installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system
-    chart: ../charts/gatekeeper
     disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
-    values:
-      - ../values/gatekeeper/gatekeeper.gotmpl
-      - snippets/common.gotmpl
-    <<: *preUpgrade
+    <<: *default
   - name: ingress-nginx-artifacts
     installed: true
     namespace: ingress

@@ -1894,6 +1894,8 @@ properties:
             default: false
           _rawValues:
             $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
       knative:
         additionalProperties: false
         properties:
