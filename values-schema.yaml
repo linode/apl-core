@@ -2012,6 +2012,8 @@ properties:
           enabled:
             type: boolean
             default: false
+          resources:
+            $ref: '#/definitions/resources'
           adminPassword:
             type: string
             x-secret: 'randAlphaNum 20'
@@ -2166,6 +2168,12 @@ properties:
           enabled:
             type: boolean
             default: false
+          replicas:
+            type: integer
+            default: 1
+          scrapeInterval:
+            type: string
+            default: 60s
           retention:
             $ref: '#/definitions/duration'
           retentionSize:
