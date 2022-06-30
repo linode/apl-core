@@ -1246,6 +1246,13 @@ properties:
                         const: custom-ca
                     required:
                       - issuer
+      cluster-autoscaler:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
       cluster-overprovisioner:
         additionalProperties: false
         properties:

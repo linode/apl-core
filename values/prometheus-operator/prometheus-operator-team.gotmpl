@@ -10,6 +10,14 @@ kubeScheduler:
   enabled: false
 kubeProxy:
   enabled: false
+kubelet:
+  enabled: false
+kubeStateMetrics:
+  enabled: false
+nodeExporter:
+  enabled: false
+prometheusOperator:
+  enabled: false
 
 defaultRules:
   create: true
@@ -41,16 +49,6 @@ defaultRules:
     prometheus: true
     prometheusOperator: false
 
-kubeApiServer:
-  enabled: false
-kubelet:
-  enabled: false
-kubeStateMetrics:
-  enabled: false
-nodeExporter:
-  enabled: false
-prometheusOperator:
-  enabled: false
 prometheus:
   additionalServiceMonitors: null
   prometheusSpec:

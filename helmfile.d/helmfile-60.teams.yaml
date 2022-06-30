@@ -83,34 +83,18 @@ releases:
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
-          enabled: false
-          namespaceOverride: team-{{ $teamId }}
+          enabled: true
+          namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             externalUrl: https://{{ $appsDomain }}/prometheus
-            podMonitorSelector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-            podMonitorNamespaceSelector:
+            {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
+            {{ $selType }}NamespaceSelector:
               matchLabels:
                 name: team-{{ $teamId }}
-            probeSelector:
+            {{ $selType }}Selector:
               matchLabels:
                 prometheus: team-{{ $teamId }}
-            probeNamespaceSelector:
-              matchLabels:
-                name: team-{{ $teamId }}
-            ruleSelector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-            ruleNamespaceSelector:
-              matchLabels:
-                name: team-{{ $teamId }}
-            serviceMonitorSelector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-            serviceMonitorNamespaceSelector:
-              matchLabels:
-                name: team-{{ $teamId }}
+            {{- end }}
         {{- if gt (len .services) 0 }}
             additionalScrapeConfigs:
           {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
@@ -119,7 +103,9 @@ releases:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
         grafana:
-          namespaceOverride: team-{{ $teamId }}
+          namespaceOverride: null # team-{{ $teamId }}
+          serviceMonitor:
+            namespace: null
           nameOverride: {{ $teamId }}-po-grafana
           fullnameOverride: {{ $teamId }}-po-grafana
           grafana.ini:

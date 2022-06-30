@@ -38,13 +38,26 @@ prometheusOperator:
       issuerRef:
         name: custom-ca
         kind: ClusterIssuer
-  priorityClassName: "otomi-critical"
+  priorityClassName: otomi-critical
 commonLabels:
   prometheus: system
 prometheus:
   enabled: {{ $p.enabled }}
   namespaceOverride: prometheus
   prometheusSpec:
+    {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
+    {{ $selType }}NamespaceSelector:
+      matchExpressions:
+        - key: name
+          operator: NotIn
+          values:
+            {{- range $teamId, $_ := $v.teamConfig }}
+            - team-{{ $teamId }}
+            {{- end }}
+    {{ $selType }}Selector:
+      matchLabels:
+        prometheus: system
+    {{- end }}
     replicas: {{ $p.replicas }}
     scrapeInterval: {{ $p.scrapeInterval }}
     podAntiAffinity: hard
@@ -56,18 +69,6 @@ prometheus:
     podMetadata:
       annotations:
         sidecar.istio.io/inject: "true"
-    podMonitorSelector:
-      matchLabels:
-        prometheus: system
-    probeSelector:
-      matchLabels:
-        prometheus: system
-    serviceMonitorSelector:
-      matchLabels:
-        prometheus: system
-    ruleSelector:
-      matchLabels:
-        prometheus: system
     resources:
       {{- with $p | get "resources" nil }}
         {{- toYaml . | nindent 6 }}
@@ -79,7 +80,7 @@ prometheus:
         cpu: '3'
         memory: 3Gi
       {{- end }}
-    priorityClassName: "otomi-critical"
+    priorityClassName: otomi-critical
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
     retention: {{ $p | get "retention" "1d" }}
@@ -140,7 +141,7 @@ alertmanager:
       tag: {{ . }}
       {{- end }}
       pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
-    priorityClassName: "otomi-critical"
+    priorityClassName: otomi-critical
     resources:
       {{- with $a | get "resources" nil }}
         {{- toYaml . | nindent 4 }}
@@ -229,10 +230,6 @@ kube-state-metrics:
     monitor:
       additionalLabels:
         prometheus: system
-  selectorLabels:
-    prometheus: system
-  selfMonitor:
-    enabled: true
   image:
     {{- with $p | get "image.kube-state-metrics.tag" nil }}
     tag: {{  . }}
@@ -255,10 +252,6 @@ prometheus-node-exporter:
     monitor:
       additionalLabels:
         prometheus: system
-      selectorOverride:
-        prometheus: system
-  selfMonitor:
-    enabled: true
   image:
     {{- with $p | get "image.node-exporter.tag" nil }}
     tag: {{ . }}
@@ -275,6 +268,6 @@ prometheus-node-exporter:
       cpu: 100m
       memory: 128Mi
     {{- end }}
-  priorityClassName: "otomi-critical"
+  priorityClassName: otomi-critical
   podAnnotations:
     policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security
