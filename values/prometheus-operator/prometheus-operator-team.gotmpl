@@ -1,36 +1,51 @@
+kubeApiServer:
+  enabled: false
+coreDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+
 defaultRules:
   create: true
   rules:
     alertmanager: true
-    configReloaders: true
+    configReloaders: false
     etcd: false
     general: false
-    k8s: true
+    k8s: false
     kubeApiserver: false
     kubeApiserverAvailability: false
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: false
     kubeApiserverSlos: false
     kubelet: false
     kubePrometheusGeneral: false
-    kubePrometheusNodeAlerting: false
     kubePrometheusNodeRecording: false
-    kubeProxy: true
-    kubernetesAbsent: false
-    kubernetesApps: true
-    kubernetesResources: true
-    kubernetesStorage: true
+    kubeProxy: false
+    kubernetesApps: false
+    kubernetesResources: false
+    kubernetesStorage: false
     kubernetesSystem: false
     kubeScheduler: false
-    kubeStateMetrics: true
+    kubeStateMetrics: false
     network: false
     node: false
-    nodeExporterAlerting: true
-    nodeExporterRecording: true
+    nodeExporterAlerting: false
+    nodeExporterRecording: false
     prometheus: true
     prometheusOperator: false
 
 kubeApiServer:
   enabled: false
 kubelet:
+  enabled: false
+kubeStateMetrics:
   enabled: false
 nodeExporter:
   enabled: false
@@ -43,3 +58,4 @@ prometheus:
 additionalPrometheusRules: null
 grafana:
   defaultDashboardsEnabled: false
+  plugins: []
