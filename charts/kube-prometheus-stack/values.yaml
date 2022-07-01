@@ -1443,7 +1443,7 @@ prometheus-node-exporter:
     monitor:
       enabled: true
 
-      # jobLabel: jobLabel
+      jobLabel: jobLabel
 
       ## Scrape interval. If not set, the Prometheus default scrape interval is used.
       ##

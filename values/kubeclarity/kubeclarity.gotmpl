@@ -4,11 +4,24 @@
 global:
   databasePassword: {{ $k | get "databasePassword" }}
 
-kubeclarity-postgresql:
-  fullnameOverride: kubeclarity-postgresql
-
 kubeclarity:
   logLevel: {{ $k.logLevel }}  
 
-
+kubeclarity-postgresql:
+  fullnameOverride: kubeclarity-postgresql
+  metrics:
+    enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128M
+      requests:
+        cpu: 50m
+        memory: 64M
+    securityContext:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 

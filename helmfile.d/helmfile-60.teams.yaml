@@ -23,7 +23,6 @@ bases:
 {{- $po := $a | get "prometheus" }}
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
-
 releases:
 {{- range $teamId, $team := omit $tc "admin" }} 
   {{- $teamServices := ($team | get "services" list) }}
@@ -31,30 +30,7 @@ releases:
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $grafanaDomain := printf "grafana.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
-  - name: team-ns-{{ $teamId }}
-    installed: true
-    namespace: team-{{ $teamId }}
-    chart: ../charts/team-ns
-    labels:
-      tag: teams
-      ingress: "true"
-      team: {{ $teamId }}
-    values:
-      - cluster: {{- $v.cluster | toYaml | nindent 10 }}
-        apps: {{- $a | toYaml | nindent 10 }}
-        otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
-        domain: {{ $domain }}
-        ingress: {{- $v.ingress | toYaml | nindent 10 }}
-      - {{- omit $team "apps" | toYaml | nindent 8 }}
-        teamId: {{ $teamId }}
-      - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if and ($a | get "prometheus.enabled" false) $v.otomi.isMultitenant }}
-    {{- if gt (len $teamServices) 0 }}
-      - name: blackbox
-        svc: prometheus-blackbox-exporter
-        port: 9115
-    {{- end }}
+  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
   - name: prometheus-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -67,7 +43,7 @@ releases:
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
-        {{- if or ($v | get "alerts" nil) ($v | get "home" nil) ($team | get "alerts" nil) }}
+    {{- if or ($v | get "alerts" nil) ($v | get "home" nil) ($team | get "alerts" nil) }}
         alertmanager:
           namespaceOverride: team-{{ $teamId }}
           alertmanagerSpec:
@@ -75,11 +51,11 @@ releases:
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
           appNamespacesTarget: team-{{ $teamId }}
-        {{- else }}
+    {{- else }}
         defaultRules:
           rules:
             alertmanager: false
-        {{- end }}
+    {{- end }}
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
@@ -87,18 +63,18 @@ releases:
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             externalUrl: https://{{ $appsDomain }}/prometheus
-            {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
+    {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
             {{ $selType }}NamespaceSelector:
               matchLabels:
                 name: team-{{ $teamId }}
             {{ $selType }}Selector:
               matchLabels:
                 prometheus: team-{{ $teamId }}
-            {{- end }}
-        {{- if gt (len .services) 0 }}
+    {{- end }}
+    {{- if gt (len .services) 0 }}
             additionalScrapeConfigs:
           {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
-        {{- end }}
+    {{- end }}
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
@@ -113,14 +89,13 @@ releases:
               root_url: https://{{ $grafanaDomain }}
           sidecar:
             datasources:
-              defaultDatasourceEnabled: false
+              defaultDatasourceEnabled: true
           additionalDataSources:
-            - name: Prometheus
+            - name: PrometheusPlatform
               editable: false
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
-              isDefault: true
             - name: Loki
               editable: false
               type: loki
@@ -169,6 +144,33 @@ releases:
           - azure
           {{- end }}
   {{- end }}
+  - name: team-ns-{{ $teamId }}
+    installed: true
+    {{- if $a.prometheus.enabled }}
+    needs: 
+      - prometheus-{{ $teamId }}
+    {{- end }}
+    namespace: team-{{ $teamId }}
+    chart: ../charts/team-ns
+    labels:
+      tag: teams
+      ingress: "true"
+      team: {{ $teamId }}
+    values:
+      - cluster: {{- $v.cluster | toYaml | nindent 10 }}
+        apps: {{- $a | toYaml | nindent 10 }}
+        otomi: {{- $v.otomi | toYaml | nindent 10 }}
+        oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
+        domain: {{ $domain }}
+        ingress: {{- $v.ingress | toYaml | nindent 10 }}
+      - {{- omit $team "apps" | toYaml | nindent 8 }}
+        teamId: {{ $teamId }}
+      - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
+  {{- if and ($a | get "prometheus.enabled" false) $v.otomi.isMultitenant (gt (len $teamServices) 0) }}
+      - name: blackbox
+        svc: prometheus-blackbox-exporter
+        port: 9115
+  {{- end }}
   {{- range $job := $team | get "jobs" list }}
   - name: job-{{ $teamId }}-{{ $job.name }}
     installed: {{ $job.enabled }}
@@ -191,5 +193,5 @@ releases:
       - teamSecrets: {{- $team | get "secrets" nil | toYaml | nindent 10 }}
         teamId: {{ $teamId }}
       - {{- $job | toYaml | nindent 8 }}
-    {{- end }}
   {{- end }}
+{{- end }}

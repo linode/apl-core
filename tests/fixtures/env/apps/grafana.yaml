@@ -1,3 +1,4 @@
 apps:
     grafana:
+        enabled: true
         adminPassword: somesecretvalue

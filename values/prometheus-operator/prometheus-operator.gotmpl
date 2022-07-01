@@ -43,7 +43,6 @@ commonLabels:
   prometheus: system
 prometheus:
   enabled: {{ $p.enabled }}
-  namespaceOverride: prometheus
   prometheusSpec:
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}NamespaceSelector:
@@ -105,13 +104,13 @@ prometheus:
   {{- end }}
 {{- end }}
   additionalPodMonitors:
-    {{- range $m := (readFile "pod-monitors.yaml" | fromYaml) | get "additionalPodMonitors" }}
+    {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
     - {{- toYaml $m | nindent 6 }}
       additionalLabels:
         prometheus: system
     {{- end }}
   additionalServiceMonitors:
-    {{- range $m := (readFile "service-monitors.yaml" | fromYaml) | get "additionalServiceMonitors" }}
+    {{- range $m := (tpl (readFile "service-monitors.gotmpl") $v | fromYaml) | get "additionalServiceMonitors" }}
     - {{- toYaml $m | nindent 6 }}
       additionalLabels:
         prometheus: system
@@ -129,7 +128,6 @@ additionalPrometheusRules:
 {{- end }}
 alertmanager:
   enabled: {{ $a.enabled }}
-  namespaceOverride: alertmanager
   alertmanagerSpec:
     podMetadata:
       annotations:
@@ -157,6 +155,9 @@ alertmanager:
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
 grafana:
   enabled: {{ $g.enabled }}
+  nameOverride: po-grafana
+  fullnameOverride: po-grafana
+  namespaceOverride: grafana
   defaultDashboardsTimezone: browser
   downloadDashboards:
     resources:
@@ -190,11 +191,8 @@ grafana:
       requests:
         cpu: 50m
         memory: 50Mi
-  nameOverride: po-grafana
-  fullnameOverride: po-grafana
-  namespaceOverride: grafana
   serviceMonitor:
-    namespace: grafana
+    # namespace: grafana
     labels:
       prometheus: system
 

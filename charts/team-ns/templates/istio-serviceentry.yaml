@@ -3,11 +3,11 @@
 {{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- $ := . }}
 {{- if not (eq $v.teamId "admin") }}
-{{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true  $v }}
+{{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
 {{- if $egressFilteringEnabled }}
 {{- range $s := $v.services }}
 {{- if not $s.isCore }}
-{{- range $entry := (dig "networkPolicy" "egressPublic" (list) $s) }}
+{{- range $entry := $s | dig "networkPolicy" "egressPublic" list }}
 {{- $host := $entry.domain }}
 {{- $hostName := (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" | replace "/" "-" ) }}
 {{/* Service entry names need to globally unique */}}

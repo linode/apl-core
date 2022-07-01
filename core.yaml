@@ -3,8 +3,6 @@ k8s:
   namespaces:
     - name: argocd
       app: argocd
-    - name: alertmanager
-      app: alertmanager
     - name: cert-manager
       disableIstioInjection: true
     - name: default
@@ -52,7 +50,6 @@ k8s:
       disablePolicyChecks: true
     - name: kubeclarity
       app: kubeclarity
-      disableIstioInjection: true
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
@@ -67,8 +64,6 @@ k8s:
     - name: cluster-overprovisioner
       app: cluster-overprovisioner
       disableIstioInjection: true
-    - name: prometheus
-      app: prometheus
     - name: redis
       app: prometheus
       disableIstioInjection: true

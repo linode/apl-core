@@ -137,6 +137,22 @@ memcached:
       cpu: 100m
       memory: 128Mi
     {{- end }}
+  metrics:
+    enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128M
+      requests:
+        cpu: 50m
+        memory: 64M
+    securityContext:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+      selector:
+        prometheus: system
+
 
 persistence:
   size: 1Gi
@@ -166,6 +182,21 @@ postgresql:
       cpu: 250m
       memory: 256Mi
     {{- end }}
+  metrics:
+    enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128M
+      requests:
+        cpu: 50m
+        memory: 64M
+    securityContext:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 
 {{- if $v._derived.untrustedCA }}
 extraVolumeMounts:

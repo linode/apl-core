@@ -32,6 +32,7 @@ additionalServiceMonitors:
     endpoints:
       - port: http-monitoring
         interval: 15s
+  {{- if .apps | get "jaeger.enabled" }}
   - name: jaeger-operator-metrics
     namespace: jaeger-operator
     selector:
@@ -47,6 +48,8 @@ additionalServiceMonitors:
       - bearerTokenSecret:
           key: ''
         port: cr-metrics
+  {{- end }}
+  {{- if .apps | get "argocd.enabled" }}
   - name: argocd-metrics
     namespace: argocd
     selector:
@@ -57,3 +60,16 @@ additionalServiceMonitors:
         - argocd
     endpoints:
       - port: metrics
+  {{- end }}
+  {{- if .apps | get "vault.enabled" }}
+  - name: external-secrets
+    namespace: vault
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: external-secrets
+    namespaceSelector:
+      matchNames:
+        - vault
+    endpoints:
+      - port: prometheus
+  {{- end }}

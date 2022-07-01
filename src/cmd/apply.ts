@@ -53,7 +53,7 @@ const applyAll = async () => {
   writeFileSync(templateFile, templateOutput)
   await $`kubectl apply -f ${templateFile}`
   await nothrow(
-    $`if ! kubectl replace -f charts/prometheus-operator/crds; then kubectl create -f charts/prometheus-operator/crds; fi`,
+    $`if ! kubectl replace -f charts/kube-prometheus-stack/crds; then kubectl create -f charts/kube-prometheus-stack/crds; fi`,
   )
   d.info('Deploying charts containing label stage=prep')
   await hf(
