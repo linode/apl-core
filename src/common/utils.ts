@@ -111,6 +111,13 @@ export const gucci = async (
   }
 }
 
+export const guccify = async (str: string, ctx: { [key: string]: any }): Promise<string> => {
+  const escaped = str.replaceAll('\n', '@@').replace(/([^{{]+|{{[^}]*}})/g, (match, token) => {
+    return token.includes('{{') ? token : token.replaceAll('$', '##')
+  })
+  return ((await gucci(escaped, ctx, true)) as string).replaceAll('##', '$').replaceAll('@@', '\n')
+}
+
 export const extract = (schema: Record<string, any>, leaf: string, mapValue = (val: any) => val): any => {
   const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret', 'x-acl']
   return Object.keys(schema)

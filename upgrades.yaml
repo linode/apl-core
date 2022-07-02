@@ -1,9 +1,10 @@
 # Upgrade commands between versions are configured in this file, and executed in bash (FROM ubuntu:20.04)
 # Options:
-# - blockingOperations: will break on exit code <> 0
-# - nonBlockingOperations: do not care about exit code
+# - operations: will run before applying all
+# - releases.*.operations will run just in time before syncing that particular release takes place
 #
-# NOTE: pipes ("|") are not supported!
+# NOTE:
+# - $(...) can't be used, but backticks can: `...`
 #
 # Special case for development:
 #
@@ -11,8 +12,17 @@
 # (don't forget to set it to the next release version before releasing!)
 
 changes:
-  - version: 0.16.9 # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
+  - version: 0.16.9
     releases:
       external-secrets:
         operations:
           - helm -n vault list | grep kubernetes-external-secrets-6.1.0 >/dev/null && helm -n vault uninstall kubernetes-external-secrets && kubectl apply -f $PWD/charts/kubernetes-external-secrets/crds
+  - version: 0.16.10 # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
+    operations:
+      # we need to patch ownership of all podmonitors which are now published by team-ns-* instead of prometheus-*
+      - |
+        for id in "{{ keys .teamConfig | join " " }}"; do 
+          for p in `kubectl -n "team-$id" get podmonitor`; do
+            kubectl -n team-$id patch podmonitor $p --type merge -p {"annotations":{"meta.helm.sh/release-name":"team-ns-$id","meta.helm.sh/release-namespace":"team-$id"}}
+          done
+        done

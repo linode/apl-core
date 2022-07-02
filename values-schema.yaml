@@ -2578,6 +2578,9 @@ properties:
         default: false
         description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
+      nodeSelector:
+        $ref: '#/definitions/labelsAnnotations'
+        description: 'One or more "label: value" pairs that must exist on one or more nodes, which will force all otomi platform workloads to be scheduled there.'
       version:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'

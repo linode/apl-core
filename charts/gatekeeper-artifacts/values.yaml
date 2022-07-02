@@ -21,3 +21,7 @@ config:  {}
   # match:
   #   - excludedNamespaces: ["gatekeeper-system"]
   #     processes: ["*"]
+
+otomiVersions: {}
+otomi: {}
+policies: []

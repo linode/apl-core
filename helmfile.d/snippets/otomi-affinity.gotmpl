@@ -1,0 +1,13 @@
+{{- with .otomi | get "nodeSelector" nil }}
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+          {{- range $key, $val := . }}
+          - key: {{ $key }}
+            operator: In
+            values:
+            - {{ $val }}
+          {{- end }}
+{{- end }}

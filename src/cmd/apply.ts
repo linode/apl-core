@@ -13,6 +13,7 @@ import { getCurrentVersion, getImageTag } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { commit } from './commit'
+import { preUpgrade } from './pre-upgrade'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -32,8 +33,8 @@ const setup = (): void => {
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
+  await preUpgrade({})
   d.info('Start apply all')
-
   const prevState = await getDeploymentState()
   d.debug(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
@@ -97,7 +98,7 @@ const apply = async (): Promise<void> => {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
-      args: ['apply', skipCleanup],
+      args: ['apply', '--include-needs', skipCleanup],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )

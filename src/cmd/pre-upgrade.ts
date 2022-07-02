@@ -4,22 +4,26 @@
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { prepareEnvironment } from '../common/cli'
+import { hfValues } from '../common/hf'
 import { getDeploymentState, setDeploymentState } from '../common/k8s'
-import { getFilename, loadYaml, rootDir, semverCompare } from '../common/utils'
+import { getFilename, guccify, loadYaml, rootDir, semverCompare } from '../common/utils'
 import { getCurrentVersion } from '../common/values'
-import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
+import { BasicArguments, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
-interface Arguments extends BasicArguments {
+interface Arguments {
   dryRun?: boolean
   r?: string
-  release: string
+  release?: string
 }
+
+interface CommandArguments extends Arguments, BasicArguments {}
 
 interface Change {
   version: string
   releases?: Record<string, string[]>
+  operations?: string[]
 }
 
 export type Changes = Array<Change>
@@ -29,33 +33,51 @@ function filterChanges(version: string, changes: Changes): Changes {
   return changes.filter((c) => c.version === 'dev' || semverCompare(version, c.version))
 }
 
+async function execute(d: typeof console, dryRun: boolean, operations: string[], values: Record<string, any>) {
+  for (const o of operations) {
+    const matches: string[] = []
+    const opStr = o.replace(/(\$\([^)]*\)|`[^`]*`)/g, (match, token) => {
+      matches.push(token)
+      return `T${matches.length - 1}X`
+    })
+    const op = (await guccify(opStr, values))
+      // .replaceAll(/\n[\W]+done/g, ';done')
+      .replaceAll(/do\W?\n/g, 'do ')
+      .replaceAll('\n', ';')
+      .replaceAll(/T([0-9]+)X/g, (match, token) => matches[token])
+    d[dryRun ? 'log' : 'info'](`operation: ${op}`)
+    if (dryRun) return
+    const res = await $`${op}`
+    if (res.stdout) d.log(res.stdout)
+    if (res.stderr) d.error(res.stderr)
+  }
+}
+
 /**
  * Checks if any operations need to be ran for releases and executes those.
  */
-export const preUpgrade = async (): Promise<void> => {
+export const preUpgrade = async ({ dryRun = false, release }: Arguments): Promise<void> => {
   const d = console // wrapped stream created by terminal(... is not showing
-  const argv = getParsedArgs() as Arguments
   const changes: Changes = loadYaml(`${rootDir}/upgrades.yaml`)?.changes
   const prevVersion: string = (await getDeploymentState()).version || '0.1.0'
+  const values = (await hfValues()) as Record<string, any>
   d.info(`Current version of otomi: ${prevVersion}`)
   const filteredChanges = filterChanges(prevVersion, changes)
   if (filteredChanges.length) {
-    const r = argv.release
-    d.info('Upgrade records detected for release: ', r)
     cd(rootDir)
     const q = $.quote
     $.quote = (v) => v
     for (let i = 0; i < filteredChanges.length; i++) {
       const c: Record<string, any> = filteredChanges[i]
-      if (c.releases[r]) {
-        const release = c.releases[r]
-        for (const op of release.operations || []) {
-          d[argv.dryRun ? 'log' : 'info'](`operation: ${op}`)
-          if (argv.dryRun) return
-          const res = await $`${op} || true`
-          if (res.stdout) d.log(res.stdout)
-          if (res.stderr) d.error(res.stderr)
-        }
+      if (!release) {
+        d.info('Upgrade records detected')
+        // before everything
+        if (c.operations) await execute(d, dryRun, c.operations, values)
+      } else if (c.releases?.[release]) {
+        d.info('Upgrade records detected for release: ', release)
+        // just in time before a release gets synced
+        const r = c.releases[release]
+        if (r.operations) await execute(d, dryRun, r.operations, values)
       }
     }
     $.quote = q
@@ -84,9 +106,9 @@ export const module = {
       },
     }),
 
-  handler: async (argv: Arguments): Promise<void> => {
+  handler: async (argv: CommandArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipAllPreChecks: true })
-    await preUpgrade()
+    await preUpgrade(argv)
   },
 }

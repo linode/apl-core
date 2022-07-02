@@ -12,14 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: gatekeeper-constraints
-    installed: {{ $a | get "gatekeeper.enabled" }}
-    namespace: gatekeeper-system
-    chart: ../charts/gatekeeper-constraints
-    labels:
-      pkg: gatekeeper
-    values:
-      - snippets/common.gotmpl
   - name: job-gitea-prepare
     installed: {{ $a | get "gitea.enabled" }}
     labels:

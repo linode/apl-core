@@ -90,8 +90,9 @@ releases:
           sidecar:
             datasources:
               defaultDatasourceEnabled: true
+              uid: Prometheus-team
           additionalDataSources:
-            - name: PrometheusPlatform
+            - name: Prometheus-platform
               editable: false
               type: prometheus
               access: proxy
@@ -166,7 +167,7 @@ releases:
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if and ($a | get "prometheus.enabled" false) $v.otomi.isMultitenant (gt (len $teamServices) 0) }}
+  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant (gt (len $teamServices) 0) }}
       - name: blackbox
         svc: prometheus-blackbox-exporter
         port: 9115
