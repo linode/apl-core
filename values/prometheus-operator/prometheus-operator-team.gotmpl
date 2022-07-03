@@ -53,6 +53,14 @@ prometheus:
   additionalServiceMonitors: null
   prometheusSpec:
     enableAdminAPI: false
+    replicas: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 additionalPrometheusRules: null
 grafana:
   defaultDashboardsEnabled: false
