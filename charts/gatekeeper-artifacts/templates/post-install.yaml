@@ -33,7 +33,7 @@ spec:
             - -c
           args:
             - |
-              while ! kubectl get crd{{ range $policy := $v.policies }} {{ $policy | replace "-" "" }}.constraints.gatekeeper.sh{{ end }}; do
+              while ! kubectl get crd{{ range $policy := ($v.policies | sortAlpha) }} {{ $policy | replace "-" "" }}.constraints.gatekeeper.sh{{ end }}; do
                 echo "Waiting until gatekeeper constraints are accessible"; sleep 5;
               done;
               echo READY!

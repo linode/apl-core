@@ -1,5 +1,6 @@
 {{- $v := .Values }}
-{{- $k := $v.apps.keycloak }}
+{{- $k := $v.apps.kiali }}
+{{- $kk := $v.apps.keycloak }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 
 image:
@@ -22,7 +23,7 @@ cr:
       openid:
         # TODO: check up on https://github.com/kiali/kiali/issues/5233 for authentication_timeout
         authentication_timeout: 1800
-        client_id: {{ $k.idp.clientID }}
+        client_id: {{ $kk.idp.clientID }}
         disable_rbac: true
         issuer_uri: {{ $v._derived.oidcBaseUrl }}
         username_claim: email
@@ -35,12 +36,16 @@ cr:
       ingress_enabled: false
       namespace: kiali
       resources:
+        {{- with $k | get "resources" nil }}
+          {{- toYaml . | nindent 8 }}
+        {{- else }}
         limits:
           cpu: 500m
           memory: 512Mi
         requests:
           cpu: 50m
           memory: 32Mi
+        {{- end }}
       verbose_mode: "4"
     external_services:
       grafana:
