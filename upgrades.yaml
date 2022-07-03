@@ -18,7 +18,7 @@ changes:
       external-secrets:
         operations:
           - helm -n vault list | grep kubernetes-external-secrets-6.1.0 >/dev/null && helm -n vault uninstall kubernetes-external-secrets && kubectl apply -f $PWD/charts/kubernetes-external-secrets/crds || true
-  - version: dev # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
+  - version: 0.16.10 # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
     operations:
       # we moved drone to its own namespace
       - helm -n team-admin list | grep drone && helm -n team-admin uninstall drone || true
