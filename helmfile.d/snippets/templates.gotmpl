@@ -1,20 +1,31 @@
 templates:
-  preUpgrade: &preUpgrade
+  upgrade: &upgrade
     hooks:
       - events: ["presync"]
         showlogs: true
         command: ../binzx/otomiw
         args:
-          - pre-upgrade
+          - upgrade
           - -r
           - "{{ .Release.Name }}"
+          - -w
+          - pre
+      - events: ["postsync"]
+        showlogs: true
+        command: ../binzx/otomiw
+        args:
+          - upgrade
+          - -r
+          - "{{ .Release.Name }}"
+          - -w
+          - post
   default: &default
     missingFileHandler: Debug
     chart: ../charts/{{ .Release.Name }}
     values:
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl
       - snippets/common.gotmpl
-    <<: *preUpgrade
+    <<: *upgrade
   raw: &raw
     chart: ../charts/raw
     values:
@@ -43,14 +54,24 @@ templates:
         showlogs: true
         command: ../bin/skeleton-chart.sh
         args: ["{{ .Release.Name }}", "{{ .Values.cluster.k8sVersion }}"]
-
       - events: ["presync"]
         showlogs: true
         command: ../binzx/otomiw
         args:
-          - pre-upgrade
+          - upgrade
           - -r
           - "{{ .Release.Name }}"
+          - -w
+          - pre
+      - events: ["postsync"]
+        showlogs: true
+        command: ../binzx/otomiw
+        args:
+          - upgrade
+          - -r
+          - "{{ .Release.Name }}"
+          - -w
+          - post
   wait: &wait
     namespace: maintenance
     chart: ../charts/wait-for

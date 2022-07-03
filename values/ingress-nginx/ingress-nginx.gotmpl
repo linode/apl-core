@@ -41,7 +41,7 @@ controller:
     {{- end }}
   podAnnotations:
     # sidecar.istio.io/inject: {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
-    policy.otomi.io/ignore: "psp-privileged"
+    policy.otomi.io/ignore: psp-privileged,psp-capabilities
 
   replicaCount: 2
   minAvailable: 1
