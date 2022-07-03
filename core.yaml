@@ -3,13 +3,12 @@ k8s:
   namespaces:
     - name: argocd
       app: argocd
-    - name: alertmanager
-      app: alertmanager
     - name: cert-manager
       disableIstioInjection: true
     - name: default
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: drone
     - name: drone-pipelines
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -52,7 +51,6 @@ k8s:
       disablePolicyChecks: true
     - name: kubeclarity
       app: kubeclarity
-      disableIstioInjection: true
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
@@ -67,8 +65,6 @@ k8s:
     - name: cluster-overprovisioner
       app: cluster-overprovisioner
       disableIstioInjection: true
-    - name: prometheus
-      app: prometheus
     - name: redis
       app: prometheus
       disableIstioInjection: true
@@ -109,13 +105,13 @@ adminApps:
     ownHost: true
     ingress:
       - svc: drone
-        namespace: team-admin
+        namespace: drone
         type: public
         auth: true
         removeRequestHeaders:
           - authorization
       - svc: drone
-        namespace: team-admin
+        namespace: drone
         type: public
         paths: [/hook, /api/user, /api/repo]
         forwardPath: true

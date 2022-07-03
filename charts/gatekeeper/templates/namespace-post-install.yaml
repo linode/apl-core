@@ -21,9 +21,9 @@ spec:
         release: '{{ .Release.Name }}'
     spec:
       restartPolicy: OnFailure
-      {{- with .Values.postInstall.labelNamespace.image.pullSecrets }}
+      {{- if .Values.postInstall.labelNamespace.image.pullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 12 }}
+      {{- .Values.postInstall.labelNamespace.image.pullSecrets | toYaml | nindent 12 }}
       {{- end }}
       serviceAccount: gatekeeper-update-namespace-label
       nodeSelector:
@@ -38,6 +38,8 @@ spec:
             - {{ .Release.Namespace }}
             - admission.gatekeeper.sh/ignore=no-self-managing
             - --overwrite
+          securityContext:
+            {{- toYaml .Values.postInstall.securityContext | nindent 12 }}
           resources:
             limits:
               cpu: 100m
@@ -45,15 +47,6 @@ spec:
             requests:
               cpu: 10m
               memory: 16Mi
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - all
-            readOnlyRootFilesystem: true
-            runAsGroup: 999
-            runAsNonRoot: true
-            runAsUser: 1000
 ---
 apiVersion: v1
 kind: ServiceAccount

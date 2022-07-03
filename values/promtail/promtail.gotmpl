@@ -17,6 +17,11 @@ resources:
     memory: 384Mi
   {{- end }}
 
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    prometheus: system
+
 securityContext:
   readOnlyRootFilesystem: true
   runAsGroup: 0

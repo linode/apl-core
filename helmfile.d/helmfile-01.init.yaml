@@ -12,23 +12,39 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: snapshot-controller
-    installed: {{ $a | get "snapshot-controller.enabled" }}
-    namespace: kube-system
-    labels:
-      init: true
-      pkg: csi
-      provider: aws 
-    <<: *default
-  - name: metrics-server
-    installed: {{ $a | get "metrics-server.enabled" }}
-    namespace: kube-system
-    <<: *default
-  - name: tigera-operator
-    installed: {{ $a | get "tigera-operator.enabled" }}
-    namespace: tigera-operator
+  - name: gatekeeper
+    installed: {{ $a | get "gatekeeper.enabled" }}
+    namespace: gatekeeper-system
+    chart: ../charts/gatekeeper
     disableValidationOnInstall: true
     labels:
-      init: true
-      pkg: calico
-    <<: *default
+      pkg: gatekeeper
+    values:
+      - ../values/gatekeeper/gatekeeper.gotmpl
+      - snippets/common.gotmpl
+    <<: *preUpgrade
+  - name: gatekeeper-artifacts
+    installed: {{ $a | get "gatekeeper.enabled" }}
+    needs: [gatekeeper]
+    namespace: gatekeeper-system
+    chart: ../charts/gatekeeper-artifacts
+    labels:
+      pkg: gatekeeper
+    hooks:
+      - events: ["prepare"]
+        showlogs: true
+        command: "../bin/build-gatekeeper-artifacts.sh"
+        args: [true]
+    values:
+      - ../values/gatekeeper/gatekeeper-artifacts.gotmpl
+      - snippets/common.gotmpl
+  - name: gatekeeper-constraints
+    installed: {{ $a | get "gatekeeper.enabled" }}
+    needs: [gatekeeper-artifacts]
+    namespace: gatekeeper-system
+    chart: ../charts/gatekeeper-constraints
+    labels:
+      pkg: gatekeeper
+    values:
+      - ../values/gatekeeper/gatekeeper-constraints.gotmpl
+      - snippets/common.gotmpl

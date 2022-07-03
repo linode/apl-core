@@ -87,7 +87,7 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              app.kubernetes.io/name: kube-state-metrics
+              app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
   podSelector:
     matchLabels:
       prometheus: {{ $v.teamId }}-po-prometheus

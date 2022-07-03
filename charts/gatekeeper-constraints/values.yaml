@@ -21,3 +21,6 @@ config:  {}
   # match:
   #   - excludedNamespaces: ["gatekeeper-system"]
   #     processes: ["*"]
+  
+imagePullSecrets: {}
+toolsTag: v1.4.25

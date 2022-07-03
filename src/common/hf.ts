@@ -104,7 +104,7 @@ export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?:
   const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
   // const args = ['template', '--validate']
-  const args = ['template']
+  const args = ['template', '--include-needs']
   if (outDir) args.push(`--output-dir=${outDir}`)
   if (argv.skipCleanup) args.push('--skip-cleanup')
   const helmArgs = getHelmArgs(argv, ['--skip-tests'])

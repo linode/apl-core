@@ -52,3 +52,5 @@ resources:
 
 tlsCert: ''
 tlsKey: ''
+
+host: ''

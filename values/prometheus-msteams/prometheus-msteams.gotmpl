@@ -18,8 +18,7 @@ metrics:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      release: prometheus # change this accordingly
-    scrapeInterval: 30s
+      prometheus: system 
 
 resources:
   limits:

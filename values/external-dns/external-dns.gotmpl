@@ -48,6 +48,10 @@ resources:
 
 metrics:
   enabled: true
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      prometheus: system
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 global:

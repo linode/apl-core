@@ -1246,6 +1246,13 @@ properties:
                         const: custom-ca
                     required:
                       - issuer
+      cluster-autoscaler:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -2014,6 +2021,8 @@ properties:
           enabled:
             type: boolean
             default: false
+          resources:
+            $ref: '#/definitions/resources'
           adminPassword:
             type: string
             x-secret: 'randAlphaNum 20'
@@ -2168,6 +2177,12 @@ properties:
           enabled:
             type: boolean
             default: false
+          replicas:
+            type: integer
+            default: 1
+          scrapeInterval:
+            type: string
+            default: 60s
           retention:
             $ref: '#/definitions/duration'
           retentionSize:
@@ -2565,6 +2580,9 @@ properties:
         default: false
         description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
+      nodeSelector:
+        $ref: '#/definitions/labelsAnnotations'
+        description: 'One or more "label: value" pairs that must exist on one or more nodes, which will force all otomi platform workloads to be scheduled there.'
       version:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'

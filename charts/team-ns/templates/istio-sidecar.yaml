@@ -1,8 +1,8 @@
 {{- $v := .Values | merge (dict) }}
 {{- $ := . }}
-{{- $egressFilteringEnabled := dig "networkPolicy" "egressPublic" true $v }}
-{{- if $egressFilteringEnabled }}
 {{- if not (eq $v.teamId "admin") }}
+{{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
+{{- if $egressFilteringEnabled }}
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: Sidecar
@@ -12,5 +12,22 @@ metadata:
 spec:
   outboundTrafficPolicy: 
     mode: REGISTRY_ONLY
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  labels:
+    {{- include "team-ns.chart-labels" $ | nindent 4 }}
+    prometheus: team-{{ $v.teamId }}
+  name: istio-sidecars
+spec:
+  namespaceSelector:
+    matchNames: [team-{{ $v.teamId }}]
+  podMetricsEndpoints:
+  - path: /stats/prometheus
+    port: http-envoy-prom
+  selector:
+    matchLabels:
+      security.istio.io/tlsMode: istio
 {{- end }}
 {{- end }}

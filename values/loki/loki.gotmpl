@@ -69,7 +69,7 @@ persistence:
   {{- end }}
 
 ## Assign a PriorityClassName to pods if set
-# priorityClassName:
+priorityClassName: otomi-critical
 
 resources:
   {{- with $l | get "resources" nil }}

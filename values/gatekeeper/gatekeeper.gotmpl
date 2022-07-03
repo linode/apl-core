@@ -24,6 +24,7 @@ auditFromCache: {{ $g | get "auditFromCache" }}
 disableValidatingWebhook: {{ $g | get "disableValidatingWebhook" }}
 
 audit:
+  {{- tpl (readFile "../../helmfile.d/snippets/otomi-affinity.gotmpl") $v | nindent 2 }}
   resources:
     {{- with $g | get "resources.audit" nil }}
       {{- toYaml . | nindent 4 }}
@@ -36,6 +37,7 @@ audit:
       memory: 256Mi
     {{- end }}
 controllerManager:
+  {{- tpl (readFile "../../helmfile.d/snippets/otomi-affinity.gotmpl") $v | nindent 2 }}
   resources:
     {{- with $g | get "resources.controller" nil }}
       {{- toYaml . | nindent 4 }}
@@ -48,7 +50,6 @@ controllerManager:
       memory: 256Mi
     {{- end }}
 
-otomiVersions: {{- toYaml .Values.versions | nindent 2 }}
 crds:
   resources:
     limits:
@@ -57,3 +58,5 @@ crds:
     requests:
       cpu: 50m
       memory: 64Mi
+
+otomiVersions: {{- toYaml .Values.versions | nindent 2 }}

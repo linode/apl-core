@@ -12,20 +12,34 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: aws-ebs-csi-driver
-    installed: {{ $a | get "aws-ebs-csi-driver.enabled" }}
+  - name: snapshot-controller
+    installed: {{ $a | get "snapshot-controller.enabled" }}
     namespace: kube-system
     labels:
       init: true
       pkg: csi
       provider: aws 
     <<: *default
-  - name: gatekeeper
-    installed: {{ $a | get "gatekeeper.enabled" }}
-    namespace: gatekeeper-system
+  - name: metrics-server
+    installed: {{ $a | get "metrics-server.enabled" }}
+    namespace: kube-system
+    <<: *default
+  - name: tigera-operator
+    installed: {{ $a | get "tigera-operator.enabled" }}
+    namespace: tigera-operator
     disableValidationOnInstall: true
     labels:
-      pkg: gatekeeper
+      init: true
+      pkg: calico
+    <<: *default
+  - name: aws-ebs-csi-driver
+    installed: {{ $a | get "aws-ebs-csi-driver.enabled" }}
+    needs: [snapshot-controller]
+    namespace: kube-system
+    labels:
+      init: true
+      pkg: csi
+      provider: aws 
     <<: *default
   - name: ingress-nginx-artifacts
     installed: true
