@@ -8,6 +8,7 @@ k8s:
     - name: default
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: drone
     - name: drone-pipelines
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -104,13 +105,13 @@ adminApps:
     ownHost: true
     ingress:
       - svc: drone
-        namespace: team-admin
+        namespace: drone
         type: public
         auth: true
         removeRequestHeaders:
           - authorization
       - svc: drone
-        namespace: team-admin
+        namespace: drone
         type: public
         paths: [/hook, /api/user, /api/repo]
         forwardPath: true
