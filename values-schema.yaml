@@ -170,6 +170,7 @@ definitions:
         type: string
         default: AzureCloud
         enum:
+          - AzurePublicCloud
           - AzureCloud
           - AzureChinaCloud
           - AzureUSGovernment
@@ -218,11 +219,16 @@ definitions:
       tenantId:
         title: Azure tenant id
         description: An Azure tenant id.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
       subscriptionId:
         title: Azure subscription id
         description: An Azure subscription id.
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
+      resourceGroup:
+        title: Resource group
+        description: An Azure resource group.
+        $ref: '#/definitions/wordCharacterPattern'
+
   cluster:
     additionalProperties: false
     properties:
@@ -2341,25 +2347,18 @@ properties:
                     $ref: '#/definitions/wordCharacterPattern'
                     description: Azure Cloud
                   resourceGroup:
-                    title: Resource group
-                    $ref: '#/definitions/wordCharacterPattern'
-                    description: Azure resource group
+                    $ref: '#/definitions/azure/definitions/resourceGroup'
                   hostedZoneName:
                     title: Hosted zone name
                     $ref: '#/definitions/wordCharacterPattern'
                   tenantId:
-                    title: Tenant ID
-                    $ref: '#/definitions/wordCharacterPattern'
-                    description: Azure tenant ID
+                    $ref: '#/definitions/azure/definitions/tenantId'
                   subscriptionId:
-                    title: Subscription ID
-                    $ref: '#/definitions/wordCharacterPattern'
-                    description: Azure subscription ID
+                    $ref: '#/definitions/azure/definitions/subscriptionId'
                   aadClientId:
-                    title: Client ID
-                    $ref: '#/definitions/wordCharacterPattern'
-                    description: Azure Application Client ID
+                    $ref: '#/definitions/azure/definitions/clientId'
                   aadClientSecret:
+                    $ref: '#/definitions/azure/definitions/clientSecret'
                     title: Client secret
                     type: string
                     description: Azure Application Client Secret
@@ -2372,12 +2371,19 @@ properties:
                   userAssignedIdentityID:
                     title: MSI id
                     type: string
-                    description: If you use Azure MSI, this is the Client ID of a Azure user-assigned managed identity (optional, system-assigned managed identity is used if empty)
+                    description: If you use Azure MSI, this is the Client ID of a Azure user-assigned managed identity. Not required for external-dns, but it is for cert-manager.
                     x-secret: ''
                 required:
+                  - subscriptionId
                   - resourceGroup
-                  - aadClientId
-                  - aadClientSecret
+                oneOf:
+                  - required:
+                      - tenantId
+                      - aadClientId
+                      - aadClientSecret
+                  - required:
+                      - useManagedIdentityExtension
+                      - userAssignedIdentityID
             required:
               - azure
           - title: Google

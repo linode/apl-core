@@ -16,7 +16,6 @@ resources:
       {{- if hasKey $p "google" }}
       secret: "{{ $p.google.serviceAccountKey | b64enc }}"
       {{- else if hasKey $p "azure" }}
-      # TODO: is aadClientSecret  same as azureClientSecret ?
       secret: "{{ $p.azure.aadClientSecret | b64enc }}"
       {{- else if hasKey $p "aws" }}
       secret: "{{ $p.aws.secretAccessKey | b64enc }}"
@@ -44,33 +43,44 @@ resources:
         solvers:
           - selector: {}
             dns01:
-              {{- if hasKey $p "aws" }}
+              {{- with $p | get "aws" nil }}
               route53:
-                {{- if and (hasKey $p.aws "accessKeyID") (hasKey $p.aws "secretAccessKey") }}
-                accessKeyID: {{ $p.aws.accessKeyID }}
+                {{- if and (hasKey . "accessKeyID") (hasKey . "secretAccessKey") }}
+                accessKeyID: {{ .accessKeyID }}
                 secretAccessKeySecretRef:
                   key: secret
                   name: "dns-secret"
                 {{- end }}
-                region: {{ $p.aws.region }}
-                {{- if hasKey $p.aws "role" }}
-                role: {{ $p.aws.role }}
+                region: {{ .region }}
+                {{- with . "role" nil }}
+                role: {{ . }}
                 {{- end }}
-              {{- else if hasKey $p "azure" }}
+              {{- end }}
+              {{- with $p | get "azure" nil }}
               azureDNS:
-                clientID: {{ $p.azure.aadClientId }}
+                resourceGroupName: {{ .resourceGroup }}
+                subscriptionID: {{ .subscriptionId }}
+                {{- with . | get "aadClientId" nil }}
+                tenantID: {{ .tenantId }}
+                clientID: {{ . }}
                 clientSecretSecretRef:
                   key: secret
                   name: "dns-secret"
-                {{- if hasKey $p.azure "hostedZoneName" }}
-                hostedZoneName: {{ $p.azure.hostedZoneName }}
                 {{- end }}
-                resourceGroupName: {{ $p.azure.resourceGroup }}
-                subscriptionID: {{ $p.azure.subscriptionId }}
-                tenantID: {{ $p.azure.tenantId }}
-              {{- else if hasKey $p "google" }}
+                {{- if .useManagedIdentityExtension | default false }}
+                managedIdentity:
+                  clientID: {{ .userAssignedIdentityID }}
+                {{- end }}
+                {{- with . | get "hostedZoneName" nil }}
+                hostedZoneName: {{ . }}
+                {{- end }}
+                {{- with . | get "environment" nil }}
+                environment: {{ . }}
+                {{- end }}
+              {{- end }}
+              {{- with $p | get "google" nil }}
               cloudDNS:
-                project: {{ $p.google.project }}
+                project: {{ .project }}
                 serviceAccountSecretRef:
                   key: secret
                   name: "dns-secret"
