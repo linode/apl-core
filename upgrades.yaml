@@ -19,22 +19,23 @@
 operations:
   - version: 0.16.7
     pre:
-      # release knative-init was renamed to knative-operator, so we uninstall the old one as it is not destructive, and patch the crds
-      - helm -n default list | grep "knative-init " >/dev/null && helm -n default uninstall knative-init &&
-        kubectl get crd | grep knative | awk '{print $1}' | xargs -n 1 -I {}
-        kubectl annotate crd {} --overwrite "meta.helm.sh/release-name"="knative-operator" || true
-      # release overprovisioner was renamed to cluster-overprovisioner in new namespace, so we just uninstall and remove the ns
+      # release knative-init was renamed to knative-operator
+      - x=`mktemp` && helm -n default get manifest knative-init >$x &&
+        kubectl annotate -f $x --overwrite "meta.helm.sh/release-name"=knative-operator && rm -rf "$x" || true
+      # release overprovisioner moved to cluster-overprovisioner in new namespace, so uninstall (also ns)
       - helm -n overprovisioner list | grep overprovisioner && helm -n uninstall overprovisioner && kubectl delete ns overprovisioner || true
-      # moved to "ingress-nginx-${ingressClass}" release(s), so we will uninstall release "ingress-nginx" (causing downtime)
-      - helm -n ingress list | grep "ingress-nginx " >/dev/null && helm -n ingress uninstall ingress-nginx || true
+      # release ingress-nginx moved to ingress-nginx-platform
+      - x=`mktemp` && helm -n ingress get manifest ingress-nginx >$x &&
+        kubectl annotate -f $x --overwrite "meta.helm.sh/release-name"=ingress-nginx-platform && rm -rf "$x" || true
   - version: 0.16.9
-    releases:
-      external-secrets:
-        pre:
-          - helm -n vault list | grep kubernetes-external-secrets-6.1.0 >/dev/null && helm -n vault uninstall kubernetes-external-secrets && kubectl apply -f $PWD/charts/kubernetes-external-secrets/crds || true
-  - version: dev # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
     pre:
-      # we moved drone to its own namespace
+      # release kubernetes-external-secrets moved to external-secrets and was upgraded (so we apply crds)
+      - x=`mktemp` && helm -n vault get manifest kubernetes-external-secrets >$x &&
+        kubectl annotate -f $x --overwrite "meta.helm.sh/release-name"=external-secrets && rm -rf "$x" &&
+        kubectl apply -f charts/kubernetes-external-secrets/crds || true
+  - version: 0.16.10
+    pre:
+      # release drone moved to its own namespace, so uninstall
       - helm -n team-admin list | grep drone && helm -n team-admin uninstall drone || true
       # we need to patch ownership of all podmonitors which are now published by team-ns-* instead of prometheus-*
       - |
@@ -43,6 +44,8 @@ operations:
             kubectl -n "team-$id" annotate podmonitor/$p --overwrite "meta.helm.sh/release-name"=team-ns-$id
           done
         done
+  - version: dev # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
+    pre:
       # istio-operator was moved from default to its own namespace
       - x=`mktemp` && helm -n default get manifest istio-operator >$x &&
         kubectl annotate -f $x --overwrite "meta.helm.sh/release-namespace"=istio-operator && rm -rf "$x"
