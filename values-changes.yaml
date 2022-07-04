@@ -19,6 +19,7 @@ changes:
       - apps.prometheus.resources.grafana: apps.grafana.resources
       - apps.prometheus.alertmanager: apps.alertmanager
       - apps.prometheus.resources.alertmanager: apps.alertmanager.resources
+      - apps.external-secrets.pollingInterval: apps.external-secrets.pollerIntervalMilliseconds
     mutations:
       - alerts.drone: 'list .prev'
       - teamConfig.{team}.services[].networkPolicy.ingressPrivate.mode: '.prev | title'
