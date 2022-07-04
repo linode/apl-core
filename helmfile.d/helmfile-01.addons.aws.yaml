@@ -1,0 +1,64 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  # aws: alb ingress controller
+  - name: aws-alb-ingress-controller
+    installed: {{ $a | get "aws-alb-ingress-controller.enabled" }}
+    namespace: ingress
+    labels:
+      tag: ingress
+      provider: aws
+    <<: *default
+  - name: aws-alb-ingress-controller-artifacts
+    installed: {{ $a | get "aws-alb-ingress-controller.enabled" }}
+    namespace: ingress
+    labels:
+      tag: ingress
+      provider: aws
+    <<: *raw
+  - name: ingress-merge
+    installed: {{ $a | get "aws-alb-ingress-controller.enabled" }}
+    namespace: ingress
+    needs: [aws-alb-ingress-controller-artifacts]
+    labels:
+      tag: ingress
+      provider: aws
+    <<: *default
+
+  - name: aws-ebs-csi-driver
+    installed: {{ $a | get "aws-ebs-csi-driver.enabled" }}
+    namespace: kube-system
+    needs: [snapshot-controller]
+    labels:
+      addon: true
+      pkg: csi
+      provider: aws 
+    <<: *default
+
+  - name: cluster-autoscaler
+    installed: {{ $a | get "cluster-autoscaler.enabled" }}
+    namespace: kube-system
+    labels:
+      addon: true
+      provider: aws 
+    <<: *default
+
+  - name: snapshot-controller
+    installed: {{ $a | get "snapshot-controller.enabled" }}
+    namespace: kube-system
+    labels:
+      addon: true
+      pkg: csi
+      provider: aws 
+    <<: *default

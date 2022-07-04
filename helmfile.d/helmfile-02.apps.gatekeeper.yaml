@@ -11,8 +11,6 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 
-# Gatekeeper is the first to be installed because it runs a mutating webhook assigning node affinity
-
 releases:
   - name: gatekeeper
     installed: {{ $a | get "gatekeeper.enabled" }}
@@ -24,7 +22,7 @@ releases:
     values:
       - ../values/gatekeeper/gatekeeper.gotmpl
       - snippets/common.gotmpl
-    <<: *upgrade
+    <<: *preUpgrade
   - name: gatekeeper-artifacts
     installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system

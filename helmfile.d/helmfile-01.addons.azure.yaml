@@ -1,0 +1,31 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  # azure: custom gateway ingress controller (if not possible to deploy with azure's own addon):
+  - name: ingress-azure
+    installed: {{ $a | get "ingress-azure.enabled" }}
+    namespace: ingress
+    labels:
+      addon: true
+      tag: ingress
+      pkg: ingress-azure
+    <<: *default
+  - name: job-ingress-azure
+    installed: {{ $a | get "ingress-azure.enabled" }}
+    needs: [ingress/ingress-azure]
+    <<: *jobs
+    labels:
+      addon: true
+      pkg: ingress-azure
+      job: true

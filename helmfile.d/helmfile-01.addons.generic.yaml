@@ -1,0 +1,35 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+
+  - name: kube-descheduler
+    installed: {{ $a | get "kube-descheduler.enabled" }}
+    namespace: kube-system
+    <<: *default
+
+  - name: kured
+    installed: {{ $a | get "kured.enabled" }}
+    namespace: kube-system
+    <<: *default
+
+  - name: metrics-server
+    installed: {{ $a | get "metrics-server.enabled" }}
+    namespace: kube-system
+    <<: *default
+    
+  - name: tigera-operator
+    installed: {{ $a | get "tigera-operator.enabled" }}
+    namespace: tigera-operator
+    disableValidationOnInstall: true
+    <<: *default

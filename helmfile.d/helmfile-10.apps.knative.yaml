@@ -23,6 +23,7 @@ releases:
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-serving
     chart: ../charts/raw-cr
+    disableValidationOnInstall: true
     needs:
       - knative-serving/knative-serving-artifacts
       - knative-operator/knative-operator

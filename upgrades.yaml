@@ -46,8 +46,7 @@ operations:
         done
   - version: dev # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
     pre:
-      # istio-operator was moved from default to its own namespace
-      - x=`mktemp` && helm -n default get manifest istio-operator >$x &&
-        kubectl annotate -f $x --overwrite "meta.helm.sh/release-namespace"=istio-operator && rm -rf "$x"
+      # istio-operator was moved from default to its own namespace, so uninstall
+      - helm -n default list | grep istio-operator && helm -n default uninstall istio-operator || true
       # istio-operator-artifacts was split into its own CR
       - kubectl -n istio-system annotate istiooperator/istiocontrolplane --overwrite "meta.helm.sh/release-name"=istio-operator-cr
