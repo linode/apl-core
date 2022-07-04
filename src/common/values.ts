@@ -55,7 +55,7 @@ export const getImageTag = async (): Promise<string> => {
  */
 export const getCurrentVersion = async (): Promise<string> => {
   const tag = await getImageTag()
-  const potentialVersion = tag.replace('/^v/', '')
+  const potentialVersion = tag.replace(/^v/, '')
   return /^[0-9.]+/.exec(potentialVersion) ? potentialVersion : pkg.version
 }
 

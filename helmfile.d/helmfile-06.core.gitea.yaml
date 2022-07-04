@@ -27,7 +27,7 @@ releases:
     <<: *raw
   - name: job-gitea-prepare
     installed: {{ $a | get "gitea.enabled" }}
-    needs: [gitea] 
+    needs: [gitea/gitea] 
     labels:
       pkg: gitea
       job: true

@@ -1,75 +1,174 @@
 {{- $v := .Values }}
+{{- $cm := $v.apps | get "cert-manager" }}
 {{- $i := $v.apps.istio }}
+{{- $ig := $i | get "global" dict }}
+{{- $excludedNamespaces := list "kube-system" }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disableIstioInjection" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
 
 resources:
-{{- if $i | get "egressGateway.enabled" false }}
-  - apiVersion: networking.istio.io/v1beta1
-    kind: Gateway
+  - apiVersion: install.istio.io/v1alpha1
+    kind: IstioOperator
     metadata:
-      name: istio-egressgateway
       namespace: istio-system
+      name: istiocontrolplane
     spec:
-      selector:
-        istio: egressgateway
-      servers:
-      - port:
-          protocol: HTTP
-        hosts:
-        - '*'
-      - port:
-          protocol: TLS
-        hosts:
-        - '*'
-        tls:
-          mode: PASSTHROUGH
-  - apiVersion: networking.istio.io/v1beta1
-    kind: DestinationRule
-    metadata:
-      name: egressgateway-for-all
-      namespace: istio-system
-    spec:
-      host: istio-egressgateway.istio-system.svc.cluster.local
-      subsets:
-      - name: all
-  - apiVersion: networking.istio.io/v1beta1
-    kind: VirtualService
-    metadata:
-      name: direct-all-through-egress-gateway
-      namespace: istio-system
-    spec:
-      hosts:
-      - '*'
-      gateways:
-      - istio-egressgateway
-      - mesh
-      http:
-      - match:
-        - gateways:
-          - mesh
-        route:
-        - destination:
-            host: istio-egressgateway.istio-system.svc.cluster.local
-          weight: 100
-      - match:
-        - gateways:
-          - istio-egressgateway
-      tls:
-      - match:
-        - gateways:
-          - mesh
-          sniHosts:
-          - '*'
-        route:
-        - destination:
-            host: istio-egressgateway.istio-system.svc.cluster.local
-            subset: all
-      - match:
-        - gateways:
-          - istio-egressgateway
-          sniHosts:
-          - '*'
-        route:
-        - destination:
-            host: '*'
-          weight: 100        
-{{- end }}
+      profile: default
+      addonComponents:
+        grafana:
+          enabled: false
+        kiali:
+          enabled: false
+        prometheus:
+          enabled: false
+        tracing:
+          enabled: false
+      components:
+        cni:
+          enabled: false
+        pilot:
+          k8s:
+            podAnnotations:
+              policy.otomi.io/ignore: psp-allowed-users
+              sidecar.istio.io/inject: "true"
+            priorityClassName: "otomi-critical"
+            hpaSpec:
+              minReplicas: {{ $i.autoscaling.pilot.minReplicas }}
+              maxReplicas: {{ $i.autoscaling.pilot.maxReplicas }}
+            resources:
+              {{- with $i | get "resources.pilot" nil }}
+                {{- toYaml . | nindent 14 }}
+              {{- else }}
+              limits:
+                cpu: '2'
+                memory: 2Gi
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              {{- end }}
+        ingressGateways:
+          - name: istio-ingressgateway
+            enabled: false
+          - name: istio-ingressgateway-public
+            enabled: true
+            label:
+              istio: ingressgateway-public
+              app: ingressgateway
+            k8s:
+              podAnnotations:
+                policy.otomi.io/ignore: psp-allowed-users
+              priorityClassName: "otomi-critical"
+              resources:
+              {{- with $i | get "resources.ingressgateway" nil }}
+                {{- toYaml . | nindent 16 }}
+              {{- else }}
+                limits:
+                  cpu: '1'
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+              {{- end }}
+              hpaSpec:
+                minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" }}
+                maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" }}
+              service:
+                type: ClusterIP
+                ports:
+                  - port: 15021
+                    name: status-port
+                  - port: 80
+                    targetPort: 8080
+                    name: http2
+                  - port: 443
+                    targetPort: 8443
+                    name: https
+                  - port: 15443
+                    name: tls
+            {{- if eq $v.cluster.provider "azure" }}
+              readinessProbe:
+                failureThreshold: 20
+            {{- end }}
+        {{ if $i.egressGateway.enabled }}
+        egressGateways:
+          - name: istio-egressgateway
+            enabled: true
+            k8s:
+              podAnnotations:
+                policy.otomi.io/ignore: psp-allowed-users
+              priorityClassName: "otomi-critical"
+              resources:
+              {{- with $i | get "resources.egressgateway" nil }}
+                {{- toYaml . | nindent 16 }}
+              {{- else }}
+                limits:
+                  cpu: '1'
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+              {{- end }}
+              hpaSpec:
+                minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" }}
+                maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" }}
+              service:
+                type: ClusterIP
+                ports:
+                  - port: 15021
+                    name: status-port
+                  - port: 80
+                    targetPort: 8080
+                    name: http2
+                  - port: 443
+                    targetPort: 8443
+                    name: https
+            {{- if eq $v.cluster.provider "azure" }}
+              readinessProbe:
+                failureThreshold: 20
+            {{- end }}
+        {{- end }}  
+      values:
+        cni:
+          excludeNamespaces: {{- $excludedNamespaces | toYaml | nindent 12 }}
+        global:
+          imagePullPolicy: IfNotPresent
+          {{- if $v.otomi | get "globalPullSecret" nil }}
+          imagePullSecrets:
+            - otomi-pullsecret-global
+          {{- end }}
+          logging:
+            level: {{ $ig | get "logging.level" "default:info" }}
+          proxy:
+            resources:
+            {{- with $i | get "resources.proxy" nil }}
+              {{- toYaml . | nindent 14 }}
+            {{- else }}
+              limits:
+                cpu: '1'
+                memory: 1Gi
+              requests:
+                cpu: 20m
+                memory: 80Mi
+            {{- end }}
+            autoInject: enabled
+          tracer:
+            zipkin:
+              address: jaeger-operator-jaeger-collector.jaeger:9411 
+          useMCP: false
+        meshConfig:
+          accessLogFile: "/dev/stdout"
+          defaultConfig:
+          {{ with $i | get "meshConfig.defaultConfig" nil }}
+            {{- toYaml . | nindent 14 }}
+          {{- else }}
+            tracing:
+              sampling: 0.1
+          {{- end }}
+          enableAutoMtls: true
+        {{- if $v._derived.untrustedCA }}
+        pilot:
+          jwksResolverExtraRootCA: |
+            {{- $v._derived.caCertRoot | nindent 12 }}
+        {{- end }}
+        sidecarInjectorWebhook:
+          enableNamespacesByDefault: false
+          injectedAnnotations: 
+            policy.otomi.io/ignore.istio-init: psp-allowed-users,psp-capabilities

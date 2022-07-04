@@ -60,10 +60,11 @@ const destroyAll = async () => {
     'externalsecrets.kubernetes-client.io',
     'gatekeeper.sh',
     'istio.io',
+    'jaegers.jaegertracing.io',
+    'kiali.io',
     'knative.dev',
     'kubeapps.com',
     'monitoring.coreos.com',
-    'monitoring.kiali.io',
     'operators.coreos.com',
     'vault.banzaicloud.com',
   ]

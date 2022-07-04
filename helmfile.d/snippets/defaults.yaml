@@ -20,11 +20,16 @@ environments:
             enabled: false
           drone:
             enabled: true
+            debug: false
+            trace: false
             sourceControl:
               provider: gitea
               username: otomi-admin
           external-dns:
             domainFilters: []
+          external-secrets:
+            logLevel: info
+            pollingInterval: 60000
           gatekeeper:
             enabled: false
             auditFromCache: false
@@ -33,7 +38,7 @@ environments:
             disableValidatingWebhook: true
             emitAdmissionEvents: false
             emitAuditEvents: false
-            logLevel: "INFO"
+            logLevel: INFO
             replicas: 1
           gitea:
             enabled: true
@@ -74,12 +79,11 @@ environments:
               ingressgateway:
                 minReplicas: 1
                 maxReplicas: 10
-              ingressgateway-private:
-                minReplicas: 1
-                maxReplicas: 10
               pilot:
                 minReplicas: 1
                 maxReplicas: 10
+            egressGateway:
+              enabled: false
           jaeger:
             enabled: false
           keycloak:
@@ -110,7 +114,7 @@ environments:
                 maxReplicas: 10
           kubeclarity:
             enabled: false
-            logLevel: "warning"
+            logLevel: warning
           kube-descheduler:
             enabled: false
           loki:
@@ -124,6 +128,8 @@ environments:
           prometheus-blackbox-exporter: {}
           prometheus:
             enabled: false
+            replicas: 1
+            scrapeInterval: 60s
             retentionSize: 4GB
             storageSize: 5Gi
           redis-shared:

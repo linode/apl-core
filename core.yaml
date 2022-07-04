@@ -3,13 +3,12 @@ k8s:
   namespaces:
     - name: argocd
       app: argocd
-    - name: alertmanager
-      app: alertmanager
     - name: cert-manager
       disableIstioInjection: true
     - name: default
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: drone
     - name: drone-pipelines
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -57,7 +56,6 @@ k8s:
       disablePolicyChecks: true
     - name: kubeclarity
       app: kubeclarity
-      disableIstioInjection: true
     - name: maintenance
       disableIstioInjection: true
     - name: monitoring
@@ -69,11 +67,9 @@ k8s:
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: otomi
-    - name: overprovisioner
-      app: overprovisioner
+    - name: cluster-overprovisioner
+      app: cluster-overprovisioner
       disableIstioInjection: true
-    - name: prometheus
-      app: prometheus
     - name: redis
       app: prometheus
       disableIstioInjection: true
@@ -114,13 +110,13 @@ adminApps:
     ownHost: true
     ingress:
       - svc: drone
-        namespace: team-admin
+        namespace: drone
         type: public
         auth: true
         removeRequestHeaders:
           - authorization
       - svc: drone
-        namespace: team-admin
+        namespace: drone
         type: public
         paths: [/hook, /api/user, /api/repo]
         forwardPath: true
@@ -150,6 +146,10 @@ adminApps:
           - authorization
         type: public
         auth: true
+    shortcuts:
+      - title: NGINX
+        description: metrics from the NGINX ingress controller
+        path: /d/nginx/nginx-ingress-controller?orgId=1&refresh=5s
   - name: harbor
     tags: [security]
     isShared: true
@@ -178,7 +178,7 @@ adminApps:
     isShared: true
     ownHost: true
     ingress:
-      - namespace: shared
+      - namespace: httpbin
         svc: httpbin
         type: public
         auth: true
@@ -211,9 +211,12 @@ adminApps:
   - name: kiali
     tags: [tracing, telemetry, observability]
     deps: [istio]
+    path: /api/auth/openid_redirect
     ingress:
       - svc: kiali
         forwardPath: true
+        removeRequestHeaders:
+          - authorization
         port: 20001
         namespace: kiali
         type: public
@@ -234,6 +237,7 @@ adminApps:
   - name: kubeclarity
     tags: [security]
     ownHost: true
+    isShared: true
     ingress:
       - svc: kubeclarity
         namespace: kubeclarity
@@ -290,13 +294,13 @@ adminApps:
         auth: true
   - name: vault
     tags: [secrets, security, observability]
-    deps: [kubernetes-external-secrets]
+    deps: [external-secrets]
     isShared: true
     ownHost: true
-    path: /ui/vault/secrets/secret/list/teams/#NS#/
+    path: /ui/vault/auth?redirect_to=%2Fvault%2Fsecrets%2Fsecret%2Flist%2Fteams%2F#NS#%2F&with=oidc
     ingress:
       - namespace: vault
-        svc: vault-0
+        svc: vault
         port: 8200
         type: public
         auth: true

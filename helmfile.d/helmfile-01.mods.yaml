@@ -11,6 +11,8 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 
+# Mods should be installed before addons as they modify core functionality
+
 releases:
   - name: host-mods
     installed: {{ $a | get "host-mods.enabled" }}

@@ -14,13 +14,13 @@ bases:
 releases:
   - name: drone
     installed: {{ $a | get "drone.enabled" }}
-    namespace: team-admin
+    namespace: drone
     labels:
       pkg: drone
     <<: *default
   - name: drone-admit-members
     installed: {{ $a | get "drone-admit-members.enabled" }}
-    namespace: team-admin
+    namespace: drone
     labels:
       pkg: drone
     chart: ../charts/drone-admit-members

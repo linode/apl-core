@@ -1,14 +1,15 @@
-apiVersion: v1
-appVersion: 6.1.0
-description: Kubernetes External Secrets CustomResourceDefinition
-home: https://github.com/external-secrets/kubernetes-external-secrets
-keywords:
-- kubernetes-external-secrets
-- secrets
-maintainers:
-- name: external-secrets
-  url: https://github.com/external-secrets
+apiVersion: v2
 name: kubernetes-external-secrets
+version: 8.5.5
+appVersion: 8.5.5
+description: "Deprecated: Kubernetes External Secrets CustomResourceDefinition"
+keywords:
+  - kubernetes-external-secrets
+  - secrets
+home: https://github.com/external-secrets/kubernetes-external-secrets
 sources:
-- https://github.com/external-secrets/kubernetes-external-secrets
-version: 6.1.0
+  - https://github.com/external-secrets/kubernetes-external-secrets
+maintainers:
+  - name: external-secrets
+    url: https://github.com/external-secrets
+deprecated: true

@@ -1,13 +1,21 @@
 # cluster-autoscaler
 
-[The cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) scales worker nodes within an AWS autoscaling group (ASG) or Spotinst Elastigroup.
-
-Cluster Autoscaler version: **v1.17.1**
+Scales Kubernetes worker nodes within autoscaling groups.
 
 ## TL;DR:
 
 ```console
-$ helm install stable/cluster-autoscaler --name my-release --set "autoscalingGroups[0].name=your-asg-name,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1"
+$ helm repo add autoscaler https://kubernetes.github.io/autoscaler
+
+# Method 1 - Using Autodiscovery
+$ helm install my-release autoscaler/cluster-autoscaler \
+--set 'autoDiscovery.clusterName'=<CLUSTER NAME>
+
+# Method 2 - Specifying groups manually
+$ helm install my-release autoscaler/cluster-autoscaler \
+--set "autoscalingGroups[0].name=your-asg-name" \
+--set "autoscalingGroups[0].maxSize=10" \
+--set "autoscalingGroups[0].minSize=1"
 ```
 
 ## Introduction
@@ -16,32 +24,36 @@ This chart bootstraps a cluster-autoscaler deployment on a [Kubernetes](http://k
 
 ## Prerequisites
 
-  - Kubernetes 1.8+
-> [older versions](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases) may work by overriding the `image`. Cluster-autoscaler internally simulates the scheduler and bugs between mismatched versions may be subtle.
-  - Azure AKS specific Prerequisites:
-    - Kubernetes 1.10+ with RBAC-enabled
+- Helm 3+
+- Kubernetes 1.8+
+  - [Older versions](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases) may work by overriding the `image`. Cluster autoscaler internally simulates the scheduler and bugs between mismatched versions may be subtle.
+- Azure AKS specific Prerequisites:
+  - Kubernetes 1.10+ with RBAC-enabled.
 
-## Upgrading from <2.X
+## Previous Helm Chart
 
-In order to upgrade to chart version to 2.X from 1.X or 0.X, deleting the old helm release first is required.
+The previous `cluster-autoscaler` Helm chart hosted at [helm/charts](https://github.com/helm/charts) has been moved to this repository in accordance with the [Deprecation timeline](https://github.com/helm/charts#deprecation-timeline). Note that a few things have changed between this version and the old version:
 
-```console
-$ helm del --purge my-release
-```
+- This repository **only** supports Helm chart installations using Helm 3+ since the `apiVersion` on the charts has been marked as `v2`.
+- Previous versions of the Helm chart have not been migrated
 
-Once the old release is deleted, the new 2.X release can be installed using the standard instructions.
-Note that autoscaling will not occur during the time between deletion and installation.
+## Migration from 1.X to 9.X+ versions of this Chart
 
-## Upgrading from 4.X to 5.X
+**TL;DR:**
+You should choose to use versions >=9.0.0 of the `cluster-autoscaler` chart published from this repository; previous versions, and the `cluster-autoscaler-chart` with versioning 1.X.X published from this repository are deprecated.
 
-In order to upgrade to chart version 5.X from <=4.X, deleting the old helm release first is required.
+<details>
+  <summary>Previous versions of this chart - further details</summary>
+On initial migration of this chart from the `helm/charts` repository this chart was renamed from `cluster-autoscaler` to `cluster-autoscaler-chart` due to technical limitations. This affected all `1.X` releases of the chart, version 2.0.0 of this chart exists only to mark the [`cluster-autoscaler-chart` chart](https://artifacthub.io/packages/helm/cluster-autoscaler/cluster-autoscaler-chart) as deprecated.
 
-```console
-$ helm del --purge my-release
-```
+Releases of the chart from `9.0.0` onwards return the naming of the chart to `cluster-autoscaler` and return to following the versioning established by the chart's previous location at .
 
-Once the old release is deleted, the new 5.X release can be installed using the standard instructions.
-Note that autoscaling will not occur during the time between deletion and installation.
+To migrate from a 1.X release of the chart to a `9.0.0` or later release, you should first uninstall your `1.X` install of the `cluster-autoscaler-chart` chart, before performing the installation of the new `cluster-autoscaler` chart.
+</details>
+
+## Migration from 9.0 to 9.1
+
+Starting from `9.1.0` the `envFromConfigMap` value is expected to contain the name of a ConfigMap that is used as ref for `envFrom`, similar to `envFromSecret`. If you want to keep the previous behaviour of `envFromConfigMap` you must rename it to `extraEnvConfigMaps`.
 
 ## Installing the Chart
 
@@ -50,213 +62,52 @@ Note that autoscaling will not occur during the time between deletion and instal
 You must provide some minimal configuration, either to specify instance groups or enable auto-discovery. It is not recommended to do both.
 
 Either:
-  - set `autoDiscovery.clusterName` and tag your autoscaling groups appropriately (`--cloud-provider=aws` only) **or**
-  - set at least one ASG as an element in the `autoscalingGroups` array with its three values: `name`, `minSize` and `maxSize`.
 
-To install the chart with the release name `my-release`:
+- Set `autoDiscovery.clusterName` and provide additional autodiscovery options if necessary **or**
+- Set static node group configurations for one or more node groups (using `autoscalingGroups` or `autoscalingGroupsnamePrefix`).
 
-### Using auto-discovery of tagged instance groups
+To create a valid configuration, follow instructions for your cloud provider:
 
-#### AWS
+* [AWS](#aws---using-auto-discovery-of-tagged-instance-groups)
+* [GCE](#gce)
+* [Azure AKS](#azure-aks)
+* [OpenStack Magnum](#openstack-magnum)
+
+### AWS - Using auto-discovery of tagged instance groups
 
 Auto-discovery finds ASGs tags as below and automatically manages them based on the min and max size specified in the ASG. `cloudProvider=aws` only.
 
-1) tag the ASGs with keys to match `.Values.autoDiscovery.tags`, by default: `k8s.io/cluster-autoscaler/enabled` and `k8s.io/cluster-autoscaler/<YOUR CLUSTER NAME>`
-2) verify the [IAM Permissions](#iam)
-3) set `autoDiscovery.clusterName=<YOUR CLUSTER NAME>`
-4) set `awsRegion=<YOUR AWS REGION>`
-5) set `awsAccessKeyID=<YOUR AWS KEY ID>` and `awsSecretAccessKey=<YOUR AWS SECRET KEY>` if you want to [use AWS credentials directly instead of an instance role](https://github.com/kubernetes/autoscaler/blob/5ac706fdfa5601348f33d5b634e62de6655bb9bf/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)
+- Tag the ASGs with keys to match `.Values.autoDiscovery.tags`, by default: `k8s.io/cluster-autoscaler/enabled` and `k8s.io/cluster-autoscaler/<YOUR CLUSTER NAME>`
+- Verify the [IAM Permissions](#aws---iam)
+- Set `autoDiscovery.clusterName=<YOUR CLUSTER NAME>`
+- Set `awsRegion=<YOUR AWS REGION>`
+- Set (option) `awsAccessKeyID=<YOUR AWS KEY ID>` and `awsSecretAccessKey=<YOUR AWS SECRET KEY>` if you want to [use AWS credentials directly instead of an instance role](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)
 
 ```console
-$ helm install stable/cluster-autoscaler --name my-release --set autoDiscovery.clusterName=<CLUSTER NAME>
+$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION>
 ```
 
-The [auto-discovery](#auto-discovery) section provides more details and examples
-
-#### GCE
-##### Required parameters
-- `autoDiscovery.clusterName=any-name`
-- `--cloud-provider=gce`
-- `autoscalingGroupsnamePrefix[0].name=your-ig-prefix,autoscalingGroupsnamePrefix[0].maxSize=10,autoscalingGroupsnamePrefix[0].minSize=1`
-
-To use Managed Instance Group (MIG) auto-discovery, provide a YAML file setting `autoscalingGroupsnamePrefix` (see values.yaml) or use `--set` when installing the Chart - e.g.
+Alternatively with your own AWS credentials
 
 ```console
-$ helm install stable/cluster-autoscaler \
---name my-release \
---set autoDiscovery.clusterName=<CLUSTER NAME> \
---set cloudProvider=gce \
---set "autoscalingGroupsnamePrefix[0].name=your-ig-prefix,autoscalingGroupsnamePrefix[0].maxSize=10,autoscalingGroupsnamePrefix[0].minSize=1"
+$ helm install my-release autoscaler/cluster-autoscaler --set autoDiscovery.clusterName=<CLUSTER NAME> --set awsRegion=<YOUR AWS REGION> --set awsAccessKeyID=<YOUR AWS KEY ID> --set awsSecretAccessKey=<YOUR AWS SECRET KEY>
 ```
 
-Note that `your-ig-prefix` should be a _prefix_ matching one or more MIGs, and _not_ the full name of the MIG. For example, to match multiple instance groups - `k8s-node-group-a-standard`, `k8s-node-group-b-gpu`, you would use a prefix of `k8s-node-group-`.
-
-In the event you want to explicitly specify MIGs instead of using auto-discovery, set members of the `autoscalingGroups` array directly - e.g.
-
-```
-# where 'n' is the index, starting at 0
--- set autoscalingGroups[n].name=https://content.googleapis.com/compute/v1/projects/$PROJECTID/zones/$ZONENAME/instanceGroupManagers/$FULL-MIG-NAME,autoscalingGroups[n].maxSize=$MAXSIZE,autoscalingGroups[n].minSize=$MINSIZE
-```
-
-#### Azure AKS
-##### Required Parameters
-- `cloudProvider=azure`
-- `autoscalingGroups[0].name=your-agent-pool,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1`
-- `azureClientID: "your-service-principal-app-id"`
-- `azureClientSecret: "your-service-principal-client-secret"`
-- `azureSubscriptionID: "your-azure-subscription-id"`
-- `azureTenantID: "your-azure-tenant-id"`
-- `azureClusterName: "your-aks-cluster-name"`
-- `azureResourceGroup: "your-aks-cluster-resource-group-name"`
-- `azureVMType: "AKS"`
-- `azureNodeResourceGroup: "your-aks-cluster-node-resource-group"`
-
-
-### Specifying groups manually (only aws)
+#### Specifying groups manually
 
 Without autodiscovery, specify an array of elements each containing ASG name, min size, max size. The sizes specified here will be applied to the ASG, assuming IAM permissions are correctly configured.
 
-1) verify the [IAM Permissions](#iam)
-2) Either provide a yaml file setting `autoscalingGroups` (see values.yaml) or use `--set` e.g.:
+- Verify the [IAM Permissions](#aws---iam)
+- Either provide a yaml file setting `autoscalingGroups` (see values.yaml) or use `--set` e.g.:
 
 ```console
-$ helm install stable/cluster-autoscaler --name my-release --set "autoscalingGroups[0].name=your-asg-name,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1"
+$ helm install my-release autoscaler/cluster-autoscaler \
+--set "autoscalingGroups[0].name=your-asg-name" \
+--set "autoscalingGroups[0].maxSize=10" \
+--set "autoscalingGroups[0].minSize=1"
 ```
 
-## Uninstalling the Chart
-
-To uninstall `my-release`:
-
-```console
-$ helm delete my-release
-```
-
-The command removes all the Kubernetes components associated with the chart and deletes the release.
-
-> **Tip**: List all releases using `helm list` or start clean with `helm delete --purge my-release`
-
-## Configuration
-
-The following table lists the configurable parameters of the cluster-autoscaler chart and their default values.
-
-Parameter | Description | Default
---- | --- | ---
-`affinity` | node/pod affinities | None
-`autoDiscovery.clusterName` | enable autodiscovery for name in ASG tag (only `cloudProvider=aws`). Must be set for `cloudProvider=gce`, but no MIG tagging required.| `""` **required unless autoscalingGroups[] provided**
-`autoDiscovery.tags` | ASG tags to match, run through `tpl` | `[ "k8s.io/cluster-autoscaler/enabled", "k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}" ]`
-`autoscalingGroups[].name` | autoscaling group name | None. Required unless `autoDiscovery.enabled=true`
-`autoscalingGroups[].maxSize` | maximum autoscaling group size | None. Required unless `autoDiscovery.enabled=true`
-`autoscalingGroups[].minSize` | minimum autoscaling group size | None. Required unless `autoDiscovery.enabled=true`
-`awsRegion` | AWS region (required if `cloudProvider=aws`) | `us-east-1`
-`awsAccessKeyID` | AWS access key ID ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) | `""`
-`awsSecretAccessKey` | AWS access secret key ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) | `""`
-`autoscalingGroupsnamePrefix[].name` | GCE MIG name prefix (the full name is invalid) | None. Required for `cloudProvider=gce`
-`autoscalingGroupsnamePrefix[].maxSize` | maximum MIG size | None. Required for `cloudProvider=gce`
-`autoscalingGroupsnamePrefix[].minSize` | minimum MIG size |  None. Required for `cloudProvider=gce`
-`cloudProvider` | `aws` or `spotinst` are currently supported for AWS. `gce` for GCE. `azure` for Azure AKS | `aws`
-`image.repository` | Image | `k8s.gcr.io/cluster-autoscaler`
-`image.tag` | Image tag  | `v1.17.1`
-`image.pullPolicy` | Image pull policy  | `IfNotPresent`
-`image.pullSecrets` | Image pull secrets  | `[]`
-`extraArgs` | additional container arguments | `{}`
-`podDisruptionBudget` | Pod disruption budget | `maxUnavailable: 1`
-`extraEnv` | additional container environment variables | `{}`
-`envFromConfigMap` | additional container environment variables from a configmap | `{}`
-`envFromSecret` | secret name containing keys that will be exposed as envs | `nil`
-`extraEnvSecrets` | additional container environment variables from a secret | `{}`
-`fullnameOverride` | String to fully override cluster-autoscaler.fullname template | `""`
-`nameOverride` | String to partially override cluster-autoscaler.fullname template (will maintain the release name) | `""`
-`nodeSelector` | node labels for pod assignment | `{}`
-`podAnnotations` | annotations to add to each pod | `{}`
-`rbac.create` | If true, create & use RBAC resources | `true`
-`rbac.serviceAccount.create` | If true and rbac.create is also true, a service account will be created | `true`
-`rbac.serviceAccount.name` | The name of the ServiceAccount to use. If not set and create is true, a name is generated using the fullname template | `nil`
-`rbac.serviceAccountAnnotations` | Additional Service Account annotations	| `{}`
-`rbac.pspEnabled` | Must be used with `rbac.create` true. If true, creates & uses RBAC resources required in the cluster with [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) enabled. | `false`
-`replicaCount` | desired number of pods | `1`
-`priorityClassName` | priorityClassName | `nil`
-`dnsPolicy` | dnsPolicy | `nil`
-`securityContext` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) | `nil`
-`containerSecurityContext` | [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) | `nil`
-`resources` | pod resource requests & limits | `{}`
-`updateStrategy` | [Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) | `nil`
-`service.annotations` | annotations to add to service | none
-`service.externalIPs` | service external IP addresses | `[]`
-`service.loadBalancerIP` | IP address to assign to load balancer (if supported) | `""`
-`service.loadBalancerSourceRanges` | list of IP CIDRs allowed access to load balancer (if supported) | `[]`
-`service.servicePort` | service port to expose | `8085`
-`service.portName` | name for service port | `http`
-`service.type` | type of service to create | `ClusterIP`
-`spotinst.account` | Spotinst Account ID (required if `cloudprovider=spotinst`) | `""`
-`spotinst.token` | Spotinst API token (required if `cloudprovider=spotinst`) | `""`
-`spotinst.image.repository` | Image (used if `cloudProvider=spotinst`) | `spotinst/kubernetes-cluster-autoscaler`
-`spotinst.image.tag` | Image tag (used if `cloudProvider=spotinst`) | `v0.6.0`
-`spotinst.image.pullPolicy` | Image pull policy (used if `cloudProvider=spotinst`) | `IfNotPresent`
-`tolerations` | List of node taints to tolerate (requires Kubernetes >= 1.6) | `[]`
-`serviceMonitor.enabled` | if `true`, creates a Prometheus Operator ServiceMonitor | `false`
-`serviceMonitor.interval` | Interval that Prometheus scrapes Cluster Autoscaler metrics | `10s`
-`serviceMonitor.namespace` | Namespace which Prometheus is running in | `monitoring`
-`serviceMonitor.path` | The path to scrape for metrics | `/metrics`
-`serviceMonitor.selector` | Default to kube-prometheus install (CoreOS recommended), but should be set according to Prometheus install | `{ prometheus: kube-prometheus }`
-`azureClientID` | Service Principal ClientID with contributor permission to Cluster and Node ResourceGroup | none
-`azureClientSecret` | Service Principal ClientSecret with contributor permission to Cluster and Node ResourceGroup | none
-`azureSubscriptionID` | Azure subscription where the resources are located | none
-`azureTenantID` | Azure tenant where the resources are located | none
-`azureClusterName` | Azure AKS cluster name | none
-`azureResourceGroup` | Azure resource group that the cluster is located | none
-`azureVMType: "AKS"` | Azure VM type | `AKS`
-`azureNodeResourceGroup` | azure resource group where the clusters Nodes are located, typically set as `MC_<cluster-resource-group-name>_<cluster-name>_<location>` | none
-`azureUseManagedIdentityExtension` | Whether to use Azure's managed identity extension for credentials | false
-`kubeTargetVersionOverride` | Override the .Capabilities.KubeVersion.GitVersion | `""`
-`expanderPriorities` | The expanderPriorities is used if extraArgs.expander is set to priority and expanderPriorities is also set with the priorities.
-
-Specify each parameter you'd like to override using a YAML file as described above in the [installation](#installing-the-chart) section or by using the `--set key=value[,key=value]` argument to `helm install`. For example, to change the region and [expander](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-expanders):
-
-```console
-$ helm install stable/cluster-autoscaler --name my-release \
-    --set extraArgs.expander=most-pods \
-    --set awsRegion=us-west-1
-```
-
-## IAM
-
-The worker running the cluster autoscaler will need access to certain resources and actions:
-
-```
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "autoscaling:DescribeAutoScalingGroups",
-                "autoscaling:DescribeAutoScalingInstances",
-                "autoscaling:DescribeLaunchConfigurations",
-                "autoscaling:DescribeTags",
-                "autoscaling:SetDesiredCapacity",
-                "autoscaling:TerminateInstanceInAutoScalingGroup"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-```
-
-  - `DescribeTags` is required for autodiscovery.
-  - `DescribeLaunchconfigurations` is required to scale up an ASG from 0
-
-Unfortunately AWS does not support ARNs for autoscaling groups yet so you must use "*" as the resource. More information [here](http://docs.aws.amazon.com/autoscaling/latest/userguide/IAM.html#UsingWithAutoScaling_Actions).
-
-# IAM Roles for Service Accounts (IRSA)
-
-For Kubernetes clusters that use Amazon EKS, the service account can be configured with an IAM role using [IAM Roles for Service Accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) to avoid needing to grant access to the worker nodes for AWS resources.
-
-In order to accomplish this, you will first need to create a new IAM role with the above mentions policies.  Take care in [configuring the trust relationship](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts-technical-overview.html#iam-role-configuration) to restrict access just to the service account used by cluster autoscaler.
-
-Once you have the IAM role configured, you would then need to `--set rbac.serviceAccountAnnotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::123456789012:role/MyRoleName` when installing.
-
-
-## Auto-discovery
+#### Auto-discovery
 
 For auto-discovery of instances to work, they must be tagged with the keys in `.Values.autoDiscovery.tags`, which by default are
 `k8s.io/cluster-autoscaler/enabled` and `k8s.io/cluster-autoscaler/<ClusterName>`
@@ -265,7 +116,7 @@ The value of the tag does not matter, only the key.
 
 An example kops spec excerpt:
 
-```
+```yaml
 apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
@@ -288,7 +139,7 @@ spec:
   cloudLabels:
     k8s.io/cluster-autoscaler/enabled: ""
     k8s.io/cluster-autoscaler/my.cluster.internal: ""
-  image: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-01-14
+  image: kops.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-01-14
   machineType: r4.large
   maxSize: 4
   minSize: 0
@@ -298,9 +149,108 @@ In this example you would need to `--set autoDiscovery.clusterName=my.cluster.in
 
 It is not recommended to try to mix this with setting `autoscalingGroups`
 
-See [autoscaler AWS documentation](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup) for a more discussion of the setup
+See [autoscaler AWS documentation](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup) for a more discussion of the setup.
 
-### Troubleshooting
+### GCE
+
+The following parameters are required:
+
+- `autoDiscovery.clusterName=any-name`
+- `cloud-provider=gce`
+- `autoscalingGroupsnamePrefix[0].name=your-ig-prefix,autoscalingGroupsnamePrefix[0].maxSize=10,autoscalingGroupsnamePrefix[0].minSize=1`
+
+To use Managed Instance Group (MIG) auto-discovery, provide a YAML file setting `autoscalingGroupsnamePrefix` (see values.yaml) or use `--set` when installing the Chart - e.g.
+
+```console
+$ helm install my-release autoscaler/cluster-autoscaler \
+--set "autoscalingGroupsnamePrefix[0].name=your-ig-prefix,autoscalingGroupsnamePrefix[0].maxSize=10,autoscalingGroupsnamePrefi[0].minSize=1" \
+--set autoDiscovery.clusterName=<CLUSTER NAME> \
+--set cloudProvider=gce
+```
+
+Note that `your-ig-prefix` should be a _prefix_ matching one or more MIGs, and _not_ the full name of the MIG. For example, to match multiple instance groups - `k8s-node-group-a-standard`, `k8s-node-group-b-gpu`, you would use a prefix of `k8s-node-group-`.
+
+In the event you want to explicitly specify MIGs instead of using auto-discovery, set members of the `autoscalingGroups` array directly - e.g.
+
+```
+# where 'n' is the index, starting at 0
+-- set autoscalingGroups[n].name=https://content.googleapis.com/compute/v1/projects/$PROJECTID/zones/$ZONENAME/instanceGroupManagers/$FULL-MIG-NAME,autoscalingGroups[n].maxSize=$MAXSIZE,autoscalingGroups[n].minSize=$MINSIZE
+```
+
+### Azure AKS
+
+The following parameters are required:
+
+- `cloudProvider=azure`
+- `autoscalingGroups[0].name=your-agent-pool,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1`
+- `azureClientID: "your-service-principal-app-id"`
+- `azureClientSecret: "your-service-principal-client-secret"`
+- `azureSubscriptionID: "your-azure-subscription-id"`
+- `azureTenantID: "your-azure-tenant-id"`
+- `azureClusterName: "your-aks-cluster-name"`
+- `azureResourceGroup: "your-aks-cluster-resource-group-name"`
+- `azureVMType: "AKS"`
+- `azureNodeResourceGroup: "your-aks-cluster-node-resource-group"`
+
+### OpenStack Magnum
+
+`cloudProvider: magnum` must be set, and then one of
+
+- `magnumClusterName=<cluster name or ID>` and `autoscalingGroups` with the names of node groups and min/max node counts
+- or `autoDiscovery.clusterName=<cluster name or ID>` with one or more `autoDiscovery.roles`.
+
+Additionally, `cloudConfigPath: "/etc/kubernetes/cloud-config"` must be set as this should be the location
+of the cloud-config file on the host.
+
+Example values files can be found [here](../../cluster-autoscaler/cloudprovider/magnum/examples).
+
+Install the chart with
+
+```
+$ helm install my-release autoscaler/cluster-autoscaler -f myvalues.yaml
+```
+### Cluster-API
+
+`cloudProvider: clusterapi` must be set, and then one or more of
+- `autoDiscovery.clusterName`
+- or `autoDiscovery.labels`
+See [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery) for more details
+
+Additional config parameters avaible, see the `values.yaml` for more details
+`clusterAPIMode`
+`clusterAPIKubeconfigSecret`
+`clusterAPIWorkloadKubeconfigPath`
+`clusterAPICloudConfigPath`
+
+## Uninstalling the Chart
+
+To uninstall `my-release`:
+
+```console
+$ helm uninstall my-release
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+> **Tip**: List all releases using `helm list` or start clean with `helm uninstall my-release`
+
+## Additional Configuration
+
+### AWS - IAM
+
+The worker running the cluster autoscaler will need access to certain resources and actions depending on the version you run and your configuration of it.
+
+For the up-to-date IAM permissions required, please see the [cluster autoscaler's AWS Cloudprovider Readme](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#iam-policy) and switch to the tag of the cluster autoscaler image you are using.
+
+### AWS - IAM Roles for Service Accounts (IRSA)
+
+For Kubernetes clusters that use Amazon EKS, the service account can be configured with an IAM role using [IAM Roles for Service Accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) to avoid needing to grant access to the worker nodes for AWS resources.
+
+In order to accomplish this, you will first need to create a new IAM role with the above mentions policies.  Take care in [configuring the trust relationship](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts-technical-overview.html#iam-role-configuration) to restrict access just to the service account used by cluster autoscaler.
+
+Once you have the IAM role configured, you would then need to `--set rbac.serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::123456789012:role/MyRoleName` when installing.
+
+## Troubleshooting
 
 The chart will succeed even if the container arguments are incorrect. A few minutes after starting
 `kubectl logs -l "app=aws-cluster-autoscaler" --tail=50` should loop through something like
@@ -327,6 +277,98 @@ Containers:
       --v=4
 ```
 
-#### PodSecurityPolicy
+### PodSecurityPolicy
 
 Though enough for the majority of installations, the default PodSecurityPolicy _could_ be too restrictive depending on the specifics of your release. Please make sure to check that the template fits with any customizations made or disable it by setting `rbac.pspEnabled` to `false`.
+
+## Values
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| additionalLabels | object | `{}` | Labels to add to each object of the chart. |
+| affinity | object | `{}` | Affinity for pod assignment |
+| autoDiscovery.clusterName | string | `nil` | Enable autodiscovery for `cloudProvider=aws`, for groups matching `autoDiscovery.tags`. Enable autodiscovery for `cloudProvider=clusterapi`, for groups matching `autoDiscovery.labels`. Enable autodiscovery for `cloudProvider=gce`, but no MIG tagging required. Enable autodiscovery for `cloudProvider=magnum`, for groups matching `autoDiscovery.roles`. |
+| autoDiscovery.labels | list | `[]` | Cluster-API labels to match  https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#configuring-node-group-auto-discovery |
+| autoDiscovery.roles | list | `["worker"]` | Magnum node group roles to match. |
+| autoDiscovery.tags | list | `["k8s.io/cluster-autoscaler/enabled","k8s.io/cluster-autoscaler/{{ .Values.autoDiscovery.clusterName }}"]` | ASG tags to match, run through `tpl`. |
+| autoscalingGroups | list | `[]` | For AWS, Azure AKS or Magnum. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: asg1<br />   maxSize: 2<br />   minSize: 1 </pre> |
+| autoscalingGroupsnamePrefix | list | `[]` | For GCE. At least one element is required if not using `autoDiscovery`. For example: <pre> - name: ig01<br />   maxSize: 10<br />   minSize: 0 </pre> |
+| awsAccessKeyID | string | `""` | AWS access key ID ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
+| awsRegion | string | `"us-east-1"` | AWS region (required if `cloudProvider=aws`) |
+| awsSecretAccessKey | string | `""` | AWS access secret key ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
+| azureClientID | string | `""` | Service Principal ClientID with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
+| azureClientSecret | string | `""` | Service Principal ClientSecret with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
+| azureClusterName | string | `""` | Azure AKS cluster name. Required if `cloudProvider=azure` |
+| azureNodeResourceGroup | string | `""` | Azure resource group where the cluster's nodes are located, typically set as `MC_<cluster-resource-group-name>_<cluster-name>_<location>`. Required if `cloudProvider=azure` |
+| azureResourceGroup | string | `""` | Azure resource group that the cluster is located. Required if `cloudProvider=azure` |
+| azureSubscriptionID | string | `""` | Azure subscription where the resources are located. Required if `cloudProvider=azure` |
+| azureTenantID | string | `""` | Azure tenant where the resources are located. Required if `cloudProvider=azure` |
+| azureUseManagedIdentityExtension | bool | `false` | Whether to use Azure's managed identity extension for credentials. If using MSI, ensure subscription ID, resource group, and azure AKS cluster name are set. |
+| azureVMType | string | `"AKS"` | Azure VM type. |
+| cloudConfigPath | string | `"/etc/gce.conf"` | Configuration file for cloud provider. |
+| cloudProvider | string | `"aws"` | The cloud provider where the autoscaler runs. Currently only `gce`, `aws`, `azure`, `magnum` and `clusterapi` are supported. `aws` supported for AWS. `gce` for GCE. `azure` for Azure AKS. `magnum` for OpenStack Magnum, `clusterapi` for Cluster API. |
+| clusterAPICloudConfigPath | string | `"/etc/kubernetes/mgmt-kubeconfig"` | Path to kubeconfig for connecting to Cluster API Management Cluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or incluster-kubeconfig` |
+| clusterAPIConfigMapsNamespace | string | `""` | Namespace on the workload cluster to store Leader election and status configmaps |
+| clusterAPIKubeconfigSecret | string | `""` | Secret containing kubeconfig for connecting to Cluster API managed workloadcluster Required if `cloudProvider=clusterapi` and `clusterAPIMode=kubeconfig-kubeconfig,kubeconfig-incluster or incluster-kubeconfig` |
+| clusterAPIMode | string | `"incluster-incluster"` | Cluster API mode, see https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/clusterapi/README.md#connecting-cluster-autoscaler-to-cluster-api-management-and-workload-clusters Syntax: workloadClusterMode-ManagementClusterMode for `kubeconfig-kubeconfig`, `incluster-kubeconfig` and `single-kubeconfig` you always must mount the external kubeconfig using either `extraVolumeSecrets` or `extraMounts` and `extraVolumes` if you dont set `clusterAPIKubeconfigSecret`and thus use an in-cluster config or want to use a non capi generated kubeconfig you must do so for the workload kubeconfig as well |
+| clusterAPIWorkloadKubeconfigPath | string | `"/etc/kubernetes/value"` | Path to kubeconfig for connecting to Cluster API managed workloadcluster, only used if `clusterAPIMode=kubeconfig-kubeconfig or kubeconfig-incluster` |
+| containerSecurityContext | object | `{}` | [Security context for container](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
+| deployment.annotations | object | `{}` | Annotations to add to the Deployment object. |
+| dnsPolicy | string | `"ClusterFirst"` | Defaults to `ClusterFirst`. Valid values are: `ClusterFirstWithHostNet`, `ClusterFirst`, `Default` or `None`. If autoscaler does not depend on cluster DNS, recommended to set this to `Default`. |
+| envFromConfigMap | string | `""` | ConfigMap name to use as envFrom. |
+| envFromSecret | string | `""` | Secret name to use as envFrom. |
+| expanderPriorities | object | `{}` | The expanderPriorities is used if `extraArgs.expander` contains `priority` and expanderPriorities is also set with the priorities. If `extraArgs.expander` contains `priority`, then expanderPriorities is used to define cluster-autoscaler-priority-expander priorities. See: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/expander/priority/readme.md |
+| extraArgs | object | `{"logtostderr":true,"stderrthreshold":"info","v":4}` | Additional container arguments. Refer to https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#what-are-the-parameters-to-ca for the full list of cluster autoscaler parameters and their default values. Everything after the first _ will be ignored allowing the use of multi-string arguments. |
+| extraEnv | object | `{}` | Additional container environment variables. |
+| extraEnvConfigMaps | object | `{}` | Additional container environment variables from ConfigMaps. |
+| extraEnvSecrets | object | `{}` | Additional container environment variables from Secrets. |
+| extraVolumeMounts | list | `[]` | Additional volumes to mount. |
+| extraVolumeSecrets | object | `{}` | Additional volumes to mount from Secrets. |
+| extraVolumes | list | `[]` | Additional volumes. |
+| fullnameOverride | string | `""` | String to fully override `cluster-autoscaler.fullname` template. |
+| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
+| image.pullSecrets | list | `[]` | Image pull secrets |
+| image.repository | string | `"k8s.gcr.io/autoscaling/cluster-autoscaler"` | Image repository |
+| image.tag | string | `"v1.23.0"` | Image tag |
+| kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
+| magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |
+| magnumClusterName | string | `""` | Cluster name or ID in Magnum. Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`. |
+| nameOverride | string | `""` | String to partially override `cluster-autoscaler.fullname` template (will maintain the release name) |
+| nodeSelector | object | `{}` | Node labels for pod assignment. Ref: https://kubernetes.io/docs/user-guide/node-selection/. |
+| podAnnotations | object | `{}` | Annotations to add to each pod. |
+| podDisruptionBudget | object | `{"maxUnavailable":1}` | Pod disruption budget. |
+| podLabels | object | `{}` | Labels to add to each pod. |
+| priorityClassName | string | `"system-cluster-critical"` | priorityClassName |
+| priorityConfigMapAnnotations | object | `{}` | Annotations to add to `cluster-autoscaler-priority-expander` ConfigMap. |
+| prometheusRule.additionalLabels | object | `{}` | Additional labels to be set in metadata. |
+| prometheusRule.enabled | bool | `false` | If true, creates a Prometheus Operator PrometheusRule. |
+| prometheusRule.interval | string | `nil` | How often rules in the group are evaluated (falls back to `global.evaluation_interval` if not set). |
+| prometheusRule.namespace | string | `"monitoring"` | Namespace which Prometheus is running in. |
+| prometheusRule.rules | list | `[]` | Rules spec template (see https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/api.md#rule). |
+| rbac.clusterScoped | bool | `true` | if set to false will only provision RBAC to alter resources in the current namespace. Most useful for Cluster-API |
+| rbac.create | bool | `true` | If `true`, create and use RBAC resources. |
+| rbac.pspEnabled | bool | `false` | If `true`, creates and uses RBAC resources required in the cluster with [Pod Security Policies](https://kubernetes.io/docs/concepts/policy/pod-security-policy/) enabled. Must be used with `rbac.create` set to `true`. |
+| rbac.serviceAccount.annotations | object | `{}` | Additional Service Account annotations. |
+| rbac.serviceAccount.automountServiceAccountToken | bool | `true` | Automount API credentials for a Service Account. |
+| rbac.serviceAccount.create | bool | `true` | If `true` and `rbac.create` is also true, a Service Account will be created. |
+| rbac.serviceAccount.name | string | `""` | The name of the ServiceAccount to use. If not set and create is `true`, a name is generated using the fullname template. |
+| replicaCount | int | `1` | Desired number of pods |
+| resources | object | `{}` | Pod resource requests and limits. |
+| securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
+| service.annotations | object | `{}` | Annotations to add to service |
+| service.create | bool | `true` | If `true`, a Service will be created. |
+| service.externalIPs | list | `[]` | List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/user-guide/services/#external-ips. |
+| service.labels | object | `{}` | Labels to add to service |
+| service.loadBalancerIP | string | `""` | IP address to assign to load balancer (if supported). |
+| service.loadBalancerSourceRanges | list | `[]` | List of IP CIDRs allowed access to load balancer (if supported). |
+| service.portName | string | `"http"` | Name for service port. |
+| service.servicePort | int | `8085` | Service port to expose. |
+| service.type | string | `"ClusterIP"` | Type of service to create. |
+| serviceMonitor.enabled | bool | `false` | If true, creates a Prometheus Operator ServiceMonitor. |
+| serviceMonitor.interval | string | `"10s"` | Interval that Prometheus scrapes Cluster Autoscaler metrics. |
+| serviceMonitor.namespace | string | `"monitoring"` | Namespace which Prometheus is running in. |
+| serviceMonitor.path | string | `"/metrics"` | The path to scrape for metrics; autoscaler exposes `/metrics` (this is standard) |
+| serviceMonitor.selector | object | `{"release":"prometheus-operator"}` | Default to kube-prometheus install (CoreOS recommended), but should be set according to Prometheus install. |
+| tolerations | list | `[]` | List of node taints to tolerate (requires Kubernetes >= 1.6). |
+| topologySpreadConstraints | list | `[]` | You can use topology spread constraints to control how Pods are spread across your cluster among failure-domains such as regions, zones, nodes, and other user-defined topology domains. (requires Kubernetes >= 1.19). |
+| updateStrategy | object | `{}` | [Deployment update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy) |

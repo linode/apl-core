@@ -1,3 +1,4 @@
+{{- $v := .Values }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -26,14 +27,15 @@ spec:
       serviceAccountName: {{ template "gatekeeper-artifacts.serviceAccountName" . }}
       containers:
         - name: postinstall
-          image: otomi/tools:{{ .Values.otomiVersions.tools }}
+          image: otomi/tools:{{ .Values.toolsTag }}
           command:
             - bash
             - -c
           args:
             - |
-              echo "Waiting until gatekeeper constraints are accessible"
-              { grep -q -m 1 "constraints.gatekeeper.sh"; kill $!; } < <(kubectl get crd -w)
+              while ! kubectl get crd{{ range $policy := ($v.policies | sortAlpha) }} {{ $policy | replace "-" "" }}.constraints.gatekeeper.sh{{ end }}; do
+                echo "Waiting until gatekeeper constraints are accessible"; sleep 5;
+              done;
               echo READY!
           resources:
             limits:

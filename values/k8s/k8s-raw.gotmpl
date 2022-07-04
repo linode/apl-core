@@ -33,7 +33,7 @@ resources:
       {{- end }}
     {{- end }}
   {{- end }}
-  {{- range $id, $team := omit $v.teamConfig "admin" }}
+  {{- range $id, $team := $v.teamConfig }}
     {{- $ns := printf "team-%s" $id }}
   - apiVersion: v1
     kind: Namespace
@@ -121,3 +121,14 @@ resources:
     data:
       tls.crt: {{ $cm.customRootCA | b64enc }}
       tls.key: {{ $cm.customRootCAKey | b64enc}}
+
+  {{- if eq $v.cluster.provider "azure" }}
+  {{- /* see https://docs.microsoft.com/en-us/azure/aks/custom-certificate-authority#create-a-kubernetes-secret-with-your-ca-information */}}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: custom-ca-trust-secret
+      namespace: kube-system
+    data:
+      tls.crt: {{ $cm.customRootCA | b64enc }}
+  {{- end }}

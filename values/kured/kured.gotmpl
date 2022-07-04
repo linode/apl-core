@@ -13,6 +13,10 @@ resources:
     cpu: 5m
     memory: 32Mi
 
+metrics:
+  create: true
+  labels:
+    prometheus: system
 
 # the container's securityContext must have "privileged:true" thus we cannot set a non-root user for this chart
 podAnnotations: 

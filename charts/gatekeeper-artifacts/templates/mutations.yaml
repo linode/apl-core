@@ -1,0 +1,68 @@
+{{- $v := .Values }}
+{{- with $v.otomi.nodeSelector }}
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: set-platform-node-affinity
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Pod"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    excludedNamespaces:
+      {{- range $teamId := $v.teamIds }}
+      - team-{{ $teamId }}
+      {{- end }}
+  location: "spec.affinity"
+  parameters:
+    assign:
+      value:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  {{- range $key, $val := . }}
+                  - key: {{ $key }}
+                    operator: In
+                    values:
+                      - {{ $val }}
+                  {{- end }}
+---
+apiVersion: mutations.gatekeeper.sh/v1alpha1
+kind: Assign
+metadata:
+  name: set-team-node-affinity
+spec:
+  applyTo:
+  - groups: [""]
+    kinds: ["Pod"]
+    versions: ["v1"]
+  match:
+    scope: Namespaced
+    kinds:
+    - apiGroups: ["*"]
+      kinds: ["Pod"]
+    namespaces:
+      {{- range $teamId := $v.teamIds }}
+      - team-{{ $teamId }}
+      {{- end }}
+  location: "spec.affinity"
+  parameters:
+    assign:
+      value:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  {{- range $key, $val := . }}
+                  - key: {{ $key }}
+                    operator: NotIn
+                    values:
+                      - {{ $val }}
+                  {{- end }}
+{{- end }}

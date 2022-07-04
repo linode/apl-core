@@ -11,14 +11,12 @@ const sync = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:sync`)
   const argv: HelmArguments = getParsedArgs()
   d.info('Start sync')
-  const conditionalArgs: string[] = []
-  if (argv.skipCleanup) conditionalArgs.push('--skip-cleanup')
   await hf(
     {
       fileOpts: argv.file,
       labelOpts: argv.label,
       logLevel: logLevelString(),
-      args: ['sync'].concat(conditionalArgs),
+      args: ['sync', '--include-needs'],
     },
     { streams: { stdout: d.stream.log } },
   )

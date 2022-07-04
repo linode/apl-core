@@ -31,7 +31,7 @@ releases:
     values:
       - ../values/knative/knative-serving-cr.gotmpl
       - snippets/common.gotmpl
-    <<: *preUpgrade
+    <<: *upgrade
   - name: knative-serving-artifacts
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-serving
@@ -41,4 +41,4 @@ releases:
       pkg: knative
     values:
       - ../values/knative/knative-serving-raw.gotmpl
-    <<: *preUpgrade
+    <<: *upgrade

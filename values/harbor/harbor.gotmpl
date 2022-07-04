@@ -159,6 +159,8 @@ jobservice:
 metrics:
   serviceMonitor:
     enabled: true
+    additionalLabels:
+      prometheus: system
 
 notary:
   server:

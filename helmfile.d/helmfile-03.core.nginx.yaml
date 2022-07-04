@@ -25,5 +25,7 @@ releases:
     chart: ../charts/ingress-nginx
     values:
       - ../values/ingress-nginx/ingress-nginx.gotmpl
-    <<: *preUpgrade
+  {{ if eq $ingress.className "platform" }}
+    <<: *upgrade
+  {{- end }}
 {{- end }}

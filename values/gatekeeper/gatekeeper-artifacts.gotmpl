@@ -2,6 +2,7 @@
 {{- $v := .Values }}
 {{- $gk := $v.apps | get "gatekeeper" }}
 {{- $excludedNamespaces := list }}{{ range $ns := $v.k8s.namespaces }}{{ if $ns | get "disablePolicyChecks" nil }}{{ $excludedNamespaces = append $excludedNamespaces $ns.name }}{{ end }}{{ end }}
+{{- tpl (readFile "../../helmfile.d/snippets/version-tags.gotmpl") $v.versions }}
 
 ### Config Resources for OPA Gatekeeper
 config:  
@@ -22,3 +23,12 @@ config:
       processes: ["*"]
 
 otomiVersions: {{- toYaml .Values.versions | nindent 2 }}
+
+otomi: {{- toYaml $v.otomi | nindent 2 }}
+teamIds: {{- keys (omit $v.teamConfig "admin") | toYaml | nindent 2 }}
+policies: {{- keys $v.policies | toYaml | nindent 2 }}
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}

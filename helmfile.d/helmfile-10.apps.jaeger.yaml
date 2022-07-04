@@ -16,4 +16,8 @@ releases:
     installed: {{ $a | get "jaeger.enabled" }}
     namespace: jaeger-operator
     disableValidationOnInstall: true
-    <<: *default
+    chart: ../charts/jaeger-operator
+    values:
+      - ../values/jaeger-operator/jaeger-operator.gotmpl
+      - {{- $v.apps.jaeger | get "_rawValues" dict | toYaml | nindent 8 }}
+    <<: *upgrade

@@ -1,0 +1,3 @@
+apps:
+    kubeclarity:
+        enabled: false

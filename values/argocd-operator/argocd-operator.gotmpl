@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
-
+{{- tpl (readFile "../../helmfile.d/snippets/version-tags.gotmpl") $v.versions }}
 teams:
   {{- range $teamId, $_ := $v.teamConfig }}
   - {{ $teamId }}
@@ -10,5 +10,3 @@ teams:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
-otomiVersions: {{- toYaml .Values.versions | nindent 2 }}
-  

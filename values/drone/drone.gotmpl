@@ -7,8 +7,6 @@
 {{- $hasGitea := $g | get "enabled" }}
 {{- $provider := $d | get "sourceControl.provider" }}
 {{- $giteaValuesUrl := printf "https://gitea.%s/otomi/values" $v.cluster.domainSuffix }}
-{{- $debug := $d | get "debug" false }}
-{{- $trace := $d | get "trace" false }}
 {{- $host := printf "drone.%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 {{- $dindEnabled := false }}
@@ -49,10 +47,10 @@ server:
       memory: 32Mi
     {{- end }}
   env:
-    DRONE_LOGS_DEBUG: {{ $debug }}
-    DRONE_LOGS_TRACE: {{ $trace }}
+    DRONE_LOGS_DEBUG: {{ $d.debug }}
+    DRONE_LOGS_TRACE: {{ $d.trace }}
     DRONE_LOGS_PRETTY: false
-    DRONE_RPC_DEBUG: {{ $debug }}
+    DRONE_RPC_DEBUG: {{ $d.debug }}
     {{- if hasKey $d "orgsFilter" }}
     DRONE_ORGS: {{ $d.orgsFilter }}
     {{- end }}
@@ -80,8 +78,8 @@ agent:
       memory: 32Mi
     {{- end }}
   env:
-    DRONE_TRACE: {{ $trace }}
-    DRONE_DEBUG: {{ $debug }}
+    DRONE_TRACE: {{ $d.trace }}
+    DRONE_DEBUG: {{ $d.debug }}
   runnerEnv: |
     {{- $sopsEnv | nindent 4 }}
     {{- with $d | get "resources.runner.requests.cpu" nil }}
@@ -92,13 +90,14 @@ agent:
     {{- end }}
     {{- if and $hasGitea $v._derived.untrustedCA }}
       {{- if $dindEnabled }}
+      {{- /* DIND: We can for sure know that the runner has mounted the CA from the agent */}}
     DRONE_RUNNER_VOLUMES: '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt'
-      {{- else }}
-    {{- /*
-    We can not yet be sure wether containerd runtime is in use, because that depends on provider and version.
-    Once we know for sure we can map the host path to the cert:
-    DRONE_RUNNER_VOLUMES: '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt'.
-    But for now we have to skip ssl verification: */}}
+      {{- else }}{{- /*
+      Host CA: Only containerd has predictable CA chain location, and docker has multiple we don't know in advance.
+      We can not yet be sure wether containerd runtime is in use, because that depends on provider and version.
+      Once we know for sure we can map the host path to the cert:
+      DRONE_RUNNER_VOLUMES: '/etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt'.
+      But for now we have to skip ssl verification: */}}
     DRONE_VALIDATE_PLUGIN_SKIP_VERIFY: true
     GIT_SSL_NO_VERIFY: true
       {{- end }}

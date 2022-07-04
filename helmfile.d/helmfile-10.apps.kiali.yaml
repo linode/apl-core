@@ -12,31 +12,21 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: istio-operator
-    installed: true
-    namespace: istio-operator
-    disableValidationOnInstall: true
-    labels:
-      pkg: istio
-    <<: *default
   - name: kiali-operator
     installed: {{ $a | get "kiali.enabled" }}
     namespace: kiali-operator
-    needs: kiali/kiali-operator-artifacts
+    needs: [kiali/kiali-operator-artifacts]
     disableValidationOnInstall: true
     labels:
       pkg: kiali
-    <<: *default
+    chart: ../charts/kiali-operator
+    values:
+      - ../values/kiali-operator/kiali-operator.gotmpl
+      - {{- $v.apps.kiali | get "_rawValues" dict | toYaml | nindent 8 }}
+    <<: *upgrade
   - name: kiali-operator-artifacts
     installed: {{ $a | get "kiali.enabled" }}
     namespace: kiali
     labels:
       pkg: kiali
     <<: *raw
-  - name: vault-operator
-    installed: {{ $a | get "vault.enabled" }}
-    disableValidationOnInstall: true
-    namespace: vault
-    labels:
-      pkg: vault
-    <<: *default

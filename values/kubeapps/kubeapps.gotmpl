@@ -85,6 +85,22 @@ postgresql:
     requests:
       memory: 256Mi
       cpu: 250m
+  metrics:
+    enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128M
+      requests:
+        cpu: 50m
+        memory: 64M
+    securityContext:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
+
 
 securityContext:
   enabled: true

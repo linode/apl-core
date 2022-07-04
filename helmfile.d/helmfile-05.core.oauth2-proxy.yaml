@@ -21,7 +21,7 @@ releases:
     values:
       - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
       - snippets/common.gotmpl
-    <<: *preUpgrade
+    <<: *upgrade
   - name: oauth2-proxy
     # TODO: remove oauth dependency
     installed: {{ ne $v.cluster.provider "kind" }}

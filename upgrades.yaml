@@ -1,22 +1,50 @@
 # Upgrade commands between versions are configured in this file, and executed in bash (FROM ubuntu:20.04)
+#
 # Options:
-# - blockingOperations: will break on exit code <> 0
-# - nonBlockingOperations: do not care about exit code
+# - pre: will run before applying all
+# - post: will run after applying all
+# - releases.*.pre will run just in time before syncing that particular release takes place
+# - releases.*.post will run immediately after syncing that particular release
+#
+# NOTE:
+# - $(...) can't be used, but backticks can: `...`
+# - go templating can be used, but not inside backticked subcommands
+# - no comments allowed as commands get transformed into oneliner TODO: move commands to own scripts
 #
 # Special case for development:
 #
 # When a version is set to "dev" it will be selected no matter what. This allows to test an upgrade record's effect.
 # (don't forget to set it to the next release version before releasing!)
 
-changes:
-  - version: dev # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
+operations:
+  - version: 0.16.7
+    pre:
+      # release knative-init was renamed to knative-operator, so we uninstall the old one as it is not destructive, and patch the crds
+      - helm -n default list | grep "knative-init " >/dev/null && helm -n default uninstall knative-init &&
+        kubectl get crd | grep knative | awk '{print $1}' | xargs -n 1 -I {}
+        kubectl annotate crd {} --overwrite "meta.helm.sh/release-name"="knative-operator" || true
+      # release overprovisioner was renamed to cluster-overprovisioner in new namespace, so we just uninstall and remove the ns
+      - helm -n overprovisioner list | grep overprovisioner && helm -n uninstall overprovisioner && kubectl delete ns overprovisioner || true
+      # moved to "ingress-nginx-${ingressClass}" release(s), so we will uninstall release "ingress-nginx" (causing downtime)
+      - helm -n ingress list | grep "ingress-nginx " >/dev/null && helm -n ingress uninstall ingress-nginx || true
+  - version: 0.16.9
     releases:
-      istio-operator:
-        blockingOperations:
-          # istio-operator is moved to "istio-operator" namespace, so remove from "default" ns beforehand
-          - helm -n default uninstall istio-operator
-        nonBlockingOperations: []
-      knative-operator:
-        blockingOperations:
-          # knative-operator was called "knative-init" before and is now also in own "knative-operator" namespace
-          - helm -n default uninstall knative-init
+      external-secrets:
+        pre:
+          - helm -n vault list | grep kubernetes-external-secrets-6.1.0 >/dev/null && helm -n vault uninstall kubernetes-external-secrets && kubectl apply -f $PWD/charts/kubernetes-external-secrets/crds || true
+  - version: dev # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
+    pre:
+      # we moved drone to its own namespace
+      - helm -n team-admin list | grep drone && helm -n team-admin uninstall drone || true
+      # we need to patch ownership of all podmonitors which are now published by team-ns-* instead of prometheus-*
+      - |
+        for id in {{ keys (omit .teamConfig "admin") | join " " }}; do 
+          for p in `kubectl -n "team-$id" get podmonitor | tail -n +2 | awk '{print $1}'`; do
+            kubectl -n "team-$id" annotate podmonitor/$p --overwrite "meta.helm.sh/release-name"=team-ns-$id
+          done
+        done
+      # istio-operator was moved from default to its own namespace
+      - x=`mktemp` && helm -n default get manifest istio-operator >$x &&
+        kubectl annotate -f $x --overwrite "meta.helm.sh/release-namespace"=istio-operator && rm -rf "$x"
+      # istio-operator-artifacts was split into its own CR
+      - kubectl -n istio-system annotate istiooperator/istiocontrolplane --overwrite "meta.helm.sh/release-name"=istio-operator-cr

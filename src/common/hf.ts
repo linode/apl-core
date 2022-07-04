@@ -55,7 +55,7 @@ const hfCore = (args: HFParams): ProcessPromise<ProcessOutput> => {
   // helmfile allows to find DAG style relations through it's `needs: ${release}` construct
   // and '--include-transitive-needs' recursively finds all relations
   // we will automatically assume we want this (TODO: when no selectors are given? I think always)
-  if (/* !labels && !files &&  */ ['destroy', 'diff', 'apply', 'sync'].includes(cmd))
+  if (/* !labels && !files &&  */ ['destroy', 'apply', 'sync'].includes(cmd))
     paramsCopy.args.push('--include-transitive-needs')
   const proc = $`helmfile ${stringArray} ${paramsCopy.args}`
   return proc
@@ -110,7 +110,7 @@ export const hfTemplate = async (argv: HelmArguments, outDir?: string, streams?:
   const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
   // const args = ['template', '--validate']
-  const args = ['template']
+  const args = ['template', '--include-needs']
   if (outDir) args.push(`--output-dir=${outDir}`)
   if (argv.skipCleanup) args.push('--skip-cleanup')
   const helmArgs = getHelmArgs(argv, ['--skip-tests'])

@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $c := $v.apps }}
 folders:
-  # - k8s
+  - k8s-admin
   - istio-admin
   {{- if and (eq $v.cluster.provider "azure") ($v | get "azure.monitor" nil) }}
   - azure

@@ -27,7 +27,7 @@ elif [ -z "$IN_DOCKER" ] && [ -n "$ENV_DIR" ]; then
 fi
 [[ "$ENV_DIR" == *"../"* ]] && echo "Don't provide an ENV_DIR that contains '../'!" && exit 1
 # treat CI and chart as non interactive
-if [ -z "$PS1" ]; then
+if [[ $calling_args != 'bash'* ]] && [[ $calling_args != 'x '* ]] && { [ -n "$CI" ]; }; then
   calling_args="$calling_args --non-interactive"
 fi
 if [[ $calling_args == 'x '* ]] && [[ $calling_args != 'x -- '* ]]; then

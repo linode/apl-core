@@ -86,46 +86,6 @@ spec:
           readinessProbe:
             failureThreshold: 20
         {{- end }}
-      - name: istio-ingressgateway-private
-        enabled: true
-        label:
-          istio: ingressgateway-private
-          app: ingressgateway
-        k8s:
-          podAnnotations:
-            policy.otomi.io/ignore: psp-allowed-users
-          hpaSpec:
-            minReplicas: {{ $i | get "autoscaling.ingressgateway-private.minReplicas" }}
-            maxReplicas: {{ $i | get "autoscaling.ingressgateway-private.maxReplicas" }}
-          priorityClassName: "otomi-critical"
-          resources:
-            {{- with $i | get "resources.ingressgateway-private" nil }}
-              {{- toYaml . | nindent 16 }}
-            {{- else }}
-            limits:
-              cpu: '1'
-              memory: 256Mi
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            {{- end }}
-          service:
-            type: ClusterIP
-            ports:
-              - port: 15021
-                name: status-port
-              - port: 80
-                targetPort: 8080
-                name: http2
-              - port: 443
-                targetPort: 8443
-                name: https
-              - port: 15443
-                name: tls
-        {{- if eq $v.cluster.provider "azure" }}
-          readinessProbe:
-            failureThreshold: 20
-        {{- end }}
     {{ if $i | get "egressGateway.enabled" false }}
     egressGateways:
       - name: istio-egressgateway
@@ -205,11 +165,7 @@ spec:
     {{- if $v._derived.untrustedCA }}
     pilot:
       jwksResolverExtraRootCA: |
-      {{- if eq $cm.issuer "custom-ca" }}
-        {{- $cm.customRootCA | nindent 12 }}
-      {{- else }}
-        {{- $v.letsencryptCA | nindent 12 }}
-      {{- end }}
+      {{- $v._derived.caCertRoot | nindent 8 }}
     {{- end }}
     sidecarInjectorWebhook:
       enableNamespacesByDefault: false

@@ -33,7 +33,7 @@ releases:
     labels:
       pkg: vault
     <<: *rawCR
-  - name: kubernetes-external-secrets
+  - name: external-secrets
     installed: {{ $a | get "vault.enabled" }}
     namespace: vault
     needs: [vault-operator]

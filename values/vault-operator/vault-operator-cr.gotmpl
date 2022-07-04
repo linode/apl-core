@@ -194,12 +194,11 @@ spec:
           # Allow every pod in the vault namespace to use the secret kv store
           - name: default
             bound_service_account_names: 
-            - kubernetes-external-secrets
+            - external-secrets
             - vault
-            - default
+            # - default
             # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226
             bound_service_account_namespaces: 
-            - shared
             - vault
             token_policies: 
             - allow-read-all-secrets

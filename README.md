@@ -12,7 +12,7 @@
   <a href="https://img.shields.io/crates/l/ap"><img alt="License" src="https://img.shields.io/crates/l/ap" /></a>
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
   <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
-  <a href="https://join.slack.com/t/otomi/shared_invite/zt-18wo93idx-qFecVX9MzcAAsnfzbliHlg"><img src="https://img.shields.io/static/v1?label=Slack&message=Join&color=4A154B" alt="Join Slack channel"></a>
+  <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/static/v1?label=Slack&message=Join&color=4A154B" alt="Join Slack channel"></a>
   <a href="https://twitter.com/RedKubes"><img src="https://img.shields.io/static/v1?label=Twitter&message=Follow&color=1DA1F2" alt="Follow us on Twitter"></a>
   <a href="https://www.facebook.com/groups/otomiusers"><img src="https://img.shields.io/static/v1?label=Facebook&message=Join group&color=1877F2" alt="Join Facebook group"></a>
   <a href="https://www.youtube.com/channel/UCarOB4QW6lTqKG17XUT2uaA"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"></a>
@@ -122,7 +122,7 @@ Learn more about all the integrated technologies:
 
 ## 📖 Documentation
 
-Check out the [dev docs index](./docs/index.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
+Check out the [dev docs index](./docs/README.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
 
 ## 🤝 Contribution
 

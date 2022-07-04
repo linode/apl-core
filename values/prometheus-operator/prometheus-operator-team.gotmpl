@@ -1,45 +1,67 @@
-defaultRules:
-  create: true
-  rules:
-    alertmanager: true
-    configReloaders: true
-    etcd: false
-    general: false
-    k8s: true
-    kubeApiserver: false
-    kubeApiserverAvailability: false
-    kubeApiserverSlos: false
-    kubelet: false
-    kubePrometheusGeneral: false
-    kubePrometheusNodeAlerting: false
-    kubePrometheusNodeRecording: false
-    kubeProxy: true
-    kubernetesAbsent: false
-    kubernetesApps: true
-    kubernetesResources: true
-    kubernetesStorage: true
-    kubernetesSystem: false
-    kubeScheduler: false
-    kubeStateMetrics: true
-    network: false
-    node: false
-    nodeExporterAlerting: true
-    nodeExporterRecording: true
-    prometheus: true
-    prometheusOperator: false
-
 kubeApiServer:
   enabled: false
+coreDns:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
 kubelet:
+  enabled: false
+kubeStateMetrics:
   enabled: false
 nodeExporter:
   enabled: false
 prometheusOperator:
   enabled: false
+
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    configReloaders: false
+    etcd: false
+    general: false
+    k8s: false
+    kubeApiserver: false
+    kubeApiserverAvailability: false
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: false
+    kubeApiserverSlos: false
+    kubelet: false
+    kubePrometheusGeneral: false
+    kubePrometheusNodeRecording: false
+    kubeProxy: false
+    kubernetesApps: false
+    kubernetesResources: false
+    kubernetesStorage: false
+    kubernetesSystem: false
+    kubeScheduler: false
+    kubeStateMetrics: false
+    network: false
+    node: false
+    nodeExporterAlerting: false
+    nodeExporterRecording: false
+    prometheus: true
+    prometheusOperator: false
+
 prometheus:
   additionalServiceMonitors: null
   prometheusSpec:
     enableAdminAPI: false
+    replicas: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 additionalPrometheusRules: null
 grafana:
   defaultDashboardsEnabled: false
+  plugins: []

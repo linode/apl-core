@@ -45,7 +45,13 @@ environments:
               {{- $v.letsencryptRootCA | nindent 12 }}
               {{- $v.letsencryptCA | nindent 12 }}
             {{- else }}
-              {{- $cm | get "customRootCA" "" | nindent 12 }}
+              {{- $cm.customRootCA | nindent 12 }}
+            {{- end }}
+          caCertRoot: |
+            {{- if eq $issuer "letsencrypt" }}
+              {{- $v.letsencryptRootCA | nindent 12 }}
+            {{- else }}
+              {{- $cm.customRootCA | nindent 12 }}
             {{- end }}
           supportedCloud: {{ has $provider (list "aws" "azure" "google") }}
           untrustedCA: {{ $untrustedCA }}
@@ -64,7 +70,7 @@ environments:
             stage: production
           {{- end }}
           cluster-autoscaler:
-            enabled: {{ eq $provider "aws" }}
+            enabled: {{ $a | get "cluster-autoscaler.enabled" (has $provider (list "custom" "aws")) }}
           cluster-overprovisioner:
             enabled: {{ $a | get "cluster-overprovisioner.enabled" (has $provider (list "custom" "kind")) }}
           {{- if eq $droneProvider "gitea" }}
@@ -87,6 +93,8 @@ environments:
             registry:
               credentials:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
+          gatekeeper:
+            enabled: {{ or ($a | get "gatekeeper.enabled") ($v.otomi | get "nodeSelector" nil) }}
           gitea:
             enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
