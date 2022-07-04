@@ -29,10 +29,11 @@ operations:
         kubectl annotate -f $x --overwrite "meta.helm.sh/release-name"=ingress-nginx-platform && rm -rf "$x" || true
   - version: 0.16.9
     pre:
-      # release kubernetes-external-secrets moved to external-secrets
+      # release kubernetes-external-secrets moved to external-secrets and was upgraded (so we apply crds)
       - x=`mktemp` && helm -n vault get manifest kubernetes-external-secrets >$x &&
-        kubectl annotate -f $x --overwrite "meta.helm.sh/release-name"=external-secrets && rm -rf "$x" || true
-  - version: 0.16.10 # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
+        kubectl annotate -f $x --overwrite "meta.helm.sh/release-name"=external-secrets && rm -rf "$x" &&
+        kubectl apply -f charts/kubernetes-external-secrets/crds || true
+  - version: 0.16.10
     pre:
       # release drone moved to its own namespace, so uninstall
       - helm -n team-admin list | grep drone && helm -n team-admin uninstall drone || true
