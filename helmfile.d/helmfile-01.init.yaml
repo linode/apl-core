@@ -22,7 +22,7 @@ releases:
     values:
       - ../values/gatekeeper/gatekeeper.gotmpl
       - snippets/common.gotmpl
-    <<: *preUpgrade
+    <<: *upgrade
   - name: gatekeeper-artifacts
     installed: {{ $a | get "gatekeeper.enabled" }}
     needs: [gatekeeper]

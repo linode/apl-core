@@ -13,7 +13,7 @@ import { getCurrentVersion, getImageTag } from '../common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { ProcessOutputTrimmed } from '../common/zx-enhance'
 import { commit } from './commit'
-import { preUpgrade } from './pre-upgrade'
+import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -33,7 +33,7 @@ const setup = (): void => {
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
-  await preUpgrade({})
+  await upgrade({ when: 'pre' })
   d.info('Start apply all')
   const prevState = await getDeploymentState()
   d.debug(`Deployment state: ${JSON.stringify(prevState)}`)
@@ -77,6 +77,7 @@ const applyAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
+  await upgrade({ when: 'post' })
   if (!env.DISABLE_SYNC)
     if (!isCli || isEmpty(prevState.status))
       // commit first time when not deployed only, always commit in chart (might have previous failure)

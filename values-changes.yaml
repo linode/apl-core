@@ -6,6 +6,7 @@ changes:
     renamings:
       - env/charts: env/apps
       - env/apps/gatekeeper-operator.yaml: env/apps/gatekeeper.yaml
+      - env/apps/kiali-operator.yaml: env/apps/kiali.yaml
       - env/apps/nginx-ingress.yaml: env/apps/ingress-nginx.yaml
       - env/apps/prometheus-operator.yaml: env/apps/prometheus.yaml
     relocations:
@@ -13,6 +14,7 @@ changes:
       - teamConfig.teams: teamConfig
       - apps.kubernetes-external-secrets: apps.external-secrets
       - apps.gatekeeper-operator: apps.gatekeeper
+      - apps.kiali-operator: apps.kiali
       - apps.nginx-ingress: apps.ingress-nginx
       - apps.prometheus-operator: apps.prometheus
       - apps.prometheus.grafana: apps.grafana

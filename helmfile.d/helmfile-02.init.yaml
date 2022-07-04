@@ -61,7 +61,7 @@ releases:
     chart: ../charts/ingress-nginx
     values:
       - ../values/ingress-nginx/ingress-nginx.gotmpl
-    <<: *preUpgrade
+    <<: *upgrade
 {{- end }}
   - name: operator-lifecycle-manager
     installed: true

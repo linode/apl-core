@@ -1,31 +1,45 @@
 # Upgrade commands between versions are configured in this file, and executed in bash (FROM ubuntu:20.04)
+#
 # Options:
-# - operations: will run before applying all
-# - releases.*.operations will run just in time before syncing that particular release takes place
+# - pre: will run before applying all
+# - post: will run after applying all
+# - releases.*.pre will run just in time before syncing that particular release takes place
+# - releases.*.post will run immediately after syncing that particular release
 #
 # NOTE:
 # - $(...) can't be used, but backticks can: `...`
-# - no comments allowed as commands get transformed into oneline
+# - go templating can be used, but not inside backticked subcommands
+# - no comments allowed as commands get transformed into oneliner TODO: move commands to own scripts
 #
 # Special case for development:
 #
 # When a version is set to "dev" it will be selected no matter what. This allows to test an upgrade record's effect.
 # (don't forget to set it to the next release version before releasing!)
 
-changes:
+operations:
+  - version: 0.16.7
+    pre:
+      # release knative-init was renamed to knative-operator
+      - x=`mktemp` && helm -n default get manifest knative-init >$x &&
+        kubectl annotate -f $x --overwrite "meta.helm.sh/release-name"=knative-operator && rm -rf "$x" || true
+      # release overprovisioner moved to cluster-overprovisioner in new namespace, so uninstall (also ns)
+      - helm -n overprovisioner list | grep overprovisioner && helm -n uninstall overprovisioner && kubectl delete ns overprovisioner || true
+      # release ingress-nginx moved to ingress-nginx-platform
+      - x=`mktemp` && helm -n ingress get manifest ingress-nginx >$x &&
+        kubectl annotate -f $x --overwrite "meta.helm.sh/release-name"=ingress-nginx-platform && rm -rf "$x" || true
   - version: 0.16.9
-    releases:
-      external-secrets:
-        operations:
-          - helm -n vault list | grep kubernetes-external-secrets-6.1.0 >/dev/null && helm -n vault uninstall kubernetes-external-secrets && kubectl apply -f $PWD/charts/kubernetes-external-secrets/crds || true
+    pre:
+      # release kubernetes-external-secrets moved to external-secrets
+      - x=`mktemp` && helm -n vault get manifest kubernetes-external-secrets >$x &&
+        kubectl annotate -f $x --overwrite "meta.helm.sh/release-name"=external-secrets && rm -rf "$x" || true
   - version: 0.16.10 # TODO: potentially published in next release (0.16.* or 0.17.0 depending on breaking changes introduced)
-    operations:
-      # we moved drone to its own namespace
+    pre:
+      # release drone moved to its own namespace, so uninstall
       - helm -n team-admin list | grep drone && helm -n team-admin uninstall drone || true
       # we need to patch ownership of all podmonitors which are now published by team-ns-* instead of prometheus-*
       - |
-        for id in "{{ keys (omit .teamConfig "admin") | join " " }}"; do 
-          for p in `kubectl -n "team-$id" get podmonitor`; do
-            kubectl -n team-$id patch podmonitor $p --type merge -p {"annotations":{"meta.helm.sh/release-name":"team-ns-$id","meta.helm.sh/release-namespace":"team-$id"}}
+        for id in {{ keys (omit .teamConfig "admin") | join " " }}; do 
+          for p in `kubectl -n "team-$id" get podmonitor | tail -n +2 | awk '{print $1}'`; do
+            kubectl -n "team-$id" annotate podmonitor/$p --overwrite "meta.helm.sh/release-name"=team-ns-$id
           done
         done

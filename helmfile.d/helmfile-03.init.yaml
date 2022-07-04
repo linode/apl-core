@@ -33,13 +33,14 @@ releases:
   - name: knative-serving-artifacts
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-serving
+    needs: [default/knative-operator]
     chart: ../charts/raw
     labels:
       init: true
       pkg: knative
     values:
       - ../values/knative/knative-serving-raw.gotmpl
-    <<: *preUpgrade
+    <<: *upgrade
   - name: knative-operator
     installed: {{ $a | get "knative.enabled" }}
     namespace: default
@@ -63,4 +64,4 @@ releases:
     values:
       - ../values/vault-operator/vault-operator.gotmpl
       - {{- $v.apps.vault | get "_rawValues" dict | toYaml | nindent 8 }}
-    <<: *preUpgrade
+    <<: *upgrade
