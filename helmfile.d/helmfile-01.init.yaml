@@ -28,6 +28,7 @@ releases:
     needs: [gatekeeper]
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper-artifacts
+    disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     hooks:
@@ -43,6 +44,7 @@ releases:
     needs: [gatekeeper-artifacts]
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper-constraints
+    disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     values:

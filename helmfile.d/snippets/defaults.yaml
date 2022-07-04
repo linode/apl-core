@@ -119,6 +119,11 @@ environments:
             enabled: false
           loki:
             enabled: false
+          metrics-server:
+            apiServer:
+              create: true
+            extraArgs:
+              kubelet-preferred-address-types: InternalIP
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api: {}

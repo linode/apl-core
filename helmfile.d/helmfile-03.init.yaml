@@ -34,6 +34,7 @@ releases:
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-serving
     needs: [default/knative-operator]
+    disableValidationOnInstall: true
     chart: ../charts/raw
     labels:
       init: true
