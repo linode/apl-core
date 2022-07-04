@@ -14,7 +14,6 @@ bases:
 releases:
   - name: vault-operator
     installed: {{ $a | get "vault.enabled" }}
-    disableValidationOnInstall: true
     namespace: vault
     labels:
       pkg: vault

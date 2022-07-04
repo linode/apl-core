@@ -18,7 +18,6 @@ releases:
     installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper
-    disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     values:

@@ -15,7 +15,6 @@ releases:
   - name: istio-operator
     installed: true
     namespace: istio-operator
-    disableValidationOnInstall: true
     labels:
       pkg: istio
     <<: *default
