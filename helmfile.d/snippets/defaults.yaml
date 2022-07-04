@@ -29,7 +29,7 @@ environments:
             domainFilters: []
           external-secrets:
             logLevel: info
-            pollingInterval: 60000
+            pollerIntervalMilliseconds: 60000
           gatekeeper:
             enabled: false
             auditFromCache: false

@@ -1992,7 +1992,7 @@ properties:
             type: boolean
           logLevel:
             $ref: '#/definitions/logLevel'
-          pollingInterval:
+          pollerIntervalMilliseconds:
             type: integer
             default: 60000
       kube-descheduler:
