@@ -12,10 +12,11 @@ This log lists the architectural decisions for otomi-core.
 * [ADR-2021-10-28](2021-10-28-internal-values.md) - Internal values
 * [ADR-2022-03-24](2022-03-24-custom-ca.md) - urice:
 * [ADR-2022-04-22](2022-04-22-values-migration.md) - Values migration
-* [ADR-2022-04-23](2022-04-23-pre-upgrade.md) - A new otomi pre-upgrade command
+* [ADR-2022-04-23](2022-04-23-upgrade.md) - A new otomi pre-upgrade command
 * [ADR-2022-05-17](2022-05-17-destroy-upon-uninstall.md) - Extra flags to accomodate destroy upon uninstall
 * [ADR-2022-06-07](2022-06-07-ingress-classes.md) - Ingress classes
 * [ADR-2022-07-02](2022-07-02-node-affinity.md) - Node affinity
+* [ADR-2022-07-03](2022-07-03-helmfile-dependencies.md) - Helmfile dependencies
 
 <!-- adrlogstop -->
 
