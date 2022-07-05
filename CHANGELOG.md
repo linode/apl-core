@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.10](https://github.com/redkubes/otomi-core/compare/v0.16.9...v0.16.10) (2022-07-04)
+
+### Features
+
+- **gatekeeper:** gatekeeper now forcing node affinity for platform if asked ([eaa7283](https://github.com/redkubes/otomi-core/commit/eaa7283a1cd7b5aa77f9fbc140018a6ca85f2073))
+
+### Bug Fixes
+
+- drone into own namespace, ingress regression ([e172a79](https://github.com/redkubes/otomi-core/commit/e172a79eb8a4f861db20c97f5f95d16b67d6fc43))
+- istio cruft cleanup, kiali now using openid ([d7f6912](https://github.com/redkubes/otomi-core/commit/d7f691237c2f4e6c59c699947bd9e73a34f61ac9))
+- kiali secret, upgrades exit code, team prom [ci skip] ([7982c78](https://github.com/redkubes/otomi-core/commit/7982c78b4fee9dd62bd4cf8c9034ab73a2cb5a3d))
+- labelselectors prometheus, autoscaler updated ([7811e16](https://github.com/redkubes/otomi-core/commit/7811e16163a97eba4872fc762f4b35a303f4cb4c))
+- prom crd install location, more service monitors ([c610977](https://github.com/redkubes/otomi-core/commit/c6109774581790c5e90cb368808bad508ccdd0fe))
+- prometheus chart ([2715171](https://github.com/redkubes/otomi-core/commit/27151711e9d9a380b2c825127c557855e940e53d))
+- prometheus configurables for scraping and replicas, harbor task bump ([607f910](https://github.com/redkubes/otomi-core/commit/607f910a48703acd483665e1fb01b157c4f9ff25))
+- rawvalues for all crs, kiali resources ([d07078e](https://github.com/redkubes/otomi-core/commit/d07078ebd3a94c14bfc10d77f71c21a804966adf))
+- updated gitea task with drone namespace, alphasorted policies to avoid diff ([f14605c](https://github.com/redkubes/otomi-core/commit/f14605cb07812e1033a4e1d2472548e84b58c63a))
+- upgrades split in pre and post operations, added upgrades, kiali migration ([fd7caa3](https://github.com/redkubes/otomi-core/commit/fd7caa3894a891d8242aa706ef247a1ef9fe0193))
+- values repo should not be init-ed ([#816](https://github.com/redkubes/otomi-core/issues/816)) ([a42cc2c](https://github.com/redkubes/otomi-core/commit/a42cc2c7c6989a6b192de55811015f4090a34e28))
+
+### Code Refactoring
+
+- removed unneeded helmfile [ci skip] ([320b5ab](https://github.com/redkubes/otomi-core/commit/320b5ab7ce2d950269fed64327b8f7c050d9c51b))
+- supressing expected git error for regular verbosity ([145132c](https://github.com/redkubes/otomi-core/commit/145132c5b30c5944e6723b4327056e60a843aeb6))
+
+### Others
+
+- **deps:** pinned api + console [ci skip] ([6dcb56b](https://github.com/redkubes/otomi-core/commit/6dcb56b255a19c78c05c8fff1c95ac6572aa93b5))
+
 ### [0.16.9](https://github.com/redkubes/otomi-core/compare/v0.16.8...v0.16.9) (2022-06-27)
 
 ### Bug Fixes
