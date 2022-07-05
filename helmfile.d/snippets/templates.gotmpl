@@ -1,22 +1,22 @@
 templates:
   upgrade: &upgrade
     hooks:
-      - events: ["presync"]
+      - events: [presync]
         showlogs: true
         command: ../binzx/otomiw
         args:
           - upgrade
           - -r
-          - "{{ .Release.Name }}"
+          - '{{ .Release.Name }}'
           - -w
           - pre
-      - events: ["postsync"]
+      - events: [postsync]
         showlogs: true
         command: ../binzx/otomiw
         args:
           - upgrade
           - -r
-          - "{{ .Release.Name }}"
+          - '{{ .Release.Name }}'
           - -w
           - post
   default: &default
@@ -39,11 +39,11 @@ templates:
     namespace: maintenance
     chart: ../charts/jobs
     hooks:
-      - events: ["presync"]
+      - events: [presync]
         showlogs: true
         command: ../bin/job-presync.sh
         args:
-          - "{{ .Release.Name }}"
+          - '{{ .Release.Name }}'
           - OnSpecChange
     values:
       - ../values/jobs/{{ .Release.Name | replace "job-" "" }}.gotmpl
@@ -53,32 +53,32 @@ templates:
       - events: [prepare]
         showlogs: true
         command: ../bin/skeleton-chart.sh
-        args: ["{{ .Release.Name }}", "{{ .Values.cluster.k8sVersion }}"]
-      - events: ["presync"]
+        args: ['{{ .Release.Name }}', '{{ .Values.cluster.k8sVersion }}']
+      - events: [presync]
         showlogs: true
         command: ../binzx/otomiw
         args:
           - upgrade
           - -r
-          - "{{ .Release.Name }}"
+          - '{{ .Release.Name }}'
           - -w
           - pre
-      - events: ["postsync"]
+      - events: [postsync]
         showlogs: true
         command: ../binzx/otomiw
         args:
           - upgrade
           - -r
-          - "{{ .Release.Name }}"
+          - '{{ .Release.Name }}'
           - -w
           - post
   wait: &wait
     namespace: maintenance
     chart: ../charts/wait-for
     hooks:
-      - events: ["presync"]
+      - events: [presync]
         showlogs: true
         command: ../bin/job-presync.sh
         args:
-          - "{{ .Release.Name }}"
+          - '{{ .Release.Name }}'
           - OnSpecChange

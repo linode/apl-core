@@ -1,11 +1,32 @@
-# @title Containers must not allow sysctls
+# METADATA
+# title: Containers must not allow sysctls
+# description: |-
+#   Deny using sysctls
 #
-# Deny using sysctls
-#
-# Sysctls can disable security mechanisms or affect all containers on a host, 
-# and should be disallowed except for an allowed "safe" subset.
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
+#   Sysctls can disable security mechanisms or affect all containers on a host,
+#   and should be disallowed except for an allowed "safe" subset.
+# custom:
+#   matchers:
+#     kinds:
+#     - apiGroups:
+#       - ""
+#       kinds:
+#       - Pod
+#     - apiGroups:
+#       - apps
+#       kinds:
+#       - DaemonSet
+#       - Deployment
+#       - StatefulSet
+#     - apiGroups:
+#       - batch
+#       kinds:
+#       - CronJob
+#       - Job
+#     - apiGroups:
+#       - serving.knative.dev
+#       kinds:
+#       - Service
 package pspforbiddensysctls
 
 import data.lib.core

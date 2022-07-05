@@ -16,7 +16,6 @@ releases:
     installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper
-    disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     values:
@@ -28,13 +27,15 @@ releases:
     needs: [gatekeeper]
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper-artifacts
+    # we have to disable validation as helmfile has a bug (it aggregates all manifests for all deps)
+    # https://github.com/helmfile/helmfile/issues/208 (TODO: check for updates)
     disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
     hooks:
-      - events: ["prepare"]
+      - events: [prepare]
         showlogs: true
-        command: "../bin/build-gatekeeper-artifacts.sh"
+        command: ../bin/build-gatekeeper-artifacts.sh
         args: [true]
     values:
       - ../values/gatekeeper/gatekeeper-artifacts.gotmpl
@@ -44,6 +45,7 @@ releases:
     needs: [gatekeeper-artifacts]
     namespace: gatekeeper-system
     chart: ../charts/gatekeeper-constraints
+    # same here:
     disableValidationOnInstall: true
     labels:
       pkg: gatekeeper

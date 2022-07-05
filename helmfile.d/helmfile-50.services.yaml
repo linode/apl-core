@@ -27,7 +27,6 @@ releases:
   - name: kubeapps
     installed: {{ $a | get "kubeapps.enabled" }}
     namespace: kubeapps
-    disableValidationOnInstall: true
     labels:
       pkg: kubeapps
     <<: *default

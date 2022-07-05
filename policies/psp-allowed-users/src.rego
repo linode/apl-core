@@ -1,7 +1,27 @@
-# @title Containers must run with allowed user and group ranges
-#
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
+# METADATA
+# title: Containers must run with allowed user and group ranges
+# custom:
+#   matchers:
+#     kinds:
+#     - apiGroups:
+#       - ""
+#       kinds:
+#       - Pod
+#     - apiGroups:
+#       - apps
+#       kinds:
+#       - DaemonSet
+#       - Deployment
+#       - StatefulSet
+#     - apiGroups:
+#       - batch
+#       kinds:
+#       - CronJob
+#       - Job
+#     - apiGroups:
+#       - serving.knative.dev
+#       kinds:
+#       - Service
 package pspallowedusers
 
 import data.lib.core

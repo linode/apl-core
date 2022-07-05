@@ -166,12 +166,11 @@ definitions:
         x-secret: ''
       environment:
         title: Azure environment
-        description: An Azure environment. Don't specify this if you don't know what you are doing!
+        description: An Azure environment.
         type: string
-        default: AzureCloud
+        default: AzurePublicCloud
         enum:
           - AzurePublicCloud
-          - AzureCloud
           - AzureChinaCloud
           - AzureUSGovernment
           - AzureGermanCloud
@@ -2342,14 +2341,13 @@ properties:
             properties:
               azure:
                 properties:
-                  cloud:
-                    title: Cloud
-                    $ref: '#/definitions/wordCharacterPattern'
-                    description: Azure Cloud
+                  environment:
+                    $ref: '#/definitions/azure/definitions/environment'
                   resourceGroup:
                     $ref: '#/definitions/azure/definitions/resourceGroup'
                   hostedZoneName:
                     title: Hosted zone name
+                    description: Name of the DNS zone that should be used.
                     $ref: '#/definitions/wordCharacterPattern'
                   tenantId:
                     $ref: '#/definitions/azure/definitions/tenantId'
@@ -2371,14 +2369,14 @@ properties:
                   userAssignedIdentityID:
                     title: MSI id
                     type: string
-                    description: If you use Azure MSI, this is the Client ID of a Azure user-assigned managed identity. Not required for external-dns, but it is for cert-manager.
+                    description: If you use Azure MSI, this is the Client ID of a Azure user-assigned managed identity or resource id. Required for cert-manager.
                     x-secret: ''
                 required:
+                  - tenantId
                   - subscriptionId
                   - resourceGroup
                 oneOf:
                   - required:
-                      - tenantId
                       - aadClientId
                       - aadClientSecret
                   - required:

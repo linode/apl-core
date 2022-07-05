@@ -1,8 +1,28 @@
-# @title hostnetworkingports
-#
-# Containers must disable hostNetworking and port binding on the host
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
+# METADATA
+# title: hostnetworkingports
+# description: Containers must disable hostNetworking and port binding on the host
+# custom:
+#   matchers:
+#     kinds:
+#     - apiGroups:
+#       - ""
+#       kinds:
+#       - Pod
+#     - apiGroups:
+#       - apps
+#       kinds:
+#       - DaemonSet
+#       - Deployment
+#       - StatefulSet
+#     - apiGroups:
+#       - batch
+#       kinds:
+#       - CronJob
+#       - Job
+#     - apiGroups:
+#       - serving.knative.dev
+#       kinds:
+#       - Service
 package psphostnetworkingports
 
 import data.lib.core

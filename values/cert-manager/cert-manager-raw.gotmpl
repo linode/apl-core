@@ -52,7 +52,7 @@ resources:
                   name: "dns-secret"
                 {{- end }}
                 region: {{ .region }}
-                {{- with . "role" nil }}
+                {{- with . | get "role" nil }}
                 role: {{ . }}
                 {{- end }}
               {{- end }}
@@ -60,14 +60,14 @@ resources:
               azureDNS:
                 resourceGroupName: {{ .resourceGroup }}
                 subscriptionID: {{ .subscriptionId }}
-                {{- with . | get "aadClientId" nil }}
+                {{- if hasKey . "aadClientId" }}
                 tenantID: {{ .tenantId }}
-                clientID: {{ . }}
+                clientID: {{ .aadClientId }}
                 clientSecretSecretRef:
                   key: secret
                   name: "dns-secret"
                 {{- end }}
-                {{- if .useManagedIdentityExtension | default false }}
+                {{- if . | get "useManagedIdentityExtension" false }}
                 managedIdentity:
                   clientID: {{ .userAssignedIdentityID }}
                 {{- end }}

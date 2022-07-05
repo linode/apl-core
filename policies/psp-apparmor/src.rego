@@ -1,9 +1,30 @@
-# @title Containers must not use disallowed  AppArmor profiles
-#
-# Kubernetes AppArmor enforcement works by first checking that all the prerequisites have been met, 
-# and then forwarding the profile selection to the container runtime for enforcement
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Serviced
+# METADATA
+# title: Containers must not use disallowed  AppArmor profiles
+# description: |-
+#   Kubernetes AppArmor enforcement works by first checking that all the prerequisites have been met,
+#   and then forwarding the profile selection to the container runtime for enforcement
+# custom:
+#   matchers:
+#     kinds:
+#     - apiGroups:
+#       - ""
+#       kinds:
+#       - Pod
+#     - apiGroups:
+#       - apps
+#       kinds:
+#       - DaemonSet
+#       - Deployment
+#       - StatefulSet
+#     - apiGroups:
+#       - batch
+#       kinds:
+#       - CronJob
+#       - Job
+#     - apiGroups:
+#       - serving.knative.dev
+#       kinds:
+#       - Serviced
 package pspapparmor
 
 import data.lib.core

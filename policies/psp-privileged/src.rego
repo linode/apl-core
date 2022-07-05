@@ -1,10 +1,31 @@
-# @title Containers must not run as privileged
-#
-# Privileged containers can easily escalate to root privileges on the node. As
-# such containers running as privileged or with sufficient capabilities granted
-# to obtain the same effect are not allowed.
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
+# METADATA
+# title: Containers must not run as privileged
+# description: |-
+#   Privileged containers can easily escalate to root privileges on the node. As
+#   such containers running as privileged or with sufficient capabilities granted
+#   to obtain the same effect are not allowed.
+# custom:
+#   matchers:
+#     kinds:
+#     - apiGroups:
+#       - ""
+#       kinds:
+#       - Pod
+#     - apiGroups:
+#       - apps
+#       kinds:
+#       - DaemonSet
+#       - Deployment
+#       - StatefulSet
+#     - apiGroups:
+#       - batch
+#       kinds:
+#       - CronJob
+#       - Job
+#     - apiGroups:
+#       - serving.knative.dev
+#       kinds:
+#       - Service
 package pspprivileged
 
 import data.lib.core

@@ -1,7 +1,28 @@
-# @title Deny host filesystem  access
-# Containers should not allow hostpath volumes other than 
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
+# METADATA
+# title: Deny host filesystem  access
+# description: Containers should not allow hostpath volumes other than
+# custom:
+#   matchers:
+#     kinds:
+#     - apiGroups:
+#       - ""
+#       kinds:
+#       - Pod
+#     - apiGroups:
+#       - apps
+#       kinds:
+#       - DaemonSet
+#       - Deployment
+#       - StatefulSet
+#     - apiGroups:
+#       - batch
+#       kinds:
+#       - CronJob
+#       - Job
+#     - apiGroups:
+#       - serving.knative.dev
+#       kinds:
+#       - Service
 package psphostfilesystem
 
 import data.lib.core

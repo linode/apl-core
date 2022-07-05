@@ -1,9 +1,30 @@
-# @title Images must come from allowed repositories only
-#
-# We can have a list of allowed sources and deny 
-# all containers that do not come from a trusted repository source
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
+# METADATA
+# title: Images must come from allowed repositories only
+# description: |-
+#   We can have a list of allowed sources and deny
+#   all containers that do not come from a trusted repository source
+# custom:
+#   matchers:
+#     kinds:
+#     - apiGroups:
+#       - ""
+#       kinds:
+#       - Pod
+#     - apiGroups:
+#       - apps
+#       kinds:
+#       - DaemonSet
+#       - Deployment
+#       - StatefulSet
+#     - apiGroups:
+#       - batch
+#       kinds:
+#       - CronJob
+#       - Job
+#     - apiGroups:
+#       - serving.knative.dev
+#       kinds:
+#       - Service
 package allowedrepos
 
 import data.lib.core

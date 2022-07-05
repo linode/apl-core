@@ -147,10 +147,6 @@ releases:
   {{- end }}
   - name: team-ns-{{ $teamId }}
     installed: true
-    {{- if $a.prometheus.enabled }}
-    needs: 
-      - prometheus-{{ $teamId }}
-    {{- end }}
     namespace: team-{{ $teamId }}
     chart: ../charts/team-ns
     labels:
@@ -182,7 +178,7 @@ releases:
       tag: teams
       team: {{ $teamId }}
     hooks:
-      - events: ["presync"]
+      - events: [presync]
         showlogs: true
         command: ../bin/job-presync.sh
         args:

@@ -3,29 +3,27 @@ FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.23.6
+ARG KUBECTL_VERSION=1.23.8
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.8.2
+ARG HELM_VERSION=3.9.0
 # https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=3.4.2
+ARG HELM_DIFF_VERSION=3.5.0
 # https://github.com/jkroepke/helm-secrets/releases
-ARG HELM_SECRETS_VERSION=3.13.0
+ARG HELM_SECRETS_VERSION=3.14.0
 # https://github.com/mozilla/sops/releases
-ARG SOPS_VERSION=3.7.2
+ARG SOPS_VERSION=3.7.3
 # https://github.com/noqcks/gucci/releases
-ARG GUCCI_VERSION=1.5.4
-# https://github.com/roboll/helmfile/releases
-ARG HELMFILE_VERSION=0.144.0
+ARG GUCCI_VERSION=1.5.5
+# https://github.com/helmfile/helmfile/releases
+ARG HELMFILE_VERSION=0.145.0
 # https://github.com/open-policy-agent/opa/releases
-ARG OPA_VERSION=0.39.0
-# https://github.com/zegl/kube-score/releases
-ARG KUBESCORE_VERSION=1.14.0
+ARG OPA_VERSION=0.42.0
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.16.1
 # https://github.com/open-policy-agent/conftest/releases
-ARG CONFTEST_VERSION=0.31.0
+ARG CONFTEST_VERSION=0.32.1
 # https://github.com/plexsystems/konstraint/releases
-ARG KONSTRAINT_VERSION=0.19.0
+ARG KONSTRAINT_VERSION=0.21.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=16
 
@@ -95,8 +93,8 @@ RUN echo "exec \$*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
 RUN helm plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION}
 
 # helmfile
-ADD https://github.com/roboll/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_linux_amd64 helmfile
-RUN chmod +x helmfile
+ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_amd64.tar.gz /tmp
+RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_amd64.tar.gz -C /tmp && mv /tmp/helmfile helmfile
 
 # gucci
 ADD https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64 gucci
@@ -116,10 +114,6 @@ RUN chmod +x opa
 # kubeval
 ADD https://github.com/instrumenta/kubeval/releases/download/v${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
-
-# kubescore
-ADD https://github.com/zegl/kube-score/releases/download/v${KUBESCORE_VERSION}/kube-score_${KUBESCORE_VERSION}_linux_amd64 kube-score
-RUN chmod +x kube-score
 
 # conftest
 ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp

@@ -1,9 +1,21 @@
-# @title Containers must not allow added capabilities
-#
-# Privileged containers can easily escalate to root privileges on the node. 
-# As such containers with sufficient capabilities granted to obtain escalated access are not allowed.
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod
+# METADATA
+# title: Containers must not allow added capabilities
+# description: |-
+#   Privileged containers can easily escalate to root privileges on the node.
+#   As such containers with sufficient capabilities granted to obtain escalated access are not allowed.
+# custom:
+#   matchers:
+#     kinds:
+#     - apiGroups:
+#       - ""
+#       kinds:
+#       - Pod
+#     - apiGroups:
+#       - apps
+#       kinds:
+#       - DaemonSet
+#       - Deployment
+#       - StatefulSet
 package pspcapabilities
 
 import data.lib.core

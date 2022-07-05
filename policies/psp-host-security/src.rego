@@ -1,16 +1,37 @@
-# @title Pods must not run with access to the host 
+# METADATA
+# title: Pods must not run with access to the host
+# description: |-
+#   Pods that can access the host's process tree can view and attempt to
+#   modify processes outside of their namespace, breaking that security
+#   boundary.
 #
-# Pods that can access the host's process tree can view and attempt to
-# modify processes outside of their namespace, breaking that security
-# boundary.
+#   Pods that are allowed to access the host IPC can read memory of
+#   the other containers, breaking that security boundary.
 #
-# Pods that are allowed to access the host IPC can read memory of
-# the other containers, breaking that security boundary.
-#
-# Pods that can change aliases in the host's /etc/hosts file can
-# redirect traffic to malicious servers.
-#
-# @kinds apps/DaemonSet apps/Deployment apps/StatefulSet core/Pod batch/CronJob batch/Job serving.knative.dev/Service
+#   Pods that can change aliases in the host's /etc/hosts file can
+#   redirect traffic to malicious servers.
+# custom:
+#   matchers:
+#     kinds:
+#     - apiGroups:
+#       - ""
+#       kinds:
+#       - Pod
+#     - apiGroups:
+#       - apps
+#       kinds:
+#       - DaemonSet
+#       - Deployment
+#       - StatefulSet
+#     - apiGroups:
+#       - batch
+#       kinds:
+#       - CronJob
+#       - Job
+#     - apiGroups:
+#       - serving.knative.dev
+#       kinds:
+#       - Service
 package psphostsecurity
 
 import data.lib.core
