@@ -73,7 +73,7 @@ jobs:
       - name: Retrieve cluster id
         run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get integration-test-${{ github.sha }} --format ID --no-header` >> $GITHUB_ENV
       - name: Assign the cluster to the project
-        run: doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=do:cluster:${{ env.DIGITALOCEAN_CLUSTER_ID }}
+        run: doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
 
   push-to-docker:
     # needs: [build-test-cache, integration]
