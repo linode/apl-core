@@ -74,6 +74,9 @@ jobs:
         run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get integration-test-${{ github.sha }} --format ID --no-header` >> $GITHUB_ENV
       - name: Assign the cluster to the project
         run: doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
+        # --- Add Otomi setup here ---
+      - name: Remove the test cluster
+        run: doctl kubernetes cluster delete integration-test-${{ github.sha }} -f --dangerous
 
   push-to-docker:
     # needs: [build-test-cache, integration]
