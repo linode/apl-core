@@ -71,10 +71,9 @@ jobs:
             --wait
         # Also saves the kubeconfig by default
       - name: Retrieve cluster id
-        id: get_k8s_cluster_id
-        run: doctl kubernetes cluster get integration-test-${{ github.sha }} --format ID --no-header
+        run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get integration-test-${{ github.sha }} --format ID --no-header` >> $GITHUB_ENV
       - name: Assign the cluster to the project
-        run: doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=${{ steps.get_k8s_cluster_id.outputs.value }}
+        run: doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=do:cluster:${{ env.DIGITALOCEAN_CLUSTER_ID }}
 
   push-to-docker:
     # needs: [build-test-cache, integration]
