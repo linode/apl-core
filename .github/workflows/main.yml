@@ -10,7 +10,7 @@ env:
   CACHE_REPO: redkubes/otomi-core
   REPO: otomi/core
   GIT_USER: redkubesbot
-  DIGITALOCEAN_PROJECT: 8f3ba81d-2bfb-4b20-bb27-9c83c40b570d
+  DIGITALOCEAN_PROJECT: 888d7eee-cd33-4f22-8499-274c393f9b80
 
 jobs:
   build-test-cache:
