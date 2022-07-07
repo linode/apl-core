@@ -71,9 +71,8 @@ jobs:
             --wait
         # Also saves the kubeconfig by default
       - name: Retrieve cluster id
-        uses: sergeysova/jq-action@v2
         id: get-k8s-cluster-id
-        run: doctl kubernetes cluster get integration-test-${{ env.GITHUB_SHA }} -o json|jq -r '.[0].id'
+        run: doctl kubernetes cluster get integration-test-${{ env.GITHUB_SHA }} --format ID --no-header
       - name: Assign the cluster to the project
         run: doctl projects resources assign {{ env.DIGITALOCEAN_PROJECT }} --resource=${{ steps.get-k8s-cluster-id.outputs.value }}
 
