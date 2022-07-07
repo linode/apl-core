@@ -53,7 +53,7 @@ jobs:
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
   integration:
-    needs: build-test-cache
+    # needs: build-test-cache
     # skip integration check for releases, as the main they are derived from have already been integration tested:
     runs-on: ubuntu-latest
     steps:
@@ -63,11 +63,11 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Create k8s cluster for testing
         run: |
-          doctl kubernetes cluster create integration-test-${{ github.sha }} \                                                        
+          doctl kubernetes cluster create integration-test-${{ github.sha }} \
             --tag integration-test \
             --region ams3 \
             --vpc-uuid=2c840be3-de75-48c4-b0d6-66b214e2d39e \
-            --node-pool "name=pool-integration-test-${{ github.sha }};size=s-8vcpu-16gb;tag=integration-test;auto-scale=true;min-nodes=2;max-nodes=5;count=2;" \
+            --node-pool "name=pool-int-test-${{ github.sha }};size=s-8vcpu-16gb;tag=integration-test;auto-scale=true;min-nodes=2;max-nodes=5;count=2;" \
             --wait
         # Also saves the kubeconfig by default
       - name: Retrieve cluster id
