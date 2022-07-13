@@ -53,8 +53,7 @@ jobs:
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
   integration:
-    # needs: build-test-cache
-    # skip integration check for releases, as the main they are derived from have already been integration tested:
+    needs: build-test-cache
     runs-on: ubuntu-latest
     steps:
       - name: Install doctl
@@ -74,7 +73,20 @@ jobs:
         run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get integration-test-${{ github.sha }} --format ID --no-header` >> $GITHUB_ENV
       - name: Assign the cluster to the project
         run: doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
-        # --- Add Otomi setup here ---
+      - name: Save kubectl config with auth token
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_ID }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Otomi CLI install
+        run: |
+          image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
+          export ENV_DIR=`mktemp -d`
+          docker pull $image
+          docker tag $image $REPO:$TAG
+          export NOPULL=1
+          export OTOMI_TAG=$TAG 
+          binzx/otomi bootstrap
+          binzx/otomi apply
       - name: Remove the test cluster
         run: doctl kubernetes cluster delete integration-test-${{ github.sha }} -f --dangerous
 
