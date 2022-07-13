@@ -68,10 +68,14 @@ jobs:
             --vpc-uuid=2c840be3-de75-48c4-b0d6-66b214e2d39e \
             --node-pool "name=pool-int-test-${{ github.sha }};size=s-8vcpu-16gb;tag=integration-test;auto-scale=true;min-nodes=2;max-nodes=5;count=2;" \
             --wait
-          echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get integration-test-${{ github.sha }} --format ID --no-header` >> $GITHUB_ENV
-          doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
-          doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_ID }}
-          DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+      - name: Retrieve cluster id
+        run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get integration-test-${{ github.sha }} --format ID --no-header` >> $GITHUB_ENV
+      - name: Assign the cluster to the project
+        run: doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
+      - name: Save kubectl config with auth token
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_ID }}
+      - name: Get kubectl environment
+        run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v3
       - name: Prepare Otomi chart
@@ -82,7 +86,7 @@ jobs:
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/minimal.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/full.yaml
       - name: Otomi install
-        run: helm install --wait --wait-for-jobs otomi chart/otomi --values tests/integration/minimal.yaml
+        run: helm install --wait --wait-for-jobs --timeout 15m0s otomi chart/otomi --values tests/integration/minimal.yaml
       - name: Gather events on failure
         if: failure()
         run: |
