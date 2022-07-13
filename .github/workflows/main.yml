@@ -83,22 +83,10 @@ jobs:
         run: |
           sed --in-place 's/APP_VERSION_PLACEHOLDER/"${{ github.sha }}"/g' chart/otomi/Chart.yaml
           sed --in-place "s/CHART_PATCH_PLACEHOLDER/0/g" chart/otomi/Chart.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/minimal.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/full.yaml
       - name: Otomi install
-        uses: 'deliverybot/helm@v1'
-        with:
-          release: otomi
-          namespace: otomi
-          chart: chart/otomi
-          values: >-
-            cluster:
-              provider: digitalocean
-              k8sContext: ${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}
-          value-files: >-
-            [
-              "tests/integration/minimal.yaml"
-            ]
-        env:
-          KUBECONFIG_FILE: /home/runner/.kube/config
+        run: helm install --wait --wait-for-jobs otomi chart/otomi --values tests/integration/minimal.yaml
       - name: Gather events on failure
         if: failure()
         run: |
