@@ -53,7 +53,7 @@ jobs:
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
   integration:
-    needs: build-test-cache
+    # needs: build-test-cache
     runs-on: ubuntu-latest
     steps:
       - name: Install doctl
@@ -75,19 +75,37 @@ jobs:
         run: doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
       - name: Save kubectl config with auth token
         run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_ID }}
+      - name: Get kubectl environment
+        run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Otomi CLI install
+      - name: Prepare Otomi chart
         run: |
-          image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
-          export ENV_DIR=`mktemp -d`
-          docker pull $image
-          docker tag $image $REPO:$TAG
-          export NOPULL=1
-          export OTOMI_TAG=$TAG 
-          binzx/otomi bootstrap
-          binzx/otomi apply
+          sed --in-place 's/APP_VERSION_PLACEHOLDER/"${{ github.sha }}"/g' chart/otomi/Chart.yaml
+          sed --in-place "s/CHART_PATCH_PLACEHOLDER/0/g" chart/otomi/Chart.yaml
+      - name: Otomi install
+        uses: 'deliverybot/helm@v1'
+        with:
+          release: otomi
+          namespace: otomi
+          chart: chart/otomi
+          values: >-
+            cluster:
+              provider: digitalocean
+              k8sContext: ${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}
+          value-files: >-
+            [
+              "tests/integration/minimal.yaml"
+            ]
+        env:
+          KUBECONFIG_FILE: /home/runner/.kube/config
+      - name: Gather events on failure
+        if: failure()
+        run: |
+          kubectl get events --sort-by='.lastTimestamp' -A
+          kubectl logs jobs/otomi --tail 150
       - name: Remove the test cluster
+        if: always()
         run: doctl kubernetes cluster delete integration-test-${{ github.sha }} -f --dangerous
 
   push-to-docker:
