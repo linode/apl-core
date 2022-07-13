@@ -1,0 +1,5 @@
+# Minimal values file with defaults
+cluster:
+  k8sVersion: '1.22'
+  name: 'dev'
+  provider: digitalocean
