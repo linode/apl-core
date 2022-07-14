@@ -1,4 +1,5 @@
 {{- $kms := .Values.kms | default dict }}
+{{- $imageName := .Values.imageName | default "otomi/core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 apiVersion: batch/v1
 kind: Job
@@ -21,8 +22,14 @@ spec:
         runAsGroup: 999
       containers:
         - name: install
-          image: otomi/core:{{ $version }}
-          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
+          image: {{ $imageName }}:{{ $version }}
+          imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
+          {{- if hasKey .Values "imagePullSecretNames" }}
+          imagePullSecrets:
+            {{- range .Values.imagePullSecretNames }}
+            - name: {{ . }}
+            {{- end }}
+          {{- end }}
           resources:
             limits:
               memory: 2Gi

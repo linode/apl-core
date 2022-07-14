@@ -53,7 +53,7 @@ jobs:
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
   integration:
-    # needs: build-test-cache
+    needs: build-test-cache
     runs-on: ubuntu-latest
     steps:
       - name: Install doctl
@@ -76,6 +76,17 @@ jobs:
         run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_ID }}
       - name: Get kubectl environment
         run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+      - name: Login to Github Packages
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.CACHE_REGISTRY }}
+          username: ${{ env.GIT_USER }}
+          password: '${{ secrets.NPM_TOKEN }}'
+      - name: Create image pull secret on test cluster
+        run: |
+          kubectl create secret generic reg-otomi-github \
+            --from-file=.dockerconfigjson=~/.docker/config.json \
+            --type=kubernetes.io/dockerconfigjson
       - name: Checkout
         uses: actions/checkout@v3
       - name: Prepare Otomi chart
@@ -85,8 +96,13 @@ jobs:
           sed --in-place "s/CHART_PATCH_PLACEHOLDER/0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/minimal.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/full.yaml
+          cat << EOF > values-temp.yaml
+          imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
+          imagePullSecretNames:
+            - reg-otomi-github
+          EOF
       - name: Otomi install
-        run: helm install --wait --wait-for-jobs --timeout 15m0s otomi chart/otomi --values tests/integration/minimal.yaml
+        run: helm install --wait --wait-for-jobs --timeout 25m0s otomi chart/otomi --values tests/integration/minimal.yaml --values values-temp.yaml
       - name: Gather events on failure
         if: failure()
         run: |
