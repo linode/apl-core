@@ -24,12 +24,6 @@ spec:
         - name: install
           image: {{ $imageName }}:{{ $version }}
           imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
-          {{- if hasKey .Values "imagePullSecretNames" }}
-          imagePullSecrets:
-            {{- range .Values.imagePullSecretNames }}
-            - name: {{ . }}
-            {{- end }}
-          {{- end }}
           resources:
             limits:
               memory: 2Gi
@@ -65,3 +59,9 @@ spec:
             secretName: {{ .Release.Name }}-values
         - name: otomi-values
           emptyDir: {}
+      {{- if hasKey .Values "imagePullSecretNames" }}
+      imagePullSecrets:
+        {{- range .Values.imagePullSecretNames }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
