@@ -86,7 +86,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Prepare Otomi chart
         run: |
-          sed --in-place 's/APP_VERSION_PLACEHOLDER/${{ env.TAG }}/g' chart/otomi/Chart.yaml
+          tag=${GITHUB_REF##*/}
+          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/CHART_PATCH_PLACEHOLDER/0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/minimal.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/full.yaml
