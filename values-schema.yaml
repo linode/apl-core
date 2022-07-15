@@ -1,4 +1,4 @@
-$schema: 'http://json-schema.org/draft-07/schema'
+schema: 'http://json-schema.org/draft-07/schema'
 version: 3
 additionalProperties: true
 definitions:
@@ -2308,6 +2308,25 @@ properties:
                 $ref: '#/definitions/imageTag'
           resources:
             $ref: '#/definitions/resources'
+      velero:
+        description: Velero for backing up and restoring, performing disaster recovery, and migrating Kubernetes cluster resources.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          logLevel:
+            enum:
+              #TODO
+              - debug
+              - info
+              - warning
+              - error
+              - fatal
+              - panic
+            #TODO look into all properties
+
   cluster:
     $ref: '#/definitions/cluster'
   dns:

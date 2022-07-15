@@ -1,0 +1,227 @@
+{{- if .Values.configuration.provider -}}
+{{- $provider := .Values.configuration.provider -}}
+{{/* 'securityContext' got renamed to 'podSecurityContext', merge both dicts into one for backward compatibility */}}
+{{- $podSecurityContext := merge (.Values.podSecurityContext | default dict) (.Values.securityContext | default dict) -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "velero.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "velero.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "velero.chart" . }}
+    component: velero
+    {{- with .Values.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "velero.name" . }}
+  template:
+    metadata:
+      labels:
+        name: velero
+        app.kubernetes.io/name: {{ include "velero.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        helm.sh/chart: {{ include "velero.chart" . }}
+        {{- if .Values.podLabels }}
+          {{- toYaml .Values.podLabels | nindent 8 }}
+        {{- end }}
+    {{- if or .Values.podAnnotations .Values.metrics.enabled }}
+      annotations:
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.metrics.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    spec:
+    {{- if .Values.image.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.imagePullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+    {{- end }}
+      restartPolicy: Always
+      serviceAccountName: {{ include "velero.serverServiceAccount" . }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ include "velero.priorityClassName" . }}
+      {{- end }}
+      containers:
+        - name: velero
+      {{- if .Values.image.digest }}
+          image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+      {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+      {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.metrics.enabled }}
+          ports:
+            - name: http-monitoring
+              containerPort: 8085
+          {{- end }}
+          command:
+            - /velero
+          args:
+            - server
+          {{- with .Values.configuration }}
+            {{- with .backupSyncPeriod }}
+            - --backup-sync-period={{ . }}
+            {{- end }}
+            {{- with .resticTimeout }}
+            - --restic-timeout={{ . }}
+            {{- end }}
+            {{- if .restoreOnlyMode }}
+            - --restore-only
+            {{- end }}
+            {{- with .restoreResourcePriorities }}
+            - --restore-resource-priorities={{ . }}
+            {{- end }}
+            {{- with .features }}
+            - --features={{ . }}
+            {{- end }}
+            {{- with .logLevel }}
+            - --log-level={{ . }}
+            {{- end }}
+            {{- with .logFormat }}
+            - --log-format={{ . }}
+            {{- end }}
+            {{- if .defaultVolumesToRestic }}
+            - --default-volumes-to-restic
+            {{- end }}
+            {{- with .defaultResticPruneFrequency }}
+            - --default-restic-prune-frequency={{ . }}
+            {{- end }}
+            {{- with .clientQPS }}
+            - --client-qps={{ . }}
+            {{- end }}
+            {{- with .clientBurst }}
+            - --client-burst={{ . }}
+            {{- end }}
+            {{- with .disableControllers }}
+            - --disable-controllers={{ . }}
+            {{- end }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: plugins
+              mountPath: /plugins
+            {{- if .Values.credentials.useSecret }}
+            - name: cloud-credentials
+              mountPath: /credentials
+            {{- end }}
+            - name: scratch
+              mountPath: /scratch
+            {{- if .Values.containerSecurityContext.readOnlyRootFilesystem }}
+            - name: tmpdir
+              mountPath: /tmp
+            {{- end }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- if .Values.credentials.extraSecretRef }}
+          envFrom:
+          - secretRef:
+              name: {{ .Values.credentials.extraSecretRef }}
+        {{- end }}
+          env:
+            - name: VELERO_SCRATCH_DIR
+              value: /scratch
+            - name: VELERO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: LD_LIBRARY_PATH
+              value: /plugins
+          {{- if .Values.credentials.useSecret }}
+            {{- if eq $provider "aws" }}
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /credentials/cloud
+            {{- else if eq $provider "gcp"}}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /credentials/cloud
+            {{- else if eq $provider "azure" }}
+            - name: AZURE_CREDENTIALS_FILE
+              value: /credentials/cloud
+            {{- else if eq $provider "alibabacloud" }}
+            - name: ALIBABA_CLOUD_CREDENTIALS_FILE
+              value: /credentials/cloud
+            {{- end }}
+          {{- end }}
+          {{- with .Values.configuration.extraEnvVars }}
+          {{- range $key, $value := . }}
+            - name: {{ default "none" $key }}
+              value: {{ default "none" $value | quote }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.credentials.extraEnvVars }}
+          {{- range $key, $value := . }}
+            - name: {{ default "none" $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "velero.secretName" $ }}
+                  key: {{ default "none" $key }}
+          {{- end }}
+          {{- end }}
+      dnsPolicy: {{ .Values.dnsPolicy }}
+{{- if .Values.initContainers }}
+      initContainers:
+        {{- if eq (typeOf .Values.initContainers) "string" }}
+        {{- tpl .Values.initContainers . | nindent 8 }}
+        {{- else }}
+        {{- toYaml .Values.initContainers | nindent 8 }}
+        {{- end }}
+{{- end }}
+      volumes:
+        {{- if .Values.credentials.useSecret }}
+        - name: cloud-credentials
+          secret:
+            secretName: {{ include "velero.secretName" . }}
+        {{- end }}
+        - name: plugins
+          emptyDir: {}
+        - name: scratch
+          emptyDir: {}
+        {{- if .Values.containerSecurityContext.readOnlyRootFilesystem }}
+        - name: tmpdir
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.extraVolumes }}
+        {{- toYaml .Values.extraVolumes | nindent 8 }}
+        {{- end }}
+    {{- with $podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end -}}

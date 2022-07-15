@@ -1,0 +1,175 @@
+{{- if .Values.deployRestic }}
+{{- $provider := .Values.configuration.provider -}}
+{{/* 'restic.securityContext' got renamed to 'restic.containerSecurityContext', merge both dicts into one for backward compatibility */}}
+{{- $containerSecurityContext := merge (.Values.restic.containerSecurityContext | default dict) (.Values.restic.securityContext | default dict) -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: restic
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.restic.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "velero.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "velero.chart" . }}
+    {{- with .Values.restic.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      name: restic
+  template:
+    metadata:
+      labels:
+        name: restic
+        app.kubernetes.io/name: {{ include "velero.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        helm.sh/chart: {{ include "velero.chart" . }}
+      {{- if .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+    {{- if .Values.image.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.imagePullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+    {{- end }}
+      serviceAccountName: {{ include "velero.serverServiceAccount" . }}
+      {{- with .Values.restic.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.restic.priorityClassName }}
+      priorityClassName: {{ include "velero.restic.priorityClassName" . }}
+      {{- end }}
+      volumes:
+        {{- if .Values.credentials.useSecret }}
+        - name: cloud-credentials
+          secret:
+            secretName: {{ include "velero.secretName" . }}
+        {{- end }}
+        - name: host-pods
+          hostPath:
+            path: {{ .Values.restic.podVolumePath }}
+        {{- if .Values.restic.useScratchEmptyDir }}
+        - name: scratch
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.restic.extraVolumes }}
+        {{- toYaml .Values.restic.extraVolumes | nindent 8 }}
+        {{- end }}
+      dnsPolicy: {{ .Values.restic.dnsPolicy }}
+      containers:
+        - name: restic
+        {{- if .Values.image.digest }}
+          image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+        {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /velero
+          args:
+            - restic
+            - server
+          {{- with .Values.configuration }}
+            {{- with .features }}
+            - --features={{ . }}
+            {{- end }}
+            {{- with .logLevel }}
+            - --log-level={{ . }}
+            {{- end }}
+            {{- with .logFormat }}
+            - --log-format={{ . }}
+            {{- end }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.credentials.useSecret }}
+            - name: cloud-credentials
+              mountPath: /credentials
+            {{- end }}
+            - name: host-pods
+              mountPath: /host_pods
+              mountPropagation: HostToContainer
+            {{- if .Values.restic.useScratchEmptyDir }}
+            - name: scratch
+              mountPath: /scratch
+            {{- end }}
+            {{- if .Values.restic.extraVolumeMounts }}
+            {{- toYaml .Values.restic.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- if .Values.credentials.extraSecretRef }}
+          envFrom:
+          - secretRef:
+              name: {{ .Values.credentials.extraSecretRef }}
+        {{- end }}
+          env:
+            - name: VELERO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: VELERO_SCRATCH_DIR
+              value: /scratch
+          {{- if .Values.credentials.useSecret }}
+            {{- if eq $provider "aws" }}
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /credentials/cloud
+            {{- else if eq $provider "gcp" }}
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /credentials/cloud
+            {{- else if eq $provider "azure" }}
+            - name: AZURE_CREDENTIALS_FILE
+              value: /credentials/cloud
+            {{- else if eq $provider "alibabacloud" }}
+            - name: ALIBABA_CLOUD_CREDENTIALS_FILE
+              value: /credentials/cloud
+            {{- end }}
+          {{- end }}
+          {{- with .Values.configuration.extraEnvVars }}
+          {{- range $key, $value := . }}
+            - name: {{ default "none" $key }}
+              value: {{ default "none" $value | quote }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.credentials.extraEnvVars }}
+          {{- range $key, $value := . }}
+            - name: {{ default "none" $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "velero.secretName" $ }}
+                  key: {{ default "none" $key }}
+          {{- end }}
+          {{- end }}
+          securityContext:
+            privileged: {{ .Values.restic.privileged }}
+            {{- with $containerSecurityContext }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.restic.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.restic.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.restic.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
