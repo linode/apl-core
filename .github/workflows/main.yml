@@ -52,8 +52,7 @@ jobs:
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
-  integration:
-    needs: build-test-cache
+  create-integration-test-cluster:
     runs-on: ubuntu-latest
     steps:
       - name: Install doctl
@@ -68,6 +67,17 @@ jobs:
             --vpc-uuid=2c840be3-de75-48c4-b0d6-66b214e2d39e \
             --node-pool "name=pool-int-test-${{ github.sha }};size=s-8vcpu-16gb;tag=integration-test;auto-scale=true;min-nodes=2;max-nodes=5;count=2;" \
             --wait
+
+  integration:
+    needs:
+      - build-test-cache
+      - create-integration-test-cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Retrieve cluster id
         run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get integration-test-${{ github.sha }} --format ID --no-header` >> $GITHUB_ENV
       - name: Assign the cluster to the project
@@ -103,14 +113,22 @@ jobs:
         run: |
           kubectl get events --sort-by='.lastTimestamp' -A
           kubectl logs jobs/otomi --tail 150
+
+  cleanup-integration-test-cluster:
+    needs: integration
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Remove the test cluster
         if: always()
         run: doctl kubernetes cluster delete integration-test-${{ github.sha }} -f --dangerous
 
   push-to-docker:
-    # needs: [build-test-cache, integration]
-    needs: build-test-cache
-    # needs: [build-test-cache]
+    needs: integration
     if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
     runs-on: ubuntu-latest
     steps:
