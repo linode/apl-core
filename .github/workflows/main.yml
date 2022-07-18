@@ -65,7 +65,7 @@ jobs:
             --tag integration-test \
             --region ams3 \
             --vpc-uuid=2c840be3-de75-48c4-b0d6-66b214e2d39e \
-            --node-pool "name=pool-int-test-${{ github.sha }};size=s-8vcpu-16gb;tag=integration-test;auto-scale=true;min-nodes=2;max-nodes=5;count=2;" \
+            --node-pool "name=pool-int-test-${{ github.sha }};size=s-8vcpu-16gb;tag=integration-test;auto-scale=true;min-nodes=2;max-nodes=5;count=3;" \
             --wait
 
   integration:
@@ -107,7 +107,7 @@ jobs:
             - reg-otomi-github
           EOF
       - name: Otomi install
-        run: helm install --wait --wait-for-jobs --timeout 25m0s otomi chart/otomi --values tests/integration/minimal.yaml --values values-temp.yaml
+        run: helm install --wait --wait-for-jobs --timeout 30m0s otomi chart/otomi --values tests/integration/full.yaml --values values-temp.yaml
       - name: Gather events on failure
         if: failure()
         run: |
