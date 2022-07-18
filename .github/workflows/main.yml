@@ -54,6 +54,7 @@ jobs:
 
   create-integration-test-cluster:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -72,6 +73,7 @@ jobs:
     needs:
       - build-test-cache
       - create-integration-test-cluster
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Install doctl
@@ -117,14 +119,13 @@ jobs:
   cleanup-integration-test-cluster:
     needs: integration
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.ref == 'refs/heads/main'
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Remove the test cluster
-        if: always()
         run: doctl kubernetes cluster delete integration-test-${{ github.sha }} -f --dangerous
 
   push-to-docker:
