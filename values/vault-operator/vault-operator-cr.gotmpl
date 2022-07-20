@@ -221,16 +221,19 @@ spec:
         policies: 
         - allow-all-secrets
         metadata: {}
+      - name: admin
+        type: external
+        policies: 
+        - allow-all-secrets
+        metadata: {}
     group-aliases:
       {{- range $teamId, $team := $tc }}
-      {{- if ne $teamId "admin" }}
       - name: team-{{ $teamId }}
         group: team-{{ $teamId }}
         mountpath: oidc/
       {{- end }}
-      {{- end }}
-      - name: team-admin
-        group: team-admin
+      - name: admin
+        group: admin
         mountpath: oidc/
     secrets:
       - path: secret
@@ -243,7 +246,6 @@ spec:
     # See https://www.vaultproject.io/docs/secrets/kv/index.html for more information.
     startupSecrets:
     {{- range $teamId, $team := $tc }}
-      {{- if ne $teamId "admin" }}
       {{- if eq $teamId "demo" }}
       - type: kv
         path: secret/data/teams/team-{{ $teamId }}/mysecret-generic
@@ -257,12 +259,6 @@ spec:
           data:
             HELLO: "Welcome {{ $teamId }} team"
     {{- end }}
-    {{- end }}
-      - type: kv
-        path: secret/data/teams/team-admin/otomi-welcome
-        data:
-          data:
-            HELLO: "Welcome admin team"
 
   {{- if and (hasKey $seal "kmsKeyId") (hasKey $kms "gcpckms")  }}
   credentialsConfig:
