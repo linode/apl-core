@@ -1,0 +1,17 @@
+{{- $v := .Values }}
+{{- $V := $v.apps.velero }}
+
+global:
+
+velero:
+  logLevel: {{ $V.logLevel }}
+
+image:
+  repository: velero/velero
+  tag: {{ $V.image.tag }}
+  pullPolicy: {{ $V.image.pullPolicy }}
+  imagePullSecrets
+
+
+resources:
+  requests
