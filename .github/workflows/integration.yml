@@ -13,6 +13,10 @@ on:
           - full
 
 env:
+  CACHE_REGISTRY: ghcr.io
+  CACHE_REPO: redkubes/otomi-core
+  REPO: otomi/core
+  GIT_USER: redkubesbot
   DIGITALOCEAN_CLUSTER_REGION: ams3
   DIGITALOCEAN_NODE_SIZE: s-8vcpu-16gb
   DIGITALOCEAN_NODE_POOL_MIN_SIZE: 3
