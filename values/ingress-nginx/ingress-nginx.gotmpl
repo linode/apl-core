@@ -25,7 +25,7 @@ controller:
   admissionWebhooks:
     enabled: false
     patch:
-      priorityClassName: "otomi-critical"
+      priorityClassName: otomi-critical
   useComponentLabel: true
   # set fixed allocation with limits same as requests
   resources:
@@ -55,7 +55,7 @@ controller:
   nodeSelector: 
     beta.kubernetes.io/os: linux
 {{- end }}
-  priorityClassName: "otomi-critical"
+  priorityClassName: otomi-critical
   extraArgs:
     v: 3
     enable-ssl-passthrough: true
@@ -145,7 +145,7 @@ controller:
 defaultBackend:
   enabled: true
   useComponentLabel: true
-  priorityClassName: "otomi-critical"
+  priorityClassName: otomi-critical
   resources:
     limits:
       cpu: 20m

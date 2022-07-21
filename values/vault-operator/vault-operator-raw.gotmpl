@@ -10,10 +10,10 @@
 {{- $bankVaultsVersion := $vt | get "image.tag" "1.15.2" }}
 
 resources:
-  - apiVersion: "vault.banzaicloud.com/v1alpha1"
-    kind: "Vault"
+  - apiVersion: vault.banzaicloud.com/v1alpha1
+    kind: Vault
     metadata:
-      name: "vault"
+      name: vault
     spec:
       size: 1
       image: vault:{{ $vaultVersion }}
@@ -24,10 +24,10 @@ resources:
         common/annotation: "true"
       # Vault Pods , Services and TLS Secret annotations
       vaultAnnotations:
-        type/instance: "vault"
+        type/instance: vault
         # psp-capabilities: IPC_LOCK vault uses it for preventing from flusing memory to swap
         # psp-allowed-users vault needs to run as root because it cuses chwon and IPC_LOCK
-        policy.otomi.io/ignore: "banned-image-tags,psp-capabilities,psp-allowed-users"
+        policy.otomi.io/ignore: banned-image-tags,psp-capabilities,psp-allowed-users
       resources:
         vault:
           {{- with $vt | get "resources" nil }}
@@ -60,7 +60,7 @@ resources:
 
       # Vault Configurer Pods and Services annotations
       vaultConfigurerAnnotations:
-        type/instance: "vaultconfigurer"
+        type/instance: vaultconfigurer
       # Vault Pods , Services and TLS Secret labels
 
       vaultConfigurerPodSpec:
@@ -95,11 +95,11 @@ resources:
       volumeMounts:
         - name: vault-file
           mountPath: /vault/file
-      {{- if $v._derived.untrustedCA }}
+        {{- if $v._derived.untrustedCA }}
         - name: root-ca
           mountPath: '/etc/ssl/certs/tls.crt'
           subPath: tls.crt
-      {{- end }}
+        {{- end }}
 
       # Support for distributing the generated CA certificate Secret to other namespaces.
       # Define a list of namespaces or use ["*"] for all namespaces.
@@ -131,7 +131,7 @@ resources:
         {{- end }}
         listener:
           tcp:
-            address: "0.0.0.0:8200"
+            address: '0.0.0.0:8200'
             tls_disable: true
         telemetry:
           statsd_address: localhost:9125
@@ -144,31 +144,31 @@ resources:
           - name: allow-read-all-secrets
             rules: |
               path "secret/*" {
-                    capabilities = ["read", "list"]
+                    capabilities = [read, list]
               }
           - name: allow-list-all-secrets
             rules: |
               path "secret/*" {
-                    capabilities = ["list"]
+                    capabilities = [list]
               }
           - name: allow_sandbox
             rules: |
               path "secret/data/sandbox/*" {
-                    capabilities = ["create", "read", "update", "delete", "list"]
+                    capabilities = [create, read, update, delete, list]
               }
           {{- range $teamId, $team := $tc }}
           {{- if ne $teamId "admin" }}
           - name: allow-team-{{ $teamId }}
             rules: |
               path "secret/data/teams/team-{{ $teamId }}/*" {
-                    capabilities = ["create", "update", "read", "delete", "list"]
+                    capabilities = [create, update, read, delete, list]
               }
           {{- end }}
           {{- end }}
           - name: allow-all-secrets
             rules: |
               path "secret/*" {
-                    capabilities = ["create", "update", "read", "delete", "list"]
+                    capabilities = [create, update, read, delete, list]
               }
         auth:
           - type: oidc
@@ -250,20 +250,20 @@ resources:
             path: secret/data/teams/team-{{ $teamId }}/mysecret-generic
             data:
               data:
-                TARGET: "secret demo world"
+                TARGET: secret demo world
           {{- end }}
           - type: kv
             path: secret/data/teams/team-{{ $teamId }}/otomi-welcome
             data:
               data:
-                HELLO: "Welcome {{ $teamId }} team"
+                HELLO: Welcome {{ $teamId }} team
         {{- end }}
         {{- end }}
           - type: kv
             path: secret/data/teams/team-admin/otomi-welcome
             data:
               data:
-                HELLO: "Welcome admin team"
+                HELLO: Welcome admin team
 
       {{- if and (hasKey $seal "kmsKeyId") (hasKey $kms "gcpckms")  }}
       credentialsConfig:

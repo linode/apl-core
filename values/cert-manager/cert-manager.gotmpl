@@ -6,7 +6,7 @@ global:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  priorityClassName: "otomi-critical"
+  priorityClassName: otomi-critical
 
 prometheus:
   servicemonitor:

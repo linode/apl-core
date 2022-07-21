@@ -331,7 +331,7 @@ export ENV_DIR=$PWD/tests/fixtures
 Instruct otomi to use master container image tag.
 
 ```
-export OTOMI_TAG=master
+export OTOMI_TAG=main
 ```
 
 **Rendering otomi values from ENV_DIR**
