@@ -1,0 +1,95 @@
+name: Run integration test
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+on:
+  workflow_dispatch:
+    inputs:
+      install_profile:
+        description: Otomi installation profile
+        required: true
+        default: full
+        type: choice
+        options:
+          - minimal
+          - full
+
+env:
+  DIGITALOCEAN_PROJECT: 888d7eee-cd33-4f22-8499-274c393f9b80
+  DIGITALOCEAN_CLUSTER_REGION: ams3
+  DIGITALOCEAN_CLUSTER_SIZE: s-8vcpu-16gb
+  DIGITALOCEAN_NODE_POOL_MIN_SIZE: 3
+
+jobs:
+  create-integration-test-cluster:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Get default VPC for region
+        run: |
+          echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list --format Region,Default,ID --no-header|sed -nr 's/${{ env.DIGITALOCEAN_CLUSTER_REGION }} +true +(.*)/\1/p'` >> $GITHUB_ENV
+      - name: Create k8s cluster for testing
+        run: |
+          doctl kubernetes cluster create integration-test-${{ github.sha }} \
+            --tag integration-test \
+            --region ${{ env.DIGITALOCEAN_CLUSTER_REGION }} \
+            --vpc-uuid ${{ env.DIGITALOCEAN_VPC_UUID }} \
+            --node-pool "name=pool-int-test-${{ github.sha }};size=${{ env.DIGITALOCEAN_CLUSTER_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
+            --wait
+
+  integration:
+    needs:
+      - create-integration-test-cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Retrieve cluster id
+        run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get integration-test-${{ github.sha }} --format ID --no-header` >> $GITHUB_ENV
+      - name: Assign the cluster to the project
+        run: doctl projects resources assign ${{ env.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
+      - name: Save kubectl config with auth token
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_ID }}
+      - name: Get kubectl environment
+        run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+      - name: Create image pull secret on test cluster
+        run: |
+          kubectl create secret docker-registry reg-otomi-github \
+            --docker-server=${{ env.CACHE_REGISTRY }} \
+            --docker-username=${{ env.GIT_USER }} \
+            --docker-password='${{ secrets.NPM_TOKEN }}'
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Prepare Otomi chart
+        run: |
+          tag=${GITHUB_REF##*/}
+          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
+          sed --in-place "s/CHART_PATCH_PLACEHOLDER/0/g" chart/otomi/Chart.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          cat << EOF > values-temp.yaml
+          imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
+          imagePullSecretNames:
+            - reg-otomi-github
+          EOF
+      - name: Otomi install
+        run: helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi --values tests/integration/${{ inputs.install_profile }}.yaml --values values-temp.yaml
+      - name: Gather events on failure
+        if: failure()
+        run: |
+          kubectl get events --sort-by='.lastTimestamp' -A
+          kubectl logs jobs/otomi --tail 150
+
+  cleanup-integration-test-cluster:
+    needs: integration
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Remove the test cluster
+        run: doctl kubernetes cluster delete integration-test-${{ github.sha }} -f --dangerous
