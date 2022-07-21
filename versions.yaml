@@ -1,4 +1,4 @@
-api: azure-vault-unseal
+api: 0.5.11
 console: 0.5.15
 tasks: 0.2.31
 tools: 1.4.25
