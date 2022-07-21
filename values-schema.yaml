@@ -2292,11 +2292,14 @@ properties:
                       client_secret:
                         type: string
                         x-secret: ''
+                      key_name:
+                        $ref: '#/definitions/wordCharacterPattern'
                     required:
                       - vault_name
                       - tenant_id
                       - client_id
                       - client_secret
+                      - key_name
                 required:
                   - azurekeyvault
           storage:
