@@ -2308,25 +2308,26 @@ properties:
                 $ref: '#/definitions/imageTag'
           resources:
             $ref: '#/definitions/resources'
+#TODO             
       velero:
         description: Velero for backing up and restoring, performing disaster recovery, and migrating Kubernetes cluster resources.
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          subscriptionId:
+                description: The Azure Subscription ID
           enabled:
             type: boolean
             default: false
           logLevel:
             enum:
-              #TODO
               - debug
               - info
               - warning
               - error
               - fatal
               - panic
-            #TODO look into all properties
-
+            
   cluster:
     $ref: '#/definitions/cluster'
   dns:

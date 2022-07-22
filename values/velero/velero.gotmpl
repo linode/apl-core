@@ -1,14 +1,5 @@
 {{- $v := .Values }}
-{{- $V := $v.apps.velero }}
-{{- $i := ### }}
-
-### Image tags dynamically added once provider is identified (ie. aws:v1.5.0, csi:v0.3.0)
-
-
-global:
-
-velero:
-  logLevel: {{ $V.logLevel }}
+{{- $velero := $v.apps | get "velero" }}
 
 image:
   repository: velero/velero
@@ -24,24 +15,32 @@ resources:
     cpu: 1000m
     memory: 512Mi
 
-# @TODO Depends on service provider
 initContainers:
-  # IF 
-  - name: velero-plugin-for-aws
-    image: velero/velero-plugin-for-aws:v1.5.0
+  - name: velero-plugin-for-{{ if eq $v.cluster.provider "azure" }}azure{{ else if eq $v.cluster.provider "aws" }}aws{{ else if eq $v.cluster.provider "gcp" }}gcp{{ if eq $v.cluster.provider "azure" }
+    image: velero/velero-plugin-for-{{ if eq $v.cluster.provider "aws" }}aws:v1.5.0{{ else if eq $v.cluster.provider "azure" }}microsoft-azure:v1.5.0{{ else if eq $v.cluster.provider "gcp" }}gcp:v1.5.0
     imagePullPolicy: IfNotPresent
     volumeMounts:
       - mountPath: /target
         name: plugins
 
-# Set fsGroup for `AWS IAM Roles for Service Accounts`. Only AWS.
 podSecurityContext: {}
-  # fsGroup: 1337
+{{- if eq $v.cluster.provider "aws" }}
+  fsGroup: 1337
+{{- end }}
 
 metrics:
   enabled: true
   scrapeInterval: 30s
   scrapeTimeout: 10s
+
+podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8085"
+    prometheus.io/path: "/metrics"
+
+ serviceMonitor:
+    enabled: false
+    namespace: velero
 
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -63,7 +62,65 @@ spec:
       annotations:
         message: Velero backup {{ $labels.schedule }} has {{ $value | humanizePercentage }} failed backups.
       expr: |-
-        velero_backup_failure_total{schedule!=""} / velero_backup_attempt_total{schedule!=""} > 0.25
+        velero_backup_failure_total{schedule! =""} / velero_backup_attempt_total{schedule!=""} > 0.25
       for: 15m
       labels:
         severity: warning
+
+configuration:
+  provider: {{ if eq $v.cluster.provider "aws" }}aws{{ else if eq $v.cluster.provider "azure" }}azure{{ else if eq $v.cluster.provider "gcp" }}gcp
+  # Parameters for the `default` BackupStorageLocation.
+  backupStorageLocation:
+    name:
+    provider:
+    bucket:
+    caCert:
+    prefix:
+    default:
+    accessMode: ReadWrite
+    # Additional provider-specific configuration.
+    config:
+      region:
+      s3ForcePathStyle:
+      s3Url:
+      kmsKeyId:
+      resourceGroup:
+      {{- if eq $v.cluster.provider "azure" }}
+      subscriptionId:
+      storageAccount:
+      publicUrl:
+{{- if eq $v.cluster.provider "gcp" }}
+      serviceAccount:
+{{- end }}
+  # Parameters for the `default` VolumeSnapshotLocation.
+  volumeSnapshotLocation:
+    name:
+    # provider is the name for the volume snapshot provider. If omitted
+    # `configuration.provider` will be used instead.
+    provider:
+    config:
+      region:
+      apiTimeout:
+      {{- if eq $v.cluster.provider "azure" }}
+      subscriptionId:
+      incremental:
+      snapshotLocation:
+      project:
+
+  # Backup schedules to create.
+  # Eg:
+  # schedules:
+  #   mybackup:
+  #     disabled: false
+  #     labels:
+  #       myenv: foo
+  #     annotations:
+  #       myenv: foo
+  #     schedule: "0 0 * * *"
+  #     useOwnerReferencesInBackup: false
+  #     template:
+  #       ttl: "240h"
+  #       includedNamespaces:
+  #       - foo
+  schedules: {}
+  logLevel: {{ $velero.logLevel }}
