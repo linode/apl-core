@@ -89,7 +89,8 @@ gitea:
     session:
       COOKIE_SECURE: true
       DOMAIN: {{ $giteaDomain }}
-      
+    webhook:
+      ALLOWED_HOST_LIST: "drone.{{ $v.cluster.domainSuffix }}"
     server:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
