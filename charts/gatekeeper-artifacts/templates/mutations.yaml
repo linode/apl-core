@@ -15,6 +15,7 @@ spec:
     - apiGroups: ["*"]
       kinds: ["Pod"]
     excludedNamespaces:
+      - monitoring
       {{- range $teamId := $v.teamIds }}
       - team-{{ $teamId }}
       {{- end }}
@@ -48,6 +49,7 @@ spec:
     - apiGroups: ["*"]
       kinds: ["Pod"]
     namespaces:
+      - team-admin
       {{- range $teamId := $v.teamIds }}
       - team-{{ $teamId }}
       {{- end }}
