@@ -1,8 +1,8 @@
 <h1 align="center">
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
-  Self-hosted PaaS for Kubernetes
+  Self-hosted DevOps Platform for Kubernetes
 </h1>
-<p align="center"><b>Deploy your apps fast and safe on any Kubernetes cluster in any cloud.</b></p>
+<p align="center"><b>Start deploying your apps on Kubernetes today </b></p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -23,15 +23,17 @@
 <a href="https://marketplace.digitalocean.com/apps/otomi?refcode=476bfcac9ec9&action=deploy"> 🚀 Start using Otomi on Digital Ocean 🚀</a>
 </p>
 
-`Otomi` brings a full platform experience to Kubernetes without the constraints and abstractions. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
+## About Otomi
+
+**Otomi** is an open source self-hosted DevOps platform for Kubernetes and offers an integrated stack of pre-configured Kubernetes applications combined with (developer) self-service and automation. Otomi can be installed in one run on any Kubernetes cluster, offering a complete DevOps platform experience out-of-the-box. No more reinventing the wheel when building and maintaining your own K8s based DevOps platform.
 
 ![Otomi features](https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.gif)
 
-## 🚀 Getting started
+## Getting started
 
 ### Helm
 
-To install `Otomi` using Helm, make sure to have a K8s cluster running with at least:
+To install Otomi using Helm, make sure to have a K8s cluster running with at least:
 
 - Version `1.18` up to `1.23`
 - A node pool with **6 vCPU** and **8GB+ RAM** (more is advised!)
@@ -58,34 +60,35 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 ### K8s quick starts
 
-Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AWS, Linode, Digital Ocean and Minikube to provision a Kubernetes cluster. Then use the helm chart to install `Otomi`.
+Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AWS, Linode, Digital Ocean and Minikube to provision a Kubernetes cluster. Then use the helm chart to install Otomi.
 
 ### Workshops
 
 In our [workshops](https://github.com/redkubes/workshops) repository, we have prepared a comprehensive set of hands-on labs to get a good understanding/overview of everything Otomi has to offer.
 
-## 🎉 Otomi Features
+## Otomi Features
 
-- [x] Drag and Drop apps to create your own preferred suite
+- [x] Drag and drop apps to create your own preferred suite
 - [x] GitOps with Argo CD out-of-the-box
 - [x] Container image scanning
 - [x] Advanced ingress architecture
-- [x] Generate validated configuration code
+- [x] Generate validated configuration code with an easy to use web UI
 - [x] Configure network policies for internal ingress and external egress
 - [x] Deploy Knative serverless workloads without writing any YAML
 - [x] Create and manage secrets in HashiCorp Vault and use them in your workloads
 - [x] Create Kubernetes Jobs and Cron Jobs without writing any YAML
 - [x] Role-based access to all integrated applications based on group membership
 - [x] Enforce Pod security policies
-- [x] Onboard teams or projects within minutes in a comprehensive multi-tenant setup
-- [x] Predefined automation tasks
+- [x] Onboard teams within minutes in a comprehensive multi-tenant setup
+- [x] Benefit from predefined automation tasks
 - [x] Bring your favorite IdP, DNS and/or CA
+- [x] Expose services on private or (multiple) public networks
 
 And much more...
 
-## 🧑‍💻 Integrated technologies
+## Integrated technologies
 
-`Otomi` installs, configures, integrates and automates all of your favorite technologies:
+Otomi installs, configures, integrates and automates all of your favorite technologies:
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/tech.png/?raw=true" width="100%" align="center" alt="Integrated technologies"></p>
 
@@ -110,9 +113,9 @@ Learn more about all the integrated technologies:
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
 - [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
 
-## 💪 Otomi Projects
+## Otomi Projects
 
-`Otomi` consists out of the following projects:
+Otomi consists out of the following projects:
 
 - Otomi Core (this project): The heart of Otomi
 - [Otomi Tasks](https://github.com/redkubes/otomi-tasks): Autonomous jobs orchestrated by Otomi Core
@@ -120,15 +123,15 @@ Learn more about all the integrated technologies:
 - [Otomi Console](https://hub.docker.com/repository/docker/otomi/console): The UI of Otomi for admins and teams, talking to Otomi API
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in the redkubes/otomi-tasks repo
 
-## 📖 Documentation
+## Documentation
 
 Check out the [dev docs index](./docs/README.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
 
-## 🤝 Contribution
+## Contribution
 
 If you wish to contribute please read our [Contributor Code of Conduct](https://otomi.io/community/code-of-conduct) and [Contribution Guidelines](https://otomi.io/community/get-involved).
 
-If you want to say **thank you** or/and support the active development of `Otomi`:
+If you want to say **thank you** or/and support the active development of Otomi:
 
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
 - Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use `Otomi`
@@ -139,6 +142,6 @@ This project exists thanks to all the people who contribute and have contributed
   <img src="https://contrib.rocks/image?repo=redkubes/otomi-core" />
 </a>
 
-## 🔖 License
+## License
 
-`Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).
+Otomi is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).
