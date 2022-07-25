@@ -46,7 +46,7 @@ jobs:
   create-integration-test-cluster:
     needs: check-commit-status
     runs-on: ubuntu-latest
-    if:
+    if: ${{ needs.check-commit-status.status }} != 'not-pending'
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -54,12 +54,12 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Get default VPC for region
         run: |
-          echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list --format Region,Default,ID --no-header|sed -nr 's/${{ inputs.cluster_region }} +true +(.*)/\1/p'` >> $GITHUB_ENV
+          echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list --format Region,Default,ID --no-header|sed -nr 's/${{ inputs.cluster_region || 'ams3' }} +true +(.*)/\1/p'` >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
           doctl kubernetes cluster create ${{ env.DIGITALOCEAN_CLUSTER_NAME }} \
             --tag integration-test \
-            --region ${{ inputs.cluster_region }} \
+            --region ${{ inputs.cluster_region || 'ams3' }} \
             --vpc-uuid ${{ env.DIGITALOCEAN_VPC_UUID }} \
             --node-pool "name=pool-int-test-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
             --wait
@@ -93,14 +93,14 @@ jobs:
           tag=${GITHUB_REF##*/}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/CHART_PATCH_PLACEHOLDER/0/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile || 'full' }}.yaml
           cat << EOF > values-temp.yaml
           imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
           imagePullSecretNames:
             - reg-otomi-github
           EOF
       - name: Otomi install
-        run: helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi --values tests/integration/${{ inputs.install_profile }}.yaml --values values-temp.yaml
+        run: helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi --values tests/integration/${{ inputs.install_profile || 'full' }}.yaml --values values-temp.yaml
       - name: Gather events on failure and report
         if: failure()
         run: |
