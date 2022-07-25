@@ -35,22 +35,27 @@ jobs:
   check-commit-status:
     runs-on: ubuntu-latest
     outputs:
-      commit-status: ${{ steps.check.outputs.status }}
+      status: ${{ steps.check.outputs.status }}
     steps:
       - id: check
         name: Check commit status
         run: |
           gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/commits/${{ env.COMMIT_ID }}/statuses \
-          | jq -re '.[] | select((.context == "${{ env.CHECK_CONTEXT }}") and ((.state == "failure") or (.state == "success"))) | .id' \
-          || echo "::set-output name=status::pending"
+          | jq -re '.[] | select((.context == "${{ env.CHECK_CONTEXT }}") and ((.state == "failure") or (.state == "success"))) | .id'
+          if [ $? -eq 0 ]; then
+            echo "::set-output name=status::done"
+          else
+            echo "::set-output name=status::pending"
+          fi
+        shell: /usr/bin/bash {0} # Do not terminate on exit status != 0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   create-integration-test-cluster:
     needs: check-commit-status
     runs-on: ubuntu-latest
-    # Avoid repeated tests on same commit
-    if: ${{ needs.check-commit-status.commit-status }} == 'pending'
+    # Avoid repeated tests on same commit, but only if not triggered manually
+    if: ${{ needs.check-commit-status.status }} == 'pending' || '${{ github.event.number }}' == ''
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
