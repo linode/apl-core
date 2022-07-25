@@ -90,6 +90,9 @@ jobs:
         run: |
           kubectl get events --sort-by='.lastTimestamp' -A
           kubectl logs jobs/otomi --tail 150
+      - name: Report if test failed
+        if: failure()
+        run: |
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
