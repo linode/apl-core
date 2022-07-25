@@ -98,7 +98,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository }}/statuses/${{ github.sha }} \
             -f state='failure' \
-            -f target_url='${{ github.event.workflow_run.html_url }}' \
+            -f target_url='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
             -f description='Integration test run failed' \
             -f context='${{ env.CHECK_CONTEXT }}'
         env:
@@ -110,7 +110,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository }}/statuses/${{ github.sha }} \
             -f state='success' \
-            -f target_url='${{ github.event.workflow_run.html_url }}' \
+            -f target_url='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
             -f description='Integration test run succeeded' \
             -f context='${{ env.CHECK_CONTEXT }}'
         env:
