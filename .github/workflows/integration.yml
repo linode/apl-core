@@ -55,7 +55,7 @@ jobs:
     needs: check-commit-status
     runs-on: ubuntu-latest
     # Avoid repeated tests on same commit, but only if not triggered manually
-    if: ${{ needs.check-commit-status.status }} == 'pending' || '${{ github.event.number }}' == ''
+    if: needs.check-commit-status.status == 'pending' || github.event.number == 0
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
