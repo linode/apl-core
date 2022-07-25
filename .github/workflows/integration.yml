@@ -144,7 +144,7 @@ jobs:
   cleanup-integration-test-cluster:
     needs: integration
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && (needs.check-commit-status.status == 'pending' || github.event.number == 0)
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
