@@ -61,7 +61,7 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Save kubectl config with auth token
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_ID }}
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
       - name: Get kubectl environment
         run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
