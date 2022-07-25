@@ -1,10 +1,9 @@
 name: Add integration testing to checks
 on:
   workflow_dispatch: {}
-  # TODO: Test manually before activating this
-  # pull_request:
-  #   paths-ignore:
-  #     - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
 
 env:
   CHECK_CONTEXT: continuous-integration/integration-test
