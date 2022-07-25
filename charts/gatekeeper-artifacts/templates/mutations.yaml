@@ -28,7 +28,7 @@ spec:
     kinds:
       - apiGroups: [batch]
         kinds: [CronJob]
-  {{- include "gatekeeper-artifacts.namespaces" (dict "teamIds" $v.teamIds) | nindent 4 }}
+    {{- include "gatekeeper-artifacts.namespaces" (dict "teamIds" $v.teamIds "excludedNamespaces" true) | nindent 4 }}
   location: spec.jobTemplate.spec.affinity.nodeAffinity
   parameters:
     assign:
@@ -64,7 +64,7 @@ spec:
         kinds: [Job]
       - apiGroups: [serving.knative.dev]
         kinds: [Service]
-    {{- include "gatekeeper-artifacts.namespaces" (dict "teamIds" $v.teamIds) | nindent 4 }}
+    {{- include "gatekeeper-artifacts.namespaces" (dict "teamIds" $v.teamIds "excludedNamespaces" true) | nindent 4 }}
   location: spec.template.spec.affinity.nodeAffinity
   parameters:
     assign:
@@ -86,7 +86,7 @@ spec:
     kinds:
     - apiGroups: ["*"]
       kinds: [Pod]
-    {{- include "gatekeeper-artifacts.namespaces" (dict "teamIds" $v.teamIds "include" true) | nindent 4 }}
+    {{- include "gatekeeper-artifacts.namespaces" (dict "teamIds" $v.teamIds) | nindent 4 }}
   location: spec.affinity.nodeAffinity
   parameters:
     assign:

@@ -60,10 +60,10 @@ Create the name of the service account to use
 
 {{- define "gatekeeper-artifacts.namespaces" -}}
 {{- if gt (len .teamIds) 0 }}
-  {{- if .include }}
-namespaces:
-  {{- else }}
+  {{- if .excludedNamespaces }}
 excludedNamespaces:
+  {{- else }}
+namespaces:
   {{- end }}
   {{- range $teamId := (.teamIds | sortAlpha) }}
   - team-{{ $teamId }}
