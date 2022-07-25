@@ -16,6 +16,9 @@ on:
         required: true
         default: ams3
         type: string
+  pull_request:
+    types:
+      - review_requested
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -24,12 +27,26 @@ env:
   GIT_USER: redkubesbot
   DIGITALOCEAN_NODE_SIZE: s-8vcpu-16gb
   DIGITALOCEAN_NODE_POOL_MIN_SIZE: 3
-  DIGITALOCEAN_CLUSTER_NAME: integration-test-${{ github.sha }}
+  DIGITALOCEAN_CLUSTER_NAME: integration-test-${{ github.event.pull_request.head.sha || github.sha }}
   CHECK_CONTEXT: continuous-integration/integration-test
+  COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
 
 jobs:
-  create-integration-test-cluster:
+  check-commit-status:
     runs-on: ubuntu-latest
+    outputs:
+      commit-status: ${{ steps.check.outputs.status }}
+    steps:
+      - name: check
+        run: |
+          gh api -H "Accept: application/vnd.github+json" /repos/redkubes/otomi-core/commits/${{ env.COMMIT_ID }}/statuses \
+          | jq -e '.[] | select((.context == "continuous-integration/integration-test") and (.state == "pending")) | .id' \
+          || echo "::set-output name=status::not-pending"
+
+  create-integration-test-cluster:
+    needs: check-commit-status
+    runs-on: ubuntu-latest
+    if:
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -44,7 +61,7 @@ jobs:
             --tag integration-test \
             --region ${{ inputs.cluster_region }} \
             --vpc-uuid ${{ env.DIGITALOCEAN_VPC_UUID }} \
-            --node-pool "name=pool-int-test-${{ github.sha }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
+            --node-pool "name=pool-int-test-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
             --wait
       - name: Retrieve cluster id
         run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get ${{ env.DIGITALOCEAN_CLUSTER_NAME }} --format ID --no-header` >> $GITHUB_ENV
@@ -52,8 +69,7 @@ jobs:
         run: doctl projects resources assign ${{ secrets.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
 
   integration:
-    needs:
-      - create-integration-test-cluster
+    needs: create-integration-test-cluster
     runs-on: ubuntu-latest
     steps:
       - name: Install doctl
@@ -96,7 +112,7 @@ jobs:
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            /repos/${{ github.repository }}/statuses/${{ env.COMMIT_ID }} \
             -f state='failure' \
             -f target_url='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
             -f description='Integration test run failed' \
@@ -108,7 +124,7 @@ jobs:
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            /repos/${{ github.repository }}/statuses/${{ env.COMMIT_ID }} \
             -f state='success' \
             -f target_url='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
             -f description='Integration test run succeeded' \
