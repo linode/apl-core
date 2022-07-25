@@ -42,6 +42,8 @@ jobs:
           gh api -H "Accept: application/vnd.github+json" /repos/redkubes/otomi-core/commits/${{ env.COMMIT_ID }}/statuses \
           | jq -e '.[] | select((.context == "continuous-integration/integration-test") and (.state == "pending")) | .id' \
           || echo "::set-output name=status::not-pending"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   create-integration-test-cluster:
     needs: check-commit-status
