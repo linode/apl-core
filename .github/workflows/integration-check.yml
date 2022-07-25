@@ -17,8 +17,8 @@ jobs:
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.GITHUB_REPOSITORY }}/statuses/${{ github.sha }} \
-            -f target_url='/${{ github.GITHUB_REPOSITORY }}/actions/workflows/integration.yml'            
+            /repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            -f target_url='/${{ github.repository }}/actions/workflows/integration.yml'            
             -f state='pending'
             -f description='Integration test run required'
             -f context='${{ env.CHECK_CONTEXT }}'

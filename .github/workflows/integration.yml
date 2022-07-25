@@ -93,7 +93,7 @@ jobs:
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.GITHUB_REPOSITORY }}/statuses/${{ github.sha }} \
+            /repos/${{ github.repository }}/statuses/${{ github.sha }} \
             -f state='failure' \
             -f target_url='${{ github.event.workflow_run.html_url }}' \
             -f description='Integration test run failed' \
@@ -105,7 +105,7 @@ jobs:
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.GITHUB_REPOSITORY }}/statuses/${{ github.sha }} \
+            /repos/${{ github.repository }}/statuses/${{ github.sha }} \
             -f state='success' \
             -f target_url='${{ github.event.workflow_run.html_url }}' \
             -f description='Integration test run succeeded' \
