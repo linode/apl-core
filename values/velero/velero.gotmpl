@@ -1,22 +1,27 @@
 {{- $v := .Values }}
-{{- $velero := $v.apps | get "velero" }}
+{{- $vl:= $v.apps | get "velero" }}
+{{- $provider:= $v.cluster.provider }}
 
 image:
   repository: velero/velero
-  tag: {{ $V.image.tag }}
-  pullPolicy: {{ $V.image.pullPolicy }}
+  tag: {{ $vl.image.tag }}
+  pullPolicy: {{ $vl.image.pullPolicy }}
   imagePullSecrets
 
 resources:
+  {{- with $vl | get "resources" nil }}
+    {{- toYaml . | nindent 2 }}
+  {{- else }}
   requests:
     cpu: 500m
     memory: 128Mi
   limits:
     cpu: 1000m
     memory: 512Mi
+  {{- end }}
 
 initContainers:
-  - name: velero-plugin-for-{{ if eq $v.cluster.provider "azure" }}azure{{ else if eq $v.cluster.provider "aws" }}aws{{ else if eq $v.cluster.provider "gcp" }}gcp{{ if eq $v.cluster.provider "azure" }
+  - name: velero-plugin-for-{{ $provider }} #aws, azure, gcp
     image: velero/velero-plugin-for-{{ if eq $v.cluster.provider "aws" }}aws:v1.5.0{{ else if eq $v.cluster.provider "azure" }}microsoft-azure:v1.5.0{{ else if eq $v.cluster.provider "gcp" }}gcp:v1.5.0
     imagePullPolicy: IfNotPresent
     volumeMounts:
@@ -27,6 +32,7 @@ podSecurityContext: {}
 {{- if eq $v.cluster.provider "aws" }}
   fsGroup: 1337
 {{- end }}
+  runAsUser: 1000
 
 metrics:
   enabled: true
@@ -41,71 +47,6 @@ podAnnotations:
  serviceMonitor:
     enabled: false
     namespace: velero
-
-apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
-metadata:
-  name: velero
-spec:
-  groups:
-  - name: velero-failures
-    rules:
-    - alert: VeleroBackupPartialFailures
-      annotations:
-        message: Velero backup {{ $labels.schedule }} has {{ $value | humanizePercentage }} partialy failed backups.
-      expr: |-
-        velero_backup_partial_failure_total{schedule!=""} / velero_backup_attempt_total{schedule!=""} > 0.25
-      for: 15m
-      labels:
-        severity: warning
-    - alert: VeleroBackupFailures
-      annotations:
-        message: Velero backup {{ $labels.schedule }} has {{ $value | humanizePercentage }} failed backups.
-      expr: |-
-        velero_backup_failure_total{schedule! =""} / velero_backup_attempt_total{schedule!=""} > 0.25
-      for: 15m
-      labels:
-        severity: warning
-
-configuration:
-  provider: {{ if eq $v.cluster.provider "aws" }}aws{{ else if eq $v.cluster.provider "azure" }}azure{{ else if eq $v.cluster.provider "gcp" }}gcp
-  # Parameters for the `default` BackupStorageLocation.
-  backupStorageLocation:
-    name:
-    provider:
-    bucket:
-    caCert:
-    prefix:
-    default:
-    accessMode: ReadWrite
-    # Additional provider-specific configuration.
-    config:
-      region:
-      s3ForcePathStyle:
-      s3Url:
-      kmsKeyId:
-      resourceGroup:
-      {{- if eq $v.cluster.provider "azure" }}
-      subscriptionId:
-      storageAccount:
-      publicUrl:
-{{- if eq $v.cluster.provider "gcp" }}
-      serviceAccount:
-{{- end }}
-  # Parameters for the `default` VolumeSnapshotLocation.
-  volumeSnapshotLocation:
-    name:
-    # provider is the name for the volume snapshot provider. If omitted
-    # `configuration.provider` will be used instead.
-    provider:
-    config:
-      region:
-      apiTimeout:
-      {{- if eq $v.cluster.provider "azure" }}
-      subscriptionId:
-      incremental:
-      snapshotLocation:
-      project:
 
   # Backup schedules to create.
   # Eg:
@@ -123,4 +64,4 @@ configuration:
   #       includedNamespaces:
   #       - foo
   schedules: {}
-  logLevel: {{ $velero.logLevel }}
+  logLevel: {{ $vl.logLevel }}

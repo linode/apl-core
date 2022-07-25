@@ -1,4 +1,4 @@
-schema: 'http://json-schema.org/draft-07/schema'
+$schema: 'http://json-schema.org/draft-07/schema'
 version: 3
 additionalProperties: true
 definitions:
@@ -2314,8 +2314,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          subscriptionId:
-                description: The Azure Subscription ID
           enabled:
             type: boolean
             default: false
