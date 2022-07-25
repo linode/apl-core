@@ -17,10 +17,10 @@ jobs:
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.GITHUB_REPOSITORY }}/statuses/{{ github.sha }} \
+            /repos/${{ github.GITHUB_REPOSITORY }}/statuses/${{ github.sha }} \
+            -f target_url='/${{ github.GITHUB_REPOSITORY }}/actions/workflows/integration.yml'            
             -f state='pending'
             -f description='Integration test run required'
             -f context='${{ env.CHECK_CONTEXT }}'
-        # TODO: Insert target URL of workflow with -f target_url='https://example.com/build/status'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
