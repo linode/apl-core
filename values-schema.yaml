@@ -2238,6 +2238,7 @@ properties:
           seal:
             description: |
               Use a KMS to encrypt and decrypt the master key.
+
               WARNING - ENABLING THIS FEATURE WILL DELETE THE UNSEAL KEY FROM THE CLUSTER WITHOUT PUSHING TO EXTERNAL KMS!
               You must first copy the keys from the "vault-unseal-keys" secret, and import them to your KMS.
             nullable: true
