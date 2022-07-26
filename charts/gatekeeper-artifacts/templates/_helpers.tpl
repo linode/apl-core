@@ -57,3 +57,27 @@ Create the name of the service account to use
 {{- define "gatekeeper-artifacts.serviceAccountName" -}}
 {{ include "gatekeeper-artifacts.fullname" . }}
 {{- end -}}
+
+{{- define "gatekeeper-artifacts.namespaces" -}}
+{{- if gt (len .teamIds) 0 }}
+  {{- if .excludedNamespaces }}
+excludedNamespaces:
+  {{- else }}
+namespaces:
+  {{- end }}
+  {{- range $teamId := (.teamIds | sortAlpha) }}
+  - team-{{ $teamId }}
+  {{- end }}
+{{- end -}}
+{{- end -}}
+
+{{- define "gatekeeper-artifacts.nodeselector-terms" -}}
+nodeSelectorTerms:
+  - matchExpressions:
+      {{- range $key, $val := .labels }}
+      - key: {{ $key }}
+        operator: {{ $.operator | default "In" }}
+        values:
+          - {{ $val }}
+      {{- end }}
+{{- end -}}
