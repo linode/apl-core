@@ -30,7 +30,7 @@ config:
 otomiVersions: {{- toYaml .Values.versions | nindent 2 }}
 
 otomi: {{- toYaml $v.otomi | nindent 2 }}
-teamIds: {{- keys (omit $v.teamConfig "admin") | toYaml | nindent 2 }}
+teamIds: {{- keys $v.teamConfig | toYaml | nindent 2 }}
 policies: {{- keys $v.policies | toYaml | nindent 2 }}
 
 {{- with $v.otomi | get "globalPullSecret" nil }}
