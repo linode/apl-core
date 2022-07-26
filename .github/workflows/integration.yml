@@ -1,5 +1,5 @@
 name: Run integration test
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+concurrency: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
 on:
   workflow_dispatch:
     inputs:
@@ -99,7 +99,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Prepare Otomi chart
         run: |
-          tag=${{ github.event.pull_request.head.ref || github.ref }}
+          ref=${{ github.event.pull_request.head.ref || github.ref }}
+          tag=${ref##*/}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/CHART_PATCH_PLACEHOLDER/0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile || 'full' }}.yaml
