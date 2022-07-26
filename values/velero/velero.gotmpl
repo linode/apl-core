@@ -16,7 +16,7 @@ resources:
 
 initContainers:
   - name: velero-plugin-for-{{ $provider }}
-    image: velero/velero-plugin-for-azure
+    image: digitalocean/velero-plugin:v1.1.0
     imagePullPolicy: IfNotPresent
     volumeMounts:
       - mountPath: /target
@@ -43,3 +43,12 @@ serviceMonitor:
     namespace: velero
 
 logLevel: {{ $vl.logLevel }}
+
+configuration:
+  provider: {{ $provider }}
+  backupStorageLocation:
+    name: default
+    bucket: velero-test-bucket
+    config:
+      s3Url: ams3.digitaloceanspaces.com
+      region: ams3
