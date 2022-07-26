@@ -54,13 +54,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  evaluate-status:
-    needs: check-commit-status
-    runs-on: ubuntu-latest
-    steps:
-      - name: Show commit status
-        run: echo "${{ needs.check-commit-status.outputs.status }}"
-
   create-integration-test-cluster:
     needs: check-commit-status
     runs-on: ubuntu-latest
