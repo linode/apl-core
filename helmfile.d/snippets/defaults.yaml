@@ -143,6 +143,7 @@ environments:
             enabled: false
           velero:
             enabled: false
+            logLevel: warning
         cluster: {}
         ingress:
           platformClass:

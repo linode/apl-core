@@ -2,12 +2,6 @@
 {{- $vl:= $v.apps | get "velero" }}
 {{- $provider:= $v.cluster.provider }}
 
-image:
-  repository: velero/velero
-  tag: {{ $vl.image.tag }}
-  pullPolicy: {{ $vl.image.pullPolicy }}
-  imagePullSecrets
-
 resources:
   {{- with $vl | get "resources" nil }}
     {{- toYaml . | nindent 2 }}
@@ -21,14 +15,14 @@ resources:
   {{- end }}
 
 initContainers:
-  - name: velero-plugin-for-{{ $provider }} #aws, azure, gcp
-    image: velero/velero-plugin-for-{{ if eq $v.cluster.provider "aws" }}aws:v1.5.0{{ else if eq $v.cluster.provider "azure" }}microsoft-azure:v1.5.0{{ else if eq $v.cluster.provider "gcp" }}gcp:v1.5.0
+  - name: velero-plugin-for-{{ $provider }}
+    image: velero/velero-plugin-for-azure
     imagePullPolicy: IfNotPresent
     volumeMounts:
       - mountPath: /target
         name: plugins
 
-podSecurityContext: {}
+podSecurityContext:
 {{- if eq $v.cluster.provider "aws" }}
   fsGroup: 1337
 {{- end }}
@@ -44,24 +38,8 @@ podAnnotations:
     prometheus.io/port: "8085"
     prometheus.io/path: "/metrics"
 
- serviceMonitor:
-    enabled: false
+serviceMonitor:
+    enabled: true
     namespace: velero
 
-  # Backup schedules to create.
-  # Eg:
-  # schedules:
-  #   mybackup:
-  #     disabled: false
-  #     labels:
-  #       myenv: foo
-  #     annotations:
-  #       myenv: foo
-  #     schedule: "0 0 * * *"
-  #     useOwnerReferencesInBackup: false
-  #     template:
-  #       ttl: "240h"
-  #       includedNamespaces:
-  #       - foo
-  schedules: {}
-  logLevel: {{ $vl.logLevel }}
+logLevel: {{ $vl.logLevel }}
