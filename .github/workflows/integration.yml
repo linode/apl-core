@@ -59,13 +59,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Show commit status
-        run: echo "${{ needs.check-commit-status.status }}"
+        run: echo "${{ needs.check-commit-status.outputs.status }}"
 
   create-integration-test-cluster:
     needs: check-commit-status
     runs-on: ubuntu-latest
     # Avoid repeated tests on same commit, but only if not triggered manually
-    if: needs.check-commit-status.status == 'pending' || github.event.number == 0
+    if: needs.check-commit-status.outputs.status == 'pending' || github.event.number == 0
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -155,7 +155,7 @@ jobs:
   cleanup-integration-test-cluster:
     needs: integration
     runs-on: ubuntu-latest
-    if: always() && (needs.check-commit-status.status == 'pending' || github.event.number == 0)
+    if: always() && (needs.check-commit-status.outputs.status == 'pending' || github.event.number == 0)
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
