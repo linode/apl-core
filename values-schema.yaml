@@ -2236,7 +2236,10 @@ properties:
           logLevel:
             $ref: '#/definitions/logLevel'
           seal:
-            description: Use a KMS to encrypt and decrypt the master key
+            description: |
+              Use a KMS to encrypt and decrypt the master key.\n
+              WARNING - You must first copy the keys from the "vault-unseal-keys" secret, and import them to your KMS.\n
+              (enabling this feature will delete the unseal key from the cluster without pushing to external kms!)
             nullable: true
             type: object
             oneOf:
@@ -2292,11 +2295,14 @@ properties:
                       client_secret:
                         type: string
                         x-secret: ''
+                      key_name:
+                        $ref: '#/definitions/wordCharacterPattern'
                     required:
                       - vault_name
                       - tenant_id
                       - client_id
                       - client_secret
+                      - key_name
                 required:
                   - azurekeyvault
           storage:
