@@ -39,17 +39,27 @@ jobs:
     steps:
       - id: check
         name: Check commit status
+        # Do not terminate on exit status != 0
         run: |
+          set +e  
           gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/commits/${{ env.COMMIT_ID }}/statuses \
           | jq -re '.[] | select((.context == "${{ env.CHECK_CONTEXT }}") and ((.state == "failure") or (.state == "success"))) | .id'
           if [ $? -eq 0 ]; then
-            echo "::set-output name=status::done"
+            status=done
           else
-            echo "::set-output name=status::pending"
+            status=pending
           fi
-        shell: /usr/bin/bash {0} # Do not terminate on exit status != 0
+          echo $status
+          echo "::set-output name=status::$status"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  evaluate-status:
+    needs: check-commit-status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show commit status
+        run: echo "${{ needs.check-commit-status.status }}"
 
   create-integration-test-cluster:
     needs: check-commit-status
