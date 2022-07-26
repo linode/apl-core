@@ -142,6 +142,7 @@
     "testmode",
     "textconv",
     "untrusted",
+    "velero",
     "xlarge"
   ]
 }
