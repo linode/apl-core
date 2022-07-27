@@ -3,7 +3,18 @@ on:
   workflow_dispatch: {}
   pull_request:
     paths-ignore:
+      - 'adr/**'
       - 'docs/**'
+      - CHANGELOG.md
+      - CODEOWNERS
+      - LICENSE
+      - README.md
+      - SECURITY.md
+      - docker-compose
+      - docker-compose.yml
+      - jest.config.ts
+      - tsconfig.jest.json
+      - tsconfig.json
 
 env:
   CHECK_CONTEXT: continuous-integration/integration-test
