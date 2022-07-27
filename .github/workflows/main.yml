@@ -131,12 +131,12 @@ jobs:
           chart_patch_version=${chart_version##*.}
           new_patch_version=$(($chart_patch_version+1))
           # check if major or minor part of version changed (patch number is automated so left out of equation)
-          this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version' | sed "s/CHART_PATCH_PLACEHOLDER/$chart_patch_version/g")
+          this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version' | sed "s/0-chart-patch-placeholder/$chart_patch_version/g")
           # if any of those changed then reset the patch version
           [ "$this_version" != "$chart_version" ] && new_patch_version=1
           release_tag=v$(cat package.json | jq -r '.version')
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CHART_PATCH_PLACEHOLDER/$new_patch_version/g" chart/otomi/Chart.yaml
+          sed --in-place "s/0-chart-patch-placeholder/$new_patch_version/g" chart/otomi/Chart.yaml
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/values.yaml
           # copy readme from repo into the charts and add tpl/chart-values.md
           cp README.md chart/otomi/
