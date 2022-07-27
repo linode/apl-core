@@ -101,7 +101,7 @@ definitions:
                       required: [id]
                       properties:
                         id:
-                          $ref: '#/definitions/idName'
+                          $ref: '#/definitions/wordCharacterPattern'
                     - title: Name
                       required: [name]
                       properties:
@@ -111,7 +111,7 @@ definitions:
                       required: [username]
                       properties:
                         username:
-                          $ref: '#/definitions/idName'
+                          $ref: '#/definitions/wordCharacterPattern'
               required: [type]
 
   annotations:
