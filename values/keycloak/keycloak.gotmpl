@@ -9,7 +9,7 @@ persistence:
   dbVendor: {{ $dbVendor }}
   dbHost: {{ $k | get "persistence.dbHost" nil }}
   deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
-priorityClassName: "otomi-critical"
+priorityClassName: otomi-critical
 proxyAddressForwarding: true
 resources:
   {{- with $k | get "resources.keycloak" nil }}
@@ -129,9 +129,9 @@ postgresql:
       memory: 1Gi
     {{- end }}
   master:
-    priorityClassName: "otomi-critical"
+    priorityClassName: otomi-critical
   slave:
-    priorityClassName: "otomi-critical"
+    priorityClassName: otomi-critical
 
 prometheus:
   operator:

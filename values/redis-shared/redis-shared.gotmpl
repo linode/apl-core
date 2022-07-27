@@ -44,7 +44,7 @@ replica:
     size: {{ $r | get "resources.replica" "1Gi" }}
   podAnnotations:
     sidecar.istio.io/inject: "false"
-  priorityClassName: "otomi-critical"
+  priorityClassName: otomi-critical
   resources:
   {{- with $r | get "resources.slave" nil }}
     {{- toYaml . | nindent 4 }}
@@ -60,7 +60,7 @@ replica:
 metrics:
   podAnnotations:
     sidecar.istio.io/inject: "false"
-  priorityClassName: "otomi-critical"
+  priorityClassName: otomi-critical
   resources:
     requests:
       cpu: 50m
