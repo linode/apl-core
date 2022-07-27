@@ -47,7 +47,7 @@ jobs:
           gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/commits/${{ env.COMMIT_ID }}/statuses \
           | jq -e 'map(select(.context == "${{ env.CHECK_CONTEXT }}"))' > $statusfile
           if [ $? -eq 0 ]; then
-            jq -re '.[] | ((.state == "failure") or (.state == "success")) | .id' $statusfile
+            jq -re '.[] | select((.state == "failure") or (.state == "success")) | .id' $statusfile
             if [ $? -eq 0 ]; then
               status=done
             else
