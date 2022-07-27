@@ -1,5 +1,5 @@
 name: Run integration test
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+concurrency: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
 on:
   workflow_dispatch:
     inputs:
@@ -16,6 +16,9 @@ on:
         required: true
         default: ams3
         type: string
+  pull_request:
+    types:
+      - review_requested
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -24,12 +27,45 @@ env:
   GIT_USER: redkubesbot
   DIGITALOCEAN_NODE_SIZE: s-8vcpu-16gb
   DIGITALOCEAN_NODE_POOL_MIN_SIZE: 3
-  DIGITALOCEAN_CLUSTER_NAME: integration-test-${{ github.sha }}
+  DIGITALOCEAN_CLUSTER_NAME: integration-test-${{ github.event.pull_request.head.sha || github.sha }}
   CHECK_CONTEXT: continuous-integration/integration-test
+  COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
 
 jobs:
-  create-integration-test-cluster:
+  check-commit-status:
     runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check.outputs.status }}
+    steps:
+      - id: check
+        name: Check commit status
+        # Do not terminate on exit status != 0
+        run: |
+          set +e
+          tmp=`mktemp -d`
+          statusfile="$tmp/status.json"
+          gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/commits/${{ env.COMMIT_ID }}/statuses \
+          | jq -e 'map(select(.context == "${{ env.CHECK_CONTEXT }}"))' > $statusfile
+          if [ $? -eq 0 ]; then
+            jq -re '.[] | select((.state == "failure") or (.state == "success")) | .id' $statusfile
+            if [ $? -eq 0 ]; then
+              status=done
+            else
+              status=pending
+            fi
+          else
+            status=skipped
+          fi
+          echo $status
+          echo "::set-output name=status::$status"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-integration-test-cluster:
+    needs: check-commit-status
+    runs-on: ubuntu-latest
+    # Avoid repeated tests on same commit, but only if not triggered manually
+    if: needs.check-commit-status.outputs.status == 'pending' || github.event.number == 0
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -37,14 +73,14 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Get default VPC for region
         run: |
-          echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list --format Region,Default,ID --no-header|sed -nr 's/${{ inputs.cluster_region }} +true +(.*)/\1/p'` >> $GITHUB_ENV
+          echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list --format Region,Default,ID --no-header|sed -nr 's/${{ inputs.cluster_region || 'ams3' }} +true +(.*)/\1/p'` >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
           doctl kubernetes cluster create ${{ env.DIGITALOCEAN_CLUSTER_NAME }} \
             --tag integration-test \
-            --region ${{ inputs.cluster_region }} \
+            --region ${{ inputs.cluster_region || 'ams3' }} \
             --vpc-uuid ${{ env.DIGITALOCEAN_VPC_UUID }} \
-            --node-pool "name=pool-int-test-${{ github.sha }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
+            --node-pool "name=pool-int-test-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
             --wait
       - name: Retrieve cluster id
         run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get ${{ env.DIGITALOCEAN_CLUSTER_NAME }} --format ID --no-header` >> $GITHUB_ENV
@@ -52,8 +88,7 @@ jobs:
         run: doctl projects resources assign ${{ secrets.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
 
   integration:
-    needs:
-      - create-integration-test-cluster
+    needs: create-integration-test-cluster
     runs-on: ubuntu-latest
     steps:
       - name: Install doctl
@@ -61,7 +96,7 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Save kubectl config with auth token
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_ID }}
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
       - name: Get kubectl environment
         run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
@@ -74,28 +109,32 @@ jobs:
         uses: actions/checkout@v3
       - name: Prepare Otomi chart
         run: |
-          tag=${GITHUB_REF##*/}
+          ref=${{ github.event.pull_request.head.ref || github.ref }}
+          tag=${ref##*/}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/0-chart-patch-placeholder/0/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile || 'full' }}.yaml
           cat << EOF > values-temp.yaml
           imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
           imagePullSecretNames:
             - reg-otomi-github
           EOF
       - name: Otomi install
-        run: helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi --values tests/integration/${{ inputs.install_profile }}.yaml --values values-temp.yaml
+        run: helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi --values tests/integration/${{ inputs.install_profile || 'full' }}.yaml --values values-temp.yaml
       - name: Gather events on failure and report
         if: failure()
         run: |
           kubectl get events --sort-by='.lastTimestamp' -A
           kubectl logs jobs/otomi --tail 150
+      - name: Report if test failed
+        if: failure()
+        run: |
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.GITHUB_REPOSITORY }}/statuses/{{ github.sha }} \
+            /repos/${{ github.repository }}/statuses/${{ env.COMMIT_ID }} \
             -f state='failure' \
-            -f target_url='${{ github.event.workflow_run.html_url }}' \
+            -f target_url='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
             -f description='Integration test run failed' \
             -f context='${{ env.CHECK_CONTEXT }}'
         env:
@@ -105,9 +144,9 @@ jobs:
           gh api \
             --method POST \
             -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.GITHUB_REPOSITORY }}/statuses/{{ github.sha }} \
+            /repos/${{ github.repository }}/statuses/${{ env.COMMIT_ID }} \
             -f state='success' \
-            -f target_url='${{ github.event.workflow_run.html_url }}' \
+            -f target_url='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
             -f description='Integration test run succeeded' \
             -f context='${{ env.CHECK_CONTEXT }}'
         env:
@@ -116,7 +155,7 @@ jobs:
   cleanup-integration-test-cluster:
     needs: integration
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && (needs.check-commit-status.outputs.status == 'pending' || github.event.number == 0)
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
