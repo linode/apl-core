@@ -164,6 +164,50 @@ definitions:
         description: An Azure client secret.
         type: string
         x-secret: ''
+      dns:
+        properties:
+          environment:
+            $ref: '#/definitions/azure/definitions/environment'
+          resourceGroup:
+            $ref: '#/definitions/azure/definitions/resourceGroup'
+          hostedZoneName:
+            title: Hosted zone name
+            description: Name of the DNS zone that should be used.
+            $ref: '#/definitions/wordCharacterPattern'
+          tenantId:
+            $ref: '#/definitions/azure/definitions/tenantId'
+          subscriptionId:
+            $ref: '#/definitions/azure/definitions/subscriptionId'
+          aadClientId:
+            $ref: '#/definitions/azure/definitions/clientId'
+          aadClientSecret:
+            $ref: '#/definitions/azure/definitions/clientSecret'
+            title: Client secret
+            type: string
+            description: Azure Application Client Secret
+            x-secret: ''
+          useManagedIdentityExtension:
+            title: Using managed identities?
+            type: boolean
+            description: If you use Azure MSI, this should be set to true
+            default: false
+          userAssignedIdentityID:
+            title: MSI id
+            type: string
+            description: If you use Azure MSI, this is the Client ID of a Azure user-assigned managed identity or resource id. Required for cert-manager.
+            x-secret: ''
+        required:
+          - tenantId
+          - subscriptionId
+          - resourceGroup
+        oneOf:
+          - required:
+              - aadClientId
+              - aadClientSecret
+          - required:
+              - useManagedIdentityExtension
+              - userAssignedIdentityID
+
       environment:
         title: Azure environment
         description: An Azure environment.
@@ -2346,50 +2390,15 @@ properties:
           - title: Azure
             properties:
               azure:
-                properties:
-                  environment:
-                    $ref: '#/definitions/azure/definitions/environment'
-                  resourceGroup:
-                    $ref: '#/definitions/azure/definitions/resourceGroup'
-                  hostedZoneName:
-                    title: Hosted zone name
-                    description: Name of the DNS zone that should be used.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  tenantId:
-                    $ref: '#/definitions/azure/definitions/tenantId'
-                  subscriptionId:
-                    $ref: '#/definitions/azure/definitions/subscriptionId'
-                  aadClientId:
-                    $ref: '#/definitions/azure/definitions/clientId'
-                  aadClientSecret:
-                    $ref: '#/definitions/azure/definitions/clientSecret'
-                    title: Client secret
-                    type: string
-                    description: Azure Application Client Secret
-                    x-secret: ''
-                  useManagedIdentityExtension:
-                    title: Using managed identities?
-                    type: boolean
-                    description: If you use Azure MSI, this should be set to true
-                    default: false
-                  userAssignedIdentityID:
-                    title: MSI id
-                    type: string
-                    description: If you use Azure MSI, this is the Client ID of a Azure user-assigned managed identity or resource id. Required for cert-manager.
-                    x-secret: ''
-                required:
-                  - tenantId
-                  - subscriptionId
-                  - resourceGroup
-                oneOf:
-                  - required:
-                      - aadClientId
-                      - aadClientSecret
-                  - required:
-                      - useManagedIdentityExtension
-                      - userAssignedIdentityID
+                $ref: '#/definitions/azure/definitions/dns'
             required:
               - azure
+          - title: Azure Private
+            properties:
+              azure-private-dns:
+                $ref: '#/definitions/azure/definitions/dns'
+            required:
+              - azure-private-dns
           - title: Google
             properties:
               google:
