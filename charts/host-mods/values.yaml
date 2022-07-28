@@ -10,3 +10,4 @@ customCa: |
 registryUrl: ''
 # The command to run after copying the cert
 updateCmd: ''
+priorityClassName: ''

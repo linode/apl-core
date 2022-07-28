@@ -29,7 +29,7 @@ resources:
             podAnnotations:
               policy.otomi.io/ignore: psp-allowed-users
               sidecar.istio.io/inject: "true"
-            priorityClassName: "otomi-critical"
+            priorityClassName: otomi-critical
             hpaSpec:
               minReplicas: {{ $i.autoscaling.pilot.minReplicas }}
               maxReplicas: {{ $i.autoscaling.pilot.maxReplicas }}
@@ -55,7 +55,7 @@ resources:
             k8s:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users
-              priorityClassName: "otomi-critical"
+              priorityClassName: otomi-critical
               resources:
               {{- with $i | get "resources.ingressgateway" nil }}
                 {{- toYaml . | nindent 16 }}
@@ -94,7 +94,7 @@ resources:
             k8s:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users
-              priorityClassName: "otomi-critical"
+              priorityClassName: otomi-critical
               resources:
               {{- with $i | get "resources.egressgateway" nil }}
                 {{- toYaml . | nindent 16 }}
