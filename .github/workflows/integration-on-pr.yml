@@ -52,7 +52,6 @@ jobs:
           - '1.23'
     runs-on: ubuntu-latest
     if: needs.check-commit-status.outputs.status == 'pending'
-    secrets: inherit
     steps:
       - name: Checkout
         uses: actions/checkout@v3
