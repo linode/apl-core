@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.check-commit-status.outputs.status == 'pending'
     steps:
-      - uses: ./.github/workflows/integration.yml
+      - uses: ${{ github.repository }}/.github/workflows/integration.yml@${{ env.COMMIT_ID }}
         with:
           kubernetes_version: ${{ matrix.kubernetes_version }}
           install_profile: full
