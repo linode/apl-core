@@ -1,0 +1,53 @@
+name: Run integration test before pull request review
+concurrency: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+on:
+  workflow_dispatch: {}
+  pull_request:
+    types:
+      - review_requested
+
+env:
+  CHECK_CONTEXT: continuous-integration/integration-test
+  COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
+
+jobs:
+  check-commit-status:
+    runs-on: ubuntu-latest
+    outputs:
+      status: ${{ steps.check.outputs.status }}
+    steps:
+      - id: check
+        name: Check commit status
+        # Do not terminate on exit status != 0
+        run: |
+          set +e
+          tmp=`mktemp -d`
+          statusfile="$tmp/status.json"
+          gh api -H "Accept: application/vnd.github+json" /repos/${{ github.repository }}/commits/${{ env.COMMIT_ID }}/statuses \
+          | jq -e 'map(select(.context == "${{ env.CHECK_CONTEXT }}"))' > $statusfile
+          if [ $? -eq 0 ]; then
+            jq -re '.[] | select((.state == "failure") or (.state == "success")) | .id' $statusfile
+            if [ $? -eq 0 ]; then
+              status=done
+            else
+              status=pending
+            fi
+          else
+            status=skipped
+          fi
+          echo $status
+          echo "::set-output name=status::$status"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  run-integration-test:
+    # TODO: Add test matrix
+    name: Run integration test
+    needs: check-commit-status
+    runs-on: ubuntu-latest
+    if: needs.check-commit-status.outputs.status == 'pending'
+    uses: ./.github/workflows/integration.yml
+    with:
+      kubernetes_version: '1.21'
+      install_profile: full
+      cluster_region: ams3
