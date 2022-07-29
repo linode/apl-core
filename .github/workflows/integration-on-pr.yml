@@ -52,8 +52,9 @@ jobs:
           - '1.23'
     runs-on: ubuntu-latest
     if: needs.check-commit-status.outputs.status == 'pending'
-    uses: ./.github/workflows/integration.yml
-    with:
-      kubernetes_version: ${{ matrix.kubernetes_version }}
-      install_profile: full
-      cluster_region: ams3
+    steps:
+      - uses: ./.github/workflows/integration.yml
+        with:
+          kubernetes_version: ${{ matrix.kubernetes_version }}
+          install_profile: full
+          cluster_region: ams3
