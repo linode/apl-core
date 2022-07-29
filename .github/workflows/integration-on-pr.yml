@@ -41,13 +41,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   run-integration-test:
-    # TODO: Add test matrix
     name: Run integration test
     needs: check-commit-status
+    strategy:
+      matrix:
+        kubernetes_version:
+          # Note: Must be supported by DigitalOcean
+          - '1.21'
+          - '1.22'
+          - '1.23'
     runs-on: ubuntu-latest
     if: needs.check-commit-status.outputs.status == 'pending'
     uses: ./.github/workflows/integration.yml
     with:
-      kubernetes_version: '1.21'
+      kubernetes_version: ${{ matrix.kubernetes_version }}
       install_profile: full
       cluster_region: ams3

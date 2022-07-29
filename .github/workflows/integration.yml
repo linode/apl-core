@@ -40,13 +40,15 @@ env:
 
 jobs:
   create-integration-test-cluster:
-    # TODO: Add kubernetes_version
     runs-on: ubuntu-latest
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Determine exact k8s version
+        run: |
+          echo DIGITALOCEAN_K8S_VERSION=`doctl kubernetes options versions -o json | jq -r 'map(select(.kubernetes_version | startswith("${{ inputs.kubernetes_version }}"))) | .[0] | .kubernetes_version'` >> $GITHUB_ENV
       - name: Get default VPC for region
         run: |
           echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list --format Region,Default,ID --no-header|sed -nr 's/${{ inputs.cluster_region || 'ams3' }} +true +(.*)/\1/p'` >> $GITHUB_ENV
@@ -56,7 +58,8 @@ jobs:
             --tag integration-test \
             --region ${{ inputs.cluster_region || 'ams3' }} \
             --vpc-uuid ${{ env.DIGITALOCEAN_VPC_UUID }} \
-            --node-pool "name=pool-int-test-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
+            --node-pool "name=int-test-${{ inputs.kubernetes_version }}-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
+            --version ${{ env.DIGITALOCEAN_K8S_VERSION }} \
             --wait
       - name: Retrieve cluster id
         run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get ${{ env.DIGITALOCEAN_CLUSTER_NAME }} --format ID --no-header` >> $GITHUB_ENV
