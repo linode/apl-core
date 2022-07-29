@@ -53,8 +53,11 @@ jobs:
     runs-on: ubuntu-latest
     if: needs.check-commit-status.outputs.status == 'pending'
     steps:
-      - uses: ${{ github.repository }}/.github/workflows/integration.yml@${{ env.COMMIT_ID }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: ./.github/workflows/integration.yml
         with:
           kubernetes_version: ${{ matrix.kubernetes_version }}
           install_profile: full
           cluster_region: ams3
+        secrets: inherit
