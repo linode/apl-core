@@ -18,7 +18,6 @@ global:
   ## Is this being installed under OpenShift restricted SCC?
   ## NOTE: You also need to set the PostgreSQL section correctly if using the OpenShift restricted SCC
   openShiftRestricted: false
-
 ## End of Global Values
 #######################################################################################
 
@@ -36,7 +35,7 @@ kubeclarity:
   logLevel: warning
 
   enableDBInfoLog: false
-
+  podAnnotations: {}
   service:
     type: ClusterIP
 
