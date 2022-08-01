@@ -90,6 +90,8 @@ jobs:
   integration:
     needs: create-integration-test-cluster
     runs-on: ubuntu-latest
+    permissions:
+      statuses: write
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2

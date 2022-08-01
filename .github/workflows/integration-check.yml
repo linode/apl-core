@@ -22,6 +22,8 @@ env:
 jobs:
   require-integration-test:
     runs-on: ubuntu-latest
+    permissions:
+      statuses: write
     steps:
       - run: |
           gh api \
