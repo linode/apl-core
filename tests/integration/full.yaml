@@ -17,6 +17,7 @@ apps:
     domainFilters: []
   gatekeeper:
     enabled: true
+    disableValidatingWebhook: false
   grafana:
     enabled: true
   harbor:
@@ -55,3 +56,38 @@ apps:
     enabled: true
   vault:
     enabled: true
+teamConfig:
+  admin:
+    id: admin
+  demo:
+    alerts:
+      receivers:
+        - email
+      email:
+        critical: admins@yourdoma.in
+    password: somesecretvalue
+    id: demo
+    networkPolicy:
+      egressPublic: true
+      ingressPrivate: true
+    services:
+      - id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
+        ksvc:
+          image:
+            repository: otomi/nodejs-helloworld
+            tag: v1.2.12
+          resources:
+            limits:
+              cpu: 50m
+              memory: 64Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          scaleToZero: false
+        name: hello
+        networkPolicy:
+          ingressPrivate:
+            mode: AllowAll
+        ownHost: true
+        port: 80
+        type: public
