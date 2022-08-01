@@ -1,9 +1,9 @@
-name: Run integration test
+name: Integration test
 on:
   workflow_call:
     inputs:
       kubernetes_versions:
-        description: Kubernetes versions
+        description: Kubernetes versions (JSON formatted list)
         type: string
       install_profile:
         description: Otomi installation profile
@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       kubernetes_versions:
-        description: Kubernetes versions
+        description: Kubernetes versions (JSON formatted list)
         type: string
       install_profile:
         description: Otomi installation profile
@@ -135,35 +135,3 @@ jobs:
       - name: Remove the test cluster
         if: always()
         run: doctl kubernetes cluster delete ${{ env.DIGITALOCEAN_CLUSTER_NAME }} -f --dangerous
-
-  report-test-status:
-    name: Report test status onto commit
-    needs: run-integration-test
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Report if test failed
-        if: failure()
-        run: |
-          gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/statuses/${{ env.COMMIT_ID }} \
-            -f state='failure' \
-            -f target_url='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
-            -f description='Integration test run failed' \
-            -f context='${{ env.CHECK_CONTEXT }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Report if test succeeded
-        run: |
-          gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/statuses/${{ env.COMMIT_ID }} \
-            -f state='success' \
-            -f target_url='https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
-            -f description='Integration test run succeeded' \
-            -f context='${{ env.CHECK_CONTEXT }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
