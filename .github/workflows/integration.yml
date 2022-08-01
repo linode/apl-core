@@ -64,15 +64,15 @@ jobs:
           echo DIGITALOCEAN_CLUSTER_NAME=integration-test-${{ strategy.job-index }}-${{ github.event.pull_request.head.sha || github.sha }} >> $GITHUB_ENV
       - name: Determine exact k8s version
         run: |
-          echo DIGITALOCEAN_K8S_VERSION=`doctl kubernetes options versions -o json | jq -r 'map(select(.kubernetes_version | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .kubernetes_version'` >> $GITHUB_ENV
+          echo DIGITALOCEAN_K8S_VERSION=`doctl kubernetes options versions -o json | jq -re 'map(select(.kubernetes_version | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .slug'` >> $GITHUB_ENV
       - name: Get default VPC for region
         run: |
-          echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list --format Region,Default,ID --no-header|sed -nr 's/${{ inputs.cluster_region || 'ams3' }} +true +(.*)/\1/p'` >> $GITHUB_ENV
+          echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list -o json | jq -re 'map(select((.region == "${{ inputs.cluster_region }}") and .default)) | .[0] | .id'` >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
           doctl kubernetes cluster create ${{ env.DIGITALOCEAN_CLUSTER_NAME }} \
             --tag integration-test \
-            --region ${{ inputs.cluster_region || 'ams3' }} \
+            --region ${{ inputs.cluster_region }} \
             --vpc-uuid ${{ env.DIGITALOCEAN_VPC_UUID }} \
             --node-pool "name=int-test-${{ strategy.job-index }}-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
             --version ${{ env.DIGITALOCEAN_K8S_VERSION }} \
@@ -99,14 +99,14 @@ jobs:
           tag=${ref##*/}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/0-chart-patch-placeholder/0/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile || 'full' }}.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           cat << EOF > values-temp.yaml
           imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
           imagePullSecretNames:
             - reg-otomi-github
           EOF
       - name: Otomi install
-        run: helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi --values tests/integration/${{ inputs.install_profile || 'full' }}.yaml --values values-temp.yaml
+        run: helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi --values tests/integration/${{ inputs.install_profile }}.yaml --values values-temp.yaml
       - name: Gather events on failure and report
         if: failure()
         run: |
@@ -117,6 +117,8 @@ jobs:
         run: doctl kubernetes cluster delete ${{ env.DIGITALOCEAN_CLUSTER_NAME }} -f --dangerous
 
   report-test-status:
+    name: Report test status onto commit
+    needs: run-integration-test
     runs-on: ubuntu-latest
     steps:
       - name: Report if test failed
