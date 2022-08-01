@@ -4,8 +4,6 @@ on:
     inputs:
       kubernetes_versions:
         description: Kubernetes versions
-        required: true
-        default: "['1.22']"
         type: string
       install_profile:
         description: Otomi installation profile
@@ -21,8 +19,6 @@ on:
     inputs:
       kubernetes_versions:
         description: Kubernetes versions
-        required: true
-        default: "['1.22']"
         type: string
       install_profile:
         description: Otomi installation profile
@@ -49,11 +45,35 @@ env:
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
 
 jobs:
+  preprocess-input:
+    name: Preprocess input variables
+    runs-on: ubuntu-latest
+    outputs:
+      kubernetes_versions: ${{ steps.k8s-versions.outputs.versions }}
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: k8s-versions
+        description: Process k8s version input
+        run: |
+          if [ -z "${{ inputs.kubernetes_versions }}" ]; then
+            echo "Kubernetes versions not specified, determine DO supported versions"
+            versions=`doctl kubernetes options versions -o json | jq -ce 'map(.kubernetes_version)'`
+          else
+            versions=${{ inputs.kubernetes_versions }}
+          fi
+          echo $versions
+          echo "::set-output name=versions::$versions"
+
   run-integration-test:
+    name: Run integration test on cluster
+    needs: preprocess-input
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        kubernetes_version: ${{ fromJSON(inputs.kubernetes_versions) }}
+        kubernetes_version: ${{ fromJSON(needs.preprocess-input.outputs.kubernetes_versions) }}
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
