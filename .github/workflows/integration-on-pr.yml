@@ -43,9 +43,9 @@ jobs:
   run-integration-test:
     name: Run integration test
     needs: check-commit-status
-    runs-on: ubuntu-latest
     if: needs.check-commit-status.outputs.status == 'pending'
     uses: ./.github/workflows/integration.yml
+    secrets: inherit
     with:
       kubernetes_versions: "['1.21', '1.22', '1.23']"
       install_profile: full
