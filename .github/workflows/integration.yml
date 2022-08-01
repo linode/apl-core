@@ -55,8 +55,8 @@ jobs:
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-      - name: k8s-versions
-        description: Process k8s version input
+      - id: k8s-versions
+        name: Process k8s version input
         run: |
           if [ -z "${{ inputs.kubernetes_versions }}" ]; then
             echo "Kubernetes versions not specified, determine DO supported versions"
