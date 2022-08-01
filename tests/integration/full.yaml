@@ -1,4 +1,4 @@
-# Minimal values file with all apps enabled
+# All apps enabled
 cluster:
   k8sVersion: '1.22'
   name: 'dev'
@@ -57,14 +57,7 @@ apps:
   vault:
     enabled: true
 teamConfig:
-  admin:
-    id: admin
   demo:
-    alerts:
-      receivers:
-        - email
-      email:
-        critical: admins@yourdoma.in
     password: somesecretvalue
     id: demo
     networkPolicy:
