@@ -1,0 +1,14 @@
+name: Integration test on schedule
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  start-integration-test:
+    name: Start integration test
+    uses: ./.github/workflows/integration.yml
+    secrets: inherit
+    with:
+      install_profile: full
+      cluster_region: ams3
