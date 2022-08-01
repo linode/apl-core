@@ -1,6 +1,23 @@
 name: Run integration test
 on:
-  workflow_call: &workflow_inputs
+  workflow_call:
+    inputs:
+      kubernetes_versions:
+        description: Kubernetes versions
+        required: true
+        default: "['1.22']"
+        type: string
+      install_profile:
+        description: Otomi installation profile
+        required: true
+        default: full
+        type: string
+      cluster_region:
+        description: DigitalOcean cluster region
+        required: true
+        default: ams3
+        type: string
+  workflow_dispatch:
     inputs:
       kubernetes_versions:
         description: Kubernetes versions
@@ -20,7 +37,6 @@ on:
         required: true
         default: ams3
         type: string
-  workflow_dispatch: *workflow_inputs
 
 env:
   CACHE_REGISTRY: ghcr.io
