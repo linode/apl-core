@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.11](https://github.com/redkubes/otomi-core/compare/v0.16.10...v0.16.11) (2022-07-27)
+
+
+### Bug Fixes
+
+* azure vault unseal ([#846](https://github.com/redkubes/otomi-core/issues/846)) ([fda2b6c](https://github.com/redkubes/otomi-core/commit/fda2b6cff1dbcc92bdd0b6e24496e71814698b50))
+* chart version placeholder conformt with semver ([#851](https://github.com/redkubes/otomi-core/issues/851)) ([45a05f5](https://github.com/redkubes/otomi-core/commit/45a05f5e22f672480fe9daf59e8b35b71820060c))
+* managed identity for dns ([6f52fa3](https://github.com/redkubes/otomi-core/commit/6f52fa3ba8bde6a85654390130b60087362dc39d))
+* node affinity match now excluding daemonsets ([#847](https://github.com/redkubes/otomi-core/issues/847)) ([598f083](https://github.com/redkubes/otomi-core/commit/598f0838afaa02bfda89e33704d46cdf288b4209))
+* node selector ([784c92f](https://github.com/redkubes/otomi-core/commit/784c92ffde741c4f5fe53aff43e0974b9e28b040))
+* releases with needs that depend on crds must disable validation on install ([605d832](https://github.com/redkubes/otomi-core/commit/605d8329117cff8669859a192063ae3546763574))
+* schema regexp for responders ([a389b2a](https://github.com/redkubes/otomi-core/commit/a389b2a5363491472ac90f008935334431a719ee))
+* tools upgrade, kube-system excluded from gatekeeper audit, nginx policy restriction, kes fix ([ca09954](https://github.com/redkubes/otomi-core/commit/ca09954621bdc2265ef72fe2dd333412ac9af11e))
+
+
+### Others
+
+* bump otomi-api ([d14e1ed](https://github.com/redkubes/otomi-core/commit/d14e1edade33252caa1f7f157d14db823caea7dd))
+* **release:** 0.16.10 ([d507e7f](https://github.com/redkubes/otomi-core/commit/d507e7fadebffde116ed10d41c3b093f13aa8d51))
+
+
+### CI
+
+* adding integration test to checks ([#850](https://github.com/redkubes/otomi-core/issues/850)) ([5ffb8e3](https://github.com/redkubes/otomi-core/commit/5ffb8e37977b6a7f394bbc62f4ab1f0569750f93))
+* run integration test in GitHub actions ([#839](https://github.com/redkubes/otomi-core/issues/839)) ([473a4e3](https://github.com/redkubes/otomi-core/commit/473a4e3423d225e173c9003be25eca514b6e7a21))
+
 ### [0.16.10](https://github.com/redkubes/otomi-core/compare/v0.16.9...v0.16.10) (2022-07-04)
 
 ### Features

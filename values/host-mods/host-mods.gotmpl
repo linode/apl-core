@@ -10,6 +10,8 @@ registryUrl: {{ printf "harbor.%s" $v.cluster.domainSuffix }}
 certDir: {{ $c | get "certDir" nil }}
 updateCmd: {{ $c | get "updateCmd" nil }}
 
+priorityClassName: otomi-critical
+
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - otomi-pullsecret-global

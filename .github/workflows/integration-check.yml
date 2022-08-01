@@ -1,0 +1,36 @@
+name: Add integration testing to checks
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths-ignore:
+      - 'adr/**'
+      - 'docs/**'
+      - CHANGELOG.md
+      - CODEOWNERS
+      - LICENSE
+      - README.md
+      - SECURITY.md
+      - docker-compose
+      - docker-compose.yml
+      - jest.config.ts
+      - tsconfig.jest.json
+      - tsconfig.json
+
+env:
+  CHECK_CONTEXT: continuous-integration/integration-test
+
+jobs:
+  require-integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha || github.sha }} \
+            -f target_url='https://github.com/${{ github.repository }}/actions/workflows/integration.yml' \
+            -f state='pending' \
+            -f description='Integration test run required' \
+            -f context='${{ env.CHECK_CONTEXT }}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
