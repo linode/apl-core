@@ -139,6 +139,7 @@ jobs:
   report-test-status:
     name: Report test status onto commit
     needs: run-integration-test
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Report if test failed
