@@ -1,6 +1,6 @@
 # Minimal values file with all apps enabled
 cluster:
-  k8sVersion: '1.22'
+  k8sVersion: 'K8S_VERSION_PLACEHOLDER'
   name: 'dev'
   provider: digitalocean
   k8sContext: CONTEXT_PLACEHOLDER
