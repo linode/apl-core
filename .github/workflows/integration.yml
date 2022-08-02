@@ -65,7 +65,7 @@ jobs:
             versions=${{ inputs.kubernetes_versions }}
           fi
           echo $versions
-          echo "::set-output name=kubernetes_versions::$versions"
+          echo "::set-output name=versions::$versions"
 
   run-integration-test:
     name: Run integration test on cluster
@@ -123,9 +123,8 @@ jobs:
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/0-chart-patch-placeholder/0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion%.*}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion:0:4}/g" tests/integration/${{ inputs.install_profile }}.yaml
           cat << EOF > values-temp.yaml
-          cat values-temp.yaml
           imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
           imagePullSecretNames:
             - reg-otomi-github
