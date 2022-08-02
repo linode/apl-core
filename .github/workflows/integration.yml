@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       kubernetes_versions:
-        description: Kubernetes versions (JSON formatted list)
+        description: "Kubernetes versions (JSON formatted list e.g.: ['1.22.12'])"
         type: string
       install_profile:
         description: Otomi installation profile
@@ -145,6 +145,7 @@ jobs:
         if: always()
         run: doctl kubernetes cluster delete ${{ env.DIGITALOCEAN_CLUSTER_NAME }} -f --dangerous
       - name: Slack Notification
+        if: always()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
