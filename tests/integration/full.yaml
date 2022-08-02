@@ -84,3 +84,8 @@ teamConfig:
         ownHost: true
         port: 80
         type: public
+    secrets:
+      - entries:
+          - HELLO
+        name: otomi-welcome
+        type: generic
