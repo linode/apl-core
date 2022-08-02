@@ -140,35 +140,36 @@ resources:
       # See: https://banzaicloud.com/docs/bank-vaults/cli-tool/#example-external-vault-configuration
       # The repository also contains a lot examples in the deploy/ and operator/deploy directories.
       externalConfig:
+        # The policies below follow HCL syntax. Do not remove quotes!
         policies:
           - name: allow-read-all-secrets
             rules: |
               path "secret/*" {
-                    capabilities = [read, list]
+                    capabilities = ["read", "list"]
               }
           - name: allow-list-all-secrets
             rules: |
               path "secret/*" {
-                    capabilities = [list]
+                    capabilities = ["list"]
               }
           - name: allow_sandbox
             rules: |
               path "secret/data/sandbox/*" {
-                    capabilities = [create, read, update, delete, list]
+                    capabilities = ["create", "read", "update", "delete", "list"]
               }
           {{- range $teamId, $team := $tc }}
           {{- if ne $teamId "admin" }}
           - name: allow-team-{{ $teamId }}
             rules: |
               path "secret/data/teams/team-{{ $teamId }}/*" {
-                    capabilities = [create, update, read, delete, list]
+                    capabilities = ["create", "update", "read", "delete", "list"]
               }
           {{- end }}
           {{- end }}
           - name: allow-all-secrets
             rules: |
               path "secret/*" {
-                    capabilities = [create, update, read, delete, list]
+                    capabilities = ["create", "update", "read", "delete", "list"]
               }
         auth:
           - type: oidc
