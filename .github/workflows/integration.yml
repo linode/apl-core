@@ -65,7 +65,7 @@ jobs:
             versions=${{ inputs.kubernetes_versions }}
           fi
           echo $versions
-          echo "::set-output name=versions::$versions"
+          echo "::set-output name=kubernetes_versions::$versions"
 
   run-integration-test:
     name: Run integration test on cluster
