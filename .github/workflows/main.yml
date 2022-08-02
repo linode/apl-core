@@ -157,7 +157,6 @@ jobs:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
   notification:
-    # needs: [build-test-cache, integration, push-to-docker, release, chart-release]
     needs: [build-test-cache, push-to-docker, release, chart-release]
     if: always()
     runs-on: ubuntu-latest

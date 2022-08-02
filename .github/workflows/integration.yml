@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       kubernetes_versions:
-        description: Kubernetes versions (JSON formatted list)
+        description: "Kubernetes versions (JSON formatted list e.g.: ['1.22.12'])"
         type: string
       install_profile:
         description: Otomi installation profile
@@ -72,8 +72,10 @@ jobs:
     needs: preprocess-input
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         kubernetes_version: ${{ fromJSON(needs.preprocess-input.outputs.kubernetes_versions) }}
+      max-parallel: 5
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -121,7 +123,7 @@ jobs:
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/0-chart-patch-placeholder/0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion%.*}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion:0:4}/g" tests/integration/${{ inputs.install_profile }}.yaml
           cat << EOF > values-temp.yaml
           imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
           imagePullSecretNames:
@@ -129,11 +131,28 @@ jobs:
           EOF
       - name: Otomi install
         run: helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi --values tests/integration/${{ inputs.install_profile }}.yaml --values values-temp.yaml
-      - name: Gather events on failure and report
+      - name: Gather k8s events on failure
         if: failure()
         run: |
           kubectl get events --sort-by='.lastTimestamp' -A
+      - name: Gather k8s pods on failure
+        if: failure()
+        run: |
+          kubectl get pods -A -o wide
+      - name: Gather otomi logs on failure
+        if: failure()
+        run: |
           kubectl logs jobs/otomi --tail 150
       - name: Remove the test cluster
         if: always()
         run: doctl kubernetes cluster delete ${{ env.DIGITALOCEAN_CLUSTER_NAME }} -f --dangerous
+      - name: Slack Notification
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: github-ci
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/redkubes.png?size=48
+          SLACK_TITLE: Scheduled integration tests
+          SLACK_USERNAME: RedKubesBot
