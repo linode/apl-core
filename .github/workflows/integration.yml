@@ -72,8 +72,10 @@ jobs:
     needs: preprocess-input
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         kubernetes_version: ${{ fromJSON(needs.preprocess-input.outputs.kubernetes_versions) }}
+      max-parallel: 5
     steps:
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
@@ -123,6 +125,7 @@ jobs:
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion%.*}/g" tests/integration/${{ inputs.install_profile }}.yaml
           cat << EOF > values-temp.yaml
+          cat values-temp.yaml
           imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
           imagePullSecretNames:
             - reg-otomi-github
