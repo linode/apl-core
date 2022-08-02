@@ -77,11 +77,16 @@ teamConfig:
               cpu: 50m
               memory: 64Mi
           scaleToZero: false
+          secrets:
+            - otomi-welcome
+          securityContext:
+            runAsUser: 1002
         name: hello
         networkPolicy:
           ingressPrivate:
             mode: AllowAll
         ownHost: true
+        paths: []
         port: 80
         type: public
     secrets:
