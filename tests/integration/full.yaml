@@ -4,6 +4,7 @@ cluster:
   name: 'dev'
   provider: digitalocean
   k8sContext: CONTEXT_PLACEHOLDER
+  version: 'OTOMI_VERSION_PLACEHOLDER'
 otomi:
   isMultitenant: true
 apps:
