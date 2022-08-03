@@ -51,6 +51,11 @@ controller:
     maxReplicas: {{ $n.autoscaling.maxReplicas }}
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 100%
 {{- if eq $v.cluster.provider "azure" }}
   nodeSelector: 
     beta.kubernetes.io/os: linux
@@ -153,6 +158,13 @@ defaultBackend:
     requests:
       cpu: 10m
       memory: 10Mi
+  autoscaling:
+    enabled: {{ $n.autoscaling.enabled }}
+    minReplicas: 1
+    # Helm chart does not include updateStrategy for the defaultBackend
+    # maxReplicas of 4 allows replica count to satisfy the kubernetes default
+    # of maxUnavailable of 25%
+    maxReplicas: 4
 
   # podAnnotations:
   #   sidecar.istio.io/inject: {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
