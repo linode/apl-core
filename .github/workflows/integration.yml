@@ -94,6 +94,7 @@ jobs:
         run: |
           doctl kubernetes cluster create ${{ env.DIGITALOCEAN_CLUSTER_NAME }} \
             --tag integration-test \
+            --ha \
             --region ${{ inputs.cluster_region }} \
             --vpc-uuid ${{ env.DIGITALOCEAN_VPC_UUID }} \
             --node-pool "name=int-test-${{ strategy.job-index }}-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
