@@ -6,6 +6,7 @@ cluster:
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
   isMultitenant: true
+  version: 'OTOMI_VERSION_PLACEHOLDER'
 apps:
   alertmanager:
     enabled: true
