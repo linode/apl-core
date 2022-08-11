@@ -240,7 +240,7 @@ helm_config="$HOME/.config/helm"
 if [[ $(uname -s) == "Darwin" ]]; then
   helm_config="$HOME/Library/Preferences/helm"
 else
-  readonly linux_workaround="--user=root:$(id -g)"
+  readonly linux_workaround="65534:65534"
 fi
 
 stack_dir='/home/app/stack'
