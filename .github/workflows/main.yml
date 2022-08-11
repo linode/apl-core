@@ -71,7 +71,7 @@ jobs:
 
   release:
     needs: push-to-docker
-    if: always() && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'chore(release)') && !github.event.act
+    if: always() && github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
