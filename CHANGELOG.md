@@ -2,34 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.16.12](https://github.com/redkubes/otomi-core/compare/v0.16.11...v0.16.12) (2022-08-11)
-
-
-### Features
-
-* add support for Azure private DNS ([#844](https://github.com/redkubes/otomi-core/issues/844)) ([d1459a3](https://github.com/redkubes/otomi-core/commit/d1459a3eb1246685b890cdd18dfac83dd2bbda7e))
-* allow to define podAnnotations for kubeclarity pod ([#857](https://github.com/redkubes/otomi-core/issues/857)) ([bca802f](https://github.com/redkubes/otomi-core/commit/bca802fb49aea95bc9e04bf5132dd0e5e9da24fc))
-* use main tag by default in developemnt mode ([#858](https://github.com/redkubes/otomi-core/issues/858)) ([058f53c](https://github.com/redkubes/otomi-core/commit/058f53c453ccbb016b50963a59d416d3e413a8d5)), closes [redkubes/unassigned-issues#438](https://github.com/redkubes/unassigned-issues/issues/438)
-
-
-### Bug Fixes
-
-* Gitea - allowed_hosts ([#848](https://github.com/redkubes/otomi-core/issues/848)) ([888040e](https://github.com/redkubes/otomi-core/commit/888040e66633dda7c8bcb86e013d17b97366551b)), closes [#838](https://github.com/redkubes/otomi-core/issues/838)
-* vault policies syntax ([#861](https://github.com/redkubes/otomi-core/issues/861)) ([5f1f915](https://github.com/redkubes/otomi-core/commit/5f1f915e8f4563f2567b39c957e146e6288b5ab0)), closes [#860](https://github.com/redkubes/otomi-core/issues/860)
-
-
-### Tests
-
-* k8sversion placeholder ([#859](https://github.com/redkubes/otomi-core/issues/859)) ([d501757](https://github.com/redkubes/otomi-core/commit/d5017574d18b1c499c585264786e1be496a1f721))
-
-
-### CI
-
-* deployment with team service and secret scenario ([#863](https://github.com/redkubes/otomi-core/issues/863)) ([2a2455d](https://github.com/redkubes/otomi-core/commit/2a2455d5a188eaa515521fbcf5953a91c1f6de8d))
-* run integration tests against many k8s versions ([#852](https://github.com/redkubes/otomi-core/issues/852)) ([a5aa81d](https://github.com/redkubes/otomi-core/commit/a5aa81d89d37f55d95831100c3fdd1d6cdab1b72))
-* status notifications  ([#862](https://github.com/redkubes/otomi-core/issues/862)) ([0a36ccc](https://github.com/redkubes/otomi-core/commit/0a36ccc31e7eef2c49d2021c6710d09619692ef8))
-* template otomi version to match branch name ([#865](https://github.com/redkubes/otomi-core/issues/865)) ([a71465c](https://github.com/redkubes/otomi-core/commit/a71465ca14eb501213e0205802ca57295110ac93))
-
 ### [0.16.11](https://github.com/redkubes/otomi-core/compare/v0.16.10...v0.16.11) (2022-07-27)
 
 
