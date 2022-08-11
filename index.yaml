@@ -2,7 +2,7 @@ apiVersion: v1
 entries:
   otomi:
   - apiVersion: v2
-    appVersion: v0.16.11
+    appVersion: v0.16.12
     created: "2022-08-11T12:47:53.259000318Z"
     description: A Helm chart for installing otomi in Kubernetes
     digest: 794861df513e9fda347228c5ccbd3254695e1357294f065e71afadba9eb50570
