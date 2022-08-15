@@ -1,10 +1,10 @@
 cluster:
-    apiName: eks_otomi-cloud_eu-central-1_otomi-eks-demo
+    apiName: aks_otomi-cloud_west-eu_otomi-aks-demo
     apiServer: https://1.1.1.1:8443
-    domainSuffix: demo.eks.otomi.cloud
-    k8sContext: otomi-eks-demo
+    domainSuffix: velero.demo.aks.otomi.cloud
+    k8sContext: velero
     k8sVersion: '1.22'
-    name: demo
+    name: velero
     owner: redkubes
-    provider: aws
-    region: eu-central-1
+    provider: azure
+    region: 'West Europe'

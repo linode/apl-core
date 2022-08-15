@@ -15,28 +15,15 @@ resources:
   {{- end }}
 
 initContainers:
-  - name: velero-plugin-for-{{ $provider }}
-    image: digitalocean/velero-plugin:v1.1.0
+  - name: velero-plugin-for-azure
+    image: velero/velero-plugin-for-microsoft-azure:v1.5.0
     imagePullPolicy: IfNotPresent
     volumeMounts:
       - mountPath: /target
         name: plugins
 
 podSecurityContext:
-{{- if eq $v.cluster.provider "aws" }}
-  fsGroup: 1337
-{{- end }}
   runAsUser: 1000
-
-metrics:
-  enabled: true
-  scrapeInterval: 30s
-  scrapeTimeout: 10s
-
-podAnnotations:
-    prometheus.io/scrape: "true"
-    prometheus.io/port: "8085"
-    prometheus.io/path: "/metrics"
 
 serviceMonitor:
     enabled: true
@@ -45,10 +32,11 @@ serviceMonitor:
 logLevel: {{ $vl.logLevel }}
 
 configuration:
-  provider: {{ $provider }}
+  provider: azure
   backupStorageLocation:
-    name: default
-    bucket: velero-test-bucket
+    name: velero-storage-location
+    bucket: velero
     config:
-      s3Url: ams3.digitaloceanspaces.com
-      region: ams3
+      storageAccount: velerostorageotomi
+      resourceGroup: velero-storage-group
+      subscriptionId: 
