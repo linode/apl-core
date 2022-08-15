@@ -320,18 +320,12 @@ By exporting `$ENV_DIR`, Otomi knows that it should mount your otomi-core code t
 
 Using Otomi CLI can be very helpful while integrating apps or developing new features that involve the execution of Helmfile because it allows you to render and validated manifests.
 
-You can render manifests of a given chart and validate them without having any cluster. The easiest way is to start using values from the `tests/fixtures` directory.
+You can render manifests of a given chart and validate them without having any cluster. The easiest way is to start using values from the `tests/fixtures` directory. Run `npm install` in the root directory to build all modules required for CLI.
 
 Below you can find some useful use cases:
 
 ```
 export ENV_DIR=$PWD/tests/fixtures
-```
-
-Instruct otomi to use master container image tag.
-
-```
-export OTOMI_TAG=main
 ```
 
 **Rendering otomi values from ENV_DIR**
