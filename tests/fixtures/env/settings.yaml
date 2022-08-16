@@ -7,6 +7,8 @@ alerts:
         - email
     repeatInterval: 3h
 azure:
+    appgw:
+        isManaged: true
     monitor:
         clientId: somesecretvalue
         subscriptionId: somesecretvalue
@@ -62,7 +64,6 @@ otomi:
     hasExternalIDP: true
     hasExternalDNS: true
     isHomeMonitored: true
-    isManaged: true
     isMultitenant: true
     version: main
     nodeSelector:

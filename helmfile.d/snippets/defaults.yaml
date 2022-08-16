@@ -153,7 +153,6 @@ environments:
           hasExternalDNS: false
           hasExternalIDP: false
           isHomeMonitored: false
-          isManaged: true
           isMultitenant: false
         teamConfig: {}
         letsencryptRootCA: |
