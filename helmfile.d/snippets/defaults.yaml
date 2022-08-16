@@ -3,7 +3,7 @@ environments:
     values:
       - azure:
           appgw:
-            isManaged: true
+            isManaged: false
         apps:
           alertmanager:
             enabled: false

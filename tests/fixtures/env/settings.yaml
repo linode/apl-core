@@ -7,8 +7,6 @@ alerts:
         - email
     repeatInterval: 3h
 azure:
-    appgw:
-        isManaged: true
     monitor:
         clientId: somesecretvalue
         subscriptionId: somesecretvalue
