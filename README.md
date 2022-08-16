@@ -12,7 +12,7 @@
   <a href="https://img.shields.io/crates/l/ap"><img alt="License" src="https://img.shields.io/crates/l/ap" /></a>
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
   <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
-  <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/static/v1?label=Slack&message=Join&color=4A154B" alt="Join Slack channel"></a>
+  <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/badge/slack--channel-blue?logo=slack" alt="Join Slack channel"></a>
   <a href="https://twitter.com/RedKubes"><img src="https://img.shields.io/static/v1?label=Twitter&message=Follow&color=1DA1F2" alt="Follow us on Twitter"></a>
   <a href="https://www.facebook.com/groups/otomiusers"><img src="https://img.shields.io/static/v1?label=Facebook&message=Join group&color=1877F2" alt="Join Facebook group"></a>
   <a href="https://www.youtube.com/channel/UCarOB4QW6lTqKG17XUT2uaA"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"></a>
@@ -20,14 +20,54 @@
 </p>
 
 <p align="center">
-<a href="https://marketplace.digitalocean.com/apps/otomi?refcode=476bfcac9ec9&action=deploy"> 🚀 Start using Otomi on Digital Ocean 🚀</a>
+<a href="https://marketplace.digitalocean.com/apps/otomi?refcode=476bfcac9ec9&action=deploy"> 🚀 Get started with Otomi on Digital Ocean 🚀</a>
 </p>
 
 ## About Otomi
 
-**Otomi** is an open source self-hosted DevOps platform for Kubernetes and offers an integrated stack of pre-configured Kubernetes applications combined with (developer) self-service and automation. Otomi can be installed in one run on any Kubernetes cluster, offering a complete DevOps platform experience out-of-the-box. No more reinventing the wheel when building and maintaining your own K8s based DevOps platform.
+**Otomi** is an open source self-hosted DevOps platform for Kubernetes and offers an integrated stack of pre-configured Kubernetes applications combined with (developer) self-service and automation. Otomi can be installed in one run on any Kubernetes cluster, offering a complete platform experience out-of-the-box. No more reinventing the wheel when building and maintaining your own K8s based platform.
+
+## Otomi helps 
+
+1. **Platform & Ops teams** - Who use Otomi to create and manage production-ready Kubernetes-based platforms
+* Onboard development teams on shared clusters in a comprehensive multi-tenant setup
+* Get all the required platform tools in an integrated way
+* Ensure governance
+* Implement zero-trust networking with east-west and north-south network controll within K8s
+* Provide self-service features to development teams
+* Full observability
+
+2. **Developers** - Who use the Otomi features and integrated tools to focus on their apps only
+* Get access to logs and metrics of deployed apps
+* Push charts and images to a private registry
+* Build and run CI pipelines
+* Enable declarative end-to-end app lifecycle management with built-in Argo CD
+* Configure ingress for apps with a single click
+* Manage secrets
+
+1. **DevOps teams** - Who use Otomi to take controll over the complete stack
+* Get all the tools needed to build, deploy and run apps on K8s
+
+## Otomi Features
 
 ![Otomi features](https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.gif)
+
+- [x] Drag and drop apps to create your own preferred suite
+- [x] GitOps with Argo CD out-of-the-box
+- [x] Container image scanning
+- [x] Advanced ingress architecture
+- [x] Generate validated configuration code with an easy to use web UI
+- [x] Configure network policies for internal ingress and external egress
+- [x] Create and manage secrets in HashiCorp Vault and use them in your workloads
+- [x] Create Kubernetes Jobs and Cron Jobs without writing any YAML
+- [x] Role-based access to all integrated applications based on group membership
+- [x] Enforce Pod security policies
+- [x] Onboard teams/projects within minutes in a comprehensive multi-tenant setup
+- [x] Benefit from predefined automation tasks
+- [x] Bring your favorite IdP, DNS and/or CA
+- [x] Expose services on private or (multiple) public networks
+
+And much more...
 
 ## Getting started
 
@@ -66,29 +106,9 @@ Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AW
 
 In our [workshops](https://github.com/redkubes/workshops) repository, we have prepared a comprehensive set of hands-on labs to get a good understanding/overview of everything Otomi has to offer.
 
-## Otomi Features
-
-- [x] Drag and drop apps to create your own preferred suite
-- [x] GitOps with Argo CD out-of-the-box
-- [x] Container image scanning
-- [x] Advanced ingress architecture
-- [x] Generate validated configuration code with an easy to use web UI
-- [x] Configure network policies for internal ingress and external egress
-- [x] Deploy Knative serverless workloads without writing any YAML
-- [x] Create and manage secrets in HashiCorp Vault and use them in your workloads
-- [x] Create Kubernetes Jobs and Cron Jobs without writing any YAML
-- [x] Role-based access to all integrated applications based on group membership
-- [x] Enforce Pod security policies
-- [x] Onboard teams within minutes in a comprehensive multi-tenant setup
-- [x] Benefit from predefined automation tasks
-- [x] Bring your favorite IdP, DNS and/or CA
-- [x] Expose services on private or (multiple) public networks
-
-And much more...
-
 ## Integrated technologies
 
-Otomi installs, configures, integrates and automates all of your favorite technologies:
+Otomi installs, configures, integrates and automates all your favorite technologies:
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/tech.png/?raw=true" width="100%" align="center" alt="Integrated technologies"></p>
 
@@ -134,7 +154,7 @@ If you wish to contribute please read our [Contributor Code of Conduct](https://
 If you want to say **thank you** or/and support the active development of Otomi:
 
 - Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
-- Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use `Otomi`
+- Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use Otomi.
 
 This project exists thanks to all the people who contribute and have contributed.
 
