@@ -196,7 +196,11 @@ persistence:
       {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
+      {{- if eq $v.cluster.provider "vultr" }}
+      size: 10Gi
+      {{- else }}
       size: 5Gi
+      {{- end }}
     jobservice:
       existingClaim: ''
       {{- if $v._derived.supportedCloud }}
@@ -204,8 +208,11 @@ persistence:
       {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
+      {{- if eq $v.cluster.provider "vultr" }}
+      size: 10Gi
+      {{- else }}
       size: 1Gi
-
+      {{- end }}
     # If external database is used, the following settings for database will
     # be ignored
     database:
