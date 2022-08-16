@@ -156,11 +156,11 @@ memcached:
 
 
 persistence:
-    {{- if eq $v.cluster.provider "vultr" }}
-    size: 10Gi
-    {{- else }}
-    size: 1Gi
-    {{- end }}
+  {{- if eq $v.cluster.provider "vultr" }}
+  size: 10Gi
+  {{- else }}
+  size: 1Gi
+  {{- end }}
 
 postgresql:
   # @TODO:
