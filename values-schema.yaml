@@ -2308,7 +2308,6 @@ properties:
                 $ref: '#/definitions/imageTag'
           resources:
             $ref: '#/definitions/resources'
-#TODO             
       velero:
         description: Velero for backing up and restoring, performing disaster recovery, and migrating Kubernetes cluster resources.
         properties:
@@ -2325,7 +2324,7 @@ properties:
               - error
               - fatal
               - panic
-            
+
   cluster:
     $ref: '#/definitions/cluster'
   dns:
