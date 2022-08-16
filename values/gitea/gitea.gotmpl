@@ -167,7 +167,9 @@ postgresql:
     image:
       tag: 0.10.0
   persistence:
-    size: 1Gi
+    {{- if eq $v.cluster.provider "vultr" }}
+    size: 10Gi
+    {{- end }}
   global:
     postgresql:
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}
