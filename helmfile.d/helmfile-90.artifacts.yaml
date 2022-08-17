@@ -26,4 +26,5 @@ releases:
     namespace: velero
     labels:
       pkg: velero
+    chart: ../charts/raw
     <<: *raw
