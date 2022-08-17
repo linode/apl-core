@@ -717,6 +717,7 @@ definitions:
       - custom
       - kind
       - ovh
+      - vultr
   redisChart:
     properties:
       _rawValues:

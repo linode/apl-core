@@ -98,6 +98,9 @@ postgresql:
   postgresqlPostgresPassword: {{ $k.postgresqlPassword }}
   postgresqlPassword: {{ $k.postgresqlPassword }}
   persistence:
+    {{- if eq $v.cluster.provider "vultr" }}
+    size: 10Gi
+    {{- end }}
     enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
   metrics:
     image:

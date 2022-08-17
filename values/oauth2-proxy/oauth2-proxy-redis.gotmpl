@@ -24,7 +24,11 @@ sentinel:
 
 master:
   persistence:
+    {{- if eq $v.cluster.provider "vultr" }}
+    size: 10Gi
+    {{- else }}
     size: {{ $r | get "sizes.master" "1Gi" }}
+    {{- end }}
   podAnnotations:
     sidecar.istio.io/inject: "false"
   priorityClassName: otomi-critical
