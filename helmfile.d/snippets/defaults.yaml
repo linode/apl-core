@@ -16,6 +16,8 @@ environments:
               targetCPUUtilizationPercentage: 50
           cert-manager:
             issuer: custom-ca
+          cluster-overprovisioner:
+            enabled: false
           demo-tlspass:
             enabled: false
           drone:

@@ -70,9 +70,7 @@ environments:
             stage: production
           {{- end }}
           cluster-autoscaler:
-            enabled: {{ $a | get "cluster-autoscaler.enabled" (has $provider (list "custom" "aws")) }}
-          cluster-overprovisioner:
-            enabled: {{ $a | get "cluster-overprovisioner.enabled" (has $provider (list "custom" "kind")) }}
+            enabled: {{ $a | get "cluster-autoscaler.enabled" (has $provider (list "aws")) }}
           {{- if eq $droneProvider "gitea" }}
           drone:
             sourceControl:
