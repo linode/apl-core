@@ -3,7 +3,6 @@ otomi:
     hasExternalDNS: false
     hasExternalIDP: false
     isHomeMonitored: false
-    isManaged: false
     isMultitenant: true
     version: main
 version: 3
