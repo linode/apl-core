@@ -2579,7 +2579,7 @@ properties:
           - password
       hasCloudLB:
         default: false
-        description: Set this to true when using a cloud specific ingress controller. By default the Nginx Ingress Controller is used.
+        description: Set this to true when a cloud-specific ingress controller, which terminates TLS, is required. Otherwise, the Nginx Ingress Controller is deployed to the cluster.'
         type: boolean
       hasExternalDNS:
         description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
