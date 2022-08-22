@@ -7,6 +7,10 @@
   "ignoreRegExpList": ["/'s\\b/"],
   "ignoreWords": [
     "adrs",
+    "KUBECFG",
+    "CNAME",
+    "SBOM",
+    "Venafi",
     "adrlog",
     "adrlogstop",
     "anyuid",
