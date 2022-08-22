@@ -46,7 +46,7 @@
 * Provide self-service features to development teams
 * Change the desired state of the platform based on configuration-as-code
 
-3. **DevOps teams** - To take full controll and responsibily over the complete stack
+3. **DevOps teams** - To take full controll and responsibility over the complete stack
 * Get all the tools needed to build, deploy and run apps on K8s
 
 
