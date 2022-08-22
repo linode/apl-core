@@ -74,7 +74,7 @@ and then install the Helm chart:
 helm install otomi otomi/otomi \
 --set cluster.k8sVersion=$VERSION \ # 1.19, 1.20, 1.21, 1.22 and 1.23 are supported
 --set cluster.name=$CLUSTERNAME \
---set cluster.provider=$PROVIDER # use azure, aws, google, digitalocean or custom for any other cloud or onprem K8s
+--set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', or 'custom' for any other cloud or onprem K8s
 ```
 
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/installation/activation/).
@@ -85,7 +85,7 @@ Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AW
 
 ### Workshops
 
-In our [workshops](https://github.com/redkubes/workshops) repository, we have prepared a comprehensive set of hands-on labs to get a good understanding/overview of everything Otomi has to offer.
+Use the [workshops](https://github.com/redkubes/workshops) repository, to go trough a comprehensive set of hands-on labs to get a good understanding/overview of everything Otomi has to offer.
 
 ## Otomi Features
 
@@ -156,10 +156,10 @@ If you wish to contribute please read our [Contributor Code of Conduct](https://
 
 If you want to say **thank you** or/and support the active development of Otomi:
 
-- Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
-- Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use `Otomi`
+- [Star](https://github.com/redkubes/otomi-core) the Otomi project on Github
+- Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog and share your experiences
 
-This project exists thanks to all the people who contribute and have contributed.
+This project exists thanks to all the people who have contributed
 
 <a href="https://github.com/redkubes/otomi-core/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=redkubes/otomi-core" />
@@ -167,4 +167,4 @@ This project exists thanks to all the people who contribute and have contributed
 
 ## License
 
-Otomi is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).
+Otomi is licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).
