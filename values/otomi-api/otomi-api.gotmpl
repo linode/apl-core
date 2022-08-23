@@ -55,6 +55,7 @@ core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
   adminApps: {{- toYaml $v.adminApps | nindent 4 }}
   teamApps: {{- toYaml $v.teamApps | nindent 4 }}
+  {{ readFile "../../apps.yaml" | nindent 2}}
 
 tools:
   {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipScript" true) | nindent 2 }}
