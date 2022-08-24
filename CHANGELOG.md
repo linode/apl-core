@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.14](https://github.com/redkubes/otomi-core/compare/v0.16.13...v0.16.14) (2022-08-24)
+
+
+### Features
+
+* add OVHcloud provider ([#878](https://github.com/redkubes/otomi-core/issues/878)) ([563d084](https://github.com/redkubes/otomi-core/commit/563d08489b64603d3d87dee238a8ff6bbc348cc2))
+* add vultr provider ([#877](https://github.com/redkubes/otomi-core/issues/877)) ([0f1cb03](https://github.com/redkubes/otomi-core/commit/0f1cb0381df86665831eaa3d5cff2fd9c3b05cc1))
+* app descriptions in core ([#881](https://github.com/redkubes/otomi-core/issues/881)) ([f72ebd6](https://github.com/redkubes/otomi-core/commit/f72ebd683814ccdeb00f20ed1785ab912189e0c6))
+* load apps.yaml and provided it to otomi-api ([c8b02c9](https://github.com/redkubes/otomi-core/commit/c8b02c99de2a8818f0da14c598f771c1c33a1f0b))
+* move apps info to separate file ([285c963](https://github.com/redkubes/otomi-core/commit/285c9638ad0100d506127686bf64734aee66347f))
+* move apps info to separate object ([2d7891e](https://github.com/redkubes/otomi-core/commit/2d7891e1efa3c64d8932b0979b7aaaa93f020267))
+* schema and related logic grooming ([#879](https://github.com/redkubes/otomi-core/issues/879)) ([9f04eb3](https://github.com/redkubes/otomi-core/commit/9f04eb35960c06377fc759b592ab1ccfa5afb4f4)), closes [redkubes/unassigned-issues#442](https://github.com/redkubes/unassigned-issues/issues/442)
+
+
+### Bug Fixes
+
+* broken link in otomi CLI ([#875](https://github.com/redkubes/otomi-core/issues/875)) ([c2ce8f9](https://github.com/redkubes/otomi-core/commit/c2ce8f9f63f9e3fb588ec0ac1d409210ee1d7010))
+* gitea postgres pv size ([#887](https://github.com/redkubes/otomi-core/issues/887)) ([cd08008](https://github.com/redkubes/otomi-core/commit/cd08008b0a74034a7cb0b15d3a9209e255e25b3d))
+* missing appinfo, titles added ([#883](https://github.com/redkubes/otomi-core/issues/883)) ([99f4e76](https://github.com/redkubes/otomi-core/commit/99f4e768a1cec98c2e6077f457aced3da74adab9))
+
+
+### Docs
+
+* describe creating values repo ([#874](https://github.com/redkubes/otomi-core/issues/874)) ([bdd6022](https://github.com/redkubes/otomi-core/commit/bdd6022021476f9773aa0452d822d62e05aa0d51))
+* using otomi cli in dev mode ([#872](https://github.com/redkubes/otomi-core/issues/872)) ([4ae9ac0](https://github.com/redkubes/otomi-core/commit/4ae9ac0bb578f4e16f84794d73934c55626f4c37))
+
+
+### Others
+
+* bump otomi versions and fix docs ([#885](https://github.com/redkubes/otomi-core/issues/885)) ([8dc91a9](https://github.com/redkubes/otomi-core/commit/8dc91a9f76956973bece098da505c81e8367e060))
+
 ### [0.16.13](https://github.com/redkubes/otomi-core/compare/v0.16.12...v0.16.13) (2022-08-11)
 
 
