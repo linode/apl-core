@@ -14,7 +14,7 @@ All notable changes to this project will be documented in this file. See [standa
 * move apps info to separate file ([285c963](https://github.com/redkubes/otomi-core/commit/285c9638ad0100d506127686bf64734aee66347f))
 * move apps info to separate object ([2d7891e](https://github.com/redkubes/otomi-core/commit/2d7891e1efa3c64d8932b0979b7aaaa93f020267))
 * schema and related logic grooming ([#879](https://github.com/redkubes/otomi-core/issues/879)) ([9f04eb3](https://github.com/redkubes/otomi-core/commit/9f04eb35960c06377fc759b592ab1ccfa5afb4f4)), closes [redkubes/unassigned-issues#442](https://github.com/redkubes/unassigned-issues/issues/442)
-* New info tap showing the version of the app, the repo and other usefull information in Otomi Console (Platform/Apps)
+* New info tab showing the version of the app, the repo and other usefull information in Otomi Console (Platform/Apps)
 * Direct navigation to applications and settings in Otomi Console (Platform/Apps and Teams/Apps)
 
 
