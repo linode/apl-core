@@ -173,6 +173,8 @@ postgresql:
   persistence:
     {{- if eq $v.cluster.provider "vultr" }}
     size: 10Gi
+    {{- else }}
+    size: 1Gi
     {{- end }}
   global:
     postgresql:
