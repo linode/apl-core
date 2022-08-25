@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by Otomi to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: ArgoCD
-    appVersion: 1.4.25
+    appVersion: v2.4.7
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -214,7 +214,7 @@ appsInfo:
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   vault:
     title: Vault
-    appVersion: 1.14.3
+    appVersion: 1.6.1
     repo: https://github.com/hashicorp/vault
     maintainers: HashiCorp
     relatedLinks:
