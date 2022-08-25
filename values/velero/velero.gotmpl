@@ -37,17 +37,43 @@ configuration:
     name: default
     bucket: velero
     config:
-      storageAccount: velerostorageotomi
-      resourceGroup: velero-storage-group
-      subscriptionId: a63d5cad-43cc-4dd6-a8c6-837bd3e66c8dpu
-      storageAccountKeyEnvVar: notPushingThis
+      storageAccount: veleroaa62d0eb7872
+      resourceGroup: Velero_Backups
   volumeSnapshotLocation:
     name: default
-    provider: azure
+    provider: velero.io/azure
     config:
-      subscriptionId: a63d5cad-43cc-4dd6-a8c6-837bd3e66c8dpu
+      resourceGroup: Velero_Backups
+      apiTimeout: 10m
+
+credentials:
+  secretContents:
+    cloud: |
+      AZURE_SUBSCRIPTION_ID=
+      AZURE_TENANT_ID=
+      AZURE_CLIENT_ID=
+      AZURE_CLIENT_SECRET=
+      AZURE_RESOURCE_GROUP=
+      AZURE_CLOUD_NAME=AzurePublicCloud
 
 kubectl:
   labels: 
     sidecar.istio.io/inject: "false"
-  
+
+deployRestic: true
+
+# Backup Schedule
+schedules:
+
+#mybackup:
+#     disabled: false
+#     labels:
+#       myenv: foo
+#     annotations:
+#       myenv: foo
+#     schedule: "0 0 * * *"
+#     useOwnerReferencesInBackup: false
+#     template:
+#       ttl: "240h"
+#       includedNamespaces:
+#       - foo
