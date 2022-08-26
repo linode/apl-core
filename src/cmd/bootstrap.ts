@@ -1,7 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { copy, outputFileSync } from 'fs-extra'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { copy } from 'fs-extra'
 import { copyFile } from 'fs/promises'
-import { dump } from 'js-yaml'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import { Argv } from 'yargs'
@@ -14,7 +13,7 @@ import { terminal } from '../common/debug'
 import { env, isChart, isCi, isCli } from '../common/envalid'
 import { hfValues } from '../common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from '../common/k8s'
-import { getFilename, gucci, isCore, loadYaml, providerMap, removeBlankAttributes, rootDir } from '../common/utils'
+import { getFilename, gucci, isCore, loadYaml, providerMap, rootDir } from '../common/utils'
 import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
 import { migrate } from './migrate'
@@ -107,23 +106,25 @@ export const bootstrapSops = async (
   }
 }
 
-export const generateLooseSchema = (deps = { terminal, rootDir, env, isCore, loadYaml, outputFileSync }): void => {
+export const generateLooseSchema = (deps = { terminal, rootDir, env, isCore, loadYaml, copyFileSync }): void => {
   const d = deps.terminal(`cmd:${cmdName}:generateLooseSchema`)
   const { ENV_DIR } = env
   const devOnlyPath = `${deps.rootDir}/.vscode/values-schema.yaml`
   const targetPath = `${ENV_DIR}/.vscode/values-schema.yaml`
   const sourcePath = `${deps.rootDir}/values-schema.yaml`
 
-  const valuesSchema = deps.loadYaml(sourcePath)
-  const trimmedVS = dump(
-    removeBlankAttributes(JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2))),
-  )
-  d.debug('generated values-schema.yaml: ', trimmedVS)
-  deps.outputFileSync(targetPath, trimmedVS)
+  // const valuesSchema = deps.loadYaml(sourcePath)
+  // const trimmedVS = dump(
+  //   removeBlankAttributes(JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2))),
+  // )
+  // d.debug('generated values-schema.yaml: ', trimmedVS)
+  // deps.outputFileSync(targetPath, trimmedVS)
+  deps.copyFileSync(sourcePath, targetPath)
   d.info(`Stored loose YAML schema at: ${targetPath}`)
   if (deps.isCore) {
-    // for validation of .values/env/* files we also generate a loose schema here:
-    deps.outputFileSync(devOnlyPath, trimmedVS)
+    // for validation of .values/env/* files we also generate a schema here:
+    // deps.outputFileSync(devOnlyPath, trimmedVS)
+    deps.copyFileSync(sourcePath, devOnlyPath)
     d.debug(`Stored loose YAML schema for otomi-core devs at: ${devOnlyPath}`)
   }
 }

@@ -12,13 +12,18 @@ image:
 
 {{- range $provider, $config := $dns.provider }}
 {{- $providerConfigKey := $provider | replace "azure-private-dns" "azure" }}
+{{- if eq $provider "other" }}
+provider: {{ $config.name }}
+{{ $config.name }}: {{- $config | get "external-dns" | toYaml | nindent 2 }}
+{{- else }}
 provider: {{ $provider }}
 {{ $providerConfigKey }}: {{- $config | toYaml | nindent 2 }}
 {{- end }}
-domainFilters: {{ $externalDns | get "domainFilters" | toYaml | nindent 2 }}
-zoneIdFilters: {{ $externalDns | get "zoneIdFilters" list | toYaml | nindent 2 }}
+{{- end }}
+domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
+zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
-logLevel: {{ $externalDns | get "logLevel" "info" }}
+logLevel: {{ $externalDns | get "logLevel" }}
 dryRun: false
 crd:
   create: false

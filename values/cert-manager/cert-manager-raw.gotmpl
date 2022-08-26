@@ -7,21 +7,6 @@
 {{- $issuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
-{{- if or ($p | get "azure.aadClientSecret" nil) ($p | get "google.serviceAccountKey" nil) ($p | get "aws.secretAccessKey" nil) }}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: "dns-secret"
-    data:
-      {{- if hasKey $p "google" }}
-      secret: "{{ $p.google.serviceAccountKey | b64enc }}"
-      {{- else if hasKey $p "azure" }}
-      secret: "{{ $p.azure.aadClientSecret | b64enc }}"
-      {{- else if hasKey $p "aws" }}
-      secret: "{{ $p.aws.secretAccessKey | b64enc }}"
-      {{- end }}
-{{- end }}
-
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
@@ -45,11 +30,13 @@ resources:
             dns01:
               {{- with $p | get "aws" nil }}
               route53:
-                {{- if and (hasKey . "accessKeyID") (hasKey . "secretAccessKey") }}
-                accessKeyID: {{ .accessKeyID }}
+                {{- with . | get "credentials.accessKey" nil }}
+                accessKeyID: {{ . }}
+                {{- end }}
+                {{- if or (. | get "credentials.secretKey" nil) (. | get "secretName" nil) }}
                 secretAccessKeySecretRef:
-                  key: secret
-                  name: "dns-secret"
+                  key: "credentials"
+                  secretName: external-dns
                 {{- end }}
                 region: {{ .region }}
                 {{- with . | get "role" nil }}
@@ -63,9 +50,6 @@ resources:
                 {{- if hasKey . "aadClientId" }}
                 tenantID: {{ .tenantId }}
                 clientID: {{ .aadClientId }}
-                clientSecretSecretRef:
-                  key: secret
-                  name: "dns-secret"
                 {{- end }}
                 {{- if . | get "useManagedIdentityExtension" false }}
                 managedIdentity:
@@ -77,13 +61,49 @@ resources:
                 {{- with . | get "environment" nil }}
                 environment: {{ . }}
                 {{- end }}
+                {{- if or (. | get "aadClientSecret" nil) (. | get "secretName" nil) }}
+                clientSecretSecretRef:
+                  key: azure.json
+                  secretName: external-dns
+                {{- end }}
+              {{- end }}
+              {{- with $p | get "cloudflare" nil }}
+              cloudflare:
+                {{- if or (. | get "apiToken" nil) (. | get "apiSecret" nil) (. | get "secretName" nil) }}
+                  {{- with . | get "apiToken" nil }}
+                apiTokenSecretRef:
+                  key: cloudflare_api_token
+                  {{- end }}
+                  {{- with . | get "apiSecret" nil }}
+                apiKeySecretRef:
+                  key: cloudflare_api_key
+                  {{- end }}
+                  secretName: external-dns
+                {{- else }}
+                  {}
+                {{- end }}
+              {{- end }}
+              {{- with $p | get "digitalocean" nil }}
+              digitalocean:
+                {{- if or (. | get "apiToken" nil) (. | get "secretName" nil) }}
+                tokenSecretRef:
+                  key: digitalocean_api_token
+                  secretName: external-dns
+                {{- else }}
+                  {}
+                {{- end }}
               {{- end }}
               {{- with $p | get "google" nil }}
               cloudDNS:
                 project: {{ .project }}
+                {{- if or (. | get "serviceAccountKey" nil) (. | get "secretName" nil) }}
                 serviceAccountSecretRef:
-                  key: secret
-                  name: "dns-secret"
+                  key: credentials.json
+                  secretName: external-dns
+                {{- end }}
+              {{- end }}
+              {{- with $p | get "other" nil }}
+              {{- toYaml . | get "cert-manager" nindent 14 }}
               {{- end }}
 {{- end }}
 # generate all da certs

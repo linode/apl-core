@@ -33,3 +33,7 @@ changes:
   - version: 4
     deletions:
       - otomi.isManaged
+  - version: 5
+    relocations:
+      - dns.provider.aws.accessKeyID: dns.provider.aws.credentials.accessKey
+      - dns.provider.aws.secretAccessKey: dns.provider.aws.credentials.secretKey
