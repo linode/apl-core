@@ -143,7 +143,7 @@ adminApps:
         auth: true
     shortcuts:
       - title: NGINX
-        description: metrics from the NGINX ingress controller
+        description: NGINX ingress controller metrics
         path: /d/nginx/nginx-ingress-controller?orgId=1&refresh=5s
   - name: harbor
     tags: [security]
@@ -246,24 +246,14 @@ adminApps:
     path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
     shortcuts:
       - title: Ingress logs
-        description: all logs generated in the "ingress" namespace
+        description: All logs generated in the "ingress" namespace
         path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"ingress%5C"%7D","refId":"A"%7D%5D
       - title: OWASP violations
-        description: ingress traffic triggering OWASP rules
+        description: All OWASP rule violations
         path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"ingress%5C"%7D%20%7C%3D%5C"ModSecurity:%20%5C""%7D%5D
       - title: Gatekeeper violations
         description: Kube API violations logged by OPA gatekepeer
         path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D%20%7C%3D%5C"Policy:%20%5C""%7D%5D
-  # - name: notary
-  #   isShared: true
-  #   ownHost: true
-  #   hide: true
-  #   ingress:
-  #     - svc: harbor-notary-server
-  #       port: 4443
-  #       namespace: harbor
-  #       type: public
-  #       auth: true
   - name: otomi
     hide: true
     isShared: true

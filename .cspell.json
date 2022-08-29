@@ -7,6 +7,10 @@
   "ignoreRegExpList": ["/'s\\b/"],
   "ignoreWords": [
     "adrs",
+    "KUBECFG",
+    "CNAME",
+    "SBOM",
+    "Venafi",
     "adrlog",
     "adrlogstop",
     "anyuid",
@@ -58,7 +62,9 @@
     "xlarge",
     "xsrf",
     "tada",
-    "minikube"
+    "minikube",
+    "vultr",
+    "ovh"
   ],
   "language": "en",
   "words": [
@@ -141,6 +147,7 @@
     "sysctls",
     "testmode",
     "textconv",
+    "unencrypted",
     "untrusted",
     "xlarge"
   ]

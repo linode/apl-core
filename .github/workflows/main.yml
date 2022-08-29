@@ -71,7 +71,7 @@ jobs:
 
   release:
     needs: push-to-docker
-    if: always() && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'chore(release)') && !github.event.act
+    if: always() && github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
@@ -90,7 +90,7 @@ jobs:
           docker pull $REPO:$TAG
           docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
-          release_tag=v${COMMIT_MSG#* }
+          release_tag="v$(echo $COMMIT_MSG | cut -d' ' -f2)"
           echo ::set-output name=tag::$release_tag
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag

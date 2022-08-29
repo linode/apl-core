@@ -3,7 +3,7 @@ environments:
     values:
       - azure:
           appgw:
-            isManaged: true
+            isManaged: false
         apps:
           alertmanager:
             enabled: false
@@ -16,6 +16,8 @@ environments:
               targetCPUUtilizationPercentage: 50
           cert-manager:
             issuer: custom-ca
+          cluster-overprovisioner:
+            enabled: false
           demo-tlspass:
             enabled: false
           drone:
@@ -153,7 +155,6 @@ environments:
           hasExternalDNS: false
           hasExternalIDP: false
           isHomeMonitored: false
-          isManaged: true
           isMultitenant: false
         teamConfig: {}
         letsencryptRootCA: |

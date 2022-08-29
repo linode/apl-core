@@ -716,6 +716,8 @@ definitions:
       - google
       - custom
       - kind
+      - ovh
+      - vultr
   redisChart:
     properties:
       _rawValues:
@@ -1191,8 +1193,8 @@ properties:
       appgw:
         properties:
           isManaged:
-            default: true
-            description: Was the AKS cluster installed with appgw addon?
+            default: false
+            description: Indicates Azure Application Gateway Ingress Controller add-on is installed by AKS.
             type: boolean
       monitor:
         $ref: '#/definitions/azure/definitions/monitor'
@@ -2577,7 +2579,7 @@ properties:
           - password
       hasCloudLB:
         default: false
-        description: 'Set this to true when an external LB exists or needs to be started (AWS ALB, Azure AppGW, Google Apigee). This will then be configured through ingress controllers. Expects existing LBs to terminate https. Currently this is only working correctly for Azure, and not for AWS and Google. AWS is close to completion.'
+        description: "Set this to true when a cloud specific ingress controller is wanted/installed that terminates TLS and forwards traffic unencrypted. Otherwise Otomi's Nginx controller will create a loadbalancer that will take care of this."
         type: boolean
       hasExternalDNS:
         description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
@@ -2590,10 +2592,6 @@ properties:
       isHomeMonitored:
         default: false
         description: Whether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
-        type: boolean
-      isManaged:
-        default: true
-        description: Whether masters are managed and not under control. Set this to false for provider "custom".
         type: boolean
       isMultitenant:
         default: false
