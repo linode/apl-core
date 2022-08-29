@@ -35,5 +35,10 @@ changes:
       - otomi.isManaged
   - version: 5
     relocations:
+      - apps.vault.seal.gcpkms.projectId: apps.vault.seal.gcpkms.project
+      - apps.external-dns.domainFilters: dns.domainFilters
+      - apps.external-dns.zoneIdFilters: dns.zoneIdFilters
       - dns.provider.aws.accessKeyID: dns.provider.aws.credentials.accessKey
       - dns.provider.aws.secretAccessKey: dns.provider.aws.credentials.secretKey
+      - dns.provider.google.projectId: dns.provider.google.project
+      - kms.sops.google.projectId: kms.sops.google.project

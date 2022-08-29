@@ -203,14 +203,15 @@ definitions:
           - tenantId
           - subscriptionId
           - resourceGroup
-        anyOf:
+        allOf:
           - oneOf:
               - required: [aadClientId, aadClientSecret]
               - required: [secretName]
               - not:
                   anyOf:
-                    - required: [aadClientId, aadClientSecret]
                     - required: [secretName]
+                    - required: [aadClientId]
+                    - required: [aadClientSecret]
           - oneOf:
               - required: [useManagedIdentityExtension, userAssignedIdentityID]
               - not:
@@ -392,7 +393,6 @@ definitions:
   email:
     pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     type: string
-    # nullable: true
   env:
     additionalProperties: false
     examples:
@@ -1265,7 +1265,7 @@ properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           customRootCA:
-            x-secret: '' # made secret to let it be added to k8s secret for chart install
+            x-secret: ''
             type: string
             description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one automatically.
           customRootCAKey:
@@ -1286,25 +1286,22 @@ properties:
               - production
               - staging
             default: production
-        required: [email]
-        # oneOf:
-        #   - properties:
-        #       issuer:
-        #         const: letsencrypt
-        #     required:
-        #       - email
-        #       - issuer
-        #   - properties:
-        #       issuer:
-        #         const: custom-ca
-        #     required:
-        #       - issuer
-        # - properties:
-        #     issuer:
-        #       const: null
-        #   not:
-        #     required:
-        #       - issuer
+        oneOf:
+          - properties:
+              issuer:
+                const: letsencrypt
+            required:
+              - email
+              - issuer
+          - properties:
+              issuer:
+                const: custom-ca
+            required:
+              - issuer
+          - not:
+              anyOf:
+                - required:
+                    - issuer
       cluster-autoscaler:
         additionalProperties: false
         properties:
@@ -1534,6 +1531,8 @@ properties:
                 $ref: '#/definitions/resources'
       gitea:
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           adminPassword:
@@ -1570,6 +1569,9 @@ properties:
           enabled:
             type: boolean
             default: false
+          adminPassword:
+            type: string
+            x-secret: ''
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -1930,6 +1932,9 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
+          theme:
+            type: string
+            default: otomi
           image:
             properties:
               keycloak:
@@ -2403,7 +2408,8 @@ properties:
                       - required: [secretName]
                       - not:
                           anyOf:
-                            - required: [secretKey, accessKey]
+                            - required: [accessKey]
+                            - required: [secretKey]
                             - required: [secretName]
                   region:
                     $ref: '#/definitions/aws/definitions/region'
@@ -2470,10 +2476,8 @@ properties:
                       anyOf:
                         - required: [apiToken]
                         - required: [secretName]
-                type: object
             required:
-              - google
-            type: object
+              - digitalocean
           - title: CloudFlare
             properties:
               cloudflare:
@@ -2496,17 +2500,16 @@ properties:
                     x-default: true
                 oneOf:
                   - required: [apiToken]
-                  - required: [email, apiSecret]
+                  - required: [apiSecret, email]
                   - required: [secretName]
                   - not:
                       anyOf:
                         - required: [apiToken]
-                        - required: [email, apiSecret]
+                        - required: [apiSecret]
+                        - required: [email]
                         - required: [secretName]
-                type: object
             required:
               - cloudflare
-            type: object
           - title: Other
             properties:
               other:
