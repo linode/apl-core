@@ -241,7 +241,8 @@ helm_config="$HOME/.config/helm"
 if [[ $(uname -s) == "Darwin" ]]; then
   helm_config="$HOME/Library/Preferences/helm"
 else
-  readonly linux_workaround="--user=${DOCKER_RUN_AS:-'root:root'}"
+  run_as="$(id -u):$(id -g)"
+  readonly linux_workaround="--user=${DOCKER_RUN_AS:-$run_as}"
 fi
 
 stack_dir='/home/app/stack'
