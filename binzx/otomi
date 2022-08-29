@@ -208,6 +208,7 @@ vars=(
   AZURE_TENANT_ID
   CI
   DEBUG
+  DOCKER_RUN_AS
   ENV_DIR
   GCLOUD_SERVICE_KEY
   KUBE_VERSION_OVERRIDE
@@ -240,7 +241,8 @@ helm_config="$HOME/.config/helm"
 if [[ $(uname -s) == "Darwin" ]]; then
   helm_config="$HOME/Library/Preferences/helm"
 else
-  readonly linux_workaround='--user=root:root'
+  run_as="$(id -u):$(id -g)"
+  readonly linux_workaround="--user=${DOCKER_RUN_AS:-$run_as}"
 fi
 
 stack_dir='/home/app/stack'
