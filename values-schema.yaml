@@ -186,9 +186,6 @@ definitions:
             type: string
             description: Azure Application Client Secret
             x-secret: ''
-          secretName:
-            type: string
-            description: Existing secret with credentials. Will override credentials provided.
           useManagedIdentityExtension:
             title: Using managed identities?
             type: boolean
@@ -206,18 +203,13 @@ definitions:
         allOf:
           - oneOf:
               - required: [aadClientId, aadClientSecret]
-              - required: [secretName]
-              - not:
-                  anyOf:
-                    - required: [secretName]
-                    - required: [aadClientId]
-                    - required: [aadClientSecret]
-          - oneOf:
               - required: [useManagedIdentityExtension, userAssignedIdentityID]
               - not:
                   anyOf:
-                    - required: [useManagedIdentityExtension, userAssignedIdentityID]
-
+                    - required: [useManagedIdentityExtension]
+                    - required: [userAssignedIdentityID]
+                    - required: [aadClientId]
+                    - required: [aadClientSecret]
       environment:
         title: Azure environment
         description: An Azure environment.
@@ -2400,17 +2392,7 @@ properties:
                         $ref: '#/definitions/aws/definitions/secretKey'
                       accessKey:
                         $ref: '#/definitions/aws/definitions/accessKey'
-                      secretName:
-                        type: string
-                        description: Existing secret with credentials. Will override credentials provided.
-                    oneOf:
-                      - required: [secretKey, accessKey]
-                      - required: [secretName]
-                      - not:
-                          anyOf:
-                            - required: [accessKey]
-                            - required: [secretKey]
-                            - required: [secretName]
+                    required: [secretKey, accessKey]
                   region:
                     $ref: '#/definitions/aws/definitions/region'
                   role:
@@ -2446,17 +2428,7 @@ properties:
                     description: A service account key in json format for managing a DNS zone.
                   project:
                     $ref: '#/definitions/google/definitions/project'
-                  secretName:
-                    type: string
-                    description: Existing secret with credentials. Will override credentials provided.
-                required: [project]
-                oneOf:
-                  - required: [serviceAccountKey]
-                  - required: [secretName]
-                  - not:
-                      anyOf:
-                        - required: [serviceAccountKey]
-                        - required: [secretName]
+                required: [project, serviceAccountKey]
             required:
               - google
           - title: Digital Ocean
@@ -2466,16 +2438,8 @@ properties:
                   apiToken:
                     type: string
                     x-secret: true
-                  secretName:
-                    type: string
-                    description: Existing secret with credentials. Will override credentials provided.
-                oneOf:
-                  - required: [apiToken]
-                  - required: [secretName]
-                  - not:
-                      anyOf:
-                        - required: [apiToken]
-                        - required: [secretName]
+                required:
+                  - apiToken
             required:
               - digitalocean
           - title: CloudFlare
@@ -2492,22 +2456,17 @@ properties:
                   email:
                     $ref: '#/definitions/email'
                     description: Required when Email is set.
-                  secretName:
-                    type: string
-                    description: Existing secret with credentials. Will override credentials provided.
                   proxied:
                     type: boolean
                     x-default: true
                 oneOf:
                   - required: [apiToken]
                   - required: [apiSecret, email]
-                  - required: [secretName]
                   - not:
                       anyOf:
                         - required: [apiToken]
                         - required: [apiSecret]
                         - required: [email]
-                        - required: [secretName]
             required:
               - cloudflare
           - title: Other

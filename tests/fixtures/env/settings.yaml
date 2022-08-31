@@ -27,6 +27,8 @@ dns:
             resourceGroup: external-dns
             subscriptionId: 00-subscriptionId
             tenantId: 00-tenantId
+            # useManagedIdentityExtension: true
+
     domainFilters:
         - otomi.cloud
     zoneIdFilters:
