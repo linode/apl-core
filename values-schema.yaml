@@ -186,30 +186,12 @@ definitions:
             type: string
             description: Azure Application Client Secret
             x-secret: ''
-          useManagedIdentityExtension:
-            title: Using managed identities?
-            type: boolean
-            description: If you use Azure MSI, this should be set to true
-            default: false
-          userAssignedIdentityID:
-            title: MSI id
-            type: string
-            description: If you use Azure MSI, this is the Client ID of a Azure user-assigned managed identity or resource id. Required for cert-manager.
-            x-secret: ''
         required:
           - tenantId
           - subscriptionId
           - resourceGroup
-        allOf:
-          - oneOf:
-              - required: [aadClientId, aadClientSecret]
-              - required: [useManagedIdentityExtension, userAssignedIdentityID]
-              - not:
-                  anyOf:
-                    - required: [useManagedIdentityExtension]
-                    - required: [userAssignedIdentityID]
-                    - required: [aadClientId]
-                    - required: [aadClientSecret]
+          - aadClientId
+          - aadClientSecret
       environment:
         title: Azure environment
         description: An Azure environment.

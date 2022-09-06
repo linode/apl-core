@@ -51,10 +51,6 @@ resources:
                 tenantID: {{ .tenantId }}
                 clientID: {{ .aadClientId }}
                 {{- end }}
-                {{- if . | get "useManagedIdentityExtension" false }}
-                managedIdentity:
-                  clientID: {{ .userAssignedIdentityID }}
-                {{- end }}
                 {{- with . | get "hostedZoneName" nil }}
                 hostedZoneName: {{ . }}
                 {{- end }}
