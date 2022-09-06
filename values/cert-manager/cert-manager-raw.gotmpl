@@ -54,9 +54,6 @@ resources:
                 {{- with . | get "hostedZoneName" nil }}
                 hostedZoneName: {{ . }}
                 {{- end }}
-                {{- with . | get "environment" nil }}
-                environment: {{ . }}
-                {{- end }}
                 {{- if or (. | get "aadClientSecret" nil) (. | get "secretName" nil) }}
                 clientSecretSecretRef:
                   key: azure.json

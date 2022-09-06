@@ -166,8 +166,6 @@ definitions:
         x-secret: ''
       dns:
         properties:
-          environment:
-            $ref: '#/definitions/azure/definitions/environment'
           resourceGroup:
             $ref: '#/definitions/azure/definitions/resourceGroup'
           hostedZoneName:
