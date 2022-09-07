@@ -142,6 +142,7 @@ environments:
           vault:
             enabled: false
           velero:
+            name: default
             enabled: false
             logLevel: warning
         cluster: {}
