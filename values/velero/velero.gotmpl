@@ -34,11 +34,11 @@ logLevel: {{ $vl.logLevel }}
 configuration:
   provider: azure
   backupStorageLocation:
-    name: default
-    bucket: velero
+    name: {{ $vl.name }}
+    bucket: {{ $vl.bucket }}
     config:
-      storageAccount: veleroaa62d0eb7872
-      resourceGroup: Velero_Backups
+      storageAccount: {{ $vl.storageAccount }}
+      resourceGroup: {{ $vl.resourceGroup }}
   volumeSnapshotLocation:
     name: default
     provider: velero.io/azure
@@ -49,11 +49,11 @@ configuration:
 credentials:
   secretContents:
     cloud: |
-      AZURE_SUBSCRIPTION_ID=
-      AZURE_TENANT_ID=
-      AZURE_CLIENT_ID=
-      AZURE_CLIENT_SECRET=
-      AZURE_RESOURCE_GROUP=
+      AZURE_SUBSCRIPTION_ID={{ $vl.secretContents.subscriptionId }}
+      AZURE_TENANT_ID={{ $vl.secretContents.tenantId }}
+      AZURE_CLIENT_ID={{ $vl.secretContents.aadClientId }}
+      AZURE_CLIENT_SECRET={{ $vl.secretContents.aadClientSecret }}
+      AZURE_RESOURCE_GROUP={{ $vl.secretContents.resourceGroup}}
       AZURE_CLOUD_NAME=AzurePublicCloud
 
 kubectl:
