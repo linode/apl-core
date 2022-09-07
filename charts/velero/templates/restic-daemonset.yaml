@@ -36,6 +36,7 @@ spec:
       {{- end }}
       annotations:
         policy.otomi.io/ignore: psp-allowed-users
+        policy.otomi.io/ignore: psp-host-filesystem
       {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

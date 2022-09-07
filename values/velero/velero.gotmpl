@@ -14,15 +14,6 @@ resources:
     memory: 512Mi
   {{- end }}
 
-  kubectl:
-    resources:
-      requests:
-        cpu: 50m
-        memory: 32Mi
-      limits:
-        cpu: 100m
-        memory: 32Mi
-
 initContainers:
   - name: velero-plugin-for-azure
     image: velero/velero-plugin-for-microsoft-azure:v1.5.0
@@ -73,6 +64,13 @@ credentials:
       AZURE_CLOUD_NAME=AzurePublicCloud
 
 kubectl:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 32Mi
   labels: 
     sidecar.istio.io/inject: "false"
 
