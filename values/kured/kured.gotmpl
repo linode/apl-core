@@ -22,6 +22,8 @@ metrics:
 podAnnotations: 
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security
 
+priorityClassName: otomi-critical
+
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 image:
   pullSecrets:

@@ -21,7 +21,7 @@ deschedulerPolicy:
       enabled: true
       params:
         # by default otomi components have a priority class named otomi-critical, we can deschedule pods up to this class
-        thresholdPriorityClassName: "otomi-critical"
+        thresholdpriorityClassName: otomi-critical
         nodeResourceUtilizationThresholds:
           thresholds:
             cpu: 50

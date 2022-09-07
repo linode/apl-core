@@ -90,7 +90,8 @@ gitea:
     session:
       COOKIE_SECURE: true
       DOMAIN: {{ $giteaDomain }}
-      
+    webhook:
+      ALLOWED_HOST_LIST: "*"
     server:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
@@ -156,7 +157,11 @@ memcached:
 
 
 persistence:
+  {{- if eq $v.cluster.provider "vultr" }}
+  size: 10Gi
+  {{- else }}
   size: 1Gi
+  {{- end }}
 
 postgresql:
   # @TODO:
@@ -167,7 +172,11 @@ postgresql:
     image:
       tag: 0.10.0
   persistence:
+    {{- if eq $v.cluster.provider "vultr" }}
+    size: 10Gi
+    {{- else }}
     size: 1Gi
+    {{- end }}
   global:
     postgresql:
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}

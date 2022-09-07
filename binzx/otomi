@@ -71,13 +71,8 @@ function parse_yaml {
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 fallback_otomi_version='latest'
-fallback_otomi_dev_version='main'
 if [ -n "$in_core" ]; then
-  current_branch=$(git branch --show-current 2>/dev/null)
-  current_branch_img=${current_branch##*/}
-  # If the git branch command fails to get the img, then we use the fallback of main
-  current_branch_img=${current_branch_img:-$fallback_otomi_dev_version}
-  otomi_version=$current_branch_img
+  otomi_version='main'
 elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
   otomi_version_rec=$(parse_yaml $ENV_DIR/env/settings.yaml | grep 'otomi__version=')
   if [[ "$otomi_version_rec" =~ otomi__version=\"(.*)\" ]]; then
@@ -89,7 +84,7 @@ elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
 else
   otomi_version=$fallback_otomi_version
 fi
-otomi_branch_or_tag=${current_branch:-$otomi_version}
+otomi_branch_or_tag=${OTOMI_TAG:-$otomi_version}
 otomi_version_used=${OTOMI_TAG:-$otomi_version}
 readonly otomi_tools_image="otomi/core:${otomi_version_used}"
 
@@ -213,6 +208,7 @@ vars=(
   AZURE_TENANT_ID
   CI
   DEBUG
+  DOCKER_RUN_AS
   ENV_DIR
   GCLOUD_SERVICE_KEY
   KUBE_VERSION_OVERRIDE
@@ -245,7 +241,8 @@ helm_config="$HOME/.config/helm"
 if [[ $(uname -s) == "Darwin" ]]; then
   helm_config="$HOME/Library/Preferences/helm"
 else
-  readonly linux_workaround='--user=root:root'
+  run_as="$(id -u):$(id -g)"
+  readonly linux_workaround="--user=${DOCKER_RUN_AS:-$run_as}"
 fi
 
 stack_dir='/home/app/stack'

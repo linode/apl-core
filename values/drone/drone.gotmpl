@@ -108,6 +108,9 @@ persistence:
   {{- if $v._derived.supportedCloud }}
   storageClass: fast
   {{- end }}
+  {{- if eq $v.cluster.provider "vultr" }}
+  size: 10Gi
+  {{- end }}
 metrics:
   prometheus:
     enabled: true

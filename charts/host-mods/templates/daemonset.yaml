@@ -21,6 +21,7 @@ spec:
       {{- with .Values.imagePullsecrets }}
       imagePullsecrets: {{- toYaml . | nindent 8 }}
       {{- end }}
+      priorityClassName: {{ .Values.priorityClassName }}
       serviceAccount: {{ include "host-mods.fullname" . }}
       initContainers:
         - name: node-mod

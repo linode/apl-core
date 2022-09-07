@@ -344,7 +344,7 @@ export const bootstrap = async (
   const originalValues = await deps.processValues()
   // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
   if (!originalValues) {
-    d.log('A new values repo has been created. For next steps follow otomi.io/docs.')
+    d.log('A new values repo has been created. For next steps follow documentation at https://otomi.io')
     return
   }
   const finalValues = (await deps.hfValues()) as Record<string, any>

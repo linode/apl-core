@@ -1,0 +1,7 @@
+# Minimal values file with defaults
+cluster:
+  k8sVersion: 'K8S_VERSION_PLACEHOLDER'
+  name: 'dev'
+  provider: digitalocean
+  k8sContext: CONTEXT_PLACEHOLDER
+  version: 'OTOMI_VERSION_PLACEHOLDER'

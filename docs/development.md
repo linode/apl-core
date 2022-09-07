@@ -315,51 +315,85 @@ TBD
 
 ## Using CLI while developing templates
 
-It is possible to use Otomi CLI from a root directory of the otomi-core project.
-By exporting `$ENV_DIR`, Otomi knows that it should mount your otomi-core code to override the one from the `otomi-core` container image.
+Using Otomi CLI can be very helpful while integrating apps or developing new features that involve the execution of Helmfile because it allows you to render and validate manifests. It is possible to use Otomi CLI in development mode, so the Otomi CLI reflects changes made in your local `otomi-core` directory.
 
-Using Otomi CLI can be very helpful while integrating apps or developing new features that involve the execution of Helmfile because it allows you to render and validated manifests.
+To run Otomi CLI in the development mode, you must:
 
-You can render manifests of a given chart and validate them without having any cluster. The easiest way is to start using values from the `tests/fixtures` directory.
+- execute Otomi CLI commands from a root directory of the `otomi-core` project
+- export `ENV_DIR`
 
-Below you can find some useful use cases:
+First, run `npm install` to build all modules required for CLI.
 
-```
-export ENV_DIR=$PWD/tests/fixtures
-```
+To create a values repository, follow the below steps:
 
-Instruct otomi to use master container image tag.
+1. Indicate the path of the value repo, e.g.:
 
 ```
-export OTOMI_TAG=master
+export ENV_DIR=$HOME/otomi-values
 ```
 
-**Rendering otomi values from ENV_DIR**
+2. Bootstrap the values repo:
 
 ```
-otomi values
+otomi bootstrap
 ```
 
-**Validating values from ENV_DIR**
+3. Now open `$ENV_DIR` directory in your favorite IDE. Otomi has bootstrapped the skeleton of the repo with default values.
+4. Last but not least provide information about your k8s cluster in `$ENV_DIR/env/cluster.yaml` file. Note, it can be fake data if you are not willing to deploy your changes to the cluster.
+
+```
+cluster:
+    name: 'dev'
+    k8sVersion: '1.22'
+    provider: 'custom'
+```
+
+5. Ensure that values from `$ENV_DIR` conform with the `values-schema.yaml` schema.
 
 ```
 otomi validate-values
 ```
 
+Voila. You have built your values repo and can use it for Otomi development.
+
+Below you can find some useful use cases:
+
+**Rendering otomi values from ENV_DIR**
+
+```
+
+otomi values
+
+```
+
+**Validating values from ENV_DIR**
+
+```
+
+otomi validate-values
+
+```
+
 **Validating all rendered chart templates**
 
 ```
+
 otomi validate-templates
+
 ```
 
 **Validating rendered chart templates**
 
 ```
+
 otomi validate-templates -l name=myapp
+
 ```
 
 **Rendering chart values**
 
 ```
+
 otomi x helmfile -l name=myapp write-values
+
 ```

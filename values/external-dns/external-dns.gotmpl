@@ -11,8 +11,9 @@ image:
   tag: 0.11.0
 
 {{- range $provider, $config := $dns.provider }}
+{{- $providerConfigKey := $provider | replace "azure-private-dns" "azure" }}
 provider: {{ $provider }}
-{{ $provider }}: {{- $config | toYaml | nindent 2 }}
+{{ $providerConfigKey }}: {{- $config | toYaml | nindent 2 }}
 {{- end }}
 domainFilters: {{ $externalDns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $externalDns | get "zoneIdFilters" list | toYaml | nindent 2 }}
@@ -36,7 +37,7 @@ containerSecurityContext:
 podSecurityContext:
   runAsUser: 1001
 
-priorityClassName: "otomi-critical"
+priorityClassName: otomi-critical
 
 resources:
   limits:

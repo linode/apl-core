@@ -19,7 +19,7 @@ replicas: 2
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
-priorityClassName: "otomi-critical"
+priorityClassName: otomi-critical
 resources:
   {{- if (hasKey $oauth2 "resources") }}
     {{- $oauth2.resources | toYaml | nindent 2 }}

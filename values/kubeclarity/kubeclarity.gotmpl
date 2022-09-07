@@ -5,7 +5,9 @@ global:
   databasePassword: {{ $k | get "databasePassword" }}
 
 kubeclarity:
-  logLevel: {{ $k.logLevel }}  
+  logLevel: {{ $k.logLevel }}
+  podAnnotations:
+    policy.otomi.io/ignore: "banned-image-tags"
 
 kubeclarity-postgresql:
   fullnameOverride: kubeclarity-postgresql

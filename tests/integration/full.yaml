@@ -1,0 +1,97 @@
+# All apps enabled
+cluster:
+  k8sVersion: 'K8S_VERSION_PLACEHOLDER'
+  name: 'dev'
+  provider: digitalocean
+  k8sContext: CONTEXT_PLACEHOLDER
+otomi:
+  isMultitenant: true
+  version: 'OTOMI_VERSION_PLACEHOLDER'
+apps:
+  alertmanager:
+    enabled: true
+  argocd:
+    enabled: true
+  cert-manager:
+    issuer: custom-ca
+  external-dns:
+    domainFilters: []
+  gatekeeper:
+    enabled: true
+    disableValidatingWebhook: false
+  grafana:
+    enabled: true
+  harbor:
+    enabled: true
+  hello:
+    enabled: true
+  httpbin:
+    enabled: true
+  jaeger:
+    enabled: true
+  kiali:
+    enabled: true
+  knative:
+    enabled: true
+  kube-descheduler:
+    enabled: true
+  kubeapps:
+    enabled: true
+  kubeclarity:
+    enabled: true
+  kured:
+    enabled: true
+  loki:
+    enabled: true
+  metrics-server:
+    enabled: true
+  prometheus:
+    enabled: true
+  promtail:
+    enabled: true
+  redis-shared:
+    enabled: true
+  snapshot-controller:
+    enabled: true
+  tigera-operator:
+    enabled: true
+  vault:
+    enabled: true
+teamConfig:
+  demo:
+    password: somesecretvalue
+    id: demo
+    networkPolicy:
+      egressPublic: true
+      ingressPrivate: true
+    services:
+      - id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
+        ksvc:
+          image:
+            repository: otomi/nodejs-helloworld
+            tag: v1.2.12
+          resources:
+            limits:
+              cpu: 50m
+              memory: 64Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          scaleToZero: false
+          secrets:
+            - otomi-welcome
+          securityContext:
+            runAsUser: 1002
+        name: hello
+        networkPolicy:
+          ingressPrivate:
+            mode: AllowAll
+        ownHost: true
+        paths: []
+        port: 80
+        type: public
+    secrets:
+      - entries:
+          - HELLO
+        name: otomi-welcome
+        type: generic

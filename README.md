@@ -1,8 +1,8 @@
 <h1 align="center">
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
-  Self-hosted PaaS for Kubernetes
+  Self-hosted DevOps Platform for Kubernetes
 </h1>
-<p align="center"><b>Deploy your apps fast and safe on any Kubernetes cluster in any cloud.</b></p>
+<p align="center"><b>Start deploying your apps on Kubernetes today </b></p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -12,7 +12,7 @@
   <a href="https://img.shields.io/crates/l/ap"><img alt="License" src="https://img.shields.io/crates/l/ap" /></a>
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
   <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
-  <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/static/v1?label=Slack&message=Join&color=4A154B" alt="Join Slack channel"></a>
+  <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/badge/slack--channel-blue?logo=slack"></a>
   <a href="https://twitter.com/RedKubes"><img src="https://img.shields.io/static/v1?label=Twitter&message=Follow&color=1DA1F2" alt="Follow us on Twitter"></a>
   <a href="https://www.facebook.com/groups/otomiusers"><img src="https://img.shields.io/static/v1?label=Facebook&message=Join group&color=1877F2" alt="Join Facebook group"></a>
   <a href="https://www.youtube.com/channel/UCarOB4QW6lTqKG17XUT2uaA"><img alt="YouTube Channel Subscribers" src="https://img.shields.io/youtube/channel/subscribers/UCarOB4QW6lTqKG17XUT2uaA?style=social"></a>
@@ -23,15 +23,38 @@
 <a href="https://marketplace.digitalocean.com/apps/otomi?refcode=476bfcac9ec9&action=deploy"> 🚀 Start using Otomi on Digital Ocean 🚀</a>
 </p>
 
-`Otomi` brings a full platform experience to Kubernetes without the constraints and abstractions. No more reinventing the wheel when building and maintaining your own K8s based (developer) platform.
+## About Otomi
 
-![Otomi features](https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.gif)
+**Otomi** is a complete stack of integrated Kubernetes applications, combined with automation and self-service. Otomi can be installed with one command on any Kubernetes cluster, offering a complete platform experience out-of-the-box. No more re-inventing the wheel when building and maintaining your own Kubernetes based platform.
 
-## 🚀 Getting started
+## Otomi helps 
+
+1 . **Developers** - To focus on their apps only
+* Deploy containerized apps with a few click without writing any K8s YAML manifests
+* Get access to logs and metrics of deployed apps
+* Store charts and images in a private registry
+* Build and run custom CI pipelines
+* Enable declarative end-to-end app lifecycle management
+* Configure ingress for apps with a single click
+* Manage your own secrets
+
+2. **Platform & Operations teams** - To setup and manage production-ready Kubernetes-based platforms
+* Onboard development teams on shared clusters in a comprehensive multi-tenant setup
+* Get all the required observability tools in an integrated way
+* Ensure governance with security policies
+* Implement zero-trust networking with east-west and north-south network controll within K8s
+* Provide self-service features to development teams
+* Change the desired state of the platform based on configuration-as-code
+
+3. **DevOps teams** - To take full controll and responsibility over the complete stack
+* Get all the tools needed to build, deploy and run apps on K8s
+
+
+## Getting started
 
 ### Helm
 
-To install `Otomi` using Helm, make sure to have a K8s cluster running with at least:
+To install Otomi using Helm, make sure to have a K8s cluster running with at least:
 
 - Version `1.18` up to `1.23`
 - A node pool with **6 vCPU** and **8GB+ RAM** (more is advised!)
@@ -51,41 +74,44 @@ and then install the Helm chart:
 helm install otomi otomi/otomi \
 --set cluster.k8sVersion=$VERSION \ # 1.19, 1.20, 1.21, 1.22 and 1.23 are supported
 --set cluster.name=$CLUSTERNAME \
---set cluster.provider=$PROVIDER # use azure, aws, google, digitalocean or custom for any other cloud or onprem K8s
+--set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', or 'custom' for any other cloud or onprem K8s
 ```
 
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/installation/activation/).
 
 ### K8s quick starts
 
-Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AWS, Linode, Digital Ocean and Minikube to provision a Kubernetes cluster. Then use the helm chart to install `Otomi`.
+Use the [quickstarts](https://github.com/redkubes/quickstart) for Azure, GCP, AWS, Linode, Digital Ocean and Minikube to provision a Kubernetes cluster. Then use the helm chart to install Otomi.
 
 ### Workshops
 
-In our [workshops](https://github.com/redkubes/workshops) repository, we have prepared a comprehensive set of hands-on labs to get a good understanding/overview of everything Otomi has to offer.
+Use the [workshops](https://github.com/redkubes/workshops) repository, to go trough a comprehensive set of hands-on labs to get a good understanding/overview of everything Otomi has to offer.
 
-## 🎉 Otomi Features
+## Otomi Features
 
-- [x] Drag and Drop apps to create your own preferred suite
+![Otomi features](https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.gif)
+
+- [x] Activate more apps to create your own preferred suite
 - [x] GitOps with Argo CD out-of-the-box
 - [x] Container image scanning
-- [x] Advanced ingress architecture
-- [x] Generate validated configuration code
+- [x] Advanced ingress architecture with self-service
+- [x] Configuration validation
 - [x] Configure network policies for internal ingress and external egress
-- [x] Deploy Knative serverless workloads without writing any YAML
+- [x] Deploy workloads without writing any YAML
 - [x] Create and manage secrets in HashiCorp Vault and use them in your workloads
 - [x] Create Kubernetes Jobs and Cron Jobs without writing any YAML
-- [x] Role-based access to all integrated applications based on group membership
+- [x] Role-based access to all integrated applications
 - [x] Enforce Pod security policies
-- [x] Onboard teams or projects within minutes in a comprehensive multi-tenant setup
+- [x] Comprehensive multi-tenant setup
 - [x] Predefined automation tasks
-- [x] Bring your favorite IdP, DNS and/or CA
+- [x] SOPS/KMS for encryption of sensitive configuration values
+- [x] BYO IdP, DNS and/or CA
 
 And much more...
 
-## 🧑‍💻 Integrated technologies
+## Integrated technologies
 
-`Otomi` installs, configures, integrates and automates all of your favorite technologies:
+Otomi installs, configures, integrates and automates all of your favorite technologies:
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/tech.png/?raw=true" width="100%" align="center" alt="Integrated technologies"></p>
 
@@ -110,9 +136,9 @@ Learn more about all the integrated technologies:
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
 - [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
 
-## 💪 Otomi Projects
+## Otomi Projects
 
-`Otomi` consists out of the following projects:
+Otomi consists out of the following projects:
 
 - Otomi Core (this project): The heart of Otomi
 - [Otomi Tasks](https://github.com/redkubes/otomi-tasks): Autonomous jobs orchestrated by Otomi Core
@@ -120,25 +146,25 @@ Learn more about all the integrated technologies:
 - [Otomi Console](https://hub.docker.com/repository/docker/otomi/console): The UI of Otomi for admins and teams, talking to Otomi API
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in the redkubes/otomi-tasks repo
 
-## 📖 Documentation
+## Documentation
 
 Check out the [dev docs index](./docs/README.md) for developer documentation or go to [otomi.io](https://otomi.io) for more detailed documentation.
 
-## 🤝 Contribution
+## Contribution
 
 If you wish to contribute please read our [Contributor Code of Conduct](https://otomi.io/community/code-of-conduct) and [Contribution Guidelines](https://otomi.io/community/get-involved).
 
-If you want to say **thank you** or/and support the active development of `Otomi`:
+If you want to say **thank you** or/and support the active development of Otomi:
 
-- Add a [GitHub Star](https://github.com/redkubes/otomi-core) to the project
-- Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog as we are curious to see how you use `Otomi`
+- [Star](https://github.com/redkubes/otomi-core) the Otomi project on Github
+- Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog and share your experiences
 
-This project exists thanks to all the people who contribute and have contributed.
+This project exists thanks to all the people who have contributed
 
 <a href="https://github.com/redkubes/otomi-core/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=redkubes/otomi-core" />
 </a>
 
-## 🔖 License
+## License
 
-`Otomi` is free and open-source software licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).
+Otomi is licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).

@@ -22,9 +22,11 @@ cloud:
         - std-immediate
 dns:
     provider:
-        aws:
-            region: eu-central-1
-    zones: []
+        azure:
+            resourceGroup: external-dns
+            aadClientId: 00-aadClientId
+            tenantId: 00-tenantId
+            subscriptionId: 00-subscriptionId
 home:
     receivers:
         - slack
@@ -59,11 +61,13 @@ otomi:
           name: demo
           provider: aws
     hasCloudLB: false
-    hasExternalIDP: false
+    hasExternalIDP: true
+    hasExternalDNS: true
     isHomeMonitored: true
-    isManaged: true
     isMultitenant: true
     version: main
+    nodeSelector:
+        otomi: otomi-sys
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in

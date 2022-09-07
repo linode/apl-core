@@ -30,3 +30,6 @@ changes:
     relocations:
       - apps.ingress-nginx.loadBalancerIP: ingress.platformClass.loadBalancerIP
       - apps.ingress-nginx.loadBalancerRG: ingress.platformClass.loadBalancerRG
+  - version: 4
+    deletions:
+      - otomi.isManaged

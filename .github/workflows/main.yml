@@ -51,46 +51,8 @@ jobs:
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
-  # integration:
-  #   needs: build-test-cache
-  #   # skip integration check for releases, as the main they are derived from have already been integration tested:
-  #   if: contains(github.event.head_commit.message, '[kind]') || (github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, 'chore(release)')) || github.event.act
-  #   outputs:
-  #     started: 'true'
-  #   runs-on: self-hosted
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #     - name: Set globalPullSecret if not running locally
-  #       if: (!github.event.act)
-  #       run: |
-  #         cmd="docker run --rm -v $PWD/tests/kind/env/settings.yaml:$PWD/settings.yaml mikefarah/yq:3.3.4 yq w -i $PWD/settings.yaml"
-  #         $cmd otomi.globalPullSecret.password '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
-  #         $cmd otomi.globalPullSecret.username otomi
-  #     - name: Validate input values and deploy otomi on kind cluster
-  #       run: |
-  #         ACT=${{ github.event.act }}
-  #         ACT=${ACT:-false}
-  #         TAG=${GITHUB_REF##*/}
-  #         image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
-  #         if $ACT; then
-  #           image=$REPO:$TAG
-  #         else
-  #           docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
-  #           echo "Pulling the following tag: $image..."
-  #           docker pull $image
-  #         fi
-
-  #         docker run --rm -e CI=1 -v $PWD/tests/kind:/home/app/stack/env $image node dist/src/otomi.js -- validate-values
-  #         docker network inspect kind >/dev/null 2>&1 || docker network create --driver bridge kind && docker run --rm -v /var/run/docker.sock:/var/run/docker.sock --network kind --pull always --user root otomi/kind:latest
-  #         docker cp kind-control-plane:/etc/kubernetes/admin.conf $PWD/kind/kubeconfig
-  #         chmod +r ./kind/kubeconfig
-  #         docker run --rm -v $PWD/kind/kubeconfig:/home/app/.kube/config -e CI=1 -e VERBOSITY=1 -e DISABLE_SYNC=1 --network kind -v $PWD/tests/kind:/home/app/stack/env -u 0 $image sh -c "binzx/otomi bootstrap && binzx/otomi apply"
-
   push-to-docker:
-    # needs: [build-test-cache, integration]
     needs: build-test-cache
-    # needs: [build-test-cache]
     if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
     runs-on: ubuntu-latest
     steps:
@@ -109,7 +71,7 @@ jobs:
 
   release:
     needs: push-to-docker
-    if: always() && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'chore(release)') && !github.event.act
+    if: always() && github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
@@ -128,7 +90,7 @@ jobs:
           docker pull $REPO:$TAG
           docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
-          release_tag=v${COMMIT_MSG#* }
+          release_tag="v$(echo $COMMIT_MSG | cut -d' ' -f2)"
           echo ::set-output name=tag::$release_tag
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag
@@ -169,12 +131,12 @@ jobs:
           chart_patch_version=${chart_version##*.}
           new_patch_version=$(($chart_patch_version+1))
           # check if major or minor part of version changed (patch number is automated so left out of equation)
-          this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version' | sed "s/CHART_PATCH_PLACEHOLDER/$chart_patch_version/g")
+          this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version' | sed "s/0-chart-patch-placeholder/$chart_patch_version/g")
           # if any of those changed then reset the patch version
           [ "$this_version" != "$chart_version" ] && new_patch_version=1
           release_tag=v$(cat package.json | jq -r '.version')
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CHART_PATCH_PLACEHOLDER/$new_patch_version/g" chart/otomi/Chart.yaml
+          sed --in-place "s/0-chart-patch-placeholder/$new_patch_version/g" chart/otomi/Chart.yaml
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/values.yaml
           # copy readme from repo into the charts and add tpl/chart-values.md
           cp README.md chart/otomi/
@@ -195,7 +157,6 @@ jobs:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
   notification:
-    # needs: [build-test-cache, integration, push-to-docker, release, chart-release]
     needs: [build-test-cache, push-to-docker, release, chart-release]
     if: always()
     runs-on: ubuntu-latest
