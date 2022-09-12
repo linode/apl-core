@@ -5,4 +5,4 @@ otomi:
     isHomeMonitored: false
     isMultitenant: true
     version: main
-version: 3
+version: 5
