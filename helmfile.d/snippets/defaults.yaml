@@ -28,7 +28,7 @@ environments:
               provider: gitea
               username: otomi-admin
           external-dns:
-            domainFilters: []
+            logLevel: info
           external-secrets:
             logLevel: info
             pollingInterval: 60000
@@ -148,6 +148,9 @@ environments:
             enabled: false
             logLevel: warning
         cluster: {}
+        dns:
+          domainFilters: []
+          zoneIdFilters: []
         ingress:
           platformClass:
             className: platform

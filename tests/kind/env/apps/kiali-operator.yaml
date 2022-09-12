@@ -1,5 +1,5 @@
 apps:
-    kiali:
+    kiali-operator:
         _rawValues:
             cr:
                 spec:
@@ -12,4 +12,3 @@ apps:
                 requests:
                     cpu: 10m
                     memory: 10Mi
-        enabled: true

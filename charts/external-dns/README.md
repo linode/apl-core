@@ -1,7 +1,13 @@
-# external-dns
+<!--- app-name: ExternalDNS -->
 
-[ExternalDNS](https://github.com/kubernetes-sigs/external-dns) is a Kubernetes addon that configures public DNS servers with information about exposed Kubernetes services to make them discoverable.
+# ExternalDNS packaged by Bitnami
 
+ExternalDNS is a Kubernetes addon that configures public DNS servers with information about exposed Kubernetes services to make them discoverable.
+
+[Overview of ExternalDNS](https://github.com/kubernetes-incubator/external-dns)
+
+Trademarks: This software listing is packaged by Bitnami. The respective trademarks mentioned in the offering are owned by the respective companies, and use of them does not imply any affiliation or endorsement.
+                           
 ## TL;DR
 
 ```console
@@ -11,14 +17,14 @@ $ helm install my-release bitnami/external-dns
 
 ## Introduction
 
-This chart bootstraps a [ExternalDNS](https://github.com/bitnami/bitnami-docker-external-dns) deployment on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+This chart bootstraps a [ExternalDNS](https://github.com/bitnami/containers/tree/main/bitnami/external-dns) deployment on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
-Bitnami charts can be used with [Kubeapps](https://kubeapps.com/) for deployment and management of Helm Charts in clusters. This chart has been tested to work with NGINX Ingress, cert-manager, fluentd and Prometheus on top of the [BKPR](https://kubeprod.io/).
+Bitnami charts can be used with [Kubeapps](https://kubeapps.dev/) for deployment and management of Helm Charts in clusters.
 
 ## Prerequisites
 
 - Kubernetes 1.19+
-- Helm 3.1.0
+- Helm 3.2.0+
 
 ## Installing the Chart
 
@@ -54,15 +60,17 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Common parameters
 
-| Name                | Description                                                                                  | Value           |
-| ------------------- | -------------------------------------------------------------------------------------------- | --------------- |
-| `nameOverride`      | String to partially override external-dns.fullname template (will maintain the release name) | `""`            |
-| `fullnameOverride`  | String to fully override external-dns.fullname template                                      | `""`            |
-| `clusterDomain`     | Kubernetes Cluster Domain                                                                    | `cluster.local` |
-| `commonLabels`      | Labels to add to all deployed objects                                                        | `{}`            |
-| `commonAnnotations` | Annotations to add to all deployed objects                                                   | `{}`            |
-| `extraDeploy`       | Array of extra objects to deploy with the release (evaluated as a template).                 | `[]`            |
-| `kubeVersion`       | Force target Kubernetes version (using Helm capabilities if not set)                         | `""`            |
+| Name                    | Description                                                                                  | Value           |
+| ----------------------- | -------------------------------------------------------------------------------------------- | --------------- |
+| `nameOverride`          | String to partially override external-dns.fullname template (will maintain the release name) | `""`            |
+| `fullnameOverride`      | String to fully override external-dns.fullname template                                      | `""`            |
+| `clusterDomain`         | Kubernetes Cluster Domain                                                                    | `cluster.local` |
+| `commonLabels`          | Labels to add to all deployed objects                                                        | `{}`            |
+| `commonAnnotations`     | Annotations to add to all deployed objects                                                   | `{}`            |
+| `extraDeploy`           | Array of extra objects to deploy with the release (evaluated as a template).                 | `[]`            |
+| `kubeVersion`           | Force target Kubernetes version (using Helm capabilities if not set)                         | `""`            |
+| `watchReleaseNamespace` | Watch only namepsace used for the release                                                    | `false`         |
+
 
 ### external-dns parameters
 
@@ -70,7 +78,8 @@ The command removes all the Kubernetes components associated with the chart and 
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
 | `image.registry`                              | ExternalDNS image registry                                                                                                                                                   | `docker.io`               |
 | `image.repository`                            | ExternalDNS image repository                                                                                                                                                 | `bitnami/external-dns`    |
-| `image.tag`                                   | ExternalDNS Image tag (immutable tags are recommended)                                                                                                                       | `0.10.1-debian-10-r33`    |
+| `image.tag`                                   | ExternalDNS Image tag (immutable tags are recommended)                                                                                                                       | `0.12.2-debian-11-r5`     |
+| `image.digest`                                | ExternalDNS image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag                                                                  | `""`                      |
 | `image.pullPolicy`                            | ExternalDNS image pull policy                                                                                                                                                | `IfNotPresent`            |
 | `image.pullSecrets`                           | ExternalDNS image pull secrets                                                                                                                                               | `[]`                      |
 | `hostAliases`                                 | Deployment pod host aliases                                                                                                                                                  | `[]`                      |
@@ -105,6 +114,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `aws.roleArn`                                 | Specify role ARN to the external-dns daemon                                                                                                                                  | `""`                      |
 | `aws.apiRetries`                              | Maximum number of retries for AWS API calls before giving up                                                                                                                 | `3`                       |
 | `aws.batchChangeSize`                         | When using the AWS provider, set the maximum number of changes that will be applied in each batch                                                                            | `1000`                    |
+| `aws.zonesCacheDuration`                      | If the list of Route53 zones managed by ExternalDNS doesn't change frequently, cache it by setting a TTL                                                                     | `0`                       |
 | `aws.zoneTags`                                | When using the AWS provider, filter for zones with these tags                                                                                                                | `[]`                      |
 | `aws.preferCNAME`                             | When using the AWS provider, replaces Alias records with CNAME (options: true, false)                                                                                        | `""`                      |
 | `aws.evaluateTargetHealth`                    | When using the AWS provider, sets the evaluate target health flag (options: true, false)                                                                                     | `""`                      |
@@ -148,7 +158,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `google.serviceAccountSecret`                 | When using the Google provider, specify the existing secret which contains credentials.json (optional)                                                                       | `""`                      |
 | `google.serviceAccountSecretKey`              | When using the Google provider with an existing secret, specify the key name (optional)                                                                                      | `credentials.json`        |
 | `google.serviceAccountKey`                    | When using the Google provider, specify the service account key JSON file. In this case a new secret will be created holding this service account (optional)                 | `""`                      |
-| `google.zoneVisibility`                       | When using the Google provider, fiter for zones of a specific visibility (private or public)                 | `""`                      |
+| `google.zoneVisibility`                       | When using the Google provider, fiter for zones of a specific visibility (private or public)                                                                                 | `""`                      |
 | `hetzner.token`                               | When using the Hetzner provider, specify your token here. (required when `hetzner.secretName` is not provided. In this case a new secret will be created holding the token.) | `""`                      |
 | `hetzner.secretName`                          | When using the Hetzner provider, specify the existing secret which contains your token. Disables the usage of `hetzner.token` (optional)                                     | `""`                      |
 | `hetzner.secretKey`                           | When using the Hetzner provider with an existing secret, specify the key name (optional)                                                                                     | `hetzner_token`           |
@@ -167,6 +177,16 @@ The command removes all the Kubernetes components associated with the chart and 
 | `linode.apiToken`                             | When using the Linode provider, `LINODE_TOKEN` to set (optional)                                                                                                             | `""`                      |
 | `linode.secretName`                           | Use an existing secret with key "linode_api_token" defined.                                                                                                                  | `""`                      |
 | `ns1.minTTL`                                  | When using the ns1 provider, specify minimal TTL, as an integer, for records                                                                                                 | `10`                      |
+| `ns1.apiKey`                                  | When using the ns1 provider, specify the API key to use                                                                                                                      | `""`                      |
+| `ns1.secretName`                              | Use an existing secret with key "ns1-api-key" defined.                                                                                                                       | `""`                      |
+| `oci.region`                                  | When using the OCI provider, specify the region, where your zone is located in.                                                                                              | `""`                      |
+| `oci.tenancyOCID`                             | When using the OCI provider, specify your Tenancy OCID                                                                                                                       | `""`                      |
+| `oci.userOCID`                                | When using the OCI provider, specify your User OCID                                                                                                                          | `""`                      |
+| `oci.compartmentOCID`                         | When using the OCI provider, specify your Compartment OCID where your DNS Zone is located in.                                                                                | `""`                      |
+| `oci.privateKey`                              | When using the OCI provider, paste in your RSA private key file for the Oracle API                                                                                           | `""`                      |
+| `oci.privateKeyFingerprint`                   | When using the OCI provider, put in the fingerprint of your privateKey                                                                                                       | `""`                      |
+| `oci.privateKeyPassphrase`                    | When using the OCI provider and your privateKey has a passphrase, put it in here. (optional)                                                                                 | `""`                      |
+| `oci.secretName`                              | When using the OCI provider, it's the name of the secret containing `oci.yaml` file.                                                                                         | `""`                      |
 | `ovh.consumerKey`                             | When using the OVH provider, specify the existing consumer key. (required when provider=ovh and `ovh.secretName` is not provided.)                                           | `""`                      |
 | `ovh.applicationKey`                          | When using the OVH provider with an existing application, specify the application key. (required when provider=ovh and `ovh.secretName` is not provided.)                    | `""`                      |
 | `ovh.applicationSecret`                       | When using the OVH provider with an existing application, specify the application secret. (required when provider=ovh and `ovh.secretName` is not provided.)                 | `""`                      |
@@ -251,14 +271,17 @@ The command removes all the Kubernetes components associated with the chart and 
 | `service.extraPorts`                          | Extra ports to expose in the service (normally used with the `sidecar` value)                                                                                                | `[]`                      |
 | `service.annotations`                         | Annotations to add to service                                                                                                                                                | `{}`                      |
 | `service.labels`                              | Provide any additional labels which may be required.                                                                                                                         | `{}`                      |
+| `service.sessionAffinity`                     | Session Affinity for Kubernetes service, can be "None" or "ClientIP"                                                                                                         | `None`                    |
+| `service.sessionAffinityConfig`               | Additional settings for the sessionAffinity                                                                                                                                  | `{}`                      |
 | `serviceAccount.create`                       | Determine whether a Service Account should be created or it should reuse a exiting one.                                                                                      | `true`                    |
 | `serviceAccount.name`                         | ServiceAccount to use. A name is generated using the external-dns.fullname template if it is not set                                                                         | `""`                      |
 | `serviceAccount.annotations`                  | Additional Service Account annotations                                                                                                                                       | `{}`                      |
 | `serviceAccount.automountServiceAccountToken` | Automount API credentials for a service account.                                                                                                                             | `true`                    |
+| `serviceAccount.labels`                       | Additional labels to be included on the service account                                                                                                                      | `{}`                      |
 | `rbac.create`                                 | Whether to create & use RBAC resources or not                                                                                                                                | `true`                    |
 | `rbac.clusterRole`                            | Whether to create Cluster Role. When set to false creates a Role in `namespace`                                                                                              | `true`                    |
 | `rbac.apiVersion`                             | Version of the RBAC API                                                                                                                                                      | `v1`                      |
-| `rbac.pspEnabled`                             | PodSecurityPolicy                                                                                                                                                            | `false`                   |
+| `rbac.pspEnabled`                             | Whether to create a PodSecurityPolicy. WARNING: PodSecurityPolicy is deprecated in Kubernetes v1.21 or later, unavailable in v1.25 or later                                  | `false`                   |
 | `containerSecurityContext`                    | Security context for the container                                                                                                                                           | `{}`                      |
 | `podSecurityContext.enabled`                  | Enable pod security context                                                                                                                                                  | `true`                    |
 | `podSecurityContext.fsGroup`                  | Group ID for the container                                                                                                                                                   | `1001`                    |
@@ -277,7 +300,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `readinessProbe.timeoutSeconds`               | Timeout seconds for readinessProbe                                                                                                                                           | `5`                       |
 | `readinessProbe.failureThreshold`             | Failure threshold for readinessProbe                                                                                                                                         | `6`                       |
 | `readinessProbe.successThreshold`             | Success threshold for readinessProbe                                                                                                                                         | `1`                       |
-| `startupProbe.enabled`                        | Enable startupProbe                                                                                                                                                          | `true`                    |
+| `startupProbe.enabled`                        | Enable startupProbe                                                                                                                                                          | `false`                   |
 | `startupProbe.initialDelaySeconds`            | Initial delay seconds for startupProbe                                                                                                                                       | `5`                       |
 | `startupProbe.periodSeconds`                  | Period seconds for startupProbe                                                                                                                                              | `10`                      |
 | `startupProbe.timeoutSeconds`                 | Timeout seconds for startupProbe                                                                                                                                             | `5`                       |
@@ -299,7 +322,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `metrics.serviceMonitor.metricRelabelings`    | Specify Metric Relabelings to add to the scrape endpoint                                                                                                                     | `[]`                      |
 | `metrics.serviceMonitor.relabelings`          | Prometheus relabeling rules                                                                                                                                                  | `[]`                      |
 | `metrics.serviceMonitor.honorLabels`          | Specify honorLabels parameter to add the scrape endpoint                                                                                                                     | `false`                   |
-| `metrics.serviceMonitor.additionalLabels`     | Used to pass Labels that are required by the installed Prometheus Operator                                                                                                   | `{}`                      |
+| `metrics.serviceMonitor.labels`               | Used to pass Labels that are required by the installed Prometheus Operator                                                                                                   | `{}`                      |
 | `metrics.serviceMonitor.jobLabel`             | The name of the label on the target service to use as the job name in prometheus.                                                                                            | `""`                      |
 
 
@@ -362,7 +385,7 @@ $ helm install my-release \
 
 ## Troubleshooting
 
-Find more information about how to deal with common errors related to Bitnami’s Helm charts in [this troubleshooting guide](https://docs.bitnami.com/general/how-to/troubleshoot-helm-chart-issues).
+Find more information about how to deal with common errors related to Bitnami's Helm charts in [this troubleshooting guide](https://docs.bitnami.com/general/how-to/troubleshoot-helm-chart-issues).
 ## Upgrading
 
 ### To 6.0.0
@@ -435,3 +458,19 @@ Other mayor changes included in this major version are:
   - `aws.credentialsPath` -> `aws.credentials.mountPath`
   - `designate.customCA.directory` -> `designate.customCA.mountPath`
 - Support to Prometheus metrics is added.
+
+## License
+
+Copyright &copy; 2022 Bitnami
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

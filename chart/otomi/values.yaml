@@ -47,34 +47,25 @@ otomi: {}
   ## By default the image tag is set to .Chart.AppVersion
   # version: main
 
-apps:
-  cert-manager:
+## Optional configuration
+# apps:
+#   cert-manager:
     ## Set issuer 
     ## Use a custom-ca (for BYO CA or auto-generated CA) or letsencrypt. 
     ## When using letsencrypt, also fill in 'dns'.
-    issuer: custom-ca
+    # issuer: custom-ca
     ## Set when using BYO CA. 
     ## If not filled in, a CA will be auto generated
     # customRootCA:
     # customRootCAKey:
-
     ## Set when issuer is letsencrypt
     # email: ''
     # stage: staging # defaults to 'production' when commented out
 
-  external-dns:
-    ## List one or more domains that the credentials under dns give access to
-    domainFilters:
-      - ''
-    ## if your dns credentials give authorization to manage everything on a root domain (i.e. *.example.com)
-    ## you can limit the scope to a list of zones that only operate on a subdomain (i.e. test.example.com):
-    # zoneIdFilters:
-    #   - ''
-    
-## Optional configuration
-
 ## External dns zone configuration
 # dns:
+#   domainFilters: []
+#   zoneIdFilters: []
 #   provider:
 #     # provide one of the following below: aws|azure|google
 #     aws:
