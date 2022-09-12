@@ -1,11 +1,13 @@
 teamConfig:
     admin:
         id: admin
+        name: admin
     demo:
         alerts:
             receivers:
                 - email
         id: demo
+        name: demo
         networkPolicy:
             egressPublic: true
             ingressPrivate: true
@@ -13,3 +15,7 @@ teamConfig:
             groupMapping: somesecretvalue
         resourceQuota:
             services.loadbalancers: '1'
+        selfService:
+            apps: []
+            service: ['ingress', 'networkPolicy']
+            team: ['alerts']
