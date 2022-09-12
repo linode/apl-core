@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- $vl:= $v.apps | get "velero" }}
-{{- $provider:= $v.cluster.provider }}
+{{- $vl:= $v.apps.velero }}
+{{- $provider:= $vl | get "provider" dict }}
 
 resources:
   {{- with $vl | get "resources" nil }}
@@ -14,6 +14,7 @@ resources:
     memory: 512Mi
   {{- end }}
 
+{{- with $provider | get "azure" nil }}
 initContainers:
   - name: velero-plugin-for-azure
     image: velero/velero-plugin-for-microsoft-azure:v1.5.0
@@ -28,6 +29,23 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
+{{- end }}
+{{- with $provider | get "aws" nil }}
+initContainers:
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.4.0
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 32Mi
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+{{- end }}
 
 podSecurityContext:
   runAsUser: 1000
@@ -39,13 +57,24 @@ serviceMonitor:
 logLevel: {{ $vl.logLevel }}
 
 configuration:
+  {{- with $provider | get "azure" nil }}
   provider: azure
+  {{- end }}
+  {{- with $provider | get "aws" nil }}
+  provider: aws
+  {{- end }}
   backupStorageLocation:
-    name: {{ $vl.name }}
-    bucket: {{ $vl.bucket }}
+    name: {{ $vl.backupStorageLocation.name }}
+    bucket: {{ $vl.backupStorageLocation.bucket }}
     config:
-      storageAccount: {{ $vl.storageAccount }}
-      resourceGroup: {{ $vl.resourceGroup }}
+      {{- with $provider | get "azure" nil }}
+      storageAccount: {{ .config.storageAccount }}
+      resourceGroup: {{ .config.resourceGroup }}
+      {{- end }}
+      {{- with $provider | get "aws" nil }}
+      storageAccount: {{ .config.s3bucket }}
+      resourceGroup: {{ .config.region }}
+      {{- end }} 
   volumeSnapshotLocation:
     name: default
     provider: velero.io/azure
@@ -54,14 +83,22 @@ configuration:
       apiTimeout: 10m
 
 credentials:
+  {{- with $provider | get "azure" nil }}
   secretContents:
     cloud: |
-      AZURE_SUBSCRIPTION_ID={{ $vl.secretContents.subscriptionId }}
-      AZURE_TENANT_ID={{ $vl.secretContents.tenantId }}
-      AZURE_CLIENT_ID={{ $vl.secretContents.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $vl.secretContents.aadClientSecret }}
-      AZURE_RESOURCE_GROUP={{ $vl.secretContents.resourceGroup}}
-      AZURE_CLOUD_NAME=AzurePublicCloud
+      AZURE_SUBSCRIPTION_ID={{ $vl.provider.azure.secretContents.subscriptionId }}
+      AZURE_TENANT_ID={{ $vl.provider.azure.secretContents.tenantId }}
+      AZURE_CLIENT_ID={{ $vl.provider.azure.secretContents.aadClientId }}
+      AZURE_CLIENT_SECRET={{ $vl.provider.azure.secretContents.aadClientSecret }}
+      AZURE_RESOURCE_GROUP={{ $vl.provider.azure.config.resourceGroup }}
+      AZURE_CLOUD_NAME=A{{ $vl.provider.azure.environment }}
+  {{- end }}
+  {{- with $provider | get "aws" nil }}
+  secretContents:
+    cloud: |
+    aws_access_key_id={{ $vl.provider.aws.secretContents.accessKeyId }}
+    aws_secret_access_key={{ $vl.provider.aws.secretContents.secretAccessKey }}
+  {{- end }}
 
 kubectl:
   resources:
@@ -76,18 +113,57 @@ kubectl:
 
 deployRestic: true
 
-# Backup Schedule
+{{- if $v.backup.platformSchedule.enabled }}
 schedules:
+  gitea:
+    disabled: false
+    schedule: "0 0 * * *"
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: "240h"
+      includedNamespaces:
+      - gitea
+  keycloak:
+    disabled: false
+    schedule: "0 0 * * *"
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: "240h"
+      includedNamespaces:
+      - keycloak
+  {{- if $v.apps.harbor.enabled }}
+  harbor:
+    disabled: false
+    schedule: "0 0 * * *"
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: "240h"
+      includedNamespaces:
+      - harbor
+  {{- end }}
+  {{- if $v.apps.vault.enabled }}
+  vault:
+    disabled: false
+    schedule: "0 0 * * *"
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: "240h"
+      includedNamespaces:
+      - vault
+  {{- end }}
+{{- end }}
 
-#mybackup:
-#     disabled: false
-#     labels:
-#       myenv: foo
-#     annotations:
-#       myenv: foo
-#     schedule: "0 0 * * *"
-#     useOwnerReferencesInBackup: false
-#     template:
-#       ttl: "240h"
-#       includedNamespaces:
-#       - foo
+
+  # for each custom schedule    
+  # custom:
+  #   disabled: false
+  #   labels:
+  #     myenv: foo
+  #   annotations:
+  #     myenv: foo
+  #   schedule: "0 0 * * *"
+  #   useOwnerReferencesInBackup: false
+  #   template:
+  #     ttl: "240h"
+  #     includedNamespaces:
+  #     - foo

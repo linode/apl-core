@@ -49,6 +49,9 @@ kms:
             clientId: somesecretvalue
             keys: somesecretvalue
             tenantId: somesecretvalue
+backup:
+    platformSchedule:
+        enabled: true
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID

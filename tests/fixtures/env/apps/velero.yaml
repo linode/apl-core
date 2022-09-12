@@ -1,12 +1,24 @@
 apps:
     velero:
         enabled: true
-        bucket: test
-        storageAccount: test
-        resourceGroup: test
-        secretContents:
-            subscriptionId: test
-            tenantId: test
-            aadClientId: bla12344556666658457847476
-            aadClientSecret: bla383736363653
-            resourceGroup: test
+        backupStorageLocation:
+            name: otomi
+            bucket: otomi
+        provider:
+            azure:
+                config:
+                    storageAccount: test
+                    resourceGroup: test
+                environment: AzurePublicCloud
+                secretContents:
+                    subscriptionId: test
+                    tenantId: test
+                    aadClientId: bla12344556666658457847476
+                    aadClientSecret: bla383736363653
+            # aws:
+            #     config:
+            #         region: north-eu
+            #         s3bucket: https://s3.my.bucket/blablabla
+            #     secretContents:
+            #         accessKeyId: dhfhfhf
+            #         secretAccessKey: hfhgfhfhfhfh

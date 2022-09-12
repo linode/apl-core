@@ -478,6 +478,31 @@ definitions:
         title: Source IP address filtering
         type: string
         description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
+  backupschedules:
+    type: object
+    properties:
+      disabled:
+        title: Enable backup
+        type: boolean
+        default: true
+      labels:
+        $ref: '#/definitions/labelsAnnotations'
+        description: 'One or more "label: value" pairs'
+      annotations:
+        $ref: '#/definitions/labelsAnnotations'
+        description: 'One or more "label: value" pairs'
+      schedule:
+        default: 0 1 * * *
+        description: Cron-type expression to schedule the backup
+        type: string
+      ttl:
+        default: 86400
+        description: Time To Live after backup job is finished in seconds.
+        minimum: 0
+        title: TTL after finished
+        type: integer
+    required:
+      - schedule
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
@@ -2361,14 +2386,97 @@ properties:
           resources:
             $ref: '#/definitions/resources'
       velero:
-        description: Velero for backing up and restoring, performing disaster recovery, and migrating Kubernetes cluster resources.
+        additionalProperties: false
         properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
+          backupStorageLocation:
+            description: Parameters for the `default` BackupStorageLocation.
+            properties:
+              name:
+                type: string
+                default: platform
+                description: Name of the backup storage location where backups should be stored.
+                $ref: '#/definitions/wordCharacterPattern'
+              bucket:
+                type: string
+                description: Name of the blob container.
+                $ref: '#/definitions/wordCharacterPattern'
+            required:
+              - bucket
+          provider:
+            azure:
+              properties:
+                config:
+                  additionalProperties: false
+                  properties:
+                    storageAccount:
+                      type: string
+                      description: The used Azure storage account
+                      $ref: '#/definitions/wordCharacterPattern'
+                    resourceGroup:
+                      type: string
+                      description: The name of the resource group that contains the cluster vm's and disks.
+                      $ref: '#/definitions/wordCharacterPattern'
+                  required:
+                    - resourceGroup
+                    - storageAccount
+                environment:
+                  title: Azure environment
+                  description: An Azure environment.
+                  type: string
+                  default: AzurePublicCloud
+                  enum:
+                    - AzurePublicCloud
+                    - AzureChinaCloud
+                    - AzureUSGovernment
+                    - AzureGermanCloud
+                secretContents:
+                  additionalProperties: false
+                  description: Data to be stored in the Velero secret.
+                  properties:
+                    tenantId:
+                      $ref: '#/definitions/wordCharacterPattern'
+                    subscriptionId:
+                      $ref: '#/definitions/wordCharacterPattern'
+                    aadClientId:
+                      $ref: '#/definitions/wordCharacterPattern'
+                    aadClientSecret:
+                      $ref: '#/definitions/wordCharacterPattern'
+                      x-secret: ''
+                  required:
+                    - tenantId
+                    - subscriptionId
+                    - aadClientId
+                    - aadClientSecret
+            aws:
+              properties:
+                congig:
+                  properties:
+                    region:
+                      description: The region of the S3 bucket
+                      $ref: '#/definitions/wordCharacterPattern'
+                    s3bucket:
+                      description: The name (URL) of the S3 bucket
+                      $ref: '#/definitions/wordCharacterPattern'
+                secretContents:
+                  properties:
+                    accessKeyId:
+                      type: string
+                      description: The ID of the access key
+                      $ref: '#/definitions/wordCharacterPattern'
+                    secretAccessKey:
+                      type: string
+                      description: The secret of the access key
+                      $ref: '#/definitions/wordCharacterPattern'
+                  required:
+                    - region
+                    - accessKeyId
+                    - secretAccessKey
           logLevel:
+            description: Set log-level for the Velero pod.
+            default: info
             enum:
               - debug
               - info
@@ -2376,41 +2484,8 @@ properties:
               - error
               - fatal
               - panic
-          name:
-            type: string
-            default: default
-            description: Name of the backup storage location where backups should be stored.
-          bucket:
-            type: string
-            description: Name of the blob container.
-          storageAccount:
-            type: string
-            description: The used Azure storage account
-          resourceGroup:
-            type: string
-            description: The name of the resource group that contains the cluster vm's and disks.
-          secretContents:
-            resourceGroup:
-              $ref: '#/definitions/azure/definitions/resourceGroup'
-            tenantId:
-              $ref: '#/definitions/azure/definitions/tenantId'
-            subscriptionId:
-              $ref: '#/definitions/azure/definitions/subscriptionId'
-            aadClientId:
-              $ref: '#/definitions/azure/definitions/clientId'
-            aadClientSecret:
-              $ref: '#/definitions/azure/definitions/clientSecret'
-              title: Client secret
-              type: string
-              description: Azure Application Client Secret
-              x-secret: ''
-            resources:
-              $ref: '#/definitions/resources'
-        required:
-          - bucket
-          - storageAccount
-          - resourceGroup
-          - secretContents
+          resources:
+            $ref: '#/definitions/resources'
   cluster:
     $ref: '#/definitions/cluster'
   dns:
@@ -2898,6 +2973,31 @@ properties:
         description: 'The smtp host:port combination.'
     required:
       - smarthost
+  backup:
+    properties:
+      platformSchedule:
+        properties:
+          enabled:
+            type: boolean
+            default: false
+      # customSchedules:
+      #   type: array
+      #   items:
+      #     allOf:
+      #       - type: object
+      #         properties:
+      #           scheduleName:
+      #             type: string
+      #       - includeNamespaces:
+      #           description: Namespaces to backup
+      #           items:
+      #             type: string
+      #           nullable: false
+      #           title: Add namespaces to backup
+      #           type: array
+      #       - $ref: '#/definitions/backupschedules'
+      #     required:
+      #       - scheduleName
   teamConfig:
     additionalProperties: false
     patternProperties:
