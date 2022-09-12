@@ -293,14 +293,6 @@ adminApps:
         auth: true
   - name: velero
     tags: [backup]
-    ownHost: true
-    isShared: true
-    ingress:
-      - svc: velero
-        namespace: velero
-        port: 9094
-        type: public
-        auth: true
 
 teamApps:
   - name: alertmanager
