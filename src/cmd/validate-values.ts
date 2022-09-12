@@ -10,7 +10,7 @@ import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../com
 
 const cmdName = getFilename(__filename)
 
-const internalPaths: string[] = ['apps', 'k8s', 'services', 'teamConfig.services']
+const internalPaths: string[] = ['k8s', 'services', 'teamConfig.services']
 
 // TODO: Accept json path to validate - on empty, validate all
 export const validateValues = async (): Promise<void> => {

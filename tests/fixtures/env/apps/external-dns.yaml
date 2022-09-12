@@ -1,6 +1,0 @@
-apps:
-    external-dns:
-        domainFilters:
-            - otomi.cloud
-        zoneIdFilters:
-            - otomi
