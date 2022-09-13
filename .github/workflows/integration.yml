@@ -83,6 +83,7 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Set k8s cluster name
         run: |
+          # Cluster name must be no longer than 63 characters
           echo DIGITALOCEAN_CLUSTER_NAME=i-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}-${{ strategy.job-index }}-${{ github.event.pull_request.head.sha || github.sha }} >> $GITHUB_ENV
       - name: Determine exact k8s version
         run: |
