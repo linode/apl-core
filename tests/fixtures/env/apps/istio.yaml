@@ -18,10 +18,6 @@ apps:
         global:
             logging:
                 level: default:warn
-            mtls:
-                enabled: false
-            sds:
-                enabled: true
         resources:
             ingressgateway:
                 limits:

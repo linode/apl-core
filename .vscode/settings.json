@@ -50,7 +50,7 @@
   "sops.enabled": false,
   "todohighlight.include": ["**/*.ts", "**/*.tsx", "**/*.html", "**/*.css", "**/*.scss", "**/*.gotmpl", "**/*.yaml"],
   "yaml.schemas": {
-    ".vscode/values-schema.yaml": "**/env/*.yaml",
+    ".vscode/values-schema.yaml": "**/env/**/*.yaml",
     "https://json-schema.org/draft-07/schema": "values-schema.yaml"
   }
 }

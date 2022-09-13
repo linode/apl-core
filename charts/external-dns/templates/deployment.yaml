@@ -2,8 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "external-dns.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ .Release.Namespace | quote }}
   labels: {{ include "external-dns.labels" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ coalesce .Values.replicas .Values.replicaCount }}
   {{- if .Values.updateStrategy }}
@@ -179,6 +185,9 @@ spec:
             - --aws-batch-change-size={{ .Values.aws.batchChangeSize }}
             {{- end }}
             {{- end }}
+            {{- if .Values.aws.zonesCacheDuration }}
+            - --aws-zones-cache-duration={{ .Values.aws.zonesCacheDuration }}
+            {{- end }}
             {{- range .Values.aws.zoneTags }}
             - --aws-zone-tags={{ . }}
             {{- end }}
@@ -335,14 +344,14 @@ spec:
             - name: OPENSTACK_CA_FILE
               value: {{ .Values.designate.customCAHostPath }}
             {{- end }}
-            {{- if .Values.designate.username}}
+            {{- if .Values.designate.username }}
             - name: OS_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: {{ template "external-dns.secretName" . }}
                   key: designate_username
             {{- end }}
-            {{- if .Values.designate.password}}
+            {{- if .Values.designate.password }}
             - name: OS_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -531,6 +540,16 @@ spec:
               {{- if .Values.extraEnvVars }}
               {{- include "common.tplvalues.render" (dict "value" .Values.extraEnvVars "context" $) | nindent 12 }}
               {{- end }}
+            {{- if eq .Values.provider "ns1" }}
+            # NS1 environment variables
+            {{- if or (.Values.ns1.apiKey) (.Values.ns1.secretName) }}
+            - name: NS1_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "external-dns.secretName" . }}
+                  key: ns1-api-key
+            {{- end }}
+            {{- end }}
           envFrom:
             {{- if .Values.extraEnvVarsCM }}
             - configMapRef:
@@ -609,7 +628,7 @@ spec:
             - name: azure-config-file
               {{- if or .Values.azure.secretName (and .Values.azure.resourceGroup .Values.azure.tenantId .Values.azure.subscriptionId) }}
               mountPath: /etc/kubernetes/
-              {{- else if not .Values.azure.useManagedIdentityExtension }}
+              {{- else }}
               mountPath: /etc/kubernetes/azure.json
               {{- end }}
               readOnly: true
@@ -625,10 +644,14 @@ spec:
             - name: google-service-account
               mountPath: /etc/secrets/service-account/
             {{- end }}
+            {{- if eq .Values.provider "oci" }}
+            - name: oci-config-file
+              mountPath: /etc/kubernetes/
+            {{- end }}
             {{- if eq .Values.provider "designate" }}
             # Designate mountPath(s)
             {{- if and (.Values.designate.customCAHostPath) (.Values.designate.customCA.enabled) }}
-            {{- fail "designate.customCAHostPath cannot be specified with designate.customCA.enabled set to true"}}
+            {{- fail "designate.customCAHostPath cannot be specified with designate.customCA.enabled set to true" }}
             {{- else if .Values.designate.customCA.enabled }}
             - name: designate-custom-ca
               mountPath: {{ .Values.designate.customCA.mountPath }}
@@ -643,7 +666,7 @@ spec:
             - name: krb5config
               mountPath: /etc/krb5.conf
               subPath: krb5.conf
-            {{- end}}
+            {{- end }}
             {{- if (eq .Values.provider "transip") }}
             # TransIP mountPath(s)
             - name: transip-api-key
@@ -676,11 +699,19 @@ spec:
           {{- if or .Values.azure.secretName (and .Values.azure.resourceGroup .Values.azure.tenantId .Values.azure.subscriptionId) }}
           secret:
             secretName: {{ template "external-dns.secretName" . }}
-          {{- else if not .Values.azure.useManagedIdentityExtension }}
+          {{- else if .Values.azure.useManagedIdentityExtension }}
+          secret:
+            secretName: {{ template "external-dns.fullname" . }}
+          {{- else }}
           hostPath:
             path: /etc/kubernetes/azure.json
             type: File
           {{- end }}
+        {{- end }}
+        {{- if (eq .Values.provider "oci")}}
+        - name: oci-config-file
+          secret:
+            secretName: {{ template "external-dns.secretName" . }}
         {{- end }}
         {{- if and (eq .Values.provider "coredns") (.Values.coredns.etcdTLS.enabled) }}
         # CoreDNS volume(s)

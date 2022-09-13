@@ -7,7 +7,6 @@ import {
   bootstrapSops,
   copyBasicFiles,
   createCustomCA,
-  generateLooseSchema,
   getStoredClusterSecrets,
   processValues,
 } from './bootstrap'
@@ -80,25 +79,6 @@ describe('Bootstrapping values', () => {
       }),
     )
   })
-  describe('Generating a loose schema', () => {
-    const values = { test: 'ok', required: 'remove', nested: { required: 'remove-leaf' } }
-    const rootDir = '/bla'
-    const targetPath = `${rootDir}/.vscode/values-schema.yaml`
-    const deps = {
-      isCore: true,
-      rootDir,
-      loadYaml: jest.fn().mockReturnValue(values),
-      env: () => ({
-        ENV_DIR: '/bla/env',
-      }),
-      terminal,
-      outputFileSync: jest.fn(),
-    }
-    it('should create a schema without required props', () => {
-      generateLooseSchema(deps)
-      expect(deps.outputFileSync).toHaveBeenCalledWith(targetPath, 'test: ok\n')
-    })
-  })
   describe('Copying basic files', () => {
     const deps = {
       env: () => ({
@@ -108,7 +88,7 @@ describe('Bootstrapping values', () => {
       copyFile: jest.fn(),
       terminal,
       copy: jest.fn(),
-      generateLooseSchema: jest.fn(),
+      copySchema: jest.fn(),
       existsSync: jest.fn(),
     }
     it('should not throw any exception', async () => {
