@@ -72,15 +72,18 @@ configuration:
       resourceGroup: {{ .config.resourceGroup }}
       {{- end }}
       {{- with $provider | get "aws" nil }}
-      storageAccount: {{ .config.s3bucket }}
-      resourceGroup: {{ .config.region }}
+      s3Url: {{ .config.s3bucket }}
+      region: {{ .config.region }}
       {{- end }} 
   volumeSnapshotLocation:
-    name: default
-    provider: velero.io/azure
     config:
-      resourceGroup: Velero_Backups
-      apiTimeout: 10m
+      {{- with $provider | get "azure" nil }}
+      resourceGroup: {{ .config.resourceGroup }}
+      {{- end }}
+      {{- with $provider | get "azure" nil }}
+      region: {{ .config.region }}
+      {{- end }}
+  defaultVolumesToRestic: true
 
 credentials:
   {{- with $provider | get "azure" nil }}
@@ -153,17 +156,6 @@ schedules:
   {{- end }}
 {{- end }}
 
-
-  # for each custom schedule    
-  # custom:
-  #   disabled: false
-  #   labels:
-  #     myenv: foo
-  #   annotations:
-  #     myenv: foo
-  #   schedule: "0 0 * * *"
-  #   useOwnerReferencesInBackup: false
-  #   template:
-  #     ttl: "240h"
-  #     includedNamespaces:
-  #     - foo
+metrics:
+  serviceMonitor:
+    enabled: true
