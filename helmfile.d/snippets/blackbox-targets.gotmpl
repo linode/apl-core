@@ -1,6 +1,6 @@
 {{- $registry := list }}
 {{- range $s := .services }}
-  {{- $type := $s | get "type" "auth" }}
+  {{- $type := $s.type | default "auth" }}
   {{- if and (eq $type "public") (not ($s | get "ksvc.scaleToZero" false)) }}
     {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.name $.domain)) }}
     {{- $paths:= $s | get "paths" list }}
