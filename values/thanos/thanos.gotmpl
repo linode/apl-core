@@ -1,0 +1,43 @@
+{{- $v := .Values }}
+{{- $vl:= $v.apps.velero }}
+{{- $provider:= $vl | get "provider" dict }}
+
+
+query:
+  enabled: false
+
+queryFrontend:
+  enabled: false
+
+objstoreConfig: |-
+  {{- with $provider | get "aws" nil }}
+  type: s3
+  config:
+    bucket: {{ .Values.objectStorage.buckets.thanos }}
+    endpoint: {{ trimPrefix "https://" (trimPrefix "http://" .Values.objectStorage.s3.regionEndpoint) }}
+    access_key: {{ .Values.objectStorage.s3.accessKey }}
+    secret_key: {{ .Values.objectStorage.s3.secretKey }}
+    region: {{ .Values.objectStorage.s3.region }}
+  {{- end }}
+
+
+querier:
+  stores:
+    - SIDECAR-SERVICE-IP-ADDRESS-1:10901
+    - SIDECAR-SERVICE-IP-ADDRESS-2:10901
+bucketweb:
+  enabled: true
+compactor:
+  enabled: true
+storegateway:
+  enabled: true
+ruler:
+  enabled: true
+  alertmanagers:
+    - http://prometheus-operator-alertmanager.monitoring.svc.cluster.local:9093
+  config: |-
+    groups:
+      - name: "metamonitoring"
+        rules:
+          - alert: "PrometheusDown"
+            expr: absent(up{prometheus="monitoring/prometheus-operator"})    
