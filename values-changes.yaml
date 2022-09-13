@@ -34,6 +34,8 @@ changes:
     deletions:
       - otomi.isManaged
   - version: 5
+    deletions:
+      - istio.autoscaling.ingressgateway-private
     relocations:
       - apps.vault.seal.gcpkms.projectId: apps.vault.seal.gcpkms.project
       - apps.external-dns.domainFilters: dns.domainFilters
