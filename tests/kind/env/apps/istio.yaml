@@ -8,13 +8,6 @@ apps:
                 requests:
                     cpu: 100m
                     memory: 128Mi
-            ingressgateway-auth:
-                limits:
-                    cpu: 500m
-                    memory: 256Mi
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
             pilot:
                 limits:
                     cpu: 100m
@@ -29,10 +22,3 @@ apps:
                 requests:
                     cpu: 200m
                     memory: 500Mi
-            proxy:
-                limits:
-                    cpu: 500m
-                    memory: 1Gi
-                requests:
-                    cpu: 20m
-                    memory: 80Mi

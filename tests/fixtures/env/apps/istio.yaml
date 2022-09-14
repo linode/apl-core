@@ -4,13 +4,7 @@ apps:
             ingressgateway:
                 maxReplicas: 5
                 minReplicas: 1
-            ingressgateway-auth:
-                maxReplicas: 5
-                minReplicas: 1
             pilot:
-                maxReplicas: 5
-                minReplicas: 1
-            proxy:
                 maxReplicas: 5
                 minReplicas: 1
         egressGateway:
@@ -20,13 +14,6 @@ apps:
                 level: default:warn
         resources:
             ingressgateway:
-                limits:
-                    cpu: 500m
-                    memory: 256Mi
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-            ingressgateway-auth:
                 limits:
                     cpu: 500m
                     memory: 256Mi
