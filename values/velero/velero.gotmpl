@@ -80,7 +80,7 @@ configuration:
       {{- with $provider | get "azure" nil }}
       resourceGroup: {{ .config.resourceGroup }}
       {{- end }}
-      {{- with $provider | get "azure" nil }}
+      {{- with $provider | get "aws" nil }}
       region: {{ .config.region }}
       {{- end }}
   defaultVolumesToRestic: true
