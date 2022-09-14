@@ -3,6 +3,7 @@ import { $ } from 'zx'
 import { prepareEnvironment } from '../common/cli'
 import { terminal } from '../common/debug'
 import { getFilename } from '../common/utils'
+import { generateSecrets } from '../common/values'
 import { BasicArguments, setParsedArgs } from '../common/yargs'
 /**
  * This file is a scripting playground to test basic code
@@ -19,6 +20,7 @@ const playground = async (): Promise<void> => {
   const q = $.quote
   $.quote = (v) => v
   const res = await $`${cmd.split(' ')}`
+  console.log(JSON.stringify(await generateSecrets({})))
 }
 
 export const module = {

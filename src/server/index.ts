@@ -9,6 +9,7 @@ import { decrypt, encrypt } from '../common/crypt'
 import { terminal } from '../common/debug'
 import { env } from '../common/envalid'
 import { rootDir } from '../common/utils'
+import { generateSecrets } from '../common/values'
 
 const d = terminal('server')
 const app = express()
@@ -50,6 +51,12 @@ app.get('/prepare', async (req: Request, res: Response) => {
     }
     res.status(status).send(err)
   }
+})
+
+app.get('/generate-secrets', async (req: Request, res: Response) => {
+  d.log('Request to generate secrets')
+  const secrets = await generateSecrets({})
+  res.json(secrets)
 })
 
 export const startServer = (): void => {
