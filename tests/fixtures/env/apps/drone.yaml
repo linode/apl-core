@@ -2,13 +2,11 @@ apps:
     drone:
         adminUser: somesecretvalue
         debug: false
-        enabled: true
         githubAdmins:
             org: redkubes
             team: admins
             token: somesecretvalue
         orgsFilter: redkubes
-        owner: redkubes
         repoFilter: redkubes
         sourceControl:
             github:

@@ -1,4 +1,4 @@
-api: velero
-console: velero
-tasks: 0.2.31
-tools: 1.4.25
+api: app-defaults
+console: app-defaults
+tasks: main
+tools: main
