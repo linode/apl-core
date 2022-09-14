@@ -1,4 +1,4 @@
 api: app-defaults
 console: app-defaults
-tasks: 0.2.31
-tools: 1.4.25
+tasks: main
+tools: main
