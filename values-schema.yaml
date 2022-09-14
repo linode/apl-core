@@ -1829,8 +1829,6 @@ properties:
                 $ref: '#/definitions/autoscaling'
               ingressgateway:
                 $ref: '#/definitions/autoscaling'
-              ingressgateway-private:
-                $ref: '#/definitions/autoscaling'
               pilot:
                 $ref: '#/definitions/autoscaling'
           egressGateway:
