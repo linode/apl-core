@@ -147,6 +147,9 @@ environments:
             name: default
             enabled: false
             logLevel: warning
+        backup:
+          platformSchedule:
+            enabled: false
         cluster: {}
         dns:
           domainFilters: []
