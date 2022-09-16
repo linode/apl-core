@@ -65,6 +65,7 @@ configuration:
   {{- end }}
   backupStorageLocation:
     name: {{ $vl.backupStorageLocation.name }}
+    default: true
     bucket: {{ $vl.backupStorageLocation.bucket }}
     config:
       {{- with $provider | get "azure" nil }}
@@ -93,8 +94,8 @@ credentials:
       AZURE_TENANT_ID={{ $vl.provider.azure.secretContents.tenantId }}
       AZURE_CLIENT_ID={{ $vl.provider.azure.secretContents.aadClientId }}
       AZURE_CLIENT_SECRET={{ $vl.provider.azure.secretContents.aadClientSecret }}
-      AZURE_RESOURCE_GROUP={{ $vl.provider.azure.config.resourceGroup }}
-      AZURE_CLOUD_NAME=A{{ $vl.provider.azure.environment }}
+      AZURE_RESOURCE_GROUP={{ $vl.provider.azure.secretContents.resourceGroup }}
+      AZURE_CLOUD_NAME={{ $vl.provider.azure.environment }}
   {{- end }}
   {{- with $provider | get "aws" nil }}
   secretContents:
@@ -120,37 +121,37 @@ deployRestic: true
 schedules:
   gitea:
     disabled: false
-    schedule: "0 0 * * *"
+    schedule: {{ $v.backup.platformSchedule.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: "240h"
+      ttl: {{ $v.backup.platformSchedule.ttl }}
       includedNamespaces:
       - gitea
   keycloak:
     disabled: false
-    schedule: "0 0 * * *"
+    schedule: {{ $v.backup.platformSchedule.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: "240h"
+      ttl: {{ $v.backup.platformSchedule.ttl }}
       includedNamespaces:
       - keycloak
   {{- if $v.apps.harbor.enabled }}
   harbor:
     disabled: false
-    schedule: "0 0 * * *"
+    schedule: {{ $v.backup.platformSchedule.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: "240h"
+      ttl: {{ $v.backup.platformSchedule.ttl }}
       includedNamespaces:
       - harbor
   {{- end }}
   {{- if $v.apps.vault.enabled }}
   vault:
     disabled: false
-    schedule: "0 0 * * *"
+    schedule: {{ $v.backup.platformSchedule.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: "240h"
+      ttl: {{ $v.backup.platformSchedule.ttl }}
       includedNamespaces:
       - vault
   {{- end }}

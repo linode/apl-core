@@ -2372,7 +2372,7 @@ properties:
             properties:
               name:
                 type: string
-                default: platform
+                default: otomi
                 description: Name of the backup storage location where backups should be stored.
                 $ref: '#/definitions/wordCharacterPattern'
               bucket:
@@ -2387,13 +2387,13 @@ properties:
                 config:
                   additionalProperties: false
                   properties:
-                    storageAccount:
+                    storageAccountName:
                       type: string
                       description: The used Azure storage account
                       $ref: '#/definitions/wordCharacterPattern'
-                    resourceGroup:
+                    resourceGroupStAcc:
                       type: string
-                      description: The name of the resource group that contains the cluster vm's and disks.
+                      description: The resource group of the storage account
                       $ref: '#/definitions/wordCharacterPattern'
                   required:
                     - resourceGroup
@@ -2417,6 +2417,9 @@ properties:
                     subscriptionId:
                       $ref: '#/definitions/wordCharacterPattern'
                     aadClientId:
+                      $ref: '#/definitions/wordCharacterPattern'
+                    resourceGroup:
+                      description: The resource group of the worker nodes (VM's and disks)
                       $ref: '#/definitions/wordCharacterPattern'
                     aadClientSecret:
                       $ref: '#/definitions/wordCharacterPattern'
@@ -3035,6 +3038,15 @@ properties:
           enabled:
             type: boolean
             default: false
+          ttl:
+            default: 240h
+            description: Expiration of the backup.
+            title: TTL after finished
+            type: string
+          schedule:
+            default: 0 0 * * *
+            description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
+            type: string
       # customSchedules:
       #   type: array
       #   items:

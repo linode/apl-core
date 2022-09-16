@@ -2,7 +2,7 @@
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
   Self-hosted DevOps Platform for Kubernetes
 </h1>
-<p align="center"><b>Start deploying your apps on Kubernetes today </b></p>
+<p align="center"><b>Start deploying your apps on Kubernetes today</b></p>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/v/release/redkubes/otomi-core" /></a>
@@ -118,6 +118,7 @@ Otomi installs, configures, integrates and automates all of your favorite techno
 Learn more about all the integrated technologies:
 
 - [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
+- [Velero](https://github.com/vmware-tanzu/velero): Back up and restore your Kubernetes cluster resources and persistent volumes
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
 - [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads

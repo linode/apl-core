@@ -4,6 +4,7 @@ apps:
         backupStorageLocation:
             name: otomi
             bucket: otomi
+        loglevel: info
         provider:
             azure:
                 config:
@@ -13,6 +14,7 @@ apps:
                 secretContents:
                     subscriptionId: test
                     tenantId: test
+                    resourceGroup: wokernodes_rg
                     aadClientId: bla12344556666658457847476
                     aadClientSecret: bla383736363653
             # aws:

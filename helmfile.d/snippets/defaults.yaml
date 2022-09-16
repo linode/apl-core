@@ -144,9 +144,8 @@ environments:
           vault:
             enabled: false
           velero:
-            name: default
             enabled: false
-            logLevel: warning
+            logLevel: info
         backup:
           platformSchedule:
             enabled: false

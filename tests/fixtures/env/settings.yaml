@@ -57,6 +57,8 @@ kms:
 backup:
     platformSchedule:
         enabled: true
+        schedule: 0 0 * * *
+        ttl: 240h
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID
