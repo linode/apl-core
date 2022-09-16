@@ -1,14 +1,12 @@
 apps:
     velero:
         enabled: true
-        backupStorageLocation:
-            name: otomi
-            bucket: otomi
         provider:
             azure:
                 config:
                     storageAccount: test
                     resourceGroup: test
+                    bucket: otomi
                 environment: AzurePublicCloud
                 secretContents:
                     subscriptionId: test
