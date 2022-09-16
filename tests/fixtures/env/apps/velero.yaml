@@ -4,7 +4,6 @@ apps:
         backupStorageLocation:
             name: otomi
             bucket: otomi
-        loglevel: info
         provider:
             azure:
                 config:
