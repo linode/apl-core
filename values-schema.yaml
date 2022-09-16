@@ -3038,24 +3038,19 @@ properties:
             default: 0 0 * * *
             description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
             type: string
-      # customSchedules:
-      #   type: array
-      #   items:
-      #     allOf:
-      #       - type: object
-      #         properties:
-      #           scheduleName:
-      #             type: string
-      #       - includeNamespaces:
-      #           description: Namespaces to backup
-      #           items:
-      #             type: string
-      #           nullable: false
-      #           title: Add namespaces to backup
-      #           type: array
-      #       - $ref: '#/definitions/backupschedules'
-      #     required:
-      #       - scheduleName
+      teamSchedule:
+        enabled:
+          type: boolean
+          default: false
+        ttl:
+          default: 240h
+          description: Expiration of the backup.
+          title: TTL after finished
+          type: string
+        schedule:
+          default: 0 0 * * *
+          description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
+          type: string
   teamConfig:
     additionalProperties: false
     patternProperties:

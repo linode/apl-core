@@ -118,8 +118,9 @@ kubectl:
 
 deployRestic: true
 
-{{- if $v.backup.platformSchedule.enabled }}
+{{- if or $v.backup.platformSchedule.enabled $v.backup.teamSchedule.enabled }}
 schedules:
+  {{- if $v.backup.platformSchedule.enabled }}
   gitea:
     disabled: false
     schedule: {{ $v.backup.platformSchedule.schedule }}
@@ -156,7 +157,31 @@ schedules:
       includedNamespaces:
       - vault
   {{- end }}
+  {{- if $v.apps.argocd.enabled }}
+  argocd:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - argocd
+  {{- end }}
+  {{- end }}
+  {{- if $v.backup.teamSchedule.enabled }}
+  {{- range $teamId := keys $v.teamConfig }}
+  {{team-$teamId}}:
+    disabled: false
+    schedule: {{ $v.backup.teamSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.teamSchedule.ttl }}
+      includedNamespaces:
+      - {{team-$teamId}}
+  {{- end }}
+  {{- end }}
 {{- end }}
+
 
 metrics:
   serviceMonitor:
