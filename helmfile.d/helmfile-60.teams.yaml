@@ -101,7 +101,7 @@ releases:
               editable: false
               type: loki
               access: proxy
-              url: http://loki.monitoring:3101
+              url: http://loki.monitoring:3100
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               basicAuthPassword: {{ $team.password }}
