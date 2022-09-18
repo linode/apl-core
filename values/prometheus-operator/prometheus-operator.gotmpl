@@ -207,7 +207,7 @@ grafana:
       type: loki
       access: proxy
       {{- if $v.otomi.isMultitenant }}
-      url: http://loki.monitoring:11811
+      url: http://loki.monitoring:3101
       basicAuth: true
       basicAuthUser: admins
       basicAuthPassword: {{ $v.apps.loki.adminPassword }}
