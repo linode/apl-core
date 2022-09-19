@@ -5,9 +5,9 @@ apps:
         retention:
             duration: 24h
             period: 24h
-        storageType: azure
-        azure:
-            account_name: 'account_name'
-            container_name: 'container_name'
-
         v11StartDate: '2021-05-13'
+        storage:
+            storageType: azure
+            azure:
+                account_name: account_name
+                container_name: container_name

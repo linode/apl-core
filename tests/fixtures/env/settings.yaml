@@ -21,15 +21,14 @@ cloud:
         - std
         - std-immediate
 dns:
+    domainFilters:
+        - otomi.cloud
     provider:
         azure:
             aadClientId: 00-aadClientId
             resourceGroup: external-dns
             subscriptionId: 00-subscriptionId
             tenantId: 00-tenantId
-
-    domainFilters:
-        - otomi.cloud
     zoneIdFilters:
         - otomi
 home:
