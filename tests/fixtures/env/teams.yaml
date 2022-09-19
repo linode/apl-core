@@ -15,5 +15,8 @@ teamConfig:
             services.loadbalancers: '1'
         selfService:
             apps: []
-            service: ['ingress', 'networkPolicy']
-            team: ['alerts']
+            service:
+                - ingress
+                - networkPolicy
+            team:
+                - alerts
