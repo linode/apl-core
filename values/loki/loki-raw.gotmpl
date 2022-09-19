@@ -8,4 +8,4 @@ resources:
         app: loki
       name: reverse-proxy-auth-config
     data:
-      authn.yaml: {{ tpl (readFile "auth-config.gotmpl") (dict "adminPassword" $l.adminPassword | b64enc }}
+      authn.yaml: {{ tpl (readFile "auth-config.gotmpl") (dict "adminPassword" $l.adminPassword) | b64enc }}
