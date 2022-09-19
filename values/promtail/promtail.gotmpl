@@ -39,22 +39,24 @@ podAnnotations:
 
 pipelineStages:
   - docker: {}
-  # {{- if $v.otomi.isMultitenant }}
-  # - tenant:
-  #     value: admins
-  # - json:
-  #     expressions:
-  #       namespace:
-  # - labels:
-  #     namespace:
-  # {{- range $id, $team := $v.teamConfig }}
-  # - match:
-  #     selector: '{namespace="team-{{ $id }}"}'
-  #     stages:
-  #       - tenant:
-  #           value: {{ $id }}
-  # {{- end }}
-  # {{- end }}
+{{/*
+  {{- if $v.otomi.isMultitenant }}
+  - tenant:
+      value: admins
+  - json:
+      expressions:
+        namespace:
+  - labels:
+      namespace:
+  {{- range $id, $team := $v.teamConfig }}
+  - match:
+      selector: '{namespace="team-{{ $id }}"}'
+      stages:
+        - tenant:
+            value: {{ $id }}
+  {{- end }}
+  {{- end }}
+*/}}
 
 priorityClassName: otomi-critical
 config:
