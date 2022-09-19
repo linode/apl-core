@@ -459,31 +459,6 @@ definitions:
         title: Source IP address filtering
         type: string
         description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
-  backupschedules:
-    type: object
-    properties:
-      disabled:
-        title: Enable backup
-        type: boolean
-        default: true
-      labels:
-        $ref: '#/definitions/labelsAnnotations'
-        description: 'One or more "label: value" pairs'
-      annotations:
-        $ref: '#/definitions/labelsAnnotations'
-        description: 'One or more "label: value" pairs'
-      schedule:
-        default: 0 1 * * *
-        description: Cron-type expression to schedule the backup
-        type: string
-      ttl:
-        default: 86400
-        description: Time To Live after backup job is finished in seconds.
-        minimum: 0
-        title: TTL after finished
-        type: integer
-    required:
-      - schedule
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
