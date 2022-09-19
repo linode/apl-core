@@ -30,22 +30,22 @@ config:
     {{- end }}
     - from: {{ $l | get "v11StartDate" "2021-05-12" }}
       store: boltdb-shipper
-      object_store: {{ $l | get "storageType" "filesystem" }}
+      object_store: {{ $l | get "storage.storageType" "filesystem" }}
       schema: v11
       index:
         prefix: index_
         period: 24h
   storage_config:
     boltdb_shipper:
-      shared_store: {{ $l | get "storageType" "filesystem" }}
+      shared_store: {{ $l | get "storage.storageType" "filesystem" }}
     filesystem:
       directory: /data/loki/chunks
-    {{- if ne ($l | get "storageType" "filesystem") "filesystem" }}
-    {{ $l.storageType }}: {{- $l | get $l.storageType | toYaml | nindent 6 }}
+    {{- if ne ($l | get "storage.storageType" "filesystem") "filesystem" }}
+    {{ $l.storageType }}: {{- $l.storage | get $l.storage.storageType | toYaml | nindent 6 }}
     {{- end }}
   compactor:
     retention_enabled: true
-    shared_store: {{ $l | get "storageType" "filesystem" }}
+    shared_store: {{ $l | get "storage.storageType" "filesystem" }}
   chunk_store_config:
     max_look_back_period: {{ $l | get "retention.period" "24h" }}
   table_manager:
