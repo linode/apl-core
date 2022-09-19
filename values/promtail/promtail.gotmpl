@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $promtail := $v.apps.promtail }}
+{{- $l := $v.apps | get "loki" }}
 
 loki:
   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
@@ -36,6 +37,13 @@ podAnnotations:
   sidecar.istio.io/inject: "false"
   # init container requires "privileged: true" thus we cannot remove "psp-allowed-users" policy Annotation
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem
+
+config:
+  client:
+    url: http://loki.monitoring:3101/api/prom/push
+    basic_auth:
+      username: admins
+      password: {{ $l.adminPassword }}
 
 pipelineStages:
   - docker: {}
