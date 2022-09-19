@@ -149,6 +149,8 @@ environments:
         backup:
           platformSchedule:
             enabled: false
+          teamSchedule:
+            enabled: false
         cluster: {}
         dns:
           domainFilters: []
