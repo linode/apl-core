@@ -208,7 +208,7 @@ grafana:
       access: proxy
       url: http://loki.monitoring:3101
       basicAuth: true
-      basicAuthUser: admins
+      basicAuthUser: admin
       basicAuthPassword: {{ $v.apps.loki.adminPassword }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}

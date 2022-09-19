@@ -39,11 +39,12 @@ podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem
 
 config:
-  client:
+  clients:
     url: http://loki.monitoring:3101/api/prom/push
     basic_auth:
-      username: admins
+      username: admin
       password: {{ $l.adminPassword }}
+    tenant_id: admins
 
 pipelineStages:
   - docker: {}
