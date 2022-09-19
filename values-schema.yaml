@@ -2373,11 +2373,11 @@ properties:
                 config:
                   additionalProperties: false
                   properties:
-                    storageAccountName:
+                    storageAccount:
                       type: string
                       description: The used Azure storage account
                       $ref: '#/definitions/wordCharacterPattern'
-                    resourceGroupStAcc:
+                    resourceGroup:
                       type: string
                       description: The resource group of the storage account
                       $ref: '#/definitions/wordCharacterPattern'
