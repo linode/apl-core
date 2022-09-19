@@ -101,7 +101,7 @@ releases:
               editable: false
               type: loki
               access: proxy
-              url: http://loki.monitoring:11811
+              url: http://loki-teams.monitoring:11811
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               basicAuthPassword: {{ $team.password }}

@@ -1,9 +1,11 @@
 users:
   - username: admins
     password: {{ .adminPassword }}
-    orgId: admins
+    orgid: admins
+{{/*
   {{- range $id, $team := .teams }}
   - username: {{ $id }}
     password: {{ $team | get "password" "XXXX" }}
     orgId: {{ $id }}
   {{- end }}
+*/}}

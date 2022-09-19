@@ -39,6 +39,7 @@ podAnnotations:
 
 pipelineStages:
   - docker: {}
+{{/*
   {{- if $v.otomi.isMultitenant }}
   - tenant:
       value: admins
@@ -55,11 +56,8 @@ pipelineStages:
             value: {{ $id }}
   {{- end }}
   {{- end }}
-
+*/}}
 priorityClassName: otomi-critical
-config:
-  server:
-    log_level: error
 
 # @TODO:
 image:
