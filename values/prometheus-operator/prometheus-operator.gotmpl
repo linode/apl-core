@@ -206,14 +206,14 @@ grafana:
       editable: false
       type: loki
       access: proxy
-      {{- if $v.otomi.isMultitenant }}
-      url: http://loki.monitoring:3101
-      basicAuth: true
-      basicAuthUser: admins
-      basicAuthPassword: {{ $v.apps.loki.adminPassword }}
-      {{- else }}
+      # {{- if $v.otomi.isMultitenant }}
+      # url: http://loki.monitoring:3101
+      # basicAuth: true
+      # basicAuthUser: admins
+      # basicAuthPassword: {{ $v.apps.loki.adminPassword }}
+      # {{- else }}
       url: http://loki.monitoring:3100
-      {{- end }}
+      # {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
     {{- end }}
