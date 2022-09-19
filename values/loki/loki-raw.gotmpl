@@ -1,7 +1,8 @@
 {{- $v := .Values }}
 {{- $l := $v.apps | get "loki" }}
 {{- if $v.otomi.isMultitenant }}
-resources:
+resources: []
+{{/*
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -10,4 +11,5 @@ resources:
       name: reverse-proxy-auth-config
     data:
       authn.yaml: {{ tpl (readFile "auth-config.gotmpl") (dict "adminPassword" $l.adminPassword "teams" $v.teamConfig) | b64enc }}
+*/}}
 {{- end }}
