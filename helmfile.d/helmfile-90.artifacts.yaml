@@ -21,10 +21,3 @@ releases:
     values:
       - ../values/raw/istio-raw.gotmpl
       - snippets/common.gotmpl
-  - name: velero-artifacts
-    installed: {{ $a | get "velero.enabled" }}
-    namespace: velero
-    labels:
-      pkg: velero
-    chart: ../charts/raw
-    <<: *raw
