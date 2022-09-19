@@ -114,6 +114,7 @@ kubectl:
       cpu: 100m
       memory: 32Mi
   labels: 
+    # do not inject sidecar, so the kubectl k8s job can exit container and return the completed status
     sidecar.istio.io/inject: "false"
 
 deployRestic: true
