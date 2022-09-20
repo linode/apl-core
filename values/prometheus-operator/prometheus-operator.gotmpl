@@ -210,7 +210,7 @@ grafana:
       {{- if $v.otomi.isMultitenant }}
       url: http://loki.monitoring:3101
       basicAuth: true
-      basicAuthUser: admin
+      basicAuthUser: otomi-admin
       basicAuthPassword: {{ $v.apps.loki.adminPassword }}
       {{- else }}
       url: http://loki.monitoring:3100
