@@ -48,10 +48,7 @@ config:
 
 pipelineStages:
   - docker: {}
-{{/*
   {{- if $v.otomi.isMultitenant }}
-  - tenant:
-      value: admins
   - json:
       expressions:
         namespace:
@@ -65,7 +62,7 @@ pipelineStages:
             value: {{ $id }}
   {{- end }}
   {{- end }}
-*/}}
+
 priorityClassName: otomi-critical
 
 # @TODO:
