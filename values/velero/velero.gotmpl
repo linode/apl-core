@@ -85,6 +85,7 @@ configuration:
       {{- with $provider | get "aws" nil }}
       region: {{ .config.region }}
       {{- end }}
+  # defaultVolumesToRestic - if set Velero will back up all pod volumes using Restic with the exception of: service account token, secrets, config maps and hostpath volumes
   defaultVolumesToRestic: true
 
 credentials:

@@ -45,7 +45,6 @@ gitea:
   podAnnotations:
     policy.otomi.io/ignore.init: psp-allowed-users
     policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
-    backup.velero.io/backup-volumes: init,data,temp
   admin:
     username: {{ $g.adminUsername }}
     password: {{ $g.adminPassword }}
