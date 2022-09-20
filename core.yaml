@@ -74,6 +74,8 @@ k8s:
       disablePolicyChecks: true
     - name: vault
       app: vault
+    - name: velero
+      app: velero
 
 adminApps:
   - name: alertmanager
@@ -289,6 +291,8 @@ adminApps:
         port: 8200
         type: public
         auth: true
+  - name: velero
+    tags: [backup]
 
 teamApps:
   - name: alertmanager

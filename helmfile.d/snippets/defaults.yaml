@@ -143,6 +143,14 @@ environments:
             enabled: false
           vault:
             enabled: false
+          velero:
+            enabled: false
+            logLevel: info
+        backup:
+          platformSchedule:
+            enabled: false
+          teamSchedule:
+            enabled: false
         cluster: {}
         dns:
           domainFilters: []
