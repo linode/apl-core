@@ -139,6 +139,14 @@ schedules:
       ttl: {{ $v.backup.platformSchedule.ttl }}
       includedNamespaces:
       - keycloak
+  drone:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - drone
   {{- if $v.apps.harbor.enabled }}
   harbor:
     disabled: false
@@ -168,6 +176,16 @@ schedules:
       ttl: {{ $v.backup.platformSchedule.ttl }}
       includedNamespaces:
       - argocd
+  {{- end }}
+  {{- if $v.apps.kubeapps.enabled }}
+  kubeapps:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - kubeapps
   {{- end }}
   {{- end }}
   {{- if $v.backup.teamSchedule.enabled }}
