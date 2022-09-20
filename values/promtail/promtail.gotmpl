@@ -2,8 +2,6 @@
 {{- $promtail := $v.apps.promtail }}
 {{- $l := $v.apps | get "loki" }}
 
-# loki:
-#   serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
 nameOverride: promtail
 
 resources:
@@ -20,17 +18,22 @@ resources:
 
 serviceMonitor:
   enabled: true
-  additionalLabels:
+  labels:
     prometheus: system
 
 podSecurityContext:
-  readOnlyRootFilesystem: true
   runAsGroup: 0
   runAsUser: 0
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+  allowPrivilegeEscalation: false
 
 serviceMonitor:
   enabled: true
-  additionalLabels:
+  labels:
     prometheus: system
 
 podAnnotations:
@@ -40,11 +43,11 @@ podAnnotations:
 
 config:
   clients:
-    url: http://loki.monitoring:3101/loki/api/v1/push
-    basic_auth:
-      username: otomi-admin
-      password: {{ $l.adminPassword }}
-    tenant_id: admins
+    - url: http://loki.monitoring:3101/loki/api/v1/push
+      tenant_id: admins
+      basic_auth:
+        username: otomi-admin
+        password: {{ $l.adminPassword }}
   snippets:
     pipelineStages:
       - docker: {}
@@ -69,6 +72,6 @@ priorityClassName: otomi-critical
 # image:
 #   tag: 2.4.2
 {{- with .Values.otomi | get "globalPullSecret" nil }}
-  pullSecrets:
-    - otomi-pullsecret-global
+imagePullSecrets:
+  - otomi-pullsecret-global
 {{- end }}
