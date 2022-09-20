@@ -119,7 +119,7 @@ extraVolumes:
 - name: reverse-proxy-auth-config
   secret:
     secretName: reverse-proxy-auth-config
-{{- end }}=
+{{- end }}
 extraVolumeMounts: []
 
 extraPorts:
@@ -140,9 +140,9 @@ extraArgs:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"
-  # {{- if $v.otomi.isMultitenant }}
-  # checksum/teams: {{ $teamNames | sha256sum }}
-  # {{- end }}  
+  {{- if $v.otomi.isMultitenant }}
+  checksum/teams: {{ $teamNames | sha256sum }}
+  {{- end }}  
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 image:
