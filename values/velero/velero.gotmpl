@@ -1,0 +1,208 @@
+{{- $v := .Values }}
+{{- $vl:= $v.apps.velero }}
+{{- $provider:= $vl | get "provider" dict }}
+
+resources:
+  {{- with $vl | get "resources" nil }}
+    {{- toYaml . | nindent 2 }}
+  {{- else }}
+  requests:
+    cpu: 500m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+  {{- end }}
+
+{{- with $provider | get "azure" nil }}
+initContainers:
+  - name: velero-plugin-for-azure
+    image: velero/velero-plugin-for-microsoft-azure:v1.5.0
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 32Mi
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+{{- end }}
+{{- with $provider | get "aws" nil }}
+initContainers:
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.4.0
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 32Mi
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+{{- end }}
+
+podSecurityContext:
+  runAsUser: 1000
+
+serviceMonitor:
+    enabled: true
+    namespace: velero
+
+logLevel: {{ $vl.logLevel }}
+
+configuration:
+  {{- with $provider | get "azure" nil }}
+  provider: azure
+  {{- end }}
+  {{- with $provider | get "aws" nil }}
+  provider: aws
+  {{- end }}
+  backupStorageLocation:
+    name: otomi
+    default: true
+    bucket: {{ $vl.provider.azure.config.bucket }}
+    config:
+      {{- with $provider | get "azure" nil }}
+      storageAccount: {{ .config.storageAccount }}
+      resourceGroup: {{ .config.resourceGroup }}
+      {{- end }}
+      {{- with $provider | get "aws" nil }}
+      s3Url: {{ .config.s3bucket }}
+      region: {{ .config.region }}
+      {{- end }} 
+  volumeSnapshotLocation:
+    name: otomi
+    config:
+      {{- with $provider | get "azure" nil }}
+      resourceGroup: {{ .config.resourceGroup }}
+      {{- end }}
+      {{- with $provider | get "aws" nil }}
+      region: {{ .config.region }}
+      {{- end }}
+  # defaultVolumesToRestic - if set Velero will back up all pod volumes using Restic with the exception of: service account token, secrets, config maps and hostpath volumes
+  defaultVolumesToRestic: true
+
+credentials:
+  {{- with $provider | get "azure" nil }}
+  secretContents:
+    cloud: |
+      AZURE_SUBSCRIPTION_ID={{ $vl.provider.azure.secretContents.subscriptionId }}
+      AZURE_TENANT_ID={{ $vl.provider.azure.secretContents.tenantId }}
+      AZURE_CLIENT_ID={{ $vl.provider.azure.secretContents.aadClientId }}
+      AZURE_CLIENT_SECRET={{ $vl.provider.azure.secretContents.aadClientSecret }}
+      AZURE_RESOURCE_GROUP={{ $vl.provider.azure.secretContents.resourceGroup }}
+      AZURE_CLOUD_NAME={{ $vl.provider.azure.environment }}
+  {{- end }}
+  {{- with $provider | get "aws" nil }}
+  secretContents:
+    cloud: |
+    aws_access_key_id={{ $vl.provider.aws.secretContents.accessKeyId }}
+    aws_secret_access_key={{ $vl.provider.aws.secretContents.secretAccessKey }}
+  {{- end }}
+
+kubectl:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 32Mi
+  labels: 
+    # do not inject sidecar, so the kubectl k8s job can exit container and return the completed status
+    sidecar.istio.io/inject: "false"
+
+deployRestic: true
+
+{{- if or $v.backup.platformSchedule.enabled $v.backup.teamSchedule.enabled }}
+schedules:
+  {{- if $v.backup.platformSchedule.enabled }}
+  gitea:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - gitea
+  keycloak:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - keycloak
+  drone:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - drone
+  {{- if $v.apps.harbor.enabled }}
+  harbor:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - harbor
+  {{- end }}
+  {{- if $v.apps.vault.enabled }}
+  vault:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - vault
+  {{- end }}
+  {{- if $v.apps.argocd.enabled }}
+  argocd:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - argocd
+  {{- end }}
+  {{- if $v.apps.kubeapps.enabled }}
+  kubeapps:
+    disabled: false
+    schedule: {{ $v.backup.platformSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.platformSchedule.ttl }}
+      includedNamespaces:
+      - kubeapps
+  {{- end }}
+  {{- end }}
+  {{- if $v.backup.teamSchedule.enabled }}
+  {{- range $teamId := keys $v.teamConfig }}
+  team-{{$teamId}}:
+    disabled: false
+    schedule: {{ $v.backup.teamSchedule.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $v.backup.teamSchedule.ttl }}
+      includedNamespaces:
+      - team-{{$teamId}}
+  {{- end }}
+  {{- end }}
+{{- end }}
+
+
+metrics:
+  serviceMonitor:
+    enabled: true

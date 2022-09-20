@@ -42,3 +42,9 @@ releases:
     labels:
       pkg: kubeclarity
     <<: *default
+  - name: velero
+    installed: {{ $a | get "velero.enabled" }}
+    namespace: velero
+    labels:
+      pkg: velero
+    <<: *default
