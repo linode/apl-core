@@ -10,4 +10,3 @@ resources: []
       name: reverse-proxy-auth-config
     data:
       authn.yaml: {{ tpl (readFile "auth-config.gotmpl") (dict "adminPassword" $l.adminPassword "teams" $v.teamConfig) | b64enc }}
-*/}}
