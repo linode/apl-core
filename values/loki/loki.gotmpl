@@ -14,9 +14,7 @@ tracing:
   jaegerAgentHost:
 
 config:
-{{/*
   auth_enabled: {{ $v.otomi.isMultitenant }}
-*/}}
   limits_config:
     reject_old_samples_max_age: {{ $l | get "retention.duration" "24h" }}
   schema_config:
@@ -90,8 +88,8 @@ fullnameOverride: loki
 promtail:
   serviceName: promtail
 
-{{/*
 extraContainers:
+{{- if $v.otomi.isMultitenant }}
 - name: reverse-proxy
   image: k8spin/loki-multi-tenant-proxy:v1.0.0
   args:
@@ -114,18 +112,16 @@ extraContainers:
     - name: reverse-proxy-auth-config
       mountPath: /etc/reverse-proxy-conf
 {{- end }}
-*/}}
 
-{{/*
+
 extraVolumes:
+{{- if $v.otomi.isMultitenant }}
 - name: reverse-proxy-auth-config
   secret:
     secretName: reverse-proxy-auth-config
 {{- end }}=
 extraVolumeMounts: []
-*/}}
 
-{{/*
 extraPorts:
 {{- if $v.otomi.isMultitenant }}
 - port: 3101
@@ -133,7 +129,6 @@ extraPorts:
   name: http
   targetPort: http
 {{- end }}
-*/}}
 
 serviceMonitor:
   enabled: true

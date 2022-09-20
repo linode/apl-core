@@ -48,7 +48,6 @@ config:
 
 pipelineStages:
   - docker: {}
-{{/*
   {{- if $v.otomi.isMultitenant }}
   - json:
       expressions:
@@ -63,7 +62,6 @@ pipelineStages:
             value: {{ $id }}
   {{- end }}
   {{- end }}
-*/}}
 
 priorityClassName: otomi-critical
 

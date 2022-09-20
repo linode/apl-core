@@ -207,7 +207,6 @@ grafana:
       type: loki
       access: proxy
       url: http://loki.monitoring:3100
-{{/*
       {{- if $v.otomi.isMultitenant }}
       url: http://loki.monitoring:3101
       basicAuth: true
@@ -216,7 +215,6 @@ grafana:
       {{- else }}
       url: http://loki.monitoring:3100
       {{- end }}
-*/}}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
     {{- end }}

@@ -2,7 +2,6 @@
 {{- $l := $v.apps | get "loki" }}
 {{- if $v.otomi.isMultitenant }}
 resources: []
-{{/*
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -12,4 +11,3 @@ resources: []
     data:
       authn.yaml: {{ tpl (readFile "auth-config.gotmpl") (dict "adminPassword" $l.adminPassword "teams" $v.teamConfig) | b64enc }}
 */}}
-{{- end }}
