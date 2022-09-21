@@ -203,7 +203,7 @@ grafana:
     - grafana-piechart-panel
   additionalDataSources:
     - name: Loki
-      editable: false
+      editable: true
       type: loki
       access: proxy
       url: http://loki.monitoring:3100
@@ -212,7 +212,7 @@ grafana:
       basicAuth: true
       basicAuthUser: otomi-admin
       secureJsonData:
-        password: {{ $v.apps.loki.adminPassword }}
+        basicAuthPassword: {{ $v.apps.loki.adminPassword }}
       {{- else }}
       url: http://loki.monitoring:3100
       {{- end }}
