@@ -50,7 +50,7 @@ config:
         password: {{ $l.adminPassword }}
   snippets:
     pipelineStages:
-      - docker: {}
+      - cri: {}
       {{- if $v.otomi.isMultitenant }}
       - json:
           expressions:
@@ -64,6 +64,8 @@ config:
             - tenant:
                 value: {{ $id }}
       {{- end }}
+      - output: 
+          source: message
       {{- end }}
 
 priorityClassName: otomi-critical

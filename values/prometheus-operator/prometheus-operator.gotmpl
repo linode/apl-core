@@ -211,7 +211,8 @@ grafana:
       url: http://loki.monitoring:3101
       basicAuth: true
       basicAuthUser: otomi-admin
-      basicAuthPassword: {{ $v.apps.loki.adminPassword }}
+      secureJsonData:
+        password: {{ $v.apps.loki.adminPassword }}
       {{- else }}
       url: http://loki.monitoring:3100
       {{- end }}
