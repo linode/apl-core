@@ -2029,6 +2029,8 @@ properties:
       external-secrets:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           logLevel:
