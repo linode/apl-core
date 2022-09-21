@@ -341,7 +341,7 @@ export const bootstrap = async (
   const otomiImage = `otomi/core:${tag}`
   d.log(`Installing artifacts from ${otomiImage}`)
   await deps.copyBasicFiles()
-
+  await deps.migrate()
   const originalValues = await deps.processValues()
   // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
   if (!originalValues) {
@@ -381,7 +381,7 @@ export const bootstrap = async (
       '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
     )
   }
-  await deps.migrate()
+
   if (!hasOtomi) {
     d.log('You can now use the otomi CLI')
   }
