@@ -35,7 +35,9 @@ changes:
       - otomi.isManaged
   - version: 5
     deletions:
-      - istio.autoscaling.ingressgateway-private
+      - apps.istio.autoscaling.ingressgateway-private
+      - apps.istio.global.mtls
+      - apps.istio.global.sds
     relocations:
       - apps.loki.storageType: apps.loki.storage.storageType
       - apps.loki.aws: apps.loki.storage.aws
