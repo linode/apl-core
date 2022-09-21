@@ -98,12 +98,14 @@ releases:
               access: proxy
               url: http://po-prometheus.monitoring:9090
             - name: Loki
-              editable: false
+              editable: true
               type: loki
               access: proxy
+              orgId: {{ $teamId }}
               url: http://loki.monitoring:3101
               basicAuth: true
               basicAuthUser: {{ $teamId }}
+              secureJsonData: {{ $team.password }}
               basicAuthPassword: {{ $team.password }}
     {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
