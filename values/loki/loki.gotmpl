@@ -15,6 +15,8 @@ tracing:
 
 config:
   auth_enabled: {{ $v.otomi.isMultitenant }}
+  querier:
+    multi_tenant_queries_enabled: true
   limits_config:
     reject_old_samples_max_age: {{ $l | get "retention.duration" "24h" }}
   schema_config:
