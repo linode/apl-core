@@ -98,7 +98,7 @@ releases:
               access: proxy
               url: http://po-prometheus.monitoring:9090
             - name: Loki
-              editable: true
+              editable: false
               type: loki
               access: proxy
               url: http://loki.monitoring:3101

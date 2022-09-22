@@ -44,9 +44,8 @@ podAnnotations:
 config:
   clients:
     - url: http://loki.monitoring:3100/loki/api/v1/push
-      # basic_auth:
-      #   username: otomi-admin
-      #   password: {{ $l.adminPassword }}
+      tenant_id: admins
+
   snippets:
     pipelineStages:
       - cri: {}
@@ -69,12 +68,8 @@ config:
 
 priorityClassName: otomi-critical
 
-# @TODO:
-# image:
-#   tag: 2.4.2
-{{/*
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - otomi-pullsecret-global
 {{- end }}
-*/}}
+
