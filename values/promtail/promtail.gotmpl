@@ -70,6 +70,6 @@ priorityClassName: otomi-critical
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
-  - otomi-pullsecret-global
+  - name: otomi-pullsecret-global
 {{- end }}
 
