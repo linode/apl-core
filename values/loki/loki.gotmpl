@@ -14,9 +14,7 @@ tracing:
   jaegerAgentHost:
 
 config:
-{{/*
   auth_enabled: {{ $v.otomi.isMultitenant }}
-*/}}
   limits_config:
     reject_old_samples_max_age: {{ $l | get "retention.duration" "24h" }}
   schema_config:
@@ -90,7 +88,6 @@ fullnameOverride: loki
 promtail:
   serviceName: promtail
 
-{{/*
 extraContainers:
 {{- if $v.otomi.isMultitenant }}
 - name: reverse-proxy
@@ -115,9 +112,8 @@ extraContainers:
     - name: reverse-proxy-auth-config
       mountPath: /etc/reverse-proxy-conf
 {{- end }}
-*/}}
 
-{{/*
+
 extraVolumes:
 {{- if $v.otomi.isMultitenant }}
 - name: reverse-proxy-auth-config
@@ -125,9 +121,7 @@ extraVolumes:
     secretName: reverse-proxy-auth-config
 {{- end }}
 extraVolumeMounts: []
-*/}}
 
-{{/*
 extraPorts:
 {{- if $v.otomi.isMultitenant }}
 - port: 3101
@@ -135,7 +129,6 @@ extraPorts:
   name: http
   targetPort: http
 {{- end }}
-*/}}
 
 serviceMonitor:
   enabled: true
@@ -147,11 +140,9 @@ extraArgs:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"
-  {{/*
   {{- if $v.otomi.isMultitenant }}
   checksum/teams: {{ $teamNames | sha256sum }}
-  {{- end }}
-  */}}
+  {{- end }}  
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 image:

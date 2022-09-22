@@ -1,6 +1,6 @@
-{{- if .Values.daemonset.enabled -}}
+{{- if .Values.deployment.enabled -}}
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: {{ include "promtail.fullname" . }}
   namespace: {{ .Release.Namespace }}
@@ -11,11 +11,12 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  {{- if not .Values.deployment.autoscaling.enabled }}
+  replicas: {{ .Values.deployment.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "promtail.selectorLabels" . | nindent 6 }}
-  updateStrategy:
-    {{- toYaml .Values.updateStrategy | nindent 4 }}
   template:
     {{- include "promtail.podTemplate" . -}}
 {{- end -}}
