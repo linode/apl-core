@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.15](https://github.com/redkubes/otomi-core/compare/v0.16.14...v0.16.15) (2022-09-22)
+
+
+### Features
+
+* add velero to platform apps ([#903](https://github.com/redkubes/otomi-core/issues/903)) ([897bfba](https://github.com/redkubes/otomi-core/commit/897bfbaf0cc65436ae2e3e29337c7f68496b5858))
+* integration tests with unique cluster names ([#896](https://github.com/redkubes/otomi-core/issues/896)) ([9be5557](https://github.com/redkubes/otomi-core/commit/9be5557bf81279459e2049c07446f57f42fb4ebc))
+* more dns providers, including 'other' ([#889](https://github.com/redkubes/otomi-core/issues/889)) ([10ed2f8](https://github.com/redkubes/otomi-core/commit/10ed2f8ab416eb9bb68bd8b7b440716d34aae80b))
+* otomi cli run as host user ([#890](https://github.com/redkubes/otomi-core/issues/890)) ([f72a497](https://github.com/redkubes/otomi-core/commit/f72a497c01bd903e6efca6d2f7202e2c57644545))
+* promtail upgrade with updated datasource configuration in grafana ([#910](https://github.com/redkubes/otomi-core/issues/910)) ([9ff1f3e](https://github.com/redkubes/otomi-core/commit/9ff1f3e166c5dbd6d4508a730a4c0913e9813f9e))
+* remove deprecated properties ([#899](https://github.com/redkubes/otomi-core/issues/899)) ([2868f2e](https://github.com/redkubes/otomi-core/commit/2868f2ea3c907f50fb28843514cb4ab632dd5964))
+
+
+### Bug Fixes
+
+* **cert-manager:** secret name ([c55398f](https://github.com/redkubes/otomi-core/commit/c55398f3d45e9f6b00478dc94553e22d8c6a7df3))
+* do not scrape kube metrics by default ([#904](https://github.com/redkubes/otomi-core/issues/904)) ([347afc1](https://github.com/redkubes/otomi-core/commit/347afc15033c9b10989d6fde583e25736014dc0b))
+* loki storage config ([#905](https://github.com/redkubes/otomi-core/issues/905)) ([a6f8576](https://github.com/redkubes/otomi-core/commit/a6f85769f499606a2417af6163dc90849259665e))
+* loki storage settings ([#909](https://github.com/redkubes/otomi-core/issues/909)) ([45f9315](https://github.com/redkubes/otomi-core/commit/45f931555208384e717d8ad006832aed6e52c3e8))
+* now teams can see all logs ([#902](https://github.com/redkubes/otomi-core/issues/902)) ([81641bc](https://github.com/redkubes/otomi-core/commit/81641bc6ad3da22e9a2f2645474d9666bb7735e8))
+* prometheus, vault, harbor schemas and values ([#906](https://github.com/redkubes/otomi-core/issues/906)) ([0f47945](https://github.com/redkubes/otomi-core/commit/0f4794578cfe3b1a2d11ec5b1dd96128055ef33a))
+* values migration ([#908](https://github.com/redkubes/otomi-core/issues/908)) ([ba218be](https://github.com/redkubes/otomi-core/commit/ba218be17dac307a448d632455959cf165368eef))
+
+
+### Others
+
+* otomi apps ([78d8302](https://github.com/redkubes/otomi-core/commit/78d830246c6279607008fe3a987a39a1698056a4))
+
+
+### Tests
+
+* fixtures cleanup ([#897](https://github.com/redkubes/otomi-core/issues/897)) ([25fa782](https://github.com/redkubes/otomi-core/commit/25fa7825a1100afd813842c704bec9382ca5bb23))
+* integration tests with unique cluster names ([daa96f6](https://github.com/redkubes/otomi-core/commit/daa96f68c393ec599038f90a25b3b276f56793e7))
+* remove duplicated tests ([#901](https://github.com/redkubes/otomi-core/issues/901)) ([c2acaaa](https://github.com/redkubes/otomi-core/commit/c2acaaa2edb78f432db13570ce6fdc2d44e4eef5))
+* scheduled integration test with minimal input values ([#884](https://github.com/redkubes/otomi-core/issues/884)) ([5eab10f](https://github.com/redkubes/otomi-core/commit/5eab10ffd11d7ac42e0e35f6446983dcb5854de9))
+
 ### [0.16.14](https://github.com/redkubes/otomi-core/compare/v0.16.13...v0.16.14) (2022-08-24)
 
 
