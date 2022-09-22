@@ -127,12 +127,17 @@ definitions:
         type: integer
         default: 1
   autoscalingEnabled:
-    allOf:
-      - properties:
-          enabled:
-            default: true
-            type: boolean
-      - $ref: '#/definitions/autoscaling'
+    additionalProperties: false
+    properties:
+      enabled:
+        default: true
+        type: boolean
+      maxReplicas:
+        type: integer
+        default: 10
+      minReplicas:
+        type: integer
+        default: 1
   aws:
     definitions:
       accessKey:
@@ -1642,8 +1647,8 @@ properties:
                       - aws
                       - azure
                       - gcs
-                      - file
-                    default: file
+                      - filesystem
+                    default: filesystem
           registry:
             properties:
               secret:
@@ -2024,6 +2029,8 @@ properties:
       external-secrets:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           logLevel:

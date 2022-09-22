@@ -69,7 +69,7 @@ prometheus:
       annotations:
         sidecar.istio.io/inject: "true"
     resources:
-      {{- with $p | get "resources" nil }}
+      {{- with $p | get "prometheus.resources" nil }}
         {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
