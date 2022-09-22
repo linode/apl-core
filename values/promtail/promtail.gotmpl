@@ -43,11 +43,10 @@ podAnnotations:
 
 config:
   clients:
-    - url: http://loki.monitoring:3101/loki/api/v1/push
-      tenant_id: admins
-      basic_auth:
-        username: otomi-admin
-        password: {{ $l.adminPassword }}
+    - url: http://loki.monitoring:3100/loki/api/v1/push
+      # basic_auth:
+      #   username: otomi-admin
+      #   password: {{ $l.adminPassword }}
   snippets:
     pipelineStages:
       - cri: {}
