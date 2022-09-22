@@ -2,8 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [0.16.14](https://github.com/redkubes/otomi-core/compare/v0.16.13...v0.16.14) (2022-08-24)
+### [0.16.15](https://github.com/redkubes/otomi-core/compare/v0.16.14...v0.16.15) (2022-09-22)
 
+
+### Features
+
+* Velero added to Otomi apps to enable platform admin to schedule backups of all Otomi platform services and teams ([#903](https://github.com/redkubes/otomi-core/issues/903)) ([897bfba](https://github.com/redkubes/otomi-core/commit/897bfbaf0cc65436ae2e3e29337c7f68496b5858))
+* More dns providers added, including 'other' to use any DNS provider that is not  ([#889](https://github.com/redkubes/otomi-core/issues/889)) ([10ed2f8](https://github.com/redkubes/otomi-core/commit/10ed2f8ab416eb9bb68bd8b7b440716d34aae80b))
+* Otomi cli run as host user ([#890](https://github.com/redkubes/otomi-core/issues/890)) ([f72a497](https://github.com/redkubes/otomi-core/commit/f72a497c01bd903e6efca6d2f7202e2c57644545))
+* Promtail upgrade with updated datasource configuration in grafana ([#910](https://github.com/redkubes/otomi-core/issues/910)) ([9ff1f3e](https://github.com/redkubes/otomi-core/commit/9ff1f3e166c5dbd6d4508a730a4c0913e9813f9e))
+* Remove deprecated properties ([#899](https://github.com/redkubes/otomi-core/issues/899)) ([2868f2e](https://github.com/redkubes/otomi-core/commit/2868f2ea3c907f50fb28843514cb4ab632dd5964))
+
+
+### Bug Fixes
+
+* do not scrape kube metrics by default ([#904](https://github.com/redkubes/otomi-core/issues/904)) ([347afc1](https://github.com/redkubes/otomi-core/commit/347afc15033c9b10989d6fde583e25736014dc0b))
+* values migration ([#908](https://github.com/redkubes/otomi-core/issues/908)) ([ba218be](https://github.com/redkubes/otomi-core/commit/ba218be17dac307a448d632455959cf165368eef))
+
+
+### Tests
+
+* scheduled integration test with minimal input values ([#884](https://github.com/redkubes/otomi-core/issues/884)) ([5eab10f](https://github.com/redkubes/otomi-core/commit/5eab10ffd11d7ac42e0e35f6446983dcb5854de9))
+* integration tests with unique cluster names ([#896](https://github.com/redkubes/otomi-core/issues/896)) ([9be5557](https://github.com/redkubes/otomi-core/commit/9be5557bf81279459e2049c07446f57f42fb4ebc))
+
+### [0.16.14](https://github.com/redkubes/otomi-core/compare/v0.16.13...v0.16.14) (2022-08-24)
 
 ### Features
 
