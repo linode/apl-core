@@ -1,3 +1,4 @@
 apps:
     vault:
+        enabled: true
         logLevel: warn

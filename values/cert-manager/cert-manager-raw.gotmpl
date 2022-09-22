@@ -36,7 +36,7 @@ resources:
                 {{- if or (. | get "credentials.secretKey" nil) (. | get "secretName" nil) }}
                 secretAccessKeySecretRef:
                   key: "credentials"
-                  secretName: external-dns
+                  name: external-dns
                 {{- end }}
                 region: {{ .region }}
                 {{- with . | get "role" nil }}
@@ -57,7 +57,7 @@ resources:
                 {{- if or (. | get "aadClientSecret" nil) (. | get "secretName" nil) }}
                 clientSecretSecretRef:
                   key: azure.json
-                  secretName: external-dns
+                  name: external-dns
                 {{- end }}
               {{- end }}
               {{- with $p | get "cloudflare" nil }}
@@ -71,7 +71,7 @@ resources:
                 apiKeySecretRef:
                   key: cloudflare_api_key
                   {{- end }}
-                  secretName: external-dns
+                  name: external-dns
                 {{- else }}
                   {}
                 {{- end }}
@@ -81,7 +81,7 @@ resources:
                 {{- if or (. | get "apiToken" nil) (. | get "secretName" nil) }}
                 tokenSecretRef:
                   key: digitalocean_api_token
-                  secretName: external-dns
+                  name: external-dns
                 {{- else }}
                   {}
                 {{- end }}
@@ -92,7 +92,7 @@ resources:
                 {{- if or (. | get "serviceAccountKey" nil) (. | get "secretName" nil) }}
                 serviceAccountSecretRef:
                   key: credentials.json
-                  secretName: external-dns
+                  name: external-dns
                 {{- end }}
               {{- end }}
               {{- with $p | get "other" nil }}
