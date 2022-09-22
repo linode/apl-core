@@ -43,7 +43,7 @@ config:
     filesystem:
       directory: /data/loki/chunks
     {{- if ne ($l | get "storage.storageType" "filesystem") "filesystem" }}
-    {{ $l.storageType }}: {{- $l.storage | get $l.storage.storageType | toYaml | nindent 6 }}
+    {{ $l.storage.storageType }}: {{- $l.storage | get $l.storage.storageType | toYaml | nindent 6 }}
     {{- end }}
   compactor:
     retention_enabled: true
