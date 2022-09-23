@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.16](https://github.com/redkubes/otomi-core/compare/v0.16.15...v0.16.16) (2022-09-23)
+
+
+### Others
+
+* versions ([#912](https://github.com/redkubes/otomi-core/issues/912)) ([4fb41b2](https://github.com/redkubes/otomi-core/commit/4fb41b223ef4c8db71421e5ec7f05028f049b1b5))
+
 ### [0.16.15](https://github.com/redkubes/otomi-core/compare/v0.16.14...v0.16.15) (2022-09-22)
 
 
