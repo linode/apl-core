@@ -58,7 +58,7 @@ jobs:
       - id: k8s-versions
         name: Process k8s version input
         run: |
-          if [ -z "${{ inputs.kubernetes_versions }}" ]; then
+          if [ -z '${{ inputs.kubernetes_versions }}' ]; then
             echo "Kubernetes versions not specified, determine DO supported versions"
             versions=`doctl kubernetes options versions -o json | jq -ce 'map(.kubernetes_version)'`
           else
