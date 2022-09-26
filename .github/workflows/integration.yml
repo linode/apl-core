@@ -1,4 +1,4 @@
-name: Integration test
+name: Integration test on demand
 on:
   workflow_call:
     inputs:
