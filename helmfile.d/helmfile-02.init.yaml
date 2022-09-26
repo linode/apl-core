@@ -60,6 +60,7 @@ releases:
     chart: ../charts/ingress-nginx
     values:
       - ../values/ingress-nginx/ingress-nginx.gotmpl
+      - ./snippets/ingress-nginx-raw.gotmpl
     <<: *upgrade
 {{- end }}
   - name: operator-lifecycle-manager
