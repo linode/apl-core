@@ -14,8 +14,7 @@ apps:
     enabled: true
   cert-manager:
     issuer: custom-ca
-  external-dns:
-    domainFilters: []
+
   gatekeeper:
     enabled: true
     disableValidatingWebhook: false
