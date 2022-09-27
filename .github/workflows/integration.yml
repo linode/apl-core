@@ -33,6 +33,11 @@ on:
         required: true
         default: ams3
         type: string
+      cluster_persistence:
+        options:
+          - preserve
+          - destroy
+        default: destroy
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -149,7 +154,9 @@ jobs:
           kubectl logs jobs/otomi --tail 150
       - name: Remove the test cluster
         if: always()
-        run: doctl kubernetes cluster delete ${{ env.DIGITALOCEAN_CLUSTER_NAME }} -f --dangerous
+        run: |
+          [[ "${{ inputs.cluster_persistence }}" == "preserve" ]] && echo "The cluster ${{ env.DIGITALOCEAN_CLUSTER_NAME }} will NOT be destroyed!!" && exit 0
+          doctl kubernetes cluster delete ${{ env.DIGITALOCEAN_CLUSTER_NAME }} -f --dangerous
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2
