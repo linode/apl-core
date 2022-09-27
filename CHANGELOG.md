@@ -2,12 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.17](https://github.com/redkubes/otomi-core/compare/v0.16.16...v0.16.17) (2022-09-27)
+
+
+### Features
+
+* raw values for ingress-nginx chart ([#915](https://github.com/redkubes/otomi-core/issues/915)) ([dd3cdec](https://github.com/redkubes/otomi-core/commit/dd3cdec8dbe0d8c1af9b7f1ec317befa71095e63))
+
+
+### Bug Fixes
+
+* otomi-api pod gets stuck during pod initialization ([#916](https://github.com/redkubes/otomi-core/issues/916)) ([68bb0a6](https://github.com/redkubes/otomi-core/commit/68bb0a6573033caaf3eacfd7ee337b69c6790b0a))
+
+### Tests
+
+- integration tests case for fully fledged deployment ([#914](https://github.com/redkubes/otomi-core/issues/914)) ([c345563](https://github.com/redkubes/otomi-core/commit/c345563bdea9177687a0435ebe27497f8f0753a2))
+
 ### [0.16.16](https://github.com/redkubes/otomi-core/compare/v0.16.15...v0.16.16) (2022-09-23)
 
 
 ### Others
 
-* versions ([#912](https://github.com/redkubes/otomi-core/issues/912)) ([4fb41b2](https://github.com/redkubes/otomi-core/commit/4fb41b223ef4c8db71421e5ec7f05028f049b1b5))
+* set otomi-api version ([#912](https://github.com/redkubes/otomi-core/issues/912)) ([4fb41b2](https://github.com/redkubes/otomi-core/commit/4fb41b223ef4c8db71421e5ec7f05028f049b1b5))
 
 ### [0.16.15](https://github.com/redkubes/otomi-core/compare/v0.16.14...v0.16.15) (2022-09-22)
 
