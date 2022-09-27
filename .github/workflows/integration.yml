@@ -34,6 +34,9 @@ on:
         default: ams3
         type: string
       cluster_persistence:
+        type: choice
+        description: Should a cluster be destroyed on pipeline finish
+        required: true
         options:
           - preserve
           - destroy
