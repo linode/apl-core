@@ -15,6 +15,12 @@ on:
         required: true
         default: ams3
         type: string
+      cluster_persistence:
+        type: string
+        description: Should a cluster be destroyed on pipeline finish
+        required: true
+        default: destroy
+
   workflow_dispatch:
     inputs:
       kubernetes_versions:
