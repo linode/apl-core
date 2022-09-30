@@ -2465,6 +2465,7 @@ properties:
         oneOf:
           - title: AWS
             description: Uses credentials when either a pair of id+key or a secret name is provided. Assumes node role otherwise.
+            additionalProperties: false
             properties:
               aws:
                 properties:
@@ -2490,18 +2491,21 @@ properties:
             required:
               - aws
           - title: Azure
+            additionalProperties: false
             properties:
               azure:
                 $ref: '#/definitions/azure/definitions/dns'
             required:
               - azure
           - title: Azure Private
+            additionalProperties: false
             properties:
               azure-private-dns:
                 $ref: '#/definitions/azure/definitions/dns'
             required:
               - azure-private-dns
           - title: Google
+            additionalProperties: false
             properties:
               google:
                 properties:
@@ -2514,6 +2518,7 @@ properties:
             required:
               - google
           - title: Digital Ocean
+            additionalProperties: false
             properties:
               digitalocean:
                 properties:
@@ -2525,6 +2530,7 @@ properties:
             required:
               - digitalocean
           - title: CloudFlare
+            additionalProperties: false
             properties:
               cloudflare:
                 properties:
@@ -2552,6 +2558,7 @@ properties:
             required:
               - cloudflare
           - title: Other
+            additionalProperties: false
             properties:
               other:
                 description: This option requires configuration for both external-dns as well as cert-manager. No schema validation is available so provide correct data.
