@@ -1,0 +1,19 @@
+name: Integration test on schedule (minimal)
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  start-integration-test-minimal-dns:
+    name: Start integration test (minimal)
+    uses: ./.github/workflows/integration.yml
+    secrets: inherit
+    with:
+      install_profile: minimal
+      cluster_region: ams3
+      kubernetes_versions: "['1.23']"
+      dns: az_dns
+      kms: az_kms
+      oidc: keycloak
+      certificate: letsencrypt_staging
