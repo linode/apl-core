@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.18](https://github.com/redkubes/otomi-core/compare/v0.16.17...v0.16.18) (2022-09-30)
+
+
+### Bug Fixes
+
+* do not allow additional properites at dns provider ([#922](https://github.com/redkubes/otomi-core/issues/922)) ([e9383a5](https://github.com/redkubes/otomi-core/commit/e9383a5206ed7d7f417682f00997ba460a4c07f7))
+* missing secret required by certificate issuer ([#923](https://github.com/redkubes/otomi-core/issues/923)) ([cdaa336](https://github.com/redkubes/otomi-core/commit/cdaa336d613e74077e5c191b93995cd21dcaf4b9))
+
+
+### Tests
+
+* add  workflow dispatch options and fix scheduled workflow ([#919](https://github.com/redkubes/otomi-core/issues/919)) ([8165f61](https://github.com/redkubes/otomi-core/commit/8165f61c17fb071d30ec8a17de39c6d020757f32))
+
 ### [0.16.17](https://github.com/redkubes/otomi-core/compare/v0.16.16...v0.16.17) (2022-09-27)
 
 
