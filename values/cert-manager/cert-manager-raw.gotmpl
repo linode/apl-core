@@ -7,6 +7,25 @@
 {{- $issuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
+
+{{- if $v.otomi.hasExternalDNS }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: "external-dns"
+    data:
+      {{- if hasKey $p "google" }}
+      secret: "{{ $p.google.serviceAccountKey | b64enc }}"
+      {{- else if or (hasKey $p "azure") (hasKey $p "azure-private-dns" ) }}
+      secret: "{{ $p.azure.aadClientSecret | b64enc }}"
+      {{- else if hasKey $p "aws" }}
+      secret: "{{ $p.aws.secretAccessKey | b64enc }}"
+      {{- else if hasKey $p "digitalocean" }}
+      secret: "{{ $p.digitalocean.apiToken | b64enc }}"
+      {{- else if hasKey $p "cloudflare" }}
+      secret: "{{ $p.cloudflare.apiToken | b64enc }}"
+      {{- end }}
+{{- end }}
   - apiVersion: cert-manager.io/v1
     kind: ClusterIssuer
     metadata:
@@ -33,9 +52,9 @@ resources:
                 {{- with . | get "credentials.accessKey" nil }}
                 accessKeyID: {{ . }}
                 {{- end }}
-                {{- if or (. | get "credentials.secretKey" nil) (. | get "secretName" nil) }}
+                {{- if . | get "credentials.secretKey" nil }}
                 secretAccessKeySecretRef:
-                  key: "credentials"
+                  key: secret
                   name: external-dns
                 {{- end }}
                 region: {{ .region }}
@@ -54,46 +73,33 @@ resources:
                 {{- with . | get "hostedZoneName" nil }}
                 hostedZoneName: {{ . }}
                 {{- end }}
-                {{- if or (. | get "aadClientSecret" nil) (. | get "secretName" nil) }}
                 clientSecretSecretRef:
-                  key: azure.json
+                  key: secret
                   name: external-dns
-                {{- end }}
               {{- end }}
               {{- with $p | get "cloudflare" nil }}
               cloudflare:
-                {{- if or (. | get "apiToken" nil) (. | get "apiSecret" nil) (. | get "secretName" nil) }}
-                  {{- with . | get "apiToken" nil }}
+                {{- with . | get "apiToken" nil }}
                 apiTokenSecretRef:
-                  key: cloudflare_api_token
-                  {{- end }}
-                  {{- with . | get "apiSecret" nil }}
-                apiKeySecretRef:
-                  key: cloudflare_api_key
-                  {{- end }}
-                  name: external-dns
-                {{- else }}
-                  {}
                 {{- end }}
+                {{- with . | get "apiSecret" nil }}
+                apiKeySecretRef:
+                {{- end }}
+                  key: secret
+                  name: external-dns
               {{- end }}
               {{- with $p | get "digitalocean" nil }}
               digitalocean:
-                {{- if or (. | get "apiToken" nil) (. | get "secretName" nil) }}
                 tokenSecretRef:
-                  key: digitalocean_api_token
+                  key: secret
                   name: external-dns
-                {{- else }}
-                  {}
-                {{- end }}
               {{- end }}
               {{- with $p | get "google" nil }}
               cloudDNS:
                 project: {{ .project }}
-                {{- if or (. | get "serviceAccountKey" nil) (. | get "secretName" nil) }}
                 serviceAccountSecretRef:
-                  key: credentials.json
+                  key: secret
                   name: external-dns
-                {{- end }}
               {{- end }}
               {{- with $p | get "other" nil }}
               {{- toYaml . | get "cert-manager" nindent 14 }}
