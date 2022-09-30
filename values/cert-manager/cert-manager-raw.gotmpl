@@ -16,6 +16,8 @@ resources:
     data:
       {{- if hasKey $p "google" }}
       secret: "{{ $p.google.serviceAccountKey | b64enc }}"
+      {{- else if or (hasKey $p "azure-private-dns") }}
+      secret: "{{ $p.azure-private-dns.aadClientSecret | b64enc }}"
       {{- else if or (hasKey $p "azure") }}
       secret: "{{ $p.azure.aadClientSecret | b64enc }}"
       {{- else if ($p | get "$p.aws.credentials.secretKey" nil) }}
@@ -63,6 +65,21 @@ resources:
                 {{- end }}
               {{- end }}
               {{- with $p | get "azure" nil }}
+              azureDNS:
+                resourceGroupName: {{ .resourceGroup }}
+                subscriptionID: {{ .subscriptionId }}
+                {{- if hasKey . "aadClientId" }}
+                tenantID: {{ .tenantId }}
+                clientID: {{ .aadClientId }}
+                {{- end }}
+                {{- with . | get "hostedZoneName" nil }}
+                hostedZoneName: {{ . }}
+                {{- end }}
+                clientSecretSecretRef:
+                  key: secret
+                  name: external-dns
+              {{- end }}
+              {{- with $p | get "azure-private-dns" nil }}
               azureDNS:
                 resourceGroupName: {{ .resourceGroup }}
                 subscriptionID: {{ .subscriptionId }}
