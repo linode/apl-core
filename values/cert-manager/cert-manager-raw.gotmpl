@@ -18,8 +18,8 @@ resources:
       secret: "{{ $p.google.serviceAccountKey | b64enc }}"
       {{- else if or (hasKey $p "azure") }}
       secret: "{{ $p.azure.aadClientSecret | b64enc }}"
-      {{- else if hasKey $p "aws" }}
-      secret: "{{ $p.aws.secretAccessKey | b64enc }}"
+      {{- else if ($p | get "$p.aws.credentials.secretKey" nil) }}
+      secret: "{{ $p.aws.credentials.secretKey | b64enc }}"
       {{- else if hasKey $p "digitalocean" }}
       secret: "{{ $p.digitalocean.apiToken | b64enc }}"
       {{- else if hasKey $p "cloudflare" }}
