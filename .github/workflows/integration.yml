@@ -52,7 +52,38 @@ on:
           - preserve
           - destroy
         default: destroy
-
+      dns:
+        type: choice
+        description: Select DNS provider
+        required: true
+        options:
+          - nip_io
+          - az_dns
+        default: nip_io
+      kms:
+        type: choice
+        description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
+        required: true
+        options:
+          - no_kms
+          - az_kms
+        default: az_kms
+      oidc:
+        type: choice
+        description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
+        required: true
+        options:
+          - no_oidc
+          - az_oidc
+        default: no_oidc
+      certificate:
+        type: choice
+        description: Select certificate issuer
+        required: true
+        options:
+          - gen_custom_ca
+          - letsencrypt_staging
+        default: gen_custom_ca
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: redkubes/otomi-core
@@ -153,7 +184,23 @@ jobs:
             - reg-otomi-github
           EOF
       - name: Otomi install
-        run: helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi --values tests/integration/${{ inputs.install_profile }}.yaml --values values-temp.yaml
+        env:
+          AZ_DNS: ${{ secrets.AZ_DNS }}
+          AZ_KMS: ${{ secrets.AZ_KMS }}
+          AZ_OIDC: ${{ secrets.AZ_OIDC }}
+          LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
+        run: |
+          domainSuffix=''
+          touch values.yaml
+          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix=' --set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
+          [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
+          [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
+          [[ '${{ inputs.cert }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
+          helm install --wait --wait-for-jobs --timeout 40m0s otomi chart/otomi \
+          --values tests/integration/${{ inputs.install_profile }}.yaml \
+          --values values-temp.yaml \
+          --values values.yaml \
+          $domainSuffix
       - name: Gather k8s events on failure
         if: failure()
         run: |
