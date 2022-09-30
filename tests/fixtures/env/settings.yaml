@@ -24,7 +24,7 @@ dns:
     domainFilters:
         - otomi.cloud
     provider:
-        azure:
+        azure-private-dns:
             aadClientId: 00-aadClientId
             resourceGroup: external-dns
             subscriptionId: 00-subscriptionId
