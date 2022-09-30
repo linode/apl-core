@@ -70,7 +70,7 @@ on:
         default: az_kms
       oidc:
         type: choice
-        description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
+        description: Should Otomi encrypt secrets in values repo (DNS or KMS is used).
         required: true
         options:
           - no_oidc
