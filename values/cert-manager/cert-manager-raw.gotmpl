@@ -16,7 +16,7 @@ resources:
     data:
       {{- if hasKey $p "google" }}
       secret: "{{ $p.google.serviceAccountKey | b64enc }}"
-      {{- else if or (hasKey $p "azure") (hasKey $p "azure-private-dns" ) }}
+      {{- else if or (hasKey $p "azure") }}
       secret: "{{ $p.azure.aadClientSecret | b64enc }}"
       {{- else if hasKey $p "aws" }}
       secret: "{{ $p.aws.secretAccessKey | b64enc }}"
