@@ -1,3 +1,4 @@
 apps:
     cert-manager:
-        issuer: custom-ca
+        issuer: letsencrypt
+        email: test@test.local
