@@ -35,7 +35,7 @@ releases:
     chart: ../charts/team-ns
     labels:
       tag: teams
-      ingress: "true"
+      ingress: 'true'
       team: admin
     values:
       - name: admin

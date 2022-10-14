@@ -114,6 +114,22 @@ metadata:
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
       {{- end }}
+    # websockets can stay open one hour
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # websocket upgrade snippet
+    nginx.ingress.kubernetes.io/server-snippets: |
+      location ~* (/ws/|socket.io) {
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_http_version 1.1;
+          proxy_set_header X-Forwarded-Host $http_host;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-For $remote_addr;
+          proxy_set_header Host $host;
+          proxy_set_header Connection "upgrade";
+          proxy_cache_bypass $http_upgrade;
+        }
+
       {{- if $.isApps }}
     nginx.ingress.kubernetes.io/configuration-snippet: |
       rewrite ^/$ https://otomi.{{ $v.cluster.domainSuffix }}/ permanent;
