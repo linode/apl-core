@@ -1,4 +1,4 @@
-name: Integration test on schedule (minimal)
+name: Scheduled - minimal with nip.io
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
