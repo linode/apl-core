@@ -245,14 +245,14 @@ resources:
                 TARGET: secret demo world
           {{- end }}
           - type: kv
-            path: secret/data/teams/team-{{ $teamId }}/otomi-welcome
+            path: secret/data/teams/team-{{ $teamId }}/.keep-me
             data:
               data:
                 HELLO: Welcome {{ $teamId }} team
         {{- end }}
         {{- end }}
           - type: kv
-            path: secret/data/teams/team-admin/otomi-welcome
+            path: secret/data/teams/team-admin/.keep-me
             data:
               data:
                 HELLO: Welcome admin team
