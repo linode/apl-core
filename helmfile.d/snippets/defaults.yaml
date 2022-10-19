@@ -128,7 +128,8 @@ environments:
               kubelet-preferred-address-types: InternalIP
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
-          otomi-api: {}
+          otomi-api:
+            editorInactivityTimeout: 10
           otomi-console: {}
           promtail:
             enabled: false

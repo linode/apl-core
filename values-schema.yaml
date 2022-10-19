@@ -2165,6 +2165,9 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          editorInactivityTimeout:
+            type: integer
+            default: 10
           git:
             additionalProperties: false
             properties:

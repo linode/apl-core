@@ -50,6 +50,7 @@ env:
     {{- $v._derived.caCert | nindent 4 }}
   {{- end }}
   IN_DOCKER: '1'
+  EDITOR_INACTIVITY_TIMEOUT: {{ $o.editorInactivityTimeout }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
