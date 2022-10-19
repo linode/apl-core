@@ -1,4 +1,4 @@
-name: Integration test on schedule (full)
+name: Scheduled - full with nip.io
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
