@@ -1,4 +1,4 @@
-name: Integration test on demand
+name: Deploy Otomi
 on:
   workflow_call:
     inputs:
@@ -7,18 +7,15 @@ on:
         type: string
       install_profile:
         description: Otomi installation profile
-        required: true
         default: full
         type: string
       cluster_region:
         description: DigitalOcean cluster region
-        required: true
         default: ams3
         type: string
       cluster_persistence:
         type: string
         description: Should a cluster be destroyed on pipeline finish
-        required: false
         default: destroy
       dns:
         type: string
@@ -35,7 +32,6 @@ on:
       certificate:
         type: string
         description: Select certificate issuer
-        required: true
         default: gen_custom_ca
   workflow_dispatch:
     inputs:
@@ -49,7 +45,6 @@ on:
         default: "['1.23']"
       install_profile:
         description: Otomi installation profile
-        required: true
         default: minimal
         type: choice
         options:
@@ -57,13 +52,11 @@ on:
           - full
       cluster_region:
         description: DigitalOcean cluster region
-        required: true
         default: ams3
         type: string
       cluster_persistence:
         type: choice
         description: Should a cluster be destroyed on pipeline finish
-        required: true
         options:
           - preserve
           - destroy
@@ -71,7 +64,6 @@ on:
       dns:
         type: choice
         description: Select DNS provider
-        required: true
         options:
           - nip_io
           - az_dns
@@ -79,7 +71,6 @@ on:
       kms:
         type: choice
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
-        required: true
         options:
           - no_kms
           - az_kms
@@ -87,7 +78,6 @@ on:
       oidc:
         type: choice
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is used).
-        required: true
         options:
           - keycloak
           - az_oidc
@@ -95,7 +85,6 @@ on:
       certificate:
         type: choice
         description: Select certificate issuer
-        required: true
         options:
           - gen_custom_ca
           - letsencrypt_staging
