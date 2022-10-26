@@ -139,7 +139,7 @@ jobs:
       - name: Set k8s cluster name
         run: |
           # Cluster name must be no longer than 63 characters
-          echo DIGITALOCEAN_CLUSTER_NAME=i-${{ github.run_id }} >> $GITHUB_ENV
+          echo DIGITALOCEAN_CLUSTER_NAME=i-${{ github.run_id }}-${{ strategy.job-index } >> $GITHUB_ENV
       - name: Determine exact k8s version
         run: |
           echo DIGITALOCEAN_K8S_VERSION=`doctl kubernetes options versions -o json | jq -re 'map(select(.kubernetes_version | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .slug'` >> $GITHUB_ENV
