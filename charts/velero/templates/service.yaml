@@ -1,0 +1,29 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "velero.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.metrics.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "velero.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "velero.chart" . }}
+    {{- with .Values.metrics.service.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: http-monitoring
+      port: 8085
+      targetPort: http-monitoring
+  selector:
+    name: velero
+    app.kubernetes.io/name: {{ include "velero.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

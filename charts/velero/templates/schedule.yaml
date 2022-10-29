@@ -1,0 +1,33 @@
+{{- range $scheduleName, $schedule := .Values.schedules }}
+{{- if (not $schedule.disabled) }}
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: {{ include "velero.fullname" $ }}-{{ $scheduleName }}
+  namespace: {{ $.Release.Namespace }}
+  annotations:
+  {{- if $schedule.annotations }}
+    {{- toYaml $schedule.annotations | nindent 4 }}
+  {{- end }}
+    "helm.sh/hook": post-install,post-upgrade,post-rollback
+    "helm.sh/hook-delete-policy": before-hook-creation
+  labels:
+    app.kubernetes.io/name: {{ include "velero.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+    helm.sh/chart: {{ include "velero.chart" $ }}
+    {{- if $schedule.labels }}
+      {{- toYaml $schedule.labels | nindent 4 }}
+    {{- end }}
+spec:
+{{- if $schedule.useOwnerReferencesInBackup }}
+  useOwnerReferencesInBackup: {{ $schedule.useOwnerReferencesInBackup }}
+{{- end }}
+  schedule: {{ $schedule.schedule | quote }}
+{{- with $schedule.template }}
+  template:
+    {{- toYaml . | nindent 4 }}
+{{- end }}
+---
+{{- end }}
+{{- end }}

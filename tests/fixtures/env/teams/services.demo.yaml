@@ -1,7 +1,9 @@
 teamConfig:
     demo:
         services:
-            - id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
+            - auth: true
+              domain: hello.team-demo.demo.eks.otomi.cloud
+              id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
               ksvc:
                   image:
                       repository: otomi/nodejs-helloworld
@@ -22,10 +24,9 @@ teamConfig:
                       mode: AllowAll
               ownHost: true
               port: 80
-              domain: hello.team-demo.demo.eks.otomi.cloud
               type: public
-              auth: true
-            - id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
+            - domain: tlspass.eks.dev.otomi.cloud
+              id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
               ksvc:
                   image:
                       repository: otomi/nodejs-helloworld
@@ -47,7 +48,6 @@ teamConfig:
               paths: []
               port: 80
               type: public
-              domain: tlspass.eks.dev.otomi.cloud
             - id: cb5149c4-8ea5-4c5a-be04-a37258658bd5
               ksvc:
                   containerPort: 80

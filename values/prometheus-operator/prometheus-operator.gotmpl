@@ -69,7 +69,7 @@ prometheus:
       annotations:
         sidecar.istio.io/inject: "true"
     resources:
-      {{- with $p | get "resources" nil }}
+      {{- with $p | get "prometheus.resources" nil }}
         {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
@@ -206,11 +206,13 @@ grafana:
       editable: false
       type: loki
       access: proxy
+      url: http://loki.monitoring:3100
       {{- if $v.otomi.isMultitenant }}
-      url: http://loki.monitoring:11811
+      url: http://loki.monitoring:3101
       basicAuth: true
-      basicAuthUser: admins
-      basicAuthPassword: {{ $v.apps.loki.adminPassword }}
+      basicAuthUser: otomi-admin
+      secureJsonData:
+        basicAuthPassword: {{ $v.apps.loki.adminPassword }}
       {{- else }}
       url: http://loki.monitoring:3100
       {{- end }}
@@ -269,3 +271,10 @@ prometheus-node-exporter:
   priorityClassName: otomi-critical
   podAnnotations:
     policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security
+
+kubeProxy:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: flase

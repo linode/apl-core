@@ -1,0 +1,5 @@
+{{- /*
+Since the release name does not match ingress-nginx chart name, we cannot use common.gotmpl
+*/ -}}
+{{- $rawValues := .Values | get "apps.ingress-nginx._rawValues" nil }}
+{{- with $rawValues }}{{ toYaml . }}{{ end }}

@@ -1,4 +1,4 @@
-name: Integration test on schedule (full)
+name: Scheduled - full with nip.io
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
@@ -12,10 +12,4 @@ jobs:
     with:
       install_profile: full
       cluster_region: ams3
-  start-integration-test-minimal:
-    name: Start integration test (minimal)
-    uses: ./.github/workflows/integration.yml
-    secrets: inherit
-    with:
-      install_profile: minimal
-      cluster_region: ams3
+      kubernetes_versions: "['1.22', '1.23']"

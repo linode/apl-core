@@ -30,22 +30,22 @@ config:
     {{- end }}
     - from: {{ $l | get "v11StartDate" "2021-05-12" }}
       store: boltdb-shipper
-      object_store: {{ $l | get "storageType" "filesystem" }}
+      object_store: {{ $l | get "storage.storageType" "filesystem" }}
       schema: v11
       index:
         prefix: index_
         period: 24h
   storage_config:
     boltdb_shipper:
-      shared_store: {{ $l | get "storageType" "filesystem" }}
+      shared_store: {{ $l | get "storage.storageType" "filesystem" }}
     filesystem:
       directory: /data/loki/chunks
-    {{- if ne ($l | get "storageType" "filesystem") "filesystem" }}
-    {{ $l.storageType }}: {{- $l | get $l.storageType | toYaml | nindent 6 }}
+    {{- if ne ($l | get "storage.storageType" "filesystem") "filesystem" }}
+    {{ $l.storage.storageType }}: {{- $l.storage | get $l.storage.storageType | toYaml | nindent 6 }}
     {{- end }}
   compactor:
     retention_enabled: true
-    shared_store: {{ $l | get "storageType" "filesystem" }}
+    shared_store: {{ $l | get "storage.storageType" "filesystem" }}
   chunk_store_config:
     max_look_back_period: {{ $l | get "retention.period" "24h" }}
   table_manager:
@@ -91,14 +91,15 @@ promtail:
 extraContainers:
 {{- if $v.otomi.isMultitenant }}
 - name: reverse-proxy
-  image: angelbarrera92/basic-auth-reverse-proxy:dev
+  image: k8spin/loki-multi-tenant-proxy:v1.0.0
   args:
-    - "serve"
-    - "--upstream=http://localhost:3100"
+    - "run"
+    - "--port=3101"
+    - "--loki-server=http://localhost:3100"
     - "--auth-config=/etc/reverse-proxy-conf/authn.yaml"
   ports:
     - name: http
-      containerPort: 11811
+      containerPort: 3101
       protocol: TCP
   resources:
     limits:
@@ -112,18 +113,18 @@ extraContainers:
       mountPath: /etc/reverse-proxy-conf
 {{- end }}
 
+
 extraVolumes:
 {{- if $v.otomi.isMultitenant }}
 - name: reverse-proxy-auth-config
   secret:
     secretName: reverse-proxy-auth-config
 {{- end }}
-
 extraVolumeMounts: []
 
 extraPorts:
 {{- if $v.otomi.isMultitenant }}
-- port: 11811
+- port: 3101
   protocol: TCP
   name: http
   targetPort: http

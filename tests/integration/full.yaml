@@ -7,6 +7,7 @@ cluster:
 otomi:
   isMultitenant: true
   version: 'OTOMI_VERSION_PLACEHOLDER'
+  adminPassword: welcomeotomi
 apps:
   alertmanager:
     enabled: true
@@ -14,8 +15,7 @@ apps:
     enabled: true
   cert-manager:
     issuer: custom-ca
-  external-dns:
-    domainFilters: []
+
   gatekeeper:
     enabled: true
     disableValidatingWebhook: false

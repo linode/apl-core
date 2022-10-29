@@ -224,3 +224,15 @@ appsInfo:
     license: MPL-2.0
     about: Vault is a tool for securely accessing secrets. A secret is anything that you want to tightly control access to, such as API keys, passwords, certificates, and more. Vault provides a unified interface to any secret, while providing tight access control and recording a detailed audit log.
     integration: Vault has been made team aware. When enabled, a space will automatically be created for each team, and only team members are allowed access. Vault is automatically configured to use Otomi's Keycloak OIDC settings for SSO. Vault runs natively on Kubernetes. To prevent data from Vault being lost during a rolling cluster upgrade, data persistence can be configured in combination with external (blob) storage.
+  velero:
+    title: Velero
+    appVersion: 1.9.0
+    repo: https://github.com/vmware-tanzu/velero
+    maintainers: VMware Tanzu
+    relatedLinks:
+      - https://otomi.io/docs/apps/velero
+      - https://velero.io/docs/v1.9/
+      - https://velero.io/docs/main/restic/
+    license: Apache 2.0
+    about: Velero is a tool to back up and restore Kubernetes cluster resources and persistent volumes.
+    integration: When enabled, Velero can be used to automatically create backups of Otomi platform services. Based on the selected provider, Otomi installs required plug-ins. Otomi also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.

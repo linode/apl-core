@@ -1,4 +1,4 @@
-api: app-defaults
-console: app-defaults
-tasks: main
-tools: main
+api: 0.5.15
+console: 0.5.18
+tasks: 0.2.31
+tools: 1.4.25

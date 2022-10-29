@@ -143,6 +143,21 @@ environments:
             enabled: false
           vault:
             enabled: false
+            resources:
+              limits:
+                cpu: "1000m"
+                memory: 512Mi
+              requests:
+                cpu: 500m
+                memory: 256Mi
+          velero:
+            enabled: false
+            logLevel: info
+        backup:
+          platformSchedule:
+            enabled: false
+          teamSchedule:
+            enabled: false
         cluster: {}
         dns:
           domainFilters: []

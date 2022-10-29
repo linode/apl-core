@@ -1,8 +1,7 @@
 {{- $v := .Values }}
 {{- $promtail := $v.apps.promtail }}
+{{- $l := $v.apps | get "loki" }}
 
-loki:
-  serviceName: "loki"  # Defaults to "${RELEASE}-loki" if not set
 nameOverride: promtail
 
 resources:
@@ -19,17 +18,22 @@ resources:
 
 serviceMonitor:
   enabled: true
-  additionalLabels:
+  labels:
     prometheus: system
 
-securityContext:
-  readOnlyRootFilesystem: true
+podSecurityContext:
   runAsGroup: 0
   runAsUser: 0
+containerSecurityContext:
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+  allowPrivilegeEscalation: false
 
 serviceMonitor:
   enabled: true
-  additionalLabels:
+  labels:
     prometheus: system
 
 podAnnotations:
@@ -37,34 +41,35 @@ podAnnotations:
   # init container requires "privileged: true" thus we cannot remove "psp-allowed-users" policy Annotation
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem
 
-pipelineStages:
-  - docker: {}
-  {{- if $v.otomi.isMultitenant }}
-  - tenant:
-      value: admins
-  - json:
-      expressions:
-        namespace:
-  - labels:
-      namespace:
-  {{- range $id, $team := $v.teamConfig }}
-  - match:
-      selector: '{namespace="team-{{ $id }}"}'
-      stages:
-        - tenant:
-            value: {{ $id }}
-  {{- end }}
-  {{- end }}
+config:
+  clients:
+    - url: http://loki.monitoring:3100/loki/api/v1/push
+      tenant_id: admins
+
+  snippets:
+    pipelineStages:
+      - cri: {}
+      {{- if $v.otomi.isMultitenant }}
+      - json:
+          expressions:
+            namespace:
+      - labels:
+          namespace:
+      {{- range $id, $team := $v.teamConfig }}
+      - match:
+          selector: '{namespace="team-{{ $id }}"}'
+          stages:
+            - tenant:
+                value: {{ $id }}
+      {{- end }}
+      - output: 
+          source: message
+      {{- end }}
 
 priorityClassName: otomi-critical
-config:
-  server:
-    log_level: error
 
-# @TODO:
-image:
-  tag: 2.4.2
 {{- with .Values.otomi | get "globalPullSecret" nil }}
-  pullSecrets:
-    - otomi-pullsecret-global
+imagePullSecrets:
+  - name: otomi-pullsecret-global
 {{- end }}
+
