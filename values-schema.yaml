@@ -740,8 +740,8 @@ definitions:
     pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
     type: string
   repoUrl:
-    description: Path to a remote git repo without protocol. Will use https to access.
-    pattern: '^(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
+    description: Path to a remote git repo with or without protocol prefix of either https:// or file:// (https:// used if omitted)
+    pattern: '^(https://|file://)?(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
     type: string
   repository:
     description: A container image repository.

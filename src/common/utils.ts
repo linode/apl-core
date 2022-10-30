@@ -1,20 +1,21 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable no-await-in-loop */
-import $RefParser from '@apidevtools/json-schema-ref-parser'
+import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
-import { existsSync, readdirSync, readFileSync } from 'fs'
+import { existsSync, pathExists, readFileSync } from 'fs-extra'
+import { readdir, readFile } from 'fs/promises'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
 import { resolve } from 'path'
 import { $, ProcessOutput } from 'zx'
-import pkg from '../../package.json'
 import { env } from './envalid'
 
 const packagePath = process.cwd()
 
 // we keep the rootDir for zx, but have to fix it for drone, which starts in /home/app/stack/env (to accommodate write perms):
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
+export const pkg = readFileSync(`${rootDir}/package.json`, 'utf8') as any
 export const getFilename = (path: string): string => path.split('/').pop()?.split('.')[0] as string
 
 export const asArray = (args: string | string[]): string[] => {
@@ -33,7 +34,7 @@ export const removeBlankAttributes = (obj: Record<string, any>): Record<string, 
 }
 
 export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }): Promise<string[]> => {
-  const dirs = readdirSync(dir, { withFileTypes: true })
+  const dirs = await readdir(dir, { withFileTypes: true })
   const files = await Promise.all(
     dirs.map(async (dirOrFile) => {
       const res = resolve(dir, dirOrFile.name)
@@ -52,19 +53,24 @@ export const getEnvFiles = (): Promise<string[]> => {
   })
 }
 
-export const loadYaml = (path: string, opts?: { noError: boolean }): Record<string, any> | undefined => {
-  if (!existsSync(path)) {
+export const loadYaml = async (
+  path: string,
+  opts?: { noError: boolean },
+): Promise<Promise<Record<string, any> | undefined>> => {
+  if (!(await pathExists(path))) {
     if (opts?.noError) return undefined
     throw new Error(`${path} does not exist`)
   }
-  return load(readFileSync(path, 'utf-8')) as Record<string, any>
+  const file = await readFile(path, 'utf-8')
+  return load(file) as Record<string, any>
 }
 
 export const flattenObject = (obj: Record<string, any>, path = ''): { [key: string]: string } => {
   return Object.entries(obj)
     .flatMap(([key, value]) => {
       const subPath = path.length ? `${path}.${key}` : key
-      if (typeof value === 'object' && !Array.isArray(value) && value !== null) return flattenObject(value, subPath)
+      if (typeof value === 'object' && !Array.isArray(value) && value !== null)
+        return flattenObject(value as Record<string, any>, subPath)
       return { [subPath]: value }
     })
     .reduce((acc, base) => {
@@ -94,7 +100,7 @@ export const gucci = async (
     let processOutput: ProcessOutput
     const templateContent: string = typeof tmpl === 'string' ? tmpl : dump(tmpl, { lineWidth: -1 })
     // Cannot be a path if it wasn't a string
-    if (typeof tmpl === 'string' && existsSync(templateContent)) {
+    if (typeof tmpl === 'string' && (await pathExists(templateContent))) {
       processOutput = await $`gucci -o missingkey=zero ${gucciArgs} ${templateContent}`
     } else {
       // input string is a go template content
@@ -118,14 +124,18 @@ export const guccify = async (str: string, ctx: { [key: string]: any }): Promise
   return ((await gucci(escaped, ctx, true)) as string).replaceAll('##', '$').replaceAll('@@', '\n')
 }
 
-export const extract = (schema: Record<string, any>, leaf: string, mapValue = (val: any) => val): any => {
+export const extract = (
+  schema: Record<string, any>,
+  leaf: string,
+  mapValue = (val: any) => val,
+): Record<string, any> => {
   const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret', 'x-acl']
   return Object.keys(schema)
     .map((key) => {
-      const childObj = schema[key]
+      const childObj: JSONSchema = schema[key]
       if (key === leaf) return schemaKeywords.includes(key) ? mapValue(childObj) : { [key]: mapValue(childObj) }
       if (typeof childObj !== 'object') return {}
-      const obj = extract(childObj, leaf, mapValue)
+      const obj: JSONSchema = extract(childObj, leaf, mapValue)
       if ('extractedValue' in obj) return { [key]: obj.extractedValue }
       // eslint-disable-next-line no-nested-ternary
       return schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
@@ -144,7 +154,7 @@ export const extract = (schema: Record<string, any>, leaf: string, mapValue = (v
 let valuesSchema: Record<string, any>
 export const getValuesSchema = async (): Promise<Record<string, any>> => {
   if (valuesSchema) return valuesSchema
-  const schema = loadYaml(`${rootDir}/values-schema.yaml`)
+  const schema = await loadYaml(`${rootDir}/values-schema.yaml`)
   const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
   valuesSchema = omit(derefSchema, ['definitions'])
 
@@ -160,7 +170,7 @@ const isCoreCheck = (): boolean => {
   return pkg.name === 'otomi-core'
 }
 
-export const isCore = isCoreCheck()
+export const isCore: boolean = isCoreCheck()
 
 export const providerMap = (provider: string): string => {
   const map = {

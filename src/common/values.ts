@@ -1,8 +1,8 @@
-import { existsSync, unlinkSync } from 'fs'
-import { writeFile } from 'fs/promises'
+import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
+import { pathExists } from 'fs-extra'
+import { unlink, writeFile } from 'fs/promises'
 import { dump } from 'js-yaml'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
-import pkg from '../../package.json'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -13,6 +13,7 @@ import {
   getValuesSchema,
   gucci,
   loadYaml,
+  pkg,
   removeBlankAttributes,
   stringContainsSome,
 } from './utils'
@@ -27,11 +28,11 @@ let otomiK8sVersion: string
  * Find the cluster kubernetes version in the values
  * @returns String of the kubernetes version on the cluster
  */
-export const getK8sVersion = (argv?: HelmArguments): string => {
+export const getK8sVersion = async (argv?: HelmArguments): Promise<string> => {
   if (argv?.kubeVersion) return argv?.kubeVersion
   if (process.env.KUBE_VERSION_OVERRIDE) return process.env.KUBE_VERSION_OVERRIDE
   if (otomiK8sVersion) return otomiK8sVersion
-  const clusterFile: any = loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
+  const clusterFile: any = await loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
   otomiK8sVersion = clusterFile.cluster!.k8sVersion!
   return otomiK8sVersion
 }
@@ -42,7 +43,7 @@ export const getK8sVersion = (argv?: HelmArguments): string => {
  */
 export const getImageTag = async (): Promise<string> => {
   if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
-  if (existsSync(`${env.ENV_DIR}/env/cluster.yaml`)) {
+  if (await pathExists(`${env.ENV_DIR}/env/cluster.yaml`)) {
     const values = await hfValues()
     return values!.otomi!.version
   }
@@ -105,14 +106,14 @@ const writeValuesToFile = async (
   const newValues = removeBlankAttributes(values)
   if (isEmpty(newValues) && isSecretsFile && overwrite) {
     // get rid of empty secrets files as those are problematic
-    if (existsSync(targetPath)) unlinkSync(targetPath)
-    if (existsSync(`${targetPath}.dec`)) unlinkSync(`${targetPath}.dec`)
+    if (await pathExists(targetPath)) await unlink(targetPath)
+    if (await pathExists(`${targetPath}.dec`)) await unlink(`${targetPath}.dec`)
   }
   d.debug('newValues: ', JSON.stringify(newValues, null, 2))
   const suffix = isSecretsFile ? '.dec' : ''
-  if (!existsSync(targetPath) || overwrite) {
+  if (!(await pathExists(targetPath)) || overwrite) {
     // create the non-suffixed file for encryption to not skip this later on
-    const notExists = !existsSync(targetPath)
+    const notExists = !(await pathExists(targetPath))
     if (isSecretsFile && notExists) {
       await writeFile(targetPath, objectToYaml(newValues))
       await encrypt(targetPath)
@@ -122,7 +123,7 @@ const writeValuesToFile = async (
     await writeFile(targetPath + suffix, objectToYaml(newValues))
     return
   }
-  const originalValues = loadYaml(targetPath + suffix, { noError: true }) ?? {}
+  const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
   const mergeResult = merge(cloneDeep(originalValues), newValues)
   if (isEqual(originalValues, mergeResult)) {
@@ -140,20 +141,22 @@ const writeValuesToFile = async (
 export const writeValues = async (values: Record<string, any>, overwrite = false): Promise<void> => {
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', values)
-  hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
-  // We relocated teamConfig.teams to teamConfig, so one time we might have to fall back to our previous location
-  // TODO:[teamConfig] deprecate this fallback sometime in the future
-  const teams = Object.keys((values.teamConfig?.teams ?? values.teamConfig) || {}).filter((i) => i !== 'teams')
+  hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
+  const teams = Object.keys(values.teamConfig as Record<string, any>)
   // creating secret files
-  const schema = await getValuesSchema()
+  const schema: any = await getValuesSchema()
   const leaf = 'x-secret'
-  const schemaSecrets = extract(schema, leaf, (val: any) => (val.length > 0 ? `{{ ${val} }}` : val))
+  const schemaSecrets: JSONSchema = extract(schema as JSONSchema, leaf, (val: any) =>
+    val.length > 0 ? `{{ ${val} }}` : val,
+  )
   d.debug('schemaSecrets: ', JSON.stringify(schemaSecrets, null, 2))
   // Get all JSON paths for secrets, without the .x-secret appended
   const secretPaths = Object.keys(flattenObject(schemaSecrets)).map((v) => v.replaceAll(`.${leaf}`, ''))
   // now blow up the teamConfig.$team prop as it is determined by a pattern
   const cleanSecretPaths: string[] = []
-  const teamProp = `teamConfig.patternProperties.${Object.keys(schema.properties.teamConfig.patternProperties)[0]}`
+  const teamProp = `teamConfig.patternProperties.${
+    Object.keys(schema.properties.teamConfig.patternProperties as JSONSchema)[0]
+  }`
   secretPaths.forEach((p) => {
     teams.forEach((team: string) => {
       if (p.indexOf(teamProp) === 0) cleanSecretPaths.push(p.replace(teamProp, `teamConfig.${team}`))
@@ -256,7 +259,7 @@ export const generateSecrets = async (
   d.info('Extracting secrets')
   const secrets = extract(schema, leaf, (val: any) => {
     if (val.length > 0) {
-      if (stringContainsSome(val, ...localRefs)) return val
+      if (stringContainsSome(val as string, ...localRefs)) return val
       return `{{ ${val} }}`
     }
     return undefined

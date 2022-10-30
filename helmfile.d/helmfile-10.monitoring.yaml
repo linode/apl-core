@@ -18,6 +18,7 @@ releases:
     <<: *default
   - name: jaeger-operator
     installed: {{ $a | get "jaeger.enabled" }}
+    disableValidationOnInstall: true
     namespace: jaeger-operator
     chart: ../charts/jaeger-operator
     values:
@@ -26,6 +27,7 @@ releases:
     <<: *upgrade
   - name: kiali-operator
     installed: {{ $a | get "kiali.enabled" }}
+    disableValidationOnInstall: true
     namespace: kiali-operator
     labels:
       pkg: kiali

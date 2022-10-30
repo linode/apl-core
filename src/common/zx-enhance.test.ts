@@ -1,4 +1,4 @@
-import { ask, askYesNo } from './zx-enhance'
+import { ask, askYesNo } from 'src/common/zx-enhance'
 
 describe('Asking a question', () => {
   const q = 'dummy question'

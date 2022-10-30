@@ -3,6 +3,7 @@
 {{- $o := $v.apps | get "otomi-api" }}
 {{- $g := $v.apps.gitea }}
 {{- $cm := $v.apps | get "cert-manager" }}
+{{- $d := $v.apps.drone }}
 {{- $sops := $v | get "kms.sops" dict }}
 {{- $hasGitea := $g.enabled }}
 {{- $giteaValuesUrl := printf "gitea.%s/otomi/values" $v.cluster.domainSuffix }}
@@ -38,11 +39,11 @@ secrets:
   {{- $sopsEnv | nindent 2 }}
   
 env:
-  # DEBUG: '*'
+  DEBUG: 'otomi:*'
   VERBOSITY: '1'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
-  CORE_VERSION: {{ $v.otomi.version }}
+  VERSIONS: {{ $v.versions | toJson }}
   {{- if $v._derived.untrustedCA }}
   GIT_SSL_NO_VERIFY: true
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
@@ -51,6 +52,7 @@ env:
   {{- end }}
   IN_DOCKER: '1'
   EDITOR_INACTIVITY_TIMEOUT: {{ $o.editorInactivityTimeout }}
+  DRONE_WEBHOOK_SECRET: {{ $d | get "sharedSecret" }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}

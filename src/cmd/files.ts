@@ -1,9 +1,9 @@
+import { prepareEnvironment } from 'src/common/cli'
+import { terminal } from 'src/common/debug'
+import { env } from 'src/common/envalid'
+import { getEnvFiles, getFilename } from 'src/common/utils'
+import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { env } from '../common/envalid'
-import { getEnvFiles, getFilename } from '../common/utils'
-import { BasicArguments, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { Writable, WritableOptions } from 'stream'
 import { $ } from 'zx'

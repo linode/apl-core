@@ -4,16 +4,16 @@
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { cloneDeep, each, get, set, unset } from 'lodash'
+import { prepareEnvironment } from 'src/common/cli'
+import { decrypt, encrypt } from 'src/common/crypt'
+import { terminal } from 'src/common/debug'
+import { env } from 'src/common/envalid'
+import { hfValues } from 'src/common/hf'
+import { getFilename, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { writeValues } from 'src/common/values'
+import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd } from 'zx'
-import { prepareEnvironment } from '../common/cli'
-import { decrypt, encrypt } from '../common/crypt'
-import { terminal } from '../common/debug'
-import { env } from '../common/envalid'
-import { hfValues } from '../common/hf'
-import { getFilename, gucci, loadYaml, rootDir } from '../common/utils'
-import { writeValues } from '../common/values'
-import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
@@ -120,7 +120,7 @@ export const setDeep = async (obj: Record<string, any>, path: string, tmplStr: s
   let paths: string[] = [path]
   // expand if we have a team marker
   if (path.includes(teamMarker)) {
-    paths = Object.keys(obj.teamConfig || {}).map((t) => path.replace(teamMarker, t))
+    paths = Object.keys((obj.teamConfig as Record<string, any>) || {}).map((t) => path.replace(teamMarker, t))
   }
 
   // expand on array markers
@@ -189,6 +189,7 @@ export const applyChanges = async (
     if (c.mutations)
       // 'for const of' is used here to allow await in loop
       for (const mut of c.mutations) {
+        // eslint-disable-next-line prefer-destructuring
         const [path, tmplStr] = Object.entries(mut)[0]
         const prev = get(values, path)
         if (prev !== undefined) {
@@ -225,8 +226,8 @@ export const applyChanges = async (
 export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
-  const changes: Changes = loadYaml(`${rootDir}/values-changes.yaml`)?.changes
-  const prevVersion: number = loadYaml(`${env.ENV_DIR}/env/settings.yaml`)?.version || 0
+  const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
+  const prevVersion: number = (await loadYaml(`${env.ENV_DIR}/env/settings.yaml`))?.version || 0
   const filteredChanges = filterChanges(prevVersion, changes)
   if (filteredChanges.length) {
     d.log('Changes detected, migrating...')

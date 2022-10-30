@@ -1,19 +1,20 @@
 import Ajv, { DefinedError, ValidateFunction } from 'ajv'
 import { unset } from 'lodash'
+import { prepareEnvironment } from 'src/common/cli'
+import { terminal } from 'src/common/debug'
+import { env } from 'src/common/envalid'
+import { hfValues } from 'src/common/hf'
+import { getFilename, loadYaml, rootDir } from 'src/common/utils'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { chalk } from 'zx'
-import { prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { hfValues } from '../common/hf'
-import { getFilename, loadYaml, rootDir } from '../common/utils'
-import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
-const internalPaths: string[] = ['k8s', 'services', 'teamConfig.services']
+const internalPaths: string[] = ['k8s', 'adminApps', 'teamApps']
 
 // TODO: Accept json path to validate - on empty, validate all
-export const validateValues = async (): Promise<void> => {
+export const validateValues = async (envDir = env.ENV_DIR): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:validateValues`)
   // TODO: Make this return true or error tree
   // Create an end point function (when running otomi validate-values) to print current messages.
@@ -25,7 +26,7 @@ export const validateValues = async (): Promise<void> => {
     throw new Error(`Cannot pass option '${labelOpts}'`)
   }
 
-  const values = await hfValues({ filesOnly: true })
+  const values = await hfValues({ filesOnly: true }, envDir)
 
   // eslint-disable-next-line no-restricted-syntax
   for (const internalPath of internalPaths) {
@@ -33,7 +34,7 @@ export const validateValues = async (): Promise<void> => {
   }
 
   d.info('Loading values-schema.yaml')
-  const valuesSchema = loadYaml(`${rootDir}/values-schema.yaml`) as Record<string, any>
+  const valuesSchema = (await loadYaml(`${rootDir}/values-schema.yaml`)) as Record<string, any>
   d.debug('Initializing Ajv')
   const ajv = new Ajv({ allErrors: true, strict: false, strictTypes: false, verbose: true })
   d.debug('Compiling Ajv validation')

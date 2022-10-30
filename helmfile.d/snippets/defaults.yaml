@@ -129,7 +129,7 @@ environments:
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api:
-            editorInactivityTimeout: 10
+            editorInactivityTimeout: 1
           otomi-console: {}
           promtail:
             enabled: false

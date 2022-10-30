@@ -1,10 +1,10 @@
+import { prepareEnvironment } from 'src/common/cli'
+import { OtomiDebugger, terminal } from 'src/common/debug'
+import { getFilename } from 'src/common/utils'
+import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
+import { stream } from 'src/common/zx-enhance'
 import { Arguments, Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { prepareEnvironment } from '../common/cli'
-import { OtomiDebugger, terminal } from '../common/debug'
-import { getFilename } from '../common/utils'
-import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
-import { stream } from '../common/zx-enhance'
 
 const cmdName = getFilename(__filename)
 const d: OtomiDebugger = terminal(`cmd:${cmdName}`)

@@ -14,8 +14,7 @@
 # shellcheck disable=SC2128
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 calling_args="$*"
-
-if [ -n "$TESTING" ]; then
+if [ "$NODE_ENV" == "test" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
   NOPULL=1
@@ -45,7 +44,7 @@ silent() {
 # shellcheck disable=SC2155
 readonly base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-if [ -f "$PWD/package.json" ] && [ -d "$PWD/.git" ]; then
+if [ -f "$PWD/package.json" ] && [ -d "$PWD/.git" ] && [ -z "$NOT_CORE" ]; then
   in_core=1
   core_path=$(pwd)
 fi
@@ -66,7 +65,6 @@ function parse_yaml {
       }
    }'
 }
-
 [ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
@@ -257,7 +255,13 @@ if [ -n "$in_core" ]; then
   stack_volume="-v $stack_dir:$stack_dir"
   tmp_volume="-v /tmp:/tmp"
   export TS_NODE_PROJECT="$PWD/tsconfig.json"
-  executable="node --no-warnings -r ts-node/register -r tsconfig-paths/register ${stack_dir}/src/otomi.ts --"
+  if [ -z "$NODE_PATH" ]; then
+    # ts-node
+    executable="node --no-warnings --inspect=4320 -r ts-node/register -r tsconfig-paths/register ${stack_dir}/src/otomi.ts --"
+  else
+    # node compiled js
+    executable="node --no-warnings --inspect=4320 ${stack_dir}/dist/src/otomi.js --"
+  fi
   echo "OTOMI_DEV=1" >>$tmp_env
 fi
 

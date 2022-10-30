@@ -1,8 +1,8 @@
+import { prepareEnvironment } from 'src/common/cli'
+import { Arguments, decrypt } from 'src/common/crypt'
+import { getFilename } from 'src/common/utils'
+import { setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/cli'
-import { Arguments, decrypt } from '../common/crypt'
-import { getFilename } from '../common/utils'
-import { setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
@@ -14,6 +14,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipDecrypt: true, skipKubeContextCheck: true })
-    await decrypt(...(argv.files ?? []))
+    await decrypt(undefined, ...(argv.files ?? []))
   },
 }

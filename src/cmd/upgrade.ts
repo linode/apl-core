@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
+import { prepareEnvironment } from 'src/common/cli'
+import { hfValues } from 'src/common/hf'
+import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
+import { getFilename, guccify, loadYaml, rootDir, semverCompare } from 'src/common/utils'
+import { getCurrentVersion } from 'src/common/values'
+import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { prepareEnvironment } from '../common/cli'
-import { hfValues } from '../common/hf'
-import { getDeploymentState, setDeploymentState } from '../common/k8s'
-import { getFilename, guccify, loadYaml, rootDir, semverCompare } from '../common/utils'
-import { getCurrentVersion } from '../common/values'
-import { BasicArguments, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
@@ -43,7 +43,7 @@ function filterUpgrades(version: string, upgrades: Upgrades): Upgrades {
 async function execute(d: typeof console, dryRun: boolean, operations: string[], values: Record<string, any>) {
   for (const o of operations) {
     const matches: string[] = []
-    const opStr = o.replace(/(\$\([^)]*\)|`[^`]*`)/g, (match, token) => {
+    const opStr = o.replace(/(\$\([^)]*\)|`[^`]*`)/g, (_, token: string) => {
       matches.push(token)
       return `T${matches.length - 1}X`
     })
@@ -64,7 +64,7 @@ async function execute(d: typeof console, dryRun: boolean, operations: string[],
  */
 export const upgrade = async ({ dryRun = false, release, when }: Arguments): Promise<void> => {
   const d = console // wrapped stream created by terminal(... is not showing
-  const upgrades: Upgrades = loadYaml(`${rootDir}/upgrades.yaml`)?.operations
+  const upgrades: Upgrades = (await loadYaml(`${rootDir}/upgrades.yaml`))?.operations
   const prevVersion: string = (await getDeploymentState()).version || '0.1.0'
   const values = (await hfValues()) as Record<string, any>
   d.info(`Current version of otomi: ${prevVersion}`)
@@ -79,14 +79,14 @@ export const upgrade = async ({ dryRun = false, release, when }: Arguments): Pro
         // before everything
         if (c[when]) {
           d.info(`Upgrade records detected for version ${c.version}`)
-          await execute(d, dryRun, c[when], values)
+          await execute(d, dryRun, c[when] as string[], values)
         }
       } else if (c.releases?.[release]) {
         // just in time before a release gets synced
         const r = c.releases[release]
         if (r[when]) {
           d.info(`Upgrade records detected for version ${c.version}, release: ${release}`)
-          await execute(d, dryRun, r[when], values)
+          await execute(d, dryRun, r[when] as string[], values)
         }
       }
     }

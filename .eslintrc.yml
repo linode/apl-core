@@ -3,35 +3,33 @@ root: true
 
 parser: '@typescript-eslint/parser'
 parserOptions:
-  project:
-    - ./tsconfig.json
+  project: [./tsconfig.json]
   ecmaVersion: 2021
-  sourceType: 'module'
 
 extends:
   - eslint:recommended
   - plugin:@typescript-eslint/eslint-recommended
   - plugin:@typescript-eslint/recommended
   - plugin:@typescript-eslint/recommended-requiring-type-checking
-  - airbnb-base
-  - plugin:prettier/recommended
-  - prettier
   - plugin:import/recommended
   - plugin:import/errors
   - plugin:import/warnings
   - plugin:import/typescript
-  - plugin:chai-friendly/recommended
+  - plugin:prettier/recommended
+  - prettier
 
 plugins:
   - import
   - prettier
+  - unused-imports
   - '@typescript-eslint'
 
 settings:
   import/resolver:
     node:
       extensions: [.js, .ts]
-      paths: ['src']
+      paths: [src]
+    typescript: {}
 
 env:
   es6: true
@@ -62,6 +60,7 @@ rules:
         - deps
         - secrets
         - values
+  '@typescript-eslint/no-unsafe-argument': warn
   func-names: 'off'
   import/no-commonjs: error
   import/no-extraneous-dependencies: off
@@ -75,10 +74,8 @@ rules:
     - expression
   no-shadow: 'off'
   no-unused-vars: 'off'
-  prefer-destructuring: error
   no-use-before-define: 'off'
   no-console: 'off'
-  object-shorthand: error
   no-debugger: error
   no-param-reassign:
     - error
@@ -89,4 +86,7 @@ rules:
     - 2
     - allowForLoopAfterthoughts: true
   no-underscore-dangle: off
+  object-shorthand: error
+  prefer-destructuring: warn
   prefer-template: error
+  unused-imports/no-unused-imports-ts: error

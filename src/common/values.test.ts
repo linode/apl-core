@@ -1,6 +1,6 @@
 import { cloneDeep, merge } from 'lodash'
-import stubs from '../test-stubs'
-import { generateSecrets } from './values'
+import { generateSecrets } from 'src/common/values'
+import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
 
@@ -63,11 +63,13 @@ describe('generateSecrets', () => {
     }
   })
   it('should generate new secrets and return only secrets', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const res = await generateSecrets(values, deps)
     expect(res).toEqual(expected)
   })
   it('should not overwrite old secrets', async () => {
     const valuesWithExisting = merge(cloneDeep(values), { nested: { twoStage: 'exists' } })
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const res = await generateSecrets(valuesWithExisting, deps)
     expect(res.nested.twoStage).toBe('exists')
   })
