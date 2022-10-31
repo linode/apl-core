@@ -43,7 +43,8 @@ env:
   VERBOSITY: '1'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}
-  VERSIONS: {{ $v.versions | toJson }}
+  VERSIONS: |
+    {{ $v.versions | toJson | nindent 4}}
   {{- if $v._derived.untrustedCA }}
   GIT_SSL_NO_VERIFY: true
   NODE_TLS_REJECT_UNAUTHORIZED: '0'
