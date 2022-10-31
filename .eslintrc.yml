@@ -38,22 +38,11 @@ env:
 
 rules:
   '@typescript-eslint/ban-ts-comment': off
-  # disabled until https://github.com/typescript-eslint/typescript-eslint/issues/2077#issuecomment-634811363:
-  # '@typescript-eslint/camelcase': warn
+  '@typescript-eslint/explicit-function-return-type': off
   '@typescript-eslint/member-delimiter-style': off
   '@typescript-eslint/no-explicit-any': off
-  '@typescript-eslint/explicit-function-return-type': off
-  '@typescript-eslint/no-unused-vars': warn
-  '@typescript-eslint/no-unsafe-assignment': off
-  '@typescript-eslint/no-unsafe-member-access': off
-  '@typescript-eslint/no-unsafe-return': off
-  '@typescript-eslint/no-use-before-define': off
-  # this next line is disabling all the warnings about non typed stuff:
-  # '@typescript-eslint/explicit-module-boundary-types': off
-  '@typescript-eslint/restrict-template-expressions': off
-  '@typescript-eslint/no-unsafe-call': off
-  '@typescript-eslint/no-non-null-assertion': off
   '@typescript-eslint/no-floating-promises': warn
+  '@typescript-eslint/no-non-null-assertion': off
   '@typescript-eslint/no-shadow':
     - error
     - allow:
@@ -61,6 +50,17 @@ rules:
         - secrets
         - values
   '@typescript-eslint/no-unsafe-argument': warn
+  '@typescript-eslint/no-unsafe-assignment': off
+  '@typescript-eslint/no-unsafe-call': off
+  '@typescript-eslint/no-unsafe-member-access': off
+  '@typescript-eslint/no-unsafe-return': off
+  '@typescript-eslint/no-unused-vars': [warn, { varsIgnorePattern: ^(_|next) }]
+  '@typescript-eslint/no-use-before-define': off
+  '@typescript-eslint/restrict-template-expressions': off
+  # '@typescript-eslint/camelcase': warn
+  # '@typescript-eslint/explicit-module-boundary-types': off
+  # disabled until https://github.com/typescript-eslint/typescript-eslint/issues/2077#issuecomment-634811363:
+  # this next line is disabling all the warnings about non typed stuff:
   func-names: 'off'
   import/no-commonjs: error
   import/no-extraneous-dependencies: off
@@ -72,9 +72,6 @@ rules:
   func-style:
     - off
     - expression
-  no-shadow: 'off'
-  no-unused-vars: 'off'
-  no-use-before-define: 'off'
   no-console: 'off'
   no-debugger: error
   no-param-reassign:
@@ -85,6 +82,9 @@ rules:
   no-plusplus:
     - 2
     - allowForLoopAfterthoughts: true
+  no-shadow: 'off'
+  no-unused-vars: off
+  no-use-before-define: 'off'
   no-underscore-dangle: off
   object-shorthand: error
   prefer-destructuring: warn
