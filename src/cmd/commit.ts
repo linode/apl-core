@@ -9,7 +9,7 @@ import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { $, cd, nothrow } from 'zx'
+import { $, cd } from 'zx'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
 
@@ -60,10 +60,6 @@ const commitAndPush = async (values: Record<string, any>): Promise<void> => {
     await $`git remote show origin`
     if (await gitPush(values)) {
       d.log('Successfully pushed the updated values')
-      // kill api container and let it reinflate
-      // @TODO: make this an api endpoint for internal use only
-      await nothrow($`kubectl -n otomi delete po -l app.kubernetes.io/name=otomi-api`)
-      d.log('Restarted the api to reinflate with new values')
     }
   } catch (error) {
     d.error(error.stderr)
