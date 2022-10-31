@@ -285,6 +285,8 @@ adminApps:
         auth: true
   - name: thanos
     tags: [metrics, observability]
+    ownHost: true
+    isShared: true
     deps: [grafana]
     ingress:
       - svc: thanos-querier
@@ -308,8 +310,10 @@ adminApps:
     tags: [backup]
   - name: minio
     tags: [storage, backup]
+    ownHost: true
+    isShared: true
     ingress:
-      - svc: thanos-querier
+      - svc: minio
         port: 9001
         namespace: minio
         type: public
