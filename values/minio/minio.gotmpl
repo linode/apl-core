@@ -2,8 +2,9 @@
 {{- $vl:= $v.apps.minio }}
 
 mode: standalone
-rootUser: otomi-admin
-rootPassword: {{ $v.otomi.adminPassword }}
+auth:
+  rootUser: otomi-admin
+  rootPassword: {{ $v.otomi.adminPassword }}
 
 persistence:
   enabled: true
