@@ -48,3 +48,9 @@ releases:
     labels:
       pkg: velero
     <<: *default
+  - name: minio
+    installed: {{ $a | get "minio.enabled" }}
+    namespace: minio
+    labels:
+      pkg: minio
+    <<: *default

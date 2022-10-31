@@ -201,6 +201,17 @@ appsInfo:
     license: AGPL-3.0
     about: Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate. It does not index the contents of the logs, but rather a set of labels for each log stream.
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. Otomi shortcuts can be used to provide selections of logs based on interest.
+  minio:
+    title: Minio
+    appVersion: 0.57.0
+    repo: https://github.com/prometheus/prometheus
+    maintainers: Prometheus
+    relatedLinks:
+      - https://otomi.io/docs/apps/prometheus
+      - https://prometheus.io/
+    license: Apache 2.0
+    about: Prometheus is a systems and service monitoring system. It collects metrics from configured targets at given intervals, evaluates rule expressions, displays the results, and can trigger alerts when specified conditions are observed.
+    integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   prometheus:
     title: Prometheus
     appVersion: 0.57.0
@@ -212,6 +223,18 @@ appsInfo:
     license: Apache 2.0
     about: Prometheus is a systems and service monitoring system. It collects metrics from configured targets at given intervals, evaluates rule expressions, displays the results, and can trigger alerts when specified conditions are observed.
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
+  thanos:
+    title: Thanos
+    appVersion: 1.6.1
+    repo: https://github.com/hashicorp/vault
+    maintainers: HashiCorp
+    relatedLinks:
+      - https://otomi.io/docs/apps/vault
+      - https://www.vaultproject.io/
+      - https://www.vaultproject.io/docs/configuration/storage
+    license: MPL-2.0
+    about: Vault is a tool for securely accessing secrets. A secret is anything that you want to tightly control access to, such as API keys, passwords, certificates, and more. Vault provides a unified interface to any secret, while providing tight access control and recording a detailed audit log.
+    integration: Vault has been made team aware. When enabled, a space will automatically be created for each team, and only team members are allowed access. Vault is automatically configured to use Otomi's Keycloak OIDC settings for SSO. Vault runs natively on Kubernetes. To prevent data from Vault being lost during a rolling cluster upgrade, data persistence can be configured in combination with external (blob) storage.
   vault:
     title: Vault
     appVersion: 1.6.1

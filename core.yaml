@@ -76,6 +76,10 @@ k8s:
       app: vault
     - name: velero
       app: velero
+    - name: minio
+      app: minio
+      disableIstioInjection: true
+      disablePolicyChecks: true
 
 adminApps:
   - name: alertmanager
@@ -279,6 +283,15 @@ adminApps:
         # namespace: prometheus
         type: public
         auth: true
+  - name: thanos
+    tags: [metrics, observability]
+    deps: [grafana]
+    ingress:
+      - svc: thanos-querier
+        port: 9090
+        namespace: monitoring
+        type: public
+        auth: true
   - name: vault
     tags: [secrets, security, observability]
     deps: [external-secrets]
@@ -293,6 +306,14 @@ adminApps:
         auth: true
   - name: velero
     tags: [backup]
+  - name: minio
+    tags: [storage, backup]
+    ingress:
+      - svc: thanos-querier
+        port: 9001
+        namespace: minio
+        type: public
+        auth: true
 
 teamApps:
   - name: alertmanager

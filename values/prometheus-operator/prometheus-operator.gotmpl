@@ -115,6 +115,16 @@ prometheus:
       additionalLabels:
         prometheus: system
     {{- end }}
+  {{- with $p.role | get "producer" nil }}
+  thanosService:
+    enabled: true
+  thanosServiceExternal:
+    enabled: true
+    labels:
+      cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+    type: ClusterIP
+  {{- end }}
+
 {{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") }}  
 additionalPrometheusRules:
   {{- if not $v.otomi.isMultitenant }}
@@ -277,4 +287,4 @@ kubeProxy:
 kubeScheduler:
   enabled: false
 kubeControllerManager:
-  enabled: flase
+  enabled: false

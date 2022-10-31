@@ -63,6 +63,9 @@ configuration:
   {{- with $provider | get "aws" nil }}
   provider: aws
   {{- end }}
+  {{- with $provider | get "minio" nil }}
+  provider: aws
+  {{- end }}
   backupStorageLocation:
     name: otomi
     default: true
@@ -75,7 +78,12 @@ configuration:
       {{- with $provider | get "aws" nil }}
       s3Url: {{ .config.s3bucket }}
       region: {{ .config.region }}
-      {{- end }} 
+      {{- end }}
+      {{- with $provider | get "minio" nil }}
+      s3Url: {{ .config.s3bucket }}
+      region: minio
+      s3ForcePathStyle: true
+      {{- end }}
   volumeSnapshotLocation:
     name: otomi
     config:

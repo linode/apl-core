@@ -692,6 +692,12 @@ definitions:
     maximum: 32768
     minimum: 80
     type: integer
+  prometheusRole:
+    description: Prometheus role
+    enum:
+      - standalone
+      - producer
+    type: string
   provider:
     type: string
     description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube, kind) or onprem installs.
@@ -2158,6 +2164,16 @@ properties:
                 pattern: '^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$'
                 type: string
                 x-secret: 'randAlphaNum 32 | b64enc'
+      minio:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          resources:
+            $ref: '#/definitions/resources'
       oauth2-proxy-redis:
         $ref: '#/definitions/redisChart'
       otomi-api:
@@ -2213,6 +2229,8 @@ properties:
           enabled:
             type: boolean
             default: false
+          role:
+            $ref: '#/definitions/prometheusRole'
           replicas:
             type: integer
             default: 1
@@ -2251,6 +2269,59 @@ properties:
               enabled:
                 type: boolean
                 default: false
+      thanos:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          receiver:
+            properties:
+              resources:
+                $ref: '#/definitions/resources'
+          query:
+            properties:
+              stores:
+                description: Urls of the Thanos sidecar services of the "data-producer" clusters
+                items:
+                  type: string
+                type: array
+              replicaCount:
+                type: integer
+                default: 1
+              resources:
+                $ref: '#/definitions/resources'
+          objstore:
+            localMinio:
+              properties:
+                bucket:
+                  type: string
+                  description: The name of the bucket
+                  $ref: '#/definitions/wordCharacterPattern'
+                accessKey:
+                  $ref: '#/definitions/wordCharacterPattern'
+                  x-secret: ''
+                secretKey:
+                  $ref: '#/definitions/wordCharacterPattern'
+                  x-secret: ''
+            s3Like:
+              properties:
+                bucket:
+                  type: string
+                  description: The name of the bucket
+                  $ref: '#/definitions/wordCharacterPattern'
+                endpoint:
+                  type: string
+                  description: URL of the storage endpoint
+                  $ref: '#/definitions/wordCharacterPattern'
+                accessKey:
+                  $ref: '#/definitions/wordCharacterPattern'
+                  x-secret: ''
+                secretKey:
+                  $ref: '#/definitions/wordCharacterPattern'
+                  x-secret: ''
       tigera-operator:
         properties:
           _rawValues:
@@ -2406,7 +2477,7 @@ properties:
                     - aadClientSecret
             aws:
               properties:
-                congig:
+                config:
                   properties:
                     region:
                       description: The region of the S3 bucket
@@ -2426,6 +2497,26 @@ properties:
                       $ref: '#/definitions/wordCharacterPattern'
                   required:
                     - region
+                    - accessKeyId
+                    - secretAccessKey
+            custom:
+              properties:
+                config:
+                  properties:
+                    s3bucket:
+                      description: The name (URL) of the bucket
+                      $ref: '#/definitions/wordCharacterPattern'
+                secretContents:
+                  properties:
+                    accessKeyId:
+                      type: string
+                      description: The ID of the access key
+                      $ref: '#/definitions/wordCharacterPattern'
+                    secretAccessKey:
+                      type: string
+                      description: The secret of the access key
+                      $ref: '#/definitions/wordCharacterPattern'
+                  required:
                     - accessKeyId
                     - secretAccessKey
           logLevel:

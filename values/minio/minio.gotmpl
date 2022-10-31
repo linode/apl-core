@@ -1,0 +1,24 @@
+{{- $v := .Values }}
+{{- $vl:= $v.apps.minio }}
+
+mode: standalone
+auth:
+  rootUser: otomi-admin
+  rootPassword: {{ $v.otomi.adminPassword }}
+
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 8Gi
+
+resources:
+  {{- with $vl | get "resources" nil }}
+    {{- toYaml . | nindent 2 }}
+  {{- else }}
+  requests:
+    cpu: 500m
+    memory: 128Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+  {{- end }}
