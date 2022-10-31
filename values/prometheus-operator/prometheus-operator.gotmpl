@@ -115,7 +115,7 @@ prometheus:
       additionalLabels:
         prometheus: system
     {{- end }}
-  {{- with $p.role | get "producer" nil }}
+  {{- if eq $p.role "producer" }}
   thanosService:
     enabled: true
   thanosServiceExternal:

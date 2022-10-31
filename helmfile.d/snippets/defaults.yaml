@@ -126,6 +126,8 @@ environments:
               create: true
             extraArgs:
               kubelet-preferred-address-types: InternalIP
+          minio:
+            enabled: false
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api: {}
@@ -136,10 +138,13 @@ environments:
           prometheus:
             enabled: false
             replicas: 1
+            role: standalone
             scrapeInterval: 60s
             retentionSize: 4GB
             storageSize: 5Gi
           redis-shared:
+            enabled: false
+          thanos:
             enabled: false
           vault:
             enabled: false

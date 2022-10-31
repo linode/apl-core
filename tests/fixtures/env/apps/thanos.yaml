@@ -1,0 +1,3 @@
+apps:
+    thanos:
+        enabled: false
