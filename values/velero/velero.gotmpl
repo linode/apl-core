@@ -46,6 +46,22 @@ initContainers:
       - mountPath: /target
         name: plugins
 {{- end }}
+{{- with $provider | get "custom" nil }}
+initContainers:
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.4.0
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 32Mi
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+{{- end }}
 
 podSecurityContext:
   runAsUser: 1000
@@ -63,7 +79,7 @@ configuration:
   {{- with $provider | get "aws" nil }}
   provider: aws
   {{- end }}
-  {{- with $provider | get "minio" nil }}
+  {{- with $provider | get "custom" nil }}
   provider: aws
   {{- end }}
   backupStorageLocation:
@@ -79,7 +95,7 @@ configuration:
       s3Url: {{ .config.s3bucket }}
       region: {{ .config.region }}
       {{- end }}
-      {{- with $provider | get "minio" nil }}
+      {{- with $provider | get "custom" nil }}
       s3Url: {{ .config.s3bucket }}
       region: minio
       s3ForcePathStyle: true
@@ -112,6 +128,12 @@ credentials:
     cloud: |
     aws_access_key_id={{ $vl.provider.aws.secretContents.accessKeyId }}
     aws_secret_access_key={{ $vl.provider.aws.secretContents.secretAccessKey }}
+  {{- end }}
+  {{- with $provider | get "custom" nil }}
+  secretContents:
+    cloud: |
+    aws_access_key_id={{ $vl.provider.custom.secretContents.accessKeyId }}
+    aws_secret_access_key={{ $vl.provider.custom.secretContents.secretAccessKey }}
   {{- end }}
 
 kubectl:
