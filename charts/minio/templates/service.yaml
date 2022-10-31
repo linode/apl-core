@@ -1,49 +1,53 @@
-{{ $scheme := "http" }}
-{{- if .Values.tls.enabled }}
-{{ $scheme = "https" }}
-{{ end }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "minio.fullname" . }}
+  name: {{ include "common.names.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
-  labels:
-    app: {{ template "minio.name" . }}
-    chart: {{ template "minio.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
-    monitoring: "true"
-{{- if .Values.service.annotations }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.service.annotations .Values.commonAnnotations }}
   annotations:
-{{ toYaml .Values.service.annotations | indent 4 }}
-{{- end }}
+    {{- if .Values.service.annotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.service.annotations "context" $ ) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonAnnotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- end }}
 spec:
-{{- if (or (eq .Values.service.type "ClusterIP" "") (empty .Values.service.type)) }}
-  type: ClusterIP
-  {{- if not (empty .Values.service.clusterIP) }}
+  type: {{ .Values.service.type }}
+  {{- if and (eq .Values.service.type "ClusterIP") .Values.service.clusterIP }}
   clusterIP: {{ .Values.service.clusterIP }}
-  {{end}}
-{{- else if eq .Values.service.type "LoadBalancer" }}
-  type: {{ .Values.service.type }}
-  loadBalancerIP: {{ default "" .Values.service.loadBalancerIP }}
-{{- else }}
-  type: {{ .Values.service.type }}
-{{- end }}
+  {{- end }}
+  {{- if or (eq .Values.service.type "LoadBalancer") (eq .Values.service.type "NodePort") }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy | quote }}
+  {{- end }}
+  {{- if and (eq .Values.service.type "LoadBalancer") .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{ .Values.service.loadBalancerSourceRanges }}
+  {{ end }}
+  {{- if and (eq .Values.service.type "LoadBalancer") (not (empty .Values.service.loadBalancerIP)) }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
   ports:
-    - name: {{ $scheme }}
-      port: {{ .Values.service.port }}
-      protocol: TCP
-{{- if (and (eq .Values.service.type "NodePort") ( .Values.service.nodePort)) }}
-      nodePort: {{ .Values.service.nodePort }}
-{{- else }}
-      targetPort: {{ .Values.minioAPIPort }}
-{{- end}}
-{{- if .Values.service.externalIPs }}
-  externalIPs:
-{{- range $i , $ip := .Values.service.externalIPs }}
-  - {{ $ip }}
-{{- end }}
-{{- end }}
-  selector:
-    app: {{ template "minio.name" . }}
-    release: {{ .Release.Name }}
+    - name: minio-api
+      port: {{ .Values.service.ports.api }}
+      targetPort: minio-api
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.api)) }}
+      nodePort: {{ .Values.service.nodePorts.api }}
+      {{- else if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
+    - name: minio-console
+      port: {{ .Values.service.ports.console }}
+      targetPort: minio-console
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePorts.console)) }}
+      nodePort: {{ .Values.service.nodePorts.console }}
+      {{- else if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
+    {{- if .Values.service.extraPorts }}
+    {{- include "common.tplvalues.render" (dict "value" .Values.service.extraPorts "context" $) | nindent 4 }}
+    {{- end }}
+  selector: {{- include "common.labels.matchLabels" . | nindent 4 }}

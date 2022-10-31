@@ -1,218 +1,316 @@
 {{/* vim: set filetype=mustache: */}}
+
 {{/*
-Expand the name of the chart.
+Return the proper MinIO&reg; image name
 */}}
-{{- define "minio.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
+{{- define "minio.image" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.image "global" .Values.global) }}
+
 {{- end -}}
 
 {{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-If release name contains chart name it will be used as a full name.
+Return the proper MinIO&reg; Client image name
 */}}
-{{- define "minio.fullname" -}}
-{{- if .Values.fullnameOverride -}}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
+{{- define "minio.clientImage" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.clientImage "global" .Values.global) }}
 {{- end -}}
 
 {{/*
-Create chart name and version as used by the chart label.
+Return the proper image name (for the init container volume-permissions image)
 */}}
-{{- define "minio.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
-Return the appropriate apiVersion for networkpolicy.
-*/}}
-{{- define "minio.networkPolicy.apiVersion" -}}
-{{- if semverCompare ">=1.4-0, <1.7-0" .Capabilities.KubeVersion.Version -}}
-{{- print "extensions/v1beta1" -}}
-{{- else if semverCompare ">=1.7-0, <1.16-0" .Capabilities.KubeVersion.Version -}}
-{{- print "networking.k8s.io/v1beta1" -}}
-{{- else if semverCompare "^1.16-0" .Capabilities.KubeVersion.Version -}}
-{{- print "networking.k8s.io/v1" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the appropriate apiVersion for deployment.
-*/}}
-{{- define "minio.deployment.apiVersion" -}}
-{{- if semverCompare "<1.9-0" .Capabilities.KubeVersion.Version -}}
-{{- print "apps/v1beta2" -}}
-{{- else -}}
-{{- print "apps/v1" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the appropriate apiVersion for statefulset.
-*/}}
-{{- define "minio.statefulset.apiVersion" -}}
-{{- if semverCompare "<1.16-0" .Capabilities.KubeVersion.Version -}}
-{{- print "apps/v1beta2" -}}
-{{- else -}}
-{{- print "apps/v1" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the appropriate apiVersion for ingress.
-*/}}
-{{- define "minio.ingress.apiVersion" -}}
-{{- if semverCompare "<1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "extensions/v1beta1" -}}
-{{- else if semverCompare "<1.19-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "networking.k8s.io/v1beta1" -}}
-{{- else -}}
-{{- print "networking.k8s.io/v1" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Return the appropriate apiVersion for console ingress.
-*/}}
-{{- define "minio.consoleIngress.apiVersion" -}}
-{{- if semverCompare "<1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "extensions/v1beta1" -}}
-{{- else if semverCompare "<1.19-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "networking.k8s.io/v1beta1" -}}
-{{- else -}}
-{{- print "networking.k8s.io/v1" -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Determine secret name.
-*/}}
-{{- define "minio.secretName" -}}
-{{- if .Values.existingSecret -}}
-{{- .Values.existingSecret }}
-{{- else -}}
-{{- include "minio.fullname" . -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Determine name for scc role and rolebinding
-*/}}
-{{- define "minio.sccRoleName" -}}
-{{- printf "%s-%s" "scc" (include "minio.fullname" .) | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-
-{{/*
-Properly format optional additional arguments to MinIO binary
-*/}}
-{{- define "minio.extraArgs" -}}
-{{- range .Values.extraArgs -}}
-{{ " " }}{{ . }}
-{{- end -}}
+{{- define "minio.volumePermissions.image" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.volumePermissions.image "global" .Values.global) }}
 {{- end -}}
 
 {{/*
 Return the proper Docker Image Registry Secret Names
 */}}
 {{- define "minio.imagePullSecrets" -}}
-{{/*
-Helm 2.11 supports the assignment of a value to a variable defined in a different scope,
-but Helm 2.9 and 2.10 does not support it, so we need to implement this if-else logic.
-Also, we can not use a single if because lazy evaluation is not an option
-*/}}
-{{- if .Values.global }}
-{{- if .Values.global.imagePullSecrets }}
-imagePullSecrets:
-{{- range .Values.global.imagePullSecrets }}
-  - name: {{ . }}
-{{- end }}
-{{- else if .Values.imagePullSecrets }}
-imagePullSecrets:
-    {{ toYaml .Values.imagePullSecrets }}
-{{- end -}}
-{{- else if .Values.imagePullSecrets }}
-imagePullSecrets:
-    {{ toYaml .Values.imagePullSecrets }}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Formats volumeMount for MinIO TLS keys and trusted certs
-*/}}
-{{- define "minio.tlsKeysVolumeMount" -}}
-{{- if .Values.tls.enabled }}
-- name: cert-secret-volume
-  mountPath: {{ .Values.certsPath }}
-{{- end }}
-{{- if or .Values.tls.enabled (ne .Values.trustedCertsSecret "") }}
-{{- $casPath := printf "%s/CAs" .Values.certsPath | clean }}
-- name: trusted-cert-secret-volume
-  mountPath: {{ $casPath }}
-{{- end }}
-{{- end -}}
-
-{{/*
-Formats volume for MinIO TLS keys and trusted certs
-*/}}
-{{- define "minio.tlsKeysVolume" -}}
-{{- if .Values.tls.enabled }}
-- name: cert-secret-volume
-  secret:
-    secretName: {{ .Values.tls.certSecret }}
-    items:
-    - key: {{ .Values.tls.publicCrt }}
-      path: public.crt
-    - key: {{ .Values.tls.privateKey }}
-      path: private.key
-{{- end }}
-{{- if or .Values.tls.enabled (ne .Values.trustedCertsSecret "") }}
-{{- $certSecret := eq .Values.trustedCertsSecret "" | ternary .Values.tls.certSecret .Values.trustedCertsSecret }}
-{{- $publicCrt := eq .Values.trustedCertsSecret "" | ternary .Values.tls.publicCrt "" }}
-- name: trusted-cert-secret-volume
-  secret:
-    secretName: {{ $certSecret }}
-    {{- if ne $publicCrt "" }}
-    items:
-    - key: {{ $publicCrt }}
-      path: public.crt
-    {{- end }}
-{{- end }}
+{{- include "common.images.pullSecrets" (dict "images" (list .Values.image .Values.clientImage .Values.volumePermissions.image) "global" .Values.global) -}}
 {{- end -}}
 
 {{/*
 Returns the available value for certain key in an existing secret (if it exists),
 otherwise it generates a random value.
 */}}
-{{- define "minio.getValueFromSecret" }}
-  {{- $len := (default 16 .Length) | int -}}
-  {{- $obj := (lookup "v1" "Secret" .Namespace .Name).data -}}
-  {{- if $obj }}
-      {{- index $obj .Key | b64dec -}}
-  {{- else -}}
-      {{- randAlphaNum $len -}}
-  {{- end -}}
+{{- define "getValueFromSecret" }}
+{{- $len := (default 16 .Length) | int -}}
+{{- $obj := (lookup "v1" "Secret" .Namespace .Name).data -}}
+{{- if $obj }}
+{{- index $obj .Key | b64dec -}}
+{{- else -}}
+{{- randAlphaNum $len -}}
+{{- end -}}
 {{- end }}
 
-{{- define "minio.root.username" -}}
-  {{- if .Values.rootUser }}
-    {{- .Values.rootUser | toString }}
-  {{- else }}
-    {{- include "minio.getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "minio.fullname" .) "Length" 20 "Key" "rootUser") }}
-  {{- end }}
+{{/*
+Get the user to use to access MinIO&reg;
+*/}}
+{{- define "minio.secret.userValue" -}}
+{{- if .Values.gateway.enabled }}
+    {{- if eq .Values.gateway.type "azure" }}
+        {{- if .Values.gateway.auth.azure.accessKey }}
+            {{- .Values.gateway.auth.azure.accessKey -}}
+        {{- else -}}
+            {{- include "getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "common.names.fullname" .) "Length" 10 "Key" "root-user")  -}}
+        {{- end -}}
+    {{- else if eq .Values.gateway.type "gcs" }}
+        {{- if .Values.gateway.auth.gcs.accessKey }}
+            {{- .Values.gateway.auth.gcs.accessKey -}}
+        {{- else -}}
+            {{- include "getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "common.names.fullname" .) "Length" 10 "Key" "root-user")  -}}
+        {{- end -}}
+    {{- else if eq .Values.gateway.type "nas" }}
+        {{- if .Values.gateway.auth.nas.accessKey }}
+            {{- .Values.gateway.auth.nas.accessKey -}}
+        {{- else -}}
+            {{- include "getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "common.names.fullname" .) "Length" 10 "Key" "root-user")  -}}
+        {{- end -}}
+    {{- else if and (eq .Values.gateway.type "s3") (not .Values.gateway.auth.s3.useIRSA ) }}
+        {{- .Values.gateway.auth.s3.accessKey -}}
+    {{- end -}}
+{{- else }}
+    {{- if .Values.auth.rootUser }}
+        {{- .Values.auth.rootUser -}}
+    {{- else if (not .Values.auth.forcePassword) }}
+        {{- include "getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "common.names.fullname" .) "Length" 10 "Key" "root-user")  -}}
+    {{- else -}}
+        {{ required "A root username is required!" .Values.auth.rootUser }}
+    {{- end -}}
+{{- end -}}
 {{- end -}}
 
-{{- define "minio.root.password" -}}
-  {{- if .Values.rootPassword }}
-    {{- .Values.rootPassword | toString }}
-  {{- else }}
-    {{- include "minio.getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "minio.fullname" .) "Length" 40 "Key" "rootPassword") }}
-  {{- end }}
+{{/*
+Get the password to use to access MinIO&reg;
+*/}}
+{{- define "minio.secret.passwordValue" -}}
+{{- if .Values.gateway.enabled }}
+    {{- if eq .Values.gateway.type "azure" }}
+        {{- if .Values.gateway.auth.azure.secretKey }}
+            {{- .Values.gateway.auth.azure.secretKey -}}
+        {{- else -}}
+            {{- include "getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "common.names.fullname" .) "Length" 10 "Key" "root-password")  -}}
+        {{- end -}}
+    {{- else if eq .Values.gateway.type "gcs" }}
+        {{- if .Values.gateway.auth.gcs.secretKey }}
+            {{- .Values.gateway.auth.gcs.secretKey -}}
+        {{- else -}}
+            {{- include "getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "common.names.fullname" .) "Length" 10 "Key" "root-password")  -}}
+        {{- end -}}
+    {{- else if eq .Values.gateway.type "nas" }}
+        {{- if .Values.gateway.auth.nas.secretKey }}
+            {{- .Values.gateway.auth.nas.secretKey -}}
+        {{- else -}}
+            {{- include "getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "common.names.fullname" .) "Length" 10 "Key" "root-password")  -}}
+        {{- end -}}
+    {{- else if and (eq .Values.gateway.type "s3") (not .Values.gateway.auth.s3.useIRSA ) }}
+        {{- .Values.gateway.auth.s3.secretKey -}}
+    {{- end -}}
+{{- else }}
+    {{- if .Values.auth.rootPassword }}
+        {{- .Values.auth.rootPassword -}}
+    {{- else if (not .Values.auth.forcePassword) }}
+        {{- include "getValueFromSecret" (dict "Namespace" .Release.Namespace "Name" (include "common.names.fullname" .) "Length" 10 "Key" "root-password")  -}}
+    {{- else -}}
+        {{ required "A root password is required!" .Values.auth.rootPassword }}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get the credentials secret.
+*/}}
+{{- define "minio.secretName" -}}
+{{- if .Values.auth.existingSecret -}}
+    {{- printf "%s" (tpl .Values.auth.existingSecret $) -}}
+{{- else -}}
+    {{- printf "%s" (include "common.names.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return true if a secret object should be created
+*/}}
+{{- define "minio.createSecret" -}}
+{{- if .Values.auth.existingSecret -}}
+{{- else -}}
+    {{- true -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return true if a PVC object should be created (only in standalone mode)
+*/}}
+{{- define "minio.createPVC" -}}
+{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) (or (and (eq .Values.mode "standalone") (not .Values.gateway.enabled)) (and .Values.gateway.enabled (eq .Values.gateway.type "nas"))) }}
+    {{- true -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the PVC name (only in standalone mode)
+*/}}
+{{- define "minio.claimName" -}}
+{{- if and .Values.persistence.existingClaim }}
+    {{- printf "%s" (tpl .Values.persistence.existingClaim $) -}}
+{{- else -}}
+    {{- printf "%s" (include "common.names.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Returns the proper service account name depending if an explicit service account name is set
+in the values file. If the name is not set it will default to either common.names.fullname if serviceAccount.create
+is true or default otherwise.
+*/}}
+{{- define "minio.serviceAccountName" -}}
+    {{- if .Values.serviceAccount.create -}}
+        {{ default (include "common.names.fullname" .) .Values.serviceAccount.name }}
+    {{- else -}}
+        {{ default "default" .Values.serviceAccount.name }}
+    {{- end -}}
+{{- end -}}
+
+{{/*
+Compile all warnings into a single message, and call fail.
+*/}}
+{{- define "minio.validateValues" -}}
+{{- $messages := list -}}
+{{- $messages := append $messages (include "minio.validateValues.mode" .) -}}
+{{- $messages := append $messages (include "minio.validateValues.totalDrives" .) -}}
+{{- $messages := append $messages (include "minio.validateValues.tls" .) -}}
+{{- $messages := append $messages (include "minio.validateValues.gateway.type" .) -}}
+{{- $messages := append $messages (include "minio.validateValues.gateway.azure.credentials" .) -}}
+{{- $messages := append $messages (include "minio.validateValues.gateway.gcs.projectID" .) -}}
+{{- $messages := append $messages (include "minio.validateValues.gateway.nas.persistence" .) -}}
+{{- $messages := append $messages (include "minio.validateValues.gateway.s3.credentials" .) -}}
+{{- $messages := without $messages "" -}}
+{{- $message := join "\n" $messages -}}
+
+{{- if $message -}}
+{{-   printf "\nVALUES VALIDATION:\n%s" $message | fail -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate values of MinIO&reg; - must provide a valid mode ("distributed" or "standalone")
+*/}}
+{{- define "minio.validateValues.mode" -}}
+{{- $allowedValues := list "distributed" "standalone" }}
+{{- if not (has .Values.mode $allowedValues) -}}
+minio: mode
+    Invalid mode selected. Valid values are "distributed" and
+    "standalone". Please set a valid mode (--set mode="xxxx")
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate values of MinIO&reg; - total number of drives should be greater than 4
+*/}}
+{{- define "minio.validateValues.totalDrives" -}}
+{{- $replicaCount := int .Values.statefulset.replicaCount }}
+{{- $drivesPerNode := int .Values.statefulset.drivesPerNode }}
+{{- $totalDrives := mul $replicaCount $drivesPerNode }}
+{{- if and (eq .Values.mode "distributed") (lt $totalDrives 4) -}}
+minio: total drives
+    The total number of drives should be greater than 4 to guarantee erasure coding!
+    Please set a combination of nodes, and drives per node that match this condition.
+    For instance (--set statefulset.replicaCount=2 --set statefulset.drivesPerNode=2)
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate values of MinIO&reg; - TLS secret must provided if TLS is enabled
+*/}}
+{{- define "minio.validateValues.tls" -}}
+{{- if and .Values.tls.enabled (not .Values.tls.existingSecret) (not .Values.tls.autoGenerated) }}
+minio: tls.existingSecret, tls.autoGenerated
+    In order to enable TLS, you also need to provide
+    an existing secret containing the TLS certificates or
+    enable auto-generated certificates.
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate values of MinIO&reg; - must provide a valid gateway type ("azure", "gcs", "nas" or "s3")
+*/}}
+{{- define "minio.validateValues.gateway.type" -}}
+{{- $allowedValues := list "azure" "gcs" "nas" "s3" }}
+{{- if and .Values.gateway.enabled (not (has .Values.gateway.type $allowedValues)) -}}
+minio: gateway.type
+    Invalid Gateway type. Valid values are "azure", "gcs", "nas" and "s3".
+    Please set a valid mode (--set gateway.type="xxxx")
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate values of MinIO&reg; - when using MinIO&reg; as an Azure Gateway, the StorageAccount Name/Key are required
+*/}}
+{{- define "minio.validateValues.gateway.azure.credentials" -}}
+{{- if and .Values.gateway.enabled (eq .Values.gateway.type "azure") (or (empty .Values.gateway.auth.azure.storageAccountName) (empty .Values.gateway.auth.azure.storageAccountKey)) (or (empty .Values.gateway.auth.azure.storageAccountNameExistingSecret) (empty .Values.gateway.auth.azure.storageAccountNameExistingSecretKey) (empty .Values.gateway.auth.azure.storageAccountKeyExistingSecret) (empty .Values.gateway.auth.azure.storageAccountKeyExistingSecretKey)) }}
+minio: gateway.auth.azure
+    The StorageAccount name and key are required to use MinIO&reg; as a Azure Gateway.
+    Please set a valid StorageAccount information (--set gateway.auth.azure.storageAccountName="xxxx",gateway.auth.azure.storageAccountKey="yyyy")
+    Alternatively, specify secrets info to extract StorageAccount name and key:
+    --set gateway.auth.azure.storageAccountNameExistingSecret="xxxx", --set gateway.auth.azure.storageAccountNameExistingSecretKey="yyyy",
+    --set gateway.auth.azure.storageAccountKeyExistingSecret="aaaa", --set gateway.auth.azure.storageAccountKeyExistingSecretKey="bbbb"
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate values of MinIO&reg; - when using MinIO&reg; as a GCS Gateway, the GCP project ID is required
+*/}}
+{{- define "minio.validateValues.gateway.gcs.projectID" -}}
+{{- if and .Values.gateway.enabled (eq .Values.gateway.type "gcs") (empty .Values.gateway.auth.gcs.projectID) }}
+minio: gateway.auth.gcs.projectID
+    A GCP project ID is required to use MinIO&reg; as a GCS Gateway.
+    Please set a valid project ID (--set gateway.auth.gcs.projectID="xxxx")
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate values of MinIO&reg; - when using MinIO&reg; as a NAS Gateway, ReadWriteMany volumes are required
+*/}}
+{{- define "minio.validateValues.gateway.nas.persistence" -}}
+{{- $replicaCount := int .Values.gateway.replicaCount }}
+{{- if and .Values.gateway.enabled (eq .Values.gateway.type "nas") (gt $replicaCount 1) (not .Values.persistence.enabled) }}
+minio: persistence.enabled
+    ReadWriteMany volumes are required to use MinIO&reg; as a NAS Gateway with N replicas.
+    Please enable persistence (--set persistence.enabled=true)
+{{- else if and .Values.gateway.enabled (eq .Values.gateway.type "nas") (gt $replicaCount 1) (include "minio.createPVC" .) (not (has "ReadWriteMany" .Values.persistence.accessModes)) }}
+minio: persistence.accessModes
+    ReadWriteMany volumes are required to use MinIO&reg; as a NAS Gateway with N replicas.
+    Please set a valid mode (--set persistence.accessModes[0]="ReadWriteMany")
+{{- end -}}
+{{- end -}}
+
+{{/*
+Validate values of MinIO&reg; - when using MinIO&reg; as a S3 Gateway, the Access & Secret keys are required
+*/}}
+{{- define "minio.validateValues.gateway.s3.credentials" -}}
+{{- if and .Values.gateway.enabled (eq .Values.gateway.type "s3") (not .Values.gateway.auth.s3.useIRSA ) (or (empty .Values.gateway.auth.s3.accessKey) (empty .Values.gateway.auth.s3.secretKey)) }}
+minio: gateway.auth.s3
+    The Access & Secret keys are required to use MinIO&reg; as a S3 Gateway.
+    Please set valid keys (--set gateway.auth.s3.accessKey="xxxx",gateway.auth.s3.secretKey="yyyy")
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the secret containing MinIO TLS certificates
+*/}}
+{{- define "minio.tlsSecretName" -}}
+{{- if .Values.tls.existingSecret -}}
+    {{- printf "%s" (tpl .Values.tls.existingSecret $) -}}
+{{- else -}}
+    {{- printf "%s-crt" (include "common.names.fullname" .) -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return true if a TLS secret object should be created
+*/}}
+{{- define "minio.createTlsSecret" -}}
+{{- if and .Values.tls.enabled .Values.tls.autoGenerated (not .Values.tls.existingSecret) }}
+    {{- true -}}
+{{- end -}}
 {{- end -}}
