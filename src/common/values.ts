@@ -99,34 +99,33 @@ const writeValuesToFile = async (
   targetPath: string,
   inValues: Record<string, any> = {},
   overwrite = false,
-  keepEmptyStructure = true,
 ): Promise<void> => {
   const d = terminal('common:values:writeValuesToFile')
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
   const values = cloneDeep(inValues)
-  const newValues = keepEmptyStructure ? values : removeBlankAttributes(values)
-  if (isEmpty(newValues) && isSecretsFile && overwrite) {
+  const cleanedValues = removeBlankAttributes(values)
+  if (isEmpty(cleanedValues) && isSecretsFile) {
     // get rid of empty secrets files as those are problematic
     if (await pathExists(targetPath)) await unlink(targetPath)
     if (await pathExists(`${targetPath}.dec`)) await unlink(`${targetPath}.dec`)
+    return
   }
-  d.debug('newValues: ', JSON.stringify(newValues, null, 2))
   const suffix = isSecretsFile ? '.dec' : ''
   if (!(await pathExists(targetPath)) || overwrite) {
     // create the non-suffixed file for encryption to not skip this later on
     const notExists = !(await pathExists(targetPath))
     if (isSecretsFile && notExists) {
-      await writeFile(targetPath, objectToYaml(newValues))
+      await writeFile(targetPath, objectToYaml(values))
       await encrypt(targetPath)
       await decrypt(targetPath)
       return
     }
-    await writeFile(targetPath + suffix, objectToYaml(newValues))
+    await writeFile(targetPath + suffix, objectToYaml(values))
     return
   }
   const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
-  const mergeResult = merge(cloneDeep(originalValues), newValues)
+  const mergeResult = merge(cloneDeep(originalValues), values)
   if (isEqual(originalValues, mergeResult)) {
     d.info(`No changes for ${targetPath}${suffix}, skipping...`)
     return
@@ -139,10 +138,12 @@ const writeValuesToFile = async (
 /**
  * Writes new values to the repo. Will keep the original values if `overwrite` is `false`.
  */
-export const writeValues = async (values: Record<string, any>, overwrite = false): Promise<void> => {
+export const writeValues = async (inValues: Record<string, any>, overwrite = false): Promise<void> => {
   const d = terminal('common:values:writeValues')
-  d.debug('Writing values: ', values)
+  d.debug('Writing values: ', inValues)
   hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
+  const teamConfig = (await loadYaml(`${env.ENV_DIR}/env/teams.yaml`)) as Record<string, Record<string, any>>
+  const values = overwrite ? inValues : { ...teamConfig, ...inValues }
   const teams = Object.keys(values.teamConfig as Record<string, any>)
   // creating secret files
   const schema: any = await getValuesSchema()
@@ -177,7 +178,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
   const promises: Promise<void>[] = []
   if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
   if (secretSettings || overwrite)
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite, false))
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   if (plainValues.cluster || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
   if (plainValues.policies || overwrite)
@@ -186,7 +187,6 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
     const types = ['apps', 'jobs', 'secrets', 'services']
     const fileMap = { secrets: 'external-secrets' }
     if (!teams.includes('admin')) teams.push('admin')
-    const teamConfig = plainValues.teamConfig ? cloneDeep(plainValues.teamConfig) : {}
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     teams.forEach(async (team) => {
       const teamPromises: Promise<void>[] = []
@@ -212,7 +212,6 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
         `${env.ENV_DIR}/env/secrets.teams.yaml`,
         secrets.teamConfig ? { teamConfig: secrets.teamConfig } : undefined,
         overwrite,
-        false,
       ),
     )
   }
@@ -234,7 +233,7 @@ export const writeValues = async (values: Record<string, any>, overwrite = false
         [app]: secrets.apps[app],
       },
     }
-    return writeValuesToFile(`${env.ENV_DIR}/env/apps/secrets.${app}.yaml`, valueObject, overwrite, false)
+    return writeValuesToFile(`${env.ENV_DIR}/env/apps/secrets.${app}.yaml`, valueObject, overwrite)
   })
   await Promise.all(secretValuesPromises)
 

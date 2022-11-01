@@ -24,7 +24,7 @@ export const asArray = (args: string | string[]): string[] => {
 
 export const removeBlankAttributes = (obj: Record<string, any>): Record<string, any> => {
   const options: CleanOptions = {
-    emptyArrays: false,
+    emptyArrays: true,
     emptyObjects: true,
     emptyStrings: true,
     nullValues: false,
