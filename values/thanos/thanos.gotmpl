@@ -50,10 +50,10 @@ storegateway:
   enabled: true
 
 ## @section Thanos Receive parameters
-receive:
-  enabled: true
-  mode: standalone
-  resources: {{- $vl.query.resources | toYaml | nindent 4 }}
+# receive:
+#   enabled: true
+#   mode: standalone
+#   resources: {{- $vl.query.resources | toYaml | nindent 4 }}
 
 ## @section Thanos Ruler parameters
 ruler:

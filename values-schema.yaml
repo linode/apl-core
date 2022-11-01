@@ -2277,7 +2277,7 @@ properties:
           enabled:
             type: boolean
             default: false
-          receiver:
+          receive:
             properties:
               resources:
                 $ref: '#/definitions/resources'
