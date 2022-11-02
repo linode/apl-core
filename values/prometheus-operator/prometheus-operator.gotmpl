@@ -18,10 +18,8 @@
 {{- end }}
 nameOverride: po
 fullnameOverride: po
-global:
-  external_labels:
-    provider: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
 {{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
   imagePullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
@@ -83,7 +81,8 @@ prometheus:
       {{- end }}
     priorityClassName: otomi-critical
     externalLabels:
-      cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
+      otomi: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
+      cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
     retention: {{ $p | get "retention" "1d" }}
     retentionSize: {{ $p | get "retentionSize" }}
     storageSpec:
@@ -123,7 +122,7 @@ prometheus:
     tlsConfig:
       insecureSkipVerify: true
     headers:
-      provider: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+      cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
 # to do: add auth
     # basicAuth:
     #   username:
