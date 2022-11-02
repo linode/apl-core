@@ -138,7 +138,6 @@ adminApps:
         type: public
   - name: grafana
     tags: [tracing, telemetry, observability]
-    deps: [prometheus]
     ownHost: true
     ingress:
       - svc: po-grafana
@@ -289,11 +288,12 @@ adminApps:
     isShared: true
     deps: [grafana]
     ingress:
-      - svc: thanos-querier
-        port: 9090
+      - svc: thanos-receive
+        port: 10902
         namespace: monitoring
+        paths: [/api/]
+        forwardPath: true
         type: public
-        auth: true
   - name: vault
     tags: [secrets, security, observability]
     deps: [external-secrets]

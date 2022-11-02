@@ -692,12 +692,6 @@ definitions:
     maximum: 32768
     minimum: 80
     type: integer
-  prometheusRole:
-    description: Prometheus role
-    enum:
-      - standalone
-      - producer
-    type: string
   provider:
     type: string
     description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube, kind) or onprem installs.
@@ -2229,8 +2223,19 @@ properties:
           enabled:
             type: boolean
             default: false
-          role:
-            $ref: '#/definitions/prometheusRole'
+          remoteWrite:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              target:
+                type: string
+              # username:
+              #   type: string
+              #   default: otomi-admin
+              # password:
+              #   $ref: '#/definitions/wordCharacterPattern'
+              #   x-secret: ''
           replicas:
             type: integer
             default: 1
@@ -2277,22 +2282,65 @@ properties:
           enabled:
             type: boolean
             default: false
-          receive:
+          receiver:
             properties:
+              mode:
+                title: Receiver mode
+                description: Mode to run receiver in.
+                type: string
+                default: standalone
+                enum:
+                  - standalone
+                  - dual-mode
               resources:
                 $ref: '#/definitions/resources'
-          query:
-            properties:
-              stores:
-                description: Urls of the Thanos sidecar services of the "data-producer" clusters
-                items:
-                  type: string
-                type: array
               replicaCount:
+                description: Number of Thanos Receive replicas to deployment.
                 type: integer
                 default: 1
+              persistence:
+                properties:
+                  size:
+                    type: string
+          storegateway:
+            properties:
               resources:
                 $ref: '#/definitions/resources'
+              persistence:
+                properties:
+                  size:
+                    type: string
+          bucketweb:
+            properties:
+              resources:
+                $ref: '#/definitions/resources'
+          compactor:
+            description: Resolution and Retention flags.
+            properties:
+              retentionResolutionRaw:
+                type: string
+                default: 30d
+              retentionResolution5m:
+                type: string
+                default: 30d
+              retentionResolution1h:
+                type: string
+                default: 10y
+              persistence:
+                properties:
+                  size:
+                    type: string
+          ruler:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+              persistence:
+                properties:
+                  size:
+                    type: string
           objstore:
             localMinio:
               properties:
@@ -2479,10 +2527,14 @@ properties:
               properties:
                 config:
                   properties:
+                    bucket:
+                      type: string
+                      description: Name of the blob container.
+                      $ref: '#/definitions/wordCharacterPattern'
                     region:
                       description: The region of the S3 bucket
                       $ref: '#/definitions/wordCharacterPattern'
-                    s3bucket:
+                    s3Url:
                       description: The name (URL) of the S3 bucket
                       $ref: '#/definitions/wordCharacterPattern'
                 secretContents:
@@ -2503,7 +2555,11 @@ properties:
               properties:
                 config:
                   properties:
-                    s3bucket:
+                    bucket:
+                      type: string
+                      description: Name of the blob container.
+                      $ref: '#/definitions/wordCharacterPattern'
+                    s3Url:
                       description: The name (URL) of the bucket
                       $ref: '#/definitions/wordCharacterPattern'
                 secretContents:

@@ -1,63 +1,52 @@
 {{- $v := .Values }}
 {{- $vl:= $v.apps.thanos }}
-{{- $objstore:= $vl | get "provider" dict }}
+{{- $provider:= $vl | get "provider" dict }}
 
-
-## @param objstoreConfig The [objstore configuration](https://thanos.io/tip/thanos/storage.md/)
-## Specify content for objstore.yml
-##
-{{- with $objstore | get "localMinio" nil }}
-objstoreConfig: |-
-  type: s3
-  config:
-    bucket: {{ $vl.objstore.localMinio.bucket }}
-    endpoint: minio.minio.svc.cluster.local:9000
-    access_key: {{ $vl.objstore.localMinio.accessKey }}
-    secret_key: {{ $vl.objstore.localMinio.secretKey }}
-    insecure: true
-{{- end }}
-{{- with $provider | get "s3Like" nil }}
-objstoreConfig: |-
-  type: s3
-  config:
-    bucket: {{ $vl.objstore.s3Like.bucket }}
-    endpoint: {{ $vl.objstore.s3Like.endpoint }}
-    access_key: {{ $vl.objstore.s3Like.accessKey }}
-    secret_key: {{ $vl.objstore.s3Like.secretKey }}
-    insecure: true
-{{- end }}
 
 ## @section Thanos Query parameters
 query:
-  enabled: true
-  stores: {{- $vl.query.stores | toYaml | nindent 4 }}
-  resources: {{- $vl.query.resources | toYaml | nindent 4 }}
+  enabled: false
 
 ## @section Thanos Query Frontend parameters
-# queryFrontend:
-#   enabled: false
+queryFrontend:
+  enabled: false
 
 ## @section Thanos Bucket Web parameters
 bucketweb:
   enabled: true
+  resources: {{- toYaml $vl.bucketweb.resources | nindent 4 }}
 
 ## @section Thanos Compactor parameters
 compactor:
   enabled: true
+  retentionResolutionRaw: {{ $vl.compactor.retentionResolutionRaw }}
+  retentionResolution5m: {{ $vl.compactor.retentionResolution5m }}
+  retentionResolution1h: {{ $vl.compactor.retentionResolution1h }}
+  extraFlags:
+    - --deduplication.replica-label=replica
 
 ## @section Thanos Store Gateway parameters
 storegateway:
   enabled: true
+  persistence:
+    size: {{ $vl.storegateway.persistence.size }}
+  resources: {{- toYaml $vl.storegateway.resources | nindent 4 }}
 
 ## @section Thanos Receive parameters
-# receive:
-#   enabled: true
-#   mode: standalone
-#   resources: {{- $vl.query.resources | toYaml | nindent 4 }}
+receive:
+  enabled: true
+  mode: {{ $vl.receiver.mode }}
+  replicacount: {{ $vl.receiver.replicaCount }}
+  persistence:
+    size: {{ $vl.receiver.persistence.size }}
+  resources: {{- toYaml $vl.receiver.resources | nindent 4 }}
 
 ## @section Thanos Ruler parameters
 ruler:
-  enabled: true
+  enabled: {{ $vl.ruler.enabled }}
+  persistence:
+    size: {{ $vl.ruler.persistence.size }}
+  resources: {{- toYaml $vl.ruler.resources | nindent 4 }}
   alertmanagers:
     - http://prometheus-operator-alertmanager.monitoring.svc.cluster.local:9093
   config: |-
@@ -66,3 +55,27 @@ ruler:
         rules:
           - alert: "PrometheusDown"
             expr: absent(up{prometheus="monitoring/prometheus-operator"}) 
+
+## @param objstoreConfig The [objstore configuration](https://thanos.io/tip/thanos/storage.md/)
+## Specify content for objstore.yml
+##
+{{- with $provider | get "localMinio" nil }}
+objstoreConfig: |-
+  type: s3
+  config:
+    bucket: {{ $provider.bucket }}
+    endpoint: minio.minio.svc.cluster.local:9000
+    access_key: {{ $provider.accessKey }}
+    secret_key: {{ $provider.secretKey }}
+    insecure: true
+{{- end }}
+{{- with $provider | get "s3Like" nil }}
+objstoreConfig: |-
+  type: s3
+  config:
+    bucket: {{ $provider.bucket }}
+    endpoint: {{ $provider.s3Url }}
+    access_key: {{ $provider.accessKey }}
+    secret_key: {{ $provider.secretKey }}
+    insecure: true
+{{- end }}

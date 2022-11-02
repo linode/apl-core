@@ -62,6 +62,8 @@ preferredDuringSchedulingIgnoredDuringExecution:
           {{- range $key, $value := $extraMatchLabels }}
           {{ $key }}: {{ $value | quote }}
           {{- end }}
+      namespaces:
+        - {{ include "common.names.namespace" .context | quote }}
       topologyKey: kubernetes.io/hostname
     weight: 1
 {{- end -}}
@@ -82,6 +84,8 @@ requiredDuringSchedulingIgnoredDuringExecution:
         {{- range $key, $value := $extraMatchLabels }}
         {{ $key }}: {{ $value | quote }}
         {{- end }}
+    namespaces:
+      - {{ include "common.names.namespace" .context | quote }}
     topologyKey: kubernetes.io/hostname
 {{- end -}}
 

@@ -115,7 +115,22 @@ prometheus:
       additionalLabels:
         prometheus: system
     {{- end }}
-  {{- if eq $p.role "producer" }}
+  {{- if eq $p.remoteWrite.enabled "true" }}
+  remoteWrite:
+  - url: https://receive.{{ $p.remoteWrite.target }}/api/v1/receive
+    tlsConfig:
+      insecureSkipVerify: true
+    headers:
+      producer: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+# to do: add auth
+    # basicAuth:
+    #   username:
+    #     key: username
+    #     name: thanos-ingress-secret-basic-auth
+    #   password:
+    #     key: password
+    #     name: thanos-ingress-secret-basic-auth
+    {{- end }}
   thanosService:
     enabled: true
   thanosServiceExternal:

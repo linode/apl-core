@@ -146,6 +146,14 @@ environments:
             enabled: false
           thanos:
             enabled: false
+            query:
+              resources:
+                limits:
+                  cpu: "1000m"
+                  memory: 512Mi
+                requests:
+                  cpu: 500m
+                  memory: 256Mi
           vault:
             enabled: false
             resources:
