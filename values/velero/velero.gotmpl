@@ -86,25 +86,25 @@ configuration:
     name: otomi
     default: true
     {{- with $provider | get "azure" nil }}
-    bucket: {{ $vl.provider.azure.config.bucket }}
+    bucket: {{ .config.bucket }}
     {{- end }}
     {{- with $provider | get "aws" nil }}
-    bucket: {{ $vl.provider.aws.config.bucket }}
+    bucket: {{ .config.bucket }}
     {{- end }}
     {{- with $provider | get "custom" nil }}
-    bucket: {{ $vl.provider.custom.config.bucket }}
+    bucket: {{ .config.bucket }}
     {{- end }}    
     config:
       {{- with $provider | get "azure" nil }}
-      storageAccount: {{ .provider.azure.config.storageAccount }}
-      resourceGroup: {{ .provider.azure.config.resourceGroup }}
+      storageAccount: {{ .config.storageAccount }}
+      resourceGroup: {{ .config.resourceGroup }}
       {{- end }}
       {{- with $provider | get "aws" nil }}
-      s3Url: {{ .provider.aws.config.s3Url }}
-      region: {{ .provider.aws.config.region }}
+      s3Url: {{ .config.s3Url }}
+      region: {{ .config.region }}
       {{- end }}
       {{- with $provider | get "custom" nil }}
-      s3Url: {{ .provider.custom.config.s3Url }}
+      s3Url: {{ .config.s3Url }}
       region: minio
       s3ForcePathStyle: true
       {{- end }}
