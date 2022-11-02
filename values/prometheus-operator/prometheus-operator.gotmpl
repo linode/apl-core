@@ -130,7 +130,7 @@ prometheus:
     #   password:
     #     key: password
     #     name: thanos-ingress-secret-basic-auth
-    {{- end }}
+  {{- end }}
 
 {{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") }}  
 additionalPrometheusRules:

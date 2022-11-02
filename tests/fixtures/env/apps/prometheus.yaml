@@ -1,3 +1,5 @@
 apps:
     prometheus:
         enabled: true
+        remoteWrite:
+            enabled: true
