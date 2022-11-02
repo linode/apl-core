@@ -15,9 +15,9 @@ query:
   dnsDiscovery:
     enabled: false
   stores:
-    - "thanos-receiver-storegateway:10901"
+    - "thanos-storegateway:10901"
     {{- range $i := until $vl.receiver.replicaCount }}
-    - "thanos-receiver-receive-{{ $i }}.thanos-receiver-receive-headless.thanos.svc.cluster.local:10901"
+    - "thanos-receive-{{ $i }}.thanos-receive-headless.monitoring.svc.cluster.local:10901"
     {{- end }}
 
   replicaLabel:
