@@ -74,6 +74,8 @@ receive:
   persistence:
     size: {{ $vl.receiver.persistence.size }}
   resources: {{- toYaml $vl.receiver.resources | nindent 4 }}
+  service:
+    additionalHeadless: true
 
 ## @section Thanos Ruler parameters
 ruler:
