@@ -117,7 +117,7 @@ prometheus:
     {{- end }}
   {{- if $p.remoteWrite.enabled }}
   remoteWrite:
-  - url: https://receive.{{ $p.remoteWrite.target }}/api/v1/receive
+  - url: {{ $p.remoteWrite.target }}
     tlsConfig:
       insecureSkipVerify: true
     headers:
