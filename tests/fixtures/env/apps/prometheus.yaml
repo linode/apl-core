@@ -3,3 +3,4 @@ apps:
         enabled: true
         remoteWrite:
             enabled: true
+            target: dev.aks.redkubes.net
