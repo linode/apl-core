@@ -115,7 +115,7 @@ prometheus:
       additionalLabels:
         prometheus: system
     {{- end }}
-  {{- if eq $p.remoteWrite.enabled "true" }}
+  {{- if $p.remoteWrite.enabled }}
   remoteWrite:
   - url: https://receive.{{ $p.remoteWrite.target }}/api/v1/receive
     tlsConfig:
