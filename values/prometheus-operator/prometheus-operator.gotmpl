@@ -121,7 +121,7 @@ prometheus:
     tlsConfig:
       insecureSkipVerify: true
     headers:
-      producer: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+      PRODUCER-CLUSTER: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
 # to do: add auth
     # basicAuth:
     #   username:

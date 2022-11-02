@@ -137,6 +137,8 @@ environments:
           prometheus-blackbox-exporter: {}
           prometheus:
             enabled: false
+            remoteWrite:
+                enabled: false
             replicas: 1
             role: standalone
             scrapeInterval: 60s
