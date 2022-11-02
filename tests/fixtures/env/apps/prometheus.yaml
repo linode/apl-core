@@ -2,5 +2,4 @@ apps:
     prometheus:
         enabled: true
         remoteWrite:
-            enabled: true
-            target: dev.aks.redkubes.net
+            enabled: false
