@@ -18,8 +18,10 @@
 {{- end }}
 nameOverride: po
 fullnameOverride: po
-{{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
+  external_labels:
+    provider: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+{{- with .Values.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
@@ -121,7 +123,7 @@ prometheus:
     tlsConfig:
       insecureSkipVerify: true
     headers:
-      PRODUCER-CLUSTER: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+      provider: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
 # to do: add auth
     # basicAuth:
     #   username:

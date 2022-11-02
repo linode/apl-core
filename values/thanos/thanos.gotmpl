@@ -5,11 +5,44 @@
 
 ## @section Thanos Query parameters
 query:
-  enabled: false
+  enabled: true
+  replicaCount: 1
+  # topologySpreadConstraints:
+
+  extraFlags:
+    - "--query.auto-downsampling"
+
+  dnsDiscovery:
+    enabled: false
+  stores:
+    - "thanos-receiver-storegateway:10901"
+    {{- range $i := until $vl.receiver.replicaCount }}
+    - "thanos-receiver-receive-{{ $i }}.thanos-receiver-receive-headless.thanos.svc.cluster.local:10901"
+    {{- end }}
+
+  replicaLabel:
+    - replica
+    - prometheus_replica
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 62Mi
 
 ## @section Thanos Query Frontend parameters
 queryFrontend:
-  enabled: false
+  enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 62Mi
+
 
 ## @section Thanos Bucket Web parameters
 bucketweb:
@@ -35,6 +68,7 @@ storegateway:
 ## @section Thanos Receive parameters
 receive:
   enabled: true
+  replicationFactor: 1
   mode: {{ $vl.receiver.mode }}
   replicacount: {{ $vl.receiver.replicaCount }}
   persistence:
