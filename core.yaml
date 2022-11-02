@@ -289,7 +289,7 @@ adminApps:
     deps: [grafana]
     ingress:
       - svc: thanos-receive
-        port: 10901
+        port: 19291
         namespace: monitoring
         paths: [/api/]
         forwardPath: true
