@@ -38,6 +38,7 @@ extensions/v1
   {{- $hasTlsPass := $.tlsPass | default false }}
   {{- $secrets := dict }}
   {{- range $s := $.services }}
+    # service {{ $s.name }}, domain: {{ $s.domain }}
     {{- $paths := list }}
     {{- $ingressClassName := dig "ingressClassName" $v.ingress.platformClass.className $s }}
     {{- if eq $ingressClassName $ingress.className }}

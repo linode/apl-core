@@ -24,13 +24,13 @@ bases:
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 releases:
-{{- range $teamId, $team := omit $tc "admin" }} 
+{{- range $teamId, $team := $tc }} 
   {{- $teamServices := ($team | get "services" list) }}
   {{- $domain := printf "team-%s.%s" $teamId ($v.cluster | get "domainSuffix" nil) }}
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $grafanaDomain := printf "grafana.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
-  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
+  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant ($teamId ne "admin") }}
   - name: prometheus-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
