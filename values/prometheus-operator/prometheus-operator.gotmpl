@@ -131,14 +131,6 @@ prometheus:
     #     key: password
     #     name: thanos-ingress-secret-basic-auth
     {{- end }}
-  thanosService:
-    enabled: true
-  thanosServiceExternal:
-    enabled: true
-    labels:
-      cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
-    type: ClusterIP
-  {{- end }}
 
 {{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") }}  
 additionalPrometheusRules:
