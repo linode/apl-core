@@ -27,6 +27,7 @@ bases:
 {{- $svc := merge $s (dict "ingressClassName" $ingressClass ) }}
 {{- $services = append $services $svc }}
 {{- end }}
+{{- $services = concat $services ($tca | get "services" list) }}
 
 releases:
   - name: team-ns-admin
