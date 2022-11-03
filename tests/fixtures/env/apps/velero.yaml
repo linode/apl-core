@@ -1,23 +1,50 @@
+# apps:
+#     velero:
+#         provider:
+#             custom:
+#                 config:
+#                     s3Url: https://minio.20.31.16.226.nip.io/
+#                     bucket: velero
+#                 secretContents:
+#                     accessKeyId: thanos
+#                     secretAccessKey: bladibla
+#         logLevel: info
+#         resources:
+#             limits:
+#                 cpu: 1000m
+#                 memory: 512Mi
+#             requests:
+#                 cpu: 500m
+#                 memory: 256Mi
+#         enabled: true
 apps:
     velero:
         enabled: true
         provider:
-            azure:
+            custom:
                 config:
-                    storageAccount: test
-                    resourceGroup: test
-                    bucket: otomi
-                environment: AzurePublicCloud
+                    s3Url: https://minio.10.10.10.10.nip.io/
+                    bucket: velero
                 secretContents:
-                    subscriptionId: test
-                    tenantId: test
-                    resourceGroup: wokernodes_rg
-                    aadClientId: bla12344556666658457847476
-                    aadClientSecret: bla383736363653
+                    accessKeyId: blala
+                    secretAccessKey: hfhfhf
+            # azure:
+            #     config:
+            #         storageAccount: test
+            #         resourceGroup: test
+            #         bucket: otomi
+            #     environment: AzurePublicCloud
+            #     secretContents:
+            #         subscriptionId: test
+            #         tenantId: test
+            #         resourceGroup: wokernodes_rg
+            #         aadClientId: bla12344556666658457847476
+            #         aadClientSecret: bla383736363653
             # aws:
             #     config:
             #         region: north-eu
-            #         s3bucket: https://s3.my.bucket/blablabla
+            #         s3Url: https://s3.my.bucket/blablabla
+            #         bucket: velero
             #     secretContents:
             #         accessKeyId: dhfhfhf
             #         secretAccessKey: hfhgfhfhfhfh

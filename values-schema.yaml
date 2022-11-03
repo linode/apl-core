@@ -2496,7 +2496,6 @@ properties:
                   title: Azure environment
                   description: An Azure environment.
                   type: string
-                  default: AzurePublicCloud
                   enum:
                     - AzurePublicCloud
                     - AzureChinaCloud
@@ -2547,6 +2546,7 @@ properties:
                       type: string
                       description: The secret of the access key
                       $ref: '#/definitions/wordCharacterPattern'
+                      x-secret: ''
                   required:
                     - region
                     - accessKeyId
@@ -2572,6 +2572,7 @@ properties:
                       type: string
                       description: The secret of the access key
                       $ref: '#/definitions/wordCharacterPattern'
+                      x-secret: ''
                   required:
                     - accessKeyId
                     - secretAccessKey

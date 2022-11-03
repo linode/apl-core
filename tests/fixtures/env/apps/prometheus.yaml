@@ -1,5 +1,33 @@
 apps:
     prometheus:
-        enabled: true
         remoteWrite:
-            enabled: false
+            enabled: true
+            target: https://thanos.20.31.16.226.nip.io/api/v1/receive
+        replicas: 1
+        scrapeInterval: 60s
+        retention: 1d
+        retentionSize: 4GB
+        storageSize: 5Gi
+        resources:
+            prometheus:
+                limits:
+                    cpu: 500m
+                    memory: 256Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            kube-state-metrics:
+                limits:
+                    cpu: 100m
+                    memory: 256Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            node-exporter:
+                limits:
+                    cpu: 500m
+                    memory: 128Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+        enabled: true

@@ -1,6 +1,7 @@
 {{- $v := .Values }}
-{{- $vl:= $v.apps.velero }}
-{{- $provider:= $vl | get "provider" dict }}
+{{- $vl := $v.apps.velero }}
+{{- $p := $vl | get "provider" dict }}
+
 
 resources:
   {{- with $vl | get "resources" nil }}
@@ -14,7 +15,7 @@ resources:
     memory: 512Mi
   {{- end }}
 
-{{- with $provider | get "azure" nil }}
+{{- with $p | get "azure" nil }}
 initContainers:
   - name: velero-plugin-for-azure
     image: velero/velero-plugin-for-microsoft-azure:v1.5.0
@@ -30,7 +31,7 @@ initContainers:
       - mountPath: /target
         name: plugins
 {{- end }}
-{{- with $provider | get "aws" nil }}
+{{- with $p | get "aws" nil }}
 initContainers:
   - name: velero-plugin-for-aws
     image: velero/velero-plugin-for-aws:v1.4.0
@@ -46,7 +47,7 @@ initContainers:
       - mountPath: /target
         name: plugins
 {{- end }}
-{{- with $provider | get "custom" nil }}
+{{- with $p| get "custom" nil }}
 initContainers:
   - name: velero-plugin-for-aws
     image: velero/velero-plugin-for-aws:v1.4.0
@@ -73,76 +74,76 @@ serviceMonitor:
 logLevel: {{ $vl.logLevel }}
 
 configuration:
-  {{- with $provider | get "azure" nil }}
+  {{- with $p | get "azure" nil }}
   provider: azure
-  {{- end }}
-  {{- with $provider | get "aws" nil }}
-  provider: aws
-  {{- end }}
-  {{- with $provider | get "custom" nil }}
-  provider: aws
-  {{- end }}
   backupStorageLocation:
     name: otomi
     default: true
-    {{- with $provider | get "azure" nil }}
     bucket: {{ .config.bucket }}
-    {{- end }}
-    {{- with $provider | get "aws" nil }}
-    bucket: {{ .config.bucket }}
-    {{- end }}
-    {{- with $provider | get "custom" nil }}
-    bucket: {{ .config.bucket }}
-    {{- end }}    
     config:
-      {{- with $provider | get "azure" nil }}
       storageAccount: {{ .config.storageAccount }}
       resourceGroup: {{ .config.resourceGroup }}
-      {{- end }}
-      {{- with $provider | get "aws" nil }}
+  {{- end }}
+  {{- with $p | get "aws" nil }}
+  provider: aws
+  backupStorageLocation:
+    name: otomi
+    default: true
+    bucket: {{ .config.bucket }}
+    config:
       s3Url: {{ .config.s3Url }}
       region: {{ .config.region }}
-      {{- end }}
-      {{- with $provider | get "custom" nil }}
+  {{- end }}
+  {{- with $p | get "custom" nil }}
+  provider: aws
+  backupStorageLocation:
+    name: otomi
+    default: true
+    bucket: {{ .config.bucket }}   
+    config:
       s3Url: {{ .config.s3Url }}
       region: minio
       s3ForcePathStyle: true
-      {{- end }}
+  {{- end }}
+
+  {{- with $p| get "azure" nil }}
   volumeSnapshotLocation:
     name: otomi
     config:
-      {{- with $provider | get "azure" nil }}
       resourceGroup: {{ .config.resourceGroup }}
-      {{- end }}
-      {{- with $provider | get "aws" nil }}
+  {{- end }}
+  
+  {{- with $p | get "aws" nil }}
+  volumeSnapshotLocation:
+    name: otomi
+    config:
       region: {{ .config.region }}
-      {{- end }}
-  # defaultVolumesToRestic - if set Velero will back up all pod volumes using Restic with the exception of: service account token, secrets, config maps and hostpath volumes
+  {{- end }}
+  
+  # defaultVolumesToRestic - 
+  # if set Velero will back up all pod volumes using Restic with the exception of: 
+  # service account tokens, secrets, config maps and hostpath volumes
   defaultVolumesToRestic: true
 
 credentials:
-  {{- with $provider | get "azure" nil }}
   secretContents:
     cloud: |
-      AZURE_SUBSCRIPTION_ID={{ $vl.provider.azure.secretContents.subscriptionId }}
-      AZURE_TENANT_ID={{ $vl.provider.azure.secretContents.tenantId }}
-      AZURE_CLIENT_ID={{ $vl.provider.azure.secretContents.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $vl.provider.azure.secretContents.aadClientSecret }}
-      AZURE_RESOURCE_GROUP={{ $vl.provider.azure.secretContents.resourceGroup }}
-      AZURE_CLOUD_NAME={{ $vl.provider.azure.environment }}
-  {{- end }}
-  {{- with $provider | get "aws" nil }}
-  secretContents:
-    cloud: |
-    aws_access_key_id={{ $vl.provider.aws.secretContents.accessKeyId }}
-    aws_secret_access_key={{ $vl.provider.aws.secretContents.secretAccessKey }}
-  {{- end }}
-  {{- with $provider | get "custom" nil }}
-  secretContents:
-    cloud: |
-    aws_access_key_id={{ $vl.provider.custom.secretContents.accessKeyId }}
-    aws_secret_access_key={{ $vl.provider.custom.secretContents.secretAccessKey }}
-  {{- end }}
+      {{- with $p | get "azure" nil }}
+      AZURE_SUBSCRIPTION_ID={{ .secretContents.subscriptionId }}
+      AZURE_TENANT_ID={{ .secretContents.tenantId }}
+      AZURE_CLIENT_ID={{ .secretContents.aadClientId }}
+      AZURE_CLIENT_SECRET={{ .secretContents.aadClientSecret }}
+      AZURE_RESOURCE_GROUP={{ .secretContents.resourceGroup }}
+      AZURE_CLOUD_NAME={{ .environment }}
+      {{- end }}
+      {{- with $p | get "aws" nil }}
+      aws_access_key_id={{ .secretContents.accessKeyId }}
+      aws_secret_access_key={{ .secretContents.secretAccessKey }}
+      {{- end }}
+      {{- with $p | get "custom" nil }}
+      aws_access_key_id={{ .secretContents.accessKeyId }}
+      aws_secret_access_key={{ .secretContents.secretAccessKey }}
+      {{- end }}
 
 kubectl:
   resources:

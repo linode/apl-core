@@ -104,6 +104,22 @@ prometheus:
     {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
   {{- end }}
 {{- end }}
+{{- if $p.remoteWrite.enabled }}
+    remoteWrite:
+    - url: {{ $p.remoteWrite.target }}
+      tlsConfig:
+        insecureSkipVerify: true
+      headers:
+        cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+  # to do: add auth
+      # basicAuth:
+      #   username:
+      #     key: username
+      #     name: thanos-ingress-secret-basic-auth
+      #   password:
+      #     key: password
+      #     name: thanos-ingress-secret-basic-auth
+{{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
     - {{- toYaml $m | nindent 6 }}
@@ -116,22 +132,6 @@ prometheus:
       additionalLabels:
         prometheus: system
     {{- end }}
-  {{- if $p.remoteWrite.enabled }}
-  remoteWrite:
-  - url: {{ $p.remoteWrite.target }}
-    tlsConfig:
-      insecureSkipVerify: true
-    headers:
-      cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
-# to do: add auth
-    # basicAuth:
-    #   username:
-    #     key: username
-    #     name: thanos-ingress-secret-basic-auth
-    #   password:
-    #     key: password
-    #     name: thanos-ingress-secret-basic-auth
-  {{- end }}
 
 {{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") }}  
 additionalPrometheusRules:
