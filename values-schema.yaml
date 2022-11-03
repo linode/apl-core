@@ -2282,6 +2282,18 @@ properties:
           enabled:
             type: boolean
             default: false
+          query:
+            properties:
+              resources:
+                $ref: '#/definitions/resources'
+              replicaCount:
+                description: Number of Thanos Query replicas.
+                type: integer
+                default: 1
+          queryFrontend:
+            properties:
+              resources:
+                $ref: '#/definitions/resources'
           receiver:
             properties:
               mode:
@@ -2295,7 +2307,7 @@ properties:
               resources:
                 $ref: '#/definitions/resources'
               replicaCount:
-                description: Number of Thanos Receive replicas to deployment.
+                description: Number of Thanos Receive replicas.
                 type: integer
                 default: 1
               persistence:

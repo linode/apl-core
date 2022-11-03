@@ -102,6 +102,7 @@ configuration:
     bucket: {{ .config.bucket }}   
     config:
       s3Url: {{ .config.s3Url }}
+      publicUrl: {{ .config.s3Url }}
       region: minio
       s3ForcePathStyle: true
   {{- end }}
@@ -137,10 +138,12 @@ credentials:
       AZURE_CLOUD_NAME={{ .environment }}
       {{- end }}
       {{- with $p | get "aws" nil }}
+      [default]
       aws_access_key_id={{ .secretContents.accessKeyId }}
       aws_secret_access_key={{ .secretContents.secretAccessKey }}
       {{- end }}
       {{- with $p | get "custom" nil }}
+      [default]
       aws_access_key_id={{ .secretContents.accessKeyId }}
       aws_secret_access_key={{ .secretContents.secretAccessKey }}
       {{- end }}
@@ -240,7 +243,6 @@ schedules:
   {{- end }}
   {{- end }}
 {{- end }}
-
 
 metrics:
   serviceMonitor:

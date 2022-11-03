@@ -6,7 +6,7 @@
 ## @section Thanos Query parameters
 query:
   enabled: true
-  replicaCount: 1
+  replicaCount: {{ $vl.query.replicaCount }}
   # topologySpreadConstraints:
 
   extraFlags:
@@ -24,24 +24,12 @@ query:
     - replica
     - prometheus_replica
 
-  resources:
-    requests:
-      cpu: 100m
-      memory: 32Mi
-    limits:
-      cpu: 200m
-      memory: 62Mi
+  resources: {{- toYaml $vl.query.resources | nindent 4 }}
 
 ## @section Thanos Query Frontend parameters
 queryFrontend:
   enabled: true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 32Mi
-    limits:
-      cpu: 200m
-      memory: 62Mi
+  resources: {{- toYaml $vl.queryFrontend.resources | nindent 4 }}
 
 
 ## @section Thanos Bucket Web parameters

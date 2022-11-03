@@ -288,6 +288,12 @@ adminApps:
     isShared: true
     deps: [grafana]
     ingress:
+      - svc: thanos-bucketweb
+        port: 8080
+        namespace: monitoring
+        forwardPath: true
+        type: public
+        auth: true
       - svc: thanos-receive
         port: 19291
         namespace: monitoring
