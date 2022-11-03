@@ -10,21 +10,13 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $tc := $v.teamConfig }}
-{{- $coreTeamServices := list }}
-{{- range $s := $v.teamApps }}
-  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
-    {{- range $ing := $s.ingress }}
-      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
-      {{- $coreTeamServices = append $coreTeamServices $svc }}
-    {{- end }}
-  {{- end }}
-{{- end }}
+{{- $s := tpl (readFile "../helmfile.d/snippets/services.gotmpl") $v | fromYaml }}
 {{- $cm := $a | get "cert-manager" }}
 {{- $po := $a | get "prometheus" }}
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 releases:
-{{- range $teamId, $team := omit $tc "admin" }} 
+{{- range $teamId, $team := $tc }} 
   {{- $teamServices := ($team | get "services" list) }}
   {{- $domain := printf "team-%s.%s" $teamId ($v.cluster | get "domainSuffix" nil) }}
   {{- $appsDomain := printf "apps.%s" $domain }}
@@ -37,7 +29,7 @@ releases:
     chart: ../charts/kube-prometheus-stack
     labels:
       tag: teams
-      team: {{ $teamId }}
+      team: {{ $teamId }} 
     values:
       - ../values/prometheus-operator/prometheus-operator.gotmpl
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
@@ -161,9 +153,12 @@ releases:
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
+    {{- if ne $teamId "admin" }}     
       - {{- omit $team "apps" | toYaml | nindent 8 }}
+    {{- end }}
         teamId: {{ $teamId }}
-      - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
+        {{- /* skip team services for admin */}}
+      - services: {{- eq $teamId "admin" | ternary $teamServices (concat $s.coreTeamServices $teamServices) | toYaml | nindent 10 }}
   {{- if and $a.prometheus.enabled $v.otomi.isMultitenant (gt (len $teamServices) 0) }}
       - name: blackbox
         svc: prometheus-blackbox-exporter
@@ -177,6 +172,7 @@ releases:
     labels:
       group: jobs
       tag: teams
+      ingress: 'true'
       team: {{ $teamId }}
     hooks:
       - events: [presync]

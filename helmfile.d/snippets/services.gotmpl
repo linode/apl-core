@@ -1,0 +1,25 @@
+{{- $v := . }}
+{{- $a := $v.apps }}
+{{- $tc := $v.teamConfig }}
+{{- $coreTeamServices := list }}
+{{- $coreAdminServices := list }}
+{{- range $s := $v.adminApps }}
+  {{- $svc := merge $s (dict "ingressClassName" $v.ingress.platformClass.className ) }}
+  {{- if and ($v.apps | get $s.name dict | get "enabled" true) (hasKey $s "ingress") }}
+    {{- range $ing := $s.ingress }}
+      {{- $svc = merge $ing (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false) "ownHost" ($s | get "ownHost" false)) }}
+      {{- $coreAdminServices = append $coreAdminServices $svc }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- range $s := $v.teamApps }}
+  {{- $svc := merge $s (dict "ingressClassName" $v.ingress.platformClass.className ) }}
+  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
+    {{- range $ing := $s.ingress }}
+      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
+      {{- $coreTeamServices = append $coreTeamServices $svc }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+coreAdminServices: {{- $coreAdminServices | toYaml | nindent 2 }}
+coreTeamServices: {{- $coreTeamServices | toYaml | nindent 2 }}
