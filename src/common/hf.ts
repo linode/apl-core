@@ -1,5 +1,5 @@
 import { pathExists } from 'fs-extra'
-import { load } from 'js-yaml'
+import { parse } from 'yaml'
 import { omit } from 'lodash'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
@@ -91,7 +91,7 @@ export const hfValues = async (
     )
   else
     output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml`, args: 'build' }, undefined, envDir)
-  const res = (load(replaceHFPaths(output.stdout, envDir)) as any).renderedvalues
+  const res = parse(replaceHFPaths(output.stdout, envDir)).renderedvalues
   if (excludeSecrets) {
     // strip secrets
     const schema = await getValuesSchema()

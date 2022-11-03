@@ -8,7 +8,7 @@ shopt -s expand_aliases
 ENV_DIR=${ENV_DIR:-$PWD}
 [ "$ENV_DIR" = '/home/app/stack' ] && ENV_DIR='/home/app/stack/env'
 [ -d $ENV_DIR/env/env ] && ENV_DIR=$ENV_DIR/env
-if [ -n "$TESTING" ]; then
+if [ "$NODE_ENV" == "test" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
 fi
@@ -45,7 +45,7 @@ function err() {
 # skip parsing args for some commands
 caller=${1#./}
 if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
-  ! getopt --test >/dev/null
+  getopt --test >/dev/null && exit 1
   if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     err '`getopt --test` failed in this environment.'
     exit 1
@@ -53,7 +53,7 @@ if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
 
   OPTIONS=dtvsp:f:l:
   LONGOPTS=debug,trace,verbose,skip-cleanup,profile:,file:,label:
-  ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
+  PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@") && exit 1
   if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
     exit 1
   fi

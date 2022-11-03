@@ -5,7 +5,7 @@ import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
-import { dump, load } from 'js-yaml'
+import { parse, stringify } from 'yaml'
 import { isEmpty, map } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
@@ -25,7 +25,7 @@ export const createK8sSecret = async (
   data: Record<string, any> | string,
 ): Promise<void> => {
   const d = terminal('common:k8s:createK8sSecret')
-  const rawString = dump(data)
+  const rawString = stringify(data)
   const filePath = join('/tmp', secretId)
   const dirPath = dirname(filePath)
   try {
@@ -46,7 +46,7 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   const result = await nothrow(
     $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`,
   )
-  if (result.exitCode === 0) return load(result.stdout) as Record<string, any>
+  if (result.exitCode === 0) return parse(result.stdout) as Record<string, any>
   return undefined
 }
 

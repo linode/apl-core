@@ -1,4 +1,4 @@
-import { dump } from 'js-yaml'
+import { stringify } from 'yaml'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { hfValues } from 'src/common/hf'
@@ -20,7 +20,7 @@ const values = async (): Promise<void> => {
   const hfVal = await hfValues({ filesOnly: argv.filesOnly, excludeSecrets: argv.excludeSecrets })
 
   d.info('Print values')
-  console.log(dump(hfVal))
+  console.log(stringify(hfVal))
 }
 
 export const module = {

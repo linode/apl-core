@@ -27,17 +27,21 @@
       "resolveSourceMapLocations": ["${workspaceFolder}/src/**"]
     },
     {
-      "name": "Debug npm run server",
+      "name": "Debug all tests",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run-script", "server"],
-      "sourceMaps": true,
-      "smartStep": true,
-      "internalConsoleOptions": "openOnSessionStart",
-      "cwd": "${workspaceRoot}",
-      "envFile": ".env",
-      "console": "integratedTerminal"
+      "args": ["${workspaceRoot}/node_modules/.bin/jest", "--runInBand", "--testTimeout=999999", "--watchAll=false"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Debug current test",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/node_modules/.bin/jest",
+      "args": ["--runInBand", "--testTimeout=999999", "--watchAll=false", "${file}"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }

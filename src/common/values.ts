@@ -1,7 +1,7 @@
 import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
 import { unlink, writeFile } from 'fs/promises'
-import { dump } from 'js-yaml'
+import { stringify } from 'yaml'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
@@ -20,7 +20,7 @@ import {
 import { HelmArguments } from './yargs'
 
 const objectToYaml = (obj: Record<string, any>): string => {
-  return isEmpty(obj) ? '' : dump(obj, { indent: 4 })
+  return isEmpty(obj) ? '' : stringify(obj, { indent: 4 })
 }
 
 let otomiK8sVersion: string
