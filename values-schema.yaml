@@ -2541,39 +2541,39 @@ properties:
                   - resourceGroup
                   - storageAccount
                   - bucket
-            s3:
-              properties:
-                bucket:
-                  type: string
-                  description: Name of the blob container.
-                  $ref: '#/definitions/wordCharacterPattern'
-                region:
-                  description: The region of the S3 bucket
-                  $ref: '#/definitions/wordCharacterPattern'
-                s3Url:
-                  description: The name (URL) of the S3 bucket
-                  $ref: '#/definitions/wordCharacterPattern'
-                accessKeyId:
-                  type: string
-                  description: The ID of the access key
-                  $ref: '#/definitions/wordCharacterPattern'
-                secretAccessKey:
-                  type: string
-                  description: The secret of the access key
-                  $ref: '#/definitions/wordCharacterPattern'
-                  x-secret: ''
-              required:
-                - bucket
-                - s3Url
-                - region
-                - accessKeyId
-                - secretAccessKey
-            minioLocal:
-              description: For using local cluster Minio instance.
-              properties:
-                enabled:
-                  type: boolean
-                  default: false
+              s3:
+                properties:
+                  bucket:
+                    type: string
+                    description: Name of the blob container.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  region:
+                    description: The region of the S3 bucket
+                    $ref: '#/definitions/wordCharacterPattern'
+                  s3Url:
+                    description: The name (URL) of the S3 bucket
+                    $ref: '#/definitions/wordCharacterPattern'
+                  accessKeyId:
+                    type: string
+                    description: The ID of the access key
+                    $ref: '#/definitions/wordCharacterPattern'
+                  secretAccessKey:
+                    type: string
+                    description: The secret of the access key
+                    $ref: '#/definitions/wordCharacterPattern'
+                    x-secret: ''
+                required:
+                  - bucket
+                  - s3Url
+                  - region
+                  - accessKeyId
+                  - secretAccessKey
+              minioLocal:
+                description: For using local cluster Minio instance.
+                properties:
+                  enabled:
+                    type: boolean
+                    default: false
           logLevel:
             description: Set log-level for the Velero pod.
             default: info

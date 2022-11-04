@@ -2,14 +2,10 @@ apps:
     velero:
         enabled: true
         providerCloud:
-            # custom:
-            #     enabled: true
             azure:
                 resourceGroup: test
                 environment: AzurePublicCloud
         providerStorage:
-            # minioLocal:
-            #     enabled: true
             azureBlob:
                 storageAccount: bla
                 bucket: velero
