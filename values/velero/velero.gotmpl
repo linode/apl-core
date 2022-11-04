@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
-{{- $pc := $vl | get "providerCloud" dict }}
-{{- $ps := $vl | get "providerStorage" dict }}
+{{- $pc := $vl | get "cloud" dict }}
+{{- $ps := $vl | get "storage" dict }}
 
 resources:
   {{- with $v | get "resources" nil }}

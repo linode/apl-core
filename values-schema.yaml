@@ -1184,7 +1184,6 @@ properties:
             type: boolean
       monitor:
         $ref: '#/definitions/azure/definitions/monitor'
-
   cloud:
     additionalProperties: true
     properties:
@@ -2169,6 +2168,7 @@ properties:
           resources:
             $ref: '#/definitions/resources'
           provisioning:
+            additionalProperties: false
             properties:
               enabled:
                 type: boolean
@@ -2477,12 +2477,16 @@ properties:
       velero:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
-          providerCloud:
+          cloud:
+            additionalProperties: false
             properties:
               azure:
+                description: Azure
                 properties:
                   resourceGroup:
                     description: The resource group of the worker nodes (VM's and disks)
@@ -2508,9 +2512,15 @@ properties:
                     $ref: '#/definitions/wordCharacterPattern'
               custom:
                 description: Any cloud provider other then Azure and AWS
-          providerStorage:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+          storage:
+            additionalProperties: false
             properties:
               azureBlob:
+                additionalProperties: false
                 properties:
                   storageAccount:
                     type: string
@@ -2542,6 +2552,7 @@ properties:
                   - storageAccount
                   - bucket
               s3:
+                additionalProperties: false
                 properties:
                   bucket:
                     type: string
@@ -2569,7 +2580,8 @@ properties:
                   - accessKeyId
                   - secretAccessKey
               minioLocal:
-                description: For using local cluster Minio instance.
+                description: For using the local cluster Minio instance.
+                additionalProperties: false
                 properties:
                   enabled:
                     type: boolean

@@ -1,11 +1,11 @@
 apps:
     velero:
         enabled: true
-        providerCloud:
+        cloud:
             azure:
                 resourceGroup: test
                 environment: AzurePublicCloud
-        providerStorage:
+        storage:
             azureBlob:
                 storageAccount: bla
                 bucket: velero
