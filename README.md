@@ -46,7 +46,7 @@
 * Provide self-service features to development teams
 * Change the desired state of the platform based on configuration-as-code
 
-3. **DevOps teams** - To take full controll and responsibility over the complete stack
+3. **DevOps teams** - To take full control and responsibility over the complete stack
 * Get all the tools needed to build, deploy and run apps on K8s
 
 
@@ -136,6 +136,8 @@ Learn more about all the integrated technologies:
 - [Drone](https://github.com/harness/drone): Continuous integration platform built on Docker
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
 - [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
+- [Minio](https://github.com/minio/minio): High performance Object Storage compatible with Amazon S3 cloud storage service
+- [Thanos](https://github.com/thanos-io/thanos): Highly available metric system with unlimited storage capacity
 
 ## Otomi Projects
 

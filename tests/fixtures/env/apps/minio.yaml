@@ -1,3 +1,5 @@
 apps:
     minio:
         enabled: true
+        provisioning:
+            enabled: true

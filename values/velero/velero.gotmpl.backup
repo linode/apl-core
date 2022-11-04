@@ -1,10 +1,10 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
-{{- $pc := $vl | get "providerCloud" dict }}
-{{- $ps := $vl | get "providerStorage" dict }}
+{{- $p := $vl | get "provider" dict }}
+
 
 resources:
-  {{- with $v | get "resources" nil }}
+  {{- with $vl | get "resources" nil }}
     {{- toYaml . | nindent 2 }}
   {{- else }}
   requests:
@@ -15,6 +15,7 @@ resources:
     memory: 512Mi
   {{- end }}
 
+{{- with $p | get "azure" nil }}
 initContainers:
   - name: velero-plugin-for-azure
     image: velero/velero-plugin-for-microsoft-azure:v1.5.0
@@ -29,6 +30,9 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
+{{- end }}
+{{- with $p | get "aws" nil }}
+initContainers:
   - name: velero-plugin-for-aws
     image: velero/velero-plugin-for-aws:v1.4.0
     imagePullPolicy: IfNotPresent
@@ -42,6 +46,23 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
+{{- end }}
+{{- with $p| get "custom" nil }}
+initContainers:
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.4.0
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 32Mi
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+{{- end }}
 
 podSecurityContext:
   runAsUser: 1000
@@ -53,51 +74,51 @@ serviceMonitor:
 logLevel: {{ $vl.logLevel }}
 
 configuration:
-  {{- with $ps | get "azureBlob" nil }}
+  {{- with $p | get "azure" nil }}
   provider: azure
   backupStorageLocation:
     name: otomi
     default: true
-    bucket: {{ .bucket }}
+    bucket: {{ .config.bucket }}
     config:
-      storageAccount: {{ .storageAccount }}
-      resourceGroup: {{ .resourceGroup }}
+      storageAccount: {{ .config.storageAccount }}
+      resourceGroup: {{ .config.resourceGroup }}
   {{- end }}
-  {{- with $ps | get "s3" nil }}
+  {{- with $p | get "aws" nil }}
   provider: aws
   backupStorageLocation:
     name: otomi
     default: true
-    bucket: {{ .bucket }}
+    bucket: {{ .config.bucket }}
     config:
-      s3Url: {{ .s3Url }}
-      region: {{ .region }}
+      s3Url: {{ .config.s3Url }}
+      region: {{ .config.region }}
   {{- end }}
-  {{- with $ps | get "minioLocal" nil }}
+  {{- with $p | get "custom" nil }}
   provider: aws
   backupStorageLocation:
     name: otomi
     default: true
-    bucket: velero   
+    bucket: {{ .config.bucket }}   
     config:
-      s3Url: http://minio.minio.svc.cluster.local:9000
-      publicUrl: http://minio.minio.svc.cluster.local:9000
+      s3Url: {{ .config.s3Url }}
+      publicUrl: {{ .config.s3Url }}
       region: minio
       s3ForcePathStyle: true
   {{- end }}
 
-  {{- with $pc| get "azure" nil }}
+  {{- with $p| get "azure" nil }}
   volumeSnapshotLocation:
     name: otomi
     config:
-      resourceGroup: {{ .resourceGroup }}
+      resourceGroup: {{ .config.resourceGroup }}
   {{- end }}
   
-  {{- with $pc | get "aws" nil }}
+  {{- with $p | get "aws" nil }}
   volumeSnapshotLocation:
     name: otomi
     config:
-      region: {{ .region }}
+      region: {{ .config.region }}
   {{- end }}
   
   # defaultVolumesToRestic - 
@@ -108,25 +129,23 @@ configuration:
 credentials:
   secretContents:
     cloud: |
-      {{- with $ps | get "azureBlob" nil }}
-      AZURE_SUBSCRIPTION_ID={{ .subscriptionId }}
-      AZURE_TENANT_ID={{ .tenantId }}
-      AZURE_CLIENT_ID={{ .aadClientId }}
-      AZURE_CLIENT_SECRET={{ .aadClientSecret }}
-      {{- end }}
-      {{- with $pc | get "azure" nil }}
-      AZURE_RESOURCE_GROUP={{ .resourceGroup }}
+      {{- with $p | get "azure" nil }}
+      AZURE_SUBSCRIPTION_ID={{ .secretContents.subscriptionId }}
+      AZURE_TENANT_ID={{ .secretContents.tenantId }}
+      AZURE_CLIENT_ID={{ .secretContents.aadClientId }}
+      AZURE_CLIENT_SECRET={{ .secretContents.aadClientSecret }}
+      AZURE_RESOURCE_GROUP={{ .secretContents.resourceGroup }}
       AZURE_CLOUD_NAME={{ .environment }}
       {{- end }}
-      {{- with $ps | get "s3" nil }}
+      {{- with $p | get "aws" nil }}
       [default]
-      aws_access_key_id={{ .accessKeyId }}
-      aws_secret_access_key={{ .secretAccessKey }}
+      aws_access_key_id={{ .secretContents.accessKeyId }}
+      aws_secret_access_key={{ .secretContents.secretAccessKey }}
       {{- end }}
-      {{- with $ps | get "minioLocal" nil }}
+      {{- with $p | get "custom" nil }}
       [default]
-      aws_access_key_id=otomi-admin
-      aws_secret_access_key={{ $v.otomi.adminPassword }}
+      aws_access_key_id={{ .secretContents.accessKeyId }}
+      aws_secret_access_key={{ .secretContents.secretAccessKey }}
       {{- end }}
 
 kubectl:
@@ -142,10 +161,6 @@ kubectl:
     sidecar.istio.io/inject: "false"
 
 deployRestic: true
-
-metrics:
-  serviceMonitor:
-    enabled: true
 
 {{- if or $v.backup.platformSchedule.enabled $v.backup.teamSchedule.enabled }}
 schedules:
@@ -228,3 +243,7 @@ schedules:
   {{- end }}
   {{- end }}
 {{- end }}
+
+metrics:
+  serviceMonitor:
+    enabled: true

@@ -22,3 +22,48 @@ resources:
     cpu: 1000m
     memory: 512Mi
   {{- end }}
+
+{{- if $vl.provisioning.enabled }}
+provisioning:
+  enabled: true
+  resources:
+    {{- with $vl | get "resources" nil }}
+      {{- toYaml . | nindent 2 }}
+    {{- else }}
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    {{- end }}
+  buckets:
+    - name: velero
+    - name: thanos
+    - name: loki
+    - name: harbor
+  policies:
+    - name: otomi-apps
+      statements:
+        - resources:
+            - "arn:aws:s3:::velero"
+            - "arn:aws:s3:::thanos"
+            - "arn:aws:s3:::loki"
+            - "arn:aws:s3:::harbor"
+          actions:
+            - "s3:GetBucketLocation"
+            - "s3:ListBucket"
+            - "s3:ListBucketMultipartUploads"
+        - resources:
+            - "arn:aws:s3:::velero/*"
+            - "arn:aws:s3:::thanos/*"
+            - "arn:aws:s3:::loki/*"
+            - "arn:aws:s3:::harbor/*"
+          effect: "Allow"
+          actions:
+            - "s3:AbortMultipartUpload"
+            - "s3:DeleteObject"
+            - "s3:GetObject"
+            - "s3:ListMultipartUploadParts"
+            - "s3:PutObject"
+{{- end }}
