@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $vl:= $v.apps.thanos }}
-{{- $objs:= $vl | get "objstore" dict }}
+{{- $obj := $vl.objstore }}
+{{- $sp := $obj | get "storageProvider" dict }}
 
 
 ## @section Thanos Query parameters
@@ -83,7 +84,7 @@ ruler:
 ## @param objstoreConfig The [objstore configuration](https://thanos.io/tip/thanos/storage.md/)
 ## Specify content for objstore.yml
 ##
-{{- with $objs | get "localMinio" nil }}
+{{- if eq $obj "minioLocal" }}
 objstoreConfig: |-
   type: s3
   config:
@@ -93,7 +94,7 @@ objstoreConfig: |-
     secret_key: {{ $v.otomi.adminPassword }}
     insecure: true
 {{- end }}
-{{- with $objs | get "s3Like" nil }}
+{{- if eq $obj "s3Like" }}
 objstoreConfig: |-
   type: s3
   config:

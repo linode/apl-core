@@ -2358,28 +2358,40 @@ properties:
                 properties:
                   size:
                     type: string
-          objstore:
-            localMinio:
-              properties:
-                enabled:
-                  type: boolean
-                  default: true
-            s3Like:
-              properties:
-                bucket:
-                  type: string
-                  description: The name of the bucket
-                  $ref: '#/definitions/wordCharacterPattern'
-                endpoint:
-                  type: string
-                  description: URL of the storage endpoint
-                  $ref: '#/definitions/wordCharacterPattern'
-                accessKey:
-                  $ref: '#/definitions/wordCharacterPattern'
-                  x-secret: ''
-                secretKey:
-                  $ref: '#/definitions/wordCharacterPattern'
-                  x-secret: ''
+          storage:
+            additionalProperties: false
+            properties:
+              s3Like:
+                additionalProperties: false
+                properties:
+                  bucket:
+                    type: string
+                    description: Name of the blob container.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  s3Url:
+                    description: The name (URL) of the S3 bucket
+                    $ref: '#/definitions/wordCharacterPattern'
+                  accessKeyId:
+                    type: string
+                    description: The ID of the access key
+                    $ref: '#/definitions/wordCharacterPattern'
+                  secretAccessKey:
+                    type: string
+                    description: The secret of the access key
+                    $ref: '#/definitions/wordCharacterPattern'
+                    x-secret: ''
+                required:
+                  - bucket
+                  - s3Url
+                  - accessKeyId
+                  - secretAccessKey
+              storageProvider:
+                type: string
+                enum:
+                  - azureBlob
+                  - s3
+                  - minioLocal
+                default: minioLocal
       tigera-operator:
         properties:
           _rawValues:
@@ -2487,6 +2499,7 @@ properties:
             properties:
               azure:
                 description: Azure
+                additionalProperties: false
                 properties:
                   resourceGroup:
                     description: The resource group of the worker nodes (VM's and disks)
@@ -2504,22 +2517,25 @@ properties:
                   - resourceGroup
                   - environment
               aws:
+                additionalProperties: false
                 description: Amazon Web Services
                 properties:
                   region:
                     type: string
                     description: The AWS region where the cluster is running.
                     $ref: '#/definitions/wordCharacterPattern'
-              custom:
-                description: Any cloud provider other then Azure and AWS
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
+              cloudProvider:
+                type: string
+                enum:
+                  - aws
+                  - azure
+                  - custom
+                default: filesystem
           storage:
             additionalProperties: false
             properties:
               azureBlob:
+                type: object
                 additionalProperties: false
                 properties:
                   storageAccount:
@@ -2579,13 +2595,13 @@ properties:
                   - region
                   - accessKeyId
                   - secretAccessKey
-              minioLocal:
-                description: For using the local cluster Minio instance.
-                additionalProperties: false
-                properties:
-                  enabled:
-                    type: boolean
-                    default: false
+              storageProvider:
+                type: string
+                enum:
+                  - azureBlob
+                  - s3
+                  - minioLocal
+                default: minioLocal
           logLevel:
             description: Set log-level for the Velero pod.
             default: info

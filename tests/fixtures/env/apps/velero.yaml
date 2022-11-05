@@ -5,6 +5,7 @@ apps:
             azure:
                 resourceGroup: test
                 environment: AzurePublicCloud
+            cloudProvider: azure
         storage:
             azureBlob:
                 storageAccount: bla
@@ -14,3 +15,4 @@ apps:
                 resourceGroup: bla
                 aadClientId: bla12344556666658457847476
                 aadClientSecret: bla383736363653
+            storageProvider: azureBlob
