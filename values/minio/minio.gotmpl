@@ -1,10 +1,31 @@
 {{- $v := .Values }}
 {{- $vl:= $v.apps.minio }}
+{{- $k := $v.apps.keycloak }}
+{{- $minioDomain := printf "minio.%s" $v.cluster.domainSuffix }}
 
 mode: standalone
 auth:
   rootUser: otomi-admin
   rootPassword: {{ $v.otomi.adminPassword }}
+
+extraEnvVars:
+  - name: MINIO_IDENTITY_OPENID_CONFIG_URL
+    value: {{ $v._derived.oidcWellKnownUrl }}
+  - name: MINIO_IDENTITY_OPENID_CLIENT_ID
+    value: {{ $k.idp.clientID  }}
+  - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
+    value: {{ $k.idp.clientSecret }}
+  - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
+    value: consoleAdmin
+  - name: MINIO_IDENTITY_OPENID_CLAIM_PREFIX
+    value: team-admin
+  - name: MINIO_IDENTITY_OPENID_SCOPES
+    value: openid
+  - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
+    value: https://{{ $minioDomain }}/oauth_callback
+  - name: MINIO_IDENTITY_LDAP_TLS_SKIP_VERIFY
+    value: on
+
 
 persistence:
   enabled: true

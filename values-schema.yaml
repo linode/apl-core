@@ -2495,11 +2495,9 @@ properties:
             type: boolean
             default: false
           cloud:
-            additionalProperties: false
             properties:
               azure:
                 description: Azure
-                additionalProperties: false
                 properties:
                   resourceGroup:
                     description: The resource group of the worker nodes (VM's and disks)
@@ -2517,7 +2515,6 @@ properties:
                   - resourceGroup
                   - environment
               aws:
-                additionalProperties: false
                 description: Amazon Web Services
                 properties:
                   region:
@@ -2530,13 +2527,11 @@ properties:
                   - aws
                   - azure
                   - custom
-                default: filesystem
+                default: custom
           storage:
-            additionalProperties: false
             properties:
               azureBlob:
                 type: object
-                additionalProperties: false
                 properties:
                   storageAccount:
                     type: string
@@ -2568,7 +2563,6 @@ properties:
                   - storageAccount
                   - bucket
               s3:
-                additionalProperties: false
                 properties:
                   bucket:
                     type: string
