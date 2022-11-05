@@ -323,8 +323,6 @@ adminApps:
         port: 9001
         namespace: minio
         type: public
-        auth: true
-
 teamApps:
   - name: alertmanager
     ingress:
