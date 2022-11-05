@@ -24,7 +24,7 @@ extraEnvVars:
   - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
     value: https://{{ $minioDomain }}/oauth_callback
   - name: MINIO_IDENTITY_LDAP_TLS_SKIP_VERIFY
-    value: on
+    value: "on"
 
 
 persistence:
