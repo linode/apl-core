@@ -27,7 +27,7 @@ query:
 
   resources:
     {{- with $vl.query | get "resources" nil }}
-      {{- toYaml . | nindent 2 }}
+    {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       cpu: 500m
@@ -42,7 +42,7 @@ queryFrontend:
   enabled: true
   resources:
     {{- with $vl.queryFrontend | get "resources" nil }}
-      {{- toYaml . | nindent 2 }}
+    {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       cpu: 500m
@@ -57,7 +57,7 @@ bucketweb:
   enabled: true
   resources:
     {{- with $vl.bucketweb | get "resources" nil }}
-      {{- toYaml . | nindent 2 }}
+    {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       cpu: 500m
@@ -77,6 +77,17 @@ compactor:
     - --deduplication.replica-label=replica
   persistence:
     size: {{ $vl.compactor.persistence.size }}
+  resources:
+    {{- with $vl.storegateway | get "resources" nil }}
+    {{- toYaml . | nindent 4 }}
+    {{- else }}
+    requests:
+      cpu: 500m
+      memory: 128Mi
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    {{- end }} 
 
 ## @section Thanos Store Gateway parameters
 storegateway:
@@ -85,7 +96,7 @@ storegateway:
     size: {{ $vl.storegateway.persistence.size }}
   resources:
     {{- with $vl.storegateway | get "resources" nil }}
-      {{- toYaml . | nindent 2 }}
+    {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       cpu: 500m
@@ -105,7 +116,7 @@ receive:
     size: {{ $vl.receiver.persistence.size }}
   resources:
     {{- with $vl.receiver | get "resources" nil }}
-      {{- toYaml . | nindent 2 }}
+    {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       cpu: 500m
@@ -124,7 +135,7 @@ ruler:
     size: {{ $vl.ruler.persistence.size }}
   resources:
     {{- with $vl.ruler | get "resources" nil }}
-      {{- toYaml . | nindent 2 }}
+    {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       cpu: 500m

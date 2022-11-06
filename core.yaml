@@ -76,6 +76,7 @@ k8s:
       app: vault
     - name: velero
       app: velero
+      disablePolicyChecks: true
     - name: minio
       app: minio
       disableIstioInjection: true

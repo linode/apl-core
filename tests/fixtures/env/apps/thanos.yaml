@@ -4,7 +4,7 @@ apps:
         bucketweb:
             resources:
                 limits:
-                    cpu: '1000m'
+                    cpu: 1000m
                     memory: 512Mi
                 requests:
                     cpu: 500m
@@ -15,12 +15,19 @@ apps:
             retentionResolution1h: 10y
             persistence:
                 size: 8Gi
+            resources:
+                limits:
+                    cpu: 1000m
+                    memory: 512Mi
+                requests:
+                    cpu: 500m
+                    memory: 256Mi
         query:
             replicaCount: 1
         queryFrontend:
             resources:
                 limits:
-                    cpu: '1000m'
+                    cpu: 1000m
                     memory: 512Mi
                 requests:
                     cpu: 500m

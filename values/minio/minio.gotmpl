@@ -32,7 +32,7 @@ persistence:
 
 resources:
   {{- with $vl | get "resources" nil }}
-    {{- toYaml . | nindent 2 }}
+  {{- toYaml . | nindent 2 }}
   {{- else }}
   requests:
     cpu: 500m
@@ -47,7 +47,7 @@ provisioning:
   enabled: true
   resources:
     {{- with $vl | get "resources" nil }}
-      {{- toYaml . | nindent 2 }}
+    {{- toYaml . | nindent 4 }}
     {{- else }}
     requests:
       cpu: 100m

@@ -2354,6 +2354,8 @@ properties:
                 properties:
                   size:
                     type: string
+              resources:
+                $ref: '#/definitions/resources'
           ruler:
             properties:
               enabled:
