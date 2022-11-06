@@ -107,7 +107,7 @@ prometheus:
 {{- end }}
 {{- if $p.remoteWrite.enabled }}
     remoteWrite:
-    - url: {{ $p.remoteWrite.target }}
+    - url: "https://thanos.{{ $p.remoteWrite.target }}/api/v1/receive"
       tlsConfig:
         insecureSkipVerify: true
       headers:
