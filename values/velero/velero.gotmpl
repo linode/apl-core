@@ -2,11 +2,11 @@
 {{- $vl := $v.apps.velero }}
 {{- $cloud := $vl.cloud }}
 {{- $storage := $vl.storage }}
-{{- $cp := $cloud | get "cloudProvider" dict }}
-{{- $sp := $storage | get "storageProvider" dict }}
+{{- $cp := $cloud.cloudProvider | get "type" dict }}
+{{- $sp := $storage.storageProvider | get "type" dict }}
 
 resources:
-  {{- with $v | get "resources" nil }}
+  {{- with $vl | get "resources" nil }}
     {{- toYaml . | nindent 2 }}
   {{- else }}
   requests:
@@ -92,14 +92,14 @@ configuration:
   volumeSnapshotLocation:
     name: otomi
     config:
-      resourceGroup: {{ $cloud.azure.resourceGroup }}
+      resourceGroup: {{ $cloud.cloudProvider.azure.resourceGroup }}
   {{- end }}
   
   {{- if eq $cp "aws" }}
   volumeSnapshotLocation:
     name: otomi
     config:
-      region: {{ $cloud.aws.region }}
+      region: {{ $cloud.cloudProvider.aws.region }}
   {{- end }}
   
   # defaultVolumesToRestic - 
@@ -111,19 +111,19 @@ credentials:
   secretContents:
     cloud: |
       {{- if eq $sp "azureBlob" }}
-      AZURE_SUBSCRIPTION_ID={{ $storage.azureBlob.subscriptionId }}
-      AZURE_TENANT_ID={{ $storage.azureBlob.tenantId }}
-      AZURE_CLIENT_ID={{ $storage.azureBlob.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $storage.azureBlob.aadClientSecret }}
+      AZURE_SUBSCRIPTION_ID={{ $storage.storageProvider.azureBlob.subscriptionId }}
+      AZURE_TENANT_ID={{ $storage.storageProvider.azureBlob.tenantId }}
+      AZURE_CLIENT_ID={{ $storage.storageProvider.azureBlob.aadClientId }}
+      AZURE_CLIENT_SECRET={{ $storage.storageProvider.azureBlob.aadClientSecret }}
       {{- end }}
       {{- if eq $cp "azure" }}
-      AZURE_RESOURCE_GROUP={{ $cloud.azure.resourceGroup }}
-      AZURE_CLOUD_NAME={{ $cloud.azure.environment }}
+      AZURE_RESOURCE_GROUP={{ $cloud.cloudProvider.azure.resourceGroup }}
+      AZURE_CLOUD_NAME={{ $cloud.cloudProvider.azure.environment }}
       {{- end }}
       {{- if eq $sp "s3" }}
       [default]
-      aws_access_key_id={{ $storage.s3.accessKeyId }}
-      aws_secret_access_key={{ $storage.s3.secretAccessKey }}
+      aws_access_key_id={{ $storage.storageProvider.s3.accessKeyId }}
+      aws_secret_access_key={{ $storage.storageProvider.s3.secretAccessKey }}
       {{- end }}
       {{- if eq $sp "minioLocal" }}
       [default]
