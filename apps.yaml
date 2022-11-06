@@ -203,15 +203,15 @@ appsInfo:
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. Otomi shortcuts can be used to provide selections of logs based on interest.
   minio:
     title: Minio
-    appVersion: 0.57.0
-    repo: https://github.com/prometheus/prometheus
-    maintainers: Prometheus
+    appVersion: 11.10.13
+    repo: https://github.com/minio/minio
+    maintainers: Minio
     relatedLinks:
-      - https://otomi.io/docs/apps/prometheus
-      - https://prometheus.io/
+      - https://otomi.io/docs/apps/minio
+      - https://minio.io/
     license: Apache 2.0
-    about: Prometheus is a systems and service monitoring system. It collects metrics from configured targets at given intervals, evaluates rule expressions, displays the results, and can trigger alerts when specified conditions are observed.
-    integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
+    about: MinIO is a High Performance Object Storage and its API is compatible with the Amazon Web Services S3 cloud storage service.
+    integration: Otomi installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in Otomi capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
     appVersion: 0.57.0
@@ -225,16 +225,15 @@ appsInfo:
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   thanos:
     title: Thanos
-    appVersion: 1.6.1
-    repo: https://github.com/hashicorp/vault
-    maintainers: HashiCorp
+    appVersion: 0.28.1
+    repo: https://github.com/thanos-io/thanos
+    maintainers: Thanos
     relatedLinks:
-      - https://otomi.io/docs/apps/vault
-      - https://www.vaultproject.io/
-      - https://www.vaultproject.io/docs/configuration/storage
-    license: MPL-2.0
-    about: Vault is a tool for securely accessing secrets. A secret is anything that you want to tightly control access to, such as API keys, passwords, certificates, and more. Vault provides a unified interface to any secret, while providing tight access control and recording a detailed audit log.
-    integration: Vault has been made team aware. When enabled, a space will automatically be created for each team, and only team members are allowed access. Vault is automatically configured to use Otomi's Keycloak OIDC settings for SSO. Vault runs natively on Kubernetes. To prevent data from Vault being lost during a rolling cluster upgrade, data persistence can be configured in combination with external (blob) storage.
+      - https://otomi.io/docs/apps/thanos
+      - https://thanos.io
+    license: Apache 2.0
+    about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
+    integration: Otomi installs and configures Thanos in a Remote Write setup. The Receiver is exposed for external Prometheus instances to upload metrics in real-time. By default Thanos Object Store is configured to use the thanos bucket of the local Minio instance. When Thanos is enabled, an extra data source is added to Grafana for Thanos Query.
   vault:
     title: Vault
     appVersion: 1.6.1
@@ -258,4 +257,4 @@ appsInfo:
       - https://velero.io/docs/main/restic/
     license: Apache 2.0
     about: Velero is a tool to back up and restore Kubernetes cluster resources and persistent volumes.
-    integration: When enabled, Velero can be used to automatically create backups of Otomi platform services. Based on the selected provider, Otomi installs required plug-ins. Otomi also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.
+    integration: When enabled, Velero can be used to create backups of Otomi platform and team services. Based on the selected provider, Otomi will install all required plug-ins. Otomi will also install Restic integration for Velero to back up and restore almost any type of Kubernetes volume. The configuration for the used cloud and the storage type used for storing backups is separated and the local Minio instance is by default used as the storage provider.

@@ -2515,14 +2515,26 @@ properties:
                         $ref: '#/definitions/wordCharacterPattern'
                       environment:
                         title: Azure environment
-                        description: An Azure environment.
                         type: string
                         enum:
                           - AzurePublicCloud
                           - AzureChinaCloud
                           - AzureUSGovernment
                           - AzureGermanCloud
+                      tenantId:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      subscriptionId:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      aadClientId:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      aadClientSecret:
+                        $ref: '#/definitions/wordCharacterPattern'
+                        x-secret: ''
                     required:
+                      - tenantId
+                      - subscriptionId
+                      - aadClientId
+                      - aadClientSecret
                       - resourceGroup
                       - environment
                   aws:

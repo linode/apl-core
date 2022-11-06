@@ -6,6 +6,10 @@ apps:
                 azure:
                     resourceGroup: test
                     environment: AzurePublicCloud
+                    subscriptionId: test
+                    tenantId: test
+                    aadClientId: bla12344556666658457847476
+                    aadClientSecret: bla383736363653
                 type: azure
         storage:
             provider:

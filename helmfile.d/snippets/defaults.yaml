@@ -148,9 +148,29 @@ environments:
             enabled: false
           thanos:
             enabled: false
+            query:
+                replicaCount: 1
+            receiver:
+                mode: standalone
+                replicaCount: 1
+                persistence:
+                    size: 8Gi
+            storegateway:
+                persistence:
+                    size: 8Gi
+            compactor:
+                retentionResolutionRaw: 30d
+                retentionResolution5m: 30d
+                retentionResolution1h: 10y
+                persistence:
+                    size: 8Gi
+            ruler:
+                enabled: false
+                persistence:
+                    size: 8Gi
             objstore:
-              storageProvider:
-                type: localMinio
+                storageProvider:
+                    type: minioLocal
           vault:
             enabled: false
             resources:
@@ -166,6 +186,9 @@ environments:
             storage:
               storageProvider:
                 type: minioLocal
+            cloud:
+                cloudProvider:
+                    type: custom
         backup:
           platformSchedule:
             enabled: false
