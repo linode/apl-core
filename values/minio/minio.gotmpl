@@ -33,8 +33,11 @@ extraVolumes:
     secret:
       secretName: root-ca
 extraVolumeMounts:
-  - name: root-ca
+  - name: root-ca-1
     mountPath: '/opt/bitnami/minio/certs/CAs/tls.crt'
+    subPath: tls.crt
+  - name: root-ca-2
+    mountPath: '/certs/CAs/tls.crt'
     subPath: tls.crt
 {{- end }}
 
