@@ -289,8 +289,8 @@ adminApps:
     isShared: true
     deps: [grafana]
     ingress:
-      - svc: thanos-bucketweb
-        port: 8080
+      - svc: thanos-query
+        port: 9090
         namespace: monitoring
         forwardPath: true
         type: public
