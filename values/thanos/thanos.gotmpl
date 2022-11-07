@@ -8,13 +8,8 @@
 query:
   enabled: true
   replicaCount: {{ $vl.query.replicaCount }}
-  # topologySpreadConstraints:
-  # args:
-  #   - "--web.external-prefix=thanos/query"
-
   extraFlags:
     - "--query.auto-downsampling"
-
   dnsDiscovery:
     enabled: false
   stores:
@@ -22,7 +17,6 @@ query:
     {{- range $i := until $vl.receiver.replicaCount }}
     - "thanos-receive-{{ $i }}.thanos-receive-headless.monitoring.svc.cluster.local:10901"
     {{- end }}
-
   replicaLabel:
     - replica
     - prometheus_replica

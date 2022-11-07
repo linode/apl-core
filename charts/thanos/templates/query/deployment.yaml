@@ -99,6 +99,7 @@ spec:
             - --log.format={{ .Values.query.logFormat }}
             - --grpc-address=0.0.0.0:10901
             - --http-address=0.0.0.0:10902
+            - --web.external-prefix=thanos/query
             {{- if (include "thanos.httpConfigEnabled" .) }}
             - --http.config=/conf/http/http-config.yml
             {{- end }}

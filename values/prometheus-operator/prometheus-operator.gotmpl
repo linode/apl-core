@@ -242,7 +242,7 @@ grafana:
     - name: Thanos Query
       editable: false
       type: prometheus
-      url: http://thanos-query.monitoring.svc.cluster.local:9090   
+      url: http://thanos-query-frontend.monitoring.svc.cluster.local:9090   
     {{- end }}
 
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
