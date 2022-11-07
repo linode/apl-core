@@ -207,6 +207,9 @@ environments:
             cloud:
                 cloudProvider:
                     type: custom
+            persistence:
+              enabled: true
+              size: 20Gi
         backup:
           platformSchedule:
             enabled: false

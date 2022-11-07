@@ -29,7 +29,10 @@ extraEnvVars:
 
 {{- if $v._derived.untrustedCA }}
 extraVolumes:       
-  - name: root-ca
+  - name: root-ca-1
+    secret:
+      secretName: root-ca
+  - name: root-ca-2
     secret:
       secretName: root-ca
 extraVolumeMounts:
