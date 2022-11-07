@@ -128,6 +128,8 @@ environments:
               kubelet-preferred-address-types: InternalIP
           minio:
             enabled: false
+            provisioning:
+              enabled: true
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api: {}

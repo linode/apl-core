@@ -139,6 +139,7 @@ adminApps:
         type: public
   - name: grafana
     tags: [tracing, telemetry, observability]
+    deps: [prometheus]
     ownHost: true
     ingress:
       - svc: po-grafana
@@ -287,9 +288,9 @@ adminApps:
     tags: [metrics, observability]
     ownHost: true
     isShared: true
-    deps: [grafana]
+    deps: [grafana, minio]
     ingress:
-      - svc: thanos-query
+      - svc: thanos-query-frontend
         port: 9090
         namespace: monitoring
         forwardPath: true
@@ -319,6 +320,7 @@ adminApps:
     tags: [storage, backup]
     ownHost: true
     isShared: true
+    deps: [minio]
     ingress:
       - svc: minio
         port: 9001
