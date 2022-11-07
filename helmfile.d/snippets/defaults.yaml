@@ -148,8 +148,24 @@ environments:
             enabled: false
           thanos:
             enabled: false
+            bucketweb:
+                resources:
+                    limits:
+                        cpu: 1000m
+                        memory: 1000Mi
+                    requests:
+                        cpu: 100m
+                        memory: 200Mi
             query:
                 replicaCount: 1
+            queryFrontend:
+                resources:
+                    limits:
+                        cpu: 1000m
+                        memory: 1000Mi
+                    requests:
+                        cpu: 100m
+                        memory: 200Mi
             receiver:
                 mode: standalone
                 replicaCount: 1
