@@ -130,6 +130,9 @@ environments:
             enabled: false
             provisioning:
               enabled: true
+            persistence:
+              enabled: true
+              size: 20Gi
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api: {}

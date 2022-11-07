@@ -18,9 +18,7 @@ extraEnvVars:
   - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
     value: {{ $k.idp.clientSecret }}
   - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
-    value: consoleAdmin
-  - name: MINIO_IDENTITY_OPENID_CLAIM_PREFIX
-    value: team-admin
+    value: policy
   - name: MINIO_IDENTITY_OPENID_SCOPES
     value: openid
   - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
