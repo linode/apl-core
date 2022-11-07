@@ -24,14 +24,14 @@ extraEnvVars:
   - name: MINIO_IDENTITY_OPENID_SCOPES
     value: openid
   - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
-    value: https://{{ $minioDomain }}/oauth_callback
+    value: "https://{{ $minioDomain }}/oauth_callback"
 
 
 {{- if $v._derived.untrustedCA }}
 extraVolumes:       
   - name: root-ca
     secret:
-      secretName: {{ $rootCASecretName }}
+      secretName: root-ca
 extraVolumeMounts:
   - name: root-ca
     mountPath: '/opt/bitnami/minio/certs/CAs/tls.crt'
