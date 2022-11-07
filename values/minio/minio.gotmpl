@@ -2,6 +2,7 @@
 {{- $vl:= $v.apps.minio }}
 {{- $k := $v.apps.keycloak }}
 {{- $minioDomain := printf "minio.%s" $v.cluster.domainSuffix }}
+{{- $rootCASecretName := "root-ca" }}
 
 mode: standalone
 auth:
@@ -9,21 +10,33 @@ auth:
   rootPassword: {{ $v.otomi.adminPassword }}
 
 ## we need to trust the IDP public certificate by keeping it at $HOME/.minio/certs/CAs
-# extraEnvVars:
-#   - name: MINIO_IDENTITY_OPENID_CONFIG_URL
-#     value: {{ $v._derived.oidcWellKnownUrl }}
-#   - name: MINIO_IDENTITY_OPENID_CLIENT_ID
-#     value: {{ $k.idp.clientID  }}
-#   - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
-#     value: {{ $k.idp.clientSecret }}
-#   - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
-#     value: consoleAdmin
-#   - name: MINIO_IDENTITY_OPENID_CLAIM_PREFIX
-#     value: team-admin
-#   - name: MINIO_IDENTITY_OPENID_SCOPES
-#     value: openid
-#   - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
-#     value: https://{{ $minioDomain }}/oauth_callback
+extraEnvVars:
+  - name: MINIO_IDENTITY_OPENID_CONFIG_URL
+    value: {{ $v._derived.oidcWellKnownUrl }}
+  - name: MINIO_IDENTITY_OPENID_CLIENT_ID
+    value: {{ $k.idp.clientID  }}
+  - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
+    value: {{ $k.idp.clientSecret }}
+  - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
+    value: consoleAdmin
+  - name: MINIO_IDENTITY_OPENID_CLAIM_PREFIX
+    value: team-admin
+  - name: MINIO_IDENTITY_OPENID_SCOPES
+    value: openid
+  - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
+    value: https://{{ $minioDomain }}/oauth_callback
+
+
+{{- if $v._derived.untrustedCA }}
+extraVolumes:       
+  - name: root-ca
+    secret:
+      secretName: {{ $rootCASecretName }}
+extraVolumeMounts:
+  - name: root-ca
+    mountPath: '/opt/bitnami/minio/certs/CAs/tls.crt'
+    subPath: tls.crt
+{{- end }}
 
 
 persistence:

@@ -1,0 +1,13 @@
+{{- $v := .Values }}
+{{- $rootCASecretName := "root-ca" }}
+
+{{- if $v._derived.untrustedCA }}
+resources:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: {{ $rootCASecretName }}
+    type: Opaque
+    data:
+      tls.crt: {{ $v._derived.caCert | b64enc }}
+{{- end }}
