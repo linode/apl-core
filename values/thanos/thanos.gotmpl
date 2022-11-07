@@ -9,8 +9,8 @@ query:
   enabled: true
   replicaCount: {{ $vl.query.replicaCount }}
   # topologySpreadConstraints:
-  args:
-    - "--web.external-prefix=thanos/query"
+  # args:
+  #   - "--web.external-prefix=thanos/query"
 
   extraFlags:
     - "--query.auto-downsampling"
