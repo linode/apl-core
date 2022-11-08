@@ -1241,6 +1241,8 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
           customRootCA:
             x-secret: ''
             type: string
@@ -1263,8 +1265,6 @@ properties:
               - production
               - staging
             default: production
-          resources:
-            $ref: '#/definitions/resources'
         oneOf:
           - properties:
               issuer:
