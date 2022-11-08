@@ -73,12 +73,7 @@ rules:
   func-style:
     - off
     - expression
-  no-shadow: 'off'
-  no-unused-vars: 'off'
-  prefer-destructuring: error
-  no-use-before-define: 'off'
-  no-console: 'off'
-  object-shorthand: error
+  no-console: off
   no-debugger: error
   no-param-reassign:
     - error
@@ -88,5 +83,8 @@ rules:
   no-plusplus:
     - 2
     - allowForLoopAfterthoughts: true
+  no-shadow: off
+  no-unused-vars: off
+  no-use-before-define: off
   no-underscore-dangle: off
   prefer-template: error
