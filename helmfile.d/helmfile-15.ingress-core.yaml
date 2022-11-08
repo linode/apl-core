@@ -21,8 +21,8 @@ releases:
     labels:
       ingress: 'true'
     values:
-      - name: admin
-        teamId: admin
+      - name: core
+        teamId: core
         apps: {{- $a | toYaml | nindent 10 }}
         oidc: {{- $v.oidc | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}

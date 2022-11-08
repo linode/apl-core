@@ -1,16 +1,16 @@
-teamId: ""
+teamId: ''
 cluster:
-  provider: ""
-  name: ""
+  provider: ''
+  name: ''
   ingress:
     allowedCidrs: []
-    tags: ""
+    tags: ''
     disableHttp2: false
-otomi:    
+otomi:
   hasCloudLB: false
-namespace: ""
+namespace: ''
 resourceQuota:
-  pods: "50"
+  pods: '50'
   services.loadbalancers: 0
 apps: {}
 services: []
