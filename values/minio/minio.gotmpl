@@ -9,7 +9,8 @@ auth:
   rootUser: otomi-admin
   rootPassword: {{ $v.otomi.adminPassword }}
 
-## we need to trust the IDP public certificate by keeping it at $HOME/.minio/certs/CAs
+## OIDC configuration
+{{/* To do: add mappers to Keycloak task
 extraEnvVars:
   - name: MINIO_IDENTITY_OPENID_CONFIG_URL
     value: {{ $v._derived.oidcWellKnownUrl }}
@@ -23,7 +24,7 @@ extraEnvVars:
     value: openid
   - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
     value: "https://{{ $minioDomain }}/oauth_callback"
-
+*/}}
 
 {{- if $v._derived.untrustedCA }}
 extraVolumes:       
