@@ -33,16 +33,7 @@ startupapicheck:
 installCRDs: true
 
 resources:
-  {{- with $cm | get "resources" nil }}
-    {{- toYaml . | nindent 2 }}
-  {{- else }}
-  requests:
-    cpu: 50m
-    memory: 64Mi
-  limits:
-    cpu: 200m
-    memory: 384Mi
-  {{- end }}
+{{- toYaml $cm. resources | nindent 2 }}
 
 cainjector:
   resources:
