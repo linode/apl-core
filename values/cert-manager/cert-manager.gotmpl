@@ -32,7 +32,7 @@ startupapicheck:
 
 installCRDs: true
 
-resources: {{- toYaml $cm resources | nindent 2 }}
+resources: {{- toYaml $cm.resources | nindent 2 }}
 
 cainjector:
   resources:
