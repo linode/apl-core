@@ -115,9 +115,6 @@ metadata:
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
       {{- end }}
-    # websockets can stay open one hour
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     # websocket upgrade snippet
     nginx.ingress.kubernetes.io/server-snippets: |
       location ~* (/ws/|socket.io) {
