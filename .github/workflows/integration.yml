@@ -210,7 +210,7 @@ jobs:
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
-          # Sometimes DO cluster has hicups while scaling up nodes thus we need keep the timeout high
+          # Sometimes the DO cluster is having hiccups while scaling up nodes, thus we need keep the timeout high.
           helm install --wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
           --values tests/integration/${{ inputs.install_profile }}.yaml \
           --values values-temp.yaml \
