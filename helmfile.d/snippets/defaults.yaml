@@ -16,6 +16,13 @@ environments:
               targetCPUUtilizationPercentage: 50
           cert-manager:
             issuer: custom-ca
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 384Mi
           cluster-overprovisioner:
             enabled: false
           demo-tlspass:
