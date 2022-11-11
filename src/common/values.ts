@@ -1,8 +1,8 @@
 import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
 import { unlink, writeFile } from 'fs/promises'
-import { stringify } from 'yaml'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
+import { stringify } from 'yaml'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -195,7 +195,11 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
         teamPromises.push(
           writeValuesToFile(
             `${env.ENV_DIR}/env/teams/${fileType}.${team}.yaml`,
-            { teamConfig: { [team]: { [type]: get(plainValues, `teamConfig.${team}.${type}`, {}) } } },
+            {
+              teamConfig: {
+                [team]: { [type]: get(plainValues, `teamConfig.${team}.${type}`, type === 'apps' ? {} : []) },
+              },
+            },
             overwrite,
           ),
         )
