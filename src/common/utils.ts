@@ -5,9 +5,9 @@ import cleanDeep, { CleanOptions } from 'clean-deep'
 import { existsSync, pathExists, readFileSync } from 'fs-extra'
 import { readdir, readFile } from 'fs/promises'
 import walk from 'ignore-walk'
+import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
 import { resolve } from 'path'
-import { parse, stringify } from 'yaml'
 import { $, ProcessOutput } from 'zx'
 import { env } from './envalid'
 
@@ -62,7 +62,7 @@ export const loadYaml = async (
     throw new Error(`${path} does not exist`)
   }
   const file = await readFile(path, 'utf-8')
-  return parse(file) as Record<string, any>
+  return load(file) as Record<string, any>
 }
 
 export const flattenObject = (obj: Record<string, any>, path = ''): { [key: string]: string } => {
@@ -98,7 +98,7 @@ export const gucci = async (
   $.quote = (v) => v
   try {
     let processOutput: ProcessOutput
-    const templateContent: string = typeof tmpl === 'string' ? tmpl : stringify(tmpl)
+    const templateContent: string = typeof tmpl === 'string' ? tmpl : dump(tmpl, { lineWidth: -1 })
     // Cannot be a path if it wasn't a string
     if (typeof tmpl === 'string' && (await pathExists(templateContent))) {
       processOutput = await $`gucci -o missingkey=zero ${gucciArgs} ${templateContent}`
@@ -111,7 +111,7 @@ export const gucci = async (
       return ret
     }
     // translate the output from yaml to js, and return it, whatever shape
-    return parse(ret)
+    return load(ret)
   } finally {
     $.quote = quoteBackup
   }
