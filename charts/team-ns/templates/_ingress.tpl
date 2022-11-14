@@ -117,7 +117,7 @@ metadata:
       {{- end }}
     # websocket upgrade snippet
     nginx.ingress.kubernetes.io/server-snippets: |
-      location ~* (/ws/|socket.io) {
+      location ~* /(ws(s)?|socket.io)/ {
           proxy_set_header Upgrade $http_upgrade;
           proxy_http_version 1.1;
           proxy_set_header X-Forwarded-Host $http_host;
