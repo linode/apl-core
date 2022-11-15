@@ -26,10 +26,6 @@ releases:
       - alertmanager: {{- $a | get "alertmanager._rawValues" dict | toYaml | nindent 10 }} 
       - grafana: {{- $a | get "grafana._rawValues" dict | toYaml | nindent 10 }}
     <<: *upgrade
-  - name: thanos
-    installed: {{ $a | get "thanos.enabled" }}
-    namespace: monitoring
-    <<: *default
   - name: kured
     installed: {{ $a | get "kured.enabled" }}
     namespace: kube-system
