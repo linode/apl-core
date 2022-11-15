@@ -142,6 +142,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', inValues)
   hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
+  // on bootstrap no values exist but we need the teamconfig so get it from file
   const teamConfig = (await loadYaml(`${env.ENV_DIR}/env/teams.yaml`)) as Record<string, Record<string, any>>
   const values = overwrite ? inValues : { ...teamConfig, ...inValues }
   const teams = Object.keys(values.teamConfig as Record<string, any>)
