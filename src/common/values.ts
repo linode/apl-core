@@ -102,36 +102,39 @@ const writeValuesToFile = async (
 ): Promise<void> => {
   const d = terminal('common:values:writeValuesToFile')
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
+  const suffix = isSecretsFile ? '.dec' : ''
   const values = cloneDeep(inValues)
+  const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
+  d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
+  const mergeResult = merge(cloneDeep(originalValues), values)
   const cleanedValues = removeBlankAttributes(values)
-  if (isEmpty(cleanedValues) && isSecretsFile) {
+  const cleanedMergeResult = removeBlankAttributes(mergeResult)
+  if (((overwrite && isEmpty(cleanedValues)) || (!overwrite && isEmpty(cleanedMergeResult))) && isSecretsFile) {
     // get rid of empty secrets files as those are problematic
     if (await pathExists(targetPath)) await unlink(targetPath)
     if (await pathExists(`${targetPath}.dec`)) await unlink(`${targetPath}.dec`)
     return
   }
-  const suffix = isSecretsFile ? '.dec' : ''
+  const useValues = overwrite ? values : mergeResult
   if (!(await pathExists(targetPath)) || overwrite) {
     // create the non-suffixed file for encryption to not skip this later on
     const notExists = !(await pathExists(targetPath))
-    if (isSecretsFile && notExists) {
-      await writeFile(targetPath, objectToYaml(values))
-      await encrypt(targetPath)
-      await decrypt(targetPath)
-      return
+    if (notExists) {
+      if (isSecretsFile) {
+        await writeFile(targetPath, objectToYaml(useValues))
+        await encrypt(targetPath)
+        await decrypt(targetPath)
+        return
+      } else await writeFile(targetPath, objectToYaml(useValues))
     }
-    await writeFile(targetPath + suffix, objectToYaml(values))
     return
   }
-  const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
-  d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
-  const mergeResult = merge(cloneDeep(originalValues), values)
-  if (isEqual(originalValues, mergeResult)) {
+  if (isEqual(originalValues, useValues)) {
     d.info(`No changes for ${targetPath}${suffix}, skipping...`)
     return
   }
-  d.debug('mergeResult: ', JSON.stringify(mergeResult, null, 2))
-  await writeFile(targetPath + suffix, objectToYaml(mergeResult))
+  d.debug('mergeResult: ', JSON.stringify(useValues, null, 2))
+  await writeFile(targetPath + suffix, objectToYaml(useValues))
   d.info(`Values were written to ${targetPath}${suffix}`)
 }
 
