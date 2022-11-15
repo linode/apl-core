@@ -65,7 +65,7 @@ async function execute(d: typeof console, dryRun: boolean, operations: string[],
 export const upgrade = async ({ dryRun = false, release, when }: Arguments): Promise<void> => {
   const d = console // wrapped stream created by terminal(... is not showing
   const upgrades: Upgrades = (await loadYaml(`${rootDir}/upgrades.yaml`))?.operations
-  const prevVersion: string = (await getDeploymentState()).version || '0.1.0'
+  const prevVersion: string = (await getDeploymentState()).version ?? '0.1.0'
   const values = (await hfValues()) as Record<string, any>
   d.info(`Current version of otomi: ${prevVersion}`)
   const filteredUpgrades = filterUpgrades(prevVersion, upgrades)
