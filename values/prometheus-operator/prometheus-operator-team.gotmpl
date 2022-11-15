@@ -1,3 +1,6 @@
+{{- $v := .Values }}
+{{- $teamId := .Release.Labels.team -}}
+
 kubeApiServer:
   enabled: false
 coreDns:
@@ -61,6 +64,13 @@ prometheus:
       requests:
         cpu: 100m
         memory: 128Mi
+    {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
+    {{ $selType }}NamespaceSelector: 
+      - team-{{ $teamId }}
+    {{ $selType }}Selector:
+      matchLabels:
+        prometheus: team-{{ $teamId }}
+    {{- end }}
 additionalPrometheusRules: null
 grafana:
   defaultDashboardsEnabled: false
