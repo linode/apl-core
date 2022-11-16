@@ -196,7 +196,7 @@ adminApps:
         auth: true
   - name: keycloak
     tags: [auth, sso]
-    isShared: true
+    # isShared: true
     ownHost: true
     ingress:
       - namespace: keycloak
