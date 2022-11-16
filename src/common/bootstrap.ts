@@ -1,14 +1,14 @@
-import { copyFileSync, existsSync } from 'fs-extra'
+import { copyFile, pathExists } from 'fs-extra'
 import { isIPv6 } from 'net'
+import { decrypt } from 'src/common/crypt'
+import { terminal } from 'src/common/debug'
+import { env, isChart, isCli } from 'src/common/envalid'
+import { hfValues } from 'src/common/hf'
+import { getOtomiLoadBalancerIP } from 'src/common/k8s'
+import { getFilename, loadYaml, rootDir } from 'src/common/utils'
+import { getRepo, writeValues } from 'src/common/values'
+import { getParsedArgs } from 'src/common/yargs'
 import { $, cd, nothrow } from 'zx'
-import { decrypt } from './crypt'
-import { terminal } from './debug'
-import { env, isChart, isCli } from './envalid'
-import { hfValues } from './hf'
-import { getOtomiLoadBalancerIP } from './k8s'
-import { getFilename, loadYaml, rootDir } from './utils'
-import { getRepo, writeValues } from './values'
-import { getParsedArgs } from './yargs'
 
 const cmdName = getFilename(__filename)
 
@@ -17,7 +17,7 @@ export const prepareDomainSuffix = async (inValues: Record<string, any> | undefi
   const values = inValues ?? (await hfValues())
   if (values && !values.cluster.domainSuffix) {
     d.info('cluster.domainSuffix was not found, creating $loadbalancerIp.nip.io as fallback')
-    const ingressIP = values.apps['ingress-nginx']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
+    const ingressIP: string = values.apps['ingress-nginx']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
     // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
     const domainSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
     await writeValues({
@@ -37,14 +37,14 @@ export const prepareDomainSuffix = async (inValues: Record<string, any> | undefi
  */
 export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
-  if (existsSync(`${env.ENV_DIR}/.git`)) {
+  if (await pathExists(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped`)
     return
   }
   let values = inValues
   if (!values) {
     if (isCli) values = (await hfValues({ filesOnly: true })) as Record<string, any>
-    else if (isChart) values = loadYaml(env.VALUES_INPUT) as Record<string, any>
+    else if (isChart) values = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
     else return
   }
   const argv = getParsedArgs()
@@ -90,11 +90,11 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     d.info('Remote does not exist yet. Expecting first commit to come later.')
   }
   cd(env.ENV_DIR)
-  if (!existsSync(`${env.ENV_DIR}/.git`)) {
+  if (!(await pathExists(`${env.ENV_DIR}/.git`))) {
     d.info('Initializing values git repo.')
     await $`git init .`
   }
-  if (isCli) copyFileSync(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
+  if (isCli) await copyFile(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
   else await nothrow($`git config --global --add safe.directory ${env.ENV_DIR}`)
   await nothrow($`git config --local user.name ${username}`)
   await nothrow($`git config --local user.password ${password}`)
@@ -103,6 +103,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await nothrow($`git checkout -b ${branch}`)
     await nothrow($`git remote add origin ${remote}`)
   }
-  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+  if (await pathExists(`${env.ENV_DIR}/.sops.yaml`))
+    await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
   d.log(`Done bootstrapping git`)
 }

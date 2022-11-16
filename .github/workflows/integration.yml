@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       kubernetes_versions:
-        description: "Kubernetes versions (JSON formatted list e.g.: ['1.22'])"
+        description: "Kubernetes versions (JSON formatted list e.g.: ['1.23'])"
         type: string
       install_profile:
         description: Otomi installation profile
@@ -27,7 +27,7 @@ on:
         default: az_kms
       oidc:
         type: string
-        description: Should Otomi use external OIDC
+        description: Should Otomi use external OIDC?
         default: keycloak
       certificate:
         type: string
@@ -56,7 +56,7 @@ on:
         type: string
       cluster_persistence:
         type: choice
-        description: Should a cluster be destroyed on pipeline finish
+        description: Should a cluster be destroyed on pipeline finish?
         options:
           - preserve
           - destroy
@@ -70,14 +70,14 @@ on:
         default: nip_io
       kms:
         type: choice
-        description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
+        description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
         options:
           - no_kms
           - az_kms
         default: az_kms
       oidc:
         type: choice
-        description: Should Otomi encrypt secrets in values repo (DNS or KMS is used).
+        description: Should Otomi use external OIDC?
         options:
           - keycloak
           - az_oidc

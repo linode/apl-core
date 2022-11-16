@@ -8,7 +8,7 @@ shopt -s expand_aliases
 ENV_DIR=${ENV_DIR:-$PWD}
 [ "$ENV_DIR" = '/home/app/stack' ] && ENV_DIR='/home/app/stack/env'
 [ -d $ENV_DIR/env/env ] && ENV_DIR=$ENV_DIR/env
-if [ -n "$TESTING" ]; then
+if [ "$NODE_ENV" == "test" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
 fi

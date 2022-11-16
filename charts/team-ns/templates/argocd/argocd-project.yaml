@@ -55,14 +55,16 @@ spec:
 {{- end }}
   - name: team-member
     description: Team member privileges to team-{{ $v.teamId }}
+{{- if or (has "argocd" $v.selfService.apps) $v.otomi.isMultitenant }}
     policies:
-{{- if has "argocd" $v.selfService.apps }}
+  {{- if has "argocd" $v.selfService.apps }}
     - p, proj:team-{{ $v.teamId }}:team-member, *, *, team-{{ $v.teamId }}/*, allow
-{{- else }}
-  {{- if $v.otomi.isMultitenant }}
-    - p, proj:team-{{ $v.teamId }}:team-member, *, get, team-{{ $v.teamId }}/*, allow
   {{- else }}
+    {{- if $v.otomi.isMultitenant }}
+    - p, proj:team-{{ $v.teamId }}:team-member, *, get, team-{{ $v.teamId }}/*, allow
+    {{- else }}
     # we already have read-only rights globally when not in multitenancy
+    {{- end }}
   {{- end }}
 {{- end }}
     groups:

@@ -1,5 +1,5 @@
 import { createMock } from 'ts-auto-mock'
-import { OtomiDebugger } from './common/debug'
+import { OtomiDebugger } from 'src/common/debug'
 
 const stubs = {
   terminal: (): OtomiDebugger =>

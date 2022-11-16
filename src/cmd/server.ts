@@ -1,9 +1,9 @@
+import { prepareEnvironment } from 'src/common/cli'
+import { terminal } from 'src/common/debug'
+import { getFilename } from 'src/common/utils'
+import { BasicArguments, setParsedArgs } from 'src/common/yargs'
+import { startServer, stopServer } from 'src/server'
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { getFilename } from '../common/utils'
-import { BasicArguments, setParsedArgs } from '../common/yargs'
-import { startServer, stopServer } from '../server/index'
 
 type Arguments = BasicArguments
 

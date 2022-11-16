@@ -1,5 +1,5 @@
-import stubs from '../test-stubs'
-import { applyChanges, Changes, filterChanges } from './migrate'
+import { applyChanges, Changes, filterChanges } from 'src/cmd/migrate'
+import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
 

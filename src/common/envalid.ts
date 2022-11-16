@@ -1,17 +1,27 @@
 import { config } from 'dotenv'
-import { bool, cleanEnv, json, makeValidator, num, str } from 'envalid'
+import {
+  bool,
+  CleanedEnvAccessors,
+  cleanEnv as clean,
+  CleanOptions,
+  json,
+  makeValidator,
+  num,
+  str,
+  ValidatorSpec,
+} from 'envalid'
 import { existsSync } from 'fs'
 
-const ciBool = makeValidator((x) => {
+const ciBool = makeValidator<boolean | undefined>((x) => {
   if (x === 'vscode-jest-tests') return true
   if (x === undefined) return undefined
   const { _parse } = bool({ default: false })
   return _parse(x)
 })
 
-const cliEnvSpec = {
+export const cliEnvSpec = {
   CI: ciBool({ default: false }),
-  DISABLE_SYNC: bool({ default: false }),
+  DISABLE_SYNC: bool({ default: false, desc: 'will disable contacting the cluster as found in kube context' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
   IN_DOCKER: bool({ default: false }),
@@ -20,32 +30,29 @@ const cliEnvSpec = {
   OTOMI_DEV: bool({ default: false }),
   OTOMI_IN_TERMINAL: bool({ default: true }),
   STATIC_COLORS: bool({ default: false }),
-  TESTING: bool({ default: false }),
   TRACE: bool({ default: false }),
   VERBOSITY: num({ desc: 'The verbosity level', default: 1 }),
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
 }
 
-export const cleanEnvironment = (spec: Record<string, any> = cliEnvSpec): Record<string, any> => {
+export function cleanEnv<T>(
+  spec: { [K in keyof T]: ValidatorSpec<T[K]> },
+  options?: CleanOptions<T>,
+): Readonly<T & CleanedEnvAccessors> {
   let pEnv: any = process.env
-  // load local .env if we have it, for devs
-  let path = `${process.cwd()}/.env`
-  if (!process.env.TESTING && existsSync(path)) {
-    const result = config({ path })
-    if (result.error) console.error(result.error)
-    pEnv = { ...result.parsed, ...pEnv }
-  }
-  path = `${pEnv.ENV_DIR}/.secrets`
-  if (existsSync(path)) {
-    const result = config({ path })
-    if (result.error) console.error(result.error)
-    pEnv = { ...result.parsed, ...pEnv }
-  }
-  return cleanEnv(pEnv, spec)
+  // load local .env and $ENV_DIR/.secrets if we have it
+  ;[`${process.cwd()}/.env`, `${pEnv.ENV_DIR}/.secrets`].forEach((path) => {
+    if (existsSync(path)) {
+      const result = config({ path })
+      if (result.error) console.error(result.error)
+      pEnv = { ...result.parsed, ...pEnv }
+    }
+  })
+  return clean(pEnv, spec, options)
 }
 
-export const env = cleanEnvironment()
+export const env = cleanEnv(cliEnvSpec, {})
 
 export const isChart = !!env.VALUES_INPUT
-export const isCi: boolean = env.CI
-export const isCli: boolean = !env.CI && !isChart
+export const isCi = env.CI
+export const isCli = env.OTOMI_DEV || (!env.CI && !isChart)

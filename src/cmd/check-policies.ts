@@ -1,12 +1,13 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { pathExists } from 'fs-extra'
+import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
+import { logLevel, logLevels, terminal } from 'src/common/debug'
+import { env } from 'src/common/envalid'
+import { hfTemplate } from 'src/common/hf'
+import { getFilename } from 'src/common/utils'
+import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { logLevel, logLevels, terminal } from '../common/debug'
-import { env } from '../common/envalid'
-import { hfTemplate } from '../common/hf'
-import { getFilename } from '../common/utils'
-import { BasicArguments, getParsedArgs, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 const outDir = '/tmp/otomi/conftest'
@@ -28,7 +29,7 @@ export const checkPolicies = async (): Promise<void> => {
 
   const policiesFile = `${env.ENV_DIR}/env/policies.yaml`
   const parametersFile = `${outDir}/parameters.yaml`
-  if (!existsSync(outDir)) mkdirSync(outDir)
+  if (!(await pathExists(outDir))) mkdirSync(outDir)
   // the policy parameters file's root prop is 'policies:', but conftest expects it to be served with 'parameters:'
   writeFileSync(parametersFile, readFileSync(policiesFile, 'utf8').replace('policies:', 'parameters:'))
   d.info('Generating k8s manifests for cluster')
