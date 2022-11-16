@@ -30,7 +30,7 @@ releases:
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $grafanaDomain := printf "grafana.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
-  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant $tc.monitoringStack.enabled }}
+  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant $team.monitoringStack.enabled }}
   - name: prometheus-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -164,7 +164,7 @@ releases:
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant $tc.monitoringStack.enabled (gt (len $teamServices) 0) }}
+  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant $team.monitoringStack.enabled (gt (len $teamServices) 0) }}
       - name: blackbox
         svc: prometheus-blackbox-exporter
         port: 9115
