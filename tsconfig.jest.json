@@ -8,7 +8,9 @@
         "cacheBetweenTests": false
       }
     ],
-    "target": "es2021"
+    "target": "esnext"
   },
+  "exclude": ["node_modules", "dist"],
+  "include": ["src", "jest.config.ts"],
   "types": ["jest"]
 }

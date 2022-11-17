@@ -5,7 +5,7 @@ import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
-import { dump, load } from 'js-yaml'
+import { parse, stringify } from 'yaml'
 import { isEmpty, map } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
@@ -25,7 +25,7 @@ export const createK8sSecret = async (
   data: Record<string, any> | string,
 ): Promise<void> => {
   const d = terminal('common:k8s:createK8sSecret')
-  const rawString = dump(data)
+  const rawString = stringify(data)
   const filePath = join('/tmp', secretId)
   const dirPath = dirname(filePath)
   try {
@@ -46,7 +46,7 @@ export const getK8sSecret = async (name: string, namespace: string): Promise<Rec
   const result = await nothrow(
     $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`,
   )
-  if (result.exitCode === 0) return load(result.stdout) as Record<string, any>
+  if (result.exitCode === 0) return parse(result.stdout) as Record<string, any>
   return undefined
 }
 
@@ -59,13 +59,13 @@ export interface DeploymentState {
 }
 
 export const getDeploymentState = async (): Promise<DeploymentState> => {
-  if (env.DISABLE_SYNC) return {}
+  if (env.isDev && env.DISABLE_SYNC) return {}
   const result = await nothrow($`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`)
   return JSON.parse(result.stdout || '{}')
 }
 
 export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {
-  if (env.DISABLE_SYNC) return
+  if (env.isDev && env.DISABLE_SYNC) return
   const d = terminal('common:k8s:setDeploymentState')
   const currentState = await getDeploymentState()
   const newState = { ...currentState, ...state }
@@ -114,7 +114,7 @@ export const getOtomiLoadBalancerIP = async (): Promise<string> => {
   /* A load balancer can have a hostname, ip or any list of those items. We select the first item, as we only need one.
    * And we prefer IP over hostname, as it reduces the fact that we need to resolve & select an ip.
    */
-  const firstIngressData = ingressDataListSorted[0]
+  const [firstIngressData] = ingressDataListSorted
 
   if (firstIngressData.ip) return firstIngressData.ip
   if (firstIngressData.hostname) {

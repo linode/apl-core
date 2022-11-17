@@ -1,15 +1,15 @@
+import { bootstrapGit } from 'src/common/bootstrap'
+import { prepareEnvironment } from 'src/common/cli'
+import { encrypt } from 'src/common/crypt'
+import { terminal } from 'src/common/debug'
+import { env, isCi } from 'src/common/envalid'
+import { hfValues } from 'src/common/hf'
+import { setDeploymentState, waitTillAvailable } from 'src/common/k8s'
+import { getFilename } from 'src/common/utils'
+import { getRepo } from 'src/common/values'
+import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { $, cd, nothrow } from 'zx'
-import { bootstrapGit } from '../common/bootstrap'
-import { prepareEnvironment } from '../common/cli'
-import { encrypt } from '../common/crypt'
-import { terminal } from '../common/debug'
-import { env, isCi } from '../common/envalid'
-import { hfValues } from '../common/hf'
-import { setDeploymentState, waitTillAvailable } from '../common/k8s'
-import { getFilename } from '../common/utils'
-import { getRepo } from '../common/values'
-import { getParsedArgs, HelmArguments, setParsedArgs } from '../common/yargs'
+import { $, cd } from 'zx'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
 import { validateValues } from './validate-values'
 
@@ -60,10 +60,6 @@ const commitAndPush = async (values: Record<string, any>): Promise<void> => {
     await $`git remote show origin`
     if (await gitPush(values)) {
       d.log('Successfully pushed the updated values')
-      // kill api container and let it reinflate
-      // @TODO: make this an api endpoint for internal use only
-      await nothrow($`kubectl -n otomi delete po -l app.kubernetes.io/name=otomi-api`)
-      d.log('Restarted the api to reinflate with new values')
     }
   } catch (error) {
     d.error(error.stderr)

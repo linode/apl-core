@@ -33,7 +33,7 @@ resources:
       {{- end }}
     {{- end }}
   {{- end }}
-  {{- range $id, $team := $v.teamConfig }}
+  {{- range $id, $team := omit $v.teamConfig "admin"}}
     {{- $ns := printf "team-%s" $id }}
   - apiVersion: v1
     kind: Namespace

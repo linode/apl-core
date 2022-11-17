@@ -1,11 +1,12 @@
+import { prepareEnvironment } from 'src/common/cli'
+import { terminal } from 'src/common/debug'
+import { hfValues } from 'src/common/hf'
+import { getFilename } from 'src/common/utils'
+import { HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { hfValues } from '../common/hf'
-import { getFilename } from '../common/utils'
-import { HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 import { checkPolicies } from './check-policies'
 import { lint } from './lint'
+import { validateTemplates } from './validate-templates'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
@@ -15,7 +16,7 @@ const test = async (): Promise<void> => {
   d.log('Running tests against cluster state...')
   await validateValues()
   await lint()
-  // await validateTemplates()
+  await validateTemplates()
   const values = await hfValues()
   if (!values?.apps.gatekeeper!.disableValidatingWebhook) await checkPolicies()
   d.log('Tests OK!')

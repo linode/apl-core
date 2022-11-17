@@ -2,16 +2,16 @@ import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isEmpty } from 'lodash'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import { prepareDomainSuffix } from '../common/bootstrap'
-import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { logLevelString, terminal } from '../common/debug'
-import { env, isCli } from '../common/envalid'
-import { hf } from '../common/hf'
-import { getDeploymentState, setDeploymentState } from '../common/k8s'
-import { getFilename } from '../common/utils'
-import { getCurrentVersion, getImageTag } from '../common/values'
-import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
-import { ProcessOutputTrimmed } from '../common/zx-enhance'
+import { prepareDomainSuffix } from 'src/common/bootstrap'
+import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
+import { logLevelString, terminal } from 'src/common/debug'
+import { env, isCli } from 'src/common/envalid'
+import { hf } from 'src/common/hf'
+import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
+import { getFilename } from 'src/common/utils'
+import { getCurrentVersion, getImageTag } from 'src/common/values'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { commit } from './commit'
 import { upgrade } from './upgrade'
 
@@ -78,7 +78,7 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   await upgrade({ when: 'post' })
-  if (!env.DISABLE_SYNC)
+  if (!(env.isDev && env.DISABLE_SYNC))
     if (!isCli || isEmpty(prevState.status))
       // commit first time when not deployed only, always commit in chart (might have previous failure)
       await commit(true) // will set deployment state after

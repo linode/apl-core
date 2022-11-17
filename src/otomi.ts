@@ -1,12 +1,12 @@
 #!/usr/bin/env node --nolazy -r ts-node/register -r tsconfig-paths/register
 
 import { existsSync, symlinkSync, unlinkSync } from 'fs'
+import { commands, defaultCommand } from 'src/cmd'
+import { scriptName } from 'src/common/cli'
+import { terminal } from 'src/common/debug'
+import { env } from 'src/common/envalid'
+import { basicOptions, parser } from 'src/common/yargs'
 import { CommandModule } from 'yargs'
-import { commands, defaultCommand } from './cmd'
-import { scriptName } from './common/cli'
-import { terminal } from './common/debug'
-import { env } from './common/envalid'
-import { basicOptions, parser } from './common/yargs'
 
 console.profile('otomi')
 const d = terminal('global')

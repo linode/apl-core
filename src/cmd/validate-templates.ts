@@ -1,15 +1,15 @@
 import { readFileSync, rmSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { loadAll } from 'js-yaml'
+import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
+import { terminal } from 'src/common/debug'
+import { hfTemplate } from 'src/common/hf'
+import { getFilename, readdirRecurse, rootDir } from 'src/common/utils'
+import { getK8sVersion } from 'src/common/values'
+import { BasicArguments, getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk, nothrow } from 'zx'
-import { cleanupHandler, prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { hfTemplate } from '../common/hf'
-import { getFilename, readdirRecurse, rootDir } from '../common/utils'
-import { getK8sVersion } from '../common/values'
-import { BasicArguments, getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
@@ -30,7 +30,7 @@ const cleanup = (argv: BasicArguments): void => {
 const setup = async (argv: HelmArguments): Promise<void> => {
   cleanupHandler(() => cleanup(argv))
 
-  k8sVersion = getK8sVersion(argv)
+  k8sVersion = await getK8sVersion(argv)
   vk8sVersion = `v${k8sVersion}`
 
   let prep: Promise<any>[] = []

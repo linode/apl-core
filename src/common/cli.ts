@@ -1,4 +1,4 @@
-import { readdirSync } from 'fs'
+import { readdir } from 'fs/promises'
 import { chalk } from 'zx'
 import { decrypt } from './crypt'
 import { terminal } from './debug'
@@ -11,14 +11,14 @@ chalk.level = 2
  * Check the ENV_DIR parameter and whether or not the folder is populated
  * @returns
  */
-const isReadyEnvDir = (): boolean => {
-  const { ENV_DIR, TESTING } = env
+const isReadyEnvDir = async (): Promise<boolean> => {
+  const { ENV_DIR, isDev } = env
   const d = terminal('common:isReadyEnvDir')
-  if (!TESTING && isCore && !ENV_DIR) {
+  if (isDev && isCore && !ENV_DIR) {
     throw new Error('The ENV_DIR environment variable is not set')
   }
   d.debug(`ENV_DIR: ${env.ENV_DIR}`)
-  return readdirSync(env.ENV_DIR).length > 0
+  return (await readdir(env.ENV_DIR)).length > 0
 }
 
 type PrepareEnvironmentOptions = {
@@ -37,7 +37,7 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
   if (options?.skipAllPreChecks) return
   const d = terminal('common:prepareEnvironment')
   d.info('Checking environment')
-  if (!options?.skipEnvDirCheck && isReadyEnvDir()) {
+  if (!options?.skipEnvDirCheck && (await isReadyEnvDir())) {
     if (!options?.skipDecrypt) await decrypt()
     if (isCli && !options?.skipKubeContextCheck) await checkKubeContext()
   }

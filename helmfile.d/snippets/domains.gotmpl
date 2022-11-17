@@ -2,20 +2,16 @@
 {{- $tc := $v.teamConfig }}
 {{- $coreAdminServices := list }}
 {{- range $s := $v.adminApps }}
-  {{- range $ing := $s | get "ingress" nil }}
-    {{- if $ing }}
-      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false) "ownHost" ($s | get "ownHost" false)) }}
-      {{- $coreAdminServices = append $coreAdminServices $svc }}
-    {{- end }}
+  {{- range $ing := $s | get "ingress" list }}
+    {{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" ($s | get "isShared" false) "ownHost" ($s | get "ownHost" false)) }}
+    {{- $coreAdminServices = append $coreAdminServices $svc }}
   {{- end }}
 {{- end }}
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
-  {{- range $ing := $s | get "ingress" nil }}
-    {{- if $ing }}
-      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" false "ownHost" ($s | get "ownHost" false)) }}
-      {{- $coreTeamServices = append $coreTeamServices $svc }}
-    {{- end }}
+  {{- range $ing := $s | get "ingress" list }}
+    {{- $svc := merge $ing (dict "isCore" true "name" $s.name "isShared" false "ownHost" ($s | get "ownHost" false)) }}
+    {{- $coreTeamServices = append $coreTeamServices $svc }}
   {{- end }}
 {{- end }}
 {{- $domains := dict }}

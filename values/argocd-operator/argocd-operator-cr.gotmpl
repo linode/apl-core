@@ -34,7 +34,6 @@ spec:
       g, team-admin, role:admin
     defaultPolicy: role:readonly
 {{- end }}
-  gaTrackingID: G-KERXM426H2
   server:
     host: argocd.{{ $v.cluster.domainSuffix }}
     insecure: true # nginx terminates tls
