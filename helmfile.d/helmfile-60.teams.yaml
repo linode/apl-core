@@ -30,9 +30,9 @@ releases:
   {{- $appsDomain := printf "apps.%s" $domain }}
   {{- $grafanaDomain := printf "grafana.%s" $domain }}
   {{- $azure := $team | get "azure" dict }}
-  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant $team.monitoringStack.enabled }}
+  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
   - name: prometheus-{{ $teamId }}
-    installed: true
+    installed: {{ $team.monitoringStack.enabled }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
@@ -59,7 +59,7 @@ releases:
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
-          enabled: true
+          enabled: {{ $team.monitoringStack.enabled }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             externalUrl: https://{{ $appsDomain }}/prometheus
@@ -111,7 +111,7 @@ releases:
     {{- end }}
     {{- if has "msteams" ($team | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: true
+    installed: {{ $team.monitoringStack.enabled }}
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -130,7 +130,7 @@ releases:
           - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
     {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
-    installed: true
+    installed: {{ $team.monitoringStack.enabled }}
     namespace: team-{{ $teamId }}
     chart: ../charts/grafana-dashboards
     labels:
@@ -164,7 +164,7 @@ releases:
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant $team.monitoringStack.enabled (gt (len $teamServices) 0) }}
+  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant (gt (len $teamServices) 0) }}
       - name: blackbox
         svc: prometheus-blackbox-exporter
         port: 9115
