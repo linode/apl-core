@@ -1,4 +1,4 @@
-api: main
+api: repo-ref
 console: main
 tasks: 0.2.31
 tools: 1.4.25
