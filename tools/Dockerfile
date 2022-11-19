@@ -53,8 +53,8 @@ RUN apt-get update -qq \
   vim \
   nano \
   groff \
-  awscli \
   rsync \
+  postgresql-client \
   && rm -rf /var/lib/apt/lists/*
 
 # set locale

@@ -8,6 +8,7 @@ metadata:
     component: chartmuseum
 spec:
   replicas: {{ .Values.chartmuseum.replicas }}
+  revisionHistoryLimit: {{ .Values.chartmuseum.revisionHistoryLimit }}
   strategy:
     type: {{ .Values.updateStrategy.type }}
     {{- if eq .Values.updateStrategy.type "Recreate" }}

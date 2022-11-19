@@ -12,7 +12,7 @@ externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
 # logLevel - debug, info, warning, error or fatal
 logLevel: warning
-harborAdminPassword: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
+harborAdminPassword: {{ $v.otomi.adminPassword }}
 nameOverride: harbor
 secretKey: {{ $h | get "secretKey" nil }}
 
@@ -117,7 +117,7 @@ database:
         cpu: 50m
         memory: 256Mi
       {{- end }}
-  password: {{ $h | get "adminPassword" $v.otomi.adminPassword }}
+  password: {{ $v.otomi.adminPassword }}
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users
