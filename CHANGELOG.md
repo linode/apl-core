@@ -7,8 +7,9 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* detect git conflicts on multi-user values changes ([#925](https://github.com/redkubes/otomi-core/issues/925)) ([eefccc7](https://github.com/redkubes/otomi-core/commit/eefccc7ab1d8106a357dbad476071bf6c109f7e6))
-
+- detect git conflicts on multi-user values changes ([#925](https://github.com/redkubes/otomi-core/issues/925)) ([eefccc7](https://github.com/redkubes/otomi-core/commit/eefccc7ab1d8106a357dbad476071bf6c109f7e6))
+- notify users about drone pipeline execution status ([#925](https://github.com/redkubes/otomi-core/issues/925))
+- encrypt only those secrets that have been changed ([#925](https://github.com/redkubes/otomi-core/issues/925))
 
 ### Bug Fixes
 
