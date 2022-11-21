@@ -1,4 +1,4 @@
-api: main
-console: main
+api: 0.5.16
+console: 0.5.19
 tasks: 0.2.31
 tools: 1.4.25
