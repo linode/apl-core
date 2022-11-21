@@ -32,7 +32,7 @@ releases:
   {{- $azure := $team | get "azure" dict }}
   {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
   - name: prometheus-{{ $teamId }}
-    installed: {{ $team.monitoringStack.enabled }}
+    installed: {{ $team | get "monitoringStack.enabled" true }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
@@ -59,7 +59,7 @@ releases:
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
-          enabled: {{ $team.monitoringStack.enabled }}
+          enabled: {{ $team | get "monitoringStack.enabled" true }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             externalUrl: https://{{ $appsDomain }}/prometheus
@@ -130,7 +130,7 @@ releases:
           - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
     {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
-    installed: {{ $team.monitoringStack.enabled }}
+    installed: {{ $team | get "monitoringStack.enabled" true }}
     namespace: team-{{ $teamId }}
     chart: ../charts/grafana-dashboards
     labels:
