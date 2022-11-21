@@ -21,23 +21,6 @@ All notable changes to this project will be documented in this file. See [standa
 * setting up NODE_ENV for lint:hf command ([#943](https://github.com/redkubes/otomi-core/issues/943)) ([0fcab9b](https://github.com/redkubes/otomi-core/commit/0fcab9bdd738fe0d1f57b7e05c963c931569d95e))
 
 
-### Styling
-
-* **schema:** formatting ([a310278](https://github.com/redkubes/otomi-core/commit/a3102786cc2b0079422773232e59961dea677abb))
-
-
-### Build System
-
-* **versions:** update versions ([c8c66be](https://github.com/redkubes/otomi-core/commit/c8c66bead1b2d6682799455322a05cc024722955))
-* **versions:** update versions.yaml ([8b7d85c](https://github.com/redkubes/otomi-core/commit/8b7d85cfbfad541babc0989f048779a388e7ad38))
-
-
-### Code Refactoring
-
-* **component:** cert manager template ([ea1109d](https://github.com/redkubes/otomi-core/commit/ea1109d986f9e4b69dfe1725c49c490c45013bc3))
-* **component:** move certmanager default resource quotas to defaults.yaml ([6257a63](https://github.com/redkubes/otomi-core/commit/6257a63cf9429ed6ee156d19426cd83e3b236cb1))
-
-
 ### Tests
 
 * ensure cluster name uniqueness for jobs using matrix strategy ([#931](https://github.com/redkubes/otomi-core/issues/931)) ([5d1f2fb](https://github.com/redkubes/otomi-core/commit/5d1f2fb3652f107a4e6da27eb199d2a45ddec0dd))
