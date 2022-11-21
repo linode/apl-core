@@ -111,7 +111,7 @@ releases:
     {{- end }}
     {{- if has "msteams" ($team | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: {{ $team.monitoringStack.enabled }}
+    installed: {{ $team | get "monitoringStack.enabled" true }}
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:

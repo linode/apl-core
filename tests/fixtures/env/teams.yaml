@@ -6,8 +6,8 @@ teamConfig:
             receivers:
                 - email
         id: demo
-        monitoringStack:
-            enabled: true
+        # monitoringStack:
+        #     enabled: false
         networkPolicy:
             egressPublic: true
             ingressPrivate: true
