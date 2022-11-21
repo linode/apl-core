@@ -54,7 +54,6 @@ RUN apt-get update -qq \
   nano \
   groff \
   rsync \
-  postgresql-client \
   && rm -rf /var/lib/apt/lists/*
 
 # set locale

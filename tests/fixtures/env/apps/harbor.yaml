@@ -1,8 +1,6 @@
 apps:
     harbor:
         enabled: true
-        backup:
-            enabled: false
         persistence:
             imageChartStorage:
                 gcs:
