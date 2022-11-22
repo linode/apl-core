@@ -186,6 +186,7 @@ adminApps:
   - name: jaeger
     tags: [ingress, telemetry, observability]
     deps: [istio]
+    isShared: true
     ingress:
       - svc: jaeger-operator-jaeger-query
         port: 16686
@@ -195,7 +196,7 @@ adminApps:
         auth: true
   - name: keycloak
     tags: [auth, sso]
-    isShared: true
+    # isShared: true
     ownHost: true
     ingress:
       - namespace: keycloak
