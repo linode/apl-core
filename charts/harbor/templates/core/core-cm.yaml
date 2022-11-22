@@ -63,8 +63,3 @@ data:
   #make the GC time window configurable for testing
   GC_TIME_WINDOW_HOURS: "{{ .Values.core.gcTimeWindowHours }}"
   {{- end }}
-  {{- template "harbor.traceEnvsForCore" . }}
-
-  {{- if .Values.core.artifactPullAsyncFlushDuration | quote }}
-  ARTIFACT_PULL_ASYNC_FLUSH_DURATION: {{ .Values.core.artifactPullAsyncFlushDuration }}
-  {{- end }}

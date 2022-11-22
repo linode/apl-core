@@ -7,7 +7,6 @@ metadata:
     component: portal
 spec:
   replicas: {{ .Values.portal.replicas }}
-  revisionHistoryLimit: {{ .Values.portal.revisionHistoryLimit }}
   selector:
     matchLabels:
 {{ include "harbor.matchLabels" . | indent 6 }}

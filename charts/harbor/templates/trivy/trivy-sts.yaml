@@ -67,8 +67,6 @@ spec:
               value: {{ .Values.trivy.debugMode | quote }}
             - name: "SCANNER_TRIVY_VULN_TYPE"
               value: {{ .Values.trivy.vulnType | quote }}
-            - name: "SCANNER_TRIVY_TIMEOUT"
-              value: {{ .Values.trivy.timeout | quote }}
             - name: "SCANNER_TRIVY_GITHUB_TOKEN"
               valueFrom:
                 secretKeyRef:
@@ -80,8 +78,6 @@ spec:
               value: {{ .Values.trivy.ignoreUnfixed | default false | quote }}
             - name: "SCANNER_TRIVY_SKIP_UPDATE"
               value: {{ .Values.trivy.skipUpdate | default false | quote }}
-            - name: "SCANNER_TRIVY_OFFLINE_SCAN"
-              value: {{ .Values.trivy.offlineScan | default false | quote }}
             - name: "SCANNER_TRIVY_INSECURE"
               value: {{ .Values.trivy.insecure | default false | quote }}
             - name: SCANNER_API_SERVER_ADDR
@@ -184,10 +180,6 @@ spec:
       name: data
       labels:
 {{ include "harbor.labels" . | indent 8 }}
-      annotations:
-      {{- range $key, $value := $trivy.annotations }}
-        {{ $key }}: {{ $value | quote }}
-      {{- end }}
     spec:
       accessModes: [{{ $trivy.accessMode | quote }}]
       {{- if $trivy.storageClass }}

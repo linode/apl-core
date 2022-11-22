@@ -7,7 +7,6 @@ metadata:
     component: registry
 spec:
   replicas: {{ .Values.registry.replicas }}
-  revisionHistoryLimit: {{ .Values.registry.revisionHistoryLimit }}
   strategy:
     type: {{ .Values.updateStrategy.type }}
     {{- if eq .Values.updateStrategy.type "Recreate" }}
@@ -152,12 +151,8 @@ spec:
 {{ toYaml .Values.registry.controller.resources | indent 10 }}
 {{- end }}
         envFrom:
-        - configMapRef:
-            name: "{{ template "harbor.registryCtl" . }}"
         - secretRef:
             name: "{{ template "harbor.registry" . }}"
-        - secretRef:
-            name: "{{ template "harbor.registryCtl" . }}"
         env:
         - name: CORE_SECRET
           valueFrom:
