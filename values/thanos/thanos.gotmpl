@@ -3,7 +3,6 @@
 {{- $obj := $vl.objstore }}
 {{- $sp := $obj.storageProvider | get "type" dict }}
 
-
 ## @section Thanos Query parameters
 query:
   enabled: true
@@ -20,48 +19,17 @@ query:
   replicaLabel:
     - replica
     - prometheus_replica
-
-  resources:
-    {{- with $vl.query | get "resources" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 500m
-      memory: 128Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-    {{- end }}  
+  resources: {{- $vl.query.resources | toYaml | nindent 4 }}
 
 ## @section Thanos Query Frontend parameters
 queryFrontend:
   enabled: true
-  resources:
-    {{- with $vl.queryFrontend | get "resources" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 500m
-      memory: 128Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-    {{- end }}  
+  resources: {{- $vl.queryFrontend.resources | toYaml | nindent 4 }}
 
 ## @section Thanos Bucket Web parameters
 bucketweb:
   enabled: true
-  resources:
-    {{- with $vl.bucketweb | get "resources" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 500m
-      memory: 128Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-    {{- end }}  
+  resources: {{- $vl.bucketweb.resources | toYaml | nindent 4 }}
 
 ## @section Thanos Compactor parameters
 compactor:
@@ -73,34 +41,14 @@ compactor:
     - --deduplication.replica-label=replica
   persistence:
     size: {{ $vl.compactor.persistence.size }}
-  resources:
-    {{- with $vl.storegateway | get "resources" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 500m
-      memory: 128Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-    {{- end }} 
+  resources: {{- $vl.compactor.resources | toYaml | nindent 4 }}
 
 ## @section Thanos Store Gateway parameters
 storegateway:
   enabled: true
   persistence:
     size: {{ $vl.storegateway.persistence.size }}
-  resources:
-    {{- with $vl.storegateway | get "resources" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 500m
-      memory: 128Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-    {{- end }} 
+  resources: {{- $vl.storegateway.resources | toYaml | nindent 4 }}
 
 ## @section Thanos Receive parameters
 receive:
@@ -110,17 +58,7 @@ receive:
   replicacount: {{ $vl.receiver.replicaCount }}
   persistence:
     size: {{ $vl.receiver.persistence.size }}
-  resources:
-    {{- with $vl.receiver | get "resources" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 500m
-      memory: 128Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-    {{- end }} 
+  resources: {{- $vl.receive.resources | toYaml | nindent 4 }}
   service:
     additionalHeadless: true
 
@@ -129,17 +67,7 @@ ruler:
   enabled: {{ $vl.ruler.enabled }}
   persistence:
     size: {{ $vl.ruler.persistence.size }}
-  resources:
-    {{- with $vl.ruler | get "resources" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 500m
-      memory: 128Mi
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-    {{- end }} 
+  resources: {{- $vl.ruler.resources | toYaml | nindent 4 }}
   alertmanagers:
     - http://prometheus-operator-alertmanager.monitoring.svc.cluster.local:9093
   config: |-
@@ -151,7 +79,6 @@ ruler:
 
 ## @param objstoreConfig The [objstore configuration](https://thanos.io/tip/thanos/storage.md/)
 ## Specify content for objstore.yml
-##
 {{- if eq $sp "minioLocal" }}
 objstoreConfig: |-
   type: s3
