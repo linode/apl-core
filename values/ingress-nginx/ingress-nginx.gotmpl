@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $n := $v.apps | get "ingress-nginx" }}
+{{- $n := $v.apps | get "ingress-nginx-platform" }}
 {{- $ingress := (index $v.ingress.classes (.Release.Labels.index | int)) }}
 {{- $privateNetwork := eq "private" ($ingress | get "network" "public")  }}
 nameOverride: {{ .Release.Name }}
