@@ -1,4 +1,4 @@
-api: upgrade-harbor
+api: harbor-backup
 console: main
 tasks: 0.2.31
 tools: 1.4.25
