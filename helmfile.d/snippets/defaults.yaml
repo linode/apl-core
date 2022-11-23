@@ -178,7 +178,7 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 512Mi
-            receive:
+            receiver:
               mode: standalone
               replicaCount: 1
               persistence:
