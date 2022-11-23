@@ -56,7 +56,5 @@ changes:
       - dns.provider.google.projectId: dns.provider.google.project
       - kms.sops.google.projectId: kms.sops.google.project
   - version: 6
-    renamings:
-      - env/apps/ingress-nginx.yaml env/apps/ingress-nginx-platform.yaml
     relocations:
       - apps.ingress-nginx: apps.ingress-nginx-platform
