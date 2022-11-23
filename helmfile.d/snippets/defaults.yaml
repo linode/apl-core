@@ -201,13 +201,13 @@ environments:
                   cpu: 500m
                   memory: 256Mi
             compactor:
-            resources:
-              requests:
-                cpu: 200m
-                memory: 128Mi
-              limits:
-                cpu: 500m
-                memory: 256Mi
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
               retentionResolutionRaw: 30d
               retentionResolution5m: 30d
               retentionResolution1h: 10y
