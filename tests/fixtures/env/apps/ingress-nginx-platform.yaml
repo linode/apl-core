@@ -4,7 +4,7 @@ apps:
             controller:
                 config:
                     modsecurity-snippet: |
-                        SecRuleRemoveById 911100
+                        SecRuleRemoveById 911102
         maxBodySize: 1024m
         modsecurity:
             enabled: true
