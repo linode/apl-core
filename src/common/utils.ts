@@ -6,9 +6,8 @@ import { existsSync, pathExists, readFileSync } from 'fs-extra'
 import { readdir, readFile } from 'fs/promises'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { isEmpty, omit } from 'lodash'
+import { omit } from 'lodash'
 import { resolve } from 'path'
-import { stringify } from 'yaml'
 import { $, ProcessOutput } from 'zx'
 import { env } from './envalid'
 
@@ -199,8 +198,4 @@ export const semverCompare = (a, b) => {
     if (Number.isNaN(na) && !Number.isNaN(nb)) return -1
   }
   return 0
-}
-
-export const objectToYaml = (obj: Record<string, any>): string => {
-  return isEmpty(obj) ? '' : stringify(obj, { indent: 4 })
 }

@@ -2,6 +2,7 @@ import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
 import { unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
+import { stringify } from 'yaml'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -12,12 +13,15 @@ import {
   getValuesSchema,
   gucci,
   loadYaml,
-  objectToYaml,
   pkg,
   removeBlankAttributes,
   stringContainsSome,
 } from './utils'
 import { HelmArguments } from './yargs'
+
+const objectToYaml = (obj: Record<string, any>): string => {
+  return isEmpty(obj) ? '' : stringify(obj, { indent: 4 })
+}
 
 let otomiK8sVersion: string
 /**
