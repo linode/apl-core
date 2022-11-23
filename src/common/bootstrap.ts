@@ -17,7 +17,7 @@ export const prepareDomainSuffix = async (inValues: Record<string, any> | undefi
   const values = inValues ?? (await hfValues())
   if (values && !values.cluster.domainSuffix) {
     d.info('cluster.domainSuffix was not found, creating $loadbalancerIp.nip.io as fallback')
-    const ingressIP: string = values.apps['ingress-nginx']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
+    const ingressIP: string = values.apps['ingress-nginx-platform']?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
     // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
     const domainSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
     await writeValues({
