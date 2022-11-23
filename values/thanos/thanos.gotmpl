@@ -58,7 +58,7 @@ receive:
   replicacount: {{ $vl.receiver.replicaCount }}
   persistence:
     size: {{ $vl.receiver.persistence.size }}
-  resources: {{- $vl.receive.resources | toYaml | nindent 4 }}
+  resources: {{- $vl.receiver.resources | toYaml | nindent 4 }}
   service:
     additionalHeadless: true
 
