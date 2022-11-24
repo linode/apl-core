@@ -57,4 +57,4 @@ changes:
       - kms.sops.google.projectId: kms.sops.google.project
   - version: 6
     relocations:
-      - apps.ingress-nginx: 'apps.ingress-nginx@platform'
+      - apps.ingress-nginx: 'apps.ingress-nginx-platform'

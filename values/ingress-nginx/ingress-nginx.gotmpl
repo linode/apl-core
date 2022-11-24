@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $ingress := (index $v.ingress.classes (.Release.Labels.index | int)) }}
-{{- $appName := printf "ingress-nginx@%s" $ingress.className }}
+{{- $appName := printf "ingress-nginx-%s" $ingress.className }}
 {{- $app := $v.apps | get $appName }}
 {{/* appDefaults - each ingress-nginx Helm realse will use default values defined in defaults.yaml in app.ingress-nginx context*/}}
 {{- $appDefaults := $v | get "apps.ingress-nginx" }}

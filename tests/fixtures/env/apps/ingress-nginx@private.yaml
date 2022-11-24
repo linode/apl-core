@@ -1,5 +1,5 @@
 apps:
-    ingress-nginx@private:
+    ingress-nginx-private:
         _rawValues:
             controller:
                 config:

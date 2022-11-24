@@ -1,5 +1,5 @@
 apps:
-    ingress-nginx@net-a:
+    ingress-nginx-net-a:
         _rawValues:
             controller:
                 config:
