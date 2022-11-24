@@ -220,16 +220,16 @@ export const preserveIngressControllerConfig = async (
   },
 ): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:preserveIngressControllerConfig`)
-  const sourcePath = `${env.ENV_DIR}/env/apps/ingress-nginx-platform.yaml`
+  const sourcePath = `${env.ENV_DIR}/env/apps/ingress-nginx@platform.yaml`
   if (!(await deps.pathExists(sourcePath))) return false
   const ingressClasses = (await loadYaml(`${env.ENV_DIR}/env/settings.yaml`))?.ingress?.classes || []
   const origSpec = await loadYaml(sourcePath)
 
   ingressClasses.forEach(async (entry) => {
-    const targetPath = `${env.ENV_DIR}/env/apps/ingress-nginx-${entry.className}.yaml`
+    const targetPath = `${env.ENV_DIR}/env/apps/ingress-nginx@${entry.className}.yaml`
     if (await deps.pathExists(targetPath)) return
-    const targetJsonPath = `apps.ingress-nginx-${entry.className}`
-    const sourceJsonPath = `apps.ingress-nginx-platform`
+    const targetJsonPath = `apps.ingress-nginx@${entry.className}`
+    const sourceJsonPath = `apps.ingress-nginx@platform`
     d.info(`Generating ${targetJsonPath} from ${sourceJsonPath}`)
     if (dryRun) {
       d.info('Dry run skipping')

@@ -63,7 +63,7 @@ environments:
             enabled: false
           httpbin:
             enabled: false
-          ingress-nginx-platform:
+          ingress-nginx@platform:
             enabled: true
             autoscaling:
               enabled: true
