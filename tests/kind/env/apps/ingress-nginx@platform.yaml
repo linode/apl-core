@@ -1,5 +1,5 @@
 apps:
-    ingress-nginx:
+    ingress-nginx@platform:
         _rawValues:
             controller:
                 resources:
