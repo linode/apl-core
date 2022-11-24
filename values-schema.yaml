@@ -1829,7 +1829,7 @@ properties:
               - required:
                   - armAuth
                   - appgw
-      ingress-nginx-platform:
+      ingress-nginx@platform:
         $ref: '#/definitions/ingressNginx'
       istio:
         additionalProperties: false
@@ -2455,7 +2455,7 @@ properties:
           resources:
             $ref: '#/definitions/resources'
     patternProperties:
-      '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
+      '^ingress-nginx@[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
         $ref: '#/definitions/ingressNginx'
   cluster:
     $ref: '#/definitions/cluster'

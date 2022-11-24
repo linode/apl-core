@@ -100,11 +100,6 @@ environments:
             enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
-          {{- range $class := $v.ingress.classes }}
-          {{ $appName := printf "ingress-nginx@%s" $class.className }}
-          {{/* At this stage the ingress-nginx@platform contains only defaults */}}
-          {{ $appName }}: {{ $v | get "apps.ingress-nginx@platform" dict | toYaml | nindent 12 }}
-          {{- end }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
