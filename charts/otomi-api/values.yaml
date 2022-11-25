@@ -90,9 +90,8 @@ secrets:
 env:
   GIT_REPO_URL:
   GIT_BRANCH:
-  DISABLE_SYNC: false
-  GIT_LOCAL_PATH: /tmp/otomi-values
-  ENV_DIR: /tmp/otomi-values
+  ENV_DIR: /tmp/otomi/values/main
+  GIT_LOCAL_PATH: /tmp/otomi/values/main
   GOOGLE_APPLICATION_CREDENTIALS: '/tmp/key.json'
 
 core: {}

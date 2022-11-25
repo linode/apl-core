@@ -740,8 +740,8 @@ definitions:
     pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
     type: string
   repoUrl:
-    description: Path to a remote git repo without protocol. Will use https to access.
-    pattern: '^(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
+    description: Path to a remote git repo with or without protocol prefix of either https:// or file:// (https:// used if omitted)
+    pattern: '^(https://|file://)?(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
     type: string
   repository:
     description: A container image repository.
@@ -1111,6 +1111,11 @@ definitions:
         items:
           $ref: '#/definitions/service'
         type: array
+      monitoringStack:
+        properties:
+          enabled:
+            type: boolean
+            default: true
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster
@@ -1237,9 +1242,12 @@ properties:
               redis:
                 $ref: '#/definitions/resources'
       cert-manager:
+        additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
           customRootCA:
             x-secret: ''
             type: string
@@ -2188,6 +2196,9 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          editorInactivityTimeout:
+            type: integer
+            default: 10
           git:
             additionalProperties: false
             properties:
@@ -3236,6 +3247,12 @@ properties:
     patternProperties:
       '^[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
         $ref: '#/definitions/team'
+    properties:
+      admin:
+        properties:
+          password:
+            type: string
+            x-secret: randAlpha 16
   version:
     type: integer
     description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.

@@ -1,8 +1,8 @@
 import { existsSync } from 'fs'
+import { logLevel, logLevels } from 'src/common/debug'
+import { env } from 'src/common/envalid'
 import yargs, { Arguments as YargsArguments, Argv, Options } from 'yargs'
 import { chalk } from 'zx'
-import { logLevel, logLevels } from './debug'
-import { env } from './envalid'
 
 export interface BasicArguments extends YargsArguments {
   logLevel?: string

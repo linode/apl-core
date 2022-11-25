@@ -16,6 +16,13 @@ environments:
               targetCPUUtilizationPercentage: 50
           cert-manager:
             issuer: custom-ca
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 384Mi
           cluster-overprovisioner:
             enabled: false
           demo-tlspass:
@@ -135,7 +142,8 @@ environments:
               size: 20Gi
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
-          otomi-api: {}
+          otomi-api:
+            editorInactivityTimeout: 1
           otomi-console: {}
           promtail:
             enabled: false
@@ -269,7 +277,8 @@ environments:
           hasExternalIDP: false
           isHomeMonitored: false
           isMultitenant: false
-        teamConfig: {}
+        # TODO: update this when schema version changes: (and think more?)
+        version: 5
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

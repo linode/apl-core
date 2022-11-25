@@ -2,25 +2,23 @@
   "compilerOptions": {
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    // "baseUrl": "src",
+    "baseUrl": ".",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "lib": ["es2021", "esnext"],
     "module": "commonjs",
     "moduleResolution": "node",
-    "outDir": "dist",
-    // "paths": {
-    //   "*": ["*"]
-    // },
+    "outDir": "dist/src",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": false,
     "strictNullChecks": true,
-    "target": "es2021"
+    "target": "esnext"
   },
   "exclude": ["node_modules", "dist"],
+  "extends": "ts-node/node16/tsconfig.json",
   "include": ["src", "jest.config.ts"],
   "parserOptions": {
     "ecmaVersion": 2021,
@@ -29,9 +27,6 @@
   "ts-node": {
     "transpileOnly": true,
     "files": true,
-    "compilerOptions": {
-      "rootDir": "."
-    },
     "require": ["tsconfig-paths/register"]
   }
 }

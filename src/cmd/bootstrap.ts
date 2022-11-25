@@ -1,21 +1,20 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { copy } from 'fs-extra'
-import { copyFile } from 'fs/promises'
+import { copy, pathExists } from 'fs-extra'
+import { copyFile, mkdir, readFile, writeFile } from 'fs/promises'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
+import { bootstrapGit } from 'src/common/bootstrap'
+import { prepareEnvironment } from 'src/common/cli'
+import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
+import { decrypt, encrypt } from 'src/common/crypt'
+import { terminal } from 'src/common/debug'
+import { env, isChart, isCi, isCli } from 'src/common/envalid'
+import { hfValues } from 'src/common/hf'
+import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
+import { getFilename, gucci, isCore, loadYaml, providerMap, rootDir } from 'src/common/utils'
+import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from 'src/common/values'
+import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
-import { bootstrapGit } from '../common/bootstrap'
-import { prepareEnvironment } from '../common/cli'
-import { DEPLOYMENT_PASSWORDS_SECRET } from '../common/constants'
-import { decrypt, encrypt } from '../common/crypt'
-import { terminal } from '../common/debug'
-import { env, isChart, isCi, isCli } from '../common/envalid'
-import { hfValues } from '../common/hf'
-import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from '../common/k8s'
-import { getFilename, gucci, isCore, loadYaml, providerMap, rootDir } from '../common/utils'
-import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from '../common/values'
-import { BasicArguments, setParsedArgs } from '../common/yargs'
 import { migrate } from './migrate'
 import { validateValues } from './validate-values'
 
@@ -29,23 +28,24 @@ const kmsMap = {
 }
 
 export const bootstrapSops = async (
+  envDir = env.ENV_DIR,
   deps = {
-    terminal,
-    loadYaml,
     copyFile,
     decrypt,
     encrypt,
     gucci,
     hfValues,
-    existsSync,
-    readFileSync,
-    writeFileSync,
+    loadYaml,
+    pathExists,
+    readFile,
+    terminal,
+    writeFile,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:genSops`)
-  const targetPath = `${env.ENV_DIR}/.sops.yaml`
-  const settingsFile = `${env.ENV_DIR}/env/settings.yaml`
-  const settingsVals = deps.loadYaml(settingsFile) as Record<string, any>
+  const targetPath = `${envDir}/.sops.yaml`
+  const settingsFile = `${envDir}/env/settings.yaml`
+  const settingsVals = (await deps.loadYaml(settingsFile)) as Record<string, any>
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) {
     d.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
@@ -61,13 +61,13 @@ export const bootstrapSops = async (
     keys: kmsKeys,
   }
 
-  const exists = deps.existsSync(targetPath)
+  const exists = await deps.pathExists(targetPath)
   // we can just get the values the first time because those are unencrypted
   const values = exists ? {} : ((await deps.hfValues()) as Record<string, any>)
 
   d.log(`Creating sops file for provider ${provider}`)
   const output = (await deps.gucci(templatePath, obj, true)) as string
-  deps.writeFileSync(targetPath, output)
+  await deps.writeFile(targetPath, output)
   d.log(`Ready generating sops files. The configuration is written to: ${targetPath}`)
 
   d.info('Copying sops related files')
@@ -82,22 +82,22 @@ export const bootstrapSops = async (
       const secretsFile = `${env.ENV_DIR}/.secrets`
       if (provider === 'google') {
         // and we also assume the correct values are given by using '!' (we want to err when not set)
-        const serviceKeyJson = JSON.parse(values.kms!.sops!.google!.accountJson)
+        const serviceKeyJson = JSON.parse(values.kms!.sops!.google!.accountJson as string)
         // and set it in env for later decryption
         process.env.GCLOUD_SERVICE_KEY = values.kms!.sops!.google!.accountJson
         d.log('Creating gcp-key.json for vscode.')
-        deps.writeFileSync(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
+        await deps.writeFile(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
         d.log(`Creating credentials file: ${secretsFile}`)
-        deps.writeFileSync(secretsFile, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`)
+        await deps.writeFile(secretsFile, `GCLOUD_SERVICE_KEY=${JSON.stringify(JSON.stringify(serviceKeyJson))}`)
       } else if (provider === 'aws') {
         const v = values.kms!.sops!.aws!
-        deps.writeFileSync(secretsFile, `AWS_ACCESS_KEY_ID='${v.accessKey}'\nAWS_ACCESS_KEY_SECRET=${v.secretKey}`)
+        await deps.writeFile(secretsFile, `AWS_ACCESS_KEY_ID='${v.accessKey}'\nAWS_ACCESS_KEY_SECRET=${v.secretKey}`)
       } else if (provider === 'azure') {
         const v = values.kms!.sops!.azure!
-        deps.writeFileSync(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
+        await deps.writeFile(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
       } else if (provider === 'vault') {
         const v = values.kms!.sops!.vault!
-        deps.writeFileSync(secretsFile, `VAULT_TOKEN='${v.token}'`)
+        await deps.writeFile(secretsFile, `VAULT_TOKEN='${v.token}'`)
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later
@@ -106,37 +106,31 @@ export const bootstrapSops = async (
   }
 }
 
-export const copySchema = (deps = { terminal, rootDir, env, isCore, loadYaml, copyFileSync }): void => {
+export const copySchema = async (deps = { terminal, rootDir, env, isCore, loadYaml, copyFile }): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:copySchema`)
   const { ENV_DIR } = env
   const devOnlyPath = `${deps.rootDir}/.vscode/values-schema.yaml`
   const targetPath = `${ENV_DIR}/.vscode/values-schema.yaml`
   const sourcePath = `${deps.rootDir}/values-schema.yaml`
 
-  // const valuesSchema = deps.loadYaml(sourcePath)
-  // const trimmedVS = dump(
-  //   removeBlankAttributes(JSON.parse(JSON.stringify(valuesSchema, (k, v) => (k === 'required' ? undefined : v), 2))),
-  // )
-  // d.debug('generated values-schema.yaml: ', trimmedVS)
-  // deps.outputFileSync(targetPath, trimmedVS)
-  deps.copyFileSync(sourcePath, targetPath)
+  await deps.copyFile(sourcePath, targetPath)
   d.info(`Stored loose YAML schema at: ${targetPath}`)
   if (deps.isCore) {
     // for validation of .values/env/* files we also generate a schema here:
-    // deps.outputFileSync(devOnlyPath, trimmedVS)
-    deps.copyFileSync(sourcePath, devOnlyPath)
+    // deps.outputFile(devOnlyPath, trimmedVS)
+    await deps.copyFile(sourcePath, devOnlyPath)
     d.debug(`Stored loose YAML schema for otomi-core devs at: ${devOnlyPath}`)
   }
 }
 
 export const getStoredClusterSecrets = async (
-  deps = { terminal, getK8sSecret },
+  deps = { $, nothrow, terminal, getK8sSecret },
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:getStoredClusterSecrets`)
-  d.info(`Checking if ${secretId} already exists`)
-  if (env.DISABLE_SYNC) return undefined
+  d.info(`Checking if ${secretId} already pathExists`)
+  if (env.isDev && env.DISABLE_SYNC) return undefined
   // we might need to create the 'otomi' namespace if we are in CLI mode
-  if (isCli) await nothrow($`kubectl create ns otomi &> /dev/null`)
+  if (isCli) await deps.nothrow(deps.$`kubectl create ns otomi &> /dev/null`)
   const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
   if (kubeSecretObject) {
     d.info(`Found ${secretId} secrets on cluster, recovering`)
@@ -146,27 +140,27 @@ export const getStoredClusterSecrets = async (
 }
 
 export const copyBasicFiles = async (
-  deps = { terminal, env, mkdirSync, copyFile, copy, copySchema, existsSync },
+  deps = { copy, copyFile, copySchema, mkdir, pathExists, terminal },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:copyBasicFiles`)
-  const { ENV_DIR } = deps.env
+  const { ENV_DIR } = env
   const binPath = `${ENV_DIR}/bin`
-  deps.mkdirSync(binPath, { recursive: true })
+  await deps.mkdir(binPath, { recursive: true })
   await Promise.allSettled([
     deps.copyFile(`${rootDir}/bin/aliases`, `${binPath}/aliases`),
     deps.copyFile(`${rootDir}/binzx/otomi`, `${binPath}/otomi`),
   ])
   d.info('Copied bin files')
-  deps.mkdirSync(`${ENV_DIR}/.vscode`, { recursive: true })
+  await deps.mkdir(`${ENV_DIR}/.vscode`, { recursive: true })
   await deps.copy(`${rootDir}/.values/.vscode`, `${ENV_DIR}/.vscode`, { recursive: true })
   d.info('Copied vscode folder')
 
-  deps.copySchema()
+  await deps.copySchema()
 
   // only copy sample files if a real one is not found
   await Promise.allSettled(
     ['.secrets.sample']
-      .filter((val) => !deps.existsSync(`${ENV_DIR}/${val.replace(/\.sample$/g, '')}`))
+      .filter(async (val) => !(await deps.pathExists(`${ENV_DIR}/${val.replace(/\.sample$/g, '')}`)))
       .map(async (val) => deps.copyFile(`${rootDir}/.values/${val}`, `${ENV_DIR}/${val}`)),
   )
 
@@ -177,7 +171,7 @@ export const copyBasicFiles = async (
     ),
   )
   // recursively copy the skeleton files to env if that folder doesn't yet exist
-  if (!existsSync(`${ENV_DIR}/env`)) {
+  if (!(await pathExists(`${ENV_DIR}/env`))) {
     d.log(`Copying skeleton files`)
     await deps.copy(`${rootDir}/.values/env`, `${ENV_DIR}/env`, { overwrite: false, recursive: true })
   }
@@ -196,8 +190,7 @@ export const processValues = async (
     decrypt,
     getStoredClusterSecrets,
     writeValues,
-    env,
-    existsSync,
+    pathExists,
     hfValues,
     validateValues,
     generateSecrets,
@@ -206,26 +199,23 @@ export const processValues = async (
   },
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
-  const { ENV_DIR, VALUES_INPUT } = deps.env
+  const { ENV_DIR, VALUES_INPUT } = env
   let originalInput: Record<string, any> | undefined
-  let originalValues: Record<string, any> | undefined
   let storedSecrets: Record<string, any> | undefined
   if (deps.isChart) {
     d.log(`Loading app values from ${VALUES_INPUT}`)
-    originalValues = deps.loadYaml(VALUES_INPUT) as Record<string, any>
-    storedSecrets = await deps.getStoredClusterSecrets()
-    if (storedSecrets) originalInput = merge(cloneDeep(storedSecrets), cloneDeep(originalValues))
-    else originalInput = cloneDeep(originalValues)
+    const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+    storedSecrets = (await deps.getStoredClusterSecrets()) || {}
+    originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
     await deps.writeValues(originalInput)
   } else {
     d.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
     storedSecrets = {}
-    if (deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true })?.cluster?.provider) {
+    if ((await deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true }))?.cluster?.provider) {
       await deps.decrypt()
       originalInput = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
     }
-    if (originalInput) storedSecrets = originalValues
   }
   // generate all secrets (does not diff against previous so generates all new secrets every time)
   const generatedSecrets = await deps.generateSecrets(originalInput)
@@ -240,11 +230,11 @@ export const processValues = async (
   // merge existing secrets over newly generated ones to keep them
   const allSecrets = merge(cloneDeep(caSecrets), cloneDeep(storedSecrets), cloneDeep(generatedSecrets))
   // we have generated all we need, now store everything by merging the original values over all the secrets
-  await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalValues)))
+  await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalInput)))
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
-    if (!env.DISABLE_SYNC) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
+    if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
   } else if (originalInput)
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
@@ -308,7 +298,7 @@ export const createCustomCA = (deps = { terminal, pki, writeValues }): Record<st
 
 export const bootstrap = async (
   deps = {
-    existsSync,
+    pathExists,
     getDeploymentState,
     getImageTag,
     getCurrentVersion,
@@ -336,7 +326,7 @@ export const bootstrap = async (
     if (prevVersion && prevTag && version === prevVersion && tag === prevTag) return
   }
   const { ENV_DIR } = env
-  const hasOtomi = deps.existsSync(`${ENV_DIR}/bin/otomi`)
+  const hasOtomi = await deps.pathExists(`${ENV_DIR}/bin/otomi`)
 
   const otomiImage = `otomi/core:${tag}`
   d.log(`Installing artifacts from ${otomiImage}`)
@@ -356,7 +346,7 @@ export const bootstrap = async (
   // that we want to end up in the files, so the api can access them
   if (!k8sContext || !apiName || !owner) {
     const add: Record<string, any> = { cluster: {} }
-    const engine = providerMap(provider)
+    const engine = providerMap(provider as string)
     const defaultOwner = 'otomi'
     const defaultName = `${owner || defaultOwner}-${engine}-${name}`
     if (!apiName) {

@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { prepareEnvironment } from 'src/common/cli'
+import { terminal } from 'src/common/debug'
+import { getFilename } from 'src/common/utils'
+import { generateSecrets } from 'src/common/values'
+import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $ } from 'zx'
-import { prepareEnvironment } from '../common/cli'
-import { terminal } from '../common/debug'
-import { getFilename } from '../common/utils'
-import { generateSecrets } from '../common/values'
-import { BasicArguments, setParsedArgs } from '../common/yargs'
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -14,7 +15,6 @@ import { BasicArguments, setParsedArgs } from '../common/yargs'
 const cmdName = getFilename(__filename)
 
 const playground = async (): Promise<void> => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const d = terminal(`cmd:${cmdName}:playGround`)
   const cmd = 'pwd && ls -als .'
   const q = $.quote
