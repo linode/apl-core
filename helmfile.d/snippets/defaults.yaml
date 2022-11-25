@@ -152,6 +152,7 @@ environments:
             enabled: false
             remoteWrite:
                 enabled: false
+            otomiThanos: false
             replicas: 1
             role: standalone
             scrapeInterval: 60s

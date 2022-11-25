@@ -107,19 +107,19 @@ prometheus:
 {{- end }}
 {{- if $p.remoteWrite.enabled }}
     remoteWrite:
-    - url: "https://thanos.{{ $p.remoteWrite.target }}/api/v1/receive"
+    - url: "{{ $p.remoteWrite.rwConfig.target }}"
+      {{- if $p.remoteWrite.rwConfig.basicAuth.enabled }}
+      basicAuth:
+        username: {{- $p.remoteWrite.rwConfig.basicAuth.username }}
+        password: {{- $p.remoteWrite.rwConfig.basicAuth.password }}
+      {{- end }}
       tlsConfig:
         insecureSkipVerify: true
+      {{- if $p.remoteWrite.otomiThanos }}
       headers:
         cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
-  # to do: add auth
-      # basicAuth:
-      #   username:
-      #     key: username
-      #     name: thanos-ingress-secret-basic-auth
-      #   password:
-      #     key: password
-      #     name: thanos-ingress-secret-basic-auth
+      {{- end }}
+      {{- $p.remoteWrite.rwConfig.customConfig | nindent 6 }}
 {{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
