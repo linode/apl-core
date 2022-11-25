@@ -287,7 +287,6 @@ adminApps:
   - name: thanos
     tags: [metrics, observability]
     ownHost: true
-    isShared: true
     deps: [grafana, minio]
     ingress:
       - svc: thanos-query-frontend
@@ -319,7 +318,6 @@ adminApps:
   - name: minio
     tags: [storage, backup]
     ownHost: true
-    isShared: true
     deps: [minio]
     ingress:
       - svc: minio
