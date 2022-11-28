@@ -2252,14 +2252,26 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              target:
-                type: string
-              # username:
-              #   type: string
-              #   default: otomi-admin
-              # password:
-              #   $ref: '#/definitions/wordCharacterPattern'
-              #   x-secret: ''
+              otomiThanos:
+                type: boolean
+                default: false
+              rwConfig:
+                properties:
+                  target:
+                    type: string
+                  basicAuth:
+                    properties:
+                      enabled:
+                        type: boolean
+                        default: false
+                      username:
+                        type: string
+                      password:
+                        $ref: ../definitions.yaml#/wordCharacterPattern
+                        x-secret: ''
+                  customConfig:
+                    description: Custom remote write config. Will be appended to the remoteWrite list.
+                    type: string
           replicas:
             type: integer
             default: 1
