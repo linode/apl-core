@@ -133,13 +133,6 @@ environments:
               create: true
             extraArgs:
               kubelet-preferred-address-types: InternalIP
-          minio:
-            enabled: false
-            provisioning:
-              enabled: true
-            persistence:
-              enabled: true
-              size: 20Gi
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api:
@@ -160,82 +153,6 @@ environments:
             storageSize: 5Gi
           redis-shared:
             enabled: false
-          thanos:
-            enabled: false
-            bucketweb:
-              resources:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
-            query:
-              replicaCount: 1
-              resources:
-                requests:
-                  cpu: 200m
-                  memory: 128Mi
-                limits:
-                  cpu: '1'
-                  memory: 1Gi
-            queryFrontend:
-              resources:
-                requests:
-                  cpu: 200m
-                  memory: 128Mi
-                limits:
-                  cpu: 500m
-                  memory: 512Mi
-            receiver:
-              mode: standalone
-              replicaCount: 1
-              persistence:
-                size: 8Gi
-              resources:
-                requests:
-                  cpu: 200m
-                  memory: 128Mi
-                limits:
-                  cpu: '1'
-                  memory: 1Gi
-            storegateway:
-              persistence:
-                size: 8Gi
-              resources:
-                requests:
-                  cpu: 200m
-                  memory: 128Mi
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
-            compactor:
-              resources:
-                requests:
-                  cpu: 200m
-                  memory: 128Mi
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
-              retentionResolutionRaw: 30d
-              retentionResolution5m: 30d
-              retentionResolution1h: 10y
-              persistence:
-                size: 8Gi
-            ruler:
-              enabled: false
-              persistence:
-                size: 8Gi
-              resources:
-                requests:
-                  cpu: 200m
-                  memory: 128Mi
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
-            objstore:
-              storageProvider:
-                type: minioLocal
           vault:
             enabled: false
             resources:
@@ -248,15 +165,6 @@ environments:
           velero:
             enabled: false
             logLevel: info
-            storage:
-              storageProvider:
-                type: minioLocal
-            cloud:
-                cloudProvider:
-                    type: custom
-            persistence:
-              enabled: true
-              size: 20Gi
         backup:
           platformSchedule:
             enabled: false

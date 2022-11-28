@@ -52,7 +52,3 @@ releases:
     installed: {{ $a | get "prometheus-msteams.enabled" }}
     namespace: monitoring
     <<: *default
-  - name: thanos
-    installed: {{ $a | get "thanos.enabled" }}
-    namespace: monitoring
-    <<: *default

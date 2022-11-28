@@ -1,24 +1,16 @@
 apps:
     velero:
         enabled: true
-        cloud:
-            cloudProvider:
-                azure:
+        provider:
+            azure:
+                config:
+                    storageAccount: test
                     resourceGroup: test
-                    environment: AzurePublicCloud
+                    bucket: otomi
+                environment: AzurePublicCloud
+                secretContents:
                     subscriptionId: test
                     tenantId: test
+                    resourceGroup: wokernodes_rg
                     aadClientId: bla12344556666658457847476
                     aadClientSecret: bla383736363653
-                type: azure
-        storage:
-            provider:
-                azureBlob:
-                    storageAccount: bla
-                    bucket: velero
-                    subscriptionId: test
-                    tenantId: test
-                    resourceGroup: bla
-                    aadClientId: bla12344556666658457847476
-                    aadClientSecret: bla383736363653
-                type: azureBlob

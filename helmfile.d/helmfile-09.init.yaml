@@ -36,9 +36,3 @@ releases:
       - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
       - snippets/common.gotmpl
     <<: *upgrade
-  - name: minio
-    installed: {{ $a | get "minio.enabled" }}
-    namespace: minio
-    labels:
-      pkg: minio
-    <<: *default

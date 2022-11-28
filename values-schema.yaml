@@ -2165,30 +2165,6 @@ properties:
                 pattern: '^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$'
                 type: string
                 x-secret: 'randAlphaNum 32 | b64enc'
-      minio:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          resources:
-            $ref: '#/definitions/resources'
-          provisioning:
-            additionalProperties: false
-            properties:
-              enabled:
-                type: boolean
-                default: true
-          persistence:
-            properties:
-              enabled:
-                type: boolean
-                default: true
-              size:
-                type: string
-                default: 20Gi
       oauth2-proxy-redis:
         $ref: '#/definitions/redisChart'
       otomi-api:
@@ -2310,120 +2286,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-      thanos:
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          query:
-            properties:
-              resources:
-                $ref: '#/definitions/resources'
-              replicaCount:
-                description: Number of Thanos Query replicas.
-                type: integer
-                default: 1
-          queryFrontend:
-            properties:
-              resources:
-                $ref: '#/definitions/resources'
-          receiver:
-            properties:
-              mode:
-                title: Receiver mode
-                description: Mode to run receiver in.
-                type: string
-                default: standalone
-                enum:
-                  - standalone
-                  - dual-mode
-              resources:
-                $ref: '#/definitions/resources'
-              replicaCount:
-                description: Number of Thanos Receive replicas.
-                type: integer
-                default: 1
-              persistence:
-                properties:
-                  size:
-                    type: string
-          storegateway:
-            properties:
-              resources:
-                $ref: '#/definitions/resources'
-              persistence:
-                properties:
-                  size:
-                    type: string
-          bucketweb:
-            properties:
-              resources:
-                $ref: '#/definitions/resources'
-          compactor:
-            description: Resolution and Retention flags.
-            properties:
-              retentionResolutionRaw:
-                type: string
-                default: 30d
-              retentionResolution5m:
-                type: string
-                default: 30d
-              retentionResolution1h:
-                type: string
-                default: 10y
-              persistence:
-                properties:
-                  size:
-                    type: string
-              resources:
-                $ref: '#/definitions/resources'
-          ruler:
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              resources:
-                $ref: '#/definitions/resources'
-              persistence:
-                properties:
-                  size:
-                    type: string
-          objstore:
-            properties:
-              storageProvider:
-                additionalProperties: false
-                properties:
-                  s3:
-                    properties:
-                      bucket:
-                        type: string
-                        description: Name of the blob container.
-                        $ref: '#/definitions/wordCharacterPattern'
-                      s3Url:
-                        description: The name (URL) of the S3 bucket
-                        $ref: '#/definitions/wordCharacterPattern'
-                      accessKeyId:
-                        type: string
-                        description: The ID of the access key
-                        $ref: '#/definitions/wordCharacterPattern'
-                      secretAccessKey:
-                        type: string
-                        description: The secret of the access key
-                        $ref: '#/definitions/wordCharacterPattern'
-                        x-secret: ''
-                    required:
-                      - bucket
-                      - s3Url
-                      - accessKeyId
-                      - secretAccessKey
-                  type:
-                    type: string
-                    enum:
-                      - s3
-                      - minioLocal
-                    default: minioLocal
       tigera-operator:
         properties:
           _rawValues:
@@ -2521,125 +2383,86 @@ properties:
       velero:
         additionalProperties: false
         properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
-          cloud:
-            properties:
-              cloudProvider:
-                properties:
-                  azure:
-                    description: Azure
-                    properties:
-                      resourceGroup:
-                        description: The resource group of the worker nodes (VM's and disks)
-                        $ref: '#/definitions/wordCharacterPattern'
-                      environment:
-                        title: Azure environment
-                        type: string
-                        enum:
-                          - AzurePublicCloud
-                          - AzureChinaCloud
-                          - AzureUSGovernment
-                          - AzureGermanCloud
-                      tenantId:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      subscriptionId:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      aadClientId:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      aadClientSecret:
-                        $ref: '#/definitions/wordCharacterPattern'
-                        x-secret: ''
-                    required:
-                      - tenantId
-                      - subscriptionId
-                      - aadClientId
-                      - aadClientSecret
-                      - resourceGroup
-                      - environment
-                  aws:
-                    description: Amazon Web Services
-                    properties:
-                      region:
-                        type: string
-                        description: The AWS region where the cluster is running.
-                        $ref: '#/definitions/wordCharacterPattern'
-                  type:
-                    type: string
-                    enum:
-                      - aws
-                      - azure
-                      - custom
-                    default: custom
-          storage:
-            properties:
-              storageProvider:
-                properties:
-                  azureBlob:
-                    type: object
-                    properties:
-                      storageAccount:
-                        type: string
-                        description: The used Azure storage account
-                        $ref: '#/definitions/wordCharacterPattern'
-                      resourceGroup:
-                        type: string
-                        description: The resource group of the storage account
-                        $ref: '#/definitions/wordCharacterPattern'
-                      bucket:
-                        type: string
-                        description: Name of the blob container.
-                        $ref: '#/definitions/wordCharacterPattern'
-                      tenantId:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      subscriptionId:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      aadClientId:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      aadClientSecret:
-                        $ref: '#/definitions/wordCharacterPattern'
-                        x-secret: ''
-                    required:
-                      - tenantId
-                      - subscriptionId
-                      - aadClientId
-                      - aadClientSecret
-                      - resourceGroup
-                      - storageAccount
-                      - bucket
-                  s3:
-                    properties:
-                      bucket:
-                        type: string
-                        description: Name of the blob container.
-                        $ref: '#/definitions/wordCharacterPattern'
-                      s3Url:
-                        description: The name (URL) of the S3 bucket
-                        $ref: '#/definitions/wordCharacterPattern'
-                      accessKeyId:
-                        type: string
-                        description: The ID of the access key
-                        $ref: '#/definitions/wordCharacterPattern'
-                      secretAccessKey:
-                        type: string
-                        description: The secret of the access key
-                        $ref: '#/definitions/wordCharacterPattern'
-                        x-secret: ''
-                    required:
-                      - bucket
-                      - s3Url
-                      - accessKeyId
-                      - secretAccessKey
-                  type:
-                    type: string
-                    enum:
-                      - azureBlob
-                      - s3
-                      - minioLocal
-                    default: minioLocal
+          provider:
+            azure:
+              properties:
+                config:
+                  additionalProperties: false
+                  properties:
+                    storageAccount:
+                      type: string
+                      description: The used Azure storage account
+                      $ref: '#/definitions/wordCharacterPattern'
+                    resourceGroup:
+                      type: string
+                      description: The resource group of the storage account
+                      $ref: '#/definitions/wordCharacterPattern'
+                    bucket:
+                      type: string
+                      description: Name of the blob container.
+                      $ref: '#/definitions/wordCharacterPattern'
+                  required:
+                    - resourceGroup
+                    - storageAccount
+                    - bucket
+                environment:
+                  title: Azure environment
+                  description: An Azure environment.
+                  type: string
+                  default: AzurePublicCloud
+                  enum:
+                    - AzurePublicCloud
+                    - AzureChinaCloud
+                    - AzureUSGovernment
+                    - AzureGermanCloud
+                secretContents:
+                  additionalProperties: false
+                  description: Data to be stored in the Velero secret.
+                  properties:
+                    tenantId:
+                      $ref: '#/definitions/wordCharacterPattern'
+                    subscriptionId:
+                      $ref: '#/definitions/wordCharacterPattern'
+                    aadClientId:
+                      $ref: '#/definitions/wordCharacterPattern'
+                    resourceGroup:
+                      description: The resource group of the worker nodes (VM's and disks)
+                      $ref: '#/definitions/wordCharacterPattern'
+                    aadClientSecret:
+                      $ref: '#/definitions/wordCharacterPattern'
+                      x-secret: ''
+                  required:
+                    - tenantId
+                    - subscriptionId
+                    - aadClientId
+                    - aadClientSecret
+            aws:
+              properties:
+                congig:
+                  properties:
+                    region:
+                      description: The region of the S3 bucket
+                      $ref: '#/definitions/wordCharacterPattern'
+                    s3bucket:
+                      description: The name (URL) of the S3 bucket
+                      $ref: '#/definitions/wordCharacterPattern'
+                secretContents:
+                  properties:
+                    accessKeyId:
+                      type: string
+                      description: The ID of the access key
+                      $ref: '#/definitions/wordCharacterPattern'
+                    secretAccessKey:
+                      type: string
+                      description: The secret of the access key
+                      $ref: '#/definitions/wordCharacterPattern'
+                  required:
+                    - region
+                    - accessKeyId
+                    - secretAccessKey
           logLevel:
             description: Set log-level for the Velero pod.
             default: info
