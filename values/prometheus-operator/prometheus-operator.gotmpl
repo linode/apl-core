@@ -110,8 +110,8 @@ prometheus:
     - url: "{{ $p.remoteWrite.rwConfig.target }}"
       {{- if $p.remoteWrite.rwConfig.basicAuth.enabled }}
       basicAuth:
-        username: {{- $p.remoteWrite.rwConfig.basicAuth.username }}
-        password: {{- $p.remoteWrite.rwConfig.basicAuth.password }}
+        username: {{ $p.remoteWrite.rwConfig.basicAuth.username }}
+        password: {{ $p.remoteWrite.rwConfig.basicAuth.password }}
       {{- end }}
       tlsConfig:
         insecureSkipVerify: true
