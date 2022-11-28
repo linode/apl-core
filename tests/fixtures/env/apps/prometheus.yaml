@@ -20,7 +20,7 @@ apps:
                       - targetLabel: customer_id
                         sourceLabels:
                         - instance
-                        replacement: "00001"
+                        replacement: 00001
                     queueConfig:
                       capacity: 18000
                       maxShards: 100
