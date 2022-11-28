@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- $c := $v.apps }}
 {{- $k := $v.apps.keycloak }}
-{{- $t := $v.apps.thanos }}
 {{- $o := $v | get "oidc" dict }}
 {{- $a := $v.apps | get "alertmanager" }}
 {{- $g := $v.apps | get "grafana" }}
@@ -241,12 +240,6 @@ grafana:
       {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
-    {{- end }}
-    {{- if $t.enabled }}
-    - name: Thanos Query
-      editable: false
-      type: prometheus
-      url: http://thanos-query-frontend.monitoring.svc.cluster.local:9090/thanos/query  
     {{- end }}
 
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
