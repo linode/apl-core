@@ -53,6 +53,10 @@ k8s:
       app: kubeclarity
     - name: maintenance
       disableIstioInjection: true
+    - name: minio
+      app: minio
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: monitoring
       disableIstioInjection: true
     - name: olm
@@ -257,6 +261,18 @@ adminApps:
       - title: Gatekeeper violations
         description: Kube API violations logged by OPA gatekepeer
         path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D%20%7C%3D%5C"Policy:%20%5C""%7D%5D
+  - name: minio
+    tags: [storage, backup]
+    ownHost: true
+    deps: [minio]
+    ingress:
+      - svc: minio
+        port: 9001
+        namespace: minio
+        type: public
+        auth: true
+        removeRequestHeaders:
+          - authorization
   - name: otomi
     hide: true
     isShared: true
