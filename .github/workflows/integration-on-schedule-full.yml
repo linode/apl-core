@@ -12,4 +12,4 @@ jobs:
     with:
       install_profile: full
       cluster_region: ams3
-      kubernetes_versions: "['1.22', '1.23']"
+      kubernetes_versions: "['1.23']"
