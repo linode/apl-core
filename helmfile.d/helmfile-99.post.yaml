@@ -35,7 +35,6 @@ releases:
     labels:
       pkg: harbor-backup
       group: jobs
-      type: cronjob
     <<: *jobs
   - name: job-ingress-azure
     installed: {{ $a | get "ingress-azure.enabled" }}
