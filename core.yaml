@@ -14,6 +14,8 @@ k8s:
       disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
+    - name: external-secrets
+      disableIstioInjection: true
     - name: harbor
       app: harbor
     - name: gatekeeper-system

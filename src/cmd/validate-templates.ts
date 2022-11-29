@@ -116,7 +116,7 @@ const processCrdWrapper = async (argv: BasicArguments) => {
   d.log('Processing CRD files...')
   cd(rootDir)
   const chartsFiles = await readdirRecurse('charts')
-  const crdFiles = chartsFiles.filter((val: string) => val.match(/\/crds\/.*\.yaml/g))
+  const crdFiles = chartsFiles.filter((val: string) => val.match(/(?<!\/templates)\/crds\/.*\.yaml/g))
   const results = await Promise.all(crdFiles.flatMap((crdFile: string): crdSchema[] => processCrd(crdFile)))
 
   const prep: Promise<any>[] = []

@@ -37,6 +37,7 @@ environments:
           external-dns:
             logLevel: info
           external-secrets:
+            enabled: true
             logLevel: info
             pollingInterval: 60000
           gatekeeper:
