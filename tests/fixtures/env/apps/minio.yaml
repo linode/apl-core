@@ -1,0 +1,8 @@
+apps:
+    minio:
+        enabled: true
+        provisioning:
+            enabled: true
+        persistence:
+            enabled: true
+            size: 20Gi
