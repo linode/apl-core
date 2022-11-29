@@ -182,6 +182,7 @@ environments:
           hasExternalIDP: false
           isHomeMonitored: false
           isMultitenant: false
+          nodeSelector: {}
         # TODO: update this when schema version changes: (and think more?)
         version: 5
         letsencryptRootCA: |
