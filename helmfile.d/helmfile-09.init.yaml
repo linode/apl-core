@@ -37,7 +37,7 @@ releases:
       - snippets/common.gotmpl
     <<: *upgrade
   - name: minio
-    installed: {{ $a | get "minio.enabled" }}
+    installed: {{ $a.minio.enabled }}
     namespace: minio
     labels:
       pkg: minio
