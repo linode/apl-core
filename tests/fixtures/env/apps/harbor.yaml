@@ -2,7 +2,8 @@ apps:
     harbor:
         enabled: true
         backup:
-            enabled: false
+            enabled: true
+            schedule: '0/3 * * * *'
         persistence:
             imageChartStorage:
                 gcs:
