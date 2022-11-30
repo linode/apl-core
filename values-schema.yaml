@@ -539,7 +539,6 @@ definitions:
   k8sVersion:
     description: The cluster k8s version. Must match one of the list.
     enum:
-      - '1.19'
       - '1.20'
       - '1.21'
       - '1.22'
@@ -2048,8 +2047,6 @@ properties:
       external-secrets:
         additionalProperties: false
         properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           logLevel:

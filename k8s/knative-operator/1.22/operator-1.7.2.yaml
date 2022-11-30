@@ -1,3 +1,192 @@
+# Copyright 2022 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: operator-webhook-certs
+  namespace: default
+  labels:
+    app.kubernetes.io/component: webhook
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+# The data is populated at install time.
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operator-webhook
+  namespace: default
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/component: operator-webhook
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/name: knative-operator
+spec:
+  selector:
+    matchLabels:
+      app: operator-webhook
+      role: operator-webhook
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: 'false'
+        sidecar.istio.io/inject: 'false'
+      labels:
+        app: operator-webhook
+        role: operator-webhook
+        operator.knative.dev/release: 'v1.7.2'
+        app.kubernetes.io/component: operator-webhook
+        app.kubernetes.io/version: '1.7.2'
+        app.kubernetes.io/name: knative-operator
+    spec:
+      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: webhook
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      serviceAccountName: operator-webhook
+      containers:
+        - name: operator-webhook
+          # This is the Go import path for the binary that is containerized
+          # and substituted here.
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook@sha256:2ecfa417e9a22a49421b803d26f70798ebf4795f82b66f6744e21866dfe66176
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+            - name: WEBHOOK_NAME
+              value: operator-webhook
+            - name: WEBHOOK_PORT
+              value: '8443'
+            - name: METRICS_DOMAIN
+              value: knative.dev/operator
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - all
+          ports:
+            - name: metrics
+              containerPort: 9090
+            - name: profiling
+              containerPort: 8008
+            - name: https-webhook
+              containerPort: 8443
+          readinessProbe:
+            periodSeconds: 1
+            httpGet:
+              scheme: HTTPS
+              port: 8443
+              httpHeaders:
+                - name: k-kubelet-probe
+                  value: 'webhook'
+          livenessProbe:
+            periodSeconds: 1
+            httpGet:
+              scheme: HTTPS
+              port: 8443
+              httpHeaders:
+                - name: k-kubelet-probe
+                  value: 'webhook'
+            failureThreshold: 6
+            initialDelaySeconds: 120
+      # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
+      # high value that we respect whatever value it has configured for the lame duck grace period.
+      terminationGracePeriodSeconds: 300
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    role: operator-webhook
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/component: operator-webhook
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/name: knative-operator
+  name: operator-webhook
+  namespace: default
+spec:
+  ports:
+    # Define metrics and profiling for them to be accessible within service meshes.
+    - name: http-metrics
+      port: 9090
+      targetPort: 9090
+    - name: http-profiling
+      port: 8008
+      targetPort: 8008
+    - name: https-webhook
+      port: 443
+      targetPort: 8443
+  selector:
+    role: operator-webhook
+
+---
 # Copyright 2021 The Knative Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,13 +206,13 @@ kind: CustomResourceDefinition
 metadata:
   name: knativeeventings.operator.knative.dev
   labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
     app.kubernetes.io/part-of: knative-operator
 spec:
   group: operator.knative.dev
   versions:
-    - name: v1alpha1
+    - name: v1beta1
       served: true
       storage: true
       subresources:
@@ -89,6 +278,97 @@ spec:
                           type: string
                         description: Annotations overrides labels for the deployment and its template.
                         type: object
+                      env:
+                        description: Env overrides env vars for the containers.
+                        items:
+                          properties:
+                            container:
+                              description: The container name
+                              type: string
+                            envVars:
+                              description: The desired EnvVarRequirements
+                              items:
+                                description: EnvVar represents an environment variable present in a Container.
+                                properties:
+                                  name:
+                                    description: Name of the environment variable. Must be a C_IDENTIFIER.
+                                    type: string
+                                  value:
+                                    description: 'Variable references $(VAR_NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".'
+                                    type: string
+                                  valueFrom:
+                                    description: Source for the environment variable's value. Cannot be used if value is not empty.
+                                    properties:
+                                      configMapKeyRef:
+                                        description: Selects a key of a ConfigMap.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap or its key must be defined
+                                            type: boolean
+                                        required:
+                                          - key
+                                        type: object
+                                      fieldRef:
+                                        description: "Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs."
+                                        properties:
+                                          apiVersion:
+                                            description: Version of the schema the FieldPath is written in terms of, defaults to "v1".
+                                            type: string
+                                          fieldPath:
+                                            description: Path of the field to select in the specified API version.
+                                            type: string
+                                        required:
+                                          - fieldPath
+                                        type: object
+                                      resourceFieldRef:
+                                        description: 'Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.'
+                                        properties:
+                                          containerName:
+                                            description: 'Container name: required for volumes, optional for env vars'
+                                            type: string
+                                          divisor:
+                                            anyOf:
+                                              - type: integer
+                                              - type: string
+                                            description: Specifies the output format of the exposed resources, defaults to "1"
+                                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                            x-kubernetes-int-or-string: true
+                                          resource:
+                                            description: 'Required: resource to select'
+                                            type: string
+                                        required:
+                                          - resource
+                                        type: object
+                                      secretKeyRef:
+                                        description: Selects a key of a secret in the pod's namespace
+                                        properties:
+                                          key:
+                                            description: The key of the secret to select from.  Must be a valid secret key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret or its key must be defined
+                                            type: boolean
+                                        required:
+                                          - key
+                                        type: object
+                                    type: object
+                                required:
+                                  - name
+                                type: object
+                              type: array
+                          required:
+                            - container
+                          type: object
+                        type: array
                       replicas:
                         description: The number of replicas that HA parts of the control plane will be scaled to
                         type: integer
@@ -490,6 +770,45 @@ spec:
                               type: object
                           type: object
                         type: array
+                services:
+                  description: A mapping of service name to override
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: The name of the service
+                        type: string
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels overrides labels for the service
+                        type: object
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations overrides labels for the service
+                        type: object
+                      selector:
+                        additionalProperties:
+                          type: string
+                        description: Selector overrides selector for the service
+                        type: object
+                podDisruptionBudgets:
+                  description: A mapping of podDisruptionBudget name to override
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: The name of the podDisruptionBudget
+                        type: string
+                      minAvailable:
+                        anyOf:
+                          - type: integer
+                          - type: string
+                        description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
+                        x-kubernetes-int-or-string: true
                 source:
                   description: The source configuration for Knative Eventing
                   properties:
@@ -513,12 +832,6 @@ spec:
                       type: object
                     kafka:
                       description: Apache Kafka settings
-                      properties:
-                        enabled:
-                          type: boolean
-                      type: object
-                    natss:
-                      description: NATS Streaming settings
                       properties:
                         enabled:
                           type: boolean
@@ -566,45 +879,6 @@ spec:
                       description: A map of a container name or image name to the full image location of the individual knative image.
                       type: object
                   type: object
-                resources:
-                  description: A mapping of deployment name to resource requirements
-                  items:
-                    properties:
-                      container:
-                        description: The name of the container
-                        type: string
-                      limits:
-                        properties:
-                          cpu:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          ephemeral-storage:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          memory:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          storage:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                        type: object
-                      requests:
-                        properties:
-                          cpu:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          ephemeral-storage:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          memory:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          storage:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                        type: object
-                    type: object
-                  type: array
                 sinkBindingSelectionMode:
                   description: Specifies the selection mode for the sinkbinding webhook. If the value is `inclusion`, only namespaces/objects labelled as `bindings.knative.dev/include:true` will be considered. If `exclusion` is selected, only `bindings.knative.dev/exclude:true` label is checked and these will NOT be considered. The default is `exclusion`.
                   type: string
@@ -671,7 +945,14 @@ spec:
     singular: knativeeventing
   scope: Namespaced
   conversion:
-    strategy: None
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions: ['v1beta1']
+      clientConfig:
+        service:
+          name: operator-webhook
+          namespace: default
+          path: /resource-conversion
 
 ---
 # Copyright 2021 The Knative Authors
@@ -693,13 +974,13 @@ kind: CustomResourceDefinition
 metadata:
   name: knativeservings.operator.knative.dev
   labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
     app.kubernetes.io/part-of: knative-operator
 spec:
   group: operator.knative.dev
   versions:
-    - name: v1alpha1
+    - name: v1beta1
       served: true
       storage: true
       subresources:
@@ -728,15 +1009,6 @@ spec:
                         type: string
                     type: object
                   type: array
-                cluster-local-gateway:
-                  description: A means to override the cluster-local-gateway. This field is deprecated. Use `spec.ingres.istio.knative-local-gateway`
-                  properties:
-                    selector:
-                      additionalProperties:
-                        type: string
-                      description: The selector for the ingress-gateway.
-                      type: object
-                  type: object
                 config:
                   additionalProperties:
                     additionalProperties:
@@ -785,6 +1057,97 @@ spec:
                           type: string
                         description: Annotations overrides labels for the deployment and its template.
                         type: object
+                      env:
+                        description: Env overrides env vars for the containers.
+                        items:
+                          properties:
+                            container:
+                              description: The container name
+                              type: string
+                            envVars:
+                              description: The desired EnvVarRequirements
+                              items:
+                                description: EnvVar represents an environment variable present in a Container.
+                                properties:
+                                  name:
+                                    description: Name of the environment variable. Must be a C_IDENTIFIER.
+                                    type: string
+                                  value:
+                                    description: 'Variable references $(VAR_NAME) are expanded using the previously defined environment variables in the container and any service environment variables. If a variable cannot be resolved, the reference in the input string will be unchanged. Double $$ are reduced to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e. "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)". Escaped references will never be expanded, regardless of whether the variable exists or not. Defaults to "".'
+                                    type: string
+                                  valueFrom:
+                                    description: Source for the environment variable's value. Cannot be used if value is not empty.
+                                    properties:
+                                      configMapKeyRef:
+                                        description: Selects a key of a ConfigMap.
+                                        properties:
+                                          key:
+                                            description: The key to select.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the ConfigMap or its key must be defined
+                                            type: boolean
+                                        required:
+                                          - key
+                                        type: object
+                                      fieldRef:
+                                        description: "Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`, spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs."
+                                        properties:
+                                          apiVersion:
+                                            description: Version of the schema the FieldPath is written in terms of, defaults to "v1".
+                                            type: string
+                                          fieldPath:
+                                            description: Path of the field to select in the specified API version.
+                                            type: string
+                                        required:
+                                          - fieldPath
+                                        type: object
+                                      resourceFieldRef:
+                                        description: 'Selects a resource of the container: only resources limits and requests (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.'
+                                        properties:
+                                          containerName:
+                                            description: 'Container name: required for volumes, optional for env vars'
+                                            type: string
+                                          divisor:
+                                            anyOf:
+                                              - type: integer
+                                              - type: string
+                                            description: Specifies the output format of the exposed resources, defaults to "1"
+                                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                            x-kubernetes-int-or-string: true
+                                          resource:
+                                            description: 'Required: resource to select'
+                                            type: string
+                                        required:
+                                          - resource
+                                        type: object
+                                      secretKeyRef:
+                                        description: Selects a key of a secret in the pod's namespace
+                                        properties:
+                                          key:
+                                            description: The key of the secret to select from.  Must be a valid secret key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret or its key must be defined
+                                            type: boolean
+                                        required:
+                                          - key
+                                        type: object
+                                    type: object
+                                required:
+                                  - name
+                                type: object
+                              type: array
+                          required:
+                            - container
+                          type: object
+                        type: array
                       replicas:
                         description: The number of replicas that HA parts of the control plane will be scaled to
                         type: integer
@@ -1186,6 +1549,45 @@ spec:
                               type: object
                           type: object
                         type: array
+                services:
+                  description: A mapping of service name to override
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: The name of the service
+                        type: string
+                      labels:
+                        additionalProperties:
+                          type: string
+                        description: Labels overrides labels for the service
+                        type: object
+                      annotations:
+                        additionalProperties:
+                          type: string
+                        description: Annotations overrides labels for the service
+                        type: object
+                      selector:
+                        additionalProperties:
+                          type: string
+                        description: Selector overrides selector for the service
+                        type: object
+                podDisruptionBudgets:
+                  description: A mapping of podDisruptionBudget name to override
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        description: The name of the podDisruptionBudget
+                        type: string
+                      minAvailable:
+                        anyOf:
+                          - type: integer
+                          - type: string
+                        description: An eviction is allowed if at least "minAvailable" pods selected by "selector" will still be available after the eviction, i.e. even in the absence of the evicted pod.  So for example you can prevent all voluntary evictions by specifying "100%".
+                        x-kubernetes-int-or-string: true
                 ingress:
                   description: The ingress configuration for Knative Serving
                   properties:
@@ -1208,6 +1610,35 @@ spec:
                                 type: string
                               description: The selector for the ingress-gateway.
                               type: object
+                            servers:
+                              description: A list of server specifications.
+                              items:
+                                properties:
+                                  hosts:
+                                    description: One or more hosts exposed by this gateway.
+                                    items:
+                                      format: string
+                                      type: string
+                                    type: array
+                                  port:
+                                    properties:
+                                      name:
+                                        description: Label assigned to the port.
+                                        format: string
+                                        type: string
+                                      number:
+                                        description: A valid non-negative integer port number.
+                                        type: integer
+                                      target_port:
+                                        description: A valid non-negative integer target port number.
+                                        type: integer
+                                      protocol:
+                                        description: The protocol exposed on the port.
+                                        format: string
+                                        type: string
+                                    type: object
+                                type: object
+                              type: array
                           type: object
                         knative-local-gateway:
                           description: A means to override the knative-local-gateway
@@ -1217,6 +1648,35 @@ spec:
                                 type: string
                               description: The selector for the ingress-gateway.
                               type: object
+                            servers:
+                              description: A list of server specifications.
+                              items:
+                                properties:
+                                  hosts:
+                                    description: One or more hosts exposed by this gateway.
+                                    items:
+                                      format: string
+                                      type: string
+                                    type: array
+                                  port:
+                                    properties:
+                                      name:
+                                        description: Label assigned to the port.
+                                        format: string
+                                        type: string
+                                      number:
+                                        description: A valid non-negative integer port number.
+                                        type: integer
+                                      target_port:
+                                        description: A valid non-negative integer target port number.
+                                        type: integer
+                                      protocol:
+                                        description: The protocol exposed on the port.
+                                        format: string
+                                        type: string
+                                    type: object
+                                type: object
+                              type: array
                           type: object
                       type: object
                     kourier:
@@ -1226,15 +1686,6 @@ spec:
                           type: boolean
                         service-type:
                           type: string
-                      type: object
-                  type: object
-                knative-ingress-gateway:
-                  description: A means to override the knative-ingress-gateway. This field is deprecated. Use `spec.ingres.istio.knative-ingress-gateway`
-                  properties:
-                    selector:
-                      additionalProperties:
-                        type: string
-                      description: The selector for the ingress-gateway.
                       type: object
                   type: object
                 manifests:
@@ -1267,45 +1718,6 @@ spec:
                       description: A map of a container name or image name to the full image location of the individual knative image.
                       type: object
                   type: object
-                resources:
-                  description: A mapping of deployment name to resource requirements
-                  items:
-                    properties:
-                      container:
-                        description: The name of the container
-                        type: string
-                      limits:
-                        properties:
-                          cpu:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          ephemeral-storage:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          memory:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          storage:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                        type: object
-                      requests:
-                        properties:
-                          cpu:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          ephemeral-storage:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          memory:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                          storage:
-                            pattern: ^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$
-                            type: string
-                        type: object
-                    type: object
-                  type: array
                 version:
                   description: The version of Knative Serving to be installed
                   type: string
@@ -1370,175 +1782,14 @@ spec:
     singular: knativeserving
   scope: Namespaced
   conversion:
-    strategy: None
-
----
-# Copyright 2019 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-logging
-  namespace: default
-  labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
-    app.kubernetes.io/part-of: knative-operator
-data:
-  _example: |
-    ################################
-    #                              #
-    #    EXAMPLE CONFIGURATION     #
-    #                              #
-    ################################
-
-    # This block is not actually functional configuration,
-    # but serves to illustrate the available configuration
-    # options and document them in a way that is accessible
-    # to users that `kubectl edit` this config map.
-    #
-    # These sample configuration options may be copied out of
-    # this example block and unindented to be in the data block
-    # to actually change the configuration.
-
-    # Common configuration for all Knative codebase
-    zap-logger-config: |
-      {
-        "level": "info",
-        "development": false,
-        "outputPaths": ["stdout"],
-        "errorOutputPaths": ["stderr"],
-        "encoding": "json",
-        "encoderConfig": {
-          "timeKey": "ts",
-          "levelKey": "level",
-          "nameKey": "logger",
-          "callerKey": "caller",
-          "messageKey": "msg",
-          "stacktraceKey": "stacktrace",
-          "lineEnding": "",
-          "levelEncoder": "",
-          "timeEncoder": "iso8601",
-          "durationEncoder": "",
-          "callerEncoder": ""
-        }
-      }
-
----
-# Copyright 2019 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-observability
-  namespace: default
-  labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
-    app.kubernetes.io/part-of: knative-operator
-data:
-  _example: |
-    ################################
-    #                              #
-    #    EXAMPLE CONFIGURATION     #
-    #                              #
-    ################################
-
-    # This block is not actually functional configuration,
-    # but serves to illustrate the available configuration
-    # options and document them in a way that is accessible
-    # to users that `kubectl edit` this config map.
-    #
-    # These sample configuration options may be copied out of
-    # this example block and unindented to be in the data block
-    # to actually change the configuration.
-
-    # logging.enable-var-log-collection defaults to false.
-    # The fluentd daemon set will be set up to collect /var/log if
-    # this flag is true.
-    logging.enable-var-log-collection: false
-
-    # logging.revision-url-template provides a template to use for producing the
-    # logging URL that is injected into the status of each Revision.
-    # This value is what you might use the the Knative monitoring bundle, and provides
-    # access to Kibana after setting up kubectl proxy.
-    logging.revision-url-template: |
-      http://localhost:8001/api/v1/namespaces/knative-monitoring/services/kibana-logging/proxy/app/kibana#/discover?_a=(query:(match:(kubernetes.labels.serving-knative-dev%2FrevisionUID:(query:'${REVISION_UID}',type:phrase))))
-
-    # If non-empty, this enables queue proxy writing request logs to stdout.
-    # The value determines the shape of the request logs and it must be a valid go text/template.
-    # It is important to keep this as a single line. Multiple lines are parsed as separate entities
-    # by most collection agents and will split the request logs into multiple records.
-    #
-    # The following fields and functions are available to the template:
-    #
-    # Request: An http.Request (see https://golang.org/pkg/net/http/#Request)
-    # representing an HTTP request received by the server.
-    #
-    # Response:
-    # struct {
-    #   Code    int       // HTTP status code (see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml)
-    #   Size    int       // An int representing the size of the response.
-    #   Latency float64   // A float64 representing the latency of the response in seconds.
-    # }
-    #
-    # Revision:
-    # struct {
-    #   Name          string  // Knative revision name
-    #   Namespace     string  // Knative revision namespace
-    #   Service       string  // Knative service name
-    #   Configuration string  // Knative configuration name
-    #   PodName       string  // Name of the pod hosting the revision
-    #   PodIP         string  // IP of the pod hosting the revision
-    # }
-    #
-    logging.request-log-template: '{"httpRequest": {"requestMethod": "{{.Request.Method}}", "requestUrl": "{{js .Request.RequestURI}}", "requestSize": "{{.Request.ContentLength}}", "status": {{.Response.Code}}, "responseSize": "{{.Response.Size}}", "userAgent": "{{js .Request.UserAgent}}", "remoteIp": "{{js .Request.RemoteAddr}}", "serverIp": "{{.Revision.PodIP}}", "referer": "{{js .Request.Referer}}", "latency": "{{.Response.Latency}}s", "protocol": "{{.Request.Proto}}"}, "traceId": "{{index .Request.Header "X-B3-Traceid"}}"}'
-
-    # metrics.backend-destination field specifies the system metrics destination.
-    # It supports either prometheus (the default) or stackdriver.
-    # Note: Using stackdriver will incur additional charges
-    metrics.backend-destination: prometheus
-
-    # metrics.request-metrics-backend-destination specifies the request metrics
-    # destination. If non-empty, it enables queue proxy to send request metrics.
-    # Currently supported values: prometheus, stackdriver.
-    metrics.request-metrics-backend-destination: prometheus
-
-    # metrics.stackdriver-project-id field specifies the stackdriver project ID. This
-    # field is optional. When running on GCE, application default credentials will be
-    # used if this field is not provided.
-    metrics.stackdriver-project-id: "<your stackdriver project id>"
-
-    # metrics.allow-stackdriver-custom-metrics indicates whether it is allowed to send metrics to
-    # Stackdriver using "global" resource type and custom metric type if the
-    # metrics are not supported by "knative_revision" resource type. Setting this
-    # flag to "true" could cause extra Stackdriver charge.
-    # If metrics.backend-destination is not Stackdriver, this is ignored.
-    metrics.allow-stackdriver-custom-metrics: "false"
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions: ['v1beta1']
+      clientConfig:
+        service:
+          name: operator-webhook
+          namespace: default
+          path: /resource-conversion
 
 ---
 # Copyright 2020 The Knative Authors
@@ -1555,85 +1806,13 @@ data:
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: knative-operator
-  namespace: default
-  labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/name: knative-operator
-    app.kubernetes.io/version: '1.2.2'
-    app.kubernetes.io/part-of: knative-operator
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      name: knative-operator
-  template:
-    metadata:
-      annotations:
-        sidecar.istio.io/inject: 'false'
-      labels:
-        name: knative-operator
-        app.kubernetes.io/name: knative-operator
-        app.kubernetes.io/version: '1.2.2'
-        app.kubernetes.io/part-of: knative-operator
-    spec:
-      serviceAccountName: knative-operator
-      containers:
-        - name: knative-operator
-          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:6007a76d83db13989247521fbe3e7a035d3b518a11139b06977e2a8afaa696fa
-          imagePullPolicy: IfNotPresent
-          env:
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: SYSTEM_NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-            - name: METRICS_DOMAIN
-              value: knative.dev/operator
-            - name: CONFIG_LOGGING_NAME
-              value: config-logging
-            - name: CONFIG_OBSERVABILITY_NAME
-              value: config-observability
-          ports:
-            - name: metrics
-              containerPort: 9090
-          resources:
-            limits:
-              cpu: 100m
-              memory: 128Mi
-            requests:
-              cpu: 10m
-              memory: 32Mi
-          securityContext:
-            runAsNonRoot: true
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: knative-serving-operator-aggregated
   labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
     app.kubernetes.io/part-of: knative-operator
 aggregationRule:
   clusterRoleSelectors:
@@ -1644,13 +1823,79 @@ aggregationRule:
         - { key: serving.knative.dev/release, operator: Exists }
 rules: [] # Rules are automatically filled in by the controller manager.
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-serving-operator-aggregated-stable
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+aggregationRule:
+  clusterRoleSelectors:
+    # This (along with escalate below) allows the Operator to pick up any
+    # roles that are provided to the admin of the cluster by knative serving
+    # automatically.
+    - matchExpressions:
+        - { key: app.kubernetes.io/name, operator: In, values: ['knative-serving'] }
+rules: [] # Rules are automatically filled in by the controller manager.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-eventing-operator-aggregated
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+aggregationRule:
+  clusterRoleSelectors:
+    # This (along with escalate below) allows the Operator to pick up any
+    # roles that are provided to the admin of the cluster by knative eventing
+    # automatically.
+    - matchExpressions:
+        - { key: eventing.knative.dev/release, operator: Exists }
+rules: [] # Rules are automatically filled in by the controller manager.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-eventing-operator-aggregated-stable
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+aggregationRule:
+  clusterRoleSelectors:
+    # This (along with escalate below) allows the Operator to pick up any
+    # roles that are provided to the admin of the cluster by knative eventing
+    # automatically.
+    - matchExpressions:
+        - { key: app.kubernetes.io/name, operator: In, values: ['knative-eventing'] }
+rules: [] # Rules are automatically filled in by the controller manager.
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-serving-operator
   labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
     app.kubernetes.io/part-of: knative-operator
 rules:
   - apiGroups:
@@ -1833,30 +2078,13 @@ rules:
     verbs:
       - delete
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: knative-eventing-operator-aggregated
-  labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
-    app.kubernetes.io/part-of: knative-operator
-aggregationRule:
-  clusterRoleSelectors:
-    # This (along with escalate below) allows the Operator to pick up any
-    # roles that are provided to the admin of the cluster by knative eventing
-    # automatically.
-    - matchExpressions:
-        - { key: eventing.knative.dev/release, operator: Exists }
-rules: [] # Rules are automatically filled in by the controller manager.
----
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: knative-eventing-operator
   labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
     app.kubernetes.io/part-of: knative-operator
 rules:
   - apiGroups:
@@ -2009,90 +2237,37 @@ rules:
       - knative-eventing-operator
     verbs:
       - delete
-
----
-# Copyright 2020 The Knative Authors
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# TODO: Consider restriction of non-aggregated role to knativeservings namespaces.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-serving-operator
-  labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
-    app.kubernetes.io/part-of: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-serving-operator
-subjects:
-  - kind: ServiceAccount
-    name: knative-operator
-    namespace: default
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-serving-operator-aggregated
-  labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
-    app.kubernetes.io/part-of: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-serving-operator-aggregated
-subjects:
-  - kind: ServiceAccount
-    name: knative-operator
-    namespace: default
----
-# TODO: Consider restriction of non-aggregated role to knativeeventing namespaces.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-eventing-operator
-  labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
-    app.kubernetes.io/part-of: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-eventing-operator
-subjects:
-  - kind: ServiceAccount
-    name: knative-operator
-    namespace: default
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-eventing-operator-aggregated
-  labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
-    app.kubernetes.io/part-of: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-eventing-operator-aggregated
-subjects:
-  - kind: ServiceAccount
-    name: knative-operator
-    namespace: default
+  # for RabbitMQ messaging topology objects
+  - apiGroups:
+      - rabbitmq.com
+    resources:
+      - rabbitmqclusters
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  - apiGroups:
+      - rabbitmq.com
+    resources:
+      - bindings
+      - queues
+      - exchanges
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - rabbitmq.com
+    resources:
+      - bindings/status
+      - queues/status
+      - exchanges/status
+    verbs:
+      - get
 
 ---
 # Copyright 2020 The Knative Authors
@@ -2115,9 +2290,572 @@ metadata:
   name: knative-operator
   namespace: default
   labels:
-    operator.knative.dev/release: 'v1.2.2'
-    app.kubernetes.io/version: '1.2.2'
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
     app.kubernetes.io/part-of: knative-operator
 
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# TODO: Consider restriction of non-aggregated role to knativeservings namespaces.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-serving-operator
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-serving-operator
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: default
+---
+# TODO: Consider restriction of non-aggregated role to knativeeventing namespaces.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: default
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: knative-operator-webhook
+  labels:
+    eventing.knative.dev/release: devel
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+rules:
+  # For manipulating certs into secrets.
+  - apiGroups:
+      - ''
+    resources:
+      - 'secrets'
+    verbs:
+      - 'get'
+      - 'create'
+      - 'update'
+      - 'list'
+      - 'watch'
+      - 'patch'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-operator-webhook
+  labels:
+    eventing.knative.dev/release: devel
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+rules:
+  # For watching logging configuration and getting certs.
+  - apiGroups:
+      - ''
+    resources:
+      - 'configmaps'
+    verbs:
+      - 'get'
+      - 'list'
+      - 'watch'
+  # For manipulating certs into secrets.
+  - apiGroups:
+      - ''
+    resources:
+      - 'namespaces'
+    verbs:
+      - 'get'
+      - 'create'
+      - 'update'
+      - 'list'
+      - 'watch'
+      - 'patch'
+  # finalizers are needed for the owner reference of the webhook
+  - apiGroups:
+      - ''
+    resources:
+      - 'namespaces/finalizers'
+    verbs:
+      - 'update'
+  # For getting our Deployment so we can decorate with ownerref.
+  - apiGroups:
+      - 'apps'
+    resources:
+      - 'deployments'
+    verbs:
+      - 'get'
+  - apiGroups:
+      - 'apps'
+    resources:
+      - 'deployments/finalizers'
+    verbs:
+      - update
+  # For actually registering our webhook.
+  - apiGroups:
+      - 'admissionregistration.k8s.io'
+    resources:
+      - 'mutatingwebhookconfigurations'
+      - 'validatingwebhookconfigurations'
+    verbs: &everything
+      - 'get'
+      - 'list'
+      - 'create'
+      - 'update'
+      - 'delete'
+      - 'patch'
+      - 'watch'
+  # For leader election
+  - apiGroups:
+      - 'coordination.k8s.io'
+    resources:
+      - 'leases'
+    verbs: *everything
+  # Necessary for conversion webhook. These are copied from the serving
+  # TODO: Do we really need all these permissions?
+  - apiGroups: ['apiextensions.k8s.io']
+    resources: ['customresourcedefinitions']
+    verbs: ['get', 'list', 'create', 'update', 'delete', 'patch', 'watch']
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: operator-webhook
+  namespace: default
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: default
+  name: operator-webhook
+  labels:
+    eventing.knative.dev/release: devel
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+subjects:
+  - kind: ServiceAccount
+    name: operator-webhook
+    namespace: default
+roleRef:
+  kind: Role
+  name: knative-operator-webhook
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: operator-webhook
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-operator-webhook
+subjects:
+  - kind: ServiceAccount
+    name: operator-webhook
+    namespace: default
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-serving-operator-aggregated
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-serving-operator-aggregated
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-serving-operator-aggregated-stable
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-serving-operator-aggregated-stable
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator-aggregated
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator-aggregated
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator-aggregated-stable
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator-aggregated-stable
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: default
+
+---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-logging
+  namespace: default
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # Common configuration for all Knative codebase
+    zap-logger-config: |
+      {
+        "level": "info",
+        "development": false,
+        "outputPaths": ["stdout"],
+        "errorOutputPaths": ["stderr"],
+        "encoding": "json",
+        "encoderConfig": {
+          "timeKey": "ts",
+          "levelKey": "level",
+          "nameKey": "logger",
+          "callerKey": "caller",
+          "messageKey": "msg",
+          "stacktraceKey": "stacktrace",
+          "lineEnding": "",
+          "levelEncoder": "",
+          "timeEncoder": "iso8601",
+          "durationEncoder": "",
+          "callerEncoder": ""
+        }
+      }
+
+---
+# Copyright 2019 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-observability
+  namespace: default
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # logging.enable-var-log-collection defaults to false.
+    # The fluentd daemon set will be set up to collect /var/log if
+    # this flag is true.
+    logging.enable-var-log-collection: false
+
+    # logging.revision-url-template provides a template to use for producing the
+    # logging URL that is injected into the status of each Revision.
+    # This value is what you might use the the Knative monitoring bundle, and provides
+    # access to Kibana after setting up kubectl proxy.
+    logging.revision-url-template: |
+      http://localhost:8001/api/v1/namespaces/knative-monitoring/services/kibana-logging/proxy/app/kibana#/discover?_a=(query:(match:(kubernetes.labels.serving-knative-dev%2FrevisionUID:(query:'${REVISION_UID}',type:phrase))))
+
+    # If non-empty, this enables queue proxy writing request logs to stdout.
+    # The value determines the shape of the request logs and it must be a valid go text/template.
+    # It is important to keep this as a single line. Multiple lines are parsed as separate entities
+    # by most collection agents and will split the request logs into multiple records.
+    #
+    # The following fields and functions are available to the template:
+    #
+    # Request: An http.Request (see https://golang.org/pkg/net/http/#Request)
+    # representing an HTTP request received by the server.
+    #
+    # Response:
+    # struct {
+    #   Code    int       // HTTP status code (see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml)
+    #   Size    int       // An int representing the size of the response.
+    #   Latency float64   // A float64 representing the latency of the response in seconds.
+    # }
+    #
+    # Revision:
+    # struct {
+    #   Name          string  // Knative revision name
+    #   Namespace     string  // Knative revision namespace
+    #   Service       string  // Knative service name
+    #   Configuration string  // Knative configuration name
+    #   PodName       string  // Name of the pod hosting the revision
+    #   PodIP         string  // IP of the pod hosting the revision
+    # }
+    #
+    logging.request-log-template: '{"httpRequest": {"requestMethod": "{{.Request.Method}}", "requestUrl": "{{js .Request.RequestURI}}", "requestSize": "{{.Request.ContentLength}}", "status": {{.Response.Code}}, "responseSize": "{{.Response.Size}}", "userAgent": "{{js .Request.UserAgent}}", "remoteIp": "{{js .Request.RemoteAddr}}", "serverIp": "{{.Revision.PodIP}}", "referer": "{{js .Request.Referer}}", "latency": "{{.Response.Latency}}s", "protocol": "{{.Request.Proto}}"}, "traceId": "{{index .Request.Header "X-B3-Traceid"}}"}'
+
+    # metrics.backend-destination field specifies the system metrics destination.
+    # It supports either prometheus (the default) or stackdriver.
+    # Note: Using stackdriver will incur additional charges
+    metrics.backend-destination: prometheus
+
+    # metrics.request-metrics-backend-destination specifies the request metrics
+    # destination. If non-empty, it enables queue proxy to send request metrics.
+    # Currently supported values: prometheus, stackdriver.
+    metrics.request-metrics-backend-destination: prometheus
+
+    # metrics.stackdriver-project-id field specifies the stackdriver project ID. This
+    # field is optional. When running on GCE, application default credentials will be
+    # used if this field is not provided.
+    metrics.stackdriver-project-id: "<your stackdriver project id>"
+
+    # metrics.allow-stackdriver-custom-metrics indicates whether it is allowed to send metrics to
+    # Stackdriver using "global" resource type and custom metric type if the
+    # metrics are not supported by "knative_revision" resource type. Setting this
+    # flag to "true" could cause extra Stackdriver charge.
+    # If metrics.backend-destination is not Stackdriver, this is ignored.
+    metrics.allow-stackdriver-custom-metrics: "false"
+
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-operator
+  namespace: default
+  labels:
+    operator.knative.dev/release: 'v1.7.2'
+    app.kubernetes.io/name: knative-operator
+    app.kubernetes.io/version: '1.7.2'
+    app.kubernetes.io/part-of: knative-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: knative-operator
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: 'false'
+      labels:
+        name: knative-operator
+        app.kubernetes.io/name: knative-operator
+        app.kubernetes.io/version: '1.7.2'
+        app.kubernetes.io/part-of: knative-operator
+    spec:
+      serviceAccountName: knative-operator
+      containers:
+        - name: knative-operator
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:e0f65b39f88ef010ae53c3f36eb0cc6a98d8356898a15fa44e891a0003cde80f
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: METRICS_DOMAIN
+              value: knative.dev/operator
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+          ports:
+            - name: metrics
+              containerPort: 9090
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
+          securityContext:
+            runAsNonRoot: true
 ---
 

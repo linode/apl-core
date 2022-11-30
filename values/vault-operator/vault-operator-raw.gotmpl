@@ -6,7 +6,7 @@
 {{- $seal := $vt | get "seal"  (dict "type" "default") }}
 {{- $kms := $v | get "kms" dict }}
 {{- $rootCASecretName := "root-ca" }}
-{{- $vaultVersion := "1.12.1" }}
+{{- $vaultVersion := "1.11.5" }}
 {{- $bankVaultsVersion := $vt | get "image.tag" "1.16.0" }}
 
 resources:

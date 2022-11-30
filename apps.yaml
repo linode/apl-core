@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by Otomi to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: ArgoCD
-    appVersion: v2.4.7
+    appVersion: 2.5.3
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -54,6 +54,17 @@ appsInfo:
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
     integration: ExternalDNS is used by Otomi to make public service domains accessible by registering them with Otomi's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then Otomi will rely on nip.io to create host names for all services.
+  external-secrets:
+    title: External Secrets Operator
+    appVersion: 0.10.2
+    repo: https://github.com/external-secrets/external-secrets
+    maintainers: External Secrets community
+    relatedLinks:
+      - https://otomi.io/docs/apps/external-secrets
+      - https://external-secrets.io
+    license: Apache 2.0
+    about: External Secrets Operator reads information from a third-party service like AWS Secrets Manager and automatically injects the values as Kubernetes Secrets.
+    integration: External Secrets is used by Otomi to allow teams to automatically sync (partial) secrets created in the packaged (Hashicorp) Vault.
   gatekeeper:
     title: Gatekeeper
     appVersion: 3.8.1
@@ -201,6 +212,17 @@ appsInfo:
     license: AGPL-3.0
     about: Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate. It does not index the contents of the logs, but rather a set of labels for each log stream.
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. Otomi shortcuts can be used to provide selections of logs based on interest.
+  minio:
+    title: Minio
+    appVersion: 11.10.13
+    repo: https://github.com/minio/minio
+    maintainers: Minio
+    relatedLinks:
+      - https://otomi.io/docs/apps/minio
+      - https://minio.io/
+    license: Apache 2.0
+    about: MinIO is a High Performance Object Storage and its API is compatible with the Amazon Web Services S3 cloud storage service.
+    integration: Otomi installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in Otomi capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
     appVersion: 0.57.0
@@ -214,7 +236,7 @@ appsInfo:
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   vault:
     title: Vault
-    appVersion: 1.6.1
+    appVersion: 1.11.5
     repo: https://github.com/hashicorp/vault
     maintainers: HashiCorp
     relatedLinks:
