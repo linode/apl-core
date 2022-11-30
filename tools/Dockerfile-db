@@ -1,0 +1,20 @@
+FROM alpine:3.14
+
+RUN apk --update add --no-cache \
+  musl musl-utils musl-locales tzdata \
+  mysql-client \
+  postgresql-client \
+  aws-cli \
+  ca-certificates \
+  curl \
+  vim
+
+# aws-cli - is used to store db backup in S3 like storage
+
+ENV LC_ALL=en_GB.UTF-8
+ENV LANG=en_GB.UTF-8
+ENV TZ="Europe/Amsterdam"
+
+USER nobody
+
+CMD "/bin/sh"

@@ -17,8 +17,8 @@ env:
 name: backup-backup
 image:
   registry: docker.io
-  repository: otomi/tools
-  tag: latest
+  repository: otomi/tools-db
+  tag: v0.0.1
   pullPolicy: Always
 schedule: {{ $h.backup.schedule }}
 script: |
