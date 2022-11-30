@@ -10,7 +10,7 @@ installType: upstream
 olm:
   replicaCount: 1
   image:
-    ref: quay.io/operator-framework/olm:master
+    ref: quay.io/operator-framework/olm:v0.22.0
     pullPolicy: Always
   service:
     internalPort: 8080
@@ -23,9 +23,9 @@ olm:
 
 catalog:
   replicaCount: 1
-  commandArgs: --configmapServerImage=quay.io/operator-framework/configmap-operator-registry:latest
+  commandArgs: --configmapServerImage=quay.io/operator-framework/configmap-operator-registry:v1.26.2
   image:
-    ref: quay.io/operator-framework/olm:master
+    ref: quay.io/operator-framework/olm:v0.22.0
     pullPolicy: Always
   service:
     internalPort: 8080
@@ -39,7 +39,7 @@ catalog:
 package:
   replicaCount: 2
   image:
-    ref: quay.io/operator-framework/olm:master
+    ref: quay.io/operator-framework/olm:v0.22.0
     pullPolicy: Always
   service:
     internalPort: 5443

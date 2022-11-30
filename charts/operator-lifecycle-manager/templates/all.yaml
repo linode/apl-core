@@ -70,7 +70,7 @@ spec:
           - $(OPERATOR_NAMESPACE)
           - --writeStatusName
           - ""
-          image: quay.io/operator-framework/olm@sha256:e74b2ac57963c7f3ba19122a8c31c9f2a0deb3c0c5cac9e5323ccffd0ca198ed
+          image: quay.io/operator-framework/olm:v0.22.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -132,10 +132,10 @@ spec:
           args:
           - '-namespace'
           - olm
-          - -configmapServerImage=quay.io/operator-framework/configmap-operator-registry:latest
+          - -configmapServerImage=quay.io/operator-framework/configmap-operator-registry:v1.26.2
           - -util-image
-          -  quay.io/operator-framework/olm@sha256:e74b2ac57963c7f3ba19122a8c31c9f2a0deb3c0c5cac9e5323ccffd0ca198ed
-          image: quay.io/operator-framework/olm@sha256:e74b2ac57963c7f3ba19122a8c31c9f2a0deb3c0c5cac9e5323ccffd0ca198ed
+          -  quay.io/operator-framework/olm:v0.22.0
+          image: quay.io/operator-framework/olm:v0.22.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -301,7 +301,7 @@ spec:
                 - "5443"
                 - --global-namespace
                 - olm
-                image: quay.io/operator-framework/olm@sha256:e74b2ac57963c7f3ba19122a8c31c9f2a0deb3c0c5cac9e5323ccffd0ca198ed
+                image: quay.io/operator-framework/olm:v0.22.0
                 imagePullPolicy: Always
                 ports:
                 - containerPort: 5443
