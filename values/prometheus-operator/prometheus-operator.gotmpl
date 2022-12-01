@@ -103,6 +103,26 @@ prometheus:
     {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
   {{- end }}
 {{- end }}
+{{- if $p.remoteWrite.enabled }}
+    remoteWrite:
+    - url: "{{ $p.remoteWrite.rwConfig.target }}"
+      {{- if $p.remoteWrite.rwConfig.basicAuth.enabled }}
+      basicAuth:
+        username:
+          name: prometheus-remote-write-basic-auth
+          key: username
+        password:
+          name: prometheus-remote-write-basic-auth
+          key: password
+      {{- end }}
+      tlsConfig:
+        insecureSkipVerify: {{ $p.remoteWrite.insecureSkipVerify }}
+      {{- if $p.remoteWrite.otomiThanos }}
+      headers:
+        cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+      {{- end }}
+      {{- $p.remoteWrite.rwConfig.customConfig | nindent 6 }}
+{{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
     - {{- toYaml $m | nindent 6 }}

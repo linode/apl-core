@@ -157,6 +157,9 @@ environments:
           prometheus-blackbox-exporter: {}
           prometheus:
             enabled: false
+            remoteWrite:
+              enabled: false
+              insecureSkipVerify: false
             replicas: 1
             scrapeInterval: 60s
             retentionSize: 4GB
