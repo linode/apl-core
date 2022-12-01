@@ -2154,6 +2154,30 @@ properties:
                 $ref: '#/definitions/resources'
               tools:
                 $ref: '#/definitions/resources'
+      minio:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          resources:
+            $ref: '#/definitions/resources'
+          provisioning:
+            additionalProperties: false
+            properties:
+              enabled:
+                type: boolean
+                default: true
+          persistence:
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              size:
+                $ref: '#/definitions/size'
+                default: 20Gi
       oauth2-proxy:
         additionalProperties: false
         properties:
