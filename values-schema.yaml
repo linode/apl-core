@@ -2232,6 +2232,9 @@ properties:
               otomiThanos:
                 type: boolean
                 default: false
+              insecureSkipVerify:
+                type: boolean
+                default: false
               rwConfig:
                 properties:
                   target:
