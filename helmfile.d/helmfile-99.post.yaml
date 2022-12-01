@@ -31,7 +31,7 @@ releases:
       group: jobs
     <<: *jobs
   - name: job-harbor-backup
-    installed: {{ $a | get "harbor.backup.enabled" }}
+    installed: {{ and ($a.harbor.enabled) ($a.harbor.backup.enabled) }}
     labels:
       pkg: harbor-backup
       group: jobs

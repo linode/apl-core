@@ -59,6 +59,8 @@ environments:
             registry:
               credentials:
                 username: otomi-admin
+            backup:
+              enabled: false
           hello:
             enabled: false
           httpbin:
