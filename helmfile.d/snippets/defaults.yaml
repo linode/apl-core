@@ -133,6 +133,20 @@ environments:
               create: true
             extraArgs:
               kubelet-preferred-address-types: InternalIP
+          minio:
+            enabled: false
+            provisioning:
+              enabled: true
+            persistence:
+              enabled: true
+              size: 20Gi
+            resources:
+              requests:
+                cpu: 500m
+                memory: 128Mi
+              limits:
+                cpu: 1000m
+                memory: 512Mi
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api:
@@ -185,6 +199,7 @@ environments:
           hasExternalIDP: false
           isHomeMonitored: false
           isMultitenant: false
+          nodeSelector: {}
         # TODO: update this when schema version changes: (and think more?)
         version: 5
         letsencryptRootCA: |

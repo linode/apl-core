@@ -19,7 +19,6 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         {{- with .Values.agent.annotations }}
         {{ toYaml . | nindent 8 }}
         {{- end }}
