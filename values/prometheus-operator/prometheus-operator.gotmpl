@@ -115,10 +115,8 @@ prometheus:
           name: prometheus-remote-write-basic-auth
           key: password
       {{- end }}
-      {{- if $p.remoteWrite.insecureSkipVerify }}
       tlsConfig:
-        insecureSkipVerify: true
-      {{- end }}
+        insecureSkipVerify: {{ $p.remoteWrite.insecureSkipVerify }}
       {{- if $p.remoteWrite.otomiThanos }}
       headers:
         cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
