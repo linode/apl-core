@@ -3127,7 +3127,7 @@ properties:
     properties:
       platform:
         title: Platform applications
-        description: Select platfom apps to backup.
+        description: Select platform apps to backup.
         properties:
           gitea:
             title: Gitea
