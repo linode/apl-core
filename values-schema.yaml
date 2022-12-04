@@ -258,7 +258,15 @@ definitions:
         title: Resource group
         description: An Azure resource group.
         $ref: '#/definitions/wordCharacterPattern'
-
+  backupTtl:
+    default: 240h
+    description: Expiration of the backup.
+    title: TTL after finished
+    type: string
+  backupSchedule:
+    default: 0 0 * * *
+    description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
+    type: string
   cluster:
     additionalProperties: false
     properties:
@@ -2411,86 +2419,125 @@ properties:
       velero:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
-          provider:
-            azure:
-              properties:
-                config:
-                  additionalProperties: false
-                  properties:
-                    storageAccount:
-                      type: string
-                      description: The used Azure storage account
-                      $ref: '#/definitions/wordCharacterPattern'
-                    resourceGroup:
-                      type: string
-                      description: The resource group of the storage account
-                      $ref: '#/definitions/wordCharacterPattern'
-                    bucket:
-                      type: string
-                      description: Name of the blob container.
-                      $ref: '#/definitions/wordCharacterPattern'
-                  required:
-                    - resourceGroup
-                    - storageAccount
-                    - bucket
-                environment:
-                  title: Azure environment
-                  description: An Azure environment.
-                  type: string
-                  default: AzurePublicCloud
-                  enum:
-                    - AzurePublicCloud
-                    - AzureChinaCloud
-                    - AzureUSGovernment
-                    - AzureGermanCloud
-                secretContents:
-                  additionalProperties: false
-                  description: Data to be stored in the Velero secret.
-                  properties:
-                    tenantId:
-                      $ref: '#/definitions/wordCharacterPattern'
-                    subscriptionId:
-                      $ref: '#/definitions/wordCharacterPattern'
-                    aadClientId:
-                      $ref: '#/definitions/wordCharacterPattern'
-                    resourceGroup:
-                      description: The resource group of the worker nodes (VM's and disks)
-                      $ref: '#/definitions/wordCharacterPattern'
-                    aadClientSecret:
-                      $ref: '#/definitions/wordCharacterPattern'
-                      x-secret: ''
-                  required:
-                    - tenantId
-                    - subscriptionId
-                    - aadClientId
-                    - aadClientSecret
-            aws:
-              properties:
-                congig:
-                  properties:
-                    region:
-                      description: The region of the S3 bucket
-                      $ref: '#/definitions/wordCharacterPattern'
-                    s3bucket:
-                      description: The name (URL) of the S3 bucket
-                      $ref: '#/definitions/wordCharacterPattern'
-                secretContents:
-                  properties:
-                    accessKeyId:
-                      type: string
-                      description: The ID of the access key
-                      $ref: '#/definitions/wordCharacterPattern'
-                    secretAccessKey:
-                      type: string
-                      description: The secret of the access key
-                      $ref: '#/definitions/wordCharacterPattern'
-                  required:
-                    - region
-                    - accessKeyId
-                    - secretAccessKey
+          cloud:
+            properties:
+              cloudProvider:
+                properties:
+                  azure:
+                    description: Azure
+                    properties:
+                      resourceGroup:
+                        description: The resource group of the worker nodes (VM's and disks)
+                        $ref: '#/definitions/wordCharacterPattern'
+                      environment:
+                        title: Azure environment
+                        type: string
+                        enum:
+                          - AzurePublicCloud
+                          - AzureChinaCloud
+                          - AzureUSGovernment
+                          - AzureGermanCloud
+                      tenantId:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      subscriptionId:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      aadClientId:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      aadClientSecret:
+                        $ref: '#/definitions/wordCharacterPattern'
+                        x-secret: ''
+                    required:
+                      - tenantId
+                      - subscriptionId
+                      - aadClientId
+                      - aadClientSecret
+                      - resourceGroup
+                      - environment
+                  aws:
+                    description: Amazon Web Services
+                    properties:
+                      region:
+                        type: string
+                        description: The AWS region where the cluster is running.
+                        $ref: '#/definitions/wordCharacterPattern'
+                  type:
+                    type: string
+                    enum:
+                      - aws
+                      - azure
+                      - custom
+                    default: custom
+          storage:
+            properties:
+              storageProvider:
+                properties:
+                  azureBlob:
+                    type: object
+                    properties:
+                      storageAccount:
+                        type: string
+                        description: The used Azure storage account
+                        $ref: '#/definitions/wordCharacterPattern'
+                      resourceGroup:
+                        type: string
+                        description: The resource group of the storage account
+                        $ref: '#/definitions/wordCharacterPattern'
+                      bucket:
+                        type: string
+                        description: Name of the blob container.
+                        $ref: '#/definitions/wordCharacterPattern'
+                      tenantId:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      subscriptionId:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      aadClientId:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      aadClientSecret:
+                        $ref: '#/definitions/wordCharacterPattern'
+                        x-secret: ''
+                    required:
+                      - tenantId
+                      - subscriptionId
+                      - aadClientId
+                      - aadClientSecret
+                      - resourceGroup
+                      - storageAccount
+                      - bucket
+                  s3:
+                    properties:
+                      bucket:
+                        type: string
+                        description: Name of the blob container.
+                        $ref: '#/definitions/wordCharacterPattern'
+                      s3Url:
+                        description: The name (URL) of the S3 bucket
+                        $ref: '#/definitions/wordCharacterPattern'
+                      accessKeyId:
+                        type: string
+                        description: The ID of the access key
+                        $ref: '#/definitions/wordCharacterPattern'
+                      secretAccessKey:
+                        type: string
+                        description: The secret of the access key
+                        $ref: '#/definitions/wordCharacterPattern'
+                        x-secret: ''
+                    required:
+                      - bucket
+                      - s3Url
+                      - accessKeyId
+                      - secretAccessKey
+                  type:
+                    type: string
+                    enum:
+                      - azureBlob
+                      - s3
+                      - minioLocal
+                    default: minioLocal
           logLevel:
             description: Set log-level for the Velero pod.
             default: info
@@ -3078,33 +3125,88 @@ properties:
       - smarthost
   backup:
     properties:
-      platformSchedule:
+      platform:
+        title: Platform applications
+        description: Select platfom apps to backup.
         properties:
-          enabled:
-            type: boolean
-            default: false
-          ttl:
-            default: 240h
-            description: Expiration of the backup.
-            title: TTL after finished
-            type: string
-          schedule:
-            default: 0 0 * * *
-            description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
-            type: string
-      teamSchedule:
+          gitea:
+            title: Gitea
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          drone:
+            title: Drone
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          keycloak:
+            title: Keycloak
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          harbor:
+            title: Harbor
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          vault:
+            title: Vault
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          argo:
+            title: ArgoCD
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          kubeapps:
+            title: Kubeapps
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+      teams:
         enabled:
           type: boolean
           default: false
         ttl:
-          default: 240h
-          description: Expiration of the backup.
-          title: TTL after finished
-          type: string
+          $ref: '#/definitions/backupTtl'
         schedule:
-          default: 0 0 * * *
-          description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
-          type: string
+          $ref: '#/definitions/backupSchedule'
   teamConfig:
     additionalProperties: false
     patternProperties:

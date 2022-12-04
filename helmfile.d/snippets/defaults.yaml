@@ -179,9 +179,22 @@ environments:
             enabled: false
             logLevel: info
         backup:
-          platformSchedule:
-            enabled: false
-          teamSchedule:
+          platform:
+            gitea:
+              enabled: false
+            drone:
+              enabled: false
+            keycloak:
+              enabled: false
+            harbor:
+              enabled: false
+            vault:
+              enabled: false
+            argo:
+              enabled: false
+            kubeapps:
+              enabled: false          
+          teams:
             enabled: false
         cluster: {}
         dns:
