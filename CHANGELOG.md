@@ -8,11 +8,12 @@ All notable changes to this project will be documented in this file. See [standa
 ### Features
 
 * add a flag to disable monitoring stack for a specific team ([#946](https://github.com/redkubes/otomi-core/issues/946)) ([550295e](https://github.com/redkubes/otomi-core/commit/550295ec3f383057bd3b3adbbc7094bb0ed4c55c))
-* add Jaeger to shared apps and ensure Keycloak in not a shared app([#944](https://github.com/redkubes/otomi-core/issues/944)) ([ebccd43](https://github.com/redkubes/otomi-core/commit/ebccd4315930c42fb1bfee382eff69db8dc58704))
-* add minio ap  ([#957](https://github.com/redkubes/otomi-core/issues/957)) ([ec5322e](https://github.com/redkubes/otomi-core/commit/ec5322e6d75416bec9624419b3138a142ce2ec7b))
-* less promiscuous validate-template output ([#955](https://github.com/redkubes/otomi-core/issues/955)) ([9d96a00](https://github.com/redkubes/otomi-core/commit/9d96a0022b3ac0a5180ed6cca04c6c61d6fa9a18))
-* prometheus remote write ([#959](https://github.com/redkubes/otomi-core/issues/959)) ([3f81389](https://github.com/redkubes/otomi-core/commit/3f81389ffe78f8dc41f3ea60530e82901335f3b3))
-* new code editor based on Monaco (otomi-console)
+* add Jaeger to shared apps ([#944](https://github.com/redkubes/otomi-core/issues/944)) ([ebccd43](https://github.com/redkubes/otomi-core/commit/ebccd4315930c42fb1bfee382eff69db8dc58704))
+* remove Keycloak from shared apps ([#944](https://github.com/redkubes/otomi-core/issues/944)) ([ebccd43](https://github.com/redkubes/otomi-core/commit/ebccd4315930c42fb1bfee382eff69db8dc58704))
+* add minio core app ([#957](https://github.com/redkubes/otomi-core/issues/957)) ([ec5322e](https://github.com/redkubes/otomi-core/commit/ec5322e6d75416bec9624419b3138a142ce2ec7b))
+* less promiscuous otomi validate-template output ([#955](https://github.com/redkubes/otomi-core/issues/955)) ([9d96a00](https://github.com/redkubes/otomi-core/commit/9d96a0022b3ac0a5180ed6cca04c6c61d6fa9a18))
+* allow to define prometheus remote write ([#959](https://github.com/redkubes/otomi-core/issues/959)) ([3f81389](https://github.com/redkubes/otomi-core/commit/3f81389ffe78f8dc41f3ea60530e82901335f3b3))
+* introduce new code editor based on Monaco (otomi-console)
 
 
 ### Bug Fixes
