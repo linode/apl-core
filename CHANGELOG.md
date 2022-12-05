@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. See [standa
 * add minio ap  ([#957](https://github.com/redkubes/otomi-core/issues/957)) ([ec5322e](https://github.com/redkubes/otomi-core/commit/ec5322e6d75416bec9624419b3138a142ce2ec7b))
 * less promiscuous validate-template output ([#955](https://github.com/redkubes/otomi-core/issues/955)) ([9d96a00](https://github.com/redkubes/otomi-core/commit/9d96a0022b3ac0a5180ed6cca04c6c61d6fa9a18))
 * prometheus remote write ([#959](https://github.com/redkubes/otomi-core/issues/959)) ([3f81389](https://github.com/redkubes/otomi-core/commit/3f81389ffe78f8dc41f3ea60530e82901335f3b3))
+* new code editor based on Monaco (otomi-console)
 
 
 ### Bug Fixes
