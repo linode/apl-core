@@ -11,17 +11,7 @@ persistence:
   deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
 priorityClassName: otomi-critical
 proxyAddressForwarding: true
-resources:
-  {{- with $k | get "resources.keycloak" nil }}
-    {{- toYaml . | nindent 4 }}
-  {{- else }}
-  limits:
-    cpu: 1
-    memory: 1.5Gi
-  requests:
-    cpu: 100m
-    memory: 1Gi
-  {{- end }}
+resources: {{- toYaml $k.resources.keycloak | nindent 4 }}
 replicas: 1
 startupScripts:
   frontend.cli: |
@@ -120,17 +110,7 @@ postgresql:
       enabled: true
       additionalLabels:
         prometheus: system
-  resources:
-    {{- with $k | get "resources.postgresql" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 1
-      memory: 1.5Gi
-    requests:
-      cpu: 100m
-      memory: 1Gi
-    {{- end }}
+  resources: {{- toYaml $k.resources.postgresql | nindent 4 }}
   master:
     priorityClassName: otomi-critical
   slave:

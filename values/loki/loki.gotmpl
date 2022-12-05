@@ -16,7 +16,7 @@ tracing:
 config:
   auth_enabled: {{ $v.otomi.isMultitenant }}
   limits_config:
-    reject_old_samples_max_age: {{ $l | get "retention.duration" "24h" }}
+    reject_old_samples_max_age: {{ $l.retention.duration }}
   schema_config:
     configs:
     {{- if $l | get "v11StartDate" nil }}
@@ -26,31 +26,31 @@ config:
       schema: v9
       index:
         prefix: index_
-        period: {{ $l | get "retention.period" "24h" }}
+        period: {{ $l.retention.period }}
     {{- end }}
     - from: {{ $l | get "v11StartDate" "2021-05-12" }}
       store: boltdb-shipper
-      object_store: {{ $l | get "storage.storageType" "filesystem" }}
+      object_store: {{ $l.storage.storageType }}
       schema: v11
       index:
         prefix: index_
         period: 24h
   storage_config:
     boltdb_shipper:
-      shared_store: {{ $l | get "storage.storageType" "filesystem" }}
+      shared_store: {{ $l.storage.storageType }}
     filesystem:
       directory: /data/loki/chunks
-    {{- if ne ($l | get "storage.storageType" "filesystem") "filesystem" }}
+    {{- if ne $l.storage.storageType "filesystem" }}
     {{ $l.storage.storageType }}: {{- $l.storage | get $l.storage.storageType | toYaml | nindent 6 }}
     {{- end }}
   compactor:
     retention_enabled: true
-    shared_store: {{ $l | get "storage.storageType" "filesystem" }}
+    shared_store: {{ $l.storage.storageType }}
   chunk_store_config:
-    max_look_back_period: {{ $l | get "retention.period" "24h" }}
+    max_look_back_period: {{ $l.retention.period }}
   table_manager:
     retention_deletes_enabled: true
-    retention_period: {{ $l | get "retention.period" "24h" }}
+    retention_period: {{ $l.retention.period }}
 
 networkPolicy:
   enabled: false
@@ -63,7 +63,7 @@ persistence:
   enabled: true
   accessModes:
   - ReadWriteOnce
-  size: {{ $l | get "persistence.size" "20Gi" }}
+  size: {{ $l.persistence.size }}
   {{- if $v._derived.supportedCloud }}
   storageClassName: fast
   {{- end }}
@@ -71,17 +71,7 @@ persistence:
 ## Assign a PriorityClassName to pods if set
 priorityClassName: otomi-critical
 
-resources:
-  {{- with $l | get "resources" nil }}
-    {{- toYaml . | nindent 2 }}
-  {{- else }}
-  limits:
-    cpu: 800m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  {{- end }}
+resources: {{- toYaml $l.resources | nindent 2 }}
 
 fullnameOverride: loki
 
@@ -144,7 +134,7 @@ podAnnotations:
   checksum/teams: {{ $teamNames | sha256sum }}
   {{- end }}  
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 image:
   pullSecrets:
     - otomi-pullsecret-global

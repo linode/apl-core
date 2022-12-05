@@ -12,7 +12,7 @@ updateCmd: {{ $c | get "updateCmd" nil }}
 
 priorityClassName: otomi-critical
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - otomi-pullsecret-global
 {{- end }}

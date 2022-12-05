@@ -122,6 +122,7 @@
     "compile:watch": "npm run compile && tsc -w",
     "cz": "git-cz",
     "cz:retry": "git-cz -- --retry",
+    "defaults": "NODE_ENV=test && binzx/otomi defaults",
     "eslint": "eslint --ext ts .",
     "eslint:fix": "eslint --fix --ext ts .",
     "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",
@@ -143,13 +144,15 @@
     "server": "binzx/otomi server",
     "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/*.md' '/.values/README.md'",
     "tasks:copy-certs": "binzx/otomi task -n copyCerts",
+    "template": "NODE_ENV=test && binzx/otomi template",
     "test": "run-s test:ts lint validate-values validate-templates check-policies",
     "test:opa": "NODE_ENV=test binzx/otomi x opa test policies -v",
     "test:ts": "NODE_ENV=test jest",
     "test:ts-cov": "jest --coverage",
     "validate-templates": "NODE_ENV=test binzx/otomi validate-templates",
     "validate-templates:all": "set -e; i=19; while [ $i -le 23 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
-    "validate-values": "NODE_ENV=test binzx/otomi validate-values"
+    "validate-values": "NODE_ENV=test binzx/otomi validate-values",
+    "values": "NODE_ENV=test && binzx/otomi values"
   },
   "standard-version": {
     "skip": {

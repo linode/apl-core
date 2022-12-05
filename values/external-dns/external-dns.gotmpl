@@ -20,10 +20,10 @@ provider: {{ $provider }}
 {{ $providerConfigKey }}: {{- $config | toYaml | nindent 2 }}
 {{- end }}
 {{- end }}
-domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
+domainFilters: {{ $dns | get "domainFilters" list | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
-logLevel: {{ $externalDns | get "logLevel" }}
+logLevel: {{ $externalDns.logLevel }}
 dryRun: false
 crd:
   create: false
@@ -59,7 +59,7 @@ metrics:
     additionalLabels:
       prometheus: system
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:
   imagePullSecrets:
     - otomi-pullsecret-global

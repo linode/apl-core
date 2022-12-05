@@ -35,10 +35,8 @@ env:
   TEAM_IDS: '{{ $teamIds | toJson }}'
 {{- if $v.otomi.hasExternalIDP }}
   IDP_ALIAS: {{ $k.idp.alias }}
-  {{- with $o | get "usernameClaimMapper" nil }}
-  IDP_USERNAME_CLAIM_MAPPER: {{ . }}{{ end }}
-  {{- with $o | get "subClaimMapper" nil }}
-  IDP_SUB_CLAIM_MAPPER: {{ . }}{{ end }}
+  IDP_USERNAME_CLAIM_MAPPER: {{ $o.usernameClaimMapper }}
+  IDP_SUB_CLAIM_MAPPER: {{ $o.subClaimMapper }}
   IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
   {{- with $o | get "adminGroupID" nil }}
   IDP_GROUP_OTOMI_ADMIN: {{ . }}{{ end }}

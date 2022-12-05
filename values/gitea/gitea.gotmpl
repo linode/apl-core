@@ -32,7 +32,7 @@ securityContext:
   runAsUser: 1000
 
 image:
-  {{- with $v.otomi | get "globalPullSecret" nil }}
+  {{- with $v._files | get "otomi.globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
@@ -46,7 +46,7 @@ gitea:
     policy.otomi.io/ignore.init: psp-allowed-users
     policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
   admin:
-    username: {{ $g.adminUsername }}
+    username: otomi-admin
     password: {{ $g.adminPassword }}
   config:
     admin:
@@ -226,7 +226,7 @@ containerSecurityContext:
   runAsUser: 1000
   runAsGroup: 1000
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:
   imagePullSecrets:
     - otomi-pullsecret-global

@@ -67,10 +67,10 @@ In Otomi, all Helmfile specs are defined in the `helmfile.d/` directory and exec
 ```go-template
 #helmfiled./999-helmfile.yaml
 bases:
-  - snippets/defaults.yaml
+  - snippets/defaults.gotmpl
 ---
 bases:
-  - snippets/env.gotmpl
+  - snippets/files.gotmpl
 ---
 bases:
   - snippets/derived.gotmpl
@@ -92,12 +92,12 @@ flowchart LR
 
     subgraph HB[Helmfile bases]
         snippets/derived.gotmpl --> HV[.Values]
-        snippets/env.gotmpl --> HV
+        snippets/files.gotmpl --> HV
         snippets/default.yaml --> HV
     end
 
     subgraph Values repo
-        R[(env/*)] --> snippets/env.gotmpl
+        R[(env/*)] --> snippets/files.gotmpl
     end
     HV --> HR
     HR --> HC
@@ -108,7 +108,7 @@ From the flow diagram, we can distinguish four stages of data, before `Kubernete
 
 **Values repo**: It contains files that define input parameters for Otomi. This is where you can define teams, team, services, enabled applications and their configurations, etc. A user sets the `$ENV_DIR` env variable, so Otomi knows about its location.
 
-**Helmfile bases**: From the flow diagram, three files incorporate the content of the `.Values` - a Helmfile variable, which is accessible while using Go templates. These files are merged together in the following order: `snippets/default.yaml` -> `snippets/env.gotmpl` -> `snippets/derived.gotmpl`.
+**Helmfile bases**: From the flow diagram, three files incorporate the content of the `.Values` - a Helmfile variable, which is accessible while using Go templates. These files are merged together in the following order: `snippets/default.yaml` -> `snippets/files.gotmpl` -> `snippets/derived.gotmpl`.
 
 **Helmfile release**: At this stage, Helmfile is establishing a path to the Helm chart and the content of the Helm chart values. We will talk more about defining Helmfile releases in the next chapter.
 
@@ -116,7 +116,7 @@ From the flow diagram, we can distinguish four stages of data, before `Kubernete
 
 **Kubernetes manifests**: Helm generates Kubernetes manifests that can be deployed to the cluster.
 
-Let's zoom into the function of `snippets/defaults.yaml` file. It contains default app values. For example, defining the default value for enabling the app.
+Let's zoom into the function of `snippets/defaults.gotmpl` file. It contains default app values. For example, defining the default value for enabling the app.
 
 The function of the `snippets/derived.gotmpl` file is to derive those values that depend on user input (values repo). For example, you can enable an app only if a certain cluster provider is set.
 

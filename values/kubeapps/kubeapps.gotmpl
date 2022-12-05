@@ -74,10 +74,10 @@ metrics:
 
 postgresql:
   existingSecret: null
-  postgresqlPassword: {{ $k | get "postgresqlPassword" }}
-  postgresqlPostgresPassword: {{ $k | get "postgresqlPassword" }}
+  postgresqlPassword: {{ $k.postgresqlPassword }}
+  postgresqlPostgresPassword: {{ $k.postgresqlPassword }}
   replication:
-    password: {{ $k | get "postgresqlPassword" }}
+    password: {{ $k.ostgresqlPassword }}
   resources:
     limits:
       memory: 768Mi
@@ -105,7 +105,7 @@ postgresql:
 securityContext:
   enabled: true
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:
   imagePullSecrets:
     - name: otomi-pullsecret-global

@@ -33,17 +33,7 @@ resources:
             hpaSpec:
               minReplicas: {{ $i.autoscaling.pilot.minReplicas }}
               maxReplicas: {{ $i.autoscaling.pilot.maxReplicas }}
-            resources:
-              {{- with $i | get "resources.pilot" nil }}
-                {{- toYaml . | nindent 14 }}
-              {{- else }}
-              limits:
-                cpu: '2'
-                memory: 2Gi
-              requests:
-                cpu: 100m
-                memory: 128Mi
-              {{- end }}
+            resources: {{- toYaml $i.resources.pilot | nindent 14 }}
         ingressGateways:
           - name: istio-ingressgateway
             enabled: false
@@ -56,17 +46,7 @@ resources:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users
               priorityClassName: otomi-critical
-              resources:
-              {{- with $i | get "resources.ingressgateway" nil }}
-                {{- toYaml . | nindent 16 }}
-              {{- else }}
-                limits:
-                  cpu: '1'
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-              {{- end }}
+              resources: {{- toYaml $i.resources.ingressgateway | nindent 16 }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" }}
                 maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" }}
@@ -95,17 +75,7 @@ resources:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users
               priorityClassName: otomi-critical
-              resources:
-              {{- with $i | get "resources.egressgateway" nil }}
-                {{- toYaml . | nindent 16 }}
-              {{- else }}
-                limits:
-                  cpu: '1'
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-              {{- end }}
+              resources: {{- toYaml $i.resources.egressgateway | nindent 16 }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" }}
                 maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" }}
@@ -135,19 +105,9 @@ resources:
             - otomi-pullsecret-global
           {{- end }}
           logging:
-            level: {{ $ig | get "logging.level" "default:info" }}
+            level: {{ $ig.logging.level }}
           proxy:
-            resources:
-            {{- with $i | get "resources.proxy" nil }}
-              {{- toYaml . | nindent 14 }}
-            {{- else }}
-              limits:
-                cpu: '1'
-                memory: 1Gi
-              requests:
-                cpu: 20m
-                memory: 80Mi
-            {{- end }}
+            resources: {{- toYaml $i.resources.proxy | nindent 14 }}
             autoInject: enabled
           tracer:
             zipkin:
@@ -155,13 +115,7 @@ resources:
           useMCP: false
         meshConfig:
           accessLogFile: "/dev/stdout"
-          defaultConfig:
-          {{ with $i | get "meshConfig.defaultConfig" nil }}
-            {{- toYaml . | nindent 14 }}
-          {{- else }}
-            tracing:
-              sampling: 0.1
-          {{- end }}
+          defaultConfig: {{-  toYaml $i.meshConfig.defaultConfig | nindent 14 }}
           enableAutoMtls: true
         {{- if $v._derived.untrustedCA }}
         pilot:

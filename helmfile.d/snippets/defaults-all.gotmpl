@@ -1,0 +1,5 @@
+environments:
+  default:
+    values:
+      - {{- readFile "../helmfile.d/snippets/defaults.yaml" | nindent 8 }}
+      - {{- exec "bash" (list "-c" "cd .. && binzx/otomi defaults --all") | trim | nindent 8 }}

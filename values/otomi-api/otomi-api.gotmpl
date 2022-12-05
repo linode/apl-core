@@ -12,17 +12,7 @@
 replicaCount: 1
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
-resources:
-{{- with $o | get "resources.api" nil }}
-  {{- toYaml . | nindent 2 }}
-{{- else }}
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
-{{- end }}
+resources: {{- toYaml $o.resources.api | nindent 4 }}
 
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipScript" true) }}
 
@@ -30,7 +20,7 @@ secrets:
   {{- if $hasGitea }}
   GIT_USER: otomi-admin
   GIT_EMAIL: not@us.ed
-  GIT_PASSWORD: {{ $g | get "admin.password" $v.otomi.adminPassword }}
+  GIT_PASSWORD: {{ $g.admin.password }}
   {{- else }}
   GIT_USER: {{ $o.git.user }}
   GIT_EMAIL: {{ $o.git.email }}
@@ -42,7 +32,7 @@ env:
   DEBUG: 'otomi:*'
   VERBOSITY: '1'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
-  GIT_BRANCH: {{ $o | get "git.branch" "main" }}
+  GIT_BRANCH: {{ $o.git.branch }}
   VERSIONS: |
     {{ $v.versions | toJson | nindent 4}}
   {{- if $v._derived.untrustedCA }}
@@ -53,7 +43,7 @@ env:
   {{- end }}
   IN_DOCKER: '1'
   EDITOR_INACTIVITY_TIMEOUT: {{ $o.editorInactivityTimeout }}
-  DRONE_WEBHOOK_SECRET: {{ $d | get "sharedSecret" }}
+  DRONE_WEBHOOK_SECRET: {{ $d.sharedSecret }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
@@ -63,17 +53,7 @@ core:
 
 tools:
   {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipScript" true) | nindent 2 }}
-  resources:
-  {{- with $o | get "resources.tools" nil }}
-    {{- toYaml . | nindent 4 }}
-  {{- else }}
-    limits:
-      cpu: 600m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  {{- end }}
+  resources: {{- toYaml $o.resources.tools | nindent 4 }}
   env:
     DEBUG: '*'
     VERBOSITY: '1'
@@ -81,7 +61,7 @@ tools:
 podSecurityContext:
   runAsUser: 999
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

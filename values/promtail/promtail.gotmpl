@@ -68,7 +68,7 @@ config:
 
 priorityClassName: otomi-critical
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

@@ -13,19 +13,19 @@ resources:
     cpu: 20m
     memory: 40Mi
 
-sharedSecret: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
+sharedSecret: {{ $d.sharedSecret }}
 github:
   token: {{ $d.githubAdmins.token }}
   org: {{ $d.githubAdmins.org }}
-  team: {{ $d.githubAdmins.team | default "admins" }}
+  team: {{ $d.githubAdmins.team }}
 
 env:
-  DRONE_DEBUG: {{ $d | get "debug" false }}
+  DRONE_DEBUG: {{ $d.debug }}
 
 podAnnotations:
   policy.otomi.io/ignore: banned-image-tags
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 image:  
   pullSecrets:
     - name: otomi-pullsecret-global

@@ -2,7 +2,7 @@
 {{- $k := $v.apps.kubeclarity }}
 
 global:
-  databasePassword: {{ $k | get "databasePassword" }}
+  databasePassword: {{ $k.databasePassword }}
 
 kubeclarity:
   logLevel: {{ $k.logLevel }}

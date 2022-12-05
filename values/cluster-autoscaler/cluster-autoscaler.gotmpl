@@ -3,7 +3,7 @@
 nameOverride: cluster-autoscaler
 fullNameOverride: cluster-autoscaler
 image:
-  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  {{- with $v._files | get "otomi.globalPullSecret" nil }}
   pullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}

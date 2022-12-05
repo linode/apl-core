@@ -1,18 +1,8 @@
 {{- $v := .Values }}
-{{- $vl:= $v.apps.velero }}
-{{- $provider:= $vl | get "provider" dict }}
+{{- $vl := $v.apps.velero }}
+{{- $provider := $vl | get "provider" dict }}
 
-resources:
-  {{- with $vl | get "resources" nil }}
-    {{- toYaml . | nindent 2 }}
-  {{- else }}
-  requests:
-    cpu: 500m
-    memory: 128Mi
-  limits:
-    cpu: 1000m
-    memory: 512Mi
-  {{- end }}
+resources: {{- $vl.resources | nindent 2 }}
 
 {{- with $provider | get "azure" nil }}
 initContainers:
@@ -51,8 +41,8 @@ podSecurityContext:
   runAsUser: 1000
 
 serviceMonitor:
-    enabled: true
-    namespace: velero
+  enabled: true
+  namespace: velero
 
 logLevel: {{ $vl.logLevel }}
 
@@ -66,25 +56,16 @@ configuration:
   backupStorageLocation:
     name: otomi
     default: true
-    bucket: {{ $vl.provider.azure.config.bucket }}
-    config:
-      {{- with $provider | get "azure" nil }}
-      storageAccount: {{ .config.storageAccount }}
-      resourceGroup: {{ .config.resourceGroup }}
-      {{- end }}
-      {{- with $provider | get "aws" nil }}
-      s3Url: {{ .config.s3bucket }}
-      region: {{ .config.region }}
-      {{- end }} 
+    {{- with $provider | get "azure" nil }}
+    bucket: {{ .bucket }}
+    {{- end }}
+    {{- with $provider | get "aws" nil }}
+    bucket: {{ .s3bucket }}
+    {{- end }}
+    config: {{- toYaml $provider.config | nindent 6 }}
   volumeSnapshotLocation:
     name: otomi
-    config:
-      {{- with $provider | get "azure" nil }}
-      resourceGroup: {{ .config.resourceGroup }}
-      {{- end }}
-      {{- with $provider | get "aws" nil }}
-      region: {{ .config.region }}
-      {{- end }}
+    config: {{- toYaml $provider.config | nindent 6 }}
   # defaultVolumesToRestic - if set Velero will back up all pod volumes using Restic with the exception of: service account token, secrets, config maps and hostpath volumes
   defaultVolumesToRestic: true
 

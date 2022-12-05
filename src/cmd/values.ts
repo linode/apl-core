@@ -18,7 +18,6 @@ const values = async (): Promise<void> => {
   d.info('Get values')
   const argv: Arguments = getParsedArgs()
   const hfVal = await hfValues({ filesOnly: argv.filesOnly, excludeSecrets: argv.excludeSecrets })
-
   d.info('Print values')
   console.log(stringify(hfVal))
 }

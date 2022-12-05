@@ -1,7 +1,7 @@
 # this release file is used to dump the values used by helmfile, which are found in the env files
 # so no defaults or derived values are dumped!!
 bases:
-  - ../helmfile.d/snippets/env.gotmpl
+  - ../helmfile.d/snippets/files.gotmpl
 ---
 {{- $v := .Values }}
 

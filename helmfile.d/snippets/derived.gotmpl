@@ -1,4 +1,6 @@
-{{- $v := .Values }}
+{{- $def := .Values._def }}
+{{- $files := (omit .Values "_def") }}
+{{- $v := merge $def $files }}
 {{- $a := $v.apps }}
 {{- $k := $a | get "keycloak" dict }}
 {{- $o := $v | get "oidc" dict }}
@@ -39,17 +41,20 @@ helmDefaults:
 environments:
   default:
     values:
+      - {{- toYaml $def | nindent 8 }}
+      - _files: {{- toYaml $files | nindent 10 }}
+      - {{- toYaml $v | nindent 8 }}
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
           caCert: |
             {{- if eq $issuer "letsencrypt" }}
-              {{- $v.letsencryptRootCA | nindent 12 }}
-              {{- $v.letsencryptCA | nindent 12 }}
+              {{- $def.letsencryptRootCA | nindent 12 }}
+              {{- $def.letsencryptCA | nindent 12 }}
             {{- else }}
               {{- $cm.customRootCA | nindent 12 }}
             {{- end }}
           caCertRoot: |
             {{- if eq $issuer "letsencrypt" }}
-              {{- $v.letsencryptRootCA | nindent 12 }}
+              {{- $def.letsencryptRootCA | nindent 12 }}
             {{- else }}
               {{- $cm.customRootCA | nindent 12 }}
             {{- end }}
@@ -85,14 +90,11 @@ environments:
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
           external-secrets:
-            enabled: {{ $a | get "vault.enabled" false }}
+            enabled: {{ $a.vault.enabled }}
           harbor:
-            adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
-            registry:
-              credentials:
-                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
+            adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword }}
           gatekeeper:
-            enabled: {{ or ($a | get "gatekeeper.enabled" false) (hasKey $v.otomi "nodeSelector") }}
+            enabled: {{ or $a.gatekeeper.enabled (hasKey $v.otomi "nodeSelector") }}
           gitea:
             enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
@@ -116,8 +118,7 @@ environments:
             enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
         ingress:
           classes:
-          - {{- $v.ingress.platformClass | toYaml | nindent 12 }}
-          {{- with $v.ingress.classes }}
+          {{- with (concat (list $v.ingress.platformClass) $v.ingress.classes) }}
           {{- . | toYaml | nindent 10 }}
           {{- end }}
         otomi:

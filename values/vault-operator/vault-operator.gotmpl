@@ -1,9 +1,11 @@
+{{- $v := .Values }}
+{{- $vt := $v.apps.vault }}
 watchNamespace: "vault"
 
 # @TODO:
 image:
-  tag: 1.15.2
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+  tag: {{ $vt.image.tag }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:
   imagePullSecrets:
     - otomi-pullsecret-global

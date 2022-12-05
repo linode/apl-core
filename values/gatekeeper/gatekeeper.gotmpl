@@ -6,7 +6,7 @@ image:
   repository: openpolicyagent/gatekeeper
   release: {{ $g | get "image.tag" "v3.7.1" }}
   pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
-  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  {{- with $v._files | get "otomi.globalPullSecret" nil }}
   pullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
@@ -25,30 +25,10 @@ disableValidatingWebhook: {{ $g | get "disableValidatingWebhook" }}
 
 audit:
   {{- tpl (readFile "../../helmfile.d/snippets/otomi-affinity.gotmpl") $v | nindent 2 }}
-  resources:
-    {{- with $g | get "resources.audit" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    {{- end }}
+  resources: {{- toYaml $g.resources.audit | nindent 4 }}
 controllerManager:
   {{- tpl (readFile "../../helmfile.d/snippets/otomi-affinity.gotmpl") $v | nindent 2 }}
-  resources:
-    {{- with $g | get "resources.controller" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 1000m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    {{- end }}
+  resources: {{- toYaml $g.resources.controller | nindent 4 }}
 
 crds:
   resources:

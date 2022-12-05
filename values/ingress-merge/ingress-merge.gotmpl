@@ -1,4 +1,5 @@
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- $v := .Values }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

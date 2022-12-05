@@ -7,60 +7,30 @@ auth:
 
 sentinel:
   persistence:
-    size: {{ $r | get "sizes.sentinel" "1Gi" }}
+    size: {{ $r.sizes.sentinel }}
   podAnnotations:
-    sidecar.istio.io/inject: "false"
-  resources:
-  {{- with $r | get "resources.sentinel" nil }}
-    {{- toYaml . | nindent 4 }}
-  {{- else }}
-    requests:
-      cpu: 200m
-      memory: 64Mi
-    limits:
-      cpu: 500m
-      memory: 256Mi
-  {{- end }}
+    sidecar.istio.io/inject: 'false'
+  resources: {{- toYaml $r.resources.sentinel | nindent 4 }}
 
 master:
   persistence:
     {{- if eq $v.cluster.provider "vultr" }}
     size: 10Gi
     {{- else }}
-    size: {{ $r | get "sizes.master" "1Gi" }}
+    size: {{ $r.sizes.master }}
     {{- end }}
   podAnnotations:
-    sidecar.istio.io/inject: "false"
+    sidecar.istio.io/inject: 'false'
   priorityClassName: otomi-critical
-  resources:
-  {{- with $r | get "resources.master" nil }}
-    {{- toYaml . | nindent 4 }}
-  {{- else }}
-    requests:
-      cpu: 200m
-      memory: 64Mi
-    limits:
-      cpu: 500m
-      memory: 256Mi
-  {{- end }}
+  resources: {{- toYaml $r.resources.master | nindent 4 }}
 
 replica:
   persistence:
-    size: {{ $r | get "sizes.replica" "1Gi" }}
+    size: {{ $r.sizes.replica }}
   podAnnotations:
     sidecar.istio.io/inject: "false"
   priorityClassName: otomi-critical
-  resources:
-  {{- with $r | get "resources.replica" nil }}
-    {{- toYaml . | nindent 4 }}
-  {{- else }}
-    requests:
-      cpu: 200m
-      memory: 64Mi
-    limits:
-      cpu: 500m
-      memory: 256Mi
-  {{- end }}
+  resources: {{- toYaml $r.resources.replica | nindent 4 }}
 
 metrics:
   podAnnotations:
@@ -74,7 +44,7 @@ metrics:
       cpu: 100m
       memory: 256Mi
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

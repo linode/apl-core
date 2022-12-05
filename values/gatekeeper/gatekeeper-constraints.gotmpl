@@ -3,7 +3,7 @@
 
 otomi: {{- toYaml $v.otomi | nindent 2 }}
 
-{{- with $v.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

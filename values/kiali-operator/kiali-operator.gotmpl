@@ -6,7 +6,7 @@
 image:
   # @TODO:
   tag: v1.49
-  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  {{- with $v._files | get "otomi.globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
@@ -35,17 +35,7 @@ cr:
         sidecar.istio.io/inject: "true"
       ingress_enabled: false
       namespace: kiali
-      resources:
-        {{- with $k | get "resources" nil }}
-          {{- toYaml . | nindent 8 }}
-        {{- else }}
-        limits:
-          cpu: 500m
-          memory: 512Mi
-        requests:
-          cpu: 50m
-          memory: 32Mi
-        {{- end }}
+      resources: {{- toYaml $k.resources | nindent 8 }}
       verbose_mode: "4"
     external_services:
       grafana:

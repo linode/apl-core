@@ -88,7 +88,7 @@ export const bootstrapSops = async (
         d.log('Creating gcp-key.json for vscode.')
         await deps.writeFile(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
         d.log(`Creating credentials file: ${secretsFile}`)
-        await deps.writeFile(secretsFile, `GCLOUD_SERVICE_KEY=${JSON.stringify(JSON.stringify(serviceKeyJson))}`)
+        await deps.writeFile(secretsFile, `GCLOUD_SERVICE_KEY='${JSON.stringify(serviceKeyJson)}'`)
       } else if (provider === 'aws') {
         const v = values.kms!.sops!.aws!
         await deps.writeFile(secretsFile, `AWS_ACCESS_KEY_ID='${v.accessKey}'\nAWS_ACCESS_KEY_SECRET=${v.secretKey}`)

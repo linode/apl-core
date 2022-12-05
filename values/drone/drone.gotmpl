@@ -31,21 +31,11 @@ server:
     policy.otomi.io/ignore: psp-allowed-users
   host: {{ $host }}
   protocol: https
-  adminUser: {{ $d | get "adminUser" "otomi-admin" }}
+  adminUser: {{ $d | get "adminUser" $g.adminUser }}
   adminToken: {{ $d | get "adminToken" ($g | get "adminPassword" $v.otomi.adminPassword) }}
   dind:
     enabled: {{ $dindEnabled }}
-  resources:
-    {{- with $d | get "resources.server" nil }}
-      {{- toYaml .| nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 40m
-      memory: 32Mi
-    {{- end }}
+  resources: {{- toYaml $d.resources.server| nindent 4 }}
   env:
     DRONE_LOGS_DEBUG: {{ $d.debug }}
     DRONE_LOGS_TRACE: {{ $d.trace }}
@@ -68,17 +58,7 @@ agent:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
     sidecar.istio.io/inject: "false"
-  resources:
-    {{- with $d | get "resources.agent" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 40m
-      memory: 32Mi
-    {{- end }}
+  resources: {{- toYaml $d.resources.agent | nindent 4 }}
   env:
     DRONE_TRACE: {{ $d.trace }}
     DRONE_DEBUG: {{ $d.debug }}
@@ -117,7 +97,7 @@ metrics:
   prometheus:
     enabled: true
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
