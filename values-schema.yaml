@@ -1135,6 +1135,11 @@ definitions:
         items:
           $ref: '#/definitions/service'
         type: array
+      monitoringStack:
+        properties:
+          enabled:
+            type: boolean
+            default: true
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster
@@ -2436,6 +2441,43 @@ properties:
               requests:
                 cpu: 100m
                 memory: 64Mi
+            additionalProperties: false
+            properties:
+              api:
+                $ref: '#/definitions/resources'
+              tools:
+                $ref: '#/definitions/resources'
+      minio:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          resources:
+            $ref: '#/definitions/resources'
+            default:
+              limits:
+                cpu: 200m
+                memory: 128Mi
+              requests:
+                cpu: 100m
+                memory: 64Mi
+          provisioning:
+            additionalProperties: false
+            properties:
+              enabled:
+                type: boolean
+                default: true
+          persistence:
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              size:
+                $ref: '#/definitions/size'
+                default: 20Gi
       oauth2-proxy:
         additionalProperties: false
         properties:

@@ -18,3 +18,9 @@ releases:
     labels:
       pkg: cert-manager
     <<: *raw
+  - name: minio-artifacts
+    installed: {{ $a.minio.enabled }}
+    namespace: minio
+    labels:
+      pkg: minio
+    <<: *raw

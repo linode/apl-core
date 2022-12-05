@@ -131,7 +131,7 @@
     "lint": "run-p spellcheck lint:hf lint:ts lint:types",
     "lint-staged": "lint-staged",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",
-    "lint:hf": "NODE_ENV=test && binzx/otomi lint",
+    "lint:hf": "NODE_ENV=test binzx/otomi lint",
     "lint:ts": "eslint --ext ts src",
     "lint:ts:fix": "eslint --fix --ext ts src",
     "lint:types": "tsc --noEmit",
@@ -160,5 +160,5 @@
     }
   },
   "type": "commonjs",
-  "version": "0.16.18"
+  "version": "0.16.19"
 }

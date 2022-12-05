@@ -75,7 +75,7 @@ type crdSchema = {
 
 const processCrd = (path: string): crdSchema[] => {
   const d = terminal(`cmd:${cmdName}:processCrd`)
-  d.info('Processing CRD file: ', path)
+  d.debug('Processing CRD file: ', path)
 
   const documents: any[] = loadAll(readFileSync(path, 'utf-8')).filter(
     (singleDoc: any) => singleDoc?.kind === 'CustomResourceDefinition',
@@ -167,6 +167,9 @@ export const validateTemplates = async (): Promise<void> => {
       ',',
     )} -d ${k8sResourcesPath} --schema-location file://${schemaOutputPath} --kubernetes-version ${k8sVersion}`,
   )
+  let passCount = 0
+  let warnCount = 0
+  let errCount = 0
   ;`${kubevalOutput.stdout}\n${kubevalOutput.stderr}`.split('\n').forEach((x) => {
     if (x === '') return
     const [left, right] = x.split(' - ')
@@ -174,18 +177,24 @@ export const validateTemplates = async (): Promise<void> => {
     const v = right ? right.trim() : ''
     switch (k) {
       case 'PASS':
-        d.info(`${chalk.greenBright('PASS')}: ${chalk.italic('%s')}`, v)
+        passCount += 1
         break
       case 'WARN':
+        warnCount += 1
         d.warn(`${chalk.yellowBright('WARN')}: %s`, v)
         break
       case 'ERR':
+        errCount += 1
         d.error(`${chalk.redBright('ERR')}: %s`, v)
         break
       default:
         break
     }
   })
+  d.info(`${chalk.greenBright('TOTAL PASS')}: %s`, `${passCount} files`)
+  d.info(`${chalk.yellowBright('TOTAL WARN')}: %s`, `${warnCount} files`)
+  d.info(`${chalk.redBright('TOTAL ERR')}: %s`, `${errCount} files`)
+
   if (kubevalOutput.exitCode !== 0) {
     throw new Error(`Template validation FAILED: ${kubevalOutput.exitCode}`)
   } else d.log('Template validation SUCCESS')

@@ -10,6 +10,8 @@ dns:
 ingress:
   classes: []
 oidc: {}
+otomi:
+  nodeSelector: {}
 # teamConfig:
 #   admin:
 #     apps: {}

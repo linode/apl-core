@@ -45,14 +45,14 @@ const defaults = async (): Promise<void> => {
 
 export const module = {
   command: cmdName,
-  describe: 'Show schema defaults for input values',
+  describe: 'Show schema defaults',
   builder: (parser: Argv): Argv =>
     parser.options({
       all: {
         boolean: true,
         default: false,
         describe:
-          'When given it shows all schema defaults, else just the defaults matching branches in the values repo (requires ENV_DIR to be set).',
+          'When given it shows all schema defaults, else just the defaults around input values (requires ENV_DIR to be set).',
       },
     }),
   handler: async (argv: Arguments): Promise<void> => {
