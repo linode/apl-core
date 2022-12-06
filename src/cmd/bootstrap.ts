@@ -63,7 +63,7 @@ export const bootstrapSops = async (
 
   const exists = await deps.pathExists(targetPath)
   // we can just get the values the first time because those are unencrypted
-  const values = exists ? {} : ((await deps.hfValues()) as Record<string, any>)
+  const values = exists ? {} : ((await deps.hfValues(undefined, envDir)) as Record<string, any>)
 
   d.log(`Creating sops file for provider ${provider}`)
   const output = (await deps.gucci(templatePath, obj, true)) as string

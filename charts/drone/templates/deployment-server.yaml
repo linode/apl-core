@@ -21,6 +21,7 @@ spec:
   template:
     metadata:
       annotations:
+        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         {{- if .Values.metrics.prometheus.enabled }}
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"
@@ -33,6 +34,8 @@ spec:
         release: "{{ .Release.Name }}"
         component: server
     spec:
+      strategy:
+        type: {{ .Values.server.strategyType }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets: {{- toYaml . | nindent 8 }}
       {{- end }}
