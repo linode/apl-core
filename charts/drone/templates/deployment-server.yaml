@@ -34,6 +34,8 @@ spec:
         release: "{{ .Release.Name }}"
         component: server
     spec:
+      strategy:
+        type: {{ .Values.server.strategyType }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets: {{- toYaml . | nindent 8 }}
       {{- end }}
