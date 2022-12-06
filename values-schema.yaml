@@ -2426,7 +2426,7 @@ properties:
             default: false
           cloud:
             properties:
-              cloudProvider:
+              provider:
                 properties:
                   azure:
                     description: Azure
@@ -2474,7 +2474,7 @@ properties:
                     default: custom
           storage:
             properties:
-              storageProvider:
+              provider:
                 properties:
                   azureBlob:
                     type: object
@@ -2501,10 +2501,6 @@ properties:
                         $ref: '#/definitions/wordCharacterPattern'
                         x-secret: ''
                     required:
-                      - tenantId
-                      - subscriptionId
-                      - aadClientId
-                      - aadClientSecret
                       - resourceGroup
                       - storageAccount
                       - bucket
@@ -2529,8 +2525,6 @@ properties:
                     required:
                       - bucket
                       - s3Url
-                      - accessKeyId
-                      - secretAccessKey
                   type:
                     type: string
                     enum:

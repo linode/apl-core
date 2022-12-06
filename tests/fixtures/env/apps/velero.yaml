@@ -2,7 +2,7 @@ apps:
     velero:
         enabled: true
         cloud:
-            cloudProvider:
+            provider:
                 azure:
                     resourceGroup: test
                     environment: AzurePublicCloud
@@ -16,9 +16,5 @@ apps:
                 azureBlob:
                     storageAccount: bla
                     bucket: velero
-                    subscriptionId: test
-                    tenantId: test
                     resourceGroup: bla
-                    aadClientId: bla12344556666658457847476
-                    aadClientSecret: bla383736363653
                 type: azureBlob

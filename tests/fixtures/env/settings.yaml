@@ -54,14 +54,23 @@ kms:
             keys: somesecretvalue
             tenantId: somesecretvalue
 backup:
-    platformSchedule:
-        enabled: true
-        schedule: 0 0 * * *
-        ttl: 240h
-    teamSchedule:
-        enabled: true
-        schedule: 0 0 * * *
-        ttl: 240h
+    platform:
+        gitea:
+            enabled: false
+        drone:
+            enabled: false
+        keycloak:
+            enabled: false
+        harbor:
+            enabled: false
+        vault:
+            enabled: false
+        argo:
+            enabled: false
+        kubeapps:
+            enabled: false
+    teams:
+        enabled: false
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID

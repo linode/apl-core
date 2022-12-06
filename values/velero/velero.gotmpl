@@ -1,10 +1,10 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
-{{- $pa := $vl.backup.platform }}
+{{- $pa := $v.backup.platform }}
 {{- $cloud := $vl.cloud }}
 {{- $storage := $vl.storage }}
-{{- $cp := $cloud.cloudProvider | get "type" dict }}
-{{- $sp := $storage.storageProvider | get "type" dict }}
+{{- $cp := $cloud.provider | get "type" dict }}
+{{- $sp := $storage.provider | get "type" dict }}
 
 resources:
   {{- with $vl | get "resources" nil }}
@@ -61,20 +61,20 @@ configuration:
   backupStorageLocation:
     name: otomi
     default: true
-    bucket: {{ $storage.azureBlob.bucket }}
+    bucket: {{ $storage.provider.azureBlob.bucket }}
     config:
-      storageAccount: {{ $storage.azureBlob.storageAccount }}
-      resourceGroup: {{ $storage.azureBlob.resourceGroup }}
+      storageAccount: {{ $storage.provider.azureBlob.storageAccount }}
+      resourceGroup: {{ $storage.provider.azureBlob.resourceGroup }}
   {{- end }}
   {{- if eq $sp "s3" }}
   provider: aws
   backupStorageLocation:
     name: otomi
     default: true
-    bucket: {{ $storage.s3.bucket }}
+    bucket: {{ $storage.provider.s3.bucket }}
     config:
-      s3Url: {{ $storage.s3.s3Url }}
-      region: {{ $storage.s3.region }}
+      s3Url: {{ $storage.provider.s3.s3Url }}
+      region: {{ $storage.provider.s3.region }}
   {{- end }}
   {{- if eq $sp "minioLocal" }}
   provider: aws
@@ -93,14 +93,14 @@ configuration:
   volumeSnapshotLocation:
     name: otomi
     config:
-      resourceGroup: {{ $cloud.cloudProvider.azure.resourceGroup }}
+      resourceGroup: {{ $cloud.provider.azure.resourceGroup }}
   {{- end }}
   
   {{- if eq $cp "aws" }}
   volumeSnapshotLocation:
     name: otomi
     config:
-      region: {{ $cloud.cloudProvider.aws.region }}
+      region: {{ $cp.region }}
   {{- end }}
   
   # defaultVolumesToRestic - 
@@ -111,29 +111,29 @@ configuration:
 credentials:
   secretContents:
     cloud: |
-{{- if eq $sp "azureBlob" }}
-      AZURE_SUBSCRIPTION_ID={{ $storage.storageProvider.azureBlob.subscriptionId }}
-      AZURE_TENANT_ID={{ $storage.storageProvider.azureBlob.tenantId }}
-      AZURE_CLIENT_ID={{ $storage.storageProvider.azureBlob.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $storage.storageProvider.azureBlob.aadClientSecret }}
-{{- end }}
 {{- if eq $cp "azure" }}
-      AZURE_RESOURCE_GROUP={{ $cloud.cloudProvider.azure.resourceGroup }}
-      AZURE_CLOUD_NAME={{ $cloud.cloudProvider.azure.environment }}
-      AZURE_SUBSCRIPTION_ID={{ $cloud.cloudProvider.azure.subscriptionId }}
-      AZURE_TENANT_ID={{ $cloud.cloudProvider.azure.tenantId }}
-      AZURE_CLIENT_ID={{ $cloud.cloudProvider.azure.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $cloud.cloudProvider.azure.aadClientSecret }}
+      AZURE_RESOURCE_GROUP={{ $cloud.provider.azure.resourceGroup }}
+      AZURE_CLOUD_NAME={{ $cloud.provider.azure.environment }}
+      AZURE_SUBSCRIPTION_ID={{ $cloud.provider.azure.subscriptionId }}
+      AZURE_TENANT_ID={{ $cloud.provider.azure.tenantId }}
+      AZURE_CLIENT_ID={{ $cloud.provider.azure.aadClientId }}
+      AZURE_CLIENT_SECRET={{ $cloud.provider.azure.aadClientSecret }}
 {{- end }}
-{{- if eq $sp "s3" }}
-      [default]
-      aws_access_key_id={{ $storage.storageProvider.s3.accessKeyId }}
-      aws_secret_access_key={{ $storage.storageProvider.s3.secretAccessKey }}
+{{- if and (eq $sp "azureBlob") (not (eq $cp "azure")) }}
+      AZURE_SUBSCRIPTION_ID={{ $storage.provider.azureBlob.subscriptionId }}
+      AZURE_TENANT_ID={{ $storage.provider.azureBlob.tenantId }}
+      AZURE_CLIENT_ID={{ $storage.provider.azureBlob.aadClientId }}
+      AZURE_CLIENT_SECRET={{ $storage.provider.azureBlob.aadClientSecret }}
 {{- end }}
 {{- if eq $sp "minioLocal" }}
       [default]
       aws_access_key_id=otomi-admin
       aws_secret_access_key={{ $v.otomi.adminPassword }}
+{{- end }}
+{{- if eq $sp "s3" }}
+      [default]
+      aws_access_key_id={{ $storage.storageProvider.s3.accessKeyId }}
+      aws_secret_access_key={{ $storage.storageProvider.s3.secretAccessKey }}
 {{- end }}
 
 kubectl:
@@ -148,13 +148,11 @@ kubectl:
     # do not inject sidecar, so the kubectl k8s job can exit container and return the completed status
     sidecar.istio.io/inject: "false"
 
-
 deployRestic: true
 
 metrics:
   serviceMonitor:
     enabled: true
-
 
 schedules:
 {{- if $pa.gitea.enabled }}
