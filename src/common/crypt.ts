@@ -40,13 +40,34 @@ const preCrypt = async (path): Promise<void> => {
   }
 }
 
-const getAllSecretFiles = async (path) => {
+export const getAllSecretFiles = (fileNames: Array<string>, encryption: boolean, suffix: string) => {
+  /** Use cases
+   * 1. encryption for the first time when .dec does not exists
+   * 2. encryption after bootstraping files, so they also do not have .dec
+   * 3. encryption of files with .dec
+   * 4. decryption of secrets.*.yaml files
+   */
+
   const d = terminal(`common:crypt:getAllSecretFiles`)
-  const files = (await readdirRecurse(`${path}/env`, { skipHidden: true }))
-    .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
-    .map((file) => file.replace(`${path}/`, ''))
-  d.debug('getAllSecretFiles: ', files)
-  return files
+  let filteredFiles: Array<string> = []
+  const encryptedFiles = fileNames.filter((file) => file.endsWith(`.yaml`) && file.startsWith('secrets.'))
+
+  if (encryption) {
+    const decryptedFiles = fileNames.filter((file) => file.endsWith(suffix) && file.startsWith('secrets.'))
+
+    filteredFiles = encryptedFiles.map((file) => {
+      // If a secret.*.yaml.dec does not exists then return secret.*.yaml
+      if (fileNames.includes(`${file}${suffix}`)) return `${file}${suffix}`
+      return file
+    })
+    filteredFiles = filteredFiles.concat(decryptedFiles)
+    filteredFiles = [...new Set(filteredFiles)]
+  } else {
+    filteredFiles = encryptedFiles
+  }
+
+  d.debug('getAllSecretFiles: ', filteredFiles)
+  return filteredFiles
 }
 
 type CR = {
@@ -72,20 +93,31 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
 }
 
 const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = []): Promise<void> => {
+  /** Use cases
+   * 1. encryption for the first time when .dec does not exists
+   * 2. encryption after bootstraping files, so they also do not have .dec
+   * 3. encryption of files with .dec
+   * 4. decryption of secrets.*.yaml files
+   */
   const d = terminal(`common:crypt:runOnSecretFiles`)
   let files: string[] = filesArgs
+  let suffix = ''
+  let encryption = false
+  if (crypt.cmd === CryptType.ENCRYPT) {
+    suffix = '.dec'
+    encryption = false
+  }
 
   cd(path)
 
   if (files.length === 0) {
-    files = await getAllSecretFiles(path)
+    const allFiles = await readdirRecurse(`${path}/env`, { skipHidden: true })
+    const allFileNames = allFiles.map((file) => file.replace(`${path}/`, ''))
+    files = getAllSecretFiles(allFileNames, encryption, suffix)
   }
+
   files = files.filter(async (f) => {
-    const suffix = crypt.cmd === CryptType.ENCRYPT ? '.dec' : ''
-    let file = `${f}${suffix}`
-    // first time encryption might not have a .dec companion, so test existence first
-    if (suffix && !(await pathExists(file))) file = f
-    const content = await readFile(file, 'utf-8')
+    const content = await readFile(f, 'utf-8')
     return !!content
   })
   await preCrypt(path)
