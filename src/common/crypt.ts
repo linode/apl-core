@@ -40,7 +40,7 @@ const preCrypt = async (path): Promise<void> => {
   }
 }
 
-export const getAllSecretFiles = (fileNames: Array<string>, encryption: boolean, suffix: string) => {
+export const getAllSecretFiles = (relativePaths: Array<string>, encryption: boolean, suffix: string) => {
   /** Use cases
    * 1. encryption for the first time when .dec does not exists
    * 2. encryption after bootstraping files, so they also do not have .dec
@@ -50,14 +50,14 @@ export const getAllSecretFiles = (fileNames: Array<string>, encryption: boolean,
 
   const d = terminal(`common:crypt:getAllSecretFiles`)
   let filteredFiles: Array<string> = []
-  const encryptedFiles = fileNames.filter((file) => file.endsWith(`.yaml`) && file.startsWith('secrets.'))
+  const encryptedFiles = relativePaths.filter((file) => file.endsWith(`.yaml`) && file.includes('secrets.'))
 
   if (encryption) {
-    const decryptedFiles = fileNames.filter((file) => file.endsWith(suffix) && file.startsWith('secrets.'))
+    const decryptedFiles = relativePaths.filter((file) => file.endsWith(suffix) && file.includes('secrets.'))
 
     filteredFiles = encryptedFiles.map((file) => {
       // If a secret.*.yaml.dec does not exists then return secret.*.yaml
-      if (fileNames.includes(`${file}${suffix}`)) return `${file}${suffix}`
+      if (relativePaths.includes(`${file}${suffix}`)) return `${file}${suffix}`
       return file
     })
     filteredFiles = filteredFiles.concat(decryptedFiles)
@@ -112,8 +112,8 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
 
   if (files.length === 0) {
     const allFiles = await readdirRecurse(`${path}/env`, { skipHidden: true })
-    const allFileNames = allFiles.map((file) => file.replace(`${path}/`, ''))
-    files = getAllSecretFiles(allFileNames, encryption, suffix)
+    const allRelativePaths = allFiles.map((file) => file.replace(`${path}/`, ''))
+    files = getAllSecretFiles(allRelativePaths, encryption, suffix)
   }
 
   files = files.filter(async (f) => {

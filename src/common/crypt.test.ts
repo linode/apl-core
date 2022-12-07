@@ -7,12 +7,15 @@ describe('Crypt', () => {
       'secrets.a.yaml.dec',
       'secrets.b.yaml.dec',
       'secrets.c.yaml',
+      'x/y/secrets.z.yaml.dec',
       'a.yaml',
       'b.yaml',
       'd.yaml',
     ]
     const r = crypt.getAllSecretFiles(allFileNames, true, '.dec')
-    expect(r.sort()).toEqual(['secrets.a.yaml.dec', 'secrets.b.yaml.dec', 'secrets.c.yaml'].sort())
+    expect(r.sort()).toEqual(
+      ['secrets.a.yaml.dec', 'secrets.b.yaml.dec', 'secrets.c.yaml', 'x/y/secrets.z.yaml.dec'].sort(),
+    )
   })
   it('should be flattened', () => {
     const allFileNames = [
@@ -20,11 +23,12 @@ describe('Crypt', () => {
       'secrets.a.yaml.dec',
       'secrets.b.yaml.dec',
       'secrets.c.yaml',
+      'x/y/secrets.z.yaml',
       'a.yaml',
       'b.yaml',
       'd.yaml',
     ]
     const r = crypt.getAllSecretFiles(allFileNames, false, '.dec')
-    expect(r.sort()).toEqual(['secrets.a.yaml', 'secrets.c.yaml'].sort())
+    expect(r.sort()).toEqual(['secrets.a.yaml', 'secrets.c.yaml', 'x/y/secrets.z.yaml'].sort())
   })
 })
