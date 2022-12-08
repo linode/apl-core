@@ -1,30 +1,35 @@
 import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { dump } from 'js-yaml'
-import { each, get, isEmpty, set } from 'lodash'
+import { each, get, isEmpty, merge, set } from 'lodash'
 import { hfValues } from 'src/common/hf'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { terminal } from '../common/debug'
-import { extract, extractArray, flattenObject, getFilename, getValuesSchema } from '../common/utils'
+import { extract, extractArray, flattenObject, getFilename, getValuesSchema, loadYaml, rootDir } from '../common/utils'
 import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
   all?: boolean
+  profile?: string
 }
 
 const defaults = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:defaults`)
   const argv: Arguments = getParsedArgs()
-  d.info('Get defaults, all: ', argv.all)
+  d.info(`Get defaults, all: ${argv.all}, profile: ${argv.profile}`)
   const schema = await getValuesSchema()
-  const def = extract(schema, 'default', (val, parent: JSONSchema): any => {
+  let def = extract(schema, 'default', (val, parent: JSONSchema): any => {
     // skip arrays as those are unknown
     if (parent?.items) return undefined
     return val
   })
   d.info('Print defaults')
+  if (argv.profile) {
+    const profileDefaults = await loadYaml(`${rootDir}/values/profile-${argv.profile}.yaml`)
+    def = merge(def, profileDefaults)
+  }
   if (argv.all) return console.log(dump(def))
   // only return defaults for which we have matching paths from values
   const values = await hfValues({ filesOnly: true })
@@ -53,6 +58,11 @@ export const module = {
         default: false,
         describe:
           'When given it shows all schema defaults, else just the defaults around input values (requires ENV_DIR to be set).',
+      },
+      profile: {
+        string: true,
+        choices: ['small'],
+        describe: 'When given it shows the defaults for the named profile as well',
       },
     }),
   handler: async (argv: Arguments): Promise<void> => {

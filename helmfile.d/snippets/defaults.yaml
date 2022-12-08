@@ -1,8 +1,8 @@
+# EMPTY APPS: only apps without any defaults don't show up in values, so we provide them here
 apps:
   oauth2-proxy: {}
-  oauth2-proxy-redis: {}
-  otomi-console: {}
   prometheus-blackbox-exporter: {}
+# EMPTY OBJECTS + ARRAYS: can't be set to empty default in schema, so we define them here
 cluster: {}
 dns:
   domainFilters: []
@@ -12,12 +12,7 @@ ingress:
 oidc: {}
 otomi:
   nodeSelector: {}
-# teamConfig:
-#   admin:
-#     apps: {}
-#     jobs: []
-#     secrets: []
-#     services: []
+# plus of course our LetsEncrypt CA
 letsencryptRootCA: |
   -----BEGIN CERTIFICATE-----
   MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

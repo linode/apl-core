@@ -1,0 +1,427 @@
+apps:
+  alertmanager:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  argocd:
+    autoscaling:
+      enabled: true
+      maxReplicas: 10
+      minReplicas: 1
+    resources:
+      server:
+        limits:
+          cpu: 500m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      controller:
+        limits:
+          cpu: 1
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 256M
+      repo:
+        limits:
+          cpu: 1
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 256M
+      redis:
+        limits:
+          cpu: 1
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 256M
+  cert-manager:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 384Mi
+  cluster-overprovisioner:
+    cpu: 1000m
+    memory: 1000Mi
+  drone:
+    resources:
+      runner:
+        requests:
+          cpu: 1000
+          memory: 1Gi
+      agent:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 40m
+          memory: 32Mi
+      server:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 40m
+          memory: 32Mi
+  gatekeeper:
+    replicas: 1
+    resources:
+      audit:
+        limits:
+          cpu: 1000m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      controller:
+        limits:
+          cpu: 1000m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+  gitea:
+    resources:
+      memcached:
+        limits:
+          cpu: 250m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      postgresql:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 250m
+          memory: 256Mi
+  grafana:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  harbor:
+    resources:
+      chartmuseum:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 400m
+          memory: 256Mi
+      clair:
+        requests:
+          cpu: 100m
+          memory: 1Gi
+        limits:
+          cpu: 400m
+          memory: 2Gi
+      clair-adapter:
+        limits:
+          cpu: 400m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      core:
+        limits:
+          cpu: 100m
+          memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
+      database:
+        limits:
+          cpu: 100m
+          memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
+      jobservice:
+        limits:
+          cpu: 100m
+          memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
+      portal:
+        limits:
+          cpu: 400m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      redis:
+        limits:
+          cpu: 400m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      registry:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+        requests:
+          cpu: 50m
+          memory: 64Mi
+      registry-controller:
+        limits:
+          cpu: 100m
+          memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
+      trivy:
+        limits:
+          cpu: 400m
+          memory: 2Gi
+        requests:
+          cpu: 100m
+          memory: 1Gi
+  ingress-nginx:
+    autoscaling:
+      maxReplicas: 10
+      minReplicas: 1
+    resources:
+      limits:
+        cpu: 2
+        memory: 1.5Gi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+  istio:
+    autoscaling:
+      egressgateway:
+        maxReplicas: 10
+        minReplicas: 1
+      ingressgateway:
+        maxReplicas: 10
+        minReplicas: 1
+      pilot:
+        maxReplicas: 10
+        minReplicas: 1
+    resources:
+      egressgateway:
+        limits:
+          cpu: '1'
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      ingressgateway:
+        limits:
+          cpu: '1'
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      proxy:
+        limits:
+          cpu: '1'
+          memory: 1Gi
+        requests:
+          cpu: 20m
+          memory: 80Mi
+      pilot:
+        limits:
+          cpu: '2'
+          memory: 2Gi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+  keycloak:
+    resources:
+      keycloak:
+        limits:
+          cpu: 1
+          memory: 1.5Gi
+        requests:
+          cpu: 100m
+          memory: 1Gi
+      postgresql:
+        limits:
+          cpu: 1
+          memory: 1.5Gi
+        requests:
+          cpu: 100m
+          memory: 1Gi
+  kiali:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 50m
+        memory: 32Mi
+  knative:
+    serving:
+      replicas: 1
+  loki:
+    resources:
+      limits:
+        cpu: 800m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    persistence:
+      size: 20Gi
+    retention:
+      duration: 24h
+      period: 24h
+  metrics-server:
+    resources:
+      limits:
+        cpu: 300m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi
+  minio:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi
+  oauth2-proxy-redis:
+    resources:
+      master:
+        requests:
+          cpu: 200m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+      sentinel:
+        requests:
+          cpu: 200m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+      replica:
+        requests:
+          cpu: 200m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+    sizes:
+      master: 1Gi
+      sentinel: 1Gi
+      replica: 1Gi
+  otomi-api:
+    resources:
+      api:
+        limits:
+          cpu: 500m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      tools:
+        limits:
+          cpu: 600m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+  otomi-console:
+    resources:
+      limits:
+        cpu: 400m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 128Mi
+  prometheus:
+    replicas: 1
+    retention: 1d
+    retentionSize: 4GB
+    storageSize: 5Gi
+    resources:
+      prometheus:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          cpu: '3'
+          memory: 3Gi
+      kube-state-metrics:
+        limits:
+          cpu: 100m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      node-exporter:
+        limits:
+          cpu: 500m
+          memory: 128Mi
+        requests:
+          cpu: 100m
+          memory: 128Mi
+  redis-shared:
+    resources:
+      master:
+        requests:
+          cpu: 200m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+      sentinel:
+        requests:
+          cpu: 200m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+      replica:
+        requests:
+          cpu: 200m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+    sizes:
+      master: 1Gi
+      sentinel: 1Gi
+      replica: 1Gi
+  vault:
+    resources:
+      limits:
+        cpu: '1'
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 256Mi
+  velero:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 128Mi
+      limits:
+        cpu: 1000m
+        memory: 512Mi
+backup:
+  platformSchedule:
+    ttl: 240h
+  teamSchedule:
+    ttl: 240h

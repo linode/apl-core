@@ -726,31 +726,10 @@ definitions:
         properties:
           master:
             $ref: '#/definitions/resources'
-            default:
-              requests:
-                cpu: 200m
-                memory: 64Mi
-              limits:
-                cpu: 500m
-                memory: 256Mi
           sentinel:
             $ref: '#/definitions/resources'
-            default:
-              requests:
-                cpu: 200m
-                memory: 64Mi
-              limits:
-                cpu: 500m
-                memory: 256Mi
           replica:
             $ref: '#/definitions/resources'
-            default:
-              requests:
-                cpu: 200m
-                memory: 64Mi
-              limits:
-                cpu: 500m
-                memory: 256Mi
       sizes:
         additionalProperties: false
         properties:
@@ -1250,13 +1229,6 @@ properties:
                 $ref: '#/definitions/imagePullPolicy'
           resources:
             $ref: '#/definitions/resources'
-            default:
-              limits:
-                cpu: 500m
-                memory: 256Mi
-              requests:
-                cpu: 100m
-                memory: 128Mi
       argocd:
         additionalProperties: false
         properties:
@@ -1272,40 +1244,12 @@ properties:
             properties:
               server:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 500m
-                    memory: 256Mi
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
               controller:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 1
-                    memory: 1Gi
-                  requests:
-                    cpu: 100m
-                    memory: 256M
               repo:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 1
-                    memory: 1Gi
-                  requests:
-                    cpu: 100m
-                    memory: 256M
               redis:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 1
-                    memory: 1Gi
-                  requests:
-                    cpu: 100m
-                    memory: 256M
         # required: [autoscaling]
       cert-manager:
         additionalProperties: false
@@ -1314,13 +1258,6 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-            default:
-              requests:
-                cpu: 50m
-                memory: 64Mi
-              limits:
-                cpu: 200m
-                memory: 384Mi
           customRootCA:
             x-secret: ''
             type: string
@@ -1452,22 +1389,8 @@ properties:
                         default: 1Gi
               agent:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 200m
-                    memory: 256Mi
-                  requests:
-                    cpu: 40m
-                    memory: 32Mi
               server:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 200m
-                    memory: 256Mi
-                  requests:
-                    cpu: 40m
-                    memory: 32Mi
 
           sharedSecret:
             description: A secret used by drone-admit-members plugin. https://docs.drone.io/runner/kubernetes/configuration/reference/drone-secret-plugin-token/
@@ -1621,22 +1544,8 @@ properties:
             properties:
               audit:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 1000m
-                    memory: 512Mi
-                  requests:
-                    cpu: 100m
-                    memory: 256Mi
               controller:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 1000m
-                    memory: 512Mi
-                  requests:
-                    cpu: 100m
-                    memory: 256Mi
       gitea:
         properties:
           _rawValues:
@@ -1692,13 +1601,6 @@ properties:
                 $ref: '#/definitions/imagePullPolicy'
           resources:
             $ref: '#/definitions/resources'
-            default:
-              limits:
-                cpu: 500m
-                memory: 256Mi
-              requests:
-                cpu: 100m
-                memory: 128Mi
       harbor:
         additionalProperties: false
         properties:
@@ -1823,103 +1725,26 @@ properties:
             properties:
               chartmuseum:
                 $ref: '#/definitions/resources'
-                default:
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
-                  limits:
-                    cpu: 400m
-                    memory: 256Mi
               clair:
                 $ref: '#/definitions/resources'
-                default:
-                  requests:
-                    cpu: 100m
-                    memory: 1Gi
-                  limits:
-                    cpu: 400m
-                    memory: 2Gi
               clair-adapter:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 400m
-                    memory: 256Mi
-                  requests:
-                    cpu: 100m
-                    memory: 256Mi
               core:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 100m
-                    memory: 512Mi
-                  requests:
-                    cpu: 50m
-                    memory: 256Mi
               database:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 100m
-                    memory: 512Mi
-                  requests:
-                    cpu: 50m
-                    memory: 256Mi
               jobservice:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 100m
-                    memory: 512Mi
-                  requests:
-                    cpu: 50m
-                    memory: 256Mi
               portal:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 400m
-                    memory: 256Mi
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
               redis:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 400m
-                    memory: 256Mi
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
               registry:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 100m
-                    memory: 128Mi
-                  requests:
-                    cpu: 50m
-                    memory: 64Mi
               registry-controller:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 100m
-                    memory: 512Mi
-                  requests:
-                    cpu: 50m
-                    memory: 256Mi
               trivy:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 400m
-                    memory: 2Gi
-                  requests:
-                    cpu: 100m
-                    memory: 1Gi
           secretKey:
             type: string
             x-secret: 'randAlpha 16'
@@ -2043,13 +1868,6 @@ properties:
                 $ref: '#/definitions/imagePullPolicy'
           resources:
             $ref: '#/definitions/resources'
-            default:
-              limits:
-                cpu: 2
-                memory: 1.5Gi
-              requests:
-                cpu: 200m
-                memory: 512Mi
           service:
             properties:
               annotations:
@@ -2108,40 +1926,12 @@ properties:
             properties:
               egressgateway:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: '1'
-                    memory: 256Mi
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
               ingressgateway:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: '1'
-                    memory: 256Mi
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
               proxy:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: '1'
-                    memory: 1Gi
-                  requests:
-                    cpu: 20m
-                    memory: 80Mi
               pilot:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: '2'
-                    memory: 2Gi
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
       jaeger:
         additionalProperties: false
         properties:
@@ -2194,22 +1984,8 @@ properties:
             properties:
               keycloak:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 1
-                    memory: 1.5Gi
-                  requests:
-                    cpu: 100m
-                    memory: 1Gi
               postgresql:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 1
-                    memory: 1.5Gi
-                  requests:
-                    cpu: 100m
-                    memory: 1Gi
         required:
           - postgresqlPassword
       kiali:
@@ -2222,13 +1998,6 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-            default:
-              limits:
-                cpu: 500m
-                memory: 512Mi
-              requests:
-                cpu: 50m
-                memory: 32Mi
       knative:
         additionalProperties: false
         properties:
@@ -2340,13 +2109,6 @@ properties:
             default: false
           resources:
             $ref: '#/definitions/resources'
-            default:
-              limits:
-                cpu: 800m
-                memory: 512Mi
-              requests:
-                cpu: 100m
-                memory: 128Mi
           adminPassword:
             type: string
             x-secret: 'randAlphaNum 20'
@@ -2434,13 +2196,6 @@ properties:
               kubelet-preferred-address-types: InternalIP
           resources:
             $ref: '#/definitions/resources'
-            default:
-              limits:
-                cpu: 300m
-                memory: 128Mi
-              requests:
-                cpu: 100m
-                memory: 64Mi
             additionalProperties: false
             properties:
               api:
@@ -2457,13 +2212,6 @@ properties:
             default: false
           resources:
             $ref: '#/definitions/resources'
-            default:
-              limits:
-                cpu: 200m
-                memory: 128Mi
-              requests:
-                cpu: 100m
-                memory: 64Mi
           provisioning:
             additionalProperties: false
             properties:
@@ -2520,34 +2268,13 @@ properties:
             properties:
               api:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 500m
-                    memory: 512Mi
-                  requests:
-                    cpu: 100m
-                    memory: 256Mi
               tools:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 600m
-                    memory: 512Mi
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
       otomi-console:
         additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-            default:
-              limits:
-                cpu: 400m
-                memory: 256Mi
-              requests:
-                cpu: 50m
-                memory: 128Mi
         allOf:
           - anyOf:
               - not:
@@ -2602,31 +2329,10 @@ properties:
             properties:
               prometheus:
                 $ref: '#/definitions/resources'
-                default:
-                  requests:
-                    cpu: 100m
-                    memory: 512Mi
-                  limits:
-                    cpu: '3'
-                    memory: 3Gi
               kube-state-metrics:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 100m
-                    memory: 256Mi
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
               node-exporter:
                 $ref: '#/definitions/resources'
-                default:
-                  limits:
-                    cpu: 500m
-                    memory: 128Mi
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
       redis-shared:
         allOf:
           - $ref: '#/definitions/redisChart'
@@ -2732,13 +2438,6 @@ properties:
             type: object
           resources:
             $ref: '#/definitions/resources'
-            default:
-              limits:
-                cpu: '1'
-                memory: 512Mi
-              requests:
-                cpu: 500m
-                memory: 256Mi
       velero:
         additionalProperties: false
         properties:
@@ -2836,13 +2535,6 @@ properties:
               - panic
           resources:
             $ref: '#/definitions/resources'
-            default:
-              requests:
-                cpu: 500m
-                memory: 128Mi
-              limits:
-                cpu: 1000m
-                memory: 512Mi
         required: [provider]
   cluster:
     $ref: '#/definitions/cluster'
