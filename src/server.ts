@@ -6,6 +6,7 @@ import { genDrone } from 'src/cmd/gen-drone'
 import { validateValues } from 'src/cmd/validate-values'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
+import { writeValues } from './common/values'
 
 const d = terminal('server')
 const app = express()
@@ -35,10 +36,12 @@ app.get('/init', async (req: Request, res: Response) => {
   }
 })
 
-app.get('/prepare', async (req: Request, res: Response) => {
+app.post('/prepare', async (req: Request, res: Response) => {
   const { envDir } = req.query as QueryParams
+  const values = req.body as Record<string, any>
   try {
     d.log('Request to prepare values repo')
+    await writeValues(values, false, envDir)
     await validateValues(envDir)
     await genDrone(envDir)
     await bootstrapSops(envDir)
