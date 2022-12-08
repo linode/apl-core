@@ -65,7 +65,8 @@
     "minikube",
     "minio",
     "vultr",
-    "ovh"
+    "ovh",
+    "thanos"
   ],
   "language": "en",
   "words": [

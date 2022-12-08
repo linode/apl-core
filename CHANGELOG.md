@@ -2,6 +2,59 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.21](https://github.com/redkubes/otomi-core/compare/v0.16.20...v0.16.21) (2022-12-06)
+
+
+### Bug Fixes
+
+* drone update strategy in wrong spec context ([#973](https://github.com/redkubes/otomi-core/issues/973)) ([af3e794](https://github.com/redkubes/otomi-core/commit/af3e7942da76dfd3b3498d256a4a34c2dac67298))
+* get drone image tag ([c3a49d9](https://github.com/redkubes/otomi-core/commit/c3a49d92b7bde4d848f40f7bb7353e2ac8c31983))
+* set drone recreate strategy, so existing Pod releases the PV ([bececb6](https://github.com/redkubes/otomi-core/commit/bececb6078605316929ee7e29a110b6390b5ef06))
+
+
+### Reverts
+
+* Revert "fix: do not redeploy drone on secret.yaml change" ([6e7d82f](https://github.com/redkubes/otomi-core/commit/6e7d82f23112663f19c14af9f49380601ef08b93))
+
+
+### Others
+
+* versions ([5c8c2ea](https://github.com/redkubes/otomi-core/commit/5c8c2ea0aca239a0f500262786aaf106508e0f47))
+* versions ([9baaccf](https://github.com/redkubes/otomi-core/commit/9baaccf499ed5bf42a786478e1e7b2fa3c3627b6))
+
+### [0.16.20](https://github.com/redkubes/otomi-core/compare/v0.16.19...v0.16.20) (2022-12-05)
+
+
+### Features
+
+* add a flag to disable monitoring stack for a specific team ([#946](https://github.com/redkubes/otomi-core/issues/946)) ([550295e](https://github.com/redkubes/otomi-core/commit/550295ec3f383057bd3b3adbbc7094bb0ed4c55c))
+* add Jaeger to shared apps ([#944](https://github.com/redkubes/otomi-core/issues/944)) ([ebccd43](https://github.com/redkubes/otomi-core/commit/ebccd4315930c42fb1bfee382eff69db8dc58704))
+* remove Keycloak from shared apps ([#944](https://github.com/redkubes/otomi-core/issues/944)) ([ebccd43](https://github.com/redkubes/otomi-core/commit/ebccd4315930c42fb1bfee382eff69db8dc58704))
+* add minio core app ([#957](https://github.com/redkubes/otomi-core/issues/957)) ([ec5322e](https://github.com/redkubes/otomi-core/commit/ec5322e6d75416bec9624419b3138a142ce2ec7b))
+* less promiscuous otomi validate-template output ([#955](https://github.com/redkubes/otomi-core/issues/955)) ([9d96a00](https://github.com/redkubes/otomi-core/commit/9d96a0022b3ac0a5180ed6cca04c6c61d6fa9a18))
+* allow to define prometheus remote write ([#959](https://github.com/redkubes/otomi-core/issues/959)) ([3f81389](https://github.com/redkubes/otomi-core/commit/3f81389ffe78f8dc41f3ea60530e82901335f3b3))
+* introduce new code editor based on Monaco (otomi-console)
+
+
+### Bug Fixes
+
+* do not enable gatekeeper when otomi.nodeSelector is empty ([#958](https://github.com/redkubes/otomi-core/issues/958)) ([bfe5287](https://github.com/redkubes/otomi-core/commit/bfe5287182f4a8998fa1bcec5006ba05ab716133))
+* do not redeploy drone on secret.yaml change ([19126dc](https://github.com/redkubes/otomi-core/commit/19126dc503d32b6568d3d322e90ad4052a32bcee)), closes [#950](https://github.com/redkubes/otomi-core/issues/950)
+* migrate values shall preserve teamConfig property ([#949](https://github.com/redkubes/otomi-core/issues/949)) ([2ea76fb](https://github.com/redkubes/otomi-core/commit/2ea76fbd75ec3666d2fa1d068132fe74b55ed1bf))
+* prometheus resources ([#956](https://github.com/redkubes/otomi-core/issues/956)) ([ca862d2](https://github.com/redkubes/otomi-core/commit/ca862d2ae17455703697236cf15b9018a808686c))
+
+
+### Tests
+
+* add minio to test scenario [ci skip] ([#961](https://github.com/redkubes/otomi-core/issues/961)) ([8ac6a21](https://github.com/redkubes/otomi-core/commit/8ac6a21f69f5c4f6d021330f5d2c4d25dda62b17))
+* digital ocean does not support k8s 1.22 anymore [ci skip] ([#951](https://github.com/redkubes/otomi-core/issues/951)) ([2372722](https://github.com/redkubes/otomi-core/commit/237272258035f95870661c597d8ae7d9725d9192))
+* workflows select image registry [ci skip] ([#948](https://github.com/redkubes/otomi-core/issues/948)) ([b780e5c](https://github.com/redkubes/otomi-core/commit/b780e5c43db6d8b04ac6b243aa7f75e77ef9b939))
+
+
+### Others
+
+* versions ([13f64af](https://github.com/redkubes/otomi-core/commit/13f64af3feeb9bf30506ca81fd66e26e1a692adb))
+
 ### [0.16.19](https://github.com/redkubes/otomi-core/compare/v0.16.18...v0.16.19) (2022-11-21)
 
 

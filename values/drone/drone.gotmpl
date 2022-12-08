@@ -53,7 +53,7 @@ server:
     {{- end }}
     DRONE_WEBHOOK_ENDPOINT: http://otomi-api.otomi/drone
     DRONE_WEBHOOK_SECRET: {{ $d | get "sharedSecret" }}
-
+  strategyType: Recreate
 agent:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
