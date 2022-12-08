@@ -50,10 +50,10 @@ export const getAllSecretFiles = (relativePaths: Array<string>, encryption: bool
 
   const d = terminal(`common:crypt:getAllSecretFiles`)
   let filteredFiles: Array<string> = []
-  const encryptedFiles = relativePaths.filter((file) => file.endsWith(`.yaml`) && file.includes('secrets.'))
+  const encryptedFiles = relativePaths.filter((file) => file.endsWith(`.yaml`) && file.includes('/secrets.'))
 
   if (encryption) {
-    const decryptedFiles = relativePaths.filter((file) => file.endsWith(suffix) && file.includes('secrets.'))
+    const decryptedFiles = relativePaths.filter((file) => file.endsWith(suffix) && file.includes('/secrets.'))
 
     filteredFiles = encryptedFiles.map((file) => {
       // If a secret.*.yaml.dec does not exists then return secret.*.yaml
@@ -115,7 +115,6 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
     const allRelativePaths = allFiles.map((file) => file.replace(`${path}/`, ''))
     files = getAllSecretFiles(allRelativePaths, encryption, suffix)
   }
-
   files = files.filter(async (f) => {
     const content = await readFile(f, 'utf-8')
     return !!content
