@@ -20,7 +20,7 @@ clair:
   adapter:
     image:
       tag: {{ $tag }}
-    resources: {{- toYaml $h.resources | get "clair-adapter" | nindent 6 }}
+    resources: {{- $h.resources | get "clair-adapter" | toYaml | nindent 6 }}
   clair:
     image:
       tag: {{ $tag }}
@@ -41,7 +41,6 @@ core:
     policy.otomi.io/ignore: psp-allowed-users
   resources: {{- toYaml $h.resources.core | nindent 6 }}
   secret: {{ $h.core.secret }}
-  # secretName: {{ $harborSecretName }}
   xsrfKey: {{ $h.core.xsrfKey }}
 
 database:
@@ -223,7 +222,7 @@ registry:
   controller:
     image:
       tag: {{ $tag }}
-    resources: {{- toYaml $h.resources | get "registry-controller" | nindent 6 }}
+    resources: {{- $h.resources | get "registry-controller" | toYaml | nindent 6 }}
   relativeurls: false
   credentials:
     username: {{ $h.registry.credentials.username }}

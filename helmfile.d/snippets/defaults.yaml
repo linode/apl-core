@@ -2,6 +2,7 @@
 apps:
   oauth2-proxy: {}
   prometheus-blackbox-exporter: {}
+  promtail: {}
 # EMPTY OBJECTS + ARRAYS: can't be set to empty default in schema, so we define them here
 cluster: {}
 dns:

@@ -270,6 +270,17 @@ apps:
   knative:
     serving:
       replicas: 1
+  kubeapps:
+    autoscaling:
+      dashboard:
+        minReplicas: 1
+        maxReplicas: 10
+      frontend:
+        minReplicas: 1
+        maxReplicas: 10
+      kubeops:
+        minReplicas: 1
+        maxReplicas: 10
   loki:
     resources:
       limits:

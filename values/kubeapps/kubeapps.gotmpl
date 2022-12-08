@@ -52,10 +52,7 @@ apprepository:
       containerSecurityContext:
         enabled: true
         runAsUser: 1001
-      # basicAuth:
-      #   user: admin
-      #   password: {{ $h.registry.credentials.password }}
-        # TODO: remove next line when CA is truly supported: https://github.com/kubeapps/kubeapps/issues/515
+      # TODO: remove next line when CA is truly supported: https://github.com/kubeapps/kubeapps/issues/515
       tlsInsecureSkipVerify: {{ $v._derived.untrustedCA }}
   {{- if $v._derived.untrustedCA }}
       caCert: |
@@ -77,7 +74,7 @@ postgresql:
   postgresqlPassword: {{ $k.postgresqlPassword }}
   postgresqlPostgresPassword: {{ $k.postgresqlPassword }}
   replication:
-    password: {{ $k.ostgresqlPassword }}
+    password: {{ $k.postgresqlPassword }}
   resources:
     limits:
       memory: 768Mi

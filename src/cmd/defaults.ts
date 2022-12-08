@@ -1,6 +1,7 @@
 import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { dump } from 'js-yaml'
 import { each, get, isEmpty, merge, set } from 'lodash'
+import omitDeep from 'omit-deep-lodash'
 import { hfValues } from 'src/common/hf'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
@@ -25,7 +26,7 @@ const defaults = async (): Promise<void> => {
     if (parent?.items) return undefined
     return val
   })
-  d.info('Print defaults')
+  def = omitDeep(def, 'patternProperties')
   if (argv.profile) {
     const profileDefaults = await loadYaml(`${rootDir}/values/profile-${argv.profile}.yaml`)
     def = merge(def, profileDefaults)

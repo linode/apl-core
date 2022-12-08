@@ -71,7 +71,7 @@ releases:
               matchLabels:
                 prometheus: team-{{ $teamId }}
     {{- end }}
-    {{- if gt (len .services) 0 }}
+    {{- if gt (len $teamServices) 0 }}
             additionalScrapeConfigs:
           {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
     {{- end }}

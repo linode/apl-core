@@ -164,9 +164,8 @@ grafana:
         cpu: 50m
         memory: 50Mi
   image:
-      tag: {{ $g.image.tag }}
-      pullPolicy: {{ $g.image.pullPolicy }}
-    pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
+    tag: {{ $g.image.tag }}
+    pullPolicy: {{ $g.image.pullPolicy }}
   resources: {{- toYaml $g.resources | nindent 4 }}
   sidecar:
     resources:
@@ -220,7 +219,7 @@ kube-state-metrics:
     tag: {{  . }}
     {{- end }}
     pullPolicy: {{ $p | get "image.kube-state-metrics.pullPolicy" "IfNotPresent" }}
-  resources: {{- toYaml $p.resources | get "kube-state-metrics" | nindent 4 }}
+  resources: {{- $p.resources | get "kube-state-metrics" | toYaml | nindent 4 }}
 
 prometheus-node-exporter:
   prometheus:
@@ -232,7 +231,7 @@ prometheus-node-exporter:
     tag: {{ . }}
     {{- end }}
     pullPolicy: {{ $p | get "image.node-exporter.pullPolicy" "IfNotPresent" }}
-  resources: {{- toYaml $p.resources | get "prometheus-node-exporter" | nindent 4 }}
+  resources: {{- $p.resources | get "node-exporter" | toYaml | nindent 4 }}
   priorityClassName: otomi-critical
   podAnnotations:
     policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security

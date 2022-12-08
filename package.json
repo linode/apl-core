@@ -27,6 +27,7 @@
     "lodash": "4.17.21",
     "node-fetch": "2.6.7",
     "node-forge": "0.10.0",
+    "omit-deep-lodash": "^1.1.7",
     "semver": "7.3.7",
     "tar": "6.1.11",
     "validator": "13.7.0",

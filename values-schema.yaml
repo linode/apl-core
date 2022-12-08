@@ -1333,9 +1333,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            description: Discarded as this is a core app.
           adminIsMachine:
             type: boolean
             default: false
@@ -2021,6 +2018,14 @@ properties:
           enableCommonGround:
             default: false
             type: boolean
+          autoscaling:
+            properties:
+              dashboard:
+                $ref: '#/definitions/autoscaling'
+              frontend:
+                $ref: '#/definitions/autoscaling'
+              kubeops:
+                $ref: '#/definitions/autoscaling'
           initialRepos:
             type: array
             items:
