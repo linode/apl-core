@@ -115,6 +115,7 @@
     "kubeconfig",
     "kubectl",
     "kubeclarity",
+    "kubeops",
     "kubernetes",
     "millicores",
     "minikube",

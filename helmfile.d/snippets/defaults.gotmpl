@@ -10,4 +10,4 @@ environments:
   default:
     values:
       - _def: {{- readFile "../helmfile.d/snippets/defaults.yaml" | nindent 10 }}
-      - _def: {{- exec "bash" (list "-c" "cd .. && binzx/otomi defaults --all --profile=small") | trim | nindent 10 }}
+      - _def: {{- readFile "../values/defaults.yaml" | nindent 10 }}

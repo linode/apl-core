@@ -12,7 +12,7 @@ resources:
         name: {{ $ns.name }}
         {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
         {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
-      {{- with $v._files.otomi | get "globalPullSecret" nil }}
+      {{- with $v._files | get "otomi.globalPullSecret" nil }}
   - apiVersion: v1
     kind: Secret
     type: kubernetes.io/dockerconfigjson
@@ -27,7 +27,7 @@ resources:
     metadata:
       name: default
       namespace: {{ $ns.name }}
-      {{- if or ($v._files.otomi | get "globalPullSecret" nil) }}
+      {{- with $v._files | get "otomi.globalPullSecret" nil }}
     imagePullSecrets:
       - name: otomi-pullsecret-global
       {{- end }}
@@ -43,7 +43,7 @@ resources:
         name: {{ $ns }}
         type: team
         istio-injection: enabled
-  {{- with $v._files.otomi | get "globalPullSecret" nil }}
+  {{- with $v._files | get "otomi.globalPullSecret" nil }}
   - apiVersion: v1
     kind: Secret
     type: kubernetes.io/dockerconfigjson
@@ -59,9 +59,9 @@ resources:
     metadata:
       name: default
       namespace: {{ $ns }}
-    {{- if or ($v._files.otomi | get "globalPullSecret" nil) $v.apps.harbor.enabled }}
+    {{- if or ($v._files | get ".otomi.globalPullSecret" nil) $v.apps.harbor.enabled }}
     imagePullSecrets:
-    {{- if $v._files.otomi | get "globalPullSecret" nil }}
+    {{- if $v._files | get "otomi.globalPullSecret" nil }}
       - name: otomi-pullsecret-global
     {{- end }}
     {{- if $v.apps.harbor.enabled }}

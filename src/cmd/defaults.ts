@@ -1,25 +1,24 @@
 import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { dump } from 'js-yaml'
-import { each, get, isEmpty, merge, set } from 'lodash'
+import { each, get, isEmpty, set } from 'lodash'
 import omitDeep from 'omit-deep-lodash'
 import { hfValues } from 'src/common/hf'
 import { Argv } from 'yargs'
 import { prepareEnvironment } from '../common/cli'
 import { terminal } from '../common/debug'
-import { extract, extractArray, flattenObject, getFilename, getValuesSchema, loadYaml, rootDir } from '../common/utils'
+import { extract, extractArray, flattenObject, getFilename, getValuesSchema } from '../common/utils'
 import { BasicArguments, getParsedArgs, setParsedArgs } from '../common/yargs'
 
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
   all?: boolean
-  profile?: string
 }
 
 const defaults = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:defaults`)
   const argv: Arguments = getParsedArgs()
-  d.info(`Get defaults, all: ${argv.all}, profile: ${argv.profile}`)
+  d.info(`Get defaults, all: ${argv.all}`)
   const schema = await getValuesSchema()
   let def = extract(schema, 'default', (val, parent: JSONSchema): any => {
     // skip arrays as those are unknown
@@ -27,10 +26,6 @@ const defaults = async (): Promise<void> => {
     return val
   })
   def = omitDeep(def, 'patternProperties')
-  if (argv.profile) {
-    const profileDefaults = await loadYaml(`${rootDir}/values/profile-${argv.profile}.yaml`)
-    def = merge(def, profileDefaults)
-  }
   if (argv.all) return console.log(dump(def))
   // only return defaults for which we have matching paths from values
   const values = await hfValues({ filesOnly: true })
@@ -46,7 +41,7 @@ const defaults = async (): Promise<void> => {
     const prop = path.split('.').pop()
     if (parentExists || parentRequired.includes(prop)) set(retDef, path, val)
   })
-  console.log(dump(retDef))
+  return console.log(dump(retDef))
 }
 
 export const module = {
@@ -58,12 +53,7 @@ export const module = {
         boolean: true,
         default: false,
         describe:
-          'When given it shows all schema defaults, else just the defaults around input values (requires ENV_DIR to be set).',
-      },
-      profile: {
-        string: true,
-        choices: ['small'],
-        describe: 'When given it shows the defaults for the named profile as well',
+          'When set it shows all schema defaults, else just the defaults around input values (requires ENV_DIR to be set).',
       },
     }),
   handler: async (argv: Arguments): Promise<void> => {

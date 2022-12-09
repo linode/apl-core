@@ -2,9 +2,8 @@
 {{- $files := (omit .Values "_def") }}
 {{- $v := merge $def $files }}
 {{- $a := $v.apps }}
-{{- $k := $a | get "keycloak" dict }}
-{{- $o := $v | get "oidc" dict }}
-
+{{- $k := $a | get "keycloak" }}
+{{- $o := $v | get "oidc" }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
 {{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
@@ -41,7 +40,6 @@ helmDefaults:
 environments:
   default:
     values:
-      - {{- toYaml $def | nindent 8 }}
       - _files: {{- toYaml $files | nindent 10 }}
       - {{- toYaml $v | nindent 8 }}
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
@@ -94,7 +92,7 @@ environments:
           harbor:
             adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword }}
           gatekeeper:
-            enabled: {{ or ($a | get "gatekeeper.enabled" false) (not (empty ($v.otomi.nodeSelector))) }}
+            enabled: {{ or ($a | get "gatekeeper.enabled") (not (empty ($v.otomi.nodeSelector))) }}
           gitea:
             enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
@@ -124,4 +122,5 @@ environments:
         otomi:
           version: {{ $otomiTag }}
         versions: {{- $versions | toYaml | nindent 10 }}
+      - {{- readFile (printf "../values/profile-%s.yaml" $v.cluster.profile) | nindent 8 }}
       - ../core.yaml

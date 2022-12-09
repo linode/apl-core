@@ -288,6 +288,11 @@ definitions:
         $ref: '#/definitions/idName'
         description: The name of the organization owning the cluster.
         default: otomi
+      profile:
+        type: string
+        description: The profile of the cluster determines resources, number of replicas and disk sizes allocated for the otomi platform apps.
+        enum: [small, medium, large]
+        default: small
       provider:
         $ref: '#/definitions/provider'
       region:
