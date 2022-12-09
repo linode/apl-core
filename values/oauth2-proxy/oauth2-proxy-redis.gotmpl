@@ -10,7 +10,7 @@ sentinel:
     size: {{ $r.sizes.sentinel }}
   podAnnotations:
     sidecar.istio.io/inject: 'false'
-  resources: {{- toYaml $r.resources.sentinel | nindent 4 }}
+  resources: {{- $r.resources.sentinel | toYaml | nindent 4 }}
 
 master:
   persistence:
@@ -22,7 +22,7 @@ master:
   podAnnotations:
     sidecar.istio.io/inject: 'false'
   priorityClassName: otomi-critical
-  resources: {{- toYaml $r.resources.master | nindent 4 }}
+  resources: {{- $r.resources.master | toYaml | nindent 4 }}
 
 replica:
   persistence:
@@ -30,7 +30,7 @@ replica:
   podAnnotations:
     sidecar.istio.io/inject: "false"
   priorityClassName: otomi-critical
-  resources: {{- toYaml $r.resources.replica | nindent 4 }}
+  resources: {{- $r.resources.replica | toYaml | nindent 4 }}
 
 metrics:
   podAnnotations:

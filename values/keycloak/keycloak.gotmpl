@@ -11,7 +11,7 @@ persistence:
   deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
 priorityClassName: otomi-critical
 proxyAddressForwarding: true
-resources: {{- toYaml $k.resources.keycloak | nindent 4 }}
+resources: {{- $k.resources.keycloak | toYaml | nindent 4 }}
 replicas: 1
 startupScripts:
   frontend.cli: |
@@ -110,7 +110,7 @@ postgresql:
       enabled: true
       additionalLabels:
         prometheus: system
-  resources: {{- toYaml $k.resources.postgresql | nindent 4 }}
+  resources: {{- $k.resources.postgresql | toYaml | nindent 4 }}
   master:
     priorityClassName: otomi-critical
   slave:

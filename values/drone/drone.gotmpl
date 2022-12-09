@@ -58,7 +58,7 @@ agent:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
     sidecar.istio.io/inject: "false"
-  resources: {{- toYaml $d.resources.agent | nindent 4 }}
+  resources: {{- $d.resources.agent | toYaml | nindent 4 }}
   env:
     DRONE_TRACE: {{ $d.trace }}
     DRONE_DEBUG: {{ $d.debug }}

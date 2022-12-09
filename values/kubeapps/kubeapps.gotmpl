@@ -39,7 +39,7 @@ apprepository:
     - name: bitnami
       url: https://charts.bitnami.com/bitnami  
 {{- range $repo := $initialRepos }}
-    - {{- toYaml $repo | nindent 6 }}
+    - {{- $repo | toYaml | nindent 6 }}
       containerSecurityContext:
         enabled: true
         runAsUser: 1001

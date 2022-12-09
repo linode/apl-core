@@ -71,7 +71,7 @@ persistence:
 ## Assign a PriorityClassName to pods if set
 priorityClassName: otomi-critical
 
-resources: {{- toYaml $l.resources | nindent 2 }}
+resources: {{- $l.resources | toYaml | nindent 2 }}
 
 fullnameOverride: loki
 

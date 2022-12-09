@@ -24,13 +24,14 @@ clair:
   clair:
     image:
       tag: {{ $tag }}
-    resources: {{- toYaml $h.resources.clair | nindent 6 }}
+    resources: {{- $h.resources.clair | toYaml | nindent 6 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
 
 chartmuseum:
   image:
     tag: {{ $tag }}
+  resources: {{- $h.resources.chartmuseum | toYaml | nindent 6 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
 
@@ -39,7 +40,7 @@ core:
     tag: {{ $tag }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
-  resources: {{- toYaml $h.resources.core | nindent 6 }}
+  resources: {{- $h.resources.core | toYaml | nindent 6 }}
   secret: {{ $h.core.secret }}
   xsrfKey: {{ $h.core.xsrfKey }}
 
@@ -64,7 +65,7 @@ database:
           requests:
             cpu: 50m
             memory: 256Mi
-    resources: {{- toYaml $h.resources.database | nindent 6 }}
+    resources: {{- $h.resources.database | toYaml | nindent 6 }}
   password: {{ $h.adminPassword }}
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
@@ -91,7 +92,7 @@ jobservice:
     - stdout
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
-  resources: {{- toYaml $h.resources.jobservice | nindent 6 }}
+  resources: {{- $h.resources.jobservice | toYaml | nindent 6 }}
   secret: {{ $h.jobservice.secret }}
 
 metrics:
@@ -197,7 +198,7 @@ postgresql:
 portal:
   image:
     tag: {{ $tag }}
-  resources: {{- toYaml $h.resources.portal | nindent 6 }}
+  resources: {{- $h.resources.portal | toYaml | nindent 6 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
 
@@ -208,7 +209,7 @@ redis:
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
   internal:
-    resources: {{- toYaml $h.resources.redis | nindent 6 }}
+    resources: {{- $h.resources.redis | toYaml | nindent 6 }}
 
 registry:
   secret: {{ $h.registry.secret }}
@@ -218,7 +219,7 @@ registry:
   registry:
     image:
       tag: {{ $tag }}
-    resources: {{- toYaml $h.resources.registry | nindent 6 }}
+    resources: {{- $h.resources.registry | toYaml | nindent 6 }}
   controller:
     image:
       tag: {{ $tag }}
@@ -232,7 +233,7 @@ registry:
 trivy:
   image:
     tag: {{ $tag }}
-  resources: {{- toYaml $h.resources.trivy | nindent 6 }}
+  resources: {{- $h.resources.trivy | toYaml | nindent 6 }}
   automountServiceAccountToken: true
 
 {{- with $v._files | get "otomi.globalPullSecret" nil }}

@@ -33,7 +33,7 @@ resources:
             hpaSpec:
               minReplicas: {{ $i.autoscaling.pilot.minReplicas }}
               maxReplicas: {{ $i.autoscaling.pilot.maxReplicas }}
-            resources: {{- toYaml $i.resources.pilot | nindent 14 }}
+            resources: {{- $i.resources.pilot | toYaml | nindent 14 }}
         ingressGateways:
           - name: istio-ingressgateway
             enabled: false
@@ -46,7 +46,7 @@ resources:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users
               priorityClassName: otomi-critical
-              resources: {{- toYaml $i.resources.ingressgateway | nindent 16 }}
+              resources: {{- $i.resources.ingressgateway | toYaml | nindent 16 }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" }}
                 maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" }}
@@ -75,7 +75,7 @@ resources:
               podAnnotations:
                 policy.otomi.io/ignore: psp-allowed-users
               priorityClassName: otomi-critical
-              resources: {{- toYaml $i.resources.egressgateway | nindent 16 }}
+              resources: {{- $i.resources.egressgateway | toYaml | nindent 16 }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" }}
                 maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" }}
@@ -107,7 +107,7 @@ resources:
           logging:
             level: {{ $ig.logging.level }}
           proxy:
-            resources: {{- toYaml $i.resources.proxy | nindent 14 }}
+            resources: {{- $i.resources.proxy | toYaml | nindent 14 }}
             autoInject: enabled
           tracer:
             zipkin:
@@ -115,7 +115,7 @@ resources:
           useMCP: false
         meshConfig:
           accessLogFile: "/dev/stdout"
-          defaultConfig: {{-  toYaml $i.meshConfig.defaultConfig | nindent 14 }}
+          defaultConfig: {{-  $i.meshConfig.defaultConfig | toYaml | nindent 14 }}
           enableAutoMtls: true
         {{- if $v._derived.untrustedCA }}
         pilot:

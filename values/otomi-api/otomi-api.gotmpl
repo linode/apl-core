@@ -12,7 +12,7 @@
 replicaCount: 1
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
-resources: {{- toYaml $o.resources.api | nindent 4 }}
+resources: {{- $o.resources.api | toYaml | nindent 4 }}
 
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipScript" true) }}
 
@@ -46,14 +46,14 @@ env:
   DRONE_WEBHOOK_SECRET: {{ $d.sharedSecret }}
 
 core:
-  k8s: {{- toYaml $v.k8s | nindent 4 }}
-  adminApps: {{- toYaml $v.adminApps | nindent 4 }}
-  teamApps: {{- toYaml $v.teamApps | nindent 4 }}
+  k8s: {{- $v.k8s | toYaml | nindent 4 }}
+  adminApps: {{- $v.adminApps | toYaml | nindent 4 }}
+  teamApps: {{- $v.teamApps | toYaml | nindent 4 }}
   {{ readFile "../../apps.yaml" | nindent 2}}
 
 tools:
   {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipScript" true) | nindent 2 }}
-  resources: {{- toYaml $o.resources.tools | nindent 4 }}
+  resources: {{- $o.resources.tools | toYaml | nindent 4 }}
   env:
     DEBUG: '*'
     VERBOSITY: '1'

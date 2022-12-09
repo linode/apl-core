@@ -25,10 +25,10 @@ disableValidatingWebhook: {{ $g | get "disableValidatingWebhook" }}
 
 audit:
   {{- tpl (readFile "../../helmfile.d/snippets/otomi-affinity.gotmpl") $v | nindent 2 }}
-  resources: {{- toYaml $g.resources.audit | nindent 4 }}
+  resources: {{- $g.resources.audit | toYaml | nindent 4 }}
 controllerManager:
   {{- tpl (readFile "../../helmfile.d/snippets/otomi-affinity.gotmpl") $v | nindent 2 }}
-  resources: {{- toYaml $g.resources.controller | nindent 4 }}
+  resources: {{- $g.resources.controller | toYaml | nindent 4 }}
 
 crds:
   resources:

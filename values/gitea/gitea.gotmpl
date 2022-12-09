@@ -127,7 +127,7 @@ memcached:
   image:
     tag: {{ $g | get "image.memcached.tag" "1.6.12" }}
     pullPolicy:  {{ $g | get "image.memcached.pullPolicy" "IfNotPresent" }}
-  resources: {{- toYaml $g | get "resources.memcached" | nindent 4 }}
+  resources: {{- $g | toYaml | get "resources.memcached" | nindent 4 }}
   metrics:
     enabled: true
     resources:
@@ -170,7 +170,7 @@ postgresql:
     postgresql:
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}
       postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
-  resources: {{-toYaml $g | get "resources.postgresql" | nindent 4 }}
+  resources: {{-$g | toYaml | get "resources.postgresql" | nindent 4 }}
   metrics:
     enabled: true
     resources:

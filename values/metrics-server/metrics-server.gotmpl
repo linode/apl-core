@@ -6,7 +6,7 @@ extraArgs: {{- $m.extraArgs | toYaml | nindent 2 }}
 apiService:
   create: {{ $m.apiServer.create }}
 
-resources: {{- toYaml $m.resources | nindent 2 }}
+resources: {{- $m.resources | toYaml | nindent 2 }}
 
 {{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:

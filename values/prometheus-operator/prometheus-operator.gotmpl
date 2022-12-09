@@ -66,7 +66,7 @@ prometheus:
     podMetadata:
       annotations:
         sidecar.istio.io/inject: "true"
-    resources: {{- toYaml $p.resources.prometheus | nindent 4 }}
+    resources: {{- $p.resources.prometheus | toYaml | nindent 4 }}
     priorityClassName: otomi-critical
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
@@ -113,13 +113,13 @@ prometheus:
 {{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
-    - {{- toYaml $m | nindent 6 }}
+    - {{- $m | toYaml | nindent 6 }}
       additionalLabels:
         prometheus: system
     {{- end }}
   additionalServiceMonitors:
     {{- range $m := (tpl (readFile "service-monitors.gotmpl") $v | fromYaml) | get "additionalServiceMonitors" }}
-    - {{- toYaml $m | nindent 6 }}
+    - {{- $m | toYaml | nindent 6 }}
       additionalLabels:
         prometheus: system
     {{- end }}
@@ -146,7 +146,7 @@ alertmanager:
       tag: {{ $a.image.tag }}
       pullPolicy: {{ $a.image.pullPolicy }}
     priorityClassName: otomi-critical
-    resources: {{- toYaml $a.resources | nindent 4 }}
+    resources: {{- $a.resources | toYaml | nindent 4 }}
     externalUrl: https://{{ $appsDomain }}/alertmanager
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
 grafana:
@@ -166,7 +166,7 @@ grafana:
   image:
     tag: {{ $g.image.tag }}
     pullPolicy: {{ $g.image.pullPolicy }}
-  resources: {{- toYaml $g.resources | nindent 4 }}
+  resources: {{- $g.resources | toYaml | nindent 4 }}
   sidecar:
     resources:
       limits:

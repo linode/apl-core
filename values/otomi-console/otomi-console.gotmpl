@@ -3,7 +3,7 @@
 {{- $o := $v.apps | get "otomi-console" }}
 
 replicaCount: 1
-resources: {{- toYaml $o.resources | nindent 2 }}
+resources: {{- $o.resources | toYaml | nindent 2 }}
 
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "console" "v" $v "skipScript" true) }}
 
