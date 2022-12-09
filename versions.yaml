@@ -1,4 +1,4 @@
-api: 0.5.19
-console: 0.5.21
+api: node-version-lock
+console: node-version-lock
 tasks: 0.2.31
 tools: 1.4.25
