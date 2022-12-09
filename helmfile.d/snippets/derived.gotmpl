@@ -100,6 +100,9 @@ environments:
             enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
+          istio:
+            # to be backwards compatible we allow installs to specify their namespace for istio (if set via values-changes.yaml)
+            operatorNamespace: {{ $a | get "istio.operatorNamespace" "istio-operator" }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}

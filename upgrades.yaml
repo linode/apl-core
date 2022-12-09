@@ -44,3 +44,7 @@ operations:
             kubectl -n "team-$id" annotate podmonitor/$p --overwrite "meta.helm.sh/release-name"=team-ns-$id
           done
         done
+  - version: dev
+    pre:
+      # release istio moved to its own namespace, so uninstall and wait until the namespace is removed
+      - helm uninstall istio-operator && until ! kubectl get ns istio-operator; do echo 'checking if istio-operator namespace is gone'; sleep 3; done || true

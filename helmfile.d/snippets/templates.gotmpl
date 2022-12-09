@@ -1,7 +1,8 @@
 templates:
   upgrade: &upgrade
     hooks:
-      - events: [presync]
+      - name: preapply
+        events: [preapply]
         showlogs: true
         command: ../binzx/otomiw
         args:
@@ -10,7 +11,8 @@ templates:
           - '{{ .Release.Name }}'
           - -w
           - pre
-      - events: [postsync]
+      - name: postsync
+        events: [postsync]
         showlogs: true
         command: ../binzx/otomiw
         args:

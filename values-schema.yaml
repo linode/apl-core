@@ -1882,6 +1882,9 @@ properties:
           enabled:
             default: true
             type: boolean
+          operatorNamespace:
+            type: string
+            default: istio-operator
           autoscaling:
             properties:
               egressgateway:
@@ -1921,7 +1924,7 @@ properties:
             properties:
               tag:
                 $ref: '#/definitions/imageTag'
-                default: 1.13.1
+                default: 1.16.0
               pullPolicy:
                 $ref: '#/definitions/imagePullPolicy'
           resources:

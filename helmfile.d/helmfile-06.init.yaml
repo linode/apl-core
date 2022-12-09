@@ -24,15 +24,12 @@ releases:
     labels:
       pkg: cert-manager
     <<: *default
-  - name: istio-operator-artifacts
+  - name: istio-operator-cr
     installed: true
     namespace: istio-operator
     labels:
       pkg: istio
-    chart: ../charts/raw
-    values:
-      - ../values/istio-operator/istio-operator-raw.gotmpl
-      - snippets/common.gotmpl
+    <<: *rawCR
   - name: external-secrets
     installed: {{ $a | get "vault.enabled" }}
     namespace: vault

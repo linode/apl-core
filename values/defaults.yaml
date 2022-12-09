@@ -120,6 +120,7 @@ apps:
       pullPolicy: IfNotPresent
   istio:
     enabled: true
+    operatorNamespace: istio-operator
     autoscaling:
       egressgateway:
         maxReplicas: 10
@@ -140,7 +141,7 @@ apps:
         tracing:
           sampling: 0.1
     image:
-      tag: 1.13.1
+      tag: 1.16.0
       pullPolicy: IfNotPresent
   jaeger:
     enabled: false

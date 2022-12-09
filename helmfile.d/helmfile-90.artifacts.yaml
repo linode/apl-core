@@ -12,12 +12,9 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: istio-artifacts
+  - name: istio-operator-artifacts
     installed: true
     namespace: istio-system
     labels:
       pkg: istio
-    chart: ../charts/raw
-    values:
-      - ../values/raw/istio-raw.gotmpl
-      - snippets/common.gotmpl
+    <<*: *raw
