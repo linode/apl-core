@@ -98,9 +98,9 @@ const writeValuesToFile = async (
   overwrite = false,
 ): Promise<void> => {
   const d = terminal('common:values:writeValuesToFile')
-  const isSecretsFile = targetPath.includes('/secrets.') && hasSops
+  const isSecretsFile = targetPath.includes('/secrets.')
   const targetPathExists = await pathExists(targetPath)
-  const suffix = isSecretsFile && targetPathExists ? '.dec' : ''
+  const suffix = isSecretsFile && hasSops && targetPathExists ? '.dec' : ''
   const values = cloneDeep(inValues)
   const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
@@ -114,16 +114,15 @@ const writeValuesToFile = async (
     return
   }
   const useValues = overwrite ? values : mergeResult
-  if (!(await pathExists(targetPath)) || overwrite) {
-    const notExists = !(await pathExists(targetPath))
-    if (notExists) {
+  const notExists = !(await pathExists(targetPath))
+  if (notExists || overwrite) {
+    if (!isEmpty(useValues)) {
       await writeFile(targetPath, objectToYaml(useValues))
       if (isSecretsFile) {
         await encrypt(targetPath)
         await decrypt(targetPath)
-        return
       }
-    }
+    } else if (overwrite) await unlink(targetPath) // remove empty files
     return
   }
   if (isEqual(originalValues, useValues)) {
