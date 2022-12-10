@@ -30,6 +30,13 @@ releases:
     labels:
       pkg: kiali
     <<: *raw
+  - name: knative-operator
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: default
+    labels:
+      init: true
+      pkg: knative
+    <<: *skeleton
   - name: knative-serving-artifacts
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-serving
@@ -44,13 +51,6 @@ releases:
     values:
       - ../values/knative/knative-serving-raw.gotmpl
     <<: *upgrade
-  - name: knative-operator
-    installed: {{ $a | get "knative.enabled" }}
-    namespace: default
-    labels:
-      init: true
-      pkg: knative
-    <<: *skeleton
   - name: loki-artifacts
     installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring

@@ -45,6 +45,12 @@ operations:
           done
         done
   - version: dev
+    # releases:
+    #   istio-operator:
     pre:
-      # release istio moved to its own namespace, so uninstall and wait until the namespace is removed
-      - helm uninstall istio-operator && until ! kubectl get ns istio-operator; do echo 'checking if istio-operator namespace is gone'; sleep 3; done || true
+      # # release istio moved to its own namespace, so uninstall and wait until the namespace is removed and recreate ns to avoid deletion
+      - helm list istio-operator && helm uninstall istio-operator && until ! kubectl get ns istio-operator >/dev/null; do echo 'checking if istio-operator namespace is gone'; sleep 3; done && kubectl create ns istio-operator || true
+      # previous istio-artifacts (potential egress gateway config) now renamed to istio-operator-artifacts, so uninstall first
+      - helm uninstall istio-artifacts || true
+      # istiocontrolplane moved to release istio-operator-cr
+      - kubectl -n istio-system annotate istiooperator istiocontrolplane meta.helm.sh/release-name=istio-operator-cr --overwrite

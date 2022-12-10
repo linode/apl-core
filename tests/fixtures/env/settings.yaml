@@ -1,11 +1,13 @@
 alerts:
     drone:
         - slack
+    email: {}
     groupInterval: 5m
     receivers:
         - slack
         - email
     repeatInterval: 3h
+    slack: {}
 azure:
     appgw:
         isManaged: true
@@ -16,6 +18,15 @@ azure:
     resourceGroup: somevalue
     subscriptionId: somevalue
     tenantId: somevalue
+backup:
+    platformSchedule:
+        enabled: true
+        schedule: 0 0 * * *
+        ttl: 240h
+    teamSchedule:
+        enabled: true
+        schedule: 0 0 * * *
+        ttl: 240h
 cloud:
     skipStorageClasses:
         - std
@@ -32,6 +43,7 @@ dns:
     zoneIdFilters:
         - otomi
 home:
+    email: {}
     receivers:
         - slack
     slack:
@@ -53,15 +65,6 @@ kms:
             clientId: somesecretvalue
             keys: somesecretvalue
             tenantId: somesecretvalue
-backup:
-    platformSchedule:
-        enabled: true
-        schedule: 0 0 * * *
-        ttl: 240h
-    teamSchedule:
-        enabled: true
-        schedule: 0 0 * * *
-        ttl: 240h
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID
@@ -86,4 +89,4 @@ smtp:
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
-version: 5
+version: 6

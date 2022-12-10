@@ -12,6 +12,7 @@ apps:
         global:
             logging:
                 level: default:warn
+        operatorNamespace: default
         resources:
             ingressgateway:
                 limits:

@@ -13,7 +13,8 @@ env:
   DRONE_NAMESPACE: drone
 nativeSecrets:
   GITEA_PASSWORD: {{ $g.adminPassword }}
-  OTOMI_VALUES: '{{ $otomiValues | toJson }}'
+  OTOMI_VALUES: |
+    {{- $otomiValues | toJson | nindent 4 }}
 annotations:
   {{- if $v | get "policies.banned-image-tags.tags" | has $v.otomi.version }}
   policy.otomi.io/ignore: "banned-image-tags"

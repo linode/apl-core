@@ -8,7 +8,6 @@ overrides:
       - 'env/**/*.yaml'
       - 'env/**/*.dec'
       - 'tests/fixtures/**/*.yaml'
-      - 'tests/kind/**/*.yaml'
     options:
       tabWidth: 4
       useTabs: true

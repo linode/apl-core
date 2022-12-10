@@ -3,11 +3,10 @@ teamConfig:
         id: admin
     demo:
         alerts:
+            email: {}
             receivers:
                 - email
         id: demo
-        # monitoringStack:
-        #     enabled: false
         networkPolicy:
             egressPublic: true
             ingressPrivate: true

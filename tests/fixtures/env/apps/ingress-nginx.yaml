@@ -5,9 +5,9 @@ apps:
                 config:
                     modsecurity-snippet: |
                         SecRuleRemoveById 911100
+        maxBodySize: 1024m
         modsecurity:
             enabled: true
-        maxBodySize: 1024m
         resources:
             limits:
                 cpu: 200m

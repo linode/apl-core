@@ -17,4 +17,4 @@ releases:
     namespace: istio-system
     labels:
       pkg: istio
-    <<*: *raw
+    <<: *raw

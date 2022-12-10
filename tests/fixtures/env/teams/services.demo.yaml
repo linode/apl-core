@@ -52,9 +52,11 @@ teamConfig:
               ksvc:
                   containerPort: 80
                   files:
-                      /etc/nginx.conf: |
+                      /etc/nginx.conf: >
                           events {
+
                           }
+
 
                           http {
                             log_format main '$remote_addr - $remote_user [$time_local]  $status '

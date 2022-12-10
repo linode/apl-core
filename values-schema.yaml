@@ -703,14 +703,13 @@ definitions:
     type: integer
   provider:
     type: string
-    description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube, kind) or onprem installs.
+    description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube) or onprem installs.
     enum:
       - aws
       - azure
       - digitalocean
       - google
       - custom
-      - kind
       - ovh
       - vultr
   redisChart:
@@ -1569,23 +1568,32 @@ properties:
             additionalProperties: false
             properties:
               gitea:
-                $ref: '#/definitions/imageSimple'
+                tag:
+                  $ref: '#/definitions/imageTag'
+                  default: 1.16.6
+                pullPolicy:
+                  $ref: '#/definitions/imagePullPolicy'
               postgresql:
-                $ref: '#/definitions/imageSimple'
+                tag:
+                  $ref: '#/definitions/imageTag'
+                  default: 13.5.0
+                pullPolicy:
+                  $ref: '#/definitions/imagePullPolicy'
               memcached:
-                $ref: '#/definitions/imageSimple'
+                tag:
+                  $ref: '#/definitions/imageTag'
+                  default: 1.6.12
+                pullPolicy:
+                  $ref: '#/definitions/imagePullPolicy'
           resources:
             additionalProperties: false
             properties:
               gitea:
                 $ref: '#/definitions/resources'
-                default:
               postgresql:
                 $ref: '#/definitions/resources'
-                default:
               memcached:
                 $ref: '#/definitions/resources'
-                default:
       grafana:
         additionalProperties: false
         properties:
@@ -1610,7 +1618,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: true
+            default: false
           privateLibrary:
             type: boolean
             default: true
@@ -2008,7 +2016,7 @@ properties:
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
           serving:
             type: object
             properties:
@@ -2192,7 +2200,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: true
+            default: false
           apiServer:
             additionalProperties: false
             properties:

@@ -8,17 +8,7 @@
 nameOverride: gitea
 fullnameOverride: gitea
 
-resources:
-  {{ with $g | get "resources.gitea" nil }}
-    {{- toYaml . | nindent 2 }}
-  {{- else }}
-  limits:
-    cpu: 1
-    memory: 1Gi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  {{- end }}
+resources: {{ $g | get "resources.gitea" | toYaml | nindent 2 }}
 
 securityContext:
   allowPrivilegeEscalation: false
@@ -36,9 +26,8 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  # tag: {{ $g | get "image.gitea.tag" "1.15.8" }}
-  tag: {{ $g | get "image.gitea.tag" "1.16.6" }}
-  pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
+  tag: {{ $g | get "image.gitea.tag" }}
+  pullPolicy: {{ $g | get "image.gitea.pullPolicy" }}
   rootless: true
 
 gitea:
@@ -125,9 +114,9 @@ init:
 memcached:
   # @TODO:
   image:
-    tag: {{ $g | get "image.memcached.tag" "1.6.12" }}
-    pullPolicy:  {{ $g | get "image.memcached.pullPolicy" "IfNotPresent" }}
-  resources: {{- $g | toYaml | get "resources.memcached" | nindent 4 }}
+    tag: {{ $g | get "image.memcached.tag" }}
+    pullPolicy:  {{ $g | get "image.memcached.pullPolicy" }}
+  resources: {{- $g | get "resources.memcached" | toYaml | nindent 4 }}
   metrics:
     enabled: true
     resources:
@@ -155,8 +144,8 @@ persistence:
 postgresql:
   # @TODO:
   image:
-    tag: {{ $g | get "image.postgresql.tag" "13.5.0" }}
-    pullPolicy:  {{ $g | get "image.postgresql.pullPolicy" "IfNotPresent" }}
+    tag: {{ $g | get "image.postgresql.tag" }}
+    pullPolicy:  {{ $g | get "image.postgresql.pullPolicy" }}
   metrics:
     image:
       tag: 0.10.0
@@ -170,7 +159,7 @@ postgresql:
     postgresql:
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}
       postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
-  resources: {{-$g | toYaml | get "resources.postgresql" | nindent 4 }}
+  resources: {{- $g | get "resources.postgresql" | toYaml | nindent 4 }}
   metrics:
     enabled: true
     resources:

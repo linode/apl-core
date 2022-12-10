@@ -4,20 +4,12 @@ apps:
         provider:
             azure:
                 config:
-                    storageAccount: test
-                    resourceGroup: test
                     bucket: otomi
+                    resourceGroup: test
+                    storageAccount: test
                 environment: AzurePublicCloud
                 secretContents:
+                    aadClientId: bla12344556666658457847476
+                    resourceGroup: wokernodes_rg
                     subscriptionId: test
                     tenantId: test
-                    resourceGroup: wokernodes_rg
-                    aadClientId: bla12344556666658457847476
-                    aadClientSecret: bla383736363653
-            # aws:
-            #     config:
-            #         region: north-eu
-            #         s3bucket: https://s3.my.bucket/blablabla
-            #     secretContents:
-            #         accessKeyId: dhfhfhf
-            #         secretAccessKey: hfhgfhfhfhfh

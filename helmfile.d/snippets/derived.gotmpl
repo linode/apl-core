@@ -2,6 +2,7 @@
 {{- $files := (omit .Values "_def") }}
 {{- $v := merge $def $files }}
 {{- $a := $v.apps }}
+{{- $fa := $files.apps }}
 {{- $k := $a | get "keycloak" }}
 {{- $o := $v | get "oidc" }}
 {{- $cm := index $v.apps "cert-manager" }}
@@ -20,9 +21,9 @@
 {{- $versions = $versions | merge (dict "core" $otomiVersion) }}
 # Domain suffix may not be present during initial deployment stage
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
-{{- $provider := $v.cluster.provider }}
-{{- $droneProvider := $a.drone.sourceControl.provider }}
-{{- $hasSops := hasKey $v "kms.sops.provider" }}
+{{- $provider := $files.cluster.provider }}
+{{- $droneProvider := $files | get "drone.sourceControl.provider" "gitea" }}
+{{- $hasSops := hasKey $files "kms.sops.provider" }}
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
@@ -67,20 +68,15 @@ environments:
             enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}
           aws-ebs-csi-driver:
             enabled: false # {{ eq $provider "aws" }}
-          {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
-          cert-manager:
-            enabled: true
-            stage: production
-          {{- end }}
           cluster-autoscaler:
-            enabled: {{ $a | get "cluster-autoscaler.enabled" (has $provider (list "aws")) }}
+            enabled: {{ $fa | get "cluster-autoscaler.enabled" (has $provider (list "aws")) }}
           {{- if eq $droneProvider "gitea" }}
           drone:
             sourceControl:
               gitea:
-                server: {{ $a | get "drone.sourceControl.gitea.server" $giteaUrl }}
-              {{- if or ($a | get "drone.sourceControl.secret" nil) (and (eq $droneProvider "gitea") (not ($a | get "drone.sourceControl.gitea.server" nil))) }}
-              secret: {{ $a | get "drone.sourceControl.secret" "drone-source-control" }}
+                server: {{ $fa | get "drone.sourceControl.gitea.server" $giteaUrl }}
+              {{- if or ($fa | get "drone.sourceControl.secret" nil) (and (eq $droneProvider "gitea") (not ($fa | get "drone.sourceControl.gitea.server" nil))) }}
+              secret: {{ $fa | get "drone.sourceControl.secret" "drone-source-control" }}
               {{- end }}
           {{- end }}
           drone-admit-members:
@@ -94,10 +90,10 @@ environments:
           gatekeeper:
             enabled: {{ or ($a | get "gatekeeper.enabled") (not (empty ($v.otomi.nodeSelector))) }}
           gitea:
-            enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
+            enabled: {{ and (eq $droneProvider "gitea") (eq ($fa | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
-            enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
+            enabled: {{ $fa | get "host-mods.enabled" $untrustedCA }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           istio:
@@ -108,15 +104,26 @@ environments:
             address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
-            enabled: {{ $a | get "kured.enabled" (has $provider (list "azure")) }}
+            enabled: {{ $fa | get "kured.enabled" (has $provider (list "azure")) }}
           metrics-server:
-            enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean")) }}
+            enabled: {{ $fa | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean")) }}
+          otomi-api:
+            git:
+              {{- if eq $droneProvider "gitea" }}
+              user: {{ $fa | get "gitea.admin.username" "otomi-admin" }}
+              password: {{ $fa | get "gitea.admin.password" $v.otomi.adminPassword }}
+              email: {{ $fa | get "gitea.admin.email" "not@us.ed" }}
+              {{- else }}
+              user: {{ $fa | get "otomi-api.git.admin.username" }}
+              password: {{ $fa | get "otomi-api.git.admin.password" }}
+              email: {{ $fa | get "otomi-api.git.admin.email" }}
+              {{- end }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
           tigera-operator:
-            enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
+            enabled: {{ $fa | get "tigera-operator.enabled" (eq $provider "aws") }}
         ingress:
           classes:
           {{- with (concat (list $v.ingress.platformClass) $v.ingress.classes) }}

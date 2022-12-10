@@ -74,10 +74,13 @@ apps:
     adminUser: otomi-admin
     image:
       gitea:
+        tag: 1.16.6
         pullPolicy: IfNotPresent
       postgresql:
+        tag: 13.5.0
         pullPolicy: IfNotPresent
       memcached:
+        tag: 1.6.12
         pullPolicy: IfNotPresent
   grafana:
     enabled: false
@@ -85,7 +88,7 @@ apps:
       tag: v0.24.0
       pullPolicy: IfNotPresent
   harbor:
-    enabled: true
+    enabled: false
     privateLibrary: true
     persistence:
       imageChartStorage:
@@ -160,7 +163,7 @@ apps:
   kiali:
     enabled: false
   knative:
-    enabled: true
+    enabled: false
     serving:
       replicas: 1
   kubeapps:
@@ -190,7 +193,7 @@ apps:
       duration: 24h
       period: 24h
   metrics-server:
-    enabled: true
+    enabled: false
     apiServer:
       create: true
       enabled: true
