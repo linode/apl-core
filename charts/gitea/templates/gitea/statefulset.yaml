@@ -45,6 +45,8 @@ spec:
         - name: init-directories
           image: "{{ include "gitea.image" . }}"
           command: ["/usr/sbin/init_directory_structure.sh"]
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
@@ -75,6 +77,8 @@ spec:
         - name: init-app-ini
           image: "{{ include "gitea.image" . }}"
           command: ["/usr/sbin/config_environment.sh"]
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
@@ -118,6 +122,8 @@ spec:
             {{- $_ := set $csc "runAsUser" 1000 -}}
             {{- end -}}
             {{- toYaml $csc | nindent 12 }}
+          resources:
+            {{- toYaml .Values.init.resources | nindent 12 }}
           env:
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini

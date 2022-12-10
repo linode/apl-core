@@ -17,15 +17,9 @@ resources: {{- $o.resources.api | toYaml | nindent 4 }}
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipScript" true) }}
 
 secrets:
-  {{- if $hasGitea }}
-  GIT_USER: otomi-admin
-  GIT_EMAIL: not@us.ed
-  GIT_PASSWORD: {{ $g.admin.password }}
-  {{- else }}
   GIT_USER: {{ $o.git.user }}
   GIT_EMAIL: {{ $o.git.email }}
   GIT_PASSWORD: {{ $o.git.password }}
-  {{- end }}
   {{- $sopsEnv | nindent 2 }}
   
 env:

@@ -91,6 +91,13 @@ apps:
           memory: 256Mi
   gitea:
     resources:
+      gitea:
+        limits:
+          cpu: 1
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 128Mi
       memcached:
         limits:
           cpu: 250m
