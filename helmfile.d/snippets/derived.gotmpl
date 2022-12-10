@@ -86,23 +86,23 @@ environments:
           external-secrets:
             enabled: {{ $a.vault.enabled }}
           harbor:
-            adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword }}
+            adminPassword: {{ $fa | get "harbor.adminPassword" $v.otomi.adminPassword }}
           gatekeeper:
-            enabled: {{ or ($a | get "gatekeeper.enabled") (not (empty ($v.otomi.nodeSelector))) }}
+            enabled: {{ or ($fa | get "gatekeeper.enabled") (not (empty ($v.otomi.nodeSelector))) }}
           gitea:
             enabled: {{ and (eq $droneProvider "gitea") (eq ($fa | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
-            adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
+            adminPassword: {{ $fa | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
             enabled: {{ $fa | get "host-mods.enabled" $untrustedCA }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           istio:
             # to be backwards compatible we allow installs to specify their namespace for istio (if set via values-changes.yaml)
-            operatorNamespace: {{ $a | get "istio.operatorNamespace" "istio-operator" }}
+            operatorNamespace: {{ $fa | get "istio.operatorNamespace" "istio-operator" }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
-            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+            adminPassword: {{ $fa | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           kured:
             enabled: {{ $fa | get "kured.enabled" (has $provider (list "azure")) }}
           metrics-server:
@@ -110,16 +110,16 @@ environments:
           otomi-api:
             git:
               {{- if eq $droneProvider "gitea" }}
-              user: {{ $fa | get "gitea.admin.username" "otomi-admin" }}
-              password: {{ $fa | get "gitea.admin.password" $v.otomi.adminPassword }}
-              email: {{ $fa | get "gitea.admin.email" "not@us.ed" }}
+              user: {{ $fa | get "gitea.adminUsername" "otomi-admin" }}
+              password: {{ $fa | get "gitea.adminPassword" $v.otomi.adminPassword }}
+              email: not@us.ed
               {{- else }}
               user: {{ $fa | get "otomi-api.git.admin.username" }}
               password: {{ $fa | get "otomi-api.git.admin.password" }}
               email: {{ $fa | get "otomi-api.git.admin.email" }}
               {{- end }}
           prometheus-msteams:
-            enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
+            enabled: {{ and ($fa | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
             enabled: false #{{ eq $provider "aws" }}
           tigera-operator:
