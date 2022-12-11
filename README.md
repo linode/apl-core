@@ -22,7 +22,7 @@
 
 ## Otomi helps 
 
-1 . **Developers** - To focus on their apps only
+**Developers** - To focus on their apps only
 * Deploy containerized apps with a few click without writing any K8s YAML manifests
 * Get access to logs and metrics of deployed apps
 * Store charts and images in a private registry
@@ -31,13 +31,14 @@
 * Configure ingress for apps with a single click
 * Manage your own secrets
 
-2. **Platform & Operations teams** - To setup and manage production-ready Kubernetes-based platforms
+**Platform & Operations teams** - To setup and manage production-ready Kubernetes-based platforms
 * Onboard development teams on shared clusters in a comprehensive multi-tenant setup
 * Get all the required K8s apps in an integrated way
 * Ensure governance with security policies
 * Implement zero-trust networking with east-west and north-south network control
-* Provide self-service features to development teams
-* Change the desired state of the platform based on configuration-as-code
+* Make development teams self-serving
+* Change the desired state of the platform based on Configuration-as-Code
+* Support multi and hybrid cloud scenarios
 
 ## Getting started
 
@@ -104,11 +105,12 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [x] Configuration validation
 - [x] Configure network policies for internal ingress and external egress
 - [x] Deploy workloads without writing any YAML
-- [x] Create and manage secrets in Vault and use them in your workloads
+- [x] Create and manage secrets in Vault and use them in workloads
 - [x] Role-based access to all integrated applications
 - [x] Enforce Pod security policies
 - [x] Comprehensive multi-tenant setup
-- [x] Predefined automation tasks
+- [x] Automation tasks
+- [x] Expose services on multiple (public/private) networks
 - [x] SOPS/KMS for encryption of sensitive configuration values
 - [x] BYO IdP, DNS and/or CA
 
