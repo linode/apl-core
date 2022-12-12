@@ -2,6 +2,7 @@ FROM alpine:3.14
 
 RUN apk --update add --no-cache \
   musl musl-utils musl-locales tzdata \
+  bash \
   mysql-client \
   postgresql-client \
   aws-cli \

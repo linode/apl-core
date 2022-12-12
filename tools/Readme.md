@@ -1,11 +1,11 @@
 # Building otomi/tools container image
 
 ```
-docker build -f Dockerfile ./tools -t otomi/tools:<TAG>
+docker build . -f Dockerfile -t otomi/tools:<TAG>
 ```
 
 # Building otomi/tools-db container image
 
 ```
-docker build -f Dockerfile-db ./tools -t otomi/tools-db:<TAG>
+docker build . -f Dockerfile-db -t otomi/tools-db:<TAG>
 ```

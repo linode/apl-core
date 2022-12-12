@@ -18,8 +18,7 @@ name: backup-backup
 image:
   registry: docker.io
   repository: otomi/tools-db
-  tag: v0.0.1
-  pullPolicy: Always
+  tag: v0.0.2
 schedule: {{ $h.backup.schedule }}
 script: |
   {{- readFile "scripts/backup-db.sh" | nindent 6 }}
