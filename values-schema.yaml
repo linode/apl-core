@@ -1717,6 +1717,8 @@ properties:
                 default: 0 0 * * *
                 description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
                 type: string
+        required:
+          - databasePassword
       hello:
         description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
         properties:
