@@ -117,7 +117,7 @@ database:
         cpu: 50m
         memory: 256Mi
       {{- end }}
-  password: {{ $v.otomi.adminPassword }}
+  password: {{ $h.databasePassword }}
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users
