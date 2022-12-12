@@ -159,6 +159,9 @@ environments:
           prometheus-blackbox-exporter: {}
           prometheus:
             enabled: false
+            remoteWrite:
+              enabled: false
+              insecureSkipVerify: false
             replicas: 1
             scrapeInterval: 60s
             retentionSize: 4GB
@@ -205,6 +208,7 @@ environments:
           hasExternalIDP: false
           isHomeMonitored: false
           isMultitenant: false
+          nodeSelector: {}
         # TODO: update this when schema version changes: (and think more?)
         version: 5
         letsencryptRootCA: |

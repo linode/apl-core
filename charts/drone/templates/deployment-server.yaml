@@ -17,6 +17,8 @@ spec:
       app: {{ template "drone.name" . }}
       release: "{{ .Release.Name }}"
       component: server
+  strategy:
+    type: {{ .Values.server.strategyType }}
   replicas: 1
   template:
     metadata:

@@ -2261,6 +2261,34 @@ properties:
           enabled:
             type: boolean
             default: false
+          remoteWrite:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              otomiThanos:
+                type: boolean
+                default: false
+              insecureSkipVerify:
+                type: boolean
+                default: false
+              rwConfig:
+                properties:
+                  target:
+                    type: string
+                  basicAuth:
+                    properties:
+                      enabled:
+                        type: boolean
+                        default: false
+                      username:
+                        type: string
+                      password:
+                        $ref: '#/definitions/wordCharacterPattern'
+                        x-secret: ''
+                  customConfig:
+                    description: Custom remote write config. Will be appended to the remoteWrite list.
+                    type: string
           replicas:
             type: integer
             default: 1
