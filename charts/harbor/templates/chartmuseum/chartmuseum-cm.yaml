@@ -36,7 +36,7 @@ data:
   ALLOW_OVERWRITE: "true"
   AUTH_ANONYMOUS_GET: "false"
   CONTEXT_PATH: ""
-  INDEX_LIMIT: "0"
+  INDEX_LIMIT: {{ .Values.chartmuseum.indexLimit | quote}}
   MAX_STORAGE_OBJECTS: "0"
   MAX_UPLOAD_SIZE: "20971520"
   CHART_POST_FORM_FIELD_NAME: "chart"
