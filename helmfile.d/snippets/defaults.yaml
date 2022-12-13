@@ -59,6 +59,8 @@ environments:
             registry:
               credentials:
                 username: otomi-admin
+            backup:
+              enabled: false
           hello:
             enabled: false
           httpbin:
@@ -178,6 +180,13 @@ environments:
           velero:
             enabled: false
             logLevel: info
+            resources:
+              requests:
+                cpu: 500m
+                memory: 128Mi
+              limits:
+                cpu: 1000m
+                memory: 512Mi
         backup:
           platformSchedule:
             enabled: false
