@@ -2,17 +2,18 @@
 {{- $h := $v.apps.harbor }}
 
 type: CronJob
+nativeSecrets:
+  AWS_ACCESS_KEY_ID: "otomi-admin"
+  AWS_SECRET_ACCESS_KEY: {{ $v.otomi.adminPassword }}
+  PGUSER: "postgres"
+  PGPASSWORD: {{ $h.databasePassword }}
 env:
   LABELS: "app=harbor"
   NS: harbor
-  AWS_ACCESS_KEY_ID: "otomi-admin"
-  AWS_SECRET_ACCESS_KEY: {{ $v.otomi.adminPassword }}
   BUCKET: "harbor"
   POSTFIX: "registry"
   PGDATABASE: "registry"
   PGHOST: "harbor-database.harbor.svc.cluster.local"
-  PGUSER: "postgres"
-  PGPASSWORD: {{ $h.databasePassword }}
   ENDPOINT: "http://minio.minio.svc.cluster.local:9000"  
 name: backup-backup
 image:
