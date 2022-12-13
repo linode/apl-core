@@ -15,7 +15,6 @@ apps:
     enabled: true
   cert-manager:
     issuer: custom-ca
-
   gatekeeper:
     enabled: true
     disableValidatingWebhook: false
@@ -44,6 +43,8 @@ apps:
   loki:
     enabled: true
   metrics-server:
+    enabled: true
+  minio:
     enabled: true
   prometheus:
     enabled: true

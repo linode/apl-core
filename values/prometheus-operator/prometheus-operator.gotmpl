@@ -69,7 +69,7 @@ prometheus:
       annotations:
         sidecar.istio.io/inject: "true"
     resources:
-      {{- with $p | get "prometheus.resources" nil }}
+      {{- with $p | get "resources.prometheus" nil }}
         {{- toYaml . | nindent 6 }}
       {{- else }}
       requests:
@@ -102,6 +102,26 @@ prometheus:
     {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
     {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
   {{- end }}
+{{- end }}
+{{- if $p.remoteWrite.enabled }}
+    remoteWrite:
+    - url: "{{ $p.remoteWrite.rwConfig.target }}"
+      {{- if $p.remoteWrite.rwConfig.basicAuth.enabled }}
+      basicAuth:
+        username:
+          name: prometheus-remote-write-basic-auth
+          key: username
+        password:
+          name: prometheus-remote-write-basic-auth
+          key: password
+      {{- end }}
+      tlsConfig:
+        insecureSkipVerify: {{ $p.remoteWrite.insecureSkipVerify }}
+      {{- if $p.remoteWrite.otomiThanos }}
+      headers:
+        cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+      {{- end }}
+      {{- $p.remoteWrite.rwConfig.customConfig | nindent 6 }}
 {{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}

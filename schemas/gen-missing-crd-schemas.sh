@@ -3,7 +3,7 @@
 # run from root
 
 # this script will create a tar.gz with missing crds, for consumption by kubeval (validate-templates)
-cd schemas/ || exit
+cd schemas/
 
 export FILENAME_FORMAT='{kind}-{group}-{version}'
 
@@ -11,19 +11,20 @@ input_folder="input-crds"
 gen_folder="generated-crd-schemas"
 
 mkdir $gen_folder >/dev/null
-rm -rf ./$gen_folder/*
+#rm -rf ./$gen_folder/*
 mkdir $input_folder >/dev/null
 rm -rf $input_folder/*
 
 # match all the crds of charts that didn't ship crds (some operators don't), and pull them
 # (expects kube context to have a cluster that has them all)
-for pkg in "argoproj" "cert-manager" "istio" "jaeger" "kiali" "knative"; do
+# for pkg in "argoproj" "operators.coreos" "cert-manager" "istio" "jaeger" "kiali" "knative"; do
+for pkg in "operators.coreos"; do
   pkg_file="$input_folder/$pkg.yaml"
   echo '' >$pkg_file
   for crd in $(kubectl get crd | grep $pkg | awk '{print $1}'); do kubectl get crd $crd -o yaml | yq d - 'metadata' | yq d - 'status' >>$pkg_file && printf "\n---\n" >>$pkg_file; done
-  pushd $gen_folder || exit
+  pushd $gen_folder
   ../crd2jsonschema.py ../input-crds/$pkg.yaml
-  popd || exit
+  popd
 done
 
 cd $gen_folder && tar -zcvf ../$gen_folder.tar.gz .

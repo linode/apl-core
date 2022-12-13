@@ -41,10 +41,10 @@ export const getK8sVersion = async (argv?: HelmArguments): Promise<string> => {
  * Find what image tag is defined in configuration for otomi
  * @returns string
  */
-export const getImageTag = async (): Promise<string> => {
+export const getImageTag = async (envDir = env.ENV_DIR): Promise<string> => {
   if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
-  if (await pathExists(`${env.ENV_DIR}/env/cluster.yaml`)) {
-    const values = await hfValues()
+  if (await pathExists(`${envDir}/env/cluster.yaml`)) {
+    const values = await hfValues(undefined, envDir)
     return values!.otomi!.version
   }
   return `v${pkg.version}`
@@ -146,8 +146,8 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('Writing values: ', inValues)
   hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
   // on bootstrap no values exist but we need the teamconfig so get it from file
-  const teamConfig = (await loadYaml(`${env.ENV_DIR}/env/teams.yaml`)) as Record<string, Record<string, any>>
-  const values = overwrite ? inValues : { ...teamConfig, ...inValues }
+  const _teamConfig = (await loadYaml(`${env.ENV_DIR}/env/teams.yaml`)) as Record<string, Record<string, any>>
+  const values = overwrite ? inValues : { ..._teamConfig, ...inValues }
   const teams = Object.keys(values.teamConfig as Record<string, any>)
   // creating secret files
   const schema: any = await getValuesSchema()
@@ -190,7 +190,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   if (plainValues.teamConfig || overwrite) {
     const types = ['apps', 'jobs', 'secrets', 'services']
     const fileMap = { secrets: 'external-secrets' }
-    if (!teams.includes('admin')) teams.push('admin')
+    const teamConfig = plainValues.teamConfig ? cloneDeep(plainValues.teamConfig) : {}
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     teams.forEach(async (team) => {
       const teamPromises: Promise<void>[] = []
@@ -212,7 +212,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
       })
       await Promise.all(teamPromises)
     })
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/teams.yaml`, { ...teamConfig }, overwrite))
+    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/teams.yaml`, { teamConfig }, overwrite))
   }
   if (secrets.teamConfig || overwrite) {
     promises.push(

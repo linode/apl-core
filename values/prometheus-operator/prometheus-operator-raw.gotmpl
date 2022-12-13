@@ -1,0 +1,14 @@
+{{- $v := .Values }}
+{{- $p := $v.apps | get "prometheus" }}
+{{- if $p | get "remoteWrite.rwConfig.basicAuth.enabled" false }}
+resources:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app: prometheus
+      name: prometheus-remote-write-basic-auth
+    data:
+      username: {{ $p.remoteWrite.rwConfig.basicAuth.username | b64enc }}
+      password: {{ $p.remoteWrite.rwConfig.basicAuth.password | b64enc }}
+{{- end }}

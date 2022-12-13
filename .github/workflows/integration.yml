@@ -171,7 +171,7 @@ jobs:
       - name: Assign the cluster to the project
         run: doctl projects resources assign ${{ secrets.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
       - name: Save kubectl config with auth token
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
       - name: Get kubectl environment
         run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
@@ -192,7 +192,13 @@ jobs:
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion:0:4}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          cat << EOF > values-temp.yaml
+          touch values-container-registry.yaml
+
+          # If a pipeline installs Otomi from the semver tag then pull container image from DockerHub
+          [[ ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]] && exit 0
+
+          # Pull image from cache registry
+          cat << EOF > values-container-registry.yaml
           imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
           imagePullSecretNames:
             - reg-otomi-github
@@ -213,7 +219,7 @@ jobs:
           # Sometimes the DO cluster is having hiccups while scaling up nodes, thus we need keep the timeout high.
           helm install --wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
           --values tests/integration/${{ inputs.install_profile }}.yaml \
-          --values values-temp.yaml \
+          --values values-container-registry.yaml \
           --values values.yaml \
           $domainSuffix
       - name: Gather k8s events on failure

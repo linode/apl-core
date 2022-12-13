@@ -1111,6 +1111,11 @@ definitions:
         items:
           $ref: '#/definitions/service'
         type: array
+      monitoringStack:
+        properties:
+          enabled:
+            type: boolean
+            default: true
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster
@@ -1571,6 +1576,10 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
+          databasePassword:
+            type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
+            x-secret: 'randAlphaNum 20'
           core:
             properties:
               secret:
@@ -1699,6 +1708,17 @@ properties:
           secretKey:
             type: string
             x-secret: 'randAlpha 16'
+          backup:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              schedule:
+                default: 0 0 * * *
+                description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
+                type: string
+        required:
+          - databasePassword
       hello:
         description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
         properties:
@@ -2149,6 +2169,30 @@ properties:
                 $ref: '#/definitions/resources'
               tools:
                 $ref: '#/definitions/resources'
+      minio:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          resources:
+            $ref: '#/definitions/resources'
+          provisioning:
+            additionalProperties: false
+            properties:
+              enabled:
+                type: boolean
+                default: true
+          persistence:
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              size:
+                $ref: '#/definitions/size'
+                default: 20Gi
       oauth2-proxy:
         additionalProperties: false
         properties:
@@ -2219,6 +2263,34 @@ properties:
           enabled:
             type: boolean
             default: false
+          remoteWrite:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              otomiThanos:
+                type: boolean
+                default: false
+              insecureSkipVerify:
+                type: boolean
+                default: false
+              rwConfig:
+                properties:
+                  target:
+                    type: string
+                  basicAuth:
+                    properties:
+                      enabled:
+                        type: boolean
+                        default: false
+                      username:
+                        type: string
+                      password:
+                        $ref: '#/definitions/wordCharacterPattern'
+                        x-secret: ''
+                  customConfig:
+                    description: Custom remote write config. Will be appended to the remoteWrite list.
+                    type: string
           replicas:
             type: integer
             default: 1
