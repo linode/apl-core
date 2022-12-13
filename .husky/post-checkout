@@ -1,4 +1,50 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# configure/install nvm
+source_nvm() {
+  if [ -f ~/.nvm/nvm.sh ]; then
+    echo 'Sourcing nvm from ~/.nvm'
+    . ~/.nvm/nvm.sh
+  elif command -v brew; then
+    _brew_prefix=$(brew --prefix nvm)
+    if [ -f "$_brew_prefix/nvm.sh" ]; then
+      echo "Sourcing nvm from brew ($_brew_prefix)"
+      . "$_brew_prefix"/nvm.sh
+    fi
+  else
+    echo "Please make sure nvm is installed (correctly), please follow the installation instructions
+              at: https://github.com/nvm-sh/nvm  
+            "
+  fi
+}
+
+# automatically change/install node version at checkout
+configure_npm() {
+  _node_version="$(nvm version)"
+  _nvmrc_path="$(nvm_find_nvmrc)"
+
+  echo "current node version: ${_node_version}"
+
+  if [ -n "$_nvmrc_path" ]; then
+    _nvmrc_node_version=$(nvm version "$(cat "${_nvmrc_path}")")
+    echo "node version found in nvmrc: ${_nvmrc_node_version}"
+    if [ "$_nvmrc_node_version" = "N/A" ]; then
+      echo "nmvrc node version not installed, attempting installation..."
+      nvm install
+    elif [ "$_nvmrc_node_version" != "$_node_version" ]; then
+      echo "nvmrc node version found! Switching from ${_node_version} to ${_nvmrc_node_version}"
+      nvm use
+    else
+      echo "It's a match! Continue using ${_node_version}"
+    fi
+  elif [ "$_node_version" != "$(nvm version default)" ]; then
+    echo "No .nvmrc file found! Reverting to nvm default version..."
+    nvm use default
+  fi
+}
+
+source_nvm
+configure_npm
+
 npm run run-if-changed
