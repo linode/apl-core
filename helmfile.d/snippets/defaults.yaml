@@ -187,6 +187,16 @@ environments:
         dns:
           domainFilters: []
           zoneIdFilters: []
+        team:
+          service:
+            headers:
+              response:
+                set:
+                  - name: test
+                    value: bla
+                  - name: test2
+                    value: bla2
+
         ingress:
           platformClass:
             className: platform
