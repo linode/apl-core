@@ -89,6 +89,10 @@ spec:
       name: data
       labels:
 {{ include "harbor.labels" . | indent 8 }}
+      annotations:
+      {{- range $key, $value := $redis.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
     spec:
       accessModes: [{{ $redis.accessMode | quote }}]
       {{- if $redis.storageClass }}
