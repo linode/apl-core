@@ -1,4 +1,26 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# configure/install nvm
+source_nvm() {
+  if [ -f ~/.nvm/nvm.sh ]; then
+    echo 'Sourcing nvm from ~/.nvm'
+    . ~/.nvm/nvm.sh
+  elif command -v brew; then
+    _brew_prefix=$(brew --prefix nvm)
+    if [ -f "$_brew_prefix/nvm.sh" ]; then
+      echo "Sourcing nvm from brew ($_brew_prefix)"
+      . "$_brew_prefix"/nvm.sh
+    fi
+  else
+    echo "Please make sure nvm is installed (correctly), please follow the installation instructions
+              at: https://github.com/nvm-sh/nvm  
+            "
+  fi
+}
+
+source_nvm
+# automatically change node version to the one indicated in .nvmrc
+nvm use
+
 npm run run-if-changed
