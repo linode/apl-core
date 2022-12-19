@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.17.1](https://github.com/redkubes/otomi-core/compare/v0.16.21...v0.17.1) (2022-12-19)
+
+
+### Features
+
+* harbor cronjob to backup ([#952](https://github.com/redkubes/otomi-core/issues/952)) ([195542c](https://github.com/redkubes/otomi-core/commit/195542c214638eba45c4fb41e918f182a758f7b9))
+* upgrade harbor ([#945](https://github.com/redkubes/otomi-core/issues/945)) ([40975bd](https://github.com/redkubes/otomi-core/commit/40975bd3e34279e6eecf3384b90c7af1b627d78e))
+
+
+### Bug Fixes
+
+* do not pass remote write into team prometheus ([#984](https://github.com/redkubes/otomi-core/issues/984)) ([96dd604](https://github.com/redkubes/otomi-core/commit/96dd60488338a3bb10021193954b20a583dd95b0))
+* ensure newly generated secrets stored in .dec file are encrypted ([b1b8265](https://github.com/redkubes/otomi-core/commit/b1b826545347e288fd7d2ab4cd4bb8f0aad30271))
+
+
 ### [0.16.21](https://github.com/redkubes/otomi-core/compare/v0.16.20...v0.16.21) (2022-12-06)
 
 
