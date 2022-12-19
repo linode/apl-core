@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.17.1](https://github.com/redkubes/otomi-core/compare/v0.16.21...v0.17.1) (2022-12-19)
+
+
+### Features
+
+* harbor cronjob to backup ([#952](https://github.com/redkubes/otomi-core/issues/952)) ([195542c](https://github.com/redkubes/otomi-core/commit/195542c214638eba45c4fb41e918f182a758f7b9))
+* upgrade harbor ([#945](https://github.com/redkubes/otomi-core/issues/945)) ([40975bd](https://github.com/redkubes/otomi-core/commit/40975bd3e34279e6eecf3384b90c7af1b627d78e))
+
+
+### Bug Fixes
+
+* do not pass remote write into team prometheus ([#984](https://github.com/redkubes/otomi-core/issues/984)) ([96dd604](https://github.com/redkubes/otomi-core/commit/96dd60488338a3bb10021193954b20a583dd95b0))
+* ensure newly generated secrets stored in .dec file are encrypted ([b1b8265](https://github.com/redkubes/otomi-core/commit/b1b826545347e288fd7d2ab4cd4bb8f0aad30271))
+* olm pinned to v0.22.0 ([#969](https://github.com/redkubes/otomi-core/issues/969)) ([68dee6b](https://github.com/redkubes/otomi-core/commit/68dee6bdc1a9442f2be76b0d314addef183d0239))
+* readme [ci skip] ([74d3d7c](https://github.com/redkubes/otomi-core/commit/74d3d7cc500653b4f6f97db4fc3f2ce85dab31aa))
+* readme [ci skip] ([3a47521](https://github.com/redkubes/otomi-core/commit/3a47521403bb81a7663e9cf531fdbfadcea349c1))
+
+
+### Reverts
+
+* Revert "fix: olm pinned to v0.22.0 (#969)" (#985) ([aac0506](https://github.com/redkubes/otomi-core/commit/aac0506ad5219b6cd0d4d95b242a90445ae53846)), closes [#969](https://github.com/redkubes/otomi-core/issues/969) [#985](https://github.com/redkubes/otomi-core/issues/985)
+
+
+### Others
+
+* versions ([ca94b0d](https://github.com/redkubes/otomi-core/commit/ca94b0d9f844513576aa77ea828b22e510c76e83))
+
 ### [0.16.21](https://github.com/redkubes/otomi-core/compare/v0.16.20...v0.16.21) (2022-12-06)
 
 
