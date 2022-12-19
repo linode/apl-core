@@ -29,10 +29,7 @@ configure_npm() {
   if [ -n "$_nvmrc_path" ]; then
     _nvmrc_node_version=$(nvm version "$(cat "${_nvmrc_path}")")
     echo "node version found in nvmrc: ${_nvmrc_node_version}"
-    if [ "$_nvmrc_node_version" = "N/A" ]; then
-      echo "nmvrc node version not installed, attempting installation..."
-      nvm install "${_nvmrc_node_version}"
-    elif [ "$_nvmrc_node_version" != "$_node_version" ]; then
+    if [ "$_nvmrc_node_version" != "$_node_version" ]; then
       echo "nvmrc node version found! Switching from ${_node_version} to ${_nvmrc_node_version}"
       nvm use "${_nvmrc_node_version}"
     else
