@@ -235,9 +235,12 @@ export const processValues = async (
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
     if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
-  } else if (originalInput)
+  } else if (originalInput) {
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
+    // Ensure newly generated secrets stored in .dec file are encrypted
+    await encrypt()
+  }
   return originalInput
 }
 

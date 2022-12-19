@@ -35,7 +35,7 @@ releases:
     <<: *default
   - name: oauth2-proxy
     # TODO: remove oauth dependency
-    installed: {{ ne $v.cluster.provider "kind" }}
+    installed: true
     namespace: istio-system
     labels:
       tag: ingress
@@ -43,7 +43,7 @@ releases:
     <<: *default
   - name: oauth2-proxy-artifacts
     # TODO: remove oauth dependency
-    installed: {{ ne $v.cluster.provider "kind" }}
+    installed: true
     namespace: istio-system
     labels:
       tag: ingress

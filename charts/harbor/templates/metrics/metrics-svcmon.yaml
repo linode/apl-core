@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ template "harbor.name" . }}
+  name: {{ template "harbor.fullname" . }}
   labels: {{ include "harbor.labels" . | nindent 4 }}
 {{- if .Values.metrics.serviceMonitor.additionalLabels }}
 {{ toYaml .Values.metrics.serviceMonitor.additionalLabels | indent 4 }}
