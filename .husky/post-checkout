@@ -19,29 +19,8 @@ source_nvm() {
   fi
 }
 
-# automatically change/install node version at checkout
-configure_npm() {
-  _node_version="$(nvm version)"
-  _nvmrc_path="$(nvm_find_nvmrc)"
-
-  echo "current node version: ${_node_version}"
-
-  if [ -n "$_nvmrc_path" ]; then
-    _nvmrc_node_version=$(nvm version "$(cat "${_nvmrc_path}")")
-    echo "node version found in nvmrc: ${_nvmrc_node_version}"
-    if [ "$_nvmrc_node_version" != "$_node_version" ]; then
-      echo "nvmrc node version found! Switching from ${_node_version} to ${_nvmrc_node_version}"
-      nvm use "${_nvmrc_node_version}"
-    else
-      echo "It's a match! Continue using ${_node_version}"
-    fi
-  elif [ "$_node_version" != "$(nvm version default)" ]; then
-    echo "No .nvmrc file found! Reverting to nvm default version..."
-    nvm use default
-  fi
-}
-
 source_nvm
-configure_npm
+# automatically change node version to the one indicated in .nvmrc
+nvm use
 
 npm run run-if-changed
