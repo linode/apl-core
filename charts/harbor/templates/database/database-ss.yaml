@@ -140,6 +140,10 @@ spec:
       name: "database-data"
       labels:
 {{ include "harbor.labels" . | indent 8 }}
+      annotations:
+      {{- range $key, $value := $database.annotations }}
+        {{ $key }}: {{ $value | quote }}
+      {{- end }}
     spec:
       accessModes: [{{ $database.accessMode | quote }}]
       {{- if $database.storageClass }}

@@ -4,3 +4,4 @@
 !^/charts/team-ns/*.{yaml | md}
 /helmfile*/
 *.sh
+CHANGELOG.md

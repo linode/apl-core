@@ -171,7 +171,7 @@ jobs:
       - name: Assign the cluster to the project
         run: doctl projects resources assign ${{ secrets.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
       - name: Save kubectl config with auth token
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 3600 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
       - name: Get kubectl environment
         run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
