@@ -44,3 +44,7 @@ operations:
             kubectl -n "team-$id" annotate podmonitor/$p --overwrite "meta.helm.sh/release-name"=team-ns-$id
           done
         done
+  - version: dev
+    pre:
+      # replace OLM crds because helm won't upgrade them
+      - kubectl replace -f charts/operator-lifecycle-manager/crds
