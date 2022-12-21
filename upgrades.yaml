@@ -47,7 +47,7 @@ operations:
   - version: dev
     pre:
       # retrieve secrets created by previous controller
-      - cd vendor/kes-to-eso && ./migrate-pre.sh
+      - cd vendor/kes-to-eso && ./migrate-pre.sh || true
     post:
       # convert secrets to new format and apply
-      - cd vendor/kes-to-eso && ./migrate-post.sh
+      - cd vendor/kes-to-eso && ./migrate-post.sh || true
