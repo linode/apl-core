@@ -44,3 +44,10 @@ operations:
             kubectl -n "team-$id" annotate podmonitor/$p --overwrite "meta.helm.sh/release-name"=team-ns-$id
           done
         done
+  - version: dev
+    pre:
+      # retrieve secrets created by previous controller
+      - cd vendor/kes-to-eso && ./migrate-pre.sh
+    post:
+      # convert secrets to new format and apply
+      - cd vendor/kes-to-eso && ./migrate-post.sh
