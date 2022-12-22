@@ -14,7 +14,7 @@ echo "Upgrade from KES to ESO"
 # kubectl apply -f eso_files
 
 echo "Scaling down KES"
-kubectl scale deployment -n $KES_NAMESPACE kubernetes-external-secrets --replicas=0
+kubectl scale deployment -n $KES_NAMESPACE external-secrets --replicas=0
 
 # Update Ownership references
 echo "Updating secrets ownership"
