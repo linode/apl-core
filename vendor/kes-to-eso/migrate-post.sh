@@ -17,11 +17,15 @@ echo "Scaling down KES"
 kubectl scale deployment -n $KES_NAMESPACE external-secrets --replicas=0
 
 # Update Ownership references
-echo "Updating secrets ownership"
+echo "Patching secrets ownership KES to ESO"
 ./kestoeso apply --all-secrets --all-namespaces
 # echo "Scaling up ESO"
 # kubectl scale deployment -n $ESO_NAMESPACE external-secrets --replicas=1
+echo "Removing KES CR"
+kubctl delete externalsecrets.kubernetes-client.io -A --all
 echo "Uninstalling KES"
 helm uninstall -n vault external-secrets
+echo "Removing KES CRD"
+kubctl delete crd externalsecrets.kubernetes-client.io
 
 echo "External secrets upgrade succeeded"
