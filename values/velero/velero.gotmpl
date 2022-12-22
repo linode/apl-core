@@ -2,17 +2,7 @@
 {{- $vl:= $v.apps.velero }}
 {{- $provider:= $vl | get "provider" dict }}
 
-resources:
-  {{- with $vl | get "resources" nil }}
-    {{- toYaml . | nindent 2 }}
-  {{- else }}
-  requests:
-    cpu: 500m
-    memory: 128Mi
-  limits:
-    cpu: 1000m
-    memory: 512Mi
-  {{- end }}
+resources: {{- $vl.resources | toYaml  | nindent 2 }}
 
 {{- with $provider | get "azure" nil }}
 initContainers:

@@ -1,5 +1,8 @@
 set -e
 
+# Run:
+# export ENV_DIR=/tmp/env-dir && rm -rf /tmp/env-dir && mkdir /tmp/env-dir && chart/otomi/localtest.sh
+
 # export IN_DOCKER=1
 export VALUES_INPUT=${VALUES_INPUT:-'/tmp/otomi/values.yaml'}
 export DOCKER_EXTRA_ARGS="-v $(dirname $VALUES_INPUT):$(dirname $VALUES_INPUT)"

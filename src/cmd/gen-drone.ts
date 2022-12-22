@@ -71,7 +71,7 @@ export const genDrone = async (envDir?: string): Promise<void> => {
   const owner = allValues.cluster?.owner
   const cloudProvider = allValues.cluster?.provider
   const globalPullSecret = allValues.otomi?.globalPullSecret
-  const imageTag = await getImageTag()
+  const imageTag = await getImageTag(envDir)
   const pullPolicy = imageTag.startsWith('v') ? 'if-not-exists' : 'always'
   const requestsCpu = allValues.apps.drone.resources?.runner?.requests?.cpu
   const requestsMem = allValues.apps.drone.resources?.runner?.requests?.memory

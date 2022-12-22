@@ -8,6 +8,7 @@ metadata:
     component: exporter
 spec:
   replicas: {{ .Values.exporter.replicas }}
+  revisionHistoryLimit: {{ .Values.exporter.revisionHistoryLimit }}
   selector:
     matchLabels:
 {{ include "harbor.matchLabels" . | indent 6 }}

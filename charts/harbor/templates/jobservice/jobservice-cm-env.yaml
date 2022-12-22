@@ -19,3 +19,4 @@ data:
   METRIC_NAMESPACE: harbor
   METRIC_SUBSYSTEM: jobservice
   {{- end }}
+  {{- template "harbor.traceEnvsForJobservice" . }}

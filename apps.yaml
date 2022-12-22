@@ -100,7 +100,7 @@ appsInfo:
     integration: Otomi uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.3.0
+    appVersion: 2.5.4
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
