@@ -51,4 +51,3 @@ operations:
     post:
       # convert secrets to new format and apply
       - cd vendor/kes-to-eso && ./migrate-post.sh || true
-      - helm uninstall -n vault external-secrets
