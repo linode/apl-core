@@ -10,4 +10,4 @@ kubectl apply -f eso_files
 # Update Ownership references
 ./kestoeso apply --all-secrets --all-namespaces
 
-[[ $(helm status -n external-secrets external-secret1) ]] && helm uninstall -n vault external-secrets
+[[ $(helm status -n vault external-secrets) ]] && helm uninstall -n vault external-secrets
