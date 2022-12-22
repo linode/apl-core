@@ -50,4 +50,4 @@ operations:
       - cd vendor/kes-to-eso && ./migrate-pre.sh || true
     post:
       # convert secrets to new format and apply
-      - cd vendor/kes-to-eso && ./migrate-post.sh || true
+      - cd vendor/kes-to-eso && ./migrate-post.sh
