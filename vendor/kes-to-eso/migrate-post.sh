@@ -2,6 +2,8 @@
 KES_NAMESPACE="vault"
 # ESO_NAMESPACE="external-secrets"
 
+scriptDir="$(dirname -- "$0")"
+
 echo "Upgrade from KES to ESO"
 [[ $(helm status -n external-secrets external-secrets) && ! $(helm status -n vault external-secrets) ]] && echo "Skipping" && exit 0
 
@@ -18,7 +20,7 @@ kubectl scale deployment -n $KES_NAMESPACE external-secrets --replicas=0
 
 # Update Ownership references
 echo "Patching secrets ownership KES to ESO"
-./kestoeso apply --all-secrets --all-namespaces
+./"${scriptDir}"/kestoeso apply --all-secrets --all-namespaces
 # echo "Scaling up ESO"
 # kubectl scale deployment -n $ESO_NAMESPACE external-secrets --replicas=1gps
 echo "Removing KES CR"
