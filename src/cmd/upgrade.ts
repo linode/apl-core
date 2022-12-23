@@ -37,7 +37,7 @@ export type Upgrades = Array<Upgrade>
 
 // select upgrades after semver version, and always select upgrade with version "dev" for dev purposes
 function filterUpgrades(version: string, upgrades: Upgrades): Upgrades {
-  return upgrades.filter((c) => c.version === 'dev' || semverCompare(version, c.version))
+  return upgrades.filter((c) => c.version === 'dev' || semverCompare(version, c.version) === 1)
 }
 
 async function execute(d: typeof console, dryRun: boolean, operations: string[], values: Record<string, any>) {
