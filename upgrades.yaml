@@ -52,4 +52,4 @@ operations:
     post:
       # convert secrets to new format and apply
       - kubectl cluster-info
-      - cd vendor/kes-to-eso/migrate-post.sh
+      - vendor/kes-to-eso/migrate-post.sh
