@@ -1,7 +1,7 @@
 import * as upgrade from './upgrade'
 
-describe('semverCompare', () => {
-  it('should indicate version to be higher', () => {
+describe('filterUpgrades', () => {
+  it('should filter out lower versions', () => {
     const inputData = [
       { version: '0.1.1' },
       { version: '1.1.2' },
