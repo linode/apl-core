@@ -1,4 +1,4 @@
-#! /bin/bash -e
+#!/bin/bash -e
 KES_NAMESPACE="vault"
 # ESO_NAMESPACE="external-secrets"
 
