@@ -24,7 +24,7 @@
 
 **Developers** - To focus on their apps only
 * Deploy containerized apps without writing any YAML manifests
-* Get a standardized set of observalitity tools
+* Get a standardized set of observability tools
 * Store images in a private registry
 * Build and run custom CI pipelines
 * Configure ingress for deployed apps
