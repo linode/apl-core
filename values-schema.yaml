@@ -2336,6 +2336,120 @@ properties:
           enabled:
             type: boolean
             default: false
+      thanos:
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          query:
+            properties:
+              resources:
+                $ref: '#/definitions/resources'
+              replicaCount:
+                description: Number of Thanos Query replicas.
+                type: integer
+                default: 1
+          queryFrontend:
+            properties:
+              resources:
+                $ref: '#/definitions/resources'
+          receiver:
+            properties:
+              mode:
+                title: Receiver mode
+                description: Mode to run receiver in.
+                type: string
+                default: standalone
+                enum:
+                  - standalone
+                  - dual-mode
+              resources:
+                $ref: '#/definitions/resources'
+              replicaCount:
+                description: Number of Thanos Receive replicas.
+                type: integer
+                default: 1
+              persistence:
+                properties:
+                  size:
+                    type: string
+          storegateway:
+            properties:
+              resources:
+                $ref: '#/definitions/resources'
+              persistence:
+                properties:
+                  size:
+                    type: string
+          bucketweb:
+            properties:
+              resources:
+                $ref: '#/definitions/resources'
+          compactor:
+            description: Resolution and Retention flags.
+            properties:
+              retentionResolutionRaw:
+                type: string
+                default: 30d
+              retentionResolution5m:
+                type: string
+                default: 30d
+              retentionResolution1h:
+                type: string
+                default: 10y
+              persistence:
+                properties:
+                  size:
+                    type: string
+              resources:
+                $ref: '#/definitions/resources'
+          ruler:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+              persistence:
+                properties:
+                  size:
+                    type: string
+          objstore:
+            properties:
+              storageProvider:
+                additionalProperties: false
+                properties:
+                  s3:
+                    properties:
+                      bucket:
+                        type: string
+                        description: Name of the blob container.
+                        $ref: '#/definitions/wordCharacterPattern'
+                      s3Url:
+                        description: The name (URL) of the S3 bucket
+                        $ref: '#/definitions/wordCharacterPattern'
+                      accessKeyId:
+                        type: string
+                        description: The ID of the access key
+                        $ref: '#/definitions/wordCharacterPattern'
+                      secretAccessKey:
+                        type: string
+                        description: The secret of the access key
+                        $ref: '#/definitions/wordCharacterPattern'
+                        x-secret: ''
+                    required:
+                      - bucket
+                      - s3Url
+                      - accessKeyId
+                      - secretAccessKey
+                  type:
+                    type: string
+                    enum:
+                      - s3
+                      - minioLocal
+                    default: minioLocal
       vault:
         additionalProperties: false
         properties:
