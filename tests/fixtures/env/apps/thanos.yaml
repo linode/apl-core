@@ -4,7 +4,7 @@ apps:
         bucketweb:
             resources:
                 limits:
-                    cpu: 1
+                    cpu: '1'
                     memory: 512Mi
                 requests:
                     cpu: 500m
@@ -17,7 +17,7 @@ apps:
                 size: 8Gi
             resources:
                 limits:
-                    cpu: 1
+                    cpu: '1'
                     memory: 512Mi
                 requests:
                     cpu: 500m
@@ -27,7 +27,7 @@ apps:
         queryFrontend:
             resources:
                 limits:
-                    cpu: 1
+                    cpu: '1'
                     memory: 512Mi
                 requests:
                     cpu: 500m
