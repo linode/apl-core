@@ -117,7 +117,7 @@ prometheus:
           key: password
       {{- end }}
       tlsConfig:
-        insecureSkipVerify: {{ $p.remoteWrite.insecureSkipVerify }}
+        insecureSkipVerify: {{ $p.remoteWrite.rwConfig.insecureSkipVerify }}
       {{- if $p.remoteWrite.otomiThanos }}
       headers:
         cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
