@@ -204,7 +204,7 @@ environments:
               resources:
                 requests:
                   cpu: 200m
-                  memory: 128Mi
+                  memory: 384Mi
                 limits:
                   cpu: 1
                   memory: 1Gi

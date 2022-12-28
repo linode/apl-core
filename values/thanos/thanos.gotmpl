@@ -94,3 +94,9 @@ objstoreConfig: |-
     secret_key: {{ $sp.s3.secretKey }}
     insecure: true
 {{- end }}
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
