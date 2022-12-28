@@ -942,6 +942,22 @@ definitions:
       hasCert:
         description: Select when a certificate exists and should not be generated.
         type: boolean
+      headers:
+        properties:
+          response:
+            properties:
+              set:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
       hide:
         description: Used by otomi console to determine wether to render it on screen or not. Only used by core services.
         type: boolean
