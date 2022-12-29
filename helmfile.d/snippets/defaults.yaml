@@ -180,7 +180,7 @@ environments:
                   cpu: 500m
                   memory: 256Mi
             query:
-              replicaCount: 1
+              replicaCount: 2
               resources:
                 requests:
                   cpu: 100m
