@@ -147,8 +147,8 @@ environments:
                 cpu: 500m
                 memory: 128Mi
               limits:
-                cpu: 1000m
-                memory: 512Mi
+                cpu: 1
+                memory: 1Gi
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api:
@@ -183,37 +183,37 @@ environments:
               replicaCount: 1
               resources:
                 requests:
-                  cpu: 200m
-                  memory: 128Mi
+                  cpu: 100m
+                  memory: 256Mi
                 limits:
-                  cpu: 1
-                  memory: 1Gi
+                  cpu: 500m
+                  memory: 256Mi
             queryFrontend:
               resources:
                 requests:
-                  cpu: 200m
+                  cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 500m
-                  memory: 512Mi
+                  memory: 256Mi
             receiver:
               mode: standalone
-              replicaCount: 1
+              replicaCount: 2
               persistence:
                 size: 8Gi
               resources:
                 requests:
                   cpu: 200m
-                  memory: 384Mi
+                  memory: 512Mi
                 limits:
-                  cpu: 1
+                  cpu: '1'
                   memory: 1Gi
             storegateway:
               persistence:
                 size: 8Gi
               resources:
                 requests:
-                  cpu: 200m
+                  cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 500m
@@ -221,7 +221,7 @@ environments:
             compactor:
               resources:
                 requests:
-                  cpu: 200m
+                  cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 500m
@@ -237,8 +237,8 @@ environments:
                 size: 8Gi
               resources:
                 requests:
-                  cpu: 200m
-                  memory: 128Mi
+                  cpu: 100m
+                  memory: 256Mi
                 limits:
                   cpu: 500m
                   memory: 256Mi

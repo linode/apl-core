@@ -15,6 +15,8 @@ query:
     - "thanos-receive-{{ $i }}.thanos-receiver-headless.monitoring.svc.cluster.local:10901"
     {{- end }}
   resources: {{- $vl.query.resources | toYaml | nindent 4 }}
+  extraFlags:
+    - "--query.auto-downsampling"
 
 ## @section Thanos Query Frontend parameters
 queryFrontend:
@@ -48,12 +50,15 @@ storegateway:
 ## @section Thanos Receive parameters
 receive:
   enabled: true
-  replicationFactor: 1
   mode: {{ $vl.receiver.mode }}
   replicacount: {{ $vl.receiver.replicaCount }}
   persistence:
     size: {{ $vl.receiver.persistence.size }}
   resources: {{- $vl.receiver.resources | toYaml | nindent 4 }}
+  ## How long to retain raw samples on local storage. 0d - disables this retention. Default is set to 8h
+  tsdbRetention: 8h
+  ## How many times to replicate incoming write requests. Default is set to 1
+  replicationFactor: 1
   service:
     additionalHeadless: true
 

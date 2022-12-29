@@ -82,7 +82,7 @@ prometheus:
       {{- end }}
     priorityClassName: otomi-critical
     externalLabels:
-      cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
+      cluster: "{{ $v.cluster.domainSuffix }}"
     retention: {{ $p | get "retention" "1d" }}
     retentionSize: {{ $p | get "retentionSize" }}
     storageSpec:
@@ -120,7 +120,7 @@ prometheus:
         insecureSkipVerify: {{ $p.remoteWrite.rwConfig.insecureSkipVerify }}
       {{- if $p.remoteWrite.otomiThanos }}
       headers:
-        cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+        cluster: "{{ $v.cluster.domainSuffix }}"
       {{- end }}
       # can't be empty now
       {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
@@ -307,4 +307,4 @@ kubeProxy:
 kubeScheduler:
   enabled: false
 kubeControllerManager:
-  enabled: flase
+  enabled: false
