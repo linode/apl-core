@@ -2421,6 +2421,13 @@ properties:
                     type: string
               resources:
                 $ref: '#/definitions/resources'
+          receiverDistributor:
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              resources:
+                $ref: '#/definitions/resources'
           ruler:
             properties:
               enabled:

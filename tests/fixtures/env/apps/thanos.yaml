@@ -33,10 +33,19 @@ apps:
                     cpu: 500m
                     memory: 256Mi
         receiver:
-            mode: standalone
-            replicaCount: 1
+            mode: dual-mode
+            replicaCount: 2
             persistence:
-                size: 8Gi
+                size: 50Gi
+        receiverDistributor:
+            enabled: true
+            resources:
+            requests:
+                cpu: 100m
+                memory: 128Mi
+            limits:
+                cpu: '1'
+                memory: 512Mi
         storegateway:
             persistence:
                 size: 8Gi

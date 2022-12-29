@@ -55,12 +55,17 @@ receive:
   persistence:
     size: {{ $vl.receiver.persistence.size }}
   resources: {{- $vl.receiver.resources | toYaml | nindent 4 }}
-  ## How long to retain raw samples on local storage. 0d - disables this retention. Default is set to 8h
-  tsdbRetention: 8h
+  ## How long to retain raw samples on local storage. 0d - disables this retention. Default is set to 7d
+  tsdbRetention: 7d
   ## How many times to replicate incoming write requests. Default is set to 1
   replicationFactor: 1
   service:
     additionalHeadless: true
+
+## @section Thanos Ruler parameters
+receiveDistributor:
+  enabled: {{ $vl.receiverDistributor.enabled }}
+  resources: {{- $vl.receiverDistributor.resources | toYaml | nindent 4 }}
 
 ## @section Thanos Ruler parameters
 ruler:
