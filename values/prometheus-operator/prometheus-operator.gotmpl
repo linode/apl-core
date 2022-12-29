@@ -215,6 +215,12 @@ grafana:
       requests:
         cpu: 50m
         memory: 50Mi
+    {{- if $t.enabled }}
+    dashboards:
+      multicluster:
+        global:
+          enabled: true
+    {{- end }}
   serviceMonitor:
     # namespace: grafana
     labels:
