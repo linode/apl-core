@@ -250,7 +250,7 @@ environments:
                   memory: 256Mi
                 limits:
                   cpu: 500m
-                  memory: 256Mi
+                  memory: 512Mi
             objstore:
               storageProvider:
                 type: minioLocal

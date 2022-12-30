@@ -12,7 +12,7 @@ query:
   stores:
     - "thanos-storegateway:10901"
     {{- range $i := until $vl.receiver.replicaCount }}
-    - "thanos-receive-{{ $i }}.thanos-receiver-headless.monitoring.svc.cluster.local:10901"
+    - "thanos-receive-{{ $i }}.thanos-receive-headless.monitoring.svc.cluster.local:10901"
     {{- end }}
   resources: {{- $vl.query.resources | toYaml | nindent 4 }}
   extraFlags:
@@ -51,8 +51,9 @@ storegateway:
 receive:
   enabled: true
   mode: {{ $vl.receiver.mode }}
-  replicacount: {{ $vl.receiver.replicaCount }}
+  replicaCount: {{ $vl.receiver.replicaCount }}
   persistence:
+    enabled: true
     size: {{ $vl.receiver.persistence.size }}
   resources: {{- $vl.receiver.resources | toYaml | nindent 4 }}
   ## How long to retain raw samples on local storage. 0d - disables this retention. Default is set to 7d
