@@ -2391,6 +2391,12 @@ properties:
                 properties:
                   size:
                     type: string
+              tsdbRetention:
+                type: string
+                default: 7d
+              replicationFactor:
+                type: integer
+                default: 1
           storegateway:
             properties:
               resources:

@@ -35,6 +35,8 @@ apps:
         receiver:
             mode: dual-mode
             replicaCount: 2
+            tsdbRetention: 7d
+            replicationFactor: 1
             persistence:
                 size: 50Gi
         receiverDistributor:

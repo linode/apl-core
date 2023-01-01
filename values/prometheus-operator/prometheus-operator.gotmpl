@@ -122,7 +122,6 @@ prometheus:
       headers:
         cluster: "{{ $v.cluster.domainSuffix }}"
       {{- end }}
-      # can't be empty now
       {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
       {{- . | nindent 6 }}
       {{- end }}

@@ -32,7 +32,7 @@ bucketweb:
 compactor:
   enabled: true
   ## By default, there is NO retention set for object storage data. This means that data is stored forever, 
-  ## which is a valid and recommended way of running Thanos. Defauls are therefor set to 0s
+  ## which is a valid and recommended way of running Thanos.
   retentionResolutionRaw: {{ $vl.compactor.retentionResolutionRaw }}
   retentionResolution5m: {{ $vl.compactor.retentionResolution5m }}
   retentionResolution1h: {{ $vl.compactor.retentionResolution1h }}
@@ -56,10 +56,8 @@ receive:
     enabled: true
     size: {{ $vl.receiver.persistence.size }}
   resources: {{- $vl.receiver.resources | toYaml | nindent 4 }}
-  ## How long to retain raw samples on local storage. 0d - disables this retention. Default is set to 7d
-  tsdbRetention: 7d
-  ## How many times to replicate incoming write requests. Default is set to 1
-  replicationFactor: 1
+  tsdbRetention: {{ $vl.receiver.tsdbRetention }}
+  replicationFactor: {{ $vl.receiver.replicationFactor }}
   service:
     additionalHeadless: true
 
