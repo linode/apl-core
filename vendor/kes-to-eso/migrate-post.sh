@@ -23,7 +23,7 @@ echo "Scaling down KES"
 kubectl scale deployment -n $KES_NAMESPACE external-secrets --replicas=0
 
 # workaround for kestoeso
-
+set +x
 cat >"$HOME"/.kube/config <<EOF
 apiVersion: v1
 clusters:
@@ -46,9 +46,9 @@ EOF
 
 chmod 644 "$HOME"/.kube/config
 # Update Ownership references
-
+set -x
 echo "Patching secrets ownership KES to ESO"
-./"${scriptDir}"/kestoeso apply --all-secrets --all-namespaces --kubeconfig
+./"${scriptDir}"/kestoeso apply --all-secrets --all-namespaces
 # echo "Scaling up ESO"
 # kubectl scale deployment -n $ESO_NAMESPACE external-secrets --replicas=1gps
 echo "Removing KES CR"

@@ -51,5 +51,4 @@ operations:
       - cd vendor/kes-to-eso && ./migrate-pre.sh || true
     post:
       # convert secrets to new format and apply
-      - kubectl cluster-info
       - vendor/kes-to-eso/migrate-post.sh && echo "Success"
