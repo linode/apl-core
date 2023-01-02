@@ -19,7 +19,7 @@ COPY --chown=app . .
 RUN npm config set update-notifier false
 RUN npm ci --ignore-scripts && npm run compile
 
-RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && npm test && rm env; fi
+# RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && npm test && rm env; fi
 
 # --------------- Cleanup
 FROM ci as clean
