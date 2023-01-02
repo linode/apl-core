@@ -14,19 +14,19 @@ query:
     {{- range $i := until $vl.receiver.replicaCount }}
     - "thanos-receive-{{ $i }}.thanos-receive-headless.monitoring.svc.cluster.local:10901"
     {{- end }}
-  resources: {{- $vl.query.resources | toYaml | nindent 4 }}
+  resources: {{- $vl.resources.query | toYaml | nindent 4 }}
   extraFlags:
     - "--query.auto-downsampling"
 
 ## @section Thanos Query Frontend parameters
 queryFrontend:
   enabled: true
-  resources: {{- $vl.queryFrontend.resources | toYaml | nindent 4 }}
+  resources: {{- $vl.resources.queryFrontend | toYaml | nindent 4 }}
 
 ## @section Thanos Bucket Web parameters
 bucketweb:
   enabled: true
-  resources: {{- $vl.bucketweb.resources | toYaml | nindent 4 }}
+  resources: {{- $vl.resources.bucketweb | toYaml | nindent 4 }}
 
 ## @section Thanos Compactor parameters
 compactor:
@@ -37,15 +37,15 @@ compactor:
   retentionResolution5m: {{ $vl.compactor.retentionResolution5m }}
   retentionResolution1h: {{ $vl.compactor.retentionResolution1h }}
   persistence:
-    size: {{ $vl.compactor.persistence.size }}
-  resources: {{- $vl.compactor.resources | toYaml | nindent 4 }}
+    size: {{ $vl.persistence.compactor.size }}
+  resources: {{- $vl.resources.compactor | toYaml | nindent 4 }}
 
 ## @section Thanos Store Gateway parameters
 storegateway:
   enabled: true
   persistence:
-    size: {{ $vl.storegateway.persistence.size }}
-  resources: {{- $vl.storegateway.resources | toYaml | nindent 4 }}
+    size: {{ $vl.persistence.storegateway.size }}
+  resources: {{- $vl.resources.resourcesstoregateway | toYaml | nindent 4 }}
 
 ## @section Thanos Receive parameters
 receive:
@@ -54,8 +54,8 @@ receive:
   replicaCount: {{ $vl.receiver.replicaCount }}
   persistence:
     enabled: true
-    size: {{ $vl.receiver.persistence.size }}
-  resources: {{- $vl.receiver.resources | toYaml | nindent 4 }}
+    size: {{ $vl.persistence.receiver.size }}
+  resources: {{- $vl.resources.receiver | toYaml | nindent 4 }}
   tsdbRetention: {{ $vl.receiver.tsdbRetention }}
   replicationFactor: {{ $vl.receiver.replicationFactor }}
   service:
@@ -64,14 +64,14 @@ receive:
 ## @section Thanos Ruler parameters
 receiveDistributor:
   enabled: {{ $vl.receiverDistributor.enabled }}
-  resources: {{- $vl.receiverDistributor.resources | toYaml | nindent 4 }}
+  resources: {{- $vl.resources.receiverDistributor | toYaml | nindent 4 }}
 
 ## @section Thanos Ruler parameters
 ruler:
   enabled: {{ $vl.ruler.enabled }}
   persistence:
-    size: {{ $vl.ruler.persistence.size }}
-  resources: {{- $vl.ruler.resources | toYaml | nindent 4 }}
+    size: {{ $vl.persistence.ruler.size }}
+  resources: {{- $vl.resources.ruler | toYaml | nindent 4 }}
   alertmanagers:
     - http://prometheus-operator-alertmanager.monitoring.svc.cluster.local:9093
   config: |-

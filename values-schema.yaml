@@ -2361,16 +2361,10 @@ properties:
             default: false
           query:
             properties:
-              resources:
-                $ref: '#/definitions/resources'
               replicaCount:
                 description: Number of Thanos Query replicas.
                 type: integer
                 default: 1
-          queryFrontend:
-            properties:
-              resources:
-                $ref: '#/definitions/resources'
           receiver:
             properties:
               mode:
@@ -2381,34 +2375,16 @@ properties:
                 enum:
                   - standalone
                   - dual-mode
-              resources:
-                $ref: '#/definitions/resources'
               replicaCount:
                 description: Number of Thanos Receive replicas.
                 type: integer
                 default: 1
-              persistence:
-                properties:
-                  size:
-                    type: string
               tsdbRetention:
                 type: string
                 default: 7d
               replicationFactor:
                 type: integer
                 default: 1
-          storegateway:
-            properties:
-              resources:
-                $ref: '#/definitions/resources'
-              persistence:
-                properties:
-                  size:
-                    type: string
-          bucketweb:
-            properties:
-              resources:
-                $ref: '#/definitions/resources'
           compactor:
             description: Resolution and Retention flags.
             properties:
@@ -2421,30 +2397,16 @@ properties:
               retentionResolution1h:
                 type: string
                 default: 10y
-              persistence:
-                properties:
-                  size:
-                    type: string
-              resources:
-                $ref: '#/definitions/resources'
           receiverDistributor:
             properties:
               enabled:
                 type: boolean
                 default: true
-              resources:
-                $ref: '#/definitions/resources'
           ruler:
             properties:
               enabled:
                 type: boolean
                 default: false
-              resources:
-                $ref: '#/definitions/resources'
-              persistence:
-                properties:
-                  size:
-                    type: string
           objstore:
             properties:
               storageProvider:
@@ -2479,6 +2441,47 @@ properties:
                       - s3
                       - minioLocal
                     default: minioLocal
+          resources:
+            additionalProperties: false
+            properties:
+              query:
+                $ref: '#/definitions/resources'
+              queryFrontend:
+                $ref: '#/definitions/resources'
+              receiver:
+                $ref: '#/definitions/resources'
+              storegateway:
+                $ref: '#/definitions/resources'
+              bucketweb:
+                $ref: '#/definitions/resources'
+              compactor:
+                $ref: '#/definitions/resources'
+              receiverDistributor:
+                $ref: '#/definitions/resources'
+              ruler:
+                $ref: '#/definitions/resources'
+        persistence:
+          properties:
+            receiver:
+              properties:
+                size:
+                  $ref: '#/definitions/size'
+                  default: 50Gi
+            storegateway:
+              properties:
+                size:
+                  $ref: '#/definitions/size'
+                  default: 8Gi
+            compactor:
+              properties:
+                size:
+                  $ref: '#/definitions/size'
+                  default: 8Gi
+            ruler:
+              properties:
+                size:
+                  $ref: '#/definitions/size'
+                  default: 8Gi
       vault:
         additionalProperties: false
         properties:

@@ -1,60 +1,17 @@
 apps:
     thanos:
         enabled: true
-        bucketweb:
-            resources:
-                limits:
-                    cpu: '1'
-                    memory: 512Mi
-                requests:
-                    cpu: 500m
-                    memory: 256Mi
         compactor:
             retentionResolutionRaw: 0s
             retentionResolution5m: 0s
             retentionResolution1h: 0s
-            persistence:
-                size: 8Gi
-            resources:
-                limits:
-                    cpu: '1'
-                    memory: 512Mi
-                requests:
-                    cpu: 500m
-                    memory: 256Mi
         query:
             replicaCount: 1
-        queryFrontend:
-            resources:
-                limits:
-                    cpu: '1'
-                    memory: 512Mi
-                requests:
-                    cpu: 500m
-                    memory: 256Mi
         receiver:
             mode: dual-mode
             replicaCount: 2
             tsdbRetention: 7d
             replicationFactor: 1
-            persistence:
-                size: 50Gi
-        receiverDistributor:
-            enabled: true
-            resources:
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-                limits:
-                    cpu: '1'
-                    memory: 512Mi
-        storegateway:
-            persistence:
-                size: 8Gi
-        ruler:
-            enabled: true
-            persistence:
-                size: 8Gi
         objstore:
             storageProvider:
                 type: minioLocal
