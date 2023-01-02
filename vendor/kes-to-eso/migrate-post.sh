@@ -1,27 +1,17 @@
 #!/bin/bash
 
-set -x
+set -e
 KES_NAMESPACE="vault"
-# ESO_NAMESPACE="external-secrets"
 
 scriptDir="$(dirname -- "$0")"
 
 echo "Upgrade from KES to ESO"
-# [[ $(helm status -n external-secrets external-secrets) && ! $(helm status -n vault external-secrets) ]] && echo "Skipping" && exit 0
-
-# mkdir -p eso_files
-
-# echo "Scaling down ESO"
-# kubectl scale deployment -n $ESO_NAMESPACE external-secrets --replicas=0
-# Generate ESO files and apply them
-# ./kestoeso generate -i kes_files -o eso_files -n $KES_NAMESPACE
-# kubectl apply -f eso_files
+[[ $(helm status -n external-secrets external-secrets) && ! $(helm status -n vault external-secrets) ]] && echo "Skipping" && exit 0
 
 echo "Scaling down KES"
 kubectl scale deployment -n $KES_NAMESPACE external-secrets --replicas=0
 
-# workaround for kestoeso
-set +x
+# kestoeso requires kube config
 cat >"$HOME"/.kube/config <<EOF
 apiVersion: v1
 clusters:
@@ -43,12 +33,11 @@ users:
 EOF
 
 chmod 644 "$HOME"/.kube/config
+
 # Update Ownership references
-set -x
 echo "Patching secrets ownership KES to ESO"
 ./"${scriptDir}"/kestoeso apply --all-secrets --all-namespaces
-# echo "Scaling up ESO"
-# kubectl scale deployment -n $ESO_NAMESPACE external-secrets --replicas=1gps
+
 echo "Removing KES CR"
 kubectl delete externalsecrets.kubernetes-client.io -A --all
 echo "Uninstalling KES"
