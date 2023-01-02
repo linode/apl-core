@@ -4,8 +4,6 @@ set -x
 KES_NAMESPACE="vault"
 # ESO_NAMESPACE="external-secrets"
 
-kubectl cluster-info
-
 scriptDir="$(dirname -- "$0")"
 
 echo "Upgrade from KES to ESO"
