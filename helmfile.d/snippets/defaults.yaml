@@ -175,7 +175,7 @@ environments:
               replicaCount: 1
             receiver:
               mode: standalone
-              replicaCount: 2
+              replicaCount: 1
               tsdbRetention: 7d
               replicationFactor: 1
             receiverDistributor:
