@@ -17,10 +17,13 @@ spec:
       app: {{ template "drone.name" . }}
       release: "{{ .Release.Name }}"
       component: server
+  strategy:
+    type: {{ .Values.server.strategyType }}
   replicas: 1
   template:
     metadata:
       annotations:
+        checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         {{- if .Values.metrics.prometheus.enabled }}
         prometheus.io/scrape: "true"
         prometheus.io/port: "8000"

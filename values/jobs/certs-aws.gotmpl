@@ -9,7 +9,6 @@ description: Import certs into ACM
 runPolicy: OnSpecChange
 schedule: "0/3 * * * *" # every 3 minutes
 # schedule: "0 1 * * *" # every day
-shell: bash
 env:
   REGION: {{ $v.cluster.region }}
   # DOMAINS: '{{ $vars.domains }}'
