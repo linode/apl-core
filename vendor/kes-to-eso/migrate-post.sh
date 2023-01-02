@@ -32,7 +32,7 @@ users:
     token: $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
 EOF
 
-chmod 644 "$HOME"/.kube/config
+chmod 600 "$HOME"/.kube/config
 
 # Update Ownership references
 echo "Patching secrets ownership KES to ESO"
