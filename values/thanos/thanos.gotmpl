@@ -45,7 +45,7 @@ storegateway:
   enabled: true
   persistence:
     size: {{ $vl.persistence.storegateway.size }}
-  resources: {{- $vl.resources.resourcesstoregateway | toYaml | nindent 4 }}
+  resources: {{- $vl.resources.storegateway | toYaml | nindent 4 }}
 
 ## @section Thanos Receive parameters
 receive:

@@ -171,91 +171,90 @@ environments:
             enabled: false
           thanos:
             enabled: false
-            bucketweb:
-              resources:
+            query:
+              replicaCount: 1
+            receiver:
+              mode: standalone
+              replicaCount: 2
+              tsdbRetention: 7d
+              replicationFactor: 1
+            receiverDistributor:
+              enabled: true
+            compactor:
+              retentionResolutionRaw: 30d
+              retentionResolution5m: 60d
+              retentionResolution1h: 0s
+            ruler:
+              enabled: false
+            objstore:
+              storageProvider:
+                type: minioLocal
+            resources:
+              bucketweb:
                 requests:
                   cpu: 50m
                   memory: 64Mi
                 limits:
                   cpu: 100m
                   memory: 128Mi
-            query:
-              replicaCount: 1
-              resources:
+              query:
                 requests:
                   cpu: 100m
                   memory: 256Mi
                 limits:
                   cpu: 500m
                   memory: 1Gi
-            queryFrontend:
-              resources:
+              queryFrontend:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
-            receiver:
-              mode: dual-mode
-              replicaCount: 2
-              tsdbRetention: 7d
-              replicationFactor: 1
-              persistence:
-                size: 50Gi
-              resources:
+              receiver:
                 requests:
                   cpu: 200m
                   memory: 512Mi
                 limits:
                   cpu: '1'
                   memory: 2Gi
-            receiverDistributor:
-              enabled: true                
-              resources:
+              receiverDistributor:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: '1'
                   memory: 512Mi
-            storegateway:
-              persistence:
-                size: 8Gi
-              resources:
+              storegateway:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 256Mi
-            compactor:
-              resources:
+              compactor:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: '1'
                   memory: 512Mi
-              retentionResolutionRaw: 30d
-              retentionResolution5m: 60d
-              retentionResolution1h: 0s
-              persistence:
-                size: 8Gi
-            ruler:
-              enabled: false
-              persistence:
-                size: 8Gi
-              resources:
+              ruler:
                 requests:
                   cpu: 100m
                   memory: 256Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
-            objstore:
-              storageProvider:
-                type: minioLocal
+            persistence:
+              receiver:
+                size: 50Gi
+              storegateway:
+                size: 8Gi
+              compactor:
+                size: 8Gi
+              ruler:
+                size: 8Gi
           vault:
             enabled: false
             resources:
