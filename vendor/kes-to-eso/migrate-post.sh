@@ -2,10 +2,12 @@
 KES_NAMESPACE="vault"
 # ESO_NAMESPACE="external-secrets"
 
+kubectl cluster-info
+
 scriptDir="$(dirname -- "$0")"
 
 echo "Upgrade from KES to ESO"
-[[ $(helm status -n external-secrets external-secrets) && ! $(helm status -n vault external-secrets) ]] && echo "Skipping" && exit 0
+# [[ $(helm status -n external-secrets external-secrets) && ! $(helm status -n vault external-secrets) ]] && echo "Skipping" && exit 0
 
 # mkdir -p eso_files
 
