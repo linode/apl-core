@@ -539,7 +539,6 @@ definitions:
   k8sVersion:
     description: The cluster k8s version. Must match one of the list.
     enum:
-      - '1.19'
       - '1.20'
       - '1.21'
       - '1.22'
@@ -822,8 +821,19 @@ definitions:
       id:
         readOnly: true
         type: string
+      clusterWide:
+        description: Will create the secret in all namespaces.
+        type: boolean
+        default: false
+      teamWide:
+        description: Will create the secret in all team-* namespaces.
+        type: boolean
+        default: false
       name:
         $ref: '#/definitions/idName'
+      namespace:
+        $ref: '#/definitions/idName'
+        description: A kubernetes namespace.
     required:
       - name
     oneOf:
@@ -2068,15 +2078,10 @@ properties:
       external-secrets:
         additionalProperties: false
         properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           logLevel:
             $ref: '#/definitions/logLevel'
-          pollingInterval:
-            type: integer
-            default: 60000
       kube-descheduler:
         additionalProperties: false
         properties:

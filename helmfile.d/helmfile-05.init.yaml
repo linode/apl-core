@@ -35,4 +35,5 @@ releases:
     namespace: vault
     labels:
       pkg: vault
+      group: secrets
     <<: *raw
