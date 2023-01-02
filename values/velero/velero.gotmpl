@@ -101,20 +101,24 @@ configuration:
 credentials:
   secretContents:
     cloud: |
-{{- if eq $cp "azure" }}
-      AZURE_RESOURCE_GROUP={{ $cloud.provider.azure.resourceGroup }}
-      AZURE_CLOUD_NAME={{ $cloud.provider.azure.environment }}
-      AZURE_SUBSCRIPTION_ID={{ $cloud.provider.azure.subscriptionId }}
-      AZURE_TENANT_ID={{ $cloud.provider.azure.tenantId }}
-      AZURE_CLIENT_ID={{ $cloud.provider.azure.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $cloud.provider.azure.aadClientSecret }}
-{{- end }}
-{{- if and (eq $sp "azureBlob") (not (eq $cp "azure")) }}
-      AZURE_SUBSCRIPTION_ID={{ $storage.provider.azureBlob.subscriptionId }}
-      AZURE_TENANT_ID={{ $storage.provider.azureBlob.tenantId }}
-      AZURE_CLIENT_ID={{ $storage.provider.azureBlob.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $storage.provider.azureBlob.aadClientSecret }}
-{{- end }}
+{{- if eq $cp "azure" }}{{ with $cloud.provider.azure nil }}
+      AZURE_RESOURCE_GROUP={{ .resourceGroup }}
+      AZURE_CLOUD_NAME={{ .environment }}
+      AZURE_SUBSCRIPTION_ID={{ .subscriptionId }}
+      AZURE_TENANT_ID={{ .tenantId }}
+      AZURE_CLIENT_ID={{ .aadClientId }}
+      AZURE_CLIENT_SECRET={{ .aadClientSecret }}
+{{- end }}{{ end }}
+
+{{- if eq $cp "azure" }}{{ with $cloud.provider.azure nil }}
+      AZURE_RESOURCE_GROUP={{ .resourceGroup }}
+      AZURE_CLOUD_NAME={{ .environment }}
+      AZURE_SUBSCRIPTION_ID={{ .azure.subscriptionId }}
+      AZURE_TENANT_ID={{ .tenantId }}
+      AZURE_CLIENT_ID={{ .aadClientId }}
+      AZURE_CLIENT_SECRET={{ .aadClientSecret }}
+
+{{- end }}{{ end }}
 {{- if eq $sp "minioLocal" }}
       [default]
       aws_access_key_id=otomi-admin
