@@ -6,17 +6,7 @@
 {{- $cp := $cloud.provider | get "type" dict }}
 {{- $sp := $storage.provider | get "type" dict }}
 
-resources:
-  {{- with $vl | get "resources" nil }}
-  {{- toYaml . | nindent 2 }}
-  {{- else }}
-  requests:
-    cpu: 500m
-    memory: 128Mi
-  limits:
-    cpu: 1000m
-    memory: 512Mi
-  {{- end }}
+resources: {{- $vl.resources | toYaml | nindent 4 }}
 
 initContainers:
   - name: velero-plugin-for-azure

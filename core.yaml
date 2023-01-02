@@ -313,7 +313,6 @@ adminApps:
         auth: true
   - name: velero
     tags: [backup]
-    deps: [minio]
 
 teamApps:
   - name: alertmanager
