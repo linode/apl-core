@@ -1,4 +1,4 @@
-api: main
-console: main
+api: write-secrets
+console: write-secrets
 tasks: 0.2.31
 tools: 1.4.25

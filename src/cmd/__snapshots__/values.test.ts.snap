@@ -2,6 +2,7 @@
 
 exports[`Listing values from fixtures should generate the same output as snapshot unless intended 1`] = `
 "_def:
+  \\"Get defaults, all\\": true
   alerts:
     groupInterval: 5m
     repeatInterval: 3h
@@ -1013,21 +1014,22 @@ _files:
             - TARGET
           id: 15bb8ecf-1fef-474c-9143-a1f19c81c387
           name: mysecret-generic-admin
-          namespaces:
-            - some-ns
-            - someother-ns
+          namespace: some-ns
+          teamId: demo
           type: generic
         - clusterWide: true
           entries:
             - TARGET
           id: 15bb8ecf-1fef-474c-9143-a1f19c81c388
           name: mysecret-generic-admin-clusterwide
+          teamId: demo
           type: generic
         - entries:
             - TARGET
           id: 15bb8ecf-1fef-474c-9143-a1f19c81c389
           name: mysecret-generic-admin-teamwide
-          teamsWide: true
+          teamId: demo
+          teamWide: true
           type: generic
       services:
         - auth: true
@@ -1226,17 +1228,18 @@ _files:
             - TARGET
           id: 15bb8ecf-1fef-474c-9143-a1f19c81c378
           name: mysecret-generic
-          teams:
-            - otomi
+          teamId: demo
           type: generic
         - id: d29ab8f8-1281-4eba-81b0-be01baed03a6
           name: mysecret-registry
+          teamId: demo
           type: docker-registry
         - ca: ca.crt
           crt: tls.crt
           id: efe80c21-cfb2-4436-a9dd-e6838ea9c4f9
           key: tls.key
           name: mysecret-tls
+          teamId: demo
           type: tls
       selfService:
         apps: []
@@ -1405,6 +1408,7 @@ _files:
           name: service-e
           type: public
   version: 5
+\\"Get defaults, all\\": true
 adminApps:
   - deps:
       - prometheus
@@ -2884,21 +2888,22 @@ teamConfig:
           - TARGET
         id: 15bb8ecf-1fef-474c-9143-a1f19c81c387
         name: mysecret-generic-admin
-        namespaces:
-          - some-ns
-          - someother-ns
+        namespace: some-ns
+        teamId: demo
         type: generic
       - clusterWide: true
         entries:
           - TARGET
         id: 15bb8ecf-1fef-474c-9143-a1f19c81c388
         name: mysecret-generic-admin-clusterwide
+        teamId: demo
         type: generic
       - entries:
           - TARGET
         id: 15bb8ecf-1fef-474c-9143-a1f19c81c389
         name: mysecret-generic-admin-teamwide
-        teamsWide: true
+        teamId: demo
+        teamWide: true
         type: generic
     services:
       - auth: true
@@ -3097,17 +3102,18 @@ teamConfig:
           - TARGET
         id: 15bb8ecf-1fef-474c-9143-a1f19c81c378
         name: mysecret-generic
-        teams:
-          - otomi
+        teamId: demo
         type: generic
       - id: d29ab8f8-1281-4eba-81b0-be01baed03a6
         name: mysecret-registry
+        teamId: demo
         type: docker-registry
       - ca: ca.crt
         crt: tls.crt
         id: efe80c21-cfb2-4436-a9dd-e6838ea9c4f9
         key: tls.key
         name: mysecret-tls
+        teamId: demo
         type: tls
     selfService:
       apps: []
@@ -3277,8 +3283,8 @@ teamConfig:
         type: public
 version: 5
 versions:
-  api: main
-  console: main
+  api: write-secrets
+  console: write-secrets
   core: main
   tasks: 0.2.31
   tools: 1.4.25
