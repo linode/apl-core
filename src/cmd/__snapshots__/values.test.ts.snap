@@ -3283,8 +3283,8 @@ teamConfig:
         type: public
 version: 5
 versions:
-  api: write-secrets
-  console: write-secrets
+  api: main
+  console: main
   core: main
   tasks: 0.2.31
   tools: 1.4.25
