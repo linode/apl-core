@@ -6,7 +6,7 @@
 {{- $cp := $cloud.provider | get "type" dict }}
 {{- $sp := $storage.provider | get "type" dict }}
 
-resources: {{- $vl.resources | toYaml | nindent 4 }}
+resources: {{- $vl.resources | toYaml | nindent 2 }}
 
 initContainers:
   - name: velero-plugin-for-azure
@@ -38,10 +38,6 @@ initContainers:
 
 podSecurityContext:
   runAsUser: 1000
-
-serviceMonitor:
-    enabled: true
-    namespace: velero
 
 logLevel: {{ $vl.logLevel }}
 
@@ -92,10 +88,8 @@ configuration:
     config:
       region: {{ $cp.region }}
   {{- end }}
-  
-  # defaultVolumesToRestic - 
-  # if set Velero will back up all pod volumes using Restic with the exception of: 
-  # service account tokens, secrets, config maps and hostpath volumes
+
+  # if set Velero will back up all pod volumes using Restic with the exception of service account tokens, secrets, config maps and hostpath volumes
   defaultVolumesToRestic: true
 
 credentials:
@@ -127,6 +121,7 @@ credentials:
 {{- end }}
 
 kubectl:
+  # Resource requests/limits to specify for the upgrade/cleanup job.
   resources:
     requests:
       cpu: 50m
@@ -135,14 +130,10 @@ kubectl:
       cpu: 100m
       memory: 32Mi
   labels: 
-    # do not inject sidecar, so the kubectl k8s job can exit container and return the completed status
+    # do not inject sidecar, so the kubectl k8s job can exit and return the completed status
     sidecar.istio.io/inject: "false"
 
 deployRestic: true
-
-metrics:
-  serviceMonitor:
-    enabled: true
 
 schedules:
 {{- if $pa.gitea.enabled }}
@@ -215,7 +206,6 @@ schedules:
       includedNamespaces:
       - kubeapps
 {{- end }}
-
   # create backups of all team namespaces
 {{- if $v.backup.teams.enabled }}
   {{- range $teamId := keys $v.teamConfig }}
