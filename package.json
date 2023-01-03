@@ -143,6 +143,7 @@
     "server": "binzx/otomi server",
     "spellcheck": "cspell '/docs/**/**.md' '/values-schema.yaml' '/*.md' '/.values/README.md'",
     "tasks:copy-certs": "binzx/otomi task -n copyCerts",
+    "template": "NODE_ENV=test binzx/otomi template",
     "test": "run-s test:ts lint validate-values validate-templates check-policies",
     "test:opa": "NODE_ENV=test binzx/otomi x opa test policies -v",
     "test:ts": "NODE_ENV=test jest",
