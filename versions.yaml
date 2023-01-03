@@ -1,4 +1,4 @@
-api: main
-console: main
+api: secrets-operator
+console: secrets-operator
 tasks: 0.2.31
 tools: 1.4.25
