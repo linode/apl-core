@@ -1,8 +1,0 @@
-releases:
-  - name: kind
-    installed: true
-    namespace: kind
-    missingFileHandler: Error
-    chart: ./chart
-    values:
-      - kind.gotmpl

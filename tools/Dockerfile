@@ -53,7 +53,6 @@ RUN apt-get update -qq \
   vim \
   nano \
   groff \
-  awscli \
   rsync \
   && rm -rf /var/lib/apt/lists/*
 

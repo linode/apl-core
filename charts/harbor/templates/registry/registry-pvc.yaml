@@ -5,8 +5,11 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ template "harbor.registry" . }}
-  {{- if eq .Values.persistence.resourcePolicy "keep" }}
   annotations:
+  {{- range $key, $value := $registry.annotations }}
+    {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- if eq .Values.persistence.resourcePolicy "keep" }}
     helm.sh/resource-policy: keep
   {{- end }}
   labels:
