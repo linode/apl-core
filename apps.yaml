@@ -12,7 +12,7 @@ appsInfo:
     integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by Otomi to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: ArgoCD
-    appVersion: v2.4.7
+    appVersion: 2.5.3
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
@@ -54,6 +54,17 @@ appsInfo:
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
     integration: ExternalDNS is used by Otomi to make public service domains accessible by registering them with Otomi's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then Otomi will rely on nip.io to create host names for all services.
+  external-secrets:
+    title: External Secrets Operator
+    appVersion: 0.10.2
+    repo: https://github.com/external-secrets/external-secrets
+    maintainers: External Secrets community
+    relatedLinks:
+      - https://otomi.io/docs/apps/external-secrets
+      - https://external-secrets.io
+    license: Apache 2.0
+    about: External Secrets Operator reads information from a third-party service like AWS Secrets Manager and automatically injects the values as Kubernetes Secrets.
+    integration: External Secrets is used by Otomi to allow teams to automatically sync (partial) secrets created in the packaged (Hashicorp) Vault.
   gatekeeper:
     title: Gatekeeper
     appVersion: 3.8.1
@@ -89,7 +100,7 @@ appsInfo:
     integration: Otomi uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.3.0
+    appVersion: 2.5.4
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
@@ -225,7 +236,7 @@ appsInfo:
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   vault:
     title: Vault
-    appVersion: 1.6.1
+    appVersion: 1.11.5
     repo: https://github.com/hashicorp/vault
     maintainers: HashiCorp
     relatedLinks:

@@ -1,4 +1,4 @@
-api: delegate-write-values
-console: 0.5.21
+api: main
+console: main
 tasks: 0.2.31
 tools: 1.4.25

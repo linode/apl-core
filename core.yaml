@@ -14,6 +14,8 @@ k8s:
       disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
+    - name: external-secrets
+      disableIstioInjection: true
     - name: harbor
       app: harbor
     - name: gatekeeper-system
@@ -125,6 +127,8 @@ adminApps:
           - authorization
   - name: external-dns
     tags: [ingress, security, tls]
+  - name: external-secrets
+    tags: [secrets, security, tls]
   - name: gatekeeper
     tags: [security, policies, observability]
   - name: gitea
