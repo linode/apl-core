@@ -840,7 +840,7 @@ definitions:
         description: A selection of team names. Will create the secret in the respective team-* namespaces. Secret name is prefixed with "otomi-team-$teamName-". Overrides "teams" selection.
         type: array
         items:
-          $ref: definitions.yaml#/idName
+          $ref: '#/definitions/idName'
     required:
       - name
     oneOf:
