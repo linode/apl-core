@@ -30,6 +30,12 @@ releases:
       pkg: harbor
       group: jobs
     <<: *jobs
+  - name: job-harbor-backup
+    installed: {{ and ($a.harbor.enabled) ($a.harbor.backup.enabled) }}
+    labels:
+      pkg: harbor-backup
+      group: jobs
+    <<: *jobs
   - name: job-ingress-azure
     installed: {{ $a | get "ingress-azure.enabled" }}
     <<: *jobs

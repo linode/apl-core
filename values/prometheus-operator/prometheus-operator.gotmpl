@@ -121,7 +121,9 @@ prometheus:
       headers:
         cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
       {{- end }}
-      {{- $p.remoteWrite.rwConfig.customConfig | nindent 6 }}
+      {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
+      {{- . | nindent 6 }}
+      {{- end }}
 {{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}

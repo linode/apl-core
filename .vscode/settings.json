@@ -52,5 +52,11 @@
   "yaml.schemas": {
     "./values-schema.yaml": "**/env/**/*.yaml",
     "https://json-schema.org/draft-07/schema": "values-schema.yaml"
+  },
+  "[properties]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker"
   }
 }

@@ -539,7 +539,6 @@ definitions:
   k8sVersion:
     description: The cluster k8s version. Must match one of the list.
     enum:
-      - '1.19'
       - '1.20'
       - '1.21'
       - '1.22'
@@ -824,6 +823,24 @@ definitions:
         type: string
       name:
         $ref: '#/definitions/idName'
+      clusterWide:
+        description: Will create the secret in all namespaces. Secret name is prefixed with "otomi-cw-". Overrides "namespaces".
+        type: boolean
+        default: false
+      namespaces:
+        type: array
+        items:
+          $ref: '#/definitions/idName'
+        description: A list of kubernetes namespaces. Overrides both "teams" and "teamsWide".
+      teamsWide:
+        description: Will create the secret in all team-* namespaces.
+        type: boolean
+        default: false
+      teams:
+        description: A selection of team names. Will create the secret in the respective team-* namespaces. Secret name is prefixed with "otomi-team-$teamName-". Overrides "teams" selection.
+        type: array
+        items:
+          $ref: definitions.yaml#/idName
     required:
       - name
     oneOf:
@@ -942,6 +959,22 @@ definitions:
       hasCert:
         description: Select when a certificate exists and should not be generated.
         type: boolean
+      headers:
+        properties:
+          response:
+            properties:
+              set:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
       hide:
         description: Used by otomi console to determine wether to render it on screen or not. Only used by core services.
         type: boolean
@@ -1576,6 +1609,10 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
+          databasePassword:
+            type: string
+            description: Once set and deployed it cannot be changed with manual intervention.
+            x-secret: 'randAlphaNum 20'
           core:
             properties:
               secret:
@@ -1704,6 +1741,17 @@ properties:
           secretKey:
             type: string
             x-secret: 'randAlpha 16'
+          backup:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              schedule:
+                default: 0 0 * * *
+                description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
+                type: string
+        required:
+          - databasePassword
       hello:
         description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
         properties:
@@ -2037,15 +2085,10 @@ properties:
       external-secrets:
         additionalProperties: false
         properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
           logLevel:
             $ref: '#/definitions/logLevel'
-          pollingInterval:
-            type: integer
-            default: 60000
       kube-descheduler:
         additionalProperties: false
         properties:

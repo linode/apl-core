@@ -12,9 +12,11 @@ image:
   imagePullSecrets: []  # global.imagePullSecrets is also supported
 
 service:
+  name: ""
   type: ClusterIP
   externalPort: 80
   internalPort: 8080
+  annotations: {}
 
 nameOverride: ""
 fullnameOverride: ""
@@ -26,18 +28,13 @@ crdAnnotations: {}
 watchNamespace: ""
 syncPeriod: "1m"
 
-# # If needed, define nodeSelector for vault operator
-# nodeSelector:
-#   "node-role.kubernetes.io/custom_worker": "true"
-
-# # if tolerations are used inside cluster, define tolerations as well
-# tolerations:
-#   - effect: NoSchedule
-#     key: node_role
-#     operator: Equal
-#     value: custom_worker
-
 labels: {}
+  #  team: banzai
+
+podLabels: {}
+  #  team: banzai
+
+podAnnotations: {}
   #  team: banzai
 
 resources:
@@ -49,6 +46,21 @@ resources:
     memory: 128Mi
 
 affinity: {}
+
+# # if tolerations are used inside cluster, define tolerations as well
+tolerations: []
+#   - effect: NoSchedule
+#     key: node_role
+#     operator: Equal
+#     value: custom_worker
+
+# # If needed, define nodeSelector for vault operator
+nodeSelector: {}
+#   "node-role.kubernetes.io/custom_worker": "true"
+
+podSecurityContext: {}
+
+securityContext: {}
 
 ## Assign a PriorityClassName to pods if set
 priorityClassName: ""
@@ -77,3 +89,10 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+monitoring:
+  # Create a Vault Operator ServiceMonitor object
+  serviceMonitor:
+    enabled: false
+    additionalLabels: {}
+    metricRelabelings: []
+    relabelings: []
