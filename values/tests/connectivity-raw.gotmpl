@@ -1,11 +1,11 @@
-{{ $v:=.Values}}
+{{- $v := .Values}}
 
 resources:
-{{- range $item:=$v.teamConnectivity }}
+{{- range $item := $v.teamConnectivity }}
 {{- $server := $item.server }}
-{{- $serverSubdomain:= printf "conn-%s" (index $server.labels "otomi.io/app") }}
-{{- $serverHostname:= printf "server-%s" (index $server.labels "otomi.io/app") }}
-{{- $serverUrl:= printf "%s.%s.svc.cluster.local" $serverSubdomain $server.namespace }}
+{{- $serverSubdomain := printf "conn-%s" (index $server.labels "otomi.io/app") }}
+{{- $serverHostname := printf "server-%s" (index $server.labels "otomi.io/app") }}
+{{- $serverUrl := printf "%s.%s.svc.cluster.local" $serverSubdomain $server.namespace }}
 
 # Server
 
@@ -57,8 +57,8 @@ resources:
             path: /
             port: 8080
 
-{{- range $client:=$item.clients }}
-{{- $clientName:= printf "client-%s-%s-to-%s-%s" (index $client.labels "otomi.io/app")  $client.namespace (index $server.labels "otomi.io/app") $server.namespace}}
+{{- range $client := $item.clients }}
+{{- $clientName := printf "client-%s-%s-to-%s-%s" (index $client.labels "otomi.io/app")  $client.namespace (index $server.labels "otomi.io/app") $server.namespace}}
 - apiVersion: v1
   kind: Pod
   metadata:
@@ -120,8 +120,8 @@ resources:
 {{- end }} {{/* range clients */}}
 {{- end }} {{/* range */}}
 
-{{- range $client:=$v.egressPublic }}
-{{- range $host:=$client.hosts }}
+{{- range $client := $v.egressPublic }}
+{{- range $host := $client.hosts }}
 {{- $clientName := printf "client-%s-%s-%s" (index $client.labels "otomi.io/app")  $client.namespace ($host | replace "://" "-" | replace "/" "-" | replace "." "-" | replace "::" "-" | replace ":" "-") }}
 
 - apiVersion: v1

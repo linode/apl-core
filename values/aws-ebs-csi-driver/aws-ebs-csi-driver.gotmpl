@@ -1,4 +1,3 @@
-
 {{- $v := .Values }}
 {{- $d := $v | get "apps.aws-ebs-csi-driver" }}
 
@@ -72,7 +71,7 @@ sidecars:
         cpu: 100m
         memory: 128Mi
 
-{{- with $v.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 image:
   pullSecrets:
     - otomi-pullsecret-global

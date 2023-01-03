@@ -4,7 +4,7 @@
 isChart: {{ ne (env "VALUES_INPUT" | default "") "" }}
 
 customCa: |
-  {{- toYaml $v._derived.caCert | nindent 2 }}
+  {{- $v._derived.caCert | toYaml | nindent 2 }}
 registryUrl: {{ printf "harbor.%s" $v.cluster.domainSuffix }}
 
 certDir: {{ $c | get "certDir" nil }}
@@ -12,7 +12,7 @@ updateCmd: {{ $c | get "updateCmd" nil }}
 
 priorityClassName: otomi-critical
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - otomi-pullsecret-global
 {{- end }}

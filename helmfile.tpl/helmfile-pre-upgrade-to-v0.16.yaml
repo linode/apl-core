@@ -1,8 +1,8 @@
 bases:
-  - ../helmfile.d/snippets/defaults.yaml
+  - ../helmfile.d/snippets/defaults.gotmpl
 ---
 bases:
-  - ../helmfile.d/snippets/env.gotmpl
+  - ../helmfile.d/snippets/files.gotmpl
 ---
 bases:
   - ../helmfile.d/snippets/derived.gotmpl

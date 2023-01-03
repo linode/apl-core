@@ -24,7 +24,7 @@ podAnnotations:
 
 priorityClassName: otomi-critical
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 image:
   pullSecrets:
     - name: otomi-pullsecret-global

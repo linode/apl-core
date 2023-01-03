@@ -1,12 +1,12 @@
 {
   "[dotenv]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
+    "editor.defaultFormatter": null
   },
   "[docker]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
+    "editor.defaultFormatter": null
   },
   "[shellscript]": {
-    "editor.defaultFormatter": "foxundermoon.shell-format"
+    "editor.defaultFormatter": null
   },
   "[javascript]": {
     "editor.defaultFormatter": "dbaeumer.vscode-eslint"
@@ -46,7 +46,6 @@
   "opa.roots": ["${workspaceFolder}/policies"],
   "prettier.enable": true,
   "shellcheck.exclude": ["2016", "2046", "2086", "2148"],
-  "shellformat.flag": "-i 2 -ci",
   "sops.enabled": false,
   "todohighlight.include": ["**/*.ts", "**/*.tsx", "**/*.html", "**/*.css", "**/*.scss", "**/*.gotmpl", "**/*.yaml"],
   "yaml.schemas": {

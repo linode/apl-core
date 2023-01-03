@@ -288,6 +288,11 @@ definitions:
         $ref: '#/definitions/idName'
         description: The name of the organization owning the cluster.
         default: otomi
+      profile:
+        type: string
+        description: The profile of the cluster determines resources, number of replicas and disk sizes allocated for the otomi platform apps.
+        enum: [small, medium, large]
+        default: small
       provider:
         $ref: '#/definitions/provider'
       region:
@@ -464,6 +469,7 @@ definitions:
         title: Source IP address filtering
         type: string
         description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
+    # required: [network]
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
@@ -654,6 +660,9 @@ definitions:
               default:
                 - number: 443
                   protocol: HTTPS
+  otomiAdminUsername:
+    x-secret: '"otomi-admin"'
+    default: otomi-admin
   path:
     description: An absolute path
     type: string
@@ -693,14 +702,13 @@ definitions:
     type: integer
   provider:
     type: string
-    description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube, kind) or onprem installs.
+    description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube) or onprem installs.
     enum:
       - aws
       - azure
       - digitalocean
       - google
       - custom
-      - kind
       - ovh
       - vultr
   redisChart:
@@ -723,17 +731,20 @@ definitions:
             $ref: '#/definitions/resources'
           sentinel:
             $ref: '#/definitions/resources'
-          slave:
+          replica:
             $ref: '#/definitions/resources'
       sizes:
         additionalProperties: false
         properties:
           master:
             $ref: '#/definitions/size'
+            default: 1Gi
           sentinel:
             $ref: '#/definitions/size'
-          slave:
+            default: 1Gi
+          replica:
             $ref: '#/definitions/size'
+            default: 1Gi
     type: object
   registry:
     pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
@@ -840,7 +851,7 @@ definitions:
         description: A selection of team names. Will create the secret in the respective team-* namespaces. Secret name is prefixed with "otomi-team-$teamName-". Overrides "teams" selection.
         type: array
         items:
-          $ref: definitions.yaml#/idName
+          $ref: '#/definitions/idName'
     required:
       - name
     oneOf:
@@ -909,10 +920,6 @@ definitions:
         type: string
     title: Secret mounts
     type: object
-  secretTemplates:
-    definitions:
-      otomiAdminUsername:
-        x-secret: '"admin"'
   securityContext:
     additionalProperties:
       uniqueItems: true
@@ -1251,7 +1258,12 @@ properties:
             type: boolean
             default: false
           image:
-            $ref: '#/definitions/imageSimple'
+            properties:
+              tag:
+                $ref: '#/definitions/imageTag'
+                default: v0.24.0
+              pullPolicy:
+                $ref: '#/definitions/imagePullPolicy'
           resources:
             $ref: '#/definitions/resources'
       argocd:
@@ -1275,6 +1287,7 @@ properties:
                 $ref: '#/definitions/resources'
               redis:
                 $ref: '#/definitions/resources'
+        # required: [autoscaling]
       cert-manager:
         additionalProperties: false
         properties:
@@ -1327,6 +1340,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
+            default: false
       cluster-overprovisioner:
         additionalProperties: false
         properties:
@@ -1334,16 +1348,19 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
+            default: false
           cpu:
             $ref: '#/definitions/cpuQuantity'
+            default: 1000m
           memory:
             $ref: '#/definitions/memoryQuantity'
+            default: 1000Mi
       demo-tlspass:
         additionalProperties: false
         properties:
           enabled:
-            default: false
             type: boolean
+            default: false
           tlsCert:
             type: string
           tlsKey:
@@ -1353,9 +1370,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            description: Discarded as this is a core app.
           adminIsMachine:
             type: boolean
             default: false
@@ -1374,6 +1388,7 @@ properties:
                 $ref: '#/definitions/wordCharacterPattern'
               team:
                 $ref: '#/definitions/wordCharacterPattern'
+                default: admin
               token:
                 $ref: '#/definitions/wordCharacterPattern'
           orgsFilter:
@@ -1410,6 +1425,7 @@ properties:
                 $ref: '#/definitions/resources'
               server:
                 $ref: '#/definitions/resources'
+
           sharedSecret:
             description: A secret used by drone-admit-members plugin. https://docs.drone.io/runner/kubernetes/configuration/reference/drone-secret-plugin-token/
             type: string
@@ -1422,15 +1438,12 @@ properties:
               bitbucketServer:
                 properties:
                   consumerKey:
-                    default: consumerKey
                     type: string
                     x-secret: ''
                   passwordKey:
-                    default: password
                     type: string
                     x-secret: ''
                   privateKey:
-                    default: privateKey
                     type: string
                     x-secret: ''
                   server:
@@ -1464,7 +1477,7 @@ properties:
               password:
                 type: string
               provider:
-                default: github
+                default: gitea
                 enum:
                   - github
                   - gitlab
@@ -1485,9 +1498,24 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          domainFilters:
+            type: array
+            items:
+              type: string
           logLevel:
             type: string
-            default: 'info'
+            default: info
+          zoneIdFilters:
+            type: array
+            items:
+              type: string
+      external-secrets:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+          logLevel:
+            $ref: '#/definitions/logLevel'
       gatekeeper:
         additionalProperties: false
         properties:
@@ -1538,8 +1566,13 @@ properties:
             default: 'INFO'
           replicas:
             type: integer
+            default: 1
           image:
-            $ref: '#/definitions/imageSimple'
+            tag:
+              $ref: '#/definitions/imageTag'
+              default: v3.7.1
+            pullPolicy:
+              $ref: '#/definitions/imagePullPolicy'
           resources:
             additionalProperties: false
             properties:
@@ -1553,6 +1586,9 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
+            default: true
+          adminUsername:
+            $ref: '#/definitions/otomiAdminUsername'
           adminPassword:
             type: string
             x-secret: ''
@@ -1565,11 +1601,23 @@ properties:
             additionalProperties: false
             properties:
               gitea:
-                $ref: '#/definitions/imageSimple'
+                tag:
+                  $ref: '#/definitions/imageTag'
+                  default: 1.16.6
+                pullPolicy:
+                  $ref: '#/definitions/imagePullPolicy'
               postgresql:
-                $ref: '#/definitions/imageSimple'
+                tag:
+                  $ref: '#/definitions/imageTag'
+                  default: 13.5.0
+                pullPolicy:
+                  $ref: '#/definitions/imagePullPolicy'
               memcached:
-                $ref: '#/definitions/imageSimple'
+                tag:
+                  $ref: '#/definitions/imageTag'
+                  default: 1.6.12
+                pullPolicy:
+                  $ref: '#/definitions/imagePullPolicy'
           resources:
             additionalProperties: false
             properties:
@@ -1587,11 +1635,13 @@ properties:
           enabled:
             type: boolean
             default: false
-          adminPassword:
-            type: string
-            x-secret: ''
           image:
-            $ref: '#/definitions/imageSimple'
+            properties:
+              tag:
+                $ref: '#/definitions/imageTag'
+                default: 9.0.1
+              pullPolicy:
+                $ref: '#/definitions/imagePullPolicy'
           resources:
             $ref: '#/definitions/resources'
       harbor:
@@ -1601,7 +1651,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: true
+            default: false
           privateLibrary:
             type: boolean
             default: true
@@ -1706,15 +1756,22 @@ properties:
                     x-secret: 'htpasswd .dot.username .dot.password'
                   username:
                     type: string
-                    $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'
+                    $ref: '#/definitions/otomiAdminUsername'
                   password:
                     type: string
                     x-secret: 'randAlphaNum 32'
+                required:
+                  - username
             required:
               - secret
               - credentials
           image:
-            $ref: '#/definitions/imageSimple'
+            tag:
+              $ref: '#/definitions/imageTag'
+              default: v2.5.4
+            pullPolicy:
+              $ref: '#/definitions/imagePullPolicy'
+
           resources:
             additionalProperties: false
             properties:
@@ -1738,6 +1795,8 @@ properties:
                 $ref: '#/definitions/resources'
               registry-controller:
                 $ref: '#/definitions/resources'
+              trivy:
+                $ref: '#/definitions/resources'
           secretKey:
             type: string
             x-secret: 'randAlpha 16'
@@ -1753,7 +1812,7 @@ properties:
         required:
           - databasePassword
       hello:
-        description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
+        description: Hello world demo chart.
         properties:
           enabled:
             type: boolean
@@ -1867,7 +1926,7 @@ properties:
             properties:
               tag:
                 $ref: '#/definitions/imageTag'
-                x-default: v1.0.5
+                default: v1.1.2
               pullPolicy:
                 $ref: '#/definitions/imagePullPolicy'
           resources:
@@ -1904,6 +1963,7 @@ properties:
                 properties:
                   level:
                     type: string
+                    default: default:info
               proxy:
                 additionalProperties: false
                 properties:
@@ -1913,17 +1973,25 @@ properties:
             properties:
               defaultConfig:
                 type: object
+                default:
+                  tracing:
+                    sampling: 0.1
             required:
               - defaultConfig
           image:
-            $ref: '#/definitions/imageSimple'
+            properties:
+              tag:
+                $ref: '#/definitions/imageTag'
+                default: 1.13.1
+              pullPolicy:
+                $ref: '#/definitions/imagePullPolicy'
           resources:
             properties:
               egressgateway:
                 $ref: '#/definitions/resources'
               ingressgateway:
                 $ref: '#/definitions/resources'
-              ingressgateway-private:
+              proxy:
                 $ref: '#/definitions/resources'
               pilot:
                 $ref: '#/definitions/resources'
@@ -1960,6 +2028,8 @@ properties:
             description: This password was generated and cannot be changed without manual intervention.
             x-secret: 'randAlphaNum 20'
             readOnly: true
+          adminUsername:
+            $ref: '#/definitions/otomiAdminUsername'
           adminPassword:
             type: string
             x-secret: ''
@@ -1969,9 +2039,17 @@ properties:
           image:
             properties:
               keycloak:
-                $ref: '#/definitions/imageSimple'
+                tag:
+                  $ref: '#/definitions/imageTag'
+                  default: 15.1.1
+                pullPolicy:
+                  $ref: '#/definitions/imagePullPolicy'
               postgresql:
-                $ref: '#/definitions/imageSimple'
+                tag:
+                  $ref: '#/definitions/imageTag'
+                  default: 13.5.0
+                pullPolicy:
+                  $ref: '#/definitions/imagePullPolicy'
           resources:
             additionalProperties: false
             properties:
@@ -1996,7 +2074,7 @@ properties:
         properties:
           enabled:
             type: boolean
-            default: true
+            default: false
           serving:
             type: object
             properties:
@@ -2014,6 +2092,14 @@ properties:
           enableCommonGround:
             default: false
             type: boolean
+          autoscaling:
+            properties:
+              dashboard:
+                $ref: '#/definitions/autoscaling'
+              frontend:
+                $ref: '#/definitions/autoscaling'
+              kubeops:
+                $ref: '#/definitions/autoscaling'
           initialRepos:
             type: array
             items:
@@ -2067,6 +2153,7 @@ properties:
             type: boolean
             default: false
           logLevel:
+            default: warning
             enum:
               - debug
               - info
@@ -2082,18 +2169,11 @@ properties:
             $ref: '#/definitions/resources'
         required:
           - databasePassword
-      external-secrets:
-        additionalProperties: false
-        properties:
-          enabled:
-            type: boolean
-          logLevel:
-            $ref: '#/definitions/logLevel'
       kube-descheduler:
         additionalProperties: false
         properties:
           enabled:
-            default: true
+            default: false
             type: boolean
           schedule:
             default: '*/30 * * * *'
@@ -2178,10 +2258,13 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: true
+            default: false
           apiServer:
             additionalProperties: false
             properties:
+              create:
+                type: boolean
+                default: true
               enabled:
                 type: boolean
                 default: true
@@ -2191,6 +2274,7 @@ properties:
             default:
               kubelet-preferred-address-types: InternalIP
           resources:
+            $ref: '#/definitions/resources'
             additionalProperties: false
             properties:
               api:
@@ -2248,6 +2332,7 @@ properties:
             properties:
               branch:
                 type: string
+                default: main
               email:
                 $ref: '#/definitions/email'
               password:
@@ -2337,7 +2422,12 @@ properties:
           image:
             properties:
               prometheus:
-                $ref: '#/definitions/imageSimple'
+                properties:
+                  tag:
+                    $ref: '#/definitions/imageTag'
+                    default: v2.36.1
+                  pullPolicy:
+                    $ref: '#/definitions/imagePullPolicy'
               kube-state-metrics:
                 $ref: '#/definitions/imageSimple'
               node-exporter:
@@ -2370,8 +2460,16 @@ properties:
           enabled:
             type: boolean
             default: false
+          image:
+            properties:
+              tag:
+                $ref: '#/definitions/imageTag'
+                default: 1.15.2
+              pullPolicy:
+                $ref: '#/definitions/imagePullPolicy'
           logLevel:
             $ref: '#/definitions/logLevel'
+            default: info
           seal:
             description: |
               Use a KMS to encrypt and decrypt the master key.\n
@@ -2445,10 +2543,6 @@ properties:
           storage:
             description: Storage configuration. See https://www.vaultproject.io/docs/configuration/storage.
             type: object
-          image:
-            properties:
-              tag:
-                $ref: '#/definitions/imageTag'
           resources:
             $ref: '#/definitions/resources'
       velero:
@@ -2510,9 +2604,10 @@ properties:
                     - subscriptionId
                     - aadClientId
                     - aadClientSecret
+              required: [config, secretContents]
             aws:
               properties:
-                congig:
+                config:
                   properties:
                     region:
                       description: The region of the S3 bucket
@@ -2534,6 +2629,7 @@ properties:
                     - region
                     - accessKeyId
                     - secretAccessKey
+              required: [config, secretContents]
           logLevel:
             description: Set log-level for the Velero pod.
             default: info
@@ -2546,6 +2642,7 @@ properties:
               - panic
           resources:
             $ref: '#/definitions/resources'
+        required: [provider]
   cluster:
     $ref: '#/definitions/cluster'
   dns:
@@ -3084,7 +3181,9 @@ properties:
               className:
                 type: string
                 enum: [platform]
+                default: platform
           - $ref: '#/definitions/ingressClassParameters'
+        # required: [className]
       classes:
         type: array
         items:
@@ -3096,6 +3195,7 @@ properties:
             - $ref: '#/definitions/ingressClassParameters'
           required:
             - className
+    # required: [platformClass]
   smtp:
     additionalProperties: false
     properties:
@@ -3156,11 +3256,16 @@ properties:
     properties:
       admin:
         properties:
+          id:
+            type: string
+            default: admin
+            readOnly: true
           password:
             type: string
             x-secret: randAlpha 16
   version:
     type: integer
-    description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.
+    description: The values-schema version. Used by `otomi migrate`.
+    default: 5
 required:
   - cluster

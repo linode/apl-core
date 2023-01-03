@@ -1,27 +1,16 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.keycloak }}
-{{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 {{- $pinnedConsoleVersion := "0.5.4" }}
 image:
-  tag: 15.1.1
+  tag: {{ $k.image.keycloak.tag }}
+  pullPolicy: {{ $k.image.keycloak.pullPolicy }}
 contextPath: ""
 persistence:
-  dbVendor: {{ $dbVendor }}
-  dbHost: {{ $k | get "persistence.dbHost" nil }}
-  deployPostgres: {{ $k | get "persistence.deployPostgres" (eq $dbVendor "postgres") }}
+  dbVendor: postgres
+  deployPostgres: true
 priorityClassName: otomi-critical
 proxyAddressForwarding: true
-resources:
-  {{- with $k | get "resources.keycloak" nil }}
-    {{- toYaml . | nindent 4 }}
-  {{- else }}
-  limits:
-    cpu: 1
-    memory: 1.5Gi
-  requests:
-    cpu: 100m
-    memory: 1Gi
-  {{- end }}
+resources: {{- $k.resources.keycloak | toYaml | nindent 4 }}
 replicas: 1
 startupScripts:
   frontend.cli: |
@@ -90,7 +79,8 @@ extraVolumes: |
 postgresql:
   # @TODO:
   image:
-    tag: 13.5.0
+    tag: {{ $k.image.postgresql.tag }}
+    pullPolicy: {{ $k.image.postgresql.pullPolicy }}
   securityContext:
     enabled: true
     fsGroup: 1001
@@ -101,7 +91,7 @@ postgresql:
     {{- if eq $v.cluster.provider "vultr" }}
     size: 10Gi
     {{- end }}
-    enabled: {{ $k | get "postgresql.persistence.enabled" (eq $dbVendor "postgres") }} 
+    enabled: true
   metrics:
     image:
       tag: 0.10.0
@@ -120,17 +110,7 @@ postgresql:
       enabled: true
       additionalLabels:
         prometheus: system
-  resources:
-    {{- with $k | get "resources.postgresql" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 1
-      memory: 1.5Gi
-    requests:
-      cpu: 100m
-      memory: 1Gi
-    {{- end }}
+  resources: {{- $k.resources.postgresql | toYaml | nindent 4 }}
   master:
     priorityClassName: otomi-critical
   slave:

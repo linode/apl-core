@@ -13,7 +13,7 @@ resources:
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users,banned-image-tags
 
-{{- with $v.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

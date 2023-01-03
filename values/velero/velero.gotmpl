@@ -180,7 +180,7 @@ schedules:
   {{- end }}
   {{- if $v.backup.teamSchedule.enabled }}
   {{- range $teamId := keys $v.teamConfig }}
-  team-{{$teamId}}:
+  team-{{ $teamId }}:
     disabled: false
     schedule: {{ $v.backup.teamSchedule.schedule }}
     useOwnerReferencesInBackup: false

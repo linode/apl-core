@@ -2,7 +2,7 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 
 global:
-  {{- with $v.otomi | get "globalPullSecret" nil }}
+  {{- with $v._files | get "otomi.globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
@@ -32,7 +32,7 @@ startupapicheck:
 
 installCRDs: true
 
-resources: {{- toYaml $cm.resources | nindent 2 }}
+resources: {{- $cm.resources | toYaml | nindent 2 }}
 
 cainjector:
   resources:

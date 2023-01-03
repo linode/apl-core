@@ -14,3 +14,7 @@ chart/otomi/values.schema.json
 chart/otomi/README.md
 workflow/
 *.new
+tests/snapshots/template
+tests/snapshots/template-next
+tests/snapshots/template-next.yaml
+tests/snapshots/values-next.yaml

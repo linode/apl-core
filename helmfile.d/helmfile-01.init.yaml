@@ -1,8 +1,8 @@
 bases:
-  - snippets/defaults.yaml
+  - snippets/files.gotmpl
 ---
 bases:
-  - snippets/env.gotmpl
+  - snippets/defaults.gotmpl
 ---
 bases:
   - snippets/derived.gotmpl

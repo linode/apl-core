@@ -17,6 +17,7 @@ This log lists the architectural decisions for otomi-core.
 * [ADR-2022-06-07](2022-06-07-ingress-classes.md) - Ingress classes
 * [ADR-2022-07-02](2022-07-02-node-affinity.md) - Node affinity
 * [ADR-2022-08-26](2022-08-26-other-dns-provider.md) - Other DNS provider
+* [ADR-2022-11-29](2022-11-29-defaults-in-schema.md) - Default values
 
 <!-- adrlogstop -->
 

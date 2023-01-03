@@ -6,19 +6,9 @@ extraArgs: {{- $m.extraArgs | toYaml | nindent 2 }}
 apiService:
   create: {{ $m.apiServer.create }}
 
-resources:
-  {{- if (hasKey $m "resources") }}
-    {{- $m.resources | toYaml | nindent 2 }}
-  {{- else }}
-  limits:
-    cpu: 300m
-    memory: 128Mi
-  requests:
-    cpu: 100m
-    memory: 64Mi
-  {{- end }}
+resources: {{- $m.resources | toYaml | nindent 2 }}
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:
   imagePullSecrets:
     - otomi-pullsecret-global

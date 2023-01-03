@@ -6,7 +6,6 @@ metadata:
   annotations:
     helm.sh/hook: post-install
     helm.sh/hook-delete-policy: hook-succeeded
-  name: {{ include "gatekeeper-artifacts.name" . }}-postinstall
   labels:
     {{- include "gatekeeper-artifacts.labels" . | nindent 4 }}
 spec:

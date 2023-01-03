@@ -8,17 +8,7 @@
 nameOverride: gitea
 fullnameOverride: gitea
 
-resources:
-  {{ with $g | get "resources.gitea" nil }}
-    {{- toYaml . | nindent 2 }}
-  {{- else }}
-  limits:
-    cpu: 1
-    memory: 1Gi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  {{- end }}
+resources: {{ $g | get "resources.gitea" | toYaml | nindent 2 }}
 
 securityContext:
   allowPrivilegeEscalation: false
@@ -32,13 +22,12 @@ securityContext:
   runAsUser: 1000
 
 image:
-  {{- with $v.otomi | get "globalPullSecret" nil }}
+  {{- with $v._files | get "otomi.globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  # tag: {{ $g | get "image.gitea.tag" "1.15.8" }}
-  tag: {{ $g | get "image.gitea.tag" "1.16.6" }}
-  pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
+  tag: {{ $g | get "image.gitea.tag" }}
+  pullPolicy: {{ $g | get "image.gitea.pullPolicy" }}
   rootless: true
 
 gitea:
@@ -46,7 +35,7 @@ gitea:
     policy.otomi.io/ignore.init: psp-allowed-users
     policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
   admin:
-    username: {{ $g.adminUsername }}
+    username: otomi-admin
     password: {{ $g.adminPassword }}
   config:
     admin:
@@ -125,19 +114,9 @@ init:
 memcached:
   # @TODO:
   image:
-    tag: {{ $g | get "image.memcached.tag" "1.6.12" }}
-    pullPolicy:  {{ $g | get "image.memcached.pullPolicy" "IfNotPresent" }}
-  resources:
-    {{ with $g | get "resources.memcached" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 250m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    {{- end }}
+    tag: {{ $g | get "image.memcached.tag" }}
+    pullPolicy:  {{ $g | get "image.memcached.pullPolicy" }}
+  resources: {{- $g | get "resources.memcached" | toYaml | nindent 4 }}
   metrics:
     enabled: true
     resources:
@@ -165,8 +144,8 @@ persistence:
 postgresql:
   # @TODO:
   image:
-    tag: {{ $g | get "image.postgresql.tag" "13.5.0" }}
-    pullPolicy:  {{ $g | get "image.postgresql.pullPolicy" "IfNotPresent" }}
+    tag: {{ $g | get "image.postgresql.tag" }}
+    pullPolicy:  {{ $g | get "image.postgresql.pullPolicy" }}
   metrics:
     image:
       tag: 0.10.0
@@ -180,17 +159,7 @@ postgresql:
     postgresql:
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}
       postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
-  resources:
-    {{ with $g | get "resources.postgresql" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 250m
-      memory: 256Mi
-    {{- end }}
+  resources: {{- $g | get "resources.postgresql" | toYaml | nindent 4 }}
   metrics:
     enabled: true
     resources:
@@ -226,7 +195,7 @@ containerSecurityContext:
   runAsUser: 1000
   runAsGroup: 1000
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:
   imagePullSecrets:
     - otomi-pullsecret-global

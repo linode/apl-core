@@ -5,3 +5,5 @@
 /helmfile*/
 *.sh
 CHANGELOG.md
+tests/template-snapshot.yaml
+tests/snapshots/**/*

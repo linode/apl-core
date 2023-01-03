@@ -30,7 +30,7 @@ config:
       prober: http
       timeout: 12s # a knative service should start under 12s, right?
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 image:
   pullSecrets:
     - otomi-pullsecret-global

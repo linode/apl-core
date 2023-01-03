@@ -1,11 +1,11 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { readFile, writeFile } from 'fs-extra'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
-import { getFilename } from 'src/common/utils'
-import { generateSecrets } from 'src/common/values'
+import { getFilename, rootDir } from 'src/common/utils'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { $ } from 'zx'
 /**
  * This file is a scripting playground to test basic code
  * it's basically the same as EXAMPLE.ts
@@ -16,11 +16,17 @@ const cmdName = getFilename(__filename)
 
 const playground = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:playGround`)
-  const cmd = 'pwd && ls -als .'
-  const q = $.quote
-  $.quote = (v) => v
-  const res = await $`${cmd.split(' ')}`
-  console.log(JSON.stringify(await generateSecrets({})))
+  const snapshotFile = `${rootDir}/tests/template-snapshot.yaml`
+  const snapshotFileOut = `${rootDir}/tests/snapshots/template.yaml`
+  const output = await readFile(snapshotFile, 'utf8')
+  // remove uuidv4 generated ids
+  const out = output
+    .replace(/-[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{10}/g, '')
+    .replace(/^#.*/gm, '')
+    .replace(/^[ ]+#.*/gm, '')
+    .replace(/[ ]{1}#.*/g, '')
+    .replace(/[\n]+/g, '\n')
+  await writeFile(snapshotFileOut, out)
 }
 
 export const module = {

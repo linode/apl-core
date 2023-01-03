@@ -1,8 +1,8 @@
 bases:
-  - snippets/defaults.yaml
+  - snippets/defaults.gotmpl
 ---
 bases:
-  - snippets/env.gotmpl
+  - snippets/files.gotmpl
 ---
 bases:
   - snippets/derived.gotmpl
@@ -13,7 +13,7 @@ bases:
 
 releases:
   - name: drone
-    installed: {{ $a | get "drone.enabled" }}
+    installed: true
     namespace: drone
     labels:
       pkg: drone

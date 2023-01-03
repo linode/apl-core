@@ -9,8 +9,8 @@ import { $, nothrow } from 'zx'
 const cmdName = getFilename(__filename)
 const d: OtomiDebugger = terminal(`cmd:${cmdName}`)
 
-export const x = async (inArgv?: Arguments): Promise<number> => {
-  const argv: Arguments = inArgv ?? getParsedArgs()
+export const x = async (): Promise<number> => {
+  const argv: Arguments = getParsedArgs()
   const commands = argv._.slice(1)
   const output = await stream(nothrow($`${commands}`), { stdout: d.stream.log, stderr: d.stream.error })
   return output.exitCode

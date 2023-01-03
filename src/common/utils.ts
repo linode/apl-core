@@ -2,12 +2,13 @@
 /* eslint-disable no-await-in-loop */
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
-import { existsSync, pathExists, readFileSync } from 'fs-extra'
+import { ensureDir, existsSync, pathExists, readFileSync, writeFile } from 'fs-extra'
 import { readdir, readFile } from 'fs/promises'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
-import { omit } from 'lodash'
+import { each, omit } from 'lodash'
 import { resolve } from 'path'
+import ThrottledPromise from 'throttled-promise'
 import { $, ProcessOutput } from 'zx'
 import { env } from './envalid'
 
@@ -127,27 +128,47 @@ export const guccify = async (str: string, ctx: { [key: string]: any }): Promise
 export const extract = (
   schema: Record<string, any>,
   leaf: string,
-  mapValue = (val: any) => val,
+  mapValue = (val: any, parent: JSONSchema) => val,
+  parent?: JSONSchema,
 ): Record<string, any> => {
-  const schemaKeywords = ['properties', 'anyOf', 'allOf', 'oneOf', 'default', 'x-secret', 'x-acl']
+  if (schema.items) return {} // early exit for arrays as we can't expand them
+  const schemaKeywords = [
+    'properties',
+    'anyOf',
+    'allOf',
+    'default',
+    'examples',
+    'items',
+    'oneOf',
+    'required',
+    'x-secret',
+    'x-acl',
+  ]
   return Object.keys(schema)
     .map((key) => {
-      const childObj: JSONSchema = schema[key]
-      if (key === leaf) return schemaKeywords.includes(key) ? mapValue(childObj) : { [key]: mapValue(childObj) }
-      if (typeof childObj !== 'object') return {}
-      const obj: JSONSchema = extract(childObj, leaf, mapValue)
+      let childObj: JSONSchema | null | string[] = schema[key]
+      const isSchemaKey = schemaKeywords.includes(key)
+      const childType = typeof childObj
+      // Just for required expand allOf as well as those are gathered from there as well.
+      // We don't support anyOf or oneOf as those are not expandable
+      if (key === 'required' && schema.allOf) {
+        const allOfRequired: string[] = schema.allOf.reduce((memo, sub) => [...memo, ...(sub.required ?? [])], [])
+        childObj = (childObj as string[]).concat(allOfRequired)
+      }
+      if (key === leaf) return isSchemaKey ? mapValue(childObj, schema) : { [key]: mapValue(childObj, schema) }
+      if (childType !== 'object' || childObj === null) return {}
+      const obj: JSONSchema = extract(childObj, leaf, mapValue, schema)
       if ('extractedValue' in obj) return { [key]: obj.extractedValue }
       // eslint-disable-next-line no-nested-ternary
-      return schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
+      return isSchemaKey || !Object.keys(obj).length || !Number.isNaN(Number(key))
         ? obj === '{}'
           ? undefined
           : obj
         : { [key]: obj }
     })
-    .reduce((accumulator, extractedValue) => {
-      return typeof extractedValue !== 'object'
-        ? { ...accumulator, extractedValue }
-        : { ...accumulator, ...extractedValue }
+    .reduce((memo, extractedValue) => {
+      if (typeof extractedValue !== 'object') return { ...memo, extractedValue }
+      else return { ...memo, ...extractedValue }
     }, {})
 }
 
@@ -198,4 +219,33 @@ export const semverCompare = (a, b) => {
     if (Number.isNaN(na) && !Number.isNaN(nb)) return -1
   }
   return 0
+}
+
+export const extractArray = (obj): any[] => {
+  const ret: any[] = []
+  each(obj, (val, key) => {
+    if (!Number.isNaN(Number(key))) ret.push(val)
+  })
+  return ret
+}
+
+export const manifestExplodeToDir = async (content, dir) => {
+  await ThrottledPromise.all(
+    content.map(async (resource: string) => {
+      const kindMatches = resource.match(/kind: ['"]?([A-Za-z-]*)['"]?/)
+      if (!kindMatches) return
+      // eslint-disable-next-line prefer-destructuring
+      const kind = kindMatches[1]
+      const nameMatches = resource.match(/[\s]+name: ['"]?([A-Za-z0-9-:]*)['"]?/)
+      // eslint-disable-next-line prefer-destructuring
+      const name = nameMatches![1].replaceAll(':', '-')
+      if (name.startsWith('job-demo-base')) console.log('nameMatches: ', nameMatches)
+      const namespaceMatches = resource.match(/[\s]+namespace: ['"]?([A-Za-z0-9-]*)['"]?/)
+      const namespace = namespaceMatches ? namespaceMatches[1] : 'global'
+      const filename = `${dir}/${kind}/${namespace}-${name}.yaml`
+      await ensureDir(`${dir}/${kind}`)
+      await writeFile(filename, resource)
+    }),
+    10,
+  )
 }

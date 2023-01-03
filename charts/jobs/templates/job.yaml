@@ -4,7 +4,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   {{- if eq ($v.runPolicy | default "OnSpecChange") "Always" }}
-  name: {{ join "-" (list .Release.Name uuidv4) | trunc 63 }}
+  name: {{ print .Release.Name "-" uuidv4 | trunc 253 }}
   {{- else }}
   name: {{ .Release.Name }}
   {{- end }}

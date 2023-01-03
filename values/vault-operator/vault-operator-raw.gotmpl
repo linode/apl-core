@@ -17,7 +17,7 @@ resources:
     spec:
       size: 1
       image: vault:{{ $vaultVersion }}
-      bankVaultsImage: ghcr.io/banzaicloud/bank-vaults:{{ $bankVaultsVersion }}
+      bankVaultsImage: ghcr.io/banzaicloud/bank-vaults:{{ $vt.image.tag }}
 
       # Common annotations for all created resources
       annotations:
@@ -29,7 +29,7 @@ resources:
         # psp-allowed-users vault needs to run as root because it cuses chwon and IPC_LOCK
         policy.otomi.io/ignore: banned-image-tags,psp-capabilities,psp-allowed-users
       resources:
-        vault: {{- toYaml $vt.resources | nindent 10 }}
+        vault: {{ $vt.resources | toYaml | nindent 10 }}
 
       vaultPodSpec:
         securityContext:
@@ -40,7 +40,7 @@ resources:
       istioEnabled: true
       vaultEnvsConfig:
         - name: VAULT_LOG_LEVEL
-          value: {{ $vt | get "logLevel" "info" }}
+          value: {{ $vt.logLevel }}
         - name: VAULT_STORAGE_FILE
           value: "/vault/file"
 
@@ -118,7 +118,7 @@ resources:
 
         # https://www.vaultproject.io/docs/configuration/seal
         {{- with $vt | get "seal" nil }}
-        seal: {{- toYaml $seal | nindent 10 }}
+        seal: {{- $seal | toYaml | nindent 10 }}
         {{- end }}
         listener:
           tcp:

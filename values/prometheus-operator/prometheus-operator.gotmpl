@@ -18,7 +18,7 @@
 {{- end }}
 nameOverride: po
 fullnameOverride: po
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:
   imagePullSecrets:
     - name: otomi-pullsecret-global
@@ -61,24 +61,12 @@ prometheus:
     scrapeInterval: {{ $p.scrapeInterval }}
     podAntiAffinity: hard
     image:
-      {{- with $g | get "image.prometheus.tag" nil }}
-      tag: {{ . }}
-      {{- end }}
-      pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
+      tag: {{ $p.image.prometheus.tag }}
+      pullPolicy: {{ $p.image.prometheus.pullPolicy }}
     podMetadata:
       annotations:
         sidecar.istio.io/inject: "true"
-    resources:
-      {{- with $p | get "resources.prometheus" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      requests:
-        cpu: 100m
-        memory: 512Mi
-      limits:
-        cpu: '3'
-        memory: 3Gi
-      {{- end }}
+    resources: {{- $p.resources.prometheus | toYaml | nindent 4 }}
     priorityClassName: otomi-critical
     externalLabels:
       cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
@@ -127,13 +115,13 @@ prometheus:
 {{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
-    - {{- toYaml $m | nindent 6 }}
+    - {{- $m | toYaml | nindent 6 }}
       additionalLabels:
         prometheus: system
     {{- end }}
   additionalServiceMonitors:
     {{- range $m := (tpl (readFile "service-monitors.gotmpl") $v | fromYaml) | get "additionalServiceMonitors" }}
-    - {{- toYaml $m | nindent 6 }}
+    - {{- $m | toYaml | nindent 6 }}
       additionalLabels:
         prometheus: system
     {{- end }}
@@ -157,22 +145,10 @@ alertmanager:
       labels:
         prometheus: system
     image:
-       {{- with $a | get "image.tag" nil }}
-      tag: {{ . }}
-      {{- end }}
-      pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
+      tag: {{ $a.image.tag }}
+      pullPolicy: {{ $a.image.pullPolicy }}
     priorityClassName: otomi-critical
-    resources:
-      {{- with $a | get "resources" nil }}
-        {{- toYaml . | nindent 4 }}
-      {{- else }}
-      limits:
-        cpu: 500m
-        memory: 256Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      {{- end }}
+    resources: {{- $a.resources | toYaml | nindent 4 }}
     externalUrl: https://{{ $appsDomain }}/alertmanager
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
 grafana:
@@ -190,21 +166,9 @@ grafana:
         cpu: 50m
         memory: 50Mi
   image:
-    {{- with $g | get "image.tag" nil }}
-    tag: {{ . }}
-    {{- end }}
-    pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
-  resources:
-    {{- with $g | get "resources" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 500m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    {{- end }}
+    tag: {{ $g.image.tag }}
+    pullPolicy: {{ $g.image.pullPolicy }}
+  resources: {{- $g.resources | toYaml | nindent 4 }}
   sidecar:
     resources:
       limits:
@@ -257,17 +221,7 @@ kube-state-metrics:
     tag: {{  . }}
     {{- end }}
     pullPolicy: {{ $p | get "image.kube-state-metrics.pullPolicy" "IfNotPresent" }}
-  resources:
-    {{- with $p | get "resources.kube-state-metrics" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 100m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    {{- end }}
+  resources: {{- $p.resources | get "kube-state-metrics" | toYaml | nindent 4 }}
 
 prometheus-node-exporter:
   prometheus:
@@ -279,17 +233,7 @@ prometheus-node-exporter:
     tag: {{ . }}
     {{- end }}
     pullPolicy: {{ $p | get "image.node-exporter.pullPolicy" "IfNotPresent" }}
-  resources:
-    {{- with $p | get "resources.prometheus-node-exporter" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 500m
-      memory: 128Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    {{- end }}
+  resources: {{- $p.resources | get "node-exporter" | toYaml | nindent 4 }}
   priorityClassName: otomi-critical
   podAnnotations:
     policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security

@@ -116,7 +116,7 @@ teamConfig:
                   requests:
                       cpu: 50m
                       memory: 64Mi
-              script: echo "hello $receiver"
+              script: echo "hello world"
               type: Job
             - enabled: true
               image:

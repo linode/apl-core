@@ -1,0 +1,332 @@
+alerts:
+  groupInterval: 5m
+  repeatInterval: 3h
+  slack:
+    channel: mon-otomi
+    channelCrit: mon-otomi-crit
+azure:
+  appgw:
+    isManaged: false
+  monitor:
+    azureLogAnalyticsSameAs: true
+apps:
+  alertmanager:
+    enabled: false
+    image:
+      tag: v0.24.0
+      pullPolicy: IfNotPresent
+  argocd:
+    enabled: false
+    autoscaling:
+      enabled: true
+      maxReplicas: 10
+      minReplicas: 1
+  cert-manager:
+    issuer: custom-ca
+    stage: production
+  cluster-autoscaler:
+    enabled: false
+  cluster-overprovisioner:
+    enabled: false
+    cpu: 1000m
+    memory: 1000Mi
+  demo-tlspass:
+    enabled: false
+  drone:
+    adminIsMachine: false
+    debug: false
+    githubAdmins:
+      team: admin
+    image:
+      agent:
+        pullPolicy: IfNotPresent
+      server:
+        pullPolicy: IfNotPresent
+    resources:
+      runner:
+        requests:
+          cpu: 1000
+          memory: 1Gi
+    sourceControl:
+      github:
+        server: https://github.com
+      provider: gitea
+    trace: false
+  external-dns:
+    logLevel: info
+  external-secrets:
+    logLevel: info
+  gatekeeper:
+    enabled: false
+    auditInterval: 60
+    auditFromCache: false
+    constraintViolationsLimit: 20
+    disableValidatingWebhook: true
+    emitAuditEvents: false
+    emitAdmissionEvents: false
+    logLevel: INFO
+    replicas: 1
+    image:
+      tag: v3.7.1
+      pullPolicy: IfNotPresent
+  gitea:
+    enabled: true
+    adminUsername: otomi-admin
+    image:
+      gitea:
+        tag: 1.16.6
+        pullPolicy: IfNotPresent
+      postgresql:
+        tag: 13.5.0
+        pullPolicy: IfNotPresent
+      memcached:
+        tag: 1.6.12
+        pullPolicy: IfNotPresent
+  grafana:
+    enabled: false
+    image:
+      tag: 9.0.1
+      pullPolicy: IfNotPresent
+  harbor:
+    enabled: false
+    privateLibrary: true
+    persistence:
+      imageChartStorage:
+        type: filesystem
+    registry:
+      credentials:
+        username: otomi-admin
+    image:
+      tag: v2.5.4
+      pullPolicy: IfNotPresent
+    backup:
+      enabled: false
+      schedule: 0 0 * * *
+  hello:
+    enabled: false
+  httpbin:
+    enabled: false
+  host-mods:
+    enabled: false
+  ingress-azure:
+    appgw:
+      usePrivateIP: false
+  ingress-nginx:
+    autoscaling:
+      enabled: true
+      maxReplicas: 10
+      minReplicas: 1
+    maxBodySize: 1024m
+    maxBodySizeBytes: 1073741824
+    modsecurity:
+      block: false
+      enabled: false
+      owasp: true
+    image:
+      tag: v1.1.2
+      pullPolicy: IfNotPresent
+  istio:
+    enabled: true
+    autoscaling:
+      egressgateway:
+        maxReplicas: 10
+        minReplicas: 1
+      ingressgateway:
+        maxReplicas: 10
+        minReplicas: 1
+      pilot:
+        maxReplicas: 10
+        minReplicas: 1
+    egressGateway:
+      enabled: false
+    global:
+      logging:
+        level: default:info
+    meshConfig:
+      defaultConfig:
+        tracing:
+          sampling: 0.1
+    image:
+      tag: 1.13.1
+      pullPolicy: IfNotPresent
+  jaeger:
+    enabled: false
+  keycloak:
+    enabled: true
+    idp:
+      alias: otomi-idp
+      clientID: otomi
+    adminUsername: otomi-admin
+    theme: otomi
+    image:
+      keycloak:
+        tag: 15.1.1
+        pullPolicy: IfNotPresent
+      postgresql:
+        tag: 13.5.0
+        pullPolicy: IfNotPresent
+  kiali:
+    enabled: false
+  knative:
+    enabled: false
+    serving:
+      replicas: 1
+  kubeapps:
+    enabled: false
+    enableCommonGround: false
+    autoscaling:
+      dashboard:
+        maxReplicas: 10
+        minReplicas: 1
+      frontend:
+        maxReplicas: 10
+        minReplicas: 1
+      kubeops:
+        maxReplicas: 10
+        minReplicas: 1
+  kubeclarity:
+    enabled: false
+    logLevel: warning
+  kube-descheduler:
+    enabled: false
+    schedule: '*/30 * * * *'
+  loki:
+    enabled: false
+    persistence:
+      size: 20Gi
+    retention:
+      duration: 24h
+      period: 24h
+  metrics-server:
+    enabled: false
+    apiServer:
+      create: true
+      enabled: true
+    extraArgs:
+      kubelet-preferred-address-types: InternalIP
+  minio:
+    enabled: false
+    provisioning:
+      enabled: true
+    persistence:
+      enabled: true
+      size: 20Gi
+  oauth2-proxy-redis:
+    architecture: standalone
+    sizes:
+      master: 1Gi
+      sentinel: 1Gi
+      replica: 1Gi
+  otomi-api:
+    editorInactivityTimeout: 10
+    git:
+      branch: main
+  prometheus:
+    enabled: false
+    remoteWrite:
+      enabled: false
+      otomiThanos: false
+      insecureSkipVerify: false
+      rwConfig:
+        basicAuth:
+          enabled: false
+    replicas: 1
+    scrapeInterval: 60s
+    retention: 1d
+    retentionSize: 4GB
+    storageSize: 5Gi
+    image:
+      prometheus:
+        tag: v2.36.1
+        pullPolicy: IfNotPresent
+      kube-state-metrics:
+        pullPolicy: IfNotPresent
+      node-exporter:
+        pullPolicy: IfNotPresent
+  redis-shared:
+    architecture: standalone
+    sizes:
+      master: 1Gi
+      sentinel: 1Gi
+      replica: 1Gi
+    enabled: false
+  tigera-operator:
+    enabled: false
+  vault:
+    enabled: false
+    image:
+      tag: 1.15.2
+      pullPolicy: IfNotPresent
+    logLevel: info
+  velero:
+    enabled: false
+    provider:
+      azure:
+        environment: AzurePublicCloud
+    logLevel: info
+cluster:
+  owner: otomi
+  profile: small
+home:
+  groupInterval: 5m
+  repeatInterval: 3h
+  slack:
+    channel: mon-otomi
+    channelCrit: mon-otomi-crit
+oidc:
+  usernameClaimMapper: ${CLAIM.upn}
+  subClaimMapper: sub
+otomi:
+  globalPullSecret:
+    email: not@us.ed
+    server: docker.io
+  hasCloudLB: false
+  hasExternalDNS: false
+  hasExternalIDP: false
+  isHomeMonitored: false
+  isMultitenant: false
+  version: latest
+policies:
+  banned-image-tags:
+    enabled: false
+  container-limits:
+    enabled: false
+  psp-allowed-repos:
+    enabled: false
+  psp-host-filesystem:
+    enabled: false
+  psp-allowed-users:
+    enabled: false
+  psp-host-security:
+    enabled: false
+  psp-host-networking-ports:
+    enabled: false
+  psp-privileged:
+    enabled: false
+  psp-capabilities:
+    enabled: false
+  psp-forbidden-sysctls:
+    enabled: false
+  psp-apparmor:
+    enabled: false
+  psp-seccomp:
+    enabled: false
+  psp-selinux:
+    enabled: false
+ingress:
+  platformClass:
+    className: platform
+    network: public
+backup:
+  platformSchedule:
+    enabled: false
+    ttl: 240h
+    schedule: 0 0 * * *
+  teamSchedule:
+    enabled: false
+    ttl: 240h
+    schedule: 0 0 * * *
+teamConfig:
+  admin:
+    id: admin
+version: 5

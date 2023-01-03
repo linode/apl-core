@@ -9,5 +9,5 @@ Notable quirks that can give you headaches:
 Both helm and helmfile use go templates, but have some minor differences. Helmfile uses a subset of Helm's features, but also has some custom functionality. Most notable differences:
 
 - helm's `.Files.Get` can be achieved by helmfile's `readFile`
-- helm's `.Files.Glob` can be achieved by executing a bash command and parsing the result. (See `helmfile.d/snippets/env.gotmpl`)
+- helm's `.Files.Glob` can be achieved by executing a bash command and parsing the result. (See `helmfile.d/snippets/files.gotmpl`)
 - helmfile's `get` can read a nested property with dots and takes an optional default value, which you can see a lot in the top of the `*.gotmpl` files

@@ -6,89 +6,44 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
-{{- $tag := $h | get "image.tag" "v2.5.4" }}
+{{- $image := $h.image | toYaml }}
+{{- $pullPolicy := $h.image.pullPolicy }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
 # logLevel - debug, info, warning, error or fatal
 logLevel: warning
-harborAdminPassword: {{ $v.otomi.adminPassword }}
+harborAdminPassword: {{ $h.adminPassword }}
 nameOverride: harbor
-secretKey: {{ $h | get "secretKey" nil }}
+secretKey: {{ $h.secretKey }}
 
 clair:
   adapter:
-    image:
-      tag: {{ $tag }}
-    resources:
-      {{- with $h | get "resources.clair-adapter" nil }}
-      {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 400m
-        memory: 256Mi
-      requests:
-        cpu: 100m 
-        memory: 256Mi
-      {{- end }}
+    image: {{- $image | nindent 6 }}
+    resources: {{- $h.resources | get "clair-adapter" | toYaml | nindent 6 }}
   clair:
-    image:
-      tag: {{ $tag }}
-    resources:
-      {{- with $h | get "resources.clair" nil }}
-      {{- toYaml . | nindent 6 }}
-      {{- else }}
-      requests:
-        cpu: 100m 
-        memory: 1Gi
-      limits:
-        cpu: 400m
-        memory: 2Gi
-      {{- end }}
+    image: {{- $image | nindent 6 }}
+    resources: {{- $h.resources.clair | toYaml | nindent 6 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
 
 chartmuseum:
-  image:
-    tag: {{ $tag }}
+  image: {{- $image | nindent 4 }}
+  resources: {{- $h.resources.chartmuseum | toYaml | nindent 6 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
-  resources:
-    {{- with $h | get "resources.chartmuseum" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 100m 
-      memory: 128Mi
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    {{- end }}
 
 core:
-  image:
-    tag: {{ $tag }}
+  image: {{- $image | nindent 4 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
-  resources:
-    {{- with $h | get "resources.core" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 100m
-      memory: 512Mi
-    requests:
-      cpu: 50m
-      memory: 256Mi
-    {{- end }}
-  secret: {{ $h | get "core.secret" nil }}
-  # secretName: {{ $harborSecretName }}
-  xsrfKey: {{ $h | get "core.xsrfKey" nil }}
+  resources: {{- $h.resources.core | toYaml | nindent 6 }}
+  secret: {{ $h.core.secret }}
+  xsrfKey: {{ $h.core.xsrfKey }}
 
 database:
   internal:
-    image:
-      tag: {{ $tag }}
+    image: {{- $image | nindent 6 }}  
     initContainer:
       migrator:
         resources:
@@ -106,26 +61,15 @@ database:
           requests:
             cpu: 50m
             memory: 256Mi
-    resources:
-      {{- with $h | get "resources.database" nil }}
-      {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 100m
-        memory: 512Mi
-      requests:
-        cpu: 50m
-        memory: 256Mi
-      {{- end }}
-    password: {{ $h.databasePassword }}
+    resources: {{- $h.resources.database | toYaml | nindent 6 }}
+  password: {{ $h.adminPassword }}
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users
   type: internal
 
 exporter:
-  image:
-    tag: {{ $tag }}
+  image: {{- $image | nindent 4 }}
 
 expose:
   tls:
@@ -137,24 +81,13 @@ internalTLS:
   enabled: false
 
 jobservice:
-  image:
-    tag: {{ $tag }}
+  image: {{- $image | nindent 4 }}
   jobLoggers:
     - stdout
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
-  resources:
-    {{- with $h | get "resources.jobservice" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 100m
-      memory: 512Mi
-    requests:
-      cpu: 50m
-      memory: 256Mi
-    {{- end }}
-  secret: {{ $h | get "jobservice.secret" nil }}
+  resources: {{- $h.resources.jobservice | toYaml | nindent 6 }}
+  secret: {{ $h.jobservice.secret }}
 
 metrics:
   serviceMonitor:
@@ -164,11 +97,9 @@ metrics:
 
 notary:
   server:
-    image:
-      tag: {{ $tag }}
+    image: {{- $image | nindent 6 }}
   signer:
-    image:
-      tag: {{ $tag }}
+    image: {{- $image | nindent 6 }}
   enabled: false
   secretName: {{ $notarySecretName }}
   
@@ -246,7 +177,7 @@ persistence:
   # https://github.com/docker/distribution/blob/master/docs/configuration.md#storage
   # for the detail.
   imageChartStorage:
-    {{ $imageChartStorageType := $hp | get "imageChartStorage.type" "filesystem" }}
+    {{ $imageChartStorageType := $hp.imageChartStorage.type }}
     type: {{ $imageChartStorageType }}
     {{- if ne $imageChartStorageType "filesystem" }}
     {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType) | nindent 6 }}
@@ -257,97 +188,42 @@ postgresql:
     enabled: true
 
 portal:
-  image:
-    tag: {{ $tag }}
-  resources:
-    {{- with $h | get "resources.portal" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    requests:
-      cpu: 100m 
-      memory: 128Mi
-    {{- end }}
+  image: {{- $image | nindent 4 }}
+  resources: {{- $h.resources.portal | toYaml | nindent 6 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
 
 redis:
   internal:
-    image:
-      tag: {{ $tag }}
+    image: {{- $image | nindent 6 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
   internal:
-    resources:
-      {{- with $h | get "resources.redis" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 400m
-        memory: 256Mi
-      requests:
-        cpu: 100m 
-        memory: 128Mi
-      {{- end }}
+    resources: {{- $h.resources.redis | toYaml | nindent 6 }}
 
 registry:
-  secret: {{ $h | get "registry.secret" nil }}
+  secret: {{ $h.registry.secret }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
 
   registry:
-    image:
-      tag: {{ $tag }}
-    resources:
-      {{- with $h | get "resources.registry" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 100m
-        memory: 128Mi
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      {{- end }}
+    image: {{- $image | nindent 6 }}
+    resources: {{- $h.resources.registry | toYaml | nindent 6 }}
   controller:
-    image:
-      tag: {{ $tag }}
-    resources:
-      {{- with $h | get "resources.registry-controller" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 100m
-        memory: 512Mi
-      requests:
-        cpu: 50m
-        memory: 256Mi
-      {{- end }}
+    image: {{- $image | nindent 6 }}
+    resources: {{- $h.resources | get "registry-controller" | toYaml | nindent 6 }}
   relativeurls: false
   credentials:
-    username: {{ $h | get "registry.credentials.username" }}
-    password: {{ $h | get "registry.credentials.password" $v.otomi.adminPassword }}
-    htpasswd: {{ $h | get "registry.credentials.htpasswd" nil }}
+    username: {{ $h.registry.credentials.username }}
+    password: {{ $h.registry.credentials.password }}
+    htpasswdString: {{ $h.registry.credentials.htpasswd }}
 
 trivy:
-  image:
-    tag: {{ $tag }}
-  resources:
-    {{- with $h | get "resources.trivy" nil }}
-      {{- toYaml . | nindent 6 }}
-    {{- else }}
-      requests:
-        cpu: 100m 
-        memory: 1Gi
-      limits:
-        cpu: 400m
-        memory: 2Gi
-    {{- end }}
+  image: {{- $image | nindent 4 }}
+  resources: {{- $h.resources.trivy | toYaml | nindent 6 }}
   automountServiceAccountToken: true
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

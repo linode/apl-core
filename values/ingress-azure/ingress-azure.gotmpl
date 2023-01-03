@@ -24,7 +24,7 @@ appgw:
   name: {{ $i.appgw.name }}
   subnetName: {{ $i.appgw.subnetName }}
   subnetPrefix: {{ $i.appgw.subnetPrefix }}
-  usePrivateIP: {{ $i.appgw | get "usePrivateIP" false }}
+  usePrivateIP: {{ $i.appgw.usePrivateIP }}
 
 rbac:
   enabled: true
@@ -33,7 +33,7 @@ verbosityLevel: 5
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

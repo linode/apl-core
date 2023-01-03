@@ -17,6 +17,7 @@ const config: Config.InitialOptions = {
   },
   silent: false,
   testMatch: ['**/*.test.ts'],
+  testTimeout: 30000,
   verbose: true,
 }
 export default config

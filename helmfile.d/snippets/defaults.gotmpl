@@ -1,0 +1,13 @@
+helmDefaults:
+  atomic: true
+  historyMax: 3
+  wait: true
+  timeout: 1200
+  force: false
+  cleanupOnFail: false
+  skipDeps: true
+environments:
+  default:
+    values:
+      - _def: {{- readFile "../helmfile.d/snippets/defaults.yaml" | nindent 10 }}
+      - _def: {{- readFile "../values/defaults.yaml" | nindent 10 }}

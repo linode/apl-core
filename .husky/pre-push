@@ -3,6 +3,9 @@
 
 npm run lint
 
+# running values snapshot test here as it is quite lean
+npm run test:ts -- src/cmd/values.test.ts
+
 # Not in main
 if ! git diff HEAD main --quiet; then
   # if values files have BOTH been modified, then we know migrate is safe

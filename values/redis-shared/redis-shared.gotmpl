@@ -69,7 +69,7 @@ metrics:
       cpu: 100m
       memory: 256Mi
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:
   imagePullSecrets:
     -  otomi-pullsecret-global

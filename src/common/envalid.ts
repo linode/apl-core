@@ -42,7 +42,7 @@ export function cleanEnv<T>(
   let pEnv: any = process.env
   // load local .env and $ENV_DIR/.secrets if we have it
   ;[`${process.cwd()}/.env`, `${pEnv.ENV_DIR}/.secrets`].forEach((path) => {
-    if (existsSync(path)) {
+    if (process.env.NODE_ENV !== 'test' && existsSync(path)) {
       const result = config({ path })
       if (result.error) console.error(result.error)
       pEnv = { ...result.parsed, ...pEnv }

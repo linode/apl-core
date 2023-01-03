@@ -5,7 +5,6 @@ metadata:
   annotations:
     helm.sh/hook: post-install
     helm.sh/hook-delete-policy: hook-succeeded
-  name: {{ include "argocd.name" . }}-postinstall
   labels:
     {{- include "argocd.labels" . | nindent 4 }}
 spec:

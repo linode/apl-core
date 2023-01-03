@@ -11,11 +11,9 @@ controller:
   ingressClassResource: 
     enabled: false
     controllerValue: k8s.io/{{ $ingress.className }}
-  # ingressClass: {{ $ingress.className }}
   image:
-    tag: v1.0.5
-    tag: {{ $n | get "image.tag" "v1.1.2" }}
-    pullPolicy:  {{ $n | get "image.pullPolicy" "IfNotPresent" }}
+    tag: {{ $n.image.tag }}
+    pullPolicy:  {{ $n.image.pullPolicy }}
   scope:
     enabled: true
     namespace: {{ $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
@@ -28,17 +26,7 @@ controller:
       priorityClassName: otomi-critical
   useComponentLabel: true
   # set fixed allocation with limits same as requests
-  resources:
-    {{- if (hasKey $n "resources") }}
-      {{- $n.resources | toYaml | nindent 4 }}
-    {{- else }}
-    limits:
-        cpu: 2
-        memory: 1.5Gi
-    requests:
-        cpu: 200m
-        memory: 512Mi
-    {{- end }}
+  resources: {{- $n.resources | toYaml | nindent 4 }}
   podAnnotations:
     # sidecar.istio.io/inject: {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
     policy.otomi.io/ignore: psp-privileged
@@ -165,7 +153,7 @@ defaultBackend:
 rbac:
   create: true
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}

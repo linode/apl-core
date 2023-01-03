@@ -14,6 +14,7 @@
 # shellcheck disable=SC2128
 [ "${BASH_VERSINFO:-0}" -lt 4 ] && echo "You are using $BASH_VERSINFO, while we only support Bash -ge than version 4. Please upgrade." && exit 1
 calling_args="$*"
+
 if [ "$NODE_ENV" == "test" ]; then
   CI=1
   ENV_DIR="$PWD/tests/fixtures"
@@ -65,7 +66,7 @@ function parse_yaml {
       }
    }'
 }
-[ -z $ENV_DIR ] && [ -n "$in_core" ] && echo "No ENV_DIR set!" && exit 1
+[ -z $ENV_DIR ] && [ -n "$in_core" ] && [ "$NODE_ENV" != "test" ] && echo "No ENV_DIR set!" && exit 1
 [ -z $ENV_DIR ] && ENV_DIR="$PWD"
 # Parse yaml block without yq: https://stackoverflow.com/a/49190338/14982291
 fallback_otomi_version='latest'
@@ -83,8 +84,7 @@ else
   otomi_version=$fallback_otomi_version
 fi
 otomi_branch_or_tag=${OTOMI_TAG:-$otomi_version}
-otomi_version_used=${OTOMI_TAG:-$otomi_version}
-readonly otomi_tools_image="otomi/core:${otomi_version_used}"
+readonly otomi_tools_image="otomi/core:${otomi_branch_or_tag}"
 
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
@@ -279,7 +279,7 @@ if [ "$1" = "bash" ] && [ "$#" = "1" ]; then
   cmd="bash"
 fi
 
-if { { [ "$otomi_version_used" = 'latest' ] || [ "$otomi_version_used" = 'main' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
+if { { [ "$otomi_branch_or_tag" = 'latest' ] || [ "$otomi_branch_or_tag" = 'main' ]; } || [ -n "$FORCE_PULL" ]; } && [ -z $NOPULL ] && [ -z $IN_DOCKER ]; then
   silent echo "Pulling latest version of the docker image, please wait"
   silent docker pull $otomi_tools_image
   status=$?

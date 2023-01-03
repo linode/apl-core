@@ -39,7 +39,7 @@ apprepository:
     - name: bitnami
       url: https://charts.bitnami.com/bitnami  
 {{- range $repo := $initialRepos }}
-    - {{- toYaml $repo | nindent 6 }}
+    - {{- $repo | toYaml | nindent 6 }}
       containerSecurityContext:
         enabled: true
         runAsUser: 1001
@@ -52,10 +52,7 @@ apprepository:
       containerSecurityContext:
         enabled: true
         runAsUser: 1001
-      # basicAuth:
-      #   user: admin
-      #   password: {{ $h.registry.credentials.password }}
-        # TODO: remove next line when CA is truly supported: https://github.com/kubeapps/kubeapps/issues/515
+      # TODO: remove next line when CA is truly supported: https://github.com/kubeapps/kubeapps/issues/515
       tlsInsecureSkipVerify: {{ $v._derived.untrustedCA }}
   {{- if $v._derived.untrustedCA }}
       caCert: |
@@ -74,10 +71,10 @@ metrics:
 
 postgresql:
   existingSecret: null
-  postgresqlPassword: {{ $k | get "postgresqlPassword" }}
-  postgresqlPostgresPassword: {{ $k | get "postgresqlPassword" }}
+  postgresqlPassword: {{ $k.postgresqlPassword }}
+  postgresqlPostgresPassword: {{ $k.postgresqlPassword }}
   replication:
-    password: {{ $k | get "postgresqlPassword" }}
+    password: {{ $k.postgresqlPassword }}
   resources:
     limits:
       memory: 768Mi
@@ -105,7 +102,7 @@ postgresql:
 securityContext:
   enabled: true
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v._files | get "otomi.globalPullSecret" nil }}
 global:
   imagePullSecrets:
     - name: otomi-pullsecret-global

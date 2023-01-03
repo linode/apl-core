@@ -49,43 +49,13 @@ spec:
           name: otomi-argocd
         targetCPUUtilizationPercentage: 70
     {{- end }}
-    resources:
-      {{- with $a | get "resources.server" nil }}
-        {{- toYaml .| nindent 4 }}
-      {{- else }}
-      limits:
-        cpu: 1
-        memory: 1Gi
-      requests:
-        cpu: 100m
-        memory: 256M
-      {{- end }}
+    resources: {{- $a.resources.server | toYaml | nindent 6 }}
   controller:
     logLevel: info
-    resources:
-      {{- with $a | get "resources.controller" nil }}
-        {{- toYaml .| nindent 4 }}
-      {{- else }}
-      limits:
-        cpu: 1
-        memory: 1Gi
-      requests:
-        cpu: 100m
-        memory: 256M
-      {{- end }}
+    resources: {{- $a.resources.controller | toYaml | nindent 6 }}
   repo:
     logLevel: info
-    resources:
-      {{- with $a | get "resources.repo" nil }}
-        {{- toYaml .| nindent 4 }}
-      {{- else }}
-      limits:
-        cpu: 1
-        memory: 1Gi
-      requests:
-        cpu: 100m
-        memory: 256M
-      {{- end }}
+    resources: {{- $a.resources.repo | toYaml | nindent 6 }}
 {{- if $v._derived.untrustedCA }}    
     volumeMounts:
       - name: custom-ca
@@ -98,17 +68,7 @@ spec:
           secretName: custom-ca
 {{- end }}
   redis:
-    resources:
-      {{- with $a | get "resources.redis" nil }}
-        {{- toYaml .| nindent 4 }}
-      {{- else }}
-      limits:
-        cpu: 1
-        memory: 1Gi
-      requests:
-        cpu: 100m
-        memory: 256M
-      {{- end }}
+    resources: {{- $a.resources.redis | toYaml | nindent 6 }}
   # initialRepositories: |
   #   - url: https://github.com/argoproj/my-private-repository
   #     passwordSecret:
