@@ -1484,6 +1484,9 @@ properties:
       falco:
         additionalProperties: false
         properties:
+          enabled:
+            type: boolean
+            default: false
           rules:
             properties:
               otomiRules:
