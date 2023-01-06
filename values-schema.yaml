@@ -824,20 +824,20 @@ definitions:
       name:
         $ref: '#/definitions/idName'
       clusterWide:
-        description: Will create the secret in all namespaces. Secret name is prefixed with "otomi-cw-". Overrides "namespaces".
+        description: Will create the secret in all namespaces. Secret name is prefixed with "otomi-cw-". Overrides "Namespaces" selection.
         type: boolean
         default: false
       namespaces:
         type: array
         items:
           $ref: '#/definitions/idName'
-        description: A list of kubernetes namespaces. Overrides both "teams" and "teamsWide".
+        description: A list of kubernetes namespaces. Overrides both "Teams" and "Teams wide".
       teamsWide:
         description: Will create the secret in all team-* namespaces.
         type: boolean
         default: false
       teams:
-        description: A selection of team names. Will create the secret in the respective team-* namespaces. Secret name is prefixed with "otomi-team-$teamName-". Overrides "teams" selection.
+        description: A selection of team names. Will create the secret in the respective team-* namespaces. Secret name is prefixed with "otomi-team-$teamName-". Overrides "Teams" selection.
         type: array
         items:
           $ref: '#/definitions/idName'
