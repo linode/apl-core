@@ -15,6 +15,12 @@ falco:
   grpc_output:
     enabled: true
 
+podAnnotations: 
+  policy.otomi.io/ignore: psp-privileged,psp-host-security,psp-host-filesystem
+
+podSecurityContext:
+  runAsUser: 1001
+
 resources: {{- $f.resources.falco | toYaml  | nindent 2 }}
 tolerations:
   - key: node-role.kubernetes.io/master
@@ -33,6 +39,17 @@ customRules:
   custom-rules.yaml: |-
 {{- . | nindent 4 }}
 {{- end }}
+
+driver:
+  loader:
+      initContainer:
+        resources:
+          requests:
+            cpu: 50m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 32Mi
 
 # see https://github.com/falcosecurity/charts/blob/master/falcosidekick/values.yaml for all options
 falcosidekick:
