@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
-import express, { Request, Response } from 'express'
+import express, { json, Request, Response } from 'express'
 import { Server } from 'http'
 import { bootstrapSops } from 'src/cmd/bootstrap'
 import { genDrone } from 'src/cmd/gen-drone'
@@ -10,6 +10,8 @@ import { writeValues } from './common/values'
 
 const d = terminal('server')
 const app = express()
+app.use(json())
+
 let server: Server
 
 export const stopServer = (): void => {
