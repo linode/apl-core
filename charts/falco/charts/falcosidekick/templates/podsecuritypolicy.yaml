@@ -1,0 +1,35 @@
+{{- if .Values.podSecurityPolicy.create}}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ template "falcosidekick.fullname" . }}
+  labels:
+    app: {{ template "falcosidekick.fullname" . }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  hostNetwork: false
+  readOnlyRootFilesystem: true
+  requiredDropCapabilities:
+  - ALL
+  fsGroup:
+    ranges:
+    - max: 65535
+      min: 1
+    rule: MustRunAs
+  runAsUser:
+    rule: MustRunAsNonRoot
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    ranges:
+    - max: 65535
+      min: 1
+    rule: MustRunAs
+  volumes:
+  - configMap
+  - secret
+{{- end }}

@@ -1,0 +1,57 @@
+{{- if .Values.webui.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "falcosidekick.fullname" . }}-ui
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "falcosidekick.name" . }}-ui
+    helm.sh/chart: {{ include "falcosidekick.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}-ui
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with .Values.webui.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.webui.service.type }}
+  ports:
+    - port: {{ .Values.webui.service.port }}
+      {{ if eq .Values.webui.service.type "NodePort" }}
+      nodePort: {{ .Values.webui.service.nodePort }}
+      {{ end }}   
+      targetPort: {{ .Values.webui.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "falcosidekick.name" . }}-ui
+    app.kubernetes.io/instance: {{ .Release.Name }}-ui
+{{- if .Values.webui.redis.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "falcosidekick.fullname" . }}-ui-redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "falcosidekick.name" . }}-ui-redis
+    helm.sh/chart: {{ include "falcosidekick.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}-ui
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with .Values.webui.redis.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.webui.redis.service.port }}
+      targetPort: {{ .Values.webui.redis.service.targetPort }}
+      protocol: TCP
+      name: redis
+  selector:
+    app.kubernetes.io/name: {{ include "falcosidekick.name" . }}-ui-redis
+    app.kubernetes.io/instance: {{ .Release.Name }}-ui-redis
+{{- end }}
+{{- end }}
