@@ -27,6 +27,7 @@ tolerations:
     operator: Exists
     effect: NoSchedule
 
+{{/*
 customRules:
 {{- with $rules | get "otomiRules" nil }}
   otomi-rules.yaml: |-
@@ -36,6 +37,7 @@ customRules:
   custom-rules.yaml: |-
 {{- . | nindent 4 }}
 {{- end }}
+*/}}
 
 driver:
   loader:
