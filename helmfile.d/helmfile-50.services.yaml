@@ -48,3 +48,9 @@ releases:
     labels:
       pkg: velero
     <<: *default
+  - name: falco
+    installed: {{ $a | get "falco.enabled" }}
+    namespace: falco
+    labels:
+      pkg: falco
+    <<: *default

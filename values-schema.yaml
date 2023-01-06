@@ -1481,6 +1481,22 @@ properties:
           logLevel:
             type: string
             default: 'info'
+      falco:
+        additionalProperties: false
+        properties:
+          rules:
+            properties:
+              otomiRules:
+                type: string
+              customRules:
+                type: string
+          resources:
+            additionalProperties: false
+            properties:
+              falco:
+                $ref: '#/definitions/resources'
+              falcoSidekick:
+                $ref: '#/definitions/resources'
       gatekeeper:
         additionalProperties: false
         properties:

@@ -1,0 +1,47 @@
+{{- $v := .Values }}
+{{- $f:= $v.apps.falco }}
+{{- $a := $v.apps | get "alertmanager" }}
+{{- $rules:= $f | get "rules" dict }}
+
+falco:
+  json_output: true
+  syscall_event_drops:
+    actions:
+      - ignore
+  grpc:
+    enabled: true
+    bind_address: "unix:///var/run/falco/falco.sock"
+    threadiness: 8
+  grpc_output:
+    enabled: true
+
+resources: {{- $f.resources.falco | toYaml  | nindent 2 }}
+tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+customRules:
+{{- with $rules | get "otomiRules" nil }}
+  otomi-rules.yaml: |-
+{{- . | nindent 4 }}
+{{- end }}
+{{- with $rules | get "customRules" nil }}
+  custom-rules.yaml: |-
+{{- . | nindent 4 }}
+{{- end }}
+
+# see https://github.com/falcosecurity/charts/blob/master/falcosidekick/values.yaml for all options
+falcosidekick:
+  enabled: {{ $a.enabled }}
+  podSecurityPolicy:
+    create: true
+  config:
+    debug: false
+    alertmanager:
+      hostport: http://po-alertmanager.monitoring.svc.cluster.local:9093
+      minimumpriority: informational
+  resources: {{- $f.resources.falcoSidekick | toYaml  | nindent 4 }}

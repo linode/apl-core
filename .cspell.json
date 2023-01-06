@@ -22,6 +22,7 @@
     "clouddns",
     "crypted",
     "descheduler",
+    "falco",
     "encodedkey",
     "envs",
     "gcpckms",

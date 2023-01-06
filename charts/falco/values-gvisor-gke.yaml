@@ -1,0 +1,45 @@
+# Default values to deploy Falco on GKE with gVisor.
+
+# Affinity constraint for pods' scheduling.
+# Needed to deploy Falco on the gVisor enabled nodes.
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: sandbox.gke.io/runtime
+          operator: In
+          values:
+          - gvisor
+
+# Tolerations to allow Falco to run on Kubernetes 1.6 masters.
+# Adds the neccesssary tolerations to allow Falco pods to be scheduled on the gVisor enabled nodes.
+tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+  - effect: NoSchedule
+    key: sandbox.gke.io/runtime
+    operator: Equal
+    value: gvisor
+
+# Disable the driver since it is not needed.
+driver:
+  enabled: false
+
+# Enable gVisor and set the appropriate paths. 
+gvisor:
+  enabled: true
+  runsc:
+    path: /home/containerd/usr/local/sbin
+    root: /run/containerd/runsc
+    config: /run/containerd/runsc/config.toml
+
+# Enable the containerd collector to enrich the syscall events with metadata.
+collectors:
+  enabled: true
+  containerd:
+    enabled: true
+    socket: /run/containerd/containerd.sock
+
+# Set this to true to force Falco so output the logs as soon as they are emmitted.
+tty: false

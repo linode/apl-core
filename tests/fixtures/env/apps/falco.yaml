@@ -1,0 +1,39 @@
+apps:
+    falco:
+        enabled: true
+        rules:
+            otomiRules: |-
+                - macro: k8s_containers
+                  condition: (
+                      container.image.repository in (
+                        docker.io/openpolicyagent/gatekeeper,
+                        docker.io/velero/velero,
+                        docker.io/weaveworks/kured,
+                        k8s.gcr.io/kube-state-metrics/kube-state-metrics,
+                        quay.io/jetstack/cert-manager-cainjector,
+                        quay.io/jetstack/cert-manager-controller,
+                        quay.io/jetstack/cert-manager-webhook,
+                        quay.io/prometheus-operator/prometheus-operator,
+                        quay.io/prometheus/prometheus,
+                      ) or (k8s.ns.name = "kube-system")
+                    )
+                - macro: user_known_write_below_etc_activities
+                  condition: (
+                      (container.image.repository = docker.io/goharbor/harbor-core and proc.name = cp) or
+                      (container.image.repository = docker.io/goharbor/harbor-registryctl and proc.name = cp) or
+                      (container.image.repository = docker.io/goharbor/registry-photon and proc.name = cp) or
+                      (container.image.repository = docker.io/goharbor/trivy-adapter-photon and proc.name = cp)
+                    )
+                - macro: user_sensitive_mount_containers
+                  condition: (
+                      container.image.repository in (
+                        quay.io/prometheus/node-exporter
+                      )
+                    )
+                - macro: user_trusted_containers
+                  condition: (
+                      container.image.repository in (
+                        docker.io/drone/drone-runner-kube
+                        docker.io/otomi/api
+                      )
+                    )

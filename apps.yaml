@@ -65,6 +65,17 @@ appsInfo:
     license: Apache 2.0
     about: External Secrets Operator reads information from a third-party service like AWS Secrets Manager and automatically injects the values as Kubernetes Secrets.
     integration: External Secrets is used by Otomi to allow teams to automatically sync (partial) secrets created in the packaged (Hashicorp) Vault.
+  falco:
+    title: Falco
+    appVersion: 0.57.0
+    repo: https://github.com/prometheus/prometheus
+    maintainers: Prometheus
+    relatedLinks:
+      - https://otomi.io/docs/apps/prometheus
+      - https://prometheus.io/
+    license: Apache 2.0
+    about: Bla.
+    integration: Bla.
   gatekeeper:
     title: Gatekeeper
     appVersion: 3.8.1
