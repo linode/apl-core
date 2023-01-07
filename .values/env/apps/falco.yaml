@@ -3,7 +3,7 @@ apps:
         enabled: false
         _rawValues:
             customRules:
-                otomi-rules.yaml: |-
+                otomi-rules.yaml: >-
                     - macro: k8s_containers
                       condition: (
                           container.image.repository in (
@@ -15,8 +15,15 @@ apps:
                             quay.io/jetstack/cert-manager-controller,
                             quay.io/jetstack/cert-manager-webhook,
                             quay.io/prometheus-operator/prometheus-operator,
-                            quay.io/prometheus/prometheus
+                            quay.io/prometheus/prometheus,
+                            quay.io/kiwigrid/k8s-sidecar,
+                            docker.io/otomi/core,
+                            docker.io/otomi/tasks,
+                            docker.io/otomi/api,
+                            docker.io/drone/drone-runner-kube
                           ) or (k8s.ns.name = "kube-system")
+                            or (k8s.ns.name = "ingress")
+                          )
                         )
                     - macro: user_known_write_below_etc_activities
                       condition: (
@@ -35,6 +42,34 @@ apps:
                       condition: (
                           container.image.repository in (
                             docker.io/drone/drone-runner-kube,
-                            docker.io/otomi/api
+                            docker.io/otomi/api,
+                            docker.io/otomi/tasks
+                          )
+                        )
+                    - macro: user_known_package_manager_in_container
+                      condition: (
+                          container.image.repository in (
+                            docker.io/otomi/tasks
+                          )
+                        )
+                    - macro: user_known_k8s_client_container
+                      condition: (
+                          container.image.repository in (
+                            docker.io/otomi/tasks,
+                            ocker.io/otomi/core
+                          ) or (k8s.ns.name = "drone-pipelines")
+                        )
+                    - macro: user_known_non_sudo_setuid_conditions
+                      condition: (
+                          container.image.repository in (
+                            docker.io/otomi/tasks,
+                            docker.io/otomi/api,
+                            docker.io/gitea/gitea
+                          ) or (k8s.ns.name = "ingress")
+                        )
+                    - macro: excessively_capable_container
+                      condition: (
+                          container.image.repository in (
+                            docker.io/istio/proxyv2
                           )
                         )

@@ -19,6 +19,7 @@ podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
 
 resources: {{- $f.resources.falco | toYaml  | nindent 2 }}
+
 tolerations:
   - key: node-role.kubernetes.io/master
     operator: Exists
@@ -26,18 +27,6 @@ tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
     effect: NoSchedule
-
-{{/*
-customRules:
-{{- with $rules | get "otomiRules" nil }}
-  otomi-rules.yaml: |-
-{{- . | nindent 4 }}
-{{- end }}
-{{- with $rules | get "customRules" nil }}
-  custom-rules.yaml: |-
-{{- . | nindent 4 }}
-{{- end }}
-*/}}
 
 driver:
   loader:
@@ -50,7 +39,6 @@ driver:
             cpu: 100m
             memory: 32Mi
 
-# see https://github.com/falcosecurity/charts/blob/master/falcosidekick/values.yaml for all options
 falcosidekick:
   enabled: {{ $a.enabled }}
   podSecurityPolicy:
@@ -59,6 +47,6 @@ falcosidekick:
     debug: false
     alertmanager:
       hostport: http://po-alertmanager.monitoring.svc.cluster.local:9093
-      minimumpriority: informational
+      minimumpriority: {{ $f.falcoSidekick.minPrio }}
   resources: {{- $f.resources.falcoSidekick | toYaml  | nindent 4 }}
-  replicaCount: 1
+  replicaCount: {{ $f.falcoSidekick.replicas }}
