@@ -134,7 +134,6 @@ adminApps:
     tags: [secrets, security, tls]
   - name: falco
     tags: [security]
-    deps: [prometheus, alertmanager]
   - name: gatekeeper
     tags: [security, policies, observability]
   - name: gitea
