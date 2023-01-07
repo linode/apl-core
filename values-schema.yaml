@@ -1487,18 +1487,14 @@ properties:
           enabled:
             type: boolean
             default: false
-          # rules:
-          #   properties:
-          #     otomiRules:
-          #       type: string
-          #     customRules:
-          #       type: string
           resources:
             additionalProperties: false
             properties:
               falco:
                 $ref: '#/definitions/resources'
               falcoSidekick:
+                $ref: '#/definitions/resources'
+              falcoExporter:
                 $ref: '#/definitions/resources'
       gatekeeper:
         additionalProperties: false

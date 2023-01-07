@@ -1,9 +1,13 @@
 {{- $v := .Values }}
-{{- $c := $v.apps }}
 folders:
   - k8s-admin
   - istio-admin
+  {{- if $v.apps.falco.enabled }}
+  - falco
+  {{- end }}
   {{- if and (eq $v.cluster.provider "azure") ($v | get "azure.monitor" nil) }}
   - azure
   {{- end }}
-  - shared
+  {{- if $v.apps.argocd.enabled }}
+  - argo
+  {{- end }}

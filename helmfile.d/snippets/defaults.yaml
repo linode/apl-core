@@ -94,6 +94,13 @@ environments:
                 limits:
                   cpu: 50m
                   memory: 64Mi
+              falcoExporter:
+                requests:
+                  cpu: 50m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi              
           gatekeeper:
             enabled: false
             auditFromCache: false
