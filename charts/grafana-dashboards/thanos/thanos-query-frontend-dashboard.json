@@ -1069,7 +1069,7 @@
              "multi": false,
              "name": "job",
              "options": [ ],
-             "query": "label_values(up{job=~\".*thanos-query-query-frontend.*\"}, job)",
+             "query": "label_values(up{job=~\".*thanos-query-frontend.*\"}, job)",
              "refresh": 1,
              "regex": "",
              "sort": 2,
