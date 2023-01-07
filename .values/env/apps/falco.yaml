@@ -20,10 +20,10 @@ apps:
                             docker.io/otomi/core,
                             docker.io/otomi/tasks,
                             docker.io/otomi/api,
-                            docker.io/drone/drone-runner-kube
+                            docker.io/drone/drone-runner-kube,
+                            docker.io/grafana/promtail
                           ) or (k8s.ns.name = "kube-system")
                             or (k8s.ns.name = "ingress")
-                          )
                         )
                     - macro: user_known_write_below_etc_activities
                       condition: (
@@ -69,7 +69,9 @@ apps:
                         )
                     - macro: excessively_capable_container
                       condition: (
-                          container.image.repository in (
-                            docker.io/istio/proxyv2
-                          )
+                          k8s.ns.name = "otomi"
+                        )
+                    - macro: user_known_write_below_root_activities
+                      condition: (
+                          k8s.ns.name = "drone-pipelines"
                         )
