@@ -7,3 +7,9 @@ folders:
   - azure
   {{- end }}
   - shared
+  {{- if $v.apps.velero.enabled }}
+  - velero
+  {{- end }}
+    {{- if $v.apps.minio.enabled }}
+  - minio
+  {{- end }}

@@ -8,6 +8,13 @@
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
 
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      prometheus: system
+
 initContainers:
   - name: velero-plugin-for-azure
     image: velero/velero-plugin-for-microsoft-azure:v1.5.0
