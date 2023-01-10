@@ -40,9 +40,9 @@ app.get('/prepare', async (req: Request, res: Response) => {
   try {
     d.log('Request to prepare values repo')
     await bootstrapSops(envDir)
-    // Encrypt ensures that a brand new secret file is encrypted
+    // Encrypt ensures that a brand new secret file is encrypted in place
     await encrypt(envDir)
-    // Decrypt ensures that a brand new secret file is decrypted to .dec file, so the validateValues can tak it into account
+    // Decrypt ensures that a brand new encrypted secret file is decrypted to the .dec file
     await decrypt(envDir)
     await validateValues(envDir)
     await genDrone(envDir)
