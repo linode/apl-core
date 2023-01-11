@@ -271,8 +271,13 @@ export const migrate = async (): Promise<boolean> => {
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const prevVersion: number = (await loadYaml(`${env.ENV_DIR}/env/settings.yaml`))?.version || 0
   const filteredChanges = filterChanges(prevVersion, changes)
+
   if (filteredChanges.length) {
-    d.log('Changes detected, migrating...')
+    d.log(
+      `Changes detected, migrating from ${prevVersion} to ${
+        filteredChanges[filteredChanges.length - 1].version
+      } version`,
+    )
     const diffedValues = await applyChanges(filteredChanges, argv.dryRun)
     if (prevVersion < 6) await preserveIngressControllerConfig(argv.dryRun)
     // encrypt and decrypt to
