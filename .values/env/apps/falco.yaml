@@ -21,7 +21,8 @@ apps:
                             docker.io/otomi/tasks,
                             docker.io/otomi/api,
                             docker.io/drone/drone-runner-kube,
-                            docker.io/grafana/promtail
+                            docker.io/grafana/promtail,
+                            quay.io/argoprojlabs/argocd-image-updater
                           ) or (k8s.ns.name = "kube-system")
                             or (k8s.ns.name = "ingress")
                         )
@@ -64,14 +65,32 @@ apps:
                           container.image.repository in (
                             docker.io/otomi/tasks,
                             docker.io/otomi/api,
-                            docker.io/gitea/gitea
+                            docker.io/otomi/console,
+                            docker.io/gitea/gitea,
+                            docker.io/grafana/grafana
                           ) or (k8s.ns.name = "ingress")
+                            or (k8s.pod.name = "keycloak-01")
                         )
                     - macro: excessively_capable_container
                       condition: (
-                          k8s.ns.name = "otomi"
+                          container.image.repository in (
+                            docker.io/otomi/console,
+                            docker.io/otomi/api
+                          ) or (k8s.pod.name = "keycloak-01")
                         )
                     - macro: user_known_write_below_root_activities
                       condition: (
                           k8s.ns.name = "drone-pipelines"
+                        )
+                    - macro: user_known_network_tool_activities
+                      condition: (
+                          container.image.repository in (
+                            docker.io/gitea/gitea
+                          ) or (k8s.pod.name = "keycloak-01")  
+                        )
+                    - macro: user_known_create_files_below_dev_activities
+                      condition: (
+                          container.image.repository in (
+                            quay.io/operatorhubio/catalog
+                          )
                         )
