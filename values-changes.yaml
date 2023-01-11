@@ -56,5 +56,7 @@ changes:
       - dns.provider.google.projectId: dns.provider.google.project
       - kms.sops.google.projectId: kms.sops.google.project
   - version: 6
+    deletions:
+      - teamConfig.admin.apps.ingress-nginx
     relocations:
       - apps.ingress-nginx: 'apps.ingress-nginx-platform'
