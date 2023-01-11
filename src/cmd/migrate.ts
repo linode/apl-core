@@ -3,6 +3,7 @@
 /* eslint-disable no-restricted-syntax */
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
+import { unlink } from 'fs/promises'
 import { cloneDeep, each, get, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
@@ -218,6 +219,7 @@ export const preserveIngressControllerConfig = async (
   },
 ): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:preserveIngressControllerConfig`)
+  d.log('Migrate nginx-ingress config')
   const sourcePath = `${env.ENV_DIR}/env/apps/ingress-nginx-platform.yaml`
   if (!(await deps.pathExists(sourcePath))) return false
   const ingressClasses = (await loadYaml(`${env.ENV_DIR}/env/settings.yaml`))?.ingress?.classes || []
@@ -233,11 +235,19 @@ export const preserveIngressControllerConfig = async (
       d.info('Dry run skipping')
       return
     }
+    d.info(`Cloning configuration from ${sourceJsonPath} to ${targetJsonPath}`)
     const spec = cloneDeep(origSpec) as Record<string, any>
     moveGivenJsonPath(spec, sourceJsonPath, targetJsonPath)
-
     await deps.writeValuesToFile(targetPath, spec, true)
   })
+
+  const path = `${env.ENV_DIR}/env/apps/ingress-nginx.yaml`
+  if (await deps.pathExists(path)) {
+    d.info(`Removing the old ${path} file`)
+    await unlink(path)
+  }
+  d.info(`Success`)
+
   return true
 }
 
@@ -264,8 +274,7 @@ export const migrate = async (): Promise<boolean> => {
   if (filteredChanges.length) {
     d.log('Changes detected, migrating...')
     const diffedValues = await applyChanges(filteredChanges, argv.dryRun)
-    // TODO: remove preserveIngressControllerConfig in v0.16.22
-    await preserveIngressControllerConfig(argv.dryRun)
+    if (prevVersion < 6) await preserveIngressControllerConfig(argv.dryRun)
     // encrypt and decrypt to
     await encrypt()
     await decrypt()
