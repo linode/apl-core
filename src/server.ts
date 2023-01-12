@@ -39,13 +39,10 @@ app.get('/prepare', async (req: Request, res: Response) => {
   const { envDir } = req.query as QueryParams
   try {
     d.log('Request to prepare values repo')
-    await bootstrapSops(envDir)
-    // Encrypt ensures that a brand new secret file is encrypted in place
-    await encrypt(envDir)
-    // Decrypt ensures that a brand new encrypted secret file is decrypted to the .dec file
-    await decrypt(envDir)
     await validateValues(envDir)
     await genDrone(envDir)
+    await bootstrapSops(envDir)
+    await encrypt(envDir)
     res.status(200).send('ok')
   } catch (error) {
     const err = `${error}`
