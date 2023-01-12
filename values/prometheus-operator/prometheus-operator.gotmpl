@@ -54,9 +54,6 @@ prometheus:
             {{- range $teamId, $_ := $v.teamConfig }}
             - team-{{ $teamId }}
             {{- end }}
-    {{- else }}
-    {{ $selType }}NamespaceSelector:
-      any: true
     {{- end }}
     {{ $selType }}Selector:
       matchLabels:
