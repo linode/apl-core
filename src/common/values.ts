@@ -95,7 +95,7 @@ let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
-const writeValuesToFile = async (
+export const writeValuesToFile = async (
   targetPath: string,
   inValues: Record<string, any> = {},
   overwrite = false,

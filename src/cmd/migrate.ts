@@ -3,6 +3,7 @@
 /* eslint-disable no-restricted-syntax */
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
+import { unlink } from 'fs/promises'
 import { cloneDeep, each, get, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
@@ -10,7 +11,7 @@ import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from 'src/common/utils'
-import { writeValues } from 'src/common/values'
+import { writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { cd } from 'zx'
@@ -209,6 +210,47 @@ export const applyChanges = async (
   return diff(prevValues, values)
 }
 
+export const preserveIngressControllerConfig = async (
+  dryRun = false,
+  deps = {
+    pathExists,
+    loadYaml,
+    writeValuesToFile,
+  },
+): Promise<boolean> => {
+  const d = terminal(`cmd:${cmdName}:preserveIngressControllerConfig`)
+  d.log('Migrate nginx-ingress config')
+  const sourcePath = `${env.ENV_DIR}/env/apps/ingress-nginx-platform.yaml`
+  if (!(await deps.pathExists(sourcePath))) return false
+  const ingressClasses = (await loadYaml(`${env.ENV_DIR}/env/settings.yaml`))?.ingress?.classes || []
+  const origSpec = await loadYaml(sourcePath)
+
+  ingressClasses.forEach(async (entry) => {
+    const targetPath = `${env.ENV_DIR}/env/apps/ingress-nginx-${entry.className}.yaml`
+    if (await deps.pathExists(targetPath)) return
+    const targetJsonPath = `apps.ingress-nginx-${entry.className}`
+    const sourceJsonPath = `apps.ingress-nginx-platform`
+    d.info(`Generating ${targetJsonPath} from ${sourceJsonPath}`)
+    if (dryRun) {
+      d.info('Dry run skipping')
+      return
+    }
+    d.info(`Cloning configuration from ${sourceJsonPath} to ${targetJsonPath}`)
+    const spec = cloneDeep(origSpec) as Record<string, any>
+    moveGivenJsonPath(spec, sourceJsonPath, targetJsonPath)
+    await deps.writeValuesToFile(targetPath, spec, true)
+  })
+
+  const path = `${env.ENV_DIR}/env/apps/ingress-nginx.yaml`
+  if (await deps.pathExists(path)) {
+    d.info(`Removing the old ${path} file`)
+    await unlink(path)
+  }
+  d.info(`Success`)
+
+  return true
+}
+
 /**
  * Differences are reported as one or more change records. Change records have the following structure:
 
@@ -229,9 +271,15 @@ export const migrate = async (): Promise<boolean> => {
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const prevVersion: number = (await loadYaml(`${env.ENV_DIR}/env/settings.yaml`))?.version || 0
   const filteredChanges = filterChanges(prevVersion, changes)
+
   if (filteredChanges.length) {
-    d.log('Changes detected, migrating...')
+    d.log(
+      `Changes detected, migrating from ${prevVersion} to ${
+        filteredChanges[filteredChanges.length - 1].version
+      } version`,
+    )
     const diffedValues = await applyChanges(filteredChanges, argv.dryRun)
+    if (prevVersion < 6) await preserveIngressControllerConfig(argv.dryRun)
     // encrypt and decrypt to
     await encrypt()
     await decrypt()

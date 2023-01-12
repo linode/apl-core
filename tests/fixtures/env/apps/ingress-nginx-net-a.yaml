@@ -1,11 +1,11 @@
 apps:
-    ingress-nginx-platform:
+    ingress-nginx-net-a:
         _rawValues:
             controller:
                 config:
                     modsecurity-snippet: |
-                        SecRuleRemoveById 911102
-        maxBodySize: 2048m
+                        SecRuleRemoveById 911101
+        maxBodySize: 1024m
         modsecurity:
             enabled: true
         resources:
