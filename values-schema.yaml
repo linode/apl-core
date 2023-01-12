@@ -1743,8 +1743,16 @@ properties:
                 default: 0 0 * * *
                 description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
                 type: string
-        required:
-          - databasePassword
+        allOf:
+          - anyOf:
+              - not:
+                  properties:
+                    enabled:
+                      const: true
+                  required:
+                    - enabled
+              - required:
+                  - databasePassword
       hello:
         description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
         properties:
@@ -3155,5 +3163,6 @@ properties:
   version:
     type: integer
     description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.
+    x-secret: 'print "5"'
 required:
   - cluster
