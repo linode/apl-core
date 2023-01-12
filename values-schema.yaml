@@ -439,6 +439,50 @@ definitions:
       - tag
     type: object
     title: Container image
+  ingressNginx:
+    additionalProperties: false
+    properties:
+      _rawValues:
+        $ref: '#/definitions/rawValues'
+      autoscaling:
+        $ref: '#/definitions/autoscalingEnabled'
+      maxBodySize:
+        type: string
+        default: 1024m
+      maxBodySizeBytes:
+        type: integer
+        minimum: 0
+        default: 1073741824
+        description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
+      modsecurity:
+        title: MOD Security
+        description: Enables MOD Security functionality.
+        properties:
+          block:
+            description: Makes nginx block requests that are marked as violating the modsec rules.
+            type: boolean
+            default: false
+          enabled:
+            type: boolean
+            default: false
+          owasp:
+            description: Turns on the default OWASP rule set for modsec. See
+            type: boolean
+            default: true
+        type: object
+      image:
+        properties:
+          tag:
+            $ref: '#/definitions/imageTag'
+            x-default: v1.0.5
+          pullPolicy:
+            $ref: '#/definitions/imagePullPolicy'
+      resources:
+        $ref: '#/definitions/resources'
+      service:
+        properties:
+          annotations:
+            $ref: '#/definitions/annotations'
   ingressClassParameters:
     type: object
     properties:
@@ -1055,6 +1099,7 @@ definitions:
         description: Ingress class name
         type: string
         default: platform
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])+$'
       svc:
         $ref: '#/definitions/idName'
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
@@ -1825,50 +1870,8 @@ properties:
               - required:
                   - armAuth
                   - appgw
-      ingress-nginx:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          autoscaling:
-            $ref: '#/definitions/autoscalingEnabled'
-          maxBodySize:
-            type: string
-            default: 1024m
-          maxBodySizeBytes:
-            type: integer
-            minimum: 0
-            default: 1073741824
-            description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
-          modsecurity:
-            title: MOD Security
-            description: Enables MOD Security functionality.
-            properties:
-              block:
-                description: Makes nginx block requests that are marked as violating the modsec rules.
-                type: boolean
-                default: false
-              enabled:
-                type: boolean
-                default: false
-              owasp:
-                description: Turns on the default OWASP rule set for modsec. See
-                type: boolean
-                default: true
-            type: object
-          image:
-            properties:
-              tag:
-                $ref: '#/definitions/imageTag'
-                x-default: v1.0.5
-              pullPolicy:
-                $ref: '#/definitions/imagePullPolicy'
-          resources:
-            $ref: '#/definitions/resources'
-          service:
-            properties:
-              annotations:
-                $ref: '#/definitions/annotations'
+      ingress-nginx-platform:
+        $ref: '#/definitions/ingressNginx'
       istio:
         additionalProperties: false
         properties:
@@ -2539,6 +2542,9 @@ properties:
               - panic
           resources:
             $ref: '#/definitions/resources'
+    patternProperties:
+      '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
+        $ref: '#/definitions/ingressNginx'
   cluster:
     $ref: '#/definitions/cluster'
   dns:
