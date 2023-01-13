@@ -1,4 +1,4 @@
-api: encrypt-new-secret-files
+api: values-handling
 console: main
 tasks: 0.2.31
 tools: 1.4.25

@@ -1,51 +1,55 @@
 /* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
-import express, { Request, Response } from 'express'
+import express, { json, Request, Response } from 'express'
 import { Server } from 'http'
 import { bootstrapSops } from 'src/cmd/bootstrap'
 import { genDrone } from 'src/cmd/gen-drone'
 import { validateValues } from 'src/cmd/validate-values'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
+import { hfValues } from './common/hf'
+import { writeValues } from './common/values'
 
 const d = terminal('server')
 const app = express()
+app.use(json())
+
 let server: Server
 
 export const stopServer = (): void => {
   server?.close()
 }
 
-app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
-  return res.send({ status: 'ok' })
+app.get('/', async (req: Request, res: Response) => {
+  res.send({ status: 'ok' })
 })
 
 type QueryParams = {
   envDir: string
 }
 
-app.get('/init', async (req: Request, res: Response) => {
+app.get('/read', async (req: Request, res: Response) => {
   const { envDir } = req.query as QueryParams
   try {
-    d.log('Request to initialize values repo')
+    d.log('Request to read values repo')
     await decrypt(envDir)
-    res.status(200).send('ok')
+    const values = await hfValues({ filesOnly: true, excludeSecrets: false }, envDir)
+    res.status(200).send(values)
   } catch (error) {
     d.error(error)
     res.status(500).send(`${error}`)
   }
 })
 
-app.get('/prepare', async (req: Request, res: Response) => {
+app.post('/update', async (req: Request, res: Response) => {
   const { envDir } = req.query as QueryParams
+  const values = req.body as Record<string, any>
   try {
-    d.log('Request to prepare values repo')
-    await bootstrapSops(envDir)
-    // Encrypt ensures that a brand new secret file is encrypted in place
-    await encrypt(envDir)
-    // Decrypt ensures that a brand new encrypted secret file is decrypted to the .dec file
-    await decrypt(envDir)
+    d.log('Request to update values repo')
+    await writeValues(values, false, envDir)
     await validateValues(envDir)
     await genDrone(envDir)
+    await bootstrapSops(envDir)
+    await encrypt(envDir)
     res.status(200).send('ok')
   } catch (error) {
     const err = `${error}`

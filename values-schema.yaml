@@ -1743,8 +1743,16 @@ properties:
                 default: 0 0 * * *
                 description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
                 type: string
-        required:
-          - databasePassword
+        allOf:
+          - anyOf:
+              - not:
+                  properties:
+                    enabled:
+                      const: true
+                  required:
+                    - enabled
+              - required:
+                  - databasePassword
       hello:
         description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
         properties:
@@ -1754,6 +1762,8 @@ properties:
       httpbin:
         description: The famous httpbin application.
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
@@ -1923,11 +1933,11 @@ properties:
       jaeger:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
-          _rawValues:
-            $ref: '#/definitions/rawValues'
       keycloak:
         additionalProperties: false
         properties:
@@ -1977,16 +1987,18 @@ properties:
       kiali:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
-          _rawValues:
-            $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
       knative:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: true
@@ -2001,6 +2013,8 @@ properties:
       kubeapps:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             default: false
             type: boolean
@@ -2447,6 +2461,8 @@ properties:
       velero:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
