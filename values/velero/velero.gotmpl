@@ -213,6 +213,16 @@ schedules:
       includedNamespaces:
       - kubeapps
 {{- end }}
+{{- if $pa.minio.enabled }}
+  kubeapps:
+    disabled: false
+    schedule: {{ $pa.minio.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $pa.kubeapps.ttl }}
+      includedNamespaces:
+      - minio
+{{- end }}
   # create backups of all team namespaces
 {{- if $v.backup.teams.enabled }}
   {{- range $teamId := keys $v.teamConfig }}
