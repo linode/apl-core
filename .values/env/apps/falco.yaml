@@ -69,14 +69,14 @@ apps:
                             docker.io/gitea/gitea,
                             docker.io/grafana/grafana
                           ) or (k8s.ns.name = "ingress")
-                            or (k8s.pod.name = "keycloak-01")
+                            or (k8s.ns.name = "keycloak")
                         )
                     - macro: excessively_capable_container
                       condition: (
                           container.image.repository in (
                             docker.io/otomi/console,
                             docker.io/otomi/api
-                          ) or (k8s.pod.name = "keycloak-01")
+                          ) or (k8s.ns.name = "keycloak")
                         )
                     - macro: user_known_write_below_root_activities
                       condition: (
@@ -86,7 +86,7 @@ apps:
                       condition: (
                           container.image.repository in (
                             docker.io/gitea/gitea
-                          ) or (k8s.pod.name = "keycloak-01")  
+                          ) or (k8s.ns.name = "keycloak")  
                         )
                     - macro: user_known_create_files_below_dev_activities
                       condition: (
