@@ -1986,7 +1986,12 @@ properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           resources:
-            $ref: '#/definitions/resources'
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+              pod:
+                $ref: '#/definitions/resources'
       knative:
         additionalProperties: false
         properties:
