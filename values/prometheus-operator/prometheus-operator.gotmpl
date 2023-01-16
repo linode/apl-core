@@ -56,8 +56,7 @@ prometheus:
             {{- end }}
     {{- else }}
     {{ $selType }}NamespaceSelector:
-      matchLabels:
-        name: *
+      matchLabels: {}
     {{- end }}
     {{ $selType }}Selector:
       matchLabels:
