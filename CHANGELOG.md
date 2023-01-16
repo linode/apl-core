@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.18.0](https://github.com/redkubes/otomi-core/compare/v0.17.1...v0.18.0) (2023-01-16)
+
+
+### Features
+
+* add default response headers ([#983](https://github.com/redkubes/otomi-core/issues/983)) ([6011f48](https://github.com/redkubes/otomi-core/commit/6011f4881d6bc6d4a21305424304c60992f12a26)), closes [#789](https://github.com/redkubes/otomi-core/issues/789)
+* define ingress-nginx settings for each ingress class ([#953](https://github.com/redkubes/otomi-core/issues/953)) ([923bf06](https://github.com/redkubes/otomi-core/commit/923bf06214472d8d84be9684a39cb11ea76369d1))
+* external-secrets upgrade plus cluster/team wide secrets ([#960](https://github.com/redkubes/otomi-core/issues/960)) ([5a10948](https://github.com/redkubes/otomi-core/commit/5a109485d94f377effb340257df48105b69a24b2))
+
+
+### Bug Fixes
+
+* encrypt brand new secrets files ([#1002](https://github.com/redkubes/otomi-core/issues/1002)) ([900cf41](https://github.com/redkubes/otomi-core/commit/900cf417b19a857bc6fa160e27f425aa094e05b5)), closes [#975](https://github.com/redkubes/otomi-core/issues/975)
+* make remote write custom config optional ([#990](https://github.com/redkubes/otomi-core/issues/990)) ([93aa930](https://github.com/redkubes/otomi-core/commit/93aa930cc60784dcf78c5c948ae26289f60a6a4d))
+* README shields [ci skip] ([24785ed](https://github.com/redkubes/otomi-core/commit/24785ed901e35ef5a4a7a7394dcd2a09ff7d4a9b))
+* shields [ci skip] ([14837f0](https://github.com/redkubes/otomi-core/commit/14837f04e6a7ed087acd0f354b85a3e1183b86ea))
+* spell [ci skip] ([d8d6a39](https://github.com/redkubes/otomi-core/commit/d8d6a397042701967fed33a07032f513ea3c7dae))
+* upgrade only relevant versions ([#995](https://github.com/redkubes/otomi-core/issues/995)) ([11ad459](https://github.com/redkubes/otomi-core/commit/11ad45967a9b15a3b5ea8bde1c1e7ed4cd1ce488))
+
+
+### Reverts
+
+* Revert "fix: encrypt brand new secrets files (#1002)" (#1007) ([ad751ad](https://github.com/redkubes/otomi-core/commit/ad751ad4ddee11456d347c5324d8ea841aedc79a)), closes [#1002](https://github.com/redkubes/otomi-core/issues/1002) [#1007](https://github.com/redkubes/otomi-core/issues/1007)
+
+
+### Others
+
+* bump api and console ([224fe89](https://github.com/redkubes/otomi-core/commit/224fe898bb4ddac6a5da7514dc3163fe1a8b9ce7))
+* node version lock ([#978](https://github.com/redkubes/otomi-core/issues/978)) ([756e203](https://github.com/redkubes/otomi-core/commit/756e2034fc0c0759048e569eec845b4930ba01f7))
+* otomi-api version ([b873956](https://github.com/redkubes/otomi-core/commit/b873956514ad68960484025b3953d268ef2c2594))
+* remove unsued configuration for kind ([#989](https://github.com/redkubes/otomi-core/issues/989)) ([491b260](https://github.com/redkubes/otomi-core/commit/491b2601899f92682314d666a156dbc48f0daeed))
+
 ### [0.17.1](https://github.com/redkubes/otomi-core/compare/v0.16.21...v0.17.1) (2022-12-19)
 
 
