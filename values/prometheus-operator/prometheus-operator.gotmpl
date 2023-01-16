@@ -44,9 +44,8 @@ commonLabels:
 prometheus:
   enabled: {{ $p.enabled }}
   prometheusSpec:
-    {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{- if $v.otomi.isMultitenant }}
-    {{ $selType }}NamespaceSelector:
+    NamespaceSelector:
       matchExpressions:
         - key: name
           operator: NotIn
@@ -54,7 +53,11 @@ prometheus:
             {{- range $teamId, $_ := $v.teamConfig }}
             - team-{{ $teamId }}
             {{- end }}
+    {{- else }}
+    NamespaceSelector:
+      any: true
     {{- end }}
+    {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}Selector:
       matchLabels:
         prometheus: system

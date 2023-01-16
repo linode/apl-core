@@ -64,9 +64,10 @@ prometheus:
       requests:
         cpu: 100m
         memory: 128Mi
+    NamespaceSelector: 
+      matchLabels:
+        name: team-{{ $teamId }}
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
-    {{ $selType }}NamespaceSelector: 
-      - team-{{ $teamId }}
     {{ $selType }}Selector:
       matchLabels:
         prometheus: team-{{ $teamId }}
