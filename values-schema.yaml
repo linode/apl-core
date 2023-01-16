@@ -3229,6 +3229,16 @@ properties:
                 $ref: '#/definitions/backupTtl'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+          minio:
+            title: Minio
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
       teams:
         enabled:
           type: boolean

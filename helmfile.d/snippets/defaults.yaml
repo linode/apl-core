@@ -203,7 +203,9 @@ environments:
             argo:
               enabled: false
             kubeapps:
-              enabled: false          
+              enabled: false
+            minio:
+              enabled: false         
           teams:
             enabled: false
         cluster: {}

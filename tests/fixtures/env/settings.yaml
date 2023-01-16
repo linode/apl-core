@@ -69,6 +69,8 @@ backup:
             enabled: false
         kubeapps:
             enabled: false
+        minio:
+            enabled: false
     teams:
         enabled: false
 oidc:
