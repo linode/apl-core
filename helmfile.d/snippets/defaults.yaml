@@ -37,7 +37,7 @@ environments:
           external-dns:
             logLevel: info
           external-secrets:
-            enabled: true
+            enabled: false
             logLevel: info
             pollingInterval: 60000
           gatekeeper:
@@ -148,8 +148,8 @@ environments:
                 cpu: 500m
                 memory: 128Mi
               limits:
-                cpu: 1000m
-                memory: 512Mi
+                cpu: 1
+                memory: 1Gi
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
           otomi-api:
@@ -162,13 +162,100 @@ environments:
             enabled: false
             remoteWrite:
               enabled: false
-              insecureSkipVerify: false
+              rwConfig:
+                insecureSkipVerify: false
             replicas: 1
             scrapeInterval: 60s
             retentionSize: 4GB
             storageSize: 5Gi
           redis-shared:
             enabled: false
+          thanos:
+            enabled: false
+            query:
+              replicaCount: 1
+            receiver:
+              mode: standalone
+              replicaCount: 1
+              tsdbRetention: 7d
+              replicationFactor: 1
+            receiverDistributor:
+              enabled: true
+            compactor:
+              retentionResolutionRaw: 30d
+              retentionResolution5m: 60d
+              retentionResolution1h: 0s
+            ruler:
+              enabled: false
+            objstore:
+              storageProvider:
+                type: minioLocal
+            resources:
+              bucketweb:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              query:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              queryFrontend:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              receiver:
+                requests:
+                  cpu: 200m
+                  memory: 512Mi
+                limits:
+                  cpu: '1'
+                  memory: 2Gi
+              receiverDistributor:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: '1'
+                  memory: 512Mi
+              storegateway:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              compactor:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: '1'
+                  memory: 512Mi
+              ruler:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+            persistence:
+              receiver:
+                size: 50Gi
+              storegateway:
+                size: 8Gi
+              compactor:
+                size: 8Gi
+              ruler:
+                size: 8Gi
           vault:
             enabled: false
             resources:

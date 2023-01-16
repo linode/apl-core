@@ -3,5 +3,6 @@ The next line will inject "apps.${RELEASENAME}._rawValues" into the values, whic
 Apps that don't have an exact corresponding release name will have to inject it in their specific release config.
 (Example: prometheus-operator)
 */ -}}
+
 {{- $rawValues := .Values | get (printf "apps.%s._rawValues" .Release.Name) nil }}
 {{- with $rawValues }}{{ toYaml . }}{{ end }}

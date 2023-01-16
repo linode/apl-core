@@ -447,6 +447,50 @@ definitions:
       - tag
     type: object
     title: Container image
+  ingressNginx:
+    additionalProperties: false
+    properties:
+      _rawValues:
+        $ref: '#/definitions/rawValues'
+      autoscaling:
+        $ref: '#/definitions/autoscalingEnabled'
+      maxBodySize:
+        type: string
+        default: 1024m
+      maxBodySizeBytes:
+        type: integer
+        minimum: 0
+        default: 1073741824
+        description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
+      modsecurity:
+        title: MOD Security
+        description: Enables MOD Security functionality.
+        properties:
+          block:
+            description: Makes nginx block requests that are marked as violating the modsec rules.
+            type: boolean
+            default: false
+          enabled:
+            type: boolean
+            default: false
+          owasp:
+            description: Turns on the default OWASP rule set for modsec. See
+            type: boolean
+            default: true
+        type: object
+      image:
+        properties:
+          tag:
+            $ref: '#/definitions/imageTag'
+            x-default: v1.0.5
+          pullPolicy:
+            $ref: '#/definitions/imagePullPolicy'
+      resources:
+        $ref: '#/definitions/resources'
+      service:
+        properties:
+          annotations:
+            $ref: '#/definitions/annotations'
   ingressClassParameters:
     type: object
     properties:
@@ -1063,6 +1107,7 @@ definitions:
         description: Ingress class name
         type: string
         default: platform
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])+$'
       svc:
         $ref: '#/definitions/idName'
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
@@ -1833,50 +1878,8 @@ properties:
               - required:
                   - armAuth
                   - appgw
-      ingress-nginx:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          autoscaling:
-            $ref: '#/definitions/autoscalingEnabled'
-          maxBodySize:
-            type: string
-            default: 1024m
-          maxBodySizeBytes:
-            type: integer
-            minimum: 0
-            default: 1073741824
-            description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
-          modsecurity:
-            title: MOD Security
-            description: Enables MOD Security functionality.
-            properties:
-              block:
-                description: Makes nginx block requests that are marked as violating the modsec rules.
-                type: boolean
-                default: false
-              enabled:
-                type: boolean
-                default: false
-              owasp:
-                description: Turns on the default OWASP rule set for modsec. See
-                type: boolean
-                default: true
-            type: object
-          image:
-            properties:
-              tag:
-                $ref: '#/definitions/imageTag'
-                x-default: v1.0.5
-              pullPolicy:
-                $ref: '#/definitions/imagePullPolicy'
-          resources:
-            $ref: '#/definitions/resources'
-          service:
-            properties:
-              annotations:
-                $ref: '#/definitions/annotations'
+      ingress-nginx-platform:
+        $ref: '#/definitions/ingressNginx'
       istio:
         additionalProperties: false
         properties:
@@ -1991,7 +1994,12 @@ properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           resources:
-            $ref: '#/definitions/resources'
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+              pod:
+                $ref: '#/definitions/resources'
       knative:
         additionalProperties: false
         properties:
@@ -2365,6 +2373,136 @@ properties:
           enabled:
             type: boolean
             default: false
+      thanos:
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          query:
+            properties:
+              replicaCount:
+                description: Number of Thanos Query replicas.
+                type: integer
+                default: 1
+          receiver:
+            properties:
+              mode:
+                title: Receiver mode
+                description: Mode to run receiver in.
+                type: string
+                default: standalone
+                enum:
+                  - standalone
+                  - dual-mode
+              replicaCount:
+                description: Number of Thanos Receive replicas.
+                type: integer
+                default: 1
+              tsdbRetention:
+                type: string
+                default: 7d
+              replicationFactor:
+                type: integer
+                default: 1
+          compactor:
+            description: Resolution and Retention flags.
+            properties:
+              retentionResolutionRaw:
+                type: string
+                default: 30d
+              retentionResolution5m:
+                type: string
+                default: 30d
+              retentionResolution1h:
+                type: string
+                default: 10y
+          receiverDistributor:
+            properties:
+              enabled:
+                type: boolean
+                default: true
+          ruler:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+          objstore:
+            properties:
+              storageProvider:
+                additionalProperties: false
+                properties:
+                  s3:
+                    properties:
+                      bucket:
+                        type: string
+                        description: Name of the blob container.
+                        $ref: '#/definitions/wordCharacterPattern'
+                      s3Url:
+                        description: The name (URL) of the S3 bucket
+                        $ref: '#/definitions/wordCharacterPattern'
+                      accessKeyId:
+                        type: string
+                        description: The ID of the access key
+                        $ref: '#/definitions/wordCharacterPattern'
+                      secretAccessKey:
+                        type: string
+                        description: The secret of the access key
+                        $ref: '#/definitions/wordCharacterPattern'
+                        x-secret: ''
+                    required:
+                      - bucket
+                      - s3Url
+                      - accessKeyId
+                      - secretAccessKey
+                  type:
+                    type: string
+                    enum:
+                      - s3
+                      - minioLocal
+                    default: minioLocal
+          resources:
+            additionalProperties: false
+            properties:
+              query:
+                $ref: '#/definitions/resources'
+              queryFrontend:
+                $ref: '#/definitions/resources'
+              receiver:
+                $ref: '#/definitions/resources'
+              storegateway:
+                $ref: '#/definitions/resources'
+              bucketweb:
+                $ref: '#/definitions/resources'
+              compactor:
+                $ref: '#/definitions/resources'
+              receiverDistributor:
+                $ref: '#/definitions/resources'
+              ruler:
+                $ref: '#/definitions/resources'
+        persistence:
+          properties:
+            receiver:
+              properties:
+                size:
+                  $ref: '#/definitions/size'
+                  default: 50Gi
+            storegateway:
+              properties:
+                size:
+                  $ref: '#/definitions/size'
+                  default: 8Gi
+            compactor:
+              properties:
+                size:
+                  $ref: '#/definitions/size'
+                  default: 8Gi
+            ruler:
+              properties:
+                size:
+                  $ref: '#/definitions/size'
+                  default: 8Gi
       vault:
         additionalProperties: false
         properties:
@@ -2580,6 +2718,9 @@ properties:
               - panic
           resources:
             $ref: '#/definitions/resources'
+    patternProperties:
+      '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
+        $ref: '#/definitions/ingressNginx'
   cluster:
     $ref: '#/definitions/cluster'
   dns:
