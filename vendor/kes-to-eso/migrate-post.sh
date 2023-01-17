@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 KES_NAMESPACE="vault"
 
 scriptDir="$(dirname -- "$0")"
