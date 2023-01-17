@@ -1,12 +1,13 @@
 #!/bin/bash
 
-set -e
+set -ex
 KES_NAMESPACE="vault"
 
 scriptDir="$(dirname -- "$0")"
 
 echo "Upgrade from KES to ESO"
-[[ $(helm status -n external-secrets external-secrets) && ! $(helm status -n vault external-secrets) ]] && echo "Skipping" && exit 0
+[[ ! $(helm status -n external-secrets external-secrets) ]] && echo "The external-secrets release does not exists. Skipping" && exit 0
+[[ ! $(helm status -n vault external-secrets) ]] && echo "The external-secrets has been already migrated. Skipping" && exit 0
 
 echo "Scaling down KES"
 kubectl scale deployment -n $KES_NAMESPACE external-secrets --replicas=0
