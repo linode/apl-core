@@ -47,4 +47,4 @@ operations:
   - version: 0.18.0
     post:
       # convert secrets to new format and apply
-      - vendor/kes-to-eso/migrate-post.sh && echo "Success"
+      - vendor/kes-to-eso/migrate-post.sh && true
