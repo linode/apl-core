@@ -216,7 +216,7 @@ adminApps:
         path: /realms/otomi/account/
   - name: kiali
     tags: [tracing, telemetry, observability]
-    deps: [istio]
+    deps: [istio, prometheus]
     path: /api/auth/openid_redirect
     ingress:
       - svc: kiali
