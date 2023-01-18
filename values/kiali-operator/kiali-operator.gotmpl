@@ -35,17 +35,7 @@ cr:
         sidecar.istio.io/inject: "true"
       ingress_enabled: false
       namespace: kiali
-      resources:
-        {{- with $k | get "resources" nil }}
-          {{- toYaml . | nindent 8 }}
-        {{- else }}
-        limits:
-          cpu: 500m
-          memory: 512Mi
-        requests:
-          cpu: 50m
-          memory: 32Mi
-        {{- end }}
+      resources: {{- $k.resources.pod | toYaml  | nindent 8 }}
       verbose_mode: "4"
     external_services:
       grafana:
@@ -115,10 +105,4 @@ cr:
       web_root: /kiali
       web_fqdn: {{ $appsDomain }}
 
-resources:
-  limits:
-    cpu: 800m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 150Mi
+resources: {{- $k.resources.operator | toYaml  | nindent 2 }}

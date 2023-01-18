@@ -7,3 +7,6 @@ folders:
   - azure
   {{- end }}
   - shared
+  {{- if $v.apps.thanos.enabled }}
+  - thanos
+  {{- end }}
