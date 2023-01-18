@@ -3,8 +3,8 @@
 {{- $pa := $v.backup.platform }}
 {{- $cloud := $vl.cloud }}
 {{- $storage := $vl.storage }}
-{{- $cp := $cloud.provider | get "type" dict }}
-{{- $sp := $storage.provider | get "type" dict }}
+{{- $cp := $cloud.provider }}
+{{- $sp := $storage.provider }}
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
 
@@ -49,27 +49,27 @@ podSecurityContext:
 logLevel: {{ $vl.logLevel }}
 
 configuration:
-  {{- if eq $sp "azureBlob" }}
+  {{- if eq $sp.type "azureBlob" }}
   provider: azure
   backupStorageLocation:
     name: otomi
     default: true
-    bucket: {{ $storage.provider.azureBlob.bucket }}
+    bucket: {{ $sp.azureBlob.bucket }}
     config:
-      storageAccount: {{ $storage.provider.azureBlob.storageAccount }}
-      resourceGroup: {{ $storage.provider.azureBlob.resourceGroup }}
+      storageAccount: {{ $sp.azureBlob.storageAccount }}
+      resourceGroup: {{ $sp.azureBlob.resourceGroup }}
   {{- end }}
-  {{- if eq $sp "s3" }}
+  {{- if eq $sp.type "s3" }}
   provider: aws
   backupStorageLocation:
     name: otomi
     default: true
-    bucket: {{ $storage.provider.s3.bucket }}
+    bucket: {{ $sp.s3.bucket }}
     config:
-      s3Url: {{ $storage.provider.s3.s3Url }}
-      region: {{ $storage.provider.s3.region }}
+      s3Url: {{ $sp.s3.s3Url }}
+      region: {{ $sp.s3.region }}
   {{- end }}
-  {{- if eq $sp "minioLocal" }}
+  {{- if eq $sp.type "minioLocal" }}
   provider: aws
   backupStorageLocation:
     name: otomi
@@ -82,18 +82,18 @@ configuration:
       s3ForcePathStyle: true
   {{- end }}
 
-  {{- if eq $cp "azure" }}
+  {{- if eq $cp.type "azure" }}
   volumeSnapshotLocation:
     name: otomi
     config:
-      resourceGroup: {{ $cloud.provider.azure.resourceGroup }}
+      resourceGroup: {{ $cp.azure.resourceGroup }}
   {{- end }}
   
-  {{- if eq $cp "aws" }}
+  {{- if eq $cp.type "aws" }}
   volumeSnapshotLocation:
     name: otomi
     config:
-      region: {{ $cp.region }}
+      region: {{ $cp.aws.region }}
   {{- end }}
 
   # if set Velero will back up all pod volumes using Restic with the exception of service account tokens, secrets, config maps and hostpath volumes
@@ -102,29 +102,29 @@ configuration:
 credentials:
   secretContents:
     cloud: |
-{{- if eq $cp "azure" }}
-      AZURE_RESOURCE_GROUP={{ $cloud.provider.azure.resourceGroup }}
-      AZURE_CLOUD_NAME={{ $cloud.provider.azure.environment }}
-      AZURE_SUBSCRIPTION_ID={{ $cloud.provider.azure.subscriptionId }}
-      AZURE_TENANT_ID={{ $cloud.provider.azure.tenantId }}
-      AZURE_CLIENT_ID={{ $cloud.provider.azure.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $cloud.provider.azure.aadClientSecret }}
+{{- if eq $cp.type "azure" }}
+      AZURE_RESOURCE_GROUP={{ $cp.azure.resourceGroup }}
+      AZURE_CLOUD_NAME={{ $cp.azure.environment }}
+      AZURE_SUBSCRIPTION_ID={{ $cp.azure.subscriptionId }}
+      AZURE_TENANT_ID={{ $cp.azure.tenantId }}
+      AZURE_CLIENT_ID={{ $cp.azure.aadClientId }}
+      AZURE_CLIENT_SECRET={{ $cp.azure.aadClientSecret }}
 {{- end }}
-{{- if and (eq $sp "azureBlob") (not (eq $cp "azure")) }}
-      AZURE_SUBSCRIPTION_ID={{ $storage.provider.azureBlob.subscriptionId }}
-      AZURE_TENANT_ID={{ $storage.provider.azureBlob.tenantId }}
-      AZURE_CLIENT_ID={{ $storage.provider.azureBlob.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $storage.provider.azureBlob.aadClientSecret }}
+{{- if and (eq $sp.type "azureBlob") (not (eq $cp.type "azure")) }}
+      AZURE_SUBSCRIPTION_ID={{ $sp.azureBlob.subscriptionId }}
+      AZURE_TENANT_ID={{ $sp.azureBlob.tenantId }}
+      AZURE_CLIENT_ID={{ $sp.azureBlob.aadClientId }}
+      AZURE_CLIENT_SECRET={{ $sp.azureBlob.aadClientSecret }}
 {{- end }}
-{{- if eq $sp "minioLocal" }}
+{{- if eq $sp.type "minioLocal" }}
       [default]
       aws_access_key_id=otomi-admin
       aws_secret_access_key={{ $v.otomi.adminPassword }}
 {{- end }}
-{{- if eq $sp "s3" }}
+{{- if eq $sp.type "s3" }}
       [default]
-      aws_access_key_id={{ $storage.storageProvider.s3.accessKeyId }}
-      aws_secret_access_key={{ $storage.storageProvider.s3.secretAccessKey }}
+      aws_access_key_id={{ $sp.s3.accessKeyId }}
+      aws_secret_access_key={{ $sp.s3.secretAccessKey }}
 {{- end }}
 
 kubectl:

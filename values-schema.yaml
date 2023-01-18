@@ -258,15 +258,17 @@ definitions:
         title: Resource group
         description: An Azure resource group.
         $ref: '#/definitions/wordCharacterPattern'
-  backupTtl:
-    default: 240h
-    description: Expiration of the backup.
-    title: TTL after finished
-    type: string
-  backupSchedule:
-    default: 0 0 * * *
-    description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
-    type: string
+  backup:
+    definitions:
+      ttl:
+        default: 240h
+        description: Expiration of the backup.
+        title: TTL after finished
+        type: string
+      schedule:
+        default: 0 0 * * *
+        description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
+        type: string
   cluster:
     additionalProperties: false
     properties:
@@ -1793,9 +1795,7 @@ properties:
                 type: boolean
                 default: false
               schedule:
-                default: 0 0 * * *
-                description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
-                type: string
+                $ref: '#/definitions/backup/definitions/schedule'
         required:
           - databasePassword
       hello:
@@ -2599,10 +2599,13 @@ properties:
             type: boolean
             default: false
           cloud:
+            additionalProperties: false
+            type: object
             properties:
               provider:
                 properties:
                   azure:
+                    additionalProperties: false
                     description: Azure
                     properties:
                       resourceGroup:
@@ -2616,6 +2619,7 @@ properties:
                           - AzureChinaCloud
                           - AzureUSGovernment
                           - AzureGermanCloud
+                        default: AzurePublicCloud
                       tenantId:
                         $ref: '#/definitions/wordCharacterPattern'
                       subscriptionId:
@@ -2633,6 +2637,7 @@ properties:
                       - resourceGroup
                       - environment
                   aws:
+                    additionalProperties: false
                     description: Amazon Web Services
                     properties:
                       region:
@@ -2647,11 +2652,12 @@ properties:
                       - custom
                     default: custom
           storage:
+            additionalProperties: false
             properties:
               provider:
                 properties:
                   azureBlob:
-                    type: object
+                    additionalProperties: false
                     properties:
                       storageAccount:
                         type: string
@@ -2679,6 +2685,7 @@ properties:
                       - storageAccount
                       - bucket
                   s3:
+                    additionalProperties: false
                     properties:
                       bucket:
                         type: string
@@ -3307,9 +3314,9 @@ properties:
                 type: boolean
                 default: false
               ttl:
-                $ref: '#/definitions/backupTtl'
+                $ref: '#/definitions/backup/definitions/ttl'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: '#/definitions/backup/definitions/schedule'
           drone:
             title: Drone
             properties:
@@ -3317,9 +3324,9 @@ properties:
                 type: boolean
                 default: false
               ttl:
-                $ref: '#/definitions/backupTtl'
+                $ref: '#/definitions/backup/definitions/ttl'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: '#/definitions/backup/definitions/schedule'
           keycloak:
             title: Keycloak
             properties:
@@ -3327,9 +3334,9 @@ properties:
                 type: boolean
                 default: false
               ttl:
-                $ref: '#/definitions/backupTtl'
+                $ref: '#/definitions/backup/definitions/ttl'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: '#/definitions/backup/definitions/schedule'
           harbor:
             title: Harbor
             properties:
@@ -3337,9 +3344,9 @@ properties:
                 type: boolean
                 default: false
               ttl:
-                $ref: '#/definitions/backupTtl'
+                $ref: '#/definitions/backup/definitions/ttl'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: '#/definitions/backup/definitions/schedule'
           vault:
             title: Vault
             properties:
@@ -3347,9 +3354,9 @@ properties:
                 type: boolean
                 default: false
               ttl:
-                $ref: '#/definitions/backupTtl'
+                $ref: '#/definitions/backup/definitions/ttl'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: '#/definitions/backup/definitions/schedule'
           argo:
             title: ArgoCD
             properties:
@@ -3357,9 +3364,9 @@ properties:
                 type: boolean
                 default: false
               ttl:
-                $ref: '#/definitions/backupTtl'
+                $ref: '#/definitions/backup/definitions/ttl'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: '#/definitions/backup/definitions/schedule'
           kubeapps:
             title: Kubeapps
             properties:
@@ -3367,9 +3374,9 @@ properties:
                 type: boolean
                 default: false
               ttl:
-                $ref: '#/definitions/backupTtl'
+                $ref: '#/definitions/backup/definitions/ttl'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: '#/definitions/backup/definitions/schedule'
           minio:
             title: Minio
             properties:
@@ -3377,17 +3384,17 @@ properties:
                 type: boolean
                 default: false
               ttl:
-                $ref: '#/definitions/backupTtl'
+                $ref: '#/definitions/backup/definitions/ttl'
               schedule:
-                $ref: '#/definitions/backupSchedule'
+                $ref: '#/definitions/backup/definitions/schedule'
       teams:
         enabled:
           type: boolean
           default: false
         ttl:
-          $ref: '#/definitions/backupTtl'
+          $ref: '#/definitions/backup/definitions/ttl'
         schedule:
-          $ref: '#/definitions/backupSchedule'
+          $ref: '#/definitions/backup/definitions/schedule'
   teamConfig:
     additionalProperties: false
     patternProperties:
