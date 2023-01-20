@@ -2602,7 +2602,7 @@ properties:
             additionalProperties: false
             type: object
             properties:
-              provider:
+              cProvider:
                 properties:
                   azure:
                     additionalProperties: false
@@ -2654,7 +2654,7 @@ properties:
           storage:
             additionalProperties: false
             properties:
-              provider:
+              sProvider:
                 properties:
                   azureBlob:
                     additionalProperties: false

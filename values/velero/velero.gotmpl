@@ -3,8 +3,8 @@
 {{- $pa := $v.backup.platform }}
 {{- $cloud := $vl.cloud }}
 {{- $storage := $vl.storage }}
-{{- $cp := $cloud.provider }}
-{{- $sp := $storage.provider }}
+{{- $cp := $cloud.cProvider }}
+{{- $sp := $storage.sProvider }}
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
 
