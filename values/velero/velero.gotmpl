@@ -1,10 +1,8 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
 {{- $pa := $v.backup.platform }}
-{{- $cloud := $vl.cloud }}
-{{- $storage := $vl.storage }}
-{{- $cp := $cloud.cProvider }}
-{{- $sp := $storage.sProvider }}
+{{- $cp := $vl.cloud }}
+{{- $sp := $vl.storage }}
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
 
@@ -121,7 +119,12 @@ credentials:
       aws_access_key_id=otomi-admin
       aws_secret_access_key={{ $v.otomi.adminPassword }}
 {{- end }}
-{{- if eq $sp.type "s3" }}
+{{- if eq $cp.type "aws" }}
+      [default]
+      aws_access_key_id={{ $sp.s3.accessKeyId }}
+      aws_secret_access_key={{ $sp.s3.secretAccessKey }}
+{{- end }}
+{{- if and (eq $sp.type "s3") (not (eq $cp.type "aws")) }}
       [default]
       aws_access_key_id={{ $sp.s3.accessKeyId }}
       aws_secret_access_key={{ $sp.s3.secretAccessKey }}
