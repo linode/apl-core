@@ -221,7 +221,7 @@ adminApps:
         path: /realms/otomi/account/
   - name: kiali
     tags: [tracing, telemetry, observability]
-    deps: [istio]
+    deps: [istio, prometheus]
     path: /api/auth/openid_redirect
     ingress:
       - svc: kiali
@@ -304,6 +304,23 @@ adminApps:
         # namespace: prometheus
         type: public
         auth: true
+  - name: thanos
+    tags: [metrics, observability]
+    ownHost: true
+    deps: [prometheus, grafana, minio]
+    ingress:
+      - svc: thanos-query-frontend
+        port: 9090
+        namespace: monitoring
+        forwardPath: true
+        type: public
+        auth: true
+      - svc: thanos-receive
+        port: 19291
+        namespace: monitoring
+        paths: [/api/]
+        forwardPath: true
+        type: public
   - name: vault
     tags: [secrets, security, observability]
     deps: [external-secrets]

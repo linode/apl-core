@@ -11,3 +11,7 @@ folders:
   {{- if $v.apps.argocd.enabled }}
   - argo
   {{- end }}
+  - shared
+  {{- if $v.apps.thanos.enabled }}
+  - thanos
+  {{- end }}

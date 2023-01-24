@@ -24,11 +24,16 @@ dns:
     domainFilters:
         - otomi.cloud
     provider:
-        azure-private-dns:
-            aadClientId: 00-aadClientId
-            resourceGroup: external-dns
-            subscriptionId: 00-subscriptionId
-            tenantId: 00-tenantId
+        aws:
+            credentials:
+                accessKey: AAAAAAAAAAAAAAAAA
+            region: eu-central-1
+
+        # azure-private-dns:
+        #     aadClientId: 00-aadClientId
+        #     resourceGroup: external-dns
+        #     subscriptionId: 00-subscriptionId
+        #     tenantId: 00-tenantId
     zoneIdFilters:
         - otomi
 home:
@@ -86,4 +91,4 @@ smtp:
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
-version: 5
+version: 6
