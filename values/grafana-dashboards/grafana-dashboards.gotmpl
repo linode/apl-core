@@ -12,6 +12,12 @@ folders:
   - argo
   {{- end }}
   - shared
+  {{- if $v.apps.velero.enabled }}
+  - velero
+  {{- end }}
+    {{- if $v.apps.minio.enabled }}
+  - minio
+  {{- end }}
   {{- if $v.apps.thanos.enabled }}
   - thanos
   {{- end }}
