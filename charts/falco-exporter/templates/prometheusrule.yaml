@@ -1,0 +1,81 @@
+{{- if and .Values.prometheusRules.enabled .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "falco-exporter.fullname" . }}
+  {{- if .Values.prometheusRules.namespace }}
+  namespace: {{ .Values.prometheusRules.namespace }}
+  {{- end }}
+  labels:
+    {{- include "falco-exporter.labels" . | nindent 4 }}
+    {{- if .Values.prometheusRules.additionalLabels }}
+    {{- toYaml .Values.prometheusRules.additionalLabels | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+  - name: falco-exporter
+    rules:
+    {{- if .Values.prometheusRules.enabled }}
+    - alert: FalcoExporterAbsent
+      expr: absent(up{job="{{- include "falco-exporter.fullname" . }}"})
+      for: 10m
+      annotations:
+        summary: Falco Exporter has dissapeared from Prometheus service discovery.
+        description: No metrics are being scraped from falco. No events will trigger any alerts.
+      labels:
+        severity: critical
+    {{- end }}
+    {{- if .Values.prometheusRules.alerts.warning.enabled }}
+    - alert: FalcoWarningEventsRateHigh
+      annotations:
+        summary: Falco is experiencing high rate of warning events
+        description: A high rate of warning events are being detected by Falco
+      expr: rate(falco_events{priority="4"}[{{ .Values.prometheusRules.alerts.warning.rate_interval }}]) > {{ .Values.prometheusRules.alerts.warning.threshold }}
+      for: 15m
+      labels:
+        severity: warning
+    {{- end }}
+    {{- if .Values.prometheusRules.alerts.error.enabled }}
+    - alert: FalcoErrorEventsRateHigh
+      annotations:
+        summary: Falco is experiencing high rate of error events
+        description: A high rate of error events are being detected by Falco
+      expr: rate(falco_events{priority="3"}[{{ .Values.prometheusRules.alerts.error.rate_interval }}]) > {{ .Values.prometheusRules.alerts.error.threshold }}
+      for: 15m
+      labels:
+        severity: warning
+    {{- end }}
+    {{- if .Values.prometheusRules.alerts.critical.enabled }}
+    - alert: FalcoCriticalEventsRateHigh
+      annotations:
+        summary: Falco is experiencing high rate of critical events
+        description: A high rate of critical events are being detected by Falco
+      expr: rate(falco_events{priority="2"}[{{ .Values.prometheusRules.alerts.critical.rate_interval }}]) > {{ .Values.prometheusRules.alerts.critical.threshold }}
+      for: 15m
+      labels:
+        severity: critical
+    {{- end }}
+    {{- if .Values.prometheusRules.alerts.alert.enabled }}
+    - alert: FalcoAlertEventsRateHigh
+      annotations:
+        summary: Falco is experiencing high rate of alert events
+        description: A high rate of alert events are being detected by Falco
+      expr: rate(falco_events{priority="1"}[{{ .Values.prometheusRules.alerts.alert.rate_interval }}]) > {{ .Values.prometheusRules.alerts.alert.threshold }}
+      for: 5m
+      labels:
+        severity: critical
+    {{- end }}
+    {{- if .Values.prometheusRules.alerts.emergency.enabled }}
+    - alert: FalcoEmergencyEventsRateHigh
+      annotations:
+        summary: Falco is experiencing high rate of emergency events
+        description: A high rate of emergency events are being detected by Falco
+      expr: rate(falco_events{priority="0"}[{{ .Values.prometheusRules.alerts.emergency.rate_interval }}]) > {{ .Values.prometheusRules.alerts.emergency.threshold }}
+      for: 1m
+      labels:
+        severity: critical
+    {{- end }}
+    {{- with .Values.prometheusRules.additionalAlerts }}
+    {{ . | nindent 4 }}
+    {{- end }}
+{{- end }}
