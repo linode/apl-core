@@ -16,6 +16,9 @@ k8s:
       disableIstioInjection: true
     - name: external-secrets
       disableIstioInjection: true
+    - name: falco
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: harbor
       app: harbor
     - name: gatekeeper-system
@@ -129,6 +132,8 @@ adminApps:
     tags: [ingress, security, tls]
   - name: external-secrets
     tags: [secrets, security, tls]
+  - name: falco
+    tags: [security]
   - name: gatekeeper
     tags: [security, policies, observability]
   - name: gitea
@@ -216,7 +221,7 @@ adminApps:
         path: /realms/otomi/account/
   - name: kiali
     tags: [tracing, telemetry, observability]
-    deps: [istio]
+    deps: [istio, prometheus]
     path: /api/auth/openid_redirect
     ingress:
       - svc: kiali
