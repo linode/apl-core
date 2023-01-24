@@ -67,15 +67,17 @@ otomi: {}
 #   domainFilters: []
 #   zoneIdFilters: []
 #   provider:
-#     # provide one of the following below: aws|azure|google
+#     # choose your DNS provider: aws|azure|google|digitalocean|cloudflare|other
 #     aws:
-#       # next two keys are optional for explicit access with an iam role
+#       # credentials are optional for explicit access with an iam role
 #       # (if no metadata exists with implicit role access to manage dns)
-#       accessKeySecret: ''
-#       secretAccessKey: ''
+#       credentials:
+#         secretKey: '' 
+#         accessKey: ''
 #       # region is always needed
 #       region: eu-central-1
-#       role: '' # optional ARN, may be set explicitly if no metadata can be accessed
+#       # optional ARN, may be set explicitly if no metadata can be accessed
+#       role: '' 
 #     azure:
 #       aadClientId: ''
 #       aadClientSecret: ''
@@ -84,6 +86,11 @@ otomi: {}
 #     google:
 #       serviceAccountKey: ''
 #       project: ''
+#     digitalocean:
+#       apiToken: ''
+#       apiSecret: ''
+#       email: ''
+#       proxied: # true|false (default is true)
 # KMS for encrypting values
 # kms:
 #   sops:
