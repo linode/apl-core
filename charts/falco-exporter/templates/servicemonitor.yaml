@@ -1,0 +1,24 @@
+{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "falco-exporter.fullname" . }}
+  labels:
+    {{- include "falco-exporter.labels" . | nindent 4 }}
+    {{- range $key, $value := .Values.serviceMonitor.additionalLabels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  endpoints:
+  - port: metrics
+    {{- if .Values.serviceMonitor.interval }}
+    interval: {{ .Values.serviceMonitor.interval }}
+    {{- end }}
+    {{- if .Values.serviceMonitor.scrapeTimeout }}
+    scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+    {{- end }}
+  selector:
+    matchLabels:
+      {{- include "falco-exporter.selectorLabels" . | nindent 6 }}
+{{- end }}

@@ -1,0 +1,151 @@
+# Falcosidekick
+
+![falcosidekick](https://github.com/falcosecurity/falcosidekick/raw/master/imgs/falcosidekick_color.png)
+
+![release](https://flat.badgen.net/github/release/falcosecurity/falcosidekick/latest?color=green) ![last commit](https://flat.badgen.net/github/last-commit/falcosecurity/falcosidekick) ![licence](https://flat.badgen.net/badge/license/MIT/blue) ![docker pulls](https://flat.badgen.net/docker/pulls/falcosecurity/falcosidekick?icon=docker)
+
+## Description
+
+A simple daemon for connecting [`Falco`](https://github.com/falcosecurity/falco) to your ecossytem. It takes a `Falco`'s events and
+forward them to different outputs in a fan-out way.
+
+It works as a single endpoint for as many as you want `Falco` instances :
+
+![falco_with_falcosidekick](https://github.com/falcosecurity/falcosidekick/raw/master/imgs/falco_with_falcosidekick.png)
+
+## Outputs
+
+`Falcosidekick` manages a large variety of outputs with different purposes.
+
+### Chat
+
+- [**Slack**](https://slack.com)
+- [**Rocketchat**](https://rocket.chat/)
+- [**Mattermost**](https://mattermost.com/)
+- [**Teams**](https://products.office.com/en-us/microsoft-teams/group-chat-software)
+- [**Discord**](https://www.discord.com/)
+- [**Google Chat**](https://workspace.google.com/products/chat/)
+- [**Zoho Cliq**](https://www.zoho.com/cliq/)
+
+### Metrics / Observability
+
+- [**Datadog**](https://www.datadoghq.com/)
+- [**Influxdb**](https://www.influxdata.com/products/influxdb-overview/)
+- [**StatsD**](https://github.com/statsd/statsd) (for monitoring of `falcosidekick`)
+- [**DogStatsD**](https://docs.datadoghq.com/developers/dogstatsd/?tab=go) (for monitoring of `falcosidekick`)
+- [**Prometheus**](https://prometheus.io/) (for both events and monitoring of `falcosidekick`)
+- [**Wavefront**](https://www.wavefront.com)
+
+### Alerting
+
+- [**AlertManager**](https://prometheus.io/docs/alerting/alertmanager/)
+- [**Opsgenie**](https://www.opsgenie.com/)
+- [**PagerDuty**](https://pagerduty.com/)
+
+### Logs
+
+- [**Elasticsearch**](https://www.elastic.co/)
+- [**Loki**](https://grafana.com/oss/loki)
+- [**AWS CloudWatchLogs**](https://aws.amazon.com/cloudwatch/features/)
+- [**Grafana**](https://grafana.com/) (annotations)
+- **Syslog**
+
+### Object Storage
+
+- [**AWS S3**](https://aws.amazon.com/s3/features/)
+- [**GCP Storage**](https://cloud.google.com/storage)
+- [**Yandex S3 Storage**](https://cloud.yandex.com/en-ru/services/storage)
+
+### FaaS / Serverless
+
+- [**AWS Lambda**](https://aws.amazon.com/lambda/features/)
+- [**Kubeless**](https://kubeless.io/)
+- [**OpenFaaS**](https://www.openfaas.com)
+- [**GCP Cloud Run**](https://cloud.google.com/run)
+- [**GCP Cloud Functions**](https://cloud.google.com/functions)
+- [**Fission**](https://fission.io)
+
+### Message queue / Streaming
+
+- [**NATS**](https://nats.io/)
+- [**STAN (NATS Streaming)**](https://docs.nats.io/nats-streaming-concepts/intro)
+- [**AWS SQS**](https://aws.amazon.com/sqs/features/)
+- [**AWS SNS**](https://aws.amazon.com/sns/features/)
+- [**AWS Kinesis**](https://aws.amazon.com/kinesis/)
+- [**GCP PubSub**](https://cloud.google.com/pubsub)
+- [**Apache Kafka**](https://kafka.apache.org/)
+- [**Kafka Rest Proxy**](https://docs.confluent.io/platform/current/kafka-rest/index.html)
+- [**RabbitMQ**](https://www.rabbitmq.com/)
+- [**Azure Event Hubs**](https://azure.microsoft.com/en-in/services/event-hubs/)
+
+### Email
+
+- **SMTP**
+
+### Web
+
+- **Webhook**
+- [**WebUI**](https://github.com/falcosecurity/falcosidekick-ui) (a Web UI for displaying latest events in real time)
+
+### Other
+- [**Policy Report**](https://github.com/kubernetes-sigs/wg-policy-prototypes/tree/master/policy-report/falco-adapter)
+
+## Adding `falcosecurity` repository
+
+Prior to install the chart, add the `falcosecurity` charts repository:
+
+```bash
+helm repo add falcosecurity https://falcosecurity.github.io/charts
+helm repo update
+```
+
+## Installing the Chart
+
+### Install Falco + Falcosidekick + Falcosidekick-ui
+
+To install the chart with the release name `falcosidekick` run:
+
+```bash
+helm install falcosidekick falcosecurity/falcosidekick --set webui.enabled=true
+```
+
+### With Helm chart of Falco
+
+`Falco`, `Falcosidekick` and `Falcosidekick-ui` can be installed together in one command. All values to configure `Falcosidekick` will have to be
+prefixed with `falcosidekick.`.
+
+```bash
+helm install falco falcosecurity/falco --set falcosidekick.enabled=true --set falcosidekick.webui.enabled=true
+```
+
+After a few seconds, Falcosidekick should be running.
+
+> **Tip**: List all releases using `helm list`, a release is a name used to track a specific deployment
+
+## Minumiun Kubernetes version
+
+The minimum Kubernetes version required is 1.17.x
+
+## Uninstalling the Chart
+
+To uninstall the `falcosidekick` deployment:
+
+```bash
+helm uninstall falcosidekick
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+## Configuration
+
+The following table lists the main configurable parameters of the Falcosidekick chart and their default values. See `values.yaml` for full list.
+
+{{ template "chart.valuesSection" . }}
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
+> **Tip**: You can use the default [values.yaml](values.yaml)
+
+## Metrics
+
+A `prometheus` endpoint can be scrapped at `/metrics`.
+

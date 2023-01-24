@@ -1,0 +1,44 @@
+1. Get the URL for Falcosidekick by running these commands:
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.hosts }}
+  {{- range .paths }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  {{- end }}
+{{- end }}
+{{- else if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "falcosidekick.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "falcosidekick.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "falcosidekick.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  kubectl port-forward svc/{{ include "falcosidekick.name" . }} {{ .Values.service.port }}:{{ .Values.service.port }} --namespace {{ .Release.Namespace }}
+  echo "Visit http://127.0.0.1:{{ .Values.service.port }} to use your application"
+{{- end }}
+{{- if .Values.webui.enabled }}
+2. Get the URL for Falcosidekick-UI (WebUI) by running these commands:
+{{- if .Values.webui.ingress.enabled }}
+{{- range $host := .Values.webui.ingress.hosts }}
+  http{{ if $.Values.webui.ingress.tls }}s{{ end }}://{{ $host.host }}{{ index .paths 0 }}
+{{- end }}
+{{- else if contains "NodePort" .Values.webui.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "falcosidekick.fullname" . }})-ui
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT/ui
+{{- else if contains "LoadBalancer" .Values.webui.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "falcosidekick.fullname" . }}-ui'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "falcosidekick.fullname" . }}-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo http://$SERVICE_IP:{{ .Values.webui.service.port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  kubectl port-forward svc/{{ include "falcosidekick.name" . }}-ui {{ .Values.webui.service.port }}:{{ .Values.webui.service.port }} --namespace {{ .Release.Namespace }}
+  echo "Visit http://127.0.0.1:{{ .Values.webui.service.port }}/ui to use your application"
+{{- end }}
+{{ else }}
+2. Try to enable Falcosidekick-UI (WebUI) by adding this argument to your command:
+  --set webui.enabled=true
+{{- end }}
+

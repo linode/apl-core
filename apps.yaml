@@ -65,6 +65,17 @@ appsInfo:
     license: Apache 2.0
     about: External Secrets Operator reads information from a third-party service like AWS Secrets Manager and automatically injects the values as Kubernetes Secrets.
     integration: External Secrets is used by Otomi to allow teams to automatically sync (partial) secrets created in the packaged (Hashicorp) Vault.
+  falco:
+    title: Falco
+    appVersion: 0.33.1
+    repo: https://github.com/prometheus/prometheus
+    maintainers: The Falco Authors
+    relatedLinks:
+      - https://otomi.io/docs/apps/falco
+      - https://falco.org/docs
+    license: Apache 2.0
+    about: Falco is an open source cloud native runtime security tool that makes it easy to consume kernel events, and enrich those events with information from Kubernetes. Falco has a rich set of security rules specifically built for Kubernetes and Linux. If a rule is violated in a system, Falco will send an alert notifying the user of the violation and its severity.
+    integration: Falco can be enabled in Otomi for runtime intrusion detection. Macros have been configured to exclude all known platform violations so platform admins are only notified when user workloads are not compliant to the security rules. Alerts are automatically send using Alertmanager and the Falco Dashboard is added to Grafana.
   gatekeeper:
     title: Gatekeeper
     appVersion: 3.8.1
