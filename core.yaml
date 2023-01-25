@@ -135,10 +135,11 @@ adminApps:
   - name: falco
     tags: [security]
     deps: [prometheus]
+    isShared: true
+    ownHost: true
     ingress:
       - namespace: falco
         svc: falco-falcosidekick-ui
-        forwardPath: true
         port: 2802
         type: public
         auth: true
