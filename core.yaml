@@ -134,13 +134,6 @@ adminApps:
     tags: [secrets, security, tls]
   - name: falco
     tags: [security]
-    ingress:
-      - namespace: falco
-        svc: falcosidekick-ui
-        forwardPath: true
-        port: 2802
-        type: public
-        auth: true
   - name: gatekeeper
     tags: [security, policies, observability]
   - name: gitea

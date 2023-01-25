@@ -50,13 +50,3 @@ falcosidekick:
       minimumpriority: {{ $f.falcoSidekick.minPrio }}
   resources: {{- $f.resources.falcoSidekick | toYaml  | nindent 4 }}
   replicaCount: {{ $f.falcoSidekick.replicas }}
-  webui:
-    enabled: false
-    replicaCount: 1
-    resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
