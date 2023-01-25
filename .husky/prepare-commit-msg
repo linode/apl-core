@@ -1,3 +1,10 @@
 #!/bin/sh
 
-exec < /dev/tty && npx cz --hook || true
+# It takes one to two parameters.
+# $1 - is a name of the file that contains the commit log message.
+# $2 - is a string indicating the source of the commit message: "message|template|merge|squash|commit" or empty.
+
+# Read more: https://git-scm.com/docs/githooks#_prepare_commit_msg
+
+# Run interactive commitizen if git message is not set
+[ -z "$2" ] && exec </dev/tty && npx cz --hook || true
