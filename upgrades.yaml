@@ -51,6 +51,7 @@ operations:
   - version: dev
     pre:
       # replace OLM crds because helm won't upgrade them
+      # The olmconfigs is a new CRD so it cannot be replaced before applying
       - |
-        kubectl apply -f charts/operator-lifecycle-manager/0000_50_olm_00-olmconfigs.crd.yaml
+        kubectl apply -f charts/operator-lifecycle-manager/crds/0000_50_olm_00-olmconfigs.crd.yaml
         kubectl replace -f charts/operator-lifecycle-manager/crds
