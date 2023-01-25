@@ -155,7 +155,14 @@ data:
         layerinfo: redis
       maintenance:
         uploadpurging:
+          {{- if .Values.registry.upload_purging.enabled }}
+          enabled: true
+          age: {{ .Values.registry.upload_purging.age }}
+          interval: {{ .Values.registry.upload_purging.interval }}
+          dryrun: {{ .Values.registry.upload_purging.dryrun }}
+          {{- else }}
           enabled: false
+          {{- end }}
       delete:
         enabled: true
       redirect:

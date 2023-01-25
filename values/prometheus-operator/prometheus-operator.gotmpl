@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $c := $v.apps }}
 {{- $k := $v.apps.keycloak }}
+{{- $t := $v.apps.thanos }}
 {{- $o := $v | get "oidc" dict }}
 {{- $a := $v.apps | get "alertmanager" }}
 {{- $g := $v.apps | get "grafana" }}
@@ -45,6 +46,7 @@ prometheus:
   enabled: {{ $p.enabled }}
   prometheusSpec:
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
+    {{- if $v.otomi.isMultitenant }}
     {{ $selType }}NamespaceSelector:
       matchExpressions:
         - key: name
@@ -53,6 +55,10 @@ prometheus:
             {{- range $teamId, $_ := $v.teamConfig }}
             - team-{{ $teamId }}
             {{- end }}
+    {{- else }}
+    {{ $selType }}NamespaceSelector:
+      matchLabels: {}
+    {{- end }}
     {{ $selType }}Selector:
       matchLabels:
         prometheus: system
@@ -81,7 +87,7 @@ prometheus:
       {{- end }}
     priorityClassName: otomi-critical
     externalLabels:
-      cluster: {{ printf "%s/%s/%s" $v.cluster.owner $v.cluster.provider $v.cluster.name | lower | quote }}
+      cluster: "{{ $v.cluster.domainSuffix }}"
     retention: {{ $p | get "retention" "1d" }}
     retentionSize: {{ $p | get "retentionSize" }}
     storageSpec:
@@ -116,12 +122,14 @@ prometheus:
           key: password
       {{- end }}
       tlsConfig:
-        insecureSkipVerify: {{ $p.remoteWrite.insecureSkipVerify }}
+        insecureSkipVerify: {{ $p.remoteWrite.rwConfig.insecureSkipVerify }}
       {{- if $p.remoteWrite.otomiThanos }}
       headers:
-        cluster: "{{ $v.cluster.name }}.{{ $v.cluster.domainSuffix }}"
+        cluster: "{{ $v.cluster.domainSuffix }}"
       {{- end }}
-      {{- $p.remoteWrite.rwConfig.customConfig | nindent 6 }}
+      {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
+      {{- . | nindent 6 }}
+      {{- end }}
 {{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
@@ -211,6 +219,12 @@ grafana:
       requests:
         cpu: 50m
         memory: 50Mi
+    {{- if $t.enabled }}
+    dashboards:
+      multicluster:
+        global:
+          enabled: true
+    {{- end }}
   serviceMonitor:
     # namespace: grafana
     labels:
@@ -238,6 +252,12 @@ grafana:
       {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
+    {{- end }}
+    {{- if $t.enabled }}
+    - name: Thanos Query
+      editable: false
+      type: prometheus
+      url: http://thanos-query-frontend.monitoring.svc.cluster.local:9090/thanos/query  
     {{- end }}
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
   grafana.ini: {{- $grafanaIni | nindent 4 }}
@@ -297,4 +317,4 @@ kubeProxy:
 kubeScheduler:
   enabled: false
 kubeControllerManager:
-  enabled: flase
+  enabled: false

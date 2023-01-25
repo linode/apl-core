@@ -1,8 +1,0 @@
-global:
-  configInline:
-    address-pools:
-      - name: kind
-        protocol: layer2
-        addresses:
-          - {{ requiredEnv "METALLB_SUBNET" }}
-  domain: kind.local

@@ -2,6 +2,62 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.18.0](https://github.com/redkubes/otomi-core/compare/v0.17.1...v0.18.0) (2023-01-16)
+
+
+### Features
+
+* add default response headers ([#983](https://github.com/redkubes/otomi-core/issues/983)) ([6011f48](https://github.com/redkubes/otomi-core/commit/6011f4881d6bc6d4a21305424304c60992f12a26)), closes [#789](https://github.com/redkubes/otomi-core/issues/789)
+* define ingress-nginx settings for each ingress class ([#953](https://github.com/redkubes/otomi-core/issues/953)) ([923bf06](https://github.com/redkubes/otomi-core/commit/923bf06214472d8d84be9684a39cb11ea76369d1))
+* external-secrets upgrade plus cluster/team wide secrets ([#960](https://github.com/redkubes/otomi-core/issues/960)) ([5a10948](https://github.com/redkubes/otomi-core/commit/5a109485d94f377effb340257df48105b69a24b2))
+
+
+### Bug Fixes
+
+* make remote write custom config optional ([#990](https://github.com/redkubes/otomi-core/issues/990)) ([93aa930](https://github.com/redkubes/otomi-core/commit/93aa930cc60784dcf78c5c948ae26289f60a6a4d))
+* upgrade only relevant versions ([#995](https://github.com/redkubes/otomi-core/issues/995)) ([11ad459](https://github.com/redkubes/otomi-core/commit/11ad45967a9b15a3b5ea8bde1c1e7ed4cd1ce488))
+
+
+### Others
+
+* node version lock ([#978](https://github.com/redkubes/otomi-core/issues/978)) ([756e203](https://github.com/redkubes/otomi-core/commit/756e2034fc0c0759048e569eec845b4930ba01f7))
+* remove unsued configuration for kind ([#989](https://github.com/redkubes/otomi-core/issues/989)) ([491b260](https://github.com/redkubes/otomi-core/commit/491b2601899f92682314d666a156dbc48f0daeed))
+
+### [0.17.1](https://github.com/redkubes/otomi-core/compare/v0.16.21...v0.17.1) (2022-12-19)
+
+
+### Features
+
+* harbor cronjob to backup ([#952](https://github.com/redkubes/otomi-core/issues/952)) ([195542c](https://github.com/redkubes/otomi-core/commit/195542c214638eba45c4fb41e918f182a758f7b9))
+* upgrade harbor ([#945](https://github.com/redkubes/otomi-core/issues/945)) ([40975bd](https://github.com/redkubes/otomi-core/commit/40975bd3e34279e6eecf3384b90c7af1b627d78e))
+
+
+### Bug Fixes
+
+* do not pass remote write into team prometheus ([#984](https://github.com/redkubes/otomi-core/issues/984)) ([96dd604](https://github.com/redkubes/otomi-core/commit/96dd60488338a3bb10021193954b20a583dd95b0))
+* ensure newly generated secrets stored in .dec file are encrypted ([b1b8265](https://github.com/redkubes/otomi-core/commit/b1b826545347e288fd7d2ab4cd4bb8f0aad30271))
+
+
+### [0.16.21](https://github.com/redkubes/otomi-core/compare/v0.16.20...v0.16.21) (2022-12-06)
+
+
+### Bug Fixes
+
+* drone update strategy in wrong spec context ([#973](https://github.com/redkubes/otomi-core/issues/973)) ([af3e794](https://github.com/redkubes/otomi-core/commit/af3e7942da76dfd3b3498d256a4a34c2dac67298))
+* get drone image tag ([c3a49d9](https://github.com/redkubes/otomi-core/commit/c3a49d92b7bde4d848f40f7bb7353e2ac8c31983))
+* set drone recreate strategy, so existing Pod releases the PV ([bececb6](https://github.com/redkubes/otomi-core/commit/bececb6078605316929ee7e29a110b6390b5ef06))
+
+
+### Reverts
+
+* Revert "fix: do not redeploy drone on secret.yaml change" ([6e7d82f](https://github.com/redkubes/otomi-core/commit/6e7d82f23112663f19c14af9f49380601ef08b93))
+
+
+### Others
+
+* versions ([5c8c2ea](https://github.com/redkubes/otomi-core/commit/5c8c2ea0aca239a0f500262786aaf106508e0f47))
+* versions ([9baaccf](https://github.com/redkubes/otomi-core/commit/9baaccf499ed5bf42a786478e1e7b2fa3c3627b6))
+
 ### [0.16.20](https://github.com/redkubes/otomi-core/compare/v0.16.19...v0.16.20) (2022-12-05)
 
 

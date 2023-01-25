@@ -41,10 +41,10 @@ export const getK8sVersion = async (argv?: HelmArguments): Promise<string> => {
  * Find what image tag is defined in configuration for otomi
  * @returns string
  */
-export const getImageTag = async (): Promise<string> => {
+export const getImageTag = async (envDir = env.ENV_DIR): Promise<string> => {
   if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
-  if (await pathExists(`${env.ENV_DIR}/env/cluster.yaml`)) {
-    const values = await hfValues()
+  if (await pathExists(`${envDir}/env/cluster.yaml`)) {
+    const values = await hfValues(undefined, envDir)
     return values!.otomi!.version
   }
   return `v${pkg.version}`
@@ -95,7 +95,7 @@ let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
  */
-const writeValuesToFile = async (
+export const writeValuesToFile = async (
   targetPath: string,
   inValues: Record<string, any> = {},
   overwrite = false,

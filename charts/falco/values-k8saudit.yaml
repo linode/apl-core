@@ -1,0 +1,33 @@
+driver:
+  enabled: false
+
+collectors:
+  enabled: false
+
+controller:
+  kind: deployment
+
+services:
+  - name: k8saudit-webhook
+    type: NodePort
+    ports:
+      - port: 9765 # See plugin open_params
+        nodePort: 30007
+        protocol: TCP
+
+falco:
+  rules_file:
+    - /etc/falco/k8s_audit_rules.yaml
+    - /etc/falco/rules.d
+  plugins:
+    - name: k8saudit
+      library_path: libk8saudit.so
+      init_config:
+        ""
+        # maxEventBytes: 1048576
+        # sslCertificate: /etc/falco/falco.pem
+      open_params: "http://:9765/k8s-audit"
+    - name: json
+      library_path: libjson.so
+      init_config: ""
+  load_plugins: [k8saudit, json]

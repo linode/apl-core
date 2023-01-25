@@ -163,6 +163,7 @@ releases:
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
+        teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
   {{- if and $a.prometheus.enabled $v.otomi.isMultitenant (gt (len $teamServices) 0) }}
       - name: blackbox

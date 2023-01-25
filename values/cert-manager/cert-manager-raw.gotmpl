@@ -20,11 +20,11 @@ resources:
       secret: "{{ $p | get "azure-private-dns.aadClientSecret" | b64enc }}"
       {{- else if or (hasKey $p "azure") }}
       secret: "{{ $p.azure.aadClientSecret | b64enc }}"
-      {{- else if ($p | get "$p.aws.credentials.secretKey" nil) }}
+      {{- else if or (hasKey $p "aws") }}
       secret: "{{ $p.aws.credentials.secretKey | b64enc }}"
-      {{- else if hasKey $p "digitalocean" }}
+      {{- else if or (hasKey $p "digitalocean") }}
       secret: "{{ $p.digitalocean.apiToken | b64enc }}"
-      {{- else if hasKey $p "cloudflare" }}
+      {{- else if or (hasKey $p "cloudflare") }}
       secret: "{{ $p.cloudflare.apiToken | b64enc }}"
       {{- end }}
 {{- end }}

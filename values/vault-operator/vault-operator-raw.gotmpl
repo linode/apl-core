@@ -6,8 +6,8 @@
 {{- $seal := $vt | get "seal"  (dict "type" "default") }}
 {{- $kms := $v | get "kms" dict }}
 {{- $rootCASecretName := "root-ca" }}
-{{- $vaultVersion := "1.6.1" }}
-{{- $bankVaultsVersion := $vt | get "image.tag" "1.15.2" }}
+{{- $vaultVersion := "1.11.5" }}
+{{- $bankVaultsVersion := $vt | get "image.tag" "1.16.0" }}
 
 resources:
   - apiVersion: vault.banzaicloud.com/v1alpha1
@@ -21,7 +21,7 @@ resources:
 
       # Common annotations for all created resources
       annotations:
-        common/annotation: "true"
+        common/annotation: 'true'
       # Vault Pods , Services and TLS Secret annotations
       vaultAnnotations:
         type/instance: vault
@@ -29,7 +29,7 @@ resources:
         # psp-allowed-users vault needs to run as root because it cuses chwon and IPC_LOCK
         policy.otomi.io/ignore: banned-image-tags,psp-capabilities,psp-allowed-users
       resources:
-        vault: {{ toYaml $vt.resources | nindent 10 }}
+        vault: {{- toYaml $vt.resources | nindent 10 }}
 
       vaultPodSpec:
         securityContext:
@@ -94,7 +94,7 @@ resources:
 
       # Support for distributing the generated CA certificate Secret to other namespaces.
       # Define a list of namespaces or use ["*"] for all namespaces.
-      caNamespaces: []
+      caNamespaces: ['*']
 
       # Describe where you would like to store the Vault unseal keys and root token.
       unsealConfig:
@@ -163,6 +163,19 @@ resources:
                     capabilities = ["create", "update", "read", "delete", "list"]
               }
         auth:
+          - type: kubernetes
+            roles:
+              # Allow the vault service account to use the secret kv store
+              - name: vault
+                bound_service_account_names:
+                - external-secrets
+                - vault
+                bound_service_account_namespaces:
+                - external-secrets
+                - vault
+                policies: 
+                - allow-read-all-secrets
+                ttl: 1h
           - type: oidc
             config:
               oidc_discovery_url: {{ $v._derived.oidcBaseUrl }}
@@ -176,27 +189,12 @@ resources:
               user_claim: email
               groups_claim: groups
               # This policy will be applied to each user that uses this role
-              token_policies:
+              policies:
               - allow-list-all-secrets
               - allow_sandbox
               ttl: 1h
               #  http://localhost:8250/oidc/callback - for: vault login -method oidc
               allowed_redirect_uris: "http://localhost:8250/oidc/callback,https://vault.{{ $v.cluster.domainSuffix }}/ui/vault/auth/oidc/oidc/callback"
-          - type: kubernetes
-            roles:
-              # Allow every pod in the vault namespace to use the secret kv store
-              - name: default
-                bound_service_account_names: 
-                - external-secrets
-                - vault
-                # - default
-                # NOTE: bound_service_account_namespaces - https://github.com/banzaicloud/bank-vaults/issues/1226
-                bound_service_account_namespaces: 
-                - vault
-                token_policies: 
-                - allow-read-all-secrets
-                ttl: 1h
-
         groups:
           {{- range $teamId, $team := $tc }}
           {{- if ne $teamId "admin" }}

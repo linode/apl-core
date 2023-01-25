@@ -9,6 +9,13 @@ auth:
   rootUser: otomi-admin
   rootPassword: {{ $v.otomi.adminPassword }}
 
+metrics:
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    labels:
+      prometheus: system
+
 ## OIDC configuration
 {{/* To do: add mappers to Keycloak task
 extraEnvVars:

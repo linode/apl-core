@@ -14,6 +14,11 @@ k8s:
       disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
+    - name: external-secrets
+      disableIstioInjection: true
+    - name: falco
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: harbor
       app: harbor
     - name: gatekeeper-system
@@ -125,6 +130,10 @@ adminApps:
           - authorization
   - name: external-dns
     tags: [ingress, security, tls]
+  - name: external-secrets
+    tags: [secrets, security, tls]
+  - name: falco
+    tags: [security]
   - name: gatekeeper
     tags: [security, policies, observability]
   - name: gitea
@@ -212,7 +221,7 @@ adminApps:
         path: /realms/otomi/account/
   - name: kiali
     tags: [tracing, telemetry, observability]
-    deps: [istio]
+    deps: [istio, prometheus]
     path: /api/auth/openid_redirect
     ingress:
       - svc: kiali
@@ -295,6 +304,23 @@ adminApps:
         # namespace: prometheus
         type: public
         auth: true
+  - name: thanos
+    tags: [metrics, observability]
+    ownHost: true
+    deps: [prometheus, grafana, minio]
+    ingress:
+      - svc: thanos-query-frontend
+        port: 9090
+        namespace: monitoring
+        forwardPath: true
+        type: public
+        auth: true
+      - svc: thanos-receive
+        port: 19291
+        namespace: monitoring
+        paths: [/api/]
+        forwardPath: true
+        type: public
   - name: vault
     tags: [secrets, security, observability]
     deps: [external-secrets]

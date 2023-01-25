@@ -28,7 +28,7 @@ data:
         settings: # Customized settings of logger
           base_dir: "/var/log/jobs"
         sweeper:
-          duration: 14 #days
+          duration: {{ .Values.jobservice.loggerSweeperDuration }} #days
           settings: # Customized settings of sweeper
             work_dir: "/var/log/jobs"
       {{- end }}
@@ -36,7 +36,7 @@ data:
       - name: "DB"
         level: {{ .Values.logLevel | upper }}
         sweeper:
-          duration: 14 #days
+          duration: {{ .Values.jobservice.loggerSweeperDuration }} #days
       {{- end }}
       {{- if has "stdout" .Values.jobservice.jobLoggers }}
       - name: "STD_OUTPUT"

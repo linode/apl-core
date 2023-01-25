@@ -55,3 +55,6 @@ changes:
       - dns.provider.aws.secretAccessKey: dns.provider.aws.credentials.secretKey
       - dns.provider.google.projectId: dns.provider.google.project
       - kms.sops.google.projectId: kms.sops.google.project
+  - version: 6
+    relocations:
+      - apps.ingress-nginx: 'apps.ingress-nginx-platform'
