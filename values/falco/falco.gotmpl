@@ -8,15 +8,22 @@ falco:
     actions:
       - ignore
   grpc:
+  {{- if eq $v.cluster.provider "google" }}
+    enabled: false
+  {{- else }}
     enabled: true
     bind_address: "unix:///var/run/falco/falco.sock"
     threadiness: 0
   grpc_output:
     enabled: true
-{{- if eq $v.cluster.provider "google" }}
-  driver:
+  {{- end }}
+# -- Tell Falco which driver to use. Available options: module (kernel driver) and ebpf (eBPF probe).
+  driver:   
+  {{- if eq $v.cluster.provider "google" }}
     kind: ebpf
-{{- end }}
+  {{- else }}
+    kind: module
+  {{- end }}
 
 podAnnotations: 
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
