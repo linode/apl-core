@@ -4,7 +4,7 @@
 import { prepareEnvironment } from 'src/common/cli'
 import { hfValues } from 'src/common/hf'
 import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
-import { getFilename, guccify, loadYaml, pkg, rootDir, semverCompare } from 'src/common/utils'
+import { getFilename, guccify, loadYaml, rootDir, semverCompare } from 'src/common/utils'
 import { getCurrentVersion } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -65,7 +65,8 @@ async function execute(d: typeof console, dryRun: boolean, operations: string[],
 export const upgrade = async ({ dryRun = false, release, when }: Arguments): Promise<void> => {
   const d = console // wrapped stream created by terminal(... is not showing
   const upgrades: Upgrades = (await loadYaml(`${rootDir}/upgrades.yaml`))?.operations
-  const prevVersion: string = (await getDeploymentState()).version ?? pkg.version
+  const version = await getCurrentVersion()
+  const prevVersion: string = (await getDeploymentState()).version ?? version
   const values = (await hfValues()) as Record<string, any>
   d.info(`Current version of otomi: ${prevVersion}`)
   const filteredUpgrades = filterUpgrades(prevVersion, upgrades)
@@ -92,7 +93,6 @@ export const upgrade = async ({ dryRun = false, release, when }: Arguments): Pro
     }
     $.quote = q
     // set latest version deployed in configmap
-    const version = await getCurrentVersion()
     await setDeploymentState({ version })
   } else d.info('No upgrade operations detected, skipping')
 }
