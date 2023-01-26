@@ -1,7 +1,5 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isEmpty } from 'lodash'
-import { Argv, CommandModule } from 'yargs'
-import { $, nothrow } from 'zx'
 import { prepareDomainSuffix } from 'src/common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -12,6 +10,8 @@ import { getFilename } from 'src/common/utils'
 import { getCurrentVersion, getImageTag } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
+import { Argv, CommandModule } from 'yargs'
+import { $, nothrow } from 'zx'
 import { commit } from './commit'
 import { upgrade } from './upgrade'
 
@@ -33,9 +33,10 @@ const setup = (): void => {
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
+  const prevState = await getDeploymentState()
+
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
-  const prevState = await getDeploymentState()
   d.debug(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
   const version = await getCurrentVersion()
