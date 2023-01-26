@@ -10,9 +10,13 @@ falco:
   grpc:
     enabled: true
     bind_address: "unix:///var/run/falco/falco.sock"
-    threadiness: 8
+    threadiness: 0
   grpc_output:
     enabled: true
+{{- if eq $v.cluster.provider "google" }}
+  driver:
+    kind: ebpf
+{{- end }}
 
 podAnnotations: 
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
