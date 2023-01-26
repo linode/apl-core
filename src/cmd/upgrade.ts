@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
+import { isEmpty } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { hfValues } from 'src/common/hf'
 import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
@@ -61,12 +62,18 @@ async function execute(d: typeof console, dryRun: boolean, operations: string[],
 
 /**
  * Checks if any operations need to be ran for releases and executes those.
+ * This function is also run as a helm chart hook
  */
 export const upgrade = async ({ dryRun = false, release, when }: Arguments): Promise<void> => {
   const d = console // wrapped stream created by terminal(... is not showing
   const upgrades: Upgrades = (await loadYaml(`${rootDir}/upgrades.yaml`))?.operations
+  const deploymentState = await getDeploymentState()
+  if (isEmpty(deploymentState)) {
+    d.info('Skipping the upgrade procedure as this is the very first installation')
+    return
+  }
   const version = await getCurrentVersion()
-  const prevVersion: string = (await getDeploymentState()).version ?? version
+  const prevVersion: string = deploymentState.version ?? version
   const values = (await hfValues()) as Record<string, any>
   d.info(`Current version of otomi: ${prevVersion}`)
   const filteredUpgrades = filterUpgrades(prevVersion, upgrades)
