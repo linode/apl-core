@@ -1,7 +1,5 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { isEmpty } from 'lodash'
-import { Argv, CommandModule } from 'yargs'
-import { $, nothrow } from 'zx'
 import { prepareDomainSuffix } from 'src/common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -12,6 +10,8 @@ import { getFilename } from 'src/common/utils'
 import { getCurrentVersion, getImageTag } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
+import { Argv, CommandModule } from 'yargs'
+import { $, nothrow } from 'zx'
 import { commit } from './commit'
 import { upgrade } from './upgrade'
 
@@ -33,9 +33,10 @@ const setup = (): void => {
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const argv: HelmArguments = getParsedArgs()
-  await upgrade({ when: 'pre' })
-  d.info('Start apply all')
   const prevState = await getDeploymentState()
+
+  if (prevState) await upgrade({ when: 'pre' })
+  d.info('Start apply all')
   d.debug(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
   const version = await getCurrentVersion()
@@ -77,7 +78,7 @@ const applyAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
-  await upgrade({ when: 'post' })
+  if (prevState) await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC))
     if (!isCli || isEmpty(prevState.status))
       // commit first time when not deployed only, always commit in chart (might have previous failure)
