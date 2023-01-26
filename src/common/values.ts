@@ -3,7 +3,6 @@ import { pathExists } from 'fs-extra'
 import { unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
 import { stringify } from 'yaml'
-import * as pkg from '../../package.json'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -14,6 +13,7 @@ import {
   getValuesSchema,
   gucci,
   loadYaml,
+  pkg,
   removeBlankAttributes,
   stringContainsSome,
 } from './utils'
