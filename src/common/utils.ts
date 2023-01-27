@@ -15,7 +15,7 @@ const packagePath = process.cwd()
 
 // we keep the rootDir for zx, but have to fix it for drone, which starts in /home/app/stack/env (to accommodate write perms):
 export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
-export const pkg = readFileSync(`${rootDir}/package.json`, 'utf8') as any
+export const pkg = JSON.parse(readFileSync(`${rootDir}/package.json`, 'utf8'))
 export const getFilename = (path: string): string => path.split('/').pop()?.split('.')[0] as string
 
 export const asArray = (args: string | string[]): string[] => {
