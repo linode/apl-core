@@ -65,7 +65,6 @@ releases:
 {{- end }}
   - name: operator-lifecycle-manager
     installed: true
-    disableValidationOnInstall: true
     namespace: operator-lifecycle-manager
     labels:
       olm: true
