@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $f:= $v.apps.falco }}
-{{- $a := $v.apps | get "alertmanager" }}
 {{- $rules:= $f | get "rules" dict }}
 
 falco:
@@ -11,7 +10,7 @@ falco:
   grpc:
     enabled: true
     bind_address: "unix:///var/run/falco/falco.sock"
-    threadiness: 8
+    threadiness: 0
   grpc_output:
     enabled: true
 
@@ -40,13 +39,35 @@ driver:
             memory: 64Mi
 
 falcosidekick:
-  enabled: {{ $a.enabled }}
+  enabled: true
   podSecurityPolicy:
     create: true
   config:
     debug: false
+    {{- if $v.apps.alertmanager.enabled }}
     alertmanager:
       hostport: http://po-alertmanager.monitoring.svc.cluster.local:9093
       minimumpriority: {{ $f.falcoSidekick.minPrio }}
+    {{- end }}
   resources: {{- $f.resources.falcoSidekick | toYaml  | nindent 4 }}
   replicaCount: {{ $f.falcoSidekick.replicas }}
+  webui:
+    enabled: true
+    replicaCount: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    redis:
+      resources:
+        limits:
+          cpu: 200m
+          memory: 256Mi
+        requests:
+          cpu: 100m
+          memory: 64Mi
+      podSecurityContext:
+        runAsUser: 1001
