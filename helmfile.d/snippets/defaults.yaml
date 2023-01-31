@@ -387,6 +387,10 @@ environments:
                 memory: 256Mi
           velero:
             enabled: false
+            cloud:
+                type: custom
+            storage:
+                type: minioLocal
             logLevel: info
             resources:
               requests:
