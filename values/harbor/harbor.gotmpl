@@ -329,7 +329,7 @@ registry:
   credentials:
     username: {{ $h | get "registry.credentials.username" }}
     password: {{ $h | get "registry.credentials.password" $v.otomi.adminPassword }}
-    htpasswd: {{ $h | get "registry.credentials.htpasswd" nil }}
+    htpasswdString: {{ $h | get "registry.credentials.htpasswd" nil }}
 
 trivy:
   image:
