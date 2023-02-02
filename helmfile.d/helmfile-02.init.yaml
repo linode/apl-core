@@ -65,7 +65,7 @@ releases:
 {{- end }}
   - name: operator-lifecycle-manager
     installed: true
-    namespace: operator-lifecycle-manager
+    namespace: olm
     labels:
       olm: true
     <<: *default
