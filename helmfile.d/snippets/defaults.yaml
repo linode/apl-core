@@ -227,6 +227,21 @@ environments:
               clientID: otomi
           kiali:
             enabled: false
+            resources:
+              pod:
+                  requests:
+                      cpu: 50m
+                      memory: 128Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              operator:
+                  requests:
+                      cpu: 50m
+                      memory: 256Mi
+                  limits:
+                      cpu: 200m
+                      memory: 1Gi
           knative:
             enabled: false
             serving:
