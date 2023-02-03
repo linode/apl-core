@@ -1,3 +1,10 @@
+{{- $noproxy := list (print (include "kubeclarity.name" .) "." .Release.Namespace ":" (index .Values "kubeclarity-runtime-scan" "resultServicePort")) -}}
+{{- if index .Values "kubeclarity-grype-server" "enabled" -}}
+{{- $noproxy = append $noproxy (print (include "kubeclarity.grype-server.name" .) "." .Release.Namespace ":" (index .Values "kubeclarity-grype-server" "servicePort")) -}}
+{{- end -}}
+{{- if index .Values "kubeclarity-trivy-server" "enabled" -}}
+{{- $noproxy = append $noproxy (print ((index .Values "kubeclarity-trivy-server" "service" "name") | default (include "trivy.fullname" (index .Subcharts "kubeclarity-trivy-server"))) "." .Release.Namespace ":" (index .Values "kubeclarity-trivy-server" "service" "port")) -}}
+{{- end -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -11,17 +18,19 @@ data:
     kind: Job
     metadata:
       labels:
-        app: scanner
-        sidecar.istio.io/inject: "false"
+{{- toYaml (index .Values "kubeclarity-runtime-scan" "labels") | nindent 8 }}
     spec:
       backoffLimit: 0
       ttlSecondsAfterFinished: 300
       template:
         metadata:
           labels:
-            app: scanner
-            sidecar.istio.io/inject: "false"
+{{- toYaml (index .Values "kubeclarity-runtime-scan" "labels") | nindent 12 }}
         spec:
+{{- if (index .Values "kubeclarity-runtime-scan" "tolerations") }}
+          tolerations:
+{{- toYaml (index .Values "kubeclarity-runtime-scan" "tolerations") | nindent 12 }}
+{{- end}}
           restartPolicy: Never
           volumes:
           - name: tmp-volume
@@ -70,6 +79,23 @@ data:
             - name: SCANNER_REMOTE_GRYPE_SERVER_TIMEOUT
               value: {{ index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "scanner" "grype" "remote-grype" "timeout" }}
 {{- end }}
+{{- if index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "analyzer" "trivy" "enabled" }}
+            - name: ANALYZER_TRIVY_CACHE_DIRECTORY
+              value: /tmp
+            - name: ANALYZER_TRIVY_TIMEOUT
+              value: {{ index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "analyzer" "trivy" "timeout" }}
+{{- end }}
+{{- if index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "scanner" "trivy" "enabled" }}
+            - name: SCANNER_TRIVY_TIMEOUT
+              value: {{ index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "scanner" "trivy" "timeout" }}
+{{- if index .Values "kubeclarity-trivy-server" "enabled" }}
+            - name: SCANNER_TRIVY_SERVER_ADDRESS
+              value: http://{{ (index .Values "kubeclarity-trivy-server" "service" "name") | default (include "trivy.fullname" (index .Subcharts "kubeclarity-trivy-server")) }}.{{ .Release.Namespace }}:{{ index .Values "kubeclarity-trivy-server" "service" "port" }}
+{{- else }}
+            - name: SCANNER_TRIVY_CACHE_DIRECTORY
+              value: /tmp
+{{- end }}
+{{- end }}
 {{- if index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "scanner" "dependency-track" "enabled" }}
             - name: SCANNER_DEPENDENCY_TRACK_INSECURE_SKIP_VERIFY
               value: {{ index .Values "kubeclarity-runtime-scan" "vulnerability-scanner" "scanner" "dependency-track" "insecureSkipVerify" }}
@@ -90,10 +116,10 @@ data:
 {{- end}}
 {{- if index .Values "kubeclarity-runtime-scan" "httpsProxy" }}
             - name: NO_PROXY
-              value: {{ include "kubeclarity.name" . }}.{{ .Release.Namespace }}:{{ index .Values "kubeclarity-runtime-scan" "resultServicePort" }},{{ include "kubeclarity.grype-server.name" . }}.{{ .Release.Namespace }}:{{ index .Values "kubeclarity-grype-server" "servicePort" }}
+              value: {{ join "," $noproxy }}
 {{- else if index .Values "kubeclarity-runtime-scan" "httpProxy" }}
             - name: NO_PROXY
-              value: {{ include "kubeclarity.name" . }}.{{ .Release.Namespace }}:{{ index .Values "kubeclarity-runtime-scan" "resultServicePort" }},{{ include "kubeclarity.grype-server.name" . }}.{{ .Release.Namespace }}:{{ index .Values "kubeclarity-grype-server" "servicePort" }}
+              value: {{ join "," $noproxy }}
 {{- end}}
             securityContext:
               capabilities:
@@ -139,10 +165,10 @@ data:
 {{- end}}
 {{- if index .Values "kubeclarity-runtime-scan" "httpsProxy" }}
             - name: NO_PROXY
-              value: {{ include "kubeclarity.name" . }}.{{ .Release.Namespace }}:{{ index .Values "kubeclarity-runtime-scan" "resultServicePort" }},{{ include "kubeclarity.grype-server.name" . }}.{{ .Release.Namespace }}:{{ index .Values "kubeclarity-grype-server" "servicePort" }}
+              value: {{ join "," $noproxy }}
 {{- else if index .Values "kubeclarity-runtime-scan" "httpProxy" }}
             - name: NO_PROXY
-              value: {{ include "kubeclarity.name" . }}.{{ .Release.Namespace }}:{{ index .Values "kubeclarity-runtime-scan" "resultServicePort" }},{{ include "kubeclarity.grype-server.name" . }}.{{ .Release.Namespace }}:{{ index .Values "kubeclarity-grype-server" "servicePort" }}
+              value: {{ join "," $noproxy }}
 {{- end}}
             securityContext:
               capabilities:

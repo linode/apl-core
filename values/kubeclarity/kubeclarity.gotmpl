@@ -8,22 +8,72 @@ kubeclarity:
   logLevel: {{ $k.logLevel }}
   podAnnotations:
     policy.otomi.io/ignore: "banned-image-tags"
+  resources:
+    requests:
+      memory: "200Mi"
+      cpu: "100m"
+    limits:
+      memory: "1000Mi"
+      cpu: "1000m"
+
+kubeclarity-runtime-scan:
+  cis-docker-benchmark-scanner:
+    resources:
+      requests:
+        memory: "50Mi"
+        cpu: "50m"
+      limits:
+        memory: "1000Mi"
+        cpu: "1000m"
+  vulnerability-scanner:
+    analyzer:
+      ## Space seperated list of analyzers. (syft gomod)
+      analyzerList: "syft gomod trivy"
+
+      analyzerScope: "squashed"
+
+      trivy:
+        ## Enable trivy scanner, if true make sure to add it to analyzerList above
+        ##
+        enabled: true
+        timeout: "300"
+
+
+kubeclarity-grype-server:
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "200Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1G"
+
+kubeclarity-trivy-server:
+  enabled: true
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "200Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1G"
+
+kubeclarity-sbom-db:
+  resources:
+    requests:
+      memory: "20Mi"
+      cpu: "10m"
+    limits:
+      memory: "100Mi"
+      cpu: "100m"
 
 kubeclarity-postgresql:
-  fullnameOverride: kubeclarity-postgresql
-  metrics:
-    enabled: true
+  primary:
     resources:
-      limits:
-        cpu: 200m
-        memory: 128M
       requests:
-        cpu: 50m
-        memory: 64M
-    securityContext:
-      enabled: true
-    serviceMonitor:
-      enabled: true
-      additionalLabels:
-        prometheus: system
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "1000Mi"
+        cpu: "1000m"
 
