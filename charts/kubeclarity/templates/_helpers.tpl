@@ -3,19 +3,19 @@
 Name of the chart.
 */}}
 {{- define "kubeclarity.name" -}}
-{{- printf .Chart.Name -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name -}}
 {{- end -}}
 
 {{- define "kubeclarity.sbom-db.name" -}}
-{{- printf "%s-sbom-db" .Chart.Name -}}
+{{- printf "%s-%s-sbom-db" .Release.Name .Chart.Name -}}
 {{- end -}}
 
 {{- define "kubeclarity.grype-server.name" -}}
-{{- printf "%s-grype-server" .Chart.Name -}}
+{{- printf "%s-%s-grype-server" .Release.Name .Chart.Name -}}
 {{- end -}}
 
 {{- define "kubeclarity.trivy-server.name" -}}
-{{- printf "%s-trivy-server" .Chart.Name -}}
+{{- printf "%s-%s-trivy-server" .Release.Name .Chart.Name -}}
 {{- end -}}
 
 {{/*
