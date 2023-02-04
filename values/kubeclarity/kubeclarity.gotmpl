@@ -8,72 +8,49 @@ kubeclarity:
   logLevel: {{ $k.logLevel }}
   podAnnotations:
     policy.otomi.io/ignore: "banned-image-tags"
-  resources:
-    requests:
-      memory: "200Mi"
-      cpu: "100m"
-    limits:
-      memory: "1000Mi"
-      cpu: "1000m"
+  resources: {{- $k.resources.kubeclarity | toYaml | nindent 4 }}
 
 kubeclarity-runtime-scan:
   cis-docker-benchmark-scanner:
-    resources:
-      requests:
-        memory: "50Mi"
-        cpu: "50m"
-      limits:
-        memory: "1000Mi"
-        cpu: "1000m"
+    resources: {{- $k.resources.cdbScanner | toYaml | nindent 6 }}
   vulnerability-scanner:
     analyzer:
-      ## Space seperated list of analyzers. (syft gomod)
+      {{- if $k.analyser.trivy.enabled }}
       analyzerList: "syft gomod trivy"
-
-      analyzerScope: "squashed"
-
+      {{- else }}
+      analyzerList: "syft gomod"
+      {{- end }}
       trivy:
-        ## Enable trivy scanner, if true make sure to add it to analyzerList above
-        ##
-        enabled: true
+        enabled: {{ $k.analyser.trivy.enabled }}
         timeout: "300"
-
+    scanner:
+      grype:
+        enabled: {{ $k.scanner.grype.enabled }}
+      trivy:
+        enabled: {{ $k.scanner.trivy.enabled }}
+        timeout: "300"
+      {{- if $k.scanner.trivy.enabled }}
+      scannerList: "grype trivy"
+      {{- else }}
+      scannerList: "grype"
+      {{- end }}
+    resources: {{- $k.resources.vulnerabilityScanner | toYaml | nindent 6 }}
 
 kubeclarity-grype-server:
-  resources:
-    requests:
-      cpu: "200m"
-      memory: "200Mi"
-    limits:
-      cpu: "1000m"
-      memory: "1G"
+  resources: {{- $k.resources.grypeServer | toYaml | nindent 4 }}
 
 kubeclarity-trivy-server:
+  {{- if or ($k.analyser.trivy.enabled) ($k.scanner.trivy.enabled) }}
   enabled: true
-  resources:
-    requests:
-      cpu: "200m"
-      memory: "200Mi"
-    limits:
-      cpu: "1000m"
-      memory: "1G"
+  {{- else }}
+  enabled: false
+  {{- end }}
+  resources: {{- $k.resources.trivyServer | toYaml | nindent 4 }}
 
 kubeclarity-sbom-db:
-  resources:
-    requests:
-      memory: "20Mi"
-      cpu: "10m"
-    limits:
-      memory: "100Mi"
-      cpu: "100m"
+  resources: {{- $k.resources.sbomDb | toYaml | nindent 4 }}
 
 kubeclarity-postgresql:
   primary:
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "250m"
-      limits:
-        memory: "1000Mi"
-        cpu: "1000m"
+    resources: {{- $k.resources.postgresql | toYaml | nindent 6 }}
 
