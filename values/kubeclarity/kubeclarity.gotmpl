@@ -15,21 +15,21 @@ kubeclarity-runtime-scan:
     resources: {{- $k.resources.cdbScanner | toYaml | nindent 6 }}
   vulnerability-scanner:
     analyzer:
-      {{- if $k.analyser.trivy.enabled }}
+      {{- if $k.analyser.trivyAnalyser.enabled }}
       analyzerList: "syft gomod trivy"
       {{- else }}
       analyzerList: "syft gomod"
       {{- end }}
       trivy:
-        enabled: {{ $k.analyser.trivy.enabled }}
+        enabled: {{ $k.analyser.trivyAnalyser.enabled }}
         timeout: "300"
     scanner:
       grype:
-        enabled: {{ $k.scanner.grype.enabled }}
+        enabled: {{ $k.scanner.grypeScanner.enabled }}
       trivy:
-        enabled: {{ $k.scanner.trivy.enabled }}
+        enabled: {{ $k.scanner.trivyScanner.enabled }}
         timeout: "300"
-      {{- if $k.scanner.trivy.enabled }}
+      {{- if $k.scanner.trivyScanner.enabled }}
       scannerList: "grype trivy"
       {{- else }}
       scannerList: "grype"
