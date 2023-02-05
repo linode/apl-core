@@ -272,10 +272,10 @@ environments:
                   cpu: '1'
               vulnerabilityScanner:
                 requests:
-                  memory: 50Mi
-                  cpu: 50m
+                  memory: 256Mi
+                  cpu: 100m
                 limits:
-                  memory: 1Gi
+                  memory: 2Gi
                   cpu: '1'
               grypeServer:
                 requests:
