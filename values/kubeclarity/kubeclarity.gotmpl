@@ -22,13 +22,11 @@ kubeclarity-runtime-scan:
       {{- end }}
       trivy:
         enabled: {{ $k.analyser.trivyAnalyser.enabled }}
-        timeout: "300"
     scanner:
       grype:
         enabled: {{ $k.scanner.grypeScanner.enabled }}
       trivy:
         enabled: {{ $k.scanner.trivyScanner.enabled }}
-        timeout: "300"
       {{- if $k.scanner.trivyScanner.enabled }}
       scannerList: "grype trivy"
       {{- else }}
@@ -40,7 +38,7 @@ kubeclarity-grype-server:
   resources: {{- $k.resources.grypeServer | toYaml | nindent 4 }}
 
 kubeclarity-trivy-server:
-  {{- if or ($k.analyser.trivy.enabled) ($k.scanner.trivy.enabled) }}
+  {{- if or ($k.analyser.trivyAnalyser.enabled) ($k.scanner.trivyScanner.enabled) }}
   enabled: true
   {{- else }}
   enabled: false
