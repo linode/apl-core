@@ -1208,6 +1208,10 @@ definitions:
           description: When set a user can define egress towards FQDNs and public IPs for a team service
           type: boolean
           default: true
+        workloads:
+          type: array
+          items:
+            $ref: '#/definitions/workload'
   teamSelfService:
     title: Team self service flags
     description: Grant team permissions to modify certain configuration parameters.
@@ -1250,6 +1254,24 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
+  workload:
+    type: object
+    description: Define location of the application's manifests or chart
+    properties:
+      name:
+        $ref: '#/definitions/wordCharacterPattern'
+      url:
+        description: URL to either Helm or Git repository
+        $ref: '#/definitions/url'
+      path:
+        description: Path is a directory path within the Git repository, and is only valid for applications sourced from Git
+      chart:
+        description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
+      revision:
+        description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
+      values:
+        description: The application values. (not encrypted as underlying controller is not able to decrypt)
+        type: object
 properties:
   alerts:
     $ref: '#/definitions/alerts'
