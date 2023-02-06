@@ -27,14 +27,11 @@ kubeclarity-runtime-scan:
         enabled: {{ $k.scanner.grypeScanner.enabled }}
       trivy:
         enabled: {{ $k.scanner.trivyScanner.enabled }}
-      {{- if $k.scanner.trivyScanner.enabled }}
-      scannerList: "grype trivy"
-      {{- else }}
-      scannerList: "grype"
-      {{- end }}
+      scannerList: {{ if $k.scanner.trivyScanner.enabled }}trivy{{ end }} {{ if $k.scanner.grypeScanner.enabled }}grype{{ end }}
     resources: {{- $k.resources.vulnerabilityScanner | toYaml | nindent 6 }}
 
 kubeclarity-grype-server:
+  enabled: {{ $k.scanner.grypeScanner.enabled }}
   resources: {{- $k.resources.grypeServer | toYaml | nindent 4 }}
 
 kubeclarity-trivy-server:
@@ -44,6 +41,7 @@ kubeclarity-trivy-server:
   enabled: false
   {{- end }}
   resources: {{- $k.resources.trivyServer | toYaml | nindent 4 }}
+  nameOverride: trivy
 
 kubeclarity-sbom-db:
   resources: {{- $k.resources.sbomDb | toYaml | nindent 4 }}
@@ -51,4 +49,5 @@ kubeclarity-sbom-db:
 kubeclarity-postgresql:
   primary:
     resources: {{- $k.resources.postgresql | toYaml | nindent 6 }}
+  nameOverride: postgresql
 

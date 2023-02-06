@@ -15,7 +15,7 @@ export const module = {
   handler: async (argv: HelmArguments): Promise<void> => {
     const d = terminal(`cmd:${cmdName}`)
     setParsedArgs(argv)
-    await prepareEnvironment()
+    await prepareEnvironment({ skipKubeContextCheck: true })
     await hfCommon(
       {
         fileOpts: argv.file,

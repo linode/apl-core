@@ -249,12 +249,12 @@ environments:
             logLevel: warning
             analyser:
               trivy:
-                enabled: false
+                enabled: true
             scanner:
               grype:
-                enabled: true
-              trivy:
                 enabled: false
+              trivy:
+                enabled: true
             resources:
               kubeclarity:
                 requests:

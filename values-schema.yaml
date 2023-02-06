@@ -2114,20 +2114,19 @@ properties:
                 properties:
                   enabled:
                     type: boolean
-                    default: false
+                    default: true
           scanner:
             properties:
               grypeScanner:
                 properties:
                   enabled:
                     type: boolean
-                    default: true
-                    readOnly: true
+                    default: false
               trivyScanner:
                 properties:
                   enabled:
                     type: boolean
-                    default: false
+                    default: true
           logLevel:
             enum:
               - debug

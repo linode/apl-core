@@ -6,5 +6,5 @@ cluster:
     k8sVersion: '1.22'
     name: demo
     owner: redkubes
-    provider: azure
+    provider: custom
     region: eu-central-1
