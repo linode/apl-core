@@ -1,11 +1,3 @@
 apps:
     kubeclarity:
         enabled: true
-        scanner:
-            trivyScanner:
-                enabled: true
-            grypeScanner:
-                enabled: false
-        analyser:
-            trivyAnalyser:
-                enabled: true

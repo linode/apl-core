@@ -248,12 +248,12 @@ environments:
             enabled: false
             logLevel: warning
             analyser:
-              trivy:
+              trivyAnalyser:
                 enabled: true
             scanner:
-              grype:
+              grypeScanner:
                 enabled: false
-              trivy:
+              trivyScanner:
                 enabled: true
             resources:
               kubeclarity:
