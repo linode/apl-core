@@ -1,4 +1,4 @@
-api: falco-exlusion
-console: falco-exlusion
+api: 0.5.22
+console: 0.5.24
 tasks: 0.2.31
 tools: 1.4.25
