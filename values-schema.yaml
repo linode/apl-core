@@ -1208,10 +1208,10 @@ definitions:
           description: When set a user can define egress towards FQDNs and public IPs for a team service
           type: boolean
           default: true
-        workloads:
-          type: array
-          items:
-            $ref: '#/definitions/workload'
+      workloads:
+        type: array
+        items:
+          $ref: '#/definitions/workload'
   teamSelfService:
     title: Team self service flags
     description: Grant team permissions to modify certain configuration parameters.
