@@ -44,6 +44,10 @@ operations:
             kubectl -n "team-$id" annotate podmonitor/$p --overwrite "meta.helm.sh/release-name"=team-ns-$id
           done
         done
+  - version: 0.18.0
+    post:
+      # convert secrets to new format and apply
+      - vendor/kes-to-eso/migrate-post.sh && true
   - version: dev
     pre:
       # we can remove the release because helm does not remove CRDs
@@ -55,6 +59,3 @@ operations:
         # we need to update crds ourselves before installing the new operator-lifecycle-manager chart
         kubectl apply -f charts/operator-lifecycle-manager/crds/0000_50_olm_00-olmconfigs.crd.yaml
         kubectl replace -f charts/operator-lifecycle-manager/crds
-    post:
-      # convert secrets to new format and apply
-      - vendor/kes-to-eso/migrate-post.sh && true
