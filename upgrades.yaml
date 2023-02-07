@@ -56,6 +56,5 @@ operations:
       - |
         [[ ! $(helm status -n operator-lifecycle-manager operator-lifecycle-manager) ]] && echo "The operator-lifecycle-manager release does not exists. Skipping" && exit 0
         helm uninstall -n operator-lifecycle-manager operator-lifecycle-manager
-        # we need to update crds ourselves before installing the new operator-lifecycle-manager chart
         kubectl apply -f charts/operator-lifecycle-manager/crds/0000_50_olm_00-olmconfigs.crd.yaml
         kubectl replace -f charts/operator-lifecycle-manager/crds
