@@ -1265,13 +1265,21 @@ definitions:
         $ref: '#/definitions/url'
       path:
         description: Path is a directory path within the Git repository, and is only valid for applications sourced from Git
+        $ref: '#/definitions/wordCharacterPattern'
       chart:
         description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
+        $ref: '#/definitions/wordCharacterPattern'
       revision:
         description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
+        $ref: '#/definitions/wordCharacterPattern'
+        default: HEAD
       values:
         description: The application values. (not encrypted as underlying controller is not able to decrypt)
         type: object
+    required:
+      - name
+      - url
+
 properties:
   alerts:
     $ref: '#/definitions/alerts'

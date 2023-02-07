@@ -1,0 +1,6 @@
+teamConfig:
+    admin:
+        workloads:
+            - name: wa1
+              url: myrepo.local/mychart.git
+              path: /

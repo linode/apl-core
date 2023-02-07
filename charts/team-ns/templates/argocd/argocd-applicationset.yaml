@@ -1,6 +1,5 @@
 {{- $v := .Values }}
-{{- $a := $v.apps.argocd }}
-{{- if and (not (eq $v.teamId "admin")) $a.enabled }}
+{{- if $v.apps.argocd.enabled }}
 {{- range $v.workloads }}
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
@@ -13,7 +12,7 @@ spec:
       repoURL: https://gitea.{{ $v.cluster.domainSuffix }}/otomi/values.git
       revision: HEAD
       files:
-      - path: "env/teams/workloads/{{ $v.teamId }}.{{ .name }}.yaml"
+      - path: "env/teams/workloads/{{ $v.teamId }}/{{ .name }}.yaml"
   template:
     metadata:
       name: 'team-{{ $v.teamId }}-{{ .name }}'
@@ -22,17 +21,16 @@ spec:
       source:
         # developers may customize app details using config.yaml files from the above repo URL
         repoURL: '{{ .url }}'
-        targetRevision: '{{ "{{app.revision}}" }}' # if using Helm, must be the revision in Chart.yaml
+        targetRevision: '{{ .revision }}' # if using Helm, must be the revision in Chart.yaml
         {{ with .path }}
         path: '{{ . }}' # path to the helm chart git-hosted Helm charts
+        {{- end }}
+        {{ with .chart }}
+        chart: '{{ . }}'  # Set this only when pulling directly from a Helm repo. DO NOT set for git-hosted Helm charts.
         {{- end }}
         helm:
           values: '{{ "{{app.values}}" }}'
           releaseName: '{{ .name }}'
-        {{ with .chart }}
-        chart: '{{ . }}'  # Set this only when pulling directly from a Helm repo. DO NOT set for git-hosted Helm charts.
-        {{- end }}
-
       destination:
         server: 'https://kubernetes.default.svc'
         namespace: team-{{ $v.teamId }} # namespace is restricted
