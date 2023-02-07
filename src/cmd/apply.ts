@@ -79,6 +79,7 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   await upgrade({ when: 'post' })
+  await setDeploymentState({ version })
   if (!(env.isDev && env.DISABLE_SYNC))
     if (!isCli || isEmpty(prevState.status))
       // commit first time when not deployed only, always commit in chart (might have previous failure)
