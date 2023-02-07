@@ -7,12 +7,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* add falcosidekick UI ([#1021](https://github.com/redkubes/otomi-core/issues/1021)) ([373ab03](https://github.com/redkubes/otomi-core/commit/373ab0310574cbb6c1a8d3b850e0287851b37873))
-* falco for thread detection ([#999](https://github.com/redkubes/otomi-core/issues/999)) ([c2c3e3e](https://github.com/redkubes/otomi-core/commit/c2c3e3eaa2a59fc0e778be26c520bc55adfb00ef)), closes [#1001](https://github.com/redkubes/otomi-core/issues/1001)
-* kiali resources ([#1014](https://github.com/redkubes/otomi-core/issues/1014)) ([8c14d45](https://github.com/redkubes/otomi-core/commit/8c14d459db6ef9020dc30643899ec0c886fd3f08))
-* olm upgrade ([#993](https://github.com/redkubes/otomi-core/issues/993)) ([8e30c72](https://github.com/redkubes/otomi-core/commit/8e30c72e7c6001fedef9222c546bc632573e2ea3))
-* split-up cloud and storage for Velero ([#971](https://github.com/redkubes/otomi-core/issues/971)) ([43e938e](https://github.com/redkubes/otomi-core/commit/43e938e972faa4c44b81108332d087b55dfbfa92))
-* thanos for multi cluster monitoring ([#996](https://github.com/redkubes/otomi-core/issues/996)) ([27665cb](https://github.com/redkubes/otomi-core/commit/27665cb654cda3c6415556874a03144c9f919f57))
+* Falcosidekick UI ([#1021](https://github.com/redkubes/otomi-core/issues/1021)) ([373ab03](https://github.com/redkubes/otomi-core/commit/373ab0310574cbb6c1a8d3b850e0287851b37873))
+* Falco for thread detection (new app) ([#999](https://github.com/redkubes/otomi-core/issues/999)) ([c2c3e3e](https://github.com/redkubes/otomi-core/commit/c2c3e3eaa2a59fc0e778be26c520bc55adfb00ef)), closes [#1001](https://github.com/redkubes/otomi-core/issues/1001)
+* Kiali configurable resources ([#1014](https://github.com/redkubes/otomi-core/issues/1014)) ([8c14d45](https://github.com/redkubes/otomi-core/commit/8c14d459db6ef9020dc30643899ec0c886fd3f08))
+* OLM upgrade ([#993](https://github.com/redkubes/otomi-core/issues/993)) ([8e30c72](https://github.com/redkubes/otomi-core/commit/8e30c72e7c6001fedef9222c546bc632573e2ea3))
+* Velero independent cloud and storage configuration ([#971](https://github.com/redkubes/otomi-core/issues/971)) ([43e938e](https://github.com/redkubes/otomi-core/commit/43e938e972faa4c44b81108332d087b55dfbfa92))
+* Thanos for multi cluster monitoring (new app) ([#996](https://github.com/redkubes/otomi-core/issues/996)) ([27665cb](https://github.com/redkubes/otomi-core/commit/27665cb654cda3c6415556874a03144c9f919f57))
 
 
 ### Bug Fixes
@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file. See [standa
 * certmanager secrets ([#1017](https://github.com/redkubes/otomi-core/issues/1017)) ([94863ed](https://github.com/redkubes/otomi-core/commit/94863ed9858485f4089536fcda5739e7ea189781))
 * do not enable external-secrets by default ([#1008](https://github.com/redkubes/otomi-core/issues/1008)) ([a7fbb98](https://github.com/redkubes/otomi-core/commit/a7fbb98f992e92c6a9038eec8d5cf52cde8bbd40))
 * do not upgrade on very first install ([#1020](https://github.com/redkubes/otomi-core/issues/1020)) ([288f05f](https://github.com/redkubes/otomi-core/commit/288f05f6949924799cce304d96160f93b84e82a9))
-* enable Prometheus detection of XXMonitor objects in team namespace if MT=false ([#1005](https://github.com/redkubes/otomi-core/issues/1005)) ([b7dca97](https://github.com/redkubes/otomi-core/commit/b7dca97b90b9d9daaa72da132df9d36ca5eb6c03)), closes [#1000](https://github.com/redkubes/otomi-core/issues/1000)
+* detect Prometheus monitors for teams while multitenacy is disabled ([#1005](https://github.com/redkubes/otomi-core/issues/1005)) ([b7dca97](https://github.com/redkubes/otomi-core/commit/b7dca97b90b9d9daaa72da132df9d36ca5eb6c03)), closes [#1000](https://github.com/redkubes/otomi-core/issues/1000)
 * external-secrets migration script ([#1015](https://github.com/redkubes/otomi-core/issues/1015)) ([73599ce](https://github.com/redkubes/otomi-core/commit/73599cea594bfa54614ac5f350f8447bb072830d))
 * harbor registry htpasswd ([#1024](https://github.com/redkubes/otomi-core/issues/1024)) ([59db83b](https://github.com/redkubes/otomi-core/commit/59db83b59ba5ffd9fea40963b07863142428a6d1)), closes [#1019](https://github.com/redkubes/otomi-core/issues/1019)
 * kiali deps ([#998](https://github.com/redkubes/otomi-core/issues/998)) ([d532f77](https://github.com/redkubes/otomi-core/commit/d532f779a2ac4f2d546f3fc5c3cee6532ff91f76))
@@ -34,7 +34,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Others
 
-* api and console ([0c0bde7](https://github.com/redkubes/otomi-core/commit/0c0bde77dbb1be96c19b82f46230fd9c3fa7782f))
 * interactive commitizen only if git commit message not delivered ([#1018](https://github.com/redkubes/otomi-core/issues/1018)) ([0bae198](https://github.com/redkubes/otomi-core/commit/0bae198d5167fe5682ab619c625034d729393d1a))
 
 ## [0.18.0](https://github.com/redkubes/otomi-core/compare/v0.17.1...v0.18.0) (2023-01-16)
