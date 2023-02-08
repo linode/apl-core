@@ -49,6 +49,7 @@ on:
         type: choice
         options:
           - minimal
+          - minimal-with-team
           - full
       cluster_region:
         description: DigitalOcean cluster region
