@@ -7,6 +7,9 @@ cluster:
 otomi:
   version: 'OTOMI_VERSION_PLACEHOLDER'
   adminPassword: welcomeotomi
+apps:
+  argocd:
+    enabled: true
 teamConfig:
   demo:
     password: somesecretvalue
