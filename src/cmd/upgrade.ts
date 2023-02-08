@@ -4,7 +4,7 @@
 import { isEmpty } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { hfValues } from 'src/common/hf'
-import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
+import { getDeploymentState } from 'src/common/k8s'
 import { getFilename, guccify, loadYaml, rootDir, semverCompare } from 'src/common/utils'
 import { getCurrentVersion } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
@@ -100,7 +100,6 @@ export const upgrade = async ({ dryRun = false, release, when }: Arguments): Pro
     }
     $.quote = q
     // set latest version deployed in configmap
-    await setDeploymentState({ version })
   } else d.info('No upgrade operations detected, skipping')
 }
 
