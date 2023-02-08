@@ -1264,7 +1264,7 @@ definitions:
         description: URL to either Helm or Git repository
         $ref: '#/definitions/url'
       path:
-        description: Path is a directory path within the Git repository, and is only valid for applications sourced from Git
+        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
         $ref: '#/definitions/wordCharacterPattern'
       chart:
         description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.

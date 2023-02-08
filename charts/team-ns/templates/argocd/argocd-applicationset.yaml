@@ -28,7 +28,9 @@ spec:
         chart: '{{ . }}'  # Set this only when pulling directly from a Helm repo. DO NOT set for git-hosted Helm charts.
         {{- end }}
         helm:
-          values: '{{ "{{app.values}}" }}'  # This is a template for the ApplicationSet controller
+          # Values are take from the git generator path
+          values: |
+            '{{ "{{values}}" }}'  
           releaseName: '{{ .name }}'
       destination:
         server: 'https://kubernetes.default.svc'
