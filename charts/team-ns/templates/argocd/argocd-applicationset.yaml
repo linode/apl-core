@@ -19,7 +19,6 @@ spec:
     spec:
       project: team-{{ $v.teamId }} # project is restricted
       source:
-        # developers may customize app details using config.yaml files from the above repo URL
         repoURL: '{{ .url }}'
         targetRevision: '{{ .revision }}' # if using Helm, must be the revision in Chart.yaml
         {{ with .path }}
@@ -29,7 +28,7 @@ spec:
         chart: '{{ . }}'  # Set this only when pulling directly from a Helm repo. DO NOT set for git-hosted Helm charts.
         {{- end }}
         helm:
-          values: '{{ "{{app.values}}" }}'
+          values: '{{ "{{app.values}}" }}'  # This is a template for the ApplicationSet controller
           releaseName: '{{ .name }}'
       destination:
         server: 'https://kubernetes.default.svc'
