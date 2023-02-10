@@ -1,0 +1,26 @@
+resources:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: gatekeeper-metrics
+    spec:
+      ports:
+      - name: metrics
+        port: 8888
+        protocol: TCP
+        targetPort: metrics
+      selector:
+        app: gatekeeper
+      type: ClusterIP
+  - apiVersion: monitoring.coreos.com/v1
+    kind: ServiceMonitor
+    metadata:
+      labels:
+        prometheus: system
+      name: gatekeeper-metrics
+    spec:
+      endpoints:
+      - port: metrics
+      selector:
+        matchLabels:
+          app: gatekeeper
