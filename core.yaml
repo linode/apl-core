@@ -83,6 +83,8 @@ k8s:
       disablePolicyChecks: true
     - name: trivy-operator
       app: trivy
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: vault
       app: vault
     - name: velero

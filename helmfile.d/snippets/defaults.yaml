@@ -393,6 +393,8 @@ environments:
                 size: 8Gi
           trivy:
             enabled: false
+            operator:
+              replicaCount: 1
             resources:
               operator:
                 requests:
