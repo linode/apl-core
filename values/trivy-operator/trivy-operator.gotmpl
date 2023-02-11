@@ -1,0 +1,32 @@
+{{- $v := .Values }}
+{{- $t := $v.apps.trivy }}
+
+# targetNamespace defines where you want trivy-operator to operate. By
+# default, it's a blank string to select all namespaces, but you can specify
+# another namespace, or a comma separated list of namespaces.
+targetNamespaces: "team-demo"
+
+# targetWorkloads is a comma seperated list of Kubernetes workload resources
+# to be included in the vulnerability and config-audit scans
+# if left blank, all workload resources will be scanned
+targetWorkloads: "pod,replicaset,replicationcontroller,statefulset,daemonset,cronjob,job"
+
+operator:
+  replicas: {{ $t.operator.replicaCount }}
+
+serviceMonitor:
+  enabled: true
+  labels:
+    prometheus: system
+
+trivy:
+  mode: Standalone
+  resources: {{- $t.resources.trivy | toYaml | nindent 2 }}
+
+podAnnotations:
+  policy.otomi.io/ignore: psp-allowed-users
+
+podSecurityContext:
+  runAsUser: 1001
+
+resources: {{- $t.resources.operator | toYaml | nindent 2 }}

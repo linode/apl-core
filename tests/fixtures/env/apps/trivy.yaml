@@ -1,0 +1,20 @@
+apps:
+    trivy:
+        enabled: true
+        operator:
+            replicaCount: 1
+        resources:
+            operator:
+                requests:
+                    cpu: 100m
+                    memory: 64Mi
+                limits:
+                    cpu: 200m
+                    memory: 128Mi
+            trivy:
+                requests:
+                    cpu: 100m
+                    memory: 100M
+                limits:
+                    cpu: 500m
+                    memory: 500M

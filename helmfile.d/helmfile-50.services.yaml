@@ -60,3 +60,9 @@ releases:
     labels:
       pkg: falco
     <<: *default
+  - name: trivy-operator
+    installed: {{ $a | get "trivy.enabled" }}
+    namespace: trivy-operator
+    labels:
+      pkg: trivy-operator
+    <<: *default
