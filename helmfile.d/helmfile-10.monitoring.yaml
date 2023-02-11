@@ -58,5 +58,5 @@ releases:
     <<: *default
   - name: opa-exporter
     installed: {{ $a | get "gatekeeper.enabled" }}
-    namespace: monitoring
+    namespace: opa-exporter
     <<: *default

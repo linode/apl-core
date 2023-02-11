@@ -3,6 +3,9 @@ resources:
     kind: Service
     metadata:
       name: gatekeeper-metrics
+      labels:
+        app.kubernetes.io/instance: gatekeeper-metrics
+        app.kubernetes.io/name: gatekeeper-metrics
     spec:
       ports:
       - name: metrics
@@ -23,4 +26,5 @@ resources:
       - port: metrics
       selector:
         matchLabels:
-          app: gatekeeper
+          app.kubernetes.io/instance: gatekeeper-metrics
+          app.kubernetes.io/name: gatekeeper-metrics

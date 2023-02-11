@@ -52,9 +52,3 @@ releases:
     values:
       - ../values/gatekeeper/gatekeeper-constraints.gotmpl
       - snippets/common.gotmpl
-  - name: gatekeeper-raw
-    installed: {{ $a | get "prometheus.enabled" }}
-    namespace: gatekeeper-system
-    labels:
-      pkg: gatekeeper
-    <<: *raw
