@@ -153,6 +153,7 @@
     "sysctls",
     "testmode",
     "textconv",
+    "trivy",
     "unencrypted",
     "untrusted",
     "velero",
