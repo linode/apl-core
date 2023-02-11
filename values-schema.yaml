@@ -2537,8 +2537,9 @@ properties:
                   $ref: '#/definitions/size'
                   default: 8Gi
       trivy:
-        additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false

@@ -401,8 +401,8 @@ environments:
                   cpu: 100m
                   memory: 64Mi
                 limits:
-                  cpu: 200m
-                  memory: 128Mi
+                  cpu: 400m
+                  memory: 512Mi
               trivy:
                 requests:
                   cpu: 100m
