@@ -401,15 +401,15 @@ environments:
                   cpu: 100m
                   memory: 64Mi
                 limits:
-                  cpu: 400m
+                  cpu: 500m
                   memory: 512Mi
               trivy:
                 requests:
                   cpu: 100m
-                  memory: 100M
+                  memory: 64M
                 limits:
                   cpu: 500m
-                  memory: 500M
+                  memory: 512Mi
           vault:
             enabled: false
             resources:
