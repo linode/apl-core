@@ -1,20 +1,12 @@
 {{- $v := .Values }}
 {{- $t := $v.apps.trivy }}
-{{/*
-{{- $joinTpl := readFile "../../helmfile.d/utils/joinKeys.gotmpl" }}
-{{- $tc := $v.teamConfig }}
-*/}}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
-# targetNamespace defines where you want trivy-operator to operate. By
-# default, it's a blank string to select all namespaces, but you can specify
-# another namespace, or a comma separated list of namespaces.
-targetNamespaces: ""
-
-
-# targetWorkloads is a comma seperated list of Kubernetes workload resources
-# to be included in the vulnerability and config-audit scans
-# if left blank, all workload resources will be scanned
-targetWorkloads: "pod,replicaset,replicationcontroller,statefulset,daemonset,cronjob,job"
+{{ $targets := list }}
+  {{- range $id, $_ := $v.teamConfig }}
+    {{- $targets = append $targets (print "team-" $id) }}
+  {{- end }}
+targetNamespaces: "{{- tpl $joinTpl (dict "list" $targets "sep" ",") }}"
 
 operator:
   replicas: {{ $t.operator.replicaCount }}
