@@ -15,16 +15,3 @@ resources:
       selector:
         app: gatekeeper
       type: ClusterIP
-  - apiVersion: monitoring.coreos.com/v1
-    kind: ServiceMonitor
-    metadata:
-      labels:
-        prometheus: system
-      name: gatekeeper-metrics
-    spec:
-      endpoints:
-      - port: metrics
-      selector:
-        matchLabels:
-          app.kubernetes.io/instance: gatekeeper-metrics
-          app.kubernetes.io/name: gatekeeper-metrics
