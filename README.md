@@ -16,7 +16,9 @@
   <a href="https://www.facebook.com/groups/otomiusers"><img src="https://img.shields.io/static/v1?label=Facebook&message=Join group&color=1877F2" alt="Join Facebook group"></a>
 </p>
 
-**Otomi** adds developer- and operations-centric tools, automation and self-service on top of Kubernetes in one installable package to offer a complete composable and configurable platform out-of-the-box.
+<h4 align="center">
+Add developer- and operations-centric tools, automation and self-service on top of Kubernetes to offer a complete platform experience out-of-the-box.
+</h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
@@ -34,6 +36,8 @@
 **Platform teams** - To setup and manage production-ready Kubernetes-based platforms
 * Onboard development teams in a comprehensive multi-tenant setup
 * Get all the required K8s tools in an integrated way
+* Create your platform profile and deploy to any K8s
+* One schema to manage all platform configuration
 * Ensure governance with security policies
 * Implement zero-trust networking
 * Make development teams self-serving
@@ -102,16 +106,15 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 
 ## Otomi Features
 
-- Drag and drop apps to create your own preferred suite
+- Drag and drop tools to create your own preferred suite
 - GitOps out-of-the-box
-- Container image scanning
+- Container image scanning (at the gate and during runtime)
+- Security policies (at the gate and during runtime)
 - Advanced ingress architecture with self-service
-- Configuration validation
-- Configure network policies for internal ingress and external egress
+- Network policies for internal ingress and external egress
 - Deploy workloads without writing any YAML
 - Create and manage secrets in Vault and use them in workloads
-- Role-based access to all integrated applications
-- Enforce Pod security policies
+- Role-based access to all integrated tools
 - Comprehensive multi-tenant setup
 - Automation tasks for Harbor, Keycloak, ArgoCD, Vault, Gitea and Drone
 - Expose services on multiple (public/private) networks
