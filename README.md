@@ -16,7 +16,9 @@
   <a href="https://www.facebook.com/groups/otomiusers"><img src="https://img.shields.io/static/v1?label=Facebook&message=Join group&color=1877F2" alt="Join Facebook group"></a>
 </p>
 
-**Otomi** adds developer- and operations-centric tools, automation and self-service on top of Kubernetes in one installable package to offer a complete composable and configurable platform out-of-the-box.
+<h4 align="center">
+Add developer- and operations-centric tools, automation and self-service on top of Kubernetes to offer a complete platform experience out-of-the-box.
+</h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
@@ -33,7 +35,9 @@
 
 **Platform teams** - To setup and manage production-ready Kubernetes-based platforms
 * Onboard development teams in a comprehensive multi-tenant setup
-* Get all the required K8s tools in an integrated way
+* Get all the required K8s tools in an integrated and automated way
+* Use one schema to configure all platform capabilities
+* Create your platform profile and deploy it to any K8s cluster
 * Ensure governance with security policies
 * Implement zero-trust networking
 * Make development teams self-serving
