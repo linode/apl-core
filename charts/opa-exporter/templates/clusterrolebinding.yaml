@@ -7,6 +7,6 @@ roleRef:
   kind: ClusterRole
   name: opa-exporter
 subjects:
-- kind: {{ .Values.serviceAccount.name }}
-  name: default
+- kind: ServiceAccount
+  name: {{ include "opa-exporter.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
