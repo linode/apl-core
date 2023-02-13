@@ -1,0 +1,172 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: null
+  name: clusterinfraassessmentreports.aquasecurity.github.io
+spec:
+  group: aquasecurity.github.io
+  names:
+    kind: ClusterInfraAssessmentReport
+    listKind: ClusterInfraAssessmentReportList
+    plural: clusterinfraassessmentreports
+    shortNames:
+    - clusterinfraassessment
+    singular: clusterinfraassessmentreport
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - description: The name of the infra assessement scanner
+      jsonPath: .report.scanner.name
+      name: Scanner
+      type: string
+    - description: The age of the report
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: The number of failed checks with critical severity
+      jsonPath: .report.summary.criticalCount
+      name: Critical
+      priority: 1
+      type: integer
+    - description: The number of failed checks with high severity
+      jsonPath: .report.summary.highCount
+      name: High
+      priority: 1
+      type: integer
+    - description: The number of failed checks with medium severity
+      jsonPath: .report.summary.mediumCount
+      name: Medium
+      priority: 1
+      type: integer
+    - description: The number of failed checks with low severity
+      jsonPath: .report.summary.lowCount
+      name: Low
+      priority: 1
+      type: integer
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ClusterInfraAssessmentReport is a specification for the ClusterInfraAssessmentReport
+          resource.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          report:
+            properties:
+              checks:
+                description: Checks provides results of conducting audit steps.
+                items:
+                  description: Check provides the result of conducting a single audit
+                    step.
+                  properties:
+                    category:
+                      type: string
+                    checkID:
+                      type: string
+                    description:
+                      type: string
+                    messages:
+                      items:
+                        type: string
+                      type: array
+                    remediation:
+                      description: Remediation provides description or links to external
+                        resources to remediate failing check.
+                      type: string
+                    scope:
+                      description: Scope indicates the section of config that was
+                        audited.
+                      properties:
+                        type:
+                          description: Type indicates type of this scope, e.g. Container,
+                            ConfigMapKey or JSONPath.
+                          type: string
+                        value:
+                          description: Value indicates value of this scope that depends
+                            on Type, e.g. container name, ConfigMap key or JSONPath
+                            expression
+                          type: string
+                      required:
+                      - type
+                      - value
+                      type: object
+                    severity:
+                      description: Severity level of a vulnerability or a configuration
+                        audit check.
+                      type: string
+                    success:
+                      type: boolean
+                    title:
+                      type: string
+                  required:
+                  - checkID
+                  - severity
+                  - success
+                  type: object
+                type: array
+              scanner:
+                description: Scanner is the spec for a scanner generating a security
+                  assessment report.
+                properties:
+                  name:
+                    description: Name the name of the scanner.
+                    type: string
+                  vendor:
+                    description: Vendor the name of the vendor providing the scanner.
+                    type: string
+                  version:
+                    description: Version the version of the scanner.
+                    type: string
+                required:
+                - name
+                - vendor
+                - version
+                type: object
+              summary:
+                description: InfraAssessmentSummary counts failed checks by severity.
+                properties:
+                  criticalCount:
+                    description: CriticalCount is the number of failed checks with
+                      critical severity.
+                    type: integer
+                  highCount:
+                    description: HighCount is the number of failed checks with high
+                      severity.
+                    type: integer
+                  lowCount:
+                    description: LowCount is the number of failed check with low severity.
+                    type: integer
+                  mediumCount:
+                    description: MediumCount is the number of failed checks with medium
+                      severity.
+                    type: integer
+                required:
+                - criticalCount
+                - highCount
+                - lowCount
+                - mediumCount
+                type: object
+            required:
+            - checks
+            - scanner
+            - summary
+            type: object
+        required:
+        - report
+        type: object
+    served: true
+    storage: true
+    subresources: {}
