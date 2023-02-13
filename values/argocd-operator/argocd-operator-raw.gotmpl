@@ -243,6 +243,6 @@ resources:
         app.kubernetes.io/part-of: argocd
     data:
     {{- if $v._derived.untrustedCA }}
-      https://gitea.{{ $v.cluster.domainSuffix }}: |
+      gitea.{{ $v.cluster.domainSuffix }}: |
         {{- .Values._derived.caCert | nindent 8 }}
     {{- end }}
