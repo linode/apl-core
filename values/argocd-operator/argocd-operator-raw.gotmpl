@@ -233,16 +233,3 @@ resources:
               optional: true
             name: ssh-config
     # END: image updater
-  - apiVersion: v1
-    kind: ConfigMap
-    metadata:
-      name: argocd-tls-certs-cm
-      namespace: argocd
-      labels:
-        app.kubernetes.io/name: argocd-cm
-        app.kubernetes.io/part-of: argocd
-    data:
-    {{- if $v._derived.untrustedCA }}
-      gitea.{{ $v.cluster.domainSuffix }}: |
-        {{- .Values._derived.caCert | nindent 8 }}
-    {{- end }}
