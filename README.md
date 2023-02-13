@@ -16,26 +16,30 @@
   <a href="https://www.facebook.com/groups/otomiusers"><img src="https://img.shields.io/static/v1?label=Facebook&message=Join group&color=1877F2" alt="Join Facebook group"></a>
 </p>
 
-**Otomi** is a complete stack of integrated Kubernetes applications, combined with automation and self-service. Otomi can be installed with one command on any Kubernetes cluster, offering a complete platform experience out-of-the-box. No more re-inventing the wheel when building and maintaining your own Kubernetes based platform.
+<h4 align="center">
+Add developer- and operations-centric tools, automation and self-service on top of Kubernetes to offer a complete platform experience out-of-the-box.
+</h4>
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-apps.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
 ## Otomi helps 
 
 **Developers** - To focus on their apps only
-* Deploy containerized apps with a few click without writing any K8s YAML manifests
-* Get access to logs and metrics of deployed apps
+* Easy deployment of containerized workloads
+* Direct access to logs and metrics
 * Store charts and images in a private registry
 * Build and run custom CI pipelines
-* Enable declarative end-to-end app lifecycle management
-* Configure ingress for apps with a single click
+* Enable declarative end-to-end workload lifecycle management
+* Easy ingress and network policy configuration
 * Manage your own secrets
 
-**Platform & Operations teams** - To setup and manage production-ready Kubernetes-based platforms
-* Onboard development teams on shared clusters in a comprehensive multi-tenant setup
-* Get all the required K8s apps in an integrated way
+**Platform teams** - To setup and manage production-ready Kubernetes-based platforms
+* Onboard development teams in a comprehensive multi-tenant setup
+* Get all the required K8s tools in an integrated way
+* Create your platform profile and deploy to any K8s
+* One schema to manage all platform configuration
 * Ensure governance with security policies
-* Implement zero-trust networking with east-west and north-south network control
+* Implement zero-trust networking
 * Make development teams self-serving
 * Change the desired state of the platform based on Configuration-as-Code
 * Support multi and hybrid cloud scenarios
@@ -46,7 +50,7 @@
 
 To install Otomi using Helm, make sure to have a K8s cluster running with at least:
 
-- Version `1.18` up to `1.23`
+- Version `1.20` up to `1.23`
 - A node pool with **6 vCPU** and **8GB+ RAM** (more is advised!)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by `Otomi` can obtain an external accessible IP (using a cloud load balancer or MetalLB)
@@ -62,7 +66,7 @@ and then install the Helm chart:
 
 ```bash
 helm install otomi otomi/otomi \
---set cluster.k8sVersion=$VERSION \ # 1.19, 1.20, 1.21, 1.22 and 1.23 are supported
+--set cluster.k8sVersion=$VERSION \ # 1.20, 1.21, 1.22 and 1.23 are supported
 --set cluster.name=$CLUSTERNAME \
 --set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', or 'custom' for any other cloud or onprem K8s
 ```
@@ -70,6 +74,8 @@ helm install otomi otomi/otomi \
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/installation/activation/).
 
 ## Integrated K8s applications
+
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/tech-stack.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
 Otomi installs, configures, integrates and automates all of your favorite K8s apps:
 
@@ -79,12 +85,13 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
 - [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics
+- [Grafana](https://github.com/grafana/grafana): Visualize metrics, logs, and traces from multiple sources
 - [Loki](https://github.com/grafana/loki): Collecting container application logs
 - [Harbor](https://github.com/goharbor/harbor): Container image registry with role-based access control, image scanning, and image signing
 - [HashiCorp Vault](https://github.com/hashicorp/vault): Manage Secrets and Protect Sensitive Data
 - [Kubeapps](https://github.com/vmware-tanzu/kubeapps): Launching and managing applications on Kubernetes
 - [Keycloak](https://github.com/keycloak/keycloak): Identity and access management for modern applications and services
-- [OPA](https://github.com/open-policy-agent/opa): Policy-based control for cloud-native environments
+- [OPA/Gatekeeper](https://github.com/open-policy-agent/gatekeeper): Policy-based control for cloud-native environments
 - [Let's Encrypt](https://letsencrypt.org/): A nonprofit Certificate Authority providing industry-recognized TLS certificates
 - [Jaeger](https://github.com/jaegertracing/jaeger): End-to-end distributed tracing and monitor for complex distributed systems
 - [Kiali](https://github.com/kiali/kiali): Observe Istio service mesh relations and connections
@@ -93,36 +100,34 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
 - [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
 - [Minio](https://github.com/minio/minio): High performance Object Storage compatible with Amazon S3 cloud storage service
+- [Trivy](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit
+- [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
+- [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
 
 ## Otomi Features
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-features.png/?raw=true" width="100%" align="center" alt="Otomi features"></p>
-
-- [x] Drag and drop apps to create your own preferred suite
-- [x] GitOps out-of-the-box
-- [x] Container image scanning
-- [x] Advanced ingress architecture with self-service
-- [x] Configuration validation
-- [x] Configure network policies for internal ingress and external egress
-- [x] Deploy workloads without writing any YAML
-- [x] Create and manage secrets in Vault and use them in workloads
-- [x] Role-based access to all integrated applications
-- [x] Enforce Pod security policies
-- [x] Comprehensive multi-tenant setup
-- [x] Automation tasks
-- [x] Expose services on multiple (public/private) networks
-- [x] SOPS/KMS for encryption of sensitive configuration values
-- [x] BYO IdP, DNS and/or CA
+- Drag and drop tools to create your own preferred suite
+- GitOps out-of-the-box
+- Container image scanning (at the gate and during runtime)
+- Security policies (at the gate and during runtime)
+- Advanced ingress architecture with self-service
+- Network policies for internal ingress and external egress
+- Deploy workloads without writing any YAML
+- Create and manage secrets in Vault and use them in workloads
+- Role-based access to all integrated tools
+- Comprehensive multi-tenant setup
+- Automation tasks for Harbor, Keycloak, ArgoCD, Vault, Gitea and Drone
+- Expose services on multiple (public/private) networks
+- SOPS/KMS for encryption of sensitive configuration values
+- BYO IdP, DNS and/or CA
 
 And much more...
 ## Otomi Projects
 
-Otomi consists out of the following projects:
+The open source Core of Otomi consists out of the following projects:
 
 - Otomi Core (this project): The heart of Otomi
 - [Otomi Tasks](https://github.com/redkubes/otomi-tasks): Autonomous jobs orchestrated by Otomi Core
-- [Otomi API](https://hub.docker.com/repository/docker/otomi/api): The brain of Otomi, handling console input and talking to Otomi Core
-- [Otomi Console](https://hub.docker.com/repository/docker/otomi/console): The UI of Otomi for admins and teams, talking to Otomi API
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in the redkubes/otomi-tasks repo
 
 ## Documentation
