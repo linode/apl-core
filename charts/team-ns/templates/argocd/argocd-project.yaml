@@ -14,7 +14,9 @@ spec:
   # Allow manifests to deploy from any Git repos
   sourceRepos:
   - https://gitea.{{ $v.cluster.domainSuffix }}/otomi/team-{{ $v.teamId }}-argocd.git
-  # TODO add source repos upon workload creation
+  {{- range $v.workloads }}
+  - {{ .url }}
+  {{- end }}
   # Only permit applications to deploy to the guestbook namespace in the same cluster
   destinations:
   - namespace: team-{{ $v.teamId }}
