@@ -140,10 +140,6 @@ spec:
   #       key: password
   #   - type: git
   #     url: https://github.com/argoproj/argocd-example-apps.git
-  {{- if $v._derived.untrustedCA }}
   tls:
-    # Initial set of certificates in the argocd-tls-certs-cm ConfigMap for connecting Git repositories via HTTPS.
-    initialCerts:
-      gitea.{{ $v.cluster.domainSuffix }}: |
-        {{- .Values._derived.caCert | nindent 8 }}
-  {{- end }}
+    ca:
+      configMapName: otomi-argocd-tls-certs
