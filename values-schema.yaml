@@ -2140,6 +2140,17 @@ properties:
           schedule:
             default: '*/30 * * * *'
             type: string
+      kured:
+        additionalProperties: false
+        properties:
+          enabled:
+            default: false
+            type: boolean
+          resources:
+            additionalProperties: false
+            properties:
+              kuredDaemonSet:
+                $ref: '#/definitions/resources'
       loki:
         additionalProperties: false
         properties:
