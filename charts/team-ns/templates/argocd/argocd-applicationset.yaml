@@ -31,6 +31,17 @@ spec:
           # The argocd template the values parameter is taken from the git generator path
           values: '{{ "{{values}}" }}'
           releaseName: '{{ .name }}'
+      syncPolicy:
+        automated:
+          allowEmpty: false
+          prune: true
+          selfHeal: true
+        retry:
+          backoff:
+            duration: 5s
+            factor: 2
+          limit: 100
+        syncOptions: []
       destination:
         server: 'https://kubernetes.default.svc'
         namespace: team-{{ $v.teamId }} # namespace is restricted
