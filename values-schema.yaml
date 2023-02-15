@@ -708,6 +708,8 @@ definitions:
               default:
                 - number: 443
                   protocol: HTTPS
+          required:
+            - domain
   path:
     description: An absolute path
     type: string
