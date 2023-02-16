@@ -5,13 +5,7 @@
 configuration:
   lockTtl: 30m 
 
-resources: {{- $k.resources.kured | toYaml | nindent 4 }}
-  limits:
-    cpu: 10m
-    memory: 64Mi
-  requests:
-    cpu: 5m
-    memory: 32Mi
+resources: {{- $k.resources.kuredDaemonSet | toYaml | nindent 4 }}
 
 metrics:
   create: true

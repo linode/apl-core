@@ -54,6 +54,9 @@ k8s:
       app: kubeapps
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: kured
+      app: kured
+      disableIstioInjection: true
     - name: kubeclarity
       app: kubeclarity
     - name: maintenance
@@ -271,6 +274,8 @@ adminApps:
         port: 8080
         type: public
         auth: true
+  - name: kured
+    tags: [security]
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus]
