@@ -34,6 +34,15 @@ spec:
       g, team-admin, role:admin
     defaultPolicy: role:readonly
 {{- end }}
+  applicationSet:
+    logLevel: info
+    resources:
+      limits:
+        cpu: '500m'
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256M
   server:
     host: argocd.{{ $v.cluster.domainSuffix }}
     insecure: true # nginx terminates tls
@@ -131,3 +140,10 @@ spec:
   #       key: password
   #   - type: git
   #     url: https://github.com/argoproj/argocd-example-apps.git
+  {{- if $v._derived.untrustedCA }}
+  tls:
+    # Initial set of certificates in the argocd-tls-certs-cm ConfigMap for connecting Git repositories via HTTPS.
+    initialCerts:
+      gitea.{{ $v.cluster.domainSuffix }}: |
+        {{- .Values._derived.caCert | nindent 8 }}
+  {{- end }}

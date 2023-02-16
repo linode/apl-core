@@ -49,6 +49,7 @@ on:
         type: choice
         options:
           - minimal
+          - minimal-with-team
           - full
       cluster_region:
         description: DigitalOcean cluster region
@@ -108,6 +109,8 @@ jobs:
     steps:
       - name: Print user input
         run: |
+          echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
+          echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
           echo 'cluster_region: ${{ inputs.cluster_region }}'
           echo 'cluster_persistence: ${{ inputs.cluster_persistence }}'
