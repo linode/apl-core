@@ -264,6 +264,8 @@ environments:
             logLevel: warning
           kube-descheduler:
             enabled: false
+          kured:
+            enabled: false
           loki:
             enabled: false
           metrics-server:
