@@ -290,6 +290,24 @@ environments:
           otomi-api:
             editorInactivityTimeout: 1
           otomi-console: {}
+          opencost:
+            enabled: false
+            resources:
+              exporter:
+                requests:
+                  cpu: 500m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+              ui:
+                requests:
+                  cpu: 500m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+
           promtail:
             enabled: false
           prometheus-blackbox-exporter: {}

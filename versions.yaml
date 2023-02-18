@@ -1,4 +1,3 @@
-api: 0.5.22
-console: 0.5.24
-tasks: 0.2.31
+api: opencost
+console: opencost
 tools: 1.4.25

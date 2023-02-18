@@ -1,0 +1,3 @@
+apps:
+    opencost:
+        enabled: true

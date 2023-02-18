@@ -2277,6 +2277,25 @@ properties:
                 x-secret: 'randAlphaNum 32 | b64enc'
       oauth2-proxy-redis:
         $ref: '#/definitions/redisChart'
+      opencost:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          gcpKey:
+            type: string
+            description: GCP API key
+            $ref: '#/definitions/wordCharacterPattern'
+          resources:
+            additionalProperties: false
+            properties:
+              exporter:
+                $ref: '#/definitions/resources'
+              ui:
+                $ref: '#/definitions/resources'
       otomi-api:
         additionalProperties: false
         properties:
