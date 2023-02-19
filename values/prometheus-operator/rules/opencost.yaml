@@ -9,3 +9,11 @@ groups:
         annotations:
           description: The monthly cost of all cluster nodes has reached $1000
           summary: Node cost quota p.m. reached
+      - alert: TeamCpuRequestQuotaReached
+        expr: sum(container_cpu_allocation * on (node) group_left node_cpu_hourly_cost) by (namespace) * 730 >
+        for: 1d
+        labels:
+          severity: warning
+        annotations:
+          description: The monthly cost of all cluster nodes has reached $1000
+          summary: Node cost quota p.m. reached

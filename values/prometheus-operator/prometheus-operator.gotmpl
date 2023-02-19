@@ -155,7 +155,7 @@ additionalPrometheusRules:
   {{- end }}
   {{- if $v.apps.opencost.enabled }}
   - name: opencost
-    {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
+    {{- readFile "rules/opencost.yaml" | nindent 4 }}
   {{- end }}
 {{- end }}
 alertmanager:
