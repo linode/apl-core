@@ -2287,6 +2287,7 @@ properties:
             default: false
           gcpKey:
             type: string
+            title: API key
             description: GCP API key
             $ref: '#/definitions/wordCharacterPattern'
           resources:

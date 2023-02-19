@@ -6,6 +6,7 @@ annotations:
 
 opencost:
   exporter:
+    defaultClusterId: {{ $v.cluster.domainSuffix }}
     {{- if eq $v.cluster.provider "google" }}
     cloudProviderApiKey: {{ $o.gcpKey }}
     {{- end }}
