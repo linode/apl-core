@@ -21,7 +21,7 @@ global:
   smtp_auth_identity: {{ .root | get "smtp.auth_identity" nil }}
 {{- end }}
 route:
-  receiver: 'null'
+  receiver: main
   group_by: [alertname]
   group_interval: {{ .instance | get "alerts.groupInterval" (.root | get "alerts.groupInterval" "5m") }}
   repeat_interval: {{ .instance | get "alerts.repeatInterval" (.root | get "alerts.repeatInterval" "3h") }}
@@ -48,7 +48,7 @@ route:
     {{- end }}
 receivers:
   - name: "null"
-  # - name: default
+  - name: main
 {{- if has "slack" $receivers  }}
     slack_configs:
       - channel: "#{{ .instance | get "alerts.slack.channel" (.root | get "alerts.slack.channel" "mon-otomi") }}"

@@ -2285,11 +2285,39 @@ properties:
           enabled:
             type: boolean
             default: false
-          gcpKey:
-            type: string
-            title: API key
-            description: GCP API key
-            $ref: '#/definitions/wordCharacterPattern'
+          keys:
+            properties:
+              gcp:
+                type: string
+                title: API key
+                description: GCP API key
+                $ref: '#/definitions/wordCharacterPattern'
+          alerts:
+            properties:
+              CostOfAllNodesQuotaPerMonthReached:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: false
+                quota:
+                  type: integer
+                  default: 100
+              TeamCpuMonthQuotaReached:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: false
+                quota:
+                  type: integer
+                  default: 100
+              TeamMemMonthQuotaReached:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: false
+                quota:
+                  type: integer
+                  default: 100
           resources:
             additionalProperties: false
             properties:
