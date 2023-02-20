@@ -206,13 +206,13 @@ environments:
             enabled: true
             autoscaling:
               egressgateway:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
               ingressgateway:
                 minReplicas: 2
                 maxReplicas: 10
               pilot:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
             egressGateway:
               enabled: false
