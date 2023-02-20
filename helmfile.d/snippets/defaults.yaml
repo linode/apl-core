@@ -169,7 +169,7 @@ environments:
             emitAdmissionEvents: false
             emitAuditEvents: false
             logLevel: INFO
-            replicas: 2
+            replicas: 1
           gitea:
             enabled: true
             adminUsername: otomi-admin
