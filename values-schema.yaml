@@ -2294,30 +2294,24 @@ properties:
                 $ref: '#/definitions/wordCharacterPattern'
           alerts:
             properties:
+              enabled:
+                type: boolean
+                default: false
               CostOfAllNodesQuotaPerMonthReached:
                 properties:
-                  enabled:
-                    type: boolean
-                    default: false
-                quota:
-                  type: integer
-                  default: 100
+                  quota:
+                    type: integer
+                    default: 500
               TeamCpuMonthQuotaReached:
                 properties:
-                  enabled:
-                    type: boolean
-                    default: false
-                quota:
-                  type: integer
-                  default: 100
+                  quota:
+                    type: integer
+                    default: 100
               TeamMemMonthQuotaReached:
                 properties:
-                  enabled:
-                    type: boolean
-                    default: false
-                quota:
-                  type: integer
-                  default: 100
+                  quota:
+                    type: integer
+                    default: 100
           resources:
             additionalProperties: false
             properties:

@@ -153,9 +153,35 @@ additionalPrometheusRules:
   - name: cluster-autoscaler
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
   {{- end }}
-  {{- if $v.apps.opencost.enabled }}
+  {{- if $v.apps.opencost.alerts.enabled }}
   - name: opencost
-    {{- readFile "rules/opencost.yaml" | nindent 4 }}
+    groups:
+      - name: opencost.rules
+        rules:
+          - alert: CostOfAllNodesQuotaPerMonthReached
+            expr: sum(node_total_hourly_cost) * 730 > {{ $v.apps.opencost.alerts.CostOfAllNodesQuotaPerMonthReached.quota }}
+            for: 1d
+            labels:
+              severity: warning
+            annotations:
+              description: The monthly cost of all cluster nodes has reached $500
+              summary: Node cost quota p.m. reached
+          - alert: TeamCpuMonthQuotaReached
+            expr: sum(container_cpu_allocation{exported_namespace=~"team-.*"} * on (node) group_left node_cpu_hourly_cost) * 730 > {{ $v.apps.opencost.alerts.TeamCpuMonthQuotaReached.quota }}
+            for: 1d
+            labels:
+              severity: warning
+            annotations:
+              description: Monthly team CPU cost quota reached
+              summary: Team CPU cost quota p.m. reached
+          - alert: TeamMemMonthQuotaReached
+            expr: sum(container_memory_allocation_bytes{exported_namespace=~"team-.*"} / 1000000000 * on (node) group_left node_ram_hourly_cost) * 730 > {{ $v.apps.opencost.alerts.TeamMemMonthQuotaReached.quota }}
+            for: 1d
+            labels:
+              severity: warning
+            annotations:
+              description: Monthly memory Memory cost quota reached
+              summary: Team memory cost quota p.m. reached
   {{- end }}
 {{- end }}
 alertmanager:

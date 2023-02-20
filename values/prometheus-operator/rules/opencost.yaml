@@ -2,15 +2,15 @@ groups:
   - name: opencost.rules
     rules:
       - alert: CostOfAllNodesQuotaPerMonthReached
-        expr: sum(node_total_hourly_cost) * 730 > 1
+        expr: sum(node_total_hourly_cost) * 730 > 500
         for: 1d
         labels:
           severity: warning
         annotations:
-          description: The monthly cost of all cluster nodes has reached $1000
+          description: The monthly cost of all cluster nodes has reached $500
           summary: Node cost quota p.m. reached
       - alert: TeamCpuMonthQuotaReached
-        expr: sum(container_cpu_allocation{namespace=~"team-.*"} * on (node) group_left node_cpu_hourly_cost) * 730 > 500
+        expr: sum(container_cpu_allocation{exported_namespace=~"team-.*"} * on (node) group_left node_cpu_hourly_cost) * 730 > 1
         for: 1d
         labels:
           severity: warning
@@ -18,7 +18,7 @@ groups:
           description: The monthly CPU cost of team {{ $labels.namespace }} reached $100
           summary: Team CPU cost quota p.m. reached
       - alert: TeamMemMonthQuotaReached
-        expr: sum(container_memory_allocation_bytes{namespace=~"team-.*"} / 1000000000 * on (node) group_left node_ram_hourly_cost) * 730 > 100
+        expr: sum(container_memory_allocation_bytes{exported_namespace=~"team-.*"} / 1000000000 * on (node) group_left node_ram_hourly_cost) * 730 > 1
         for: 1d
         labels:
           severity: warning
