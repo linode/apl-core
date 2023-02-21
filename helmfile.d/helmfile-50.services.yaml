@@ -65,4 +65,9 @@ releases:
     namespace: trivy-operator
     labels:
       pkg: trivy-operator
+  - name: opencost
+    installed: {{ $a | get "opencost.enabled" }}
+    namespace: opencost
+    labels:
+      pkg: opencost
     <<: *default

@@ -1,0 +1,11 @@
+apps:
+    opencost:
+        enabled: true
+        alerts:
+            enabled: true
+            CostOfAllNodesQuotaPerMonthReached:
+                quota: 500
+            TeamCpuMonthQuotaReached:
+                quota: 100
+            TeamMemMonthQuotaReached:
+                quota: 100

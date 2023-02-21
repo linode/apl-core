@@ -26,4 +26,6 @@ folders:
   {{- end }}
   {{- if $v.apps.trivy.enabled }}
   - trivy
+  {{- if $v.apps.opencost.enabled }}
+  - opencost
   {{- end }}
