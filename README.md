@@ -71,7 +71,7 @@ helm install otomi otomi/otomi \
 --set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', or 'custom' for any other cloud or onprem K8s
 ```
 
-When the installer job is completed, follow the [activation steps](https://otomi.io/docs/installation/activation/).
+When the installer job is completed, follow the [activation steps](https://otomi.io/docs/get-started/activation/).
 
 ## Integrated K8s applications
 
