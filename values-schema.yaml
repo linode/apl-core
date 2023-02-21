@@ -2289,8 +2289,6 @@ properties:
             properties:
               gcp:
                 type: string
-                title: API key
-                description: GCP API key
                 $ref: '#/definitions/wordCharacterPattern'
           alerts:
             properties:

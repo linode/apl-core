@@ -234,6 +234,17 @@ appsInfo:
     license: Apache 2.0
     about: MinIO is a High Performance Object Storage and its API is compatible with the Amazon Web Services S3 cloud storage service.
     integration: Otomi installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in Otomi capable of using object storage for data persistence.
+  opencost:
+    title: Opencost
+    appVersion: 11.10.13
+    repo: https://github.com/minio/minio
+    maintainers: Minio
+    relatedLinks:
+      - https://otomi.io/docs/apps/opencost
+      - https://minio.io/
+    license: Apache 2.0
+    about: bla
+    integration: bla
   prometheus:
     title: Prometheus
     appVersion: 0.57.0
