@@ -144,7 +144,9 @@ releases:
           {{- if $v.apps.gatekeeper.enabled }}
           - gatekeeper-teams
           {{- end }}
-          # - istio-teams
+          {{- if $v.apps.falco.enabled }}
+          - falco-teams
+          {{- end }}
           {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
           - azure
           {{- end }}
