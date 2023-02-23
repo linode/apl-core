@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- if $v.apps.argocd.enabled }}
 {{- range $v.workloads }}
+---
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:

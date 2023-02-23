@@ -4,3 +4,6 @@ teamConfig:
             - name: wd1
               url: https://myrepo.local/mychart.git
               path: /
+            - name: wd2
+              url: https://myrepo.local/mychart.git
+              path: /
