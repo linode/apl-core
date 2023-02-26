@@ -236,15 +236,15 @@ appsInfo:
     integration: Otomi installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in Otomi capable of using object storage for data persistence.
   opencost:
     title: Opencost
-    appVersion: 11.10.13
-    repo: https://github.com/minio/minio
-    maintainers: Minio
+    appVersion: 1.9.8
+    repo: https://github.com/opencost/opencost
+    maintainers: Opencost
     relatedLinks:
       - https://otomi.io/docs/apps/opencost
-      - https://minio.io/
+      - https://www.opencost.io/
     license: Apache 2.0
-    about: bla
-    integration: bla
+    about: OpenCost models give teams visibility into current and historical Kubernetes spend and resource allocation.
+    integration: Opencost can be activated to provide insight into cost spend for the platform and Otomi teams. The platform admin can set CPU and memory quotas for teams on the platform and receive an alert when a quota has been reached.
   prometheus:
     title: Prometheus
     appVersion: 0.57.0
