@@ -2279,6 +2279,14 @@ properties:
                 x-secret: 'randAlphaNum 32 | b64enc'
       oauth2-proxy-redis:
         $ref: '#/definitions/redisChart'
+      opa-exporter:
+        description: Expose OPA/Gatekeeper Constraint Violations metrics.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
       otomi-api:
         additionalProperties: false
         properties:
