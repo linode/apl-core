@@ -169,7 +169,7 @@ environments:
             emitAdmissionEvents: false
             emitAuditEvents: false
             logLevel: INFO
-            replicas: 1
+            replicas: 2
           gitea:
             enabled: true
             adminUsername: otomi-admin
@@ -190,7 +190,7 @@ environments:
             enabled: true
             autoscaling:
               enabled: true
-              minReplicas: 1
+              minReplicas: 2
               maxReplicas: 10
             modsecurity:
               enabled: false
@@ -200,19 +200,19 @@ environments:
               enabled: false
               autoscaling:
                 enabled: true
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
           istio:
             enabled: true
             autoscaling:
               egressgateway:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
               ingressgateway:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
               pilot:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
             egressGateway:
               enabled: false
