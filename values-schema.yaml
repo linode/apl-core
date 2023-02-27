@@ -2546,6 +2546,26 @@ properties:
                 size:
                   $ref: '#/definitions/size'
                   default: 8Gi
+      trivy:
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          operator:
+            properties:
+              replicaCount:
+                description: Number of Operator replicas.
+                type: integer
+                default: 1
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+              trivy:
+                $ref: '#/definitions/resources'
       vault:
         additionalProperties: false
         properties:

@@ -150,6 +150,9 @@ releases:
           {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
           - azure
           {{- end }}
+          {{- if $v.apps.trivy.enabled }}
+          - trivy-teams
+          {{- end }}
   {{- end }}
   - name: team-ns-{{ $teamId }}
     installed: true

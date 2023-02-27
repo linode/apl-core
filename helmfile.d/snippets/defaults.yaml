@@ -392,6 +392,25 @@ environments:
                 size: 8Gi
               ruler:
                 size: 8Gi
+          trivy:
+            enabled: false
+            operator:
+              replicaCount: 1
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              trivy:
+                requests:
+                  cpu: 100m
+                  memory: 64M
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
           vault:
             enabled: false
             resources:
