@@ -20,7 +20,7 @@ releases:
     <<: *raw
   - name: istio-operator
     installed: true
-    namespace: default
+    namespace: istio-operator
     labels:
       pkg: istio
     <<: *default
