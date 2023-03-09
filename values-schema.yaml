@@ -1229,7 +1229,7 @@ definitions:
         type: array
         items:
           type: string
-          enum: [alerts, oidc, resourceQuota, downloadKubeConfig, networkPolicy]
+          enum: [alerts, oidc, resourceQuota, downloadKubeConfig, downloadDockerConfig, networkPolicy]
         uniqueItems: true
       apps:
         type: array
