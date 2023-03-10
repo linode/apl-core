@@ -16,15 +16,15 @@ resources:
     data:
       {{- if hasKey $p "google" }}
       secret: "{{ $p.google.serviceAccountKey | b64enc }}"
-      {{- else if or (hasKey $p "azure-private-dns") }}
+      {{- else if hasKey $p "azure-private-dns" }}
       secret: "{{ $p | get "azure-private-dns.aadClientSecret" | b64enc }}"
-      {{- else if or (hasKey $p "azure") }}
+      {{- else if hasKey $p "azure" }}
       secret: "{{ $p.azure.aadClientSecret | b64enc }}"
-      {{- else if or (hasKey $p "aws") }}
+      {{- else if and (hasKey $p "aws") ($p | get "aws.credentials.secretKey" nil) }}
       secret: "{{ $p.aws.credentials.secretKey | b64enc }}"
-      {{- else if or (hasKey $p "digitalocean") }}
+      {{- else if hasKey $p "digitalocean" }}
       secret: "{{ $p.digitalocean.apiToken | b64enc }}"
-      {{- else if or (hasKey $p "cloudflare") }}
+      {{- else if hasKey $p "cloudflare" }}
       secret: "{{ $p.cloudflare.apiToken | b64enc }}"
       {{- end }}
 {{- end }}

@@ -41,7 +41,11 @@ helm.sh/chart: {{ include "aws-ebs-csi-driver.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
+app.kubernetes.io/component: csi-driver
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+{{- if .Values.customLabels }}
+{{ toYaml .Values.customLabels }}
 {{- end }}
 {{- end -}}
 
@@ -56,7 +60,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*
-Convert the `--extra-volume-tags` command line arg from a map.
+Convert the `--extra-tags` command line arg from a map.
 */}}
 {{- define "aws-ebs-csi-driver.extra-volume-tags" -}}
 {{- $result := dict "pairs" (list) -}}
@@ -64,7 +68,7 @@ Convert the `--extra-volume-tags` command line arg from a map.
 {{- $noop := printf "%s=%v" $key $value | append $result.pairs | set $result "pairs" -}}
 {{- end -}}
 {{- if gt (len $result.pairs) 0 -}}
-{{- printf "%s=%s" "- --extra-volume-tags" (join "," $result.pairs) -}}
+{{- printf "- \"--extra-tags=%s\"" (join "," $result.pairs) -}}
 {{- end -}}
 {{- end -}}
 
