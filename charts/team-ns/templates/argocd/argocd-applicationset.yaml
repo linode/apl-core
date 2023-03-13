@@ -1,0 +1,51 @@
+{{- $v := .Values }}
+{{- if $v.apps.argocd.enabled }}
+{{- range $v.workloads }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: team-{{ $v.teamId }}-{{ .name }}
+  namespace: argocd # ApplicationSets must always be in the argocd namespace
+spec:
+  generators:
+  - git:
+      repoURL: https://gitea.{{ $v.cluster.domainSuffix }}/otomi/values.git
+      revision: HEAD
+      files:
+      - path: "env/teams/workloads/{{ $v.teamId }}/{{ .name }}.yaml"
+  template:
+    metadata:
+      name: 'team-{{ $v.teamId }}-{{ .name }}'
+    spec:
+      project: team-{{ $v.teamId }} # project is restricted
+      source:
+        repoURL: '{{ .url }}'
+        targetRevision: '{{ .revision }}' # if using Helm, must be the revision in Chart.yaml
+        {{ with .path }}
+        path: '{{ . }}' # path to the helm chart git-hosted Helm charts
+        {{- end }}
+        {{ with .chart }}
+        chart: '{{ . }}'  # Set this only when pulling directly from a Helm repo. DO NOT set for git-hosted Helm charts.
+        {{- end }}
+        helm:
+          # The argocd template the values parameter is taken from the git generator path
+          values: '{{ "{{values}}" }}'
+          releaseName: '{{ .name }}'
+      syncPolicy:
+        automated:
+          allowEmpty: false
+          prune: false
+          selfHeal: true
+        retry:
+          backoff:
+            duration: 10s
+            factor: 3
+          limit: 3
+        syncOptions: []
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: team-{{ $v.teamId }} # namespace is restricted
+        # helm-specific config
+{{- end }}
+{{- end }}

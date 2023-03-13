@@ -50,6 +50,11 @@ controllerManager:
       memory: 256Mi
     {{- end }}
 
+podAnnotations:
+  container.seccomp.security.alpha.kubernetes.io/manager: runtime/default
+  prometheus.io/port: "8888"
+  prometheus.io/scrape: "true"
+
 crds:
   resources:
     limits:
