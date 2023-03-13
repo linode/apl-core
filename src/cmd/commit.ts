@@ -72,16 +72,15 @@ export const commit = async (firstTime = false): Promise<void> => {
   await validateValues()
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  const { remote } = getRepo(values)
   // we call this here again, as we might not have completed (happens upon first install):
   await bootstrapGit(values)
-  if (values?.apps!.gitea!.enabled) {
-    const { adminPassword } = values.apps!.gitea
+  if (values?.apps!.gitea!.enabled ?? true) {
+    const { username, password, remote } = getRepo(values)
     await waitTillAvailable(remote, {
       status: 200,
       skipSsl: values._derived?.untrustedCA,
-      username: 'otomi-admin',
-      password: adminPassword,
+      username,
+      password,
     })
   }
   await genDrone()
