@@ -73,7 +73,6 @@ templates:
           - -w
           - post
   wait: &wait
-    namespace: maintenance
     chart: ../charts/wait-for
     hooks:
       - events: [presync]
