@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
-{{- if and (not (eq $v.teamId "admin")) $a.enabled }}
+{{- if $a.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

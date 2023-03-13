@@ -8,7 +8,7 @@
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
 
-{{- if $v.otomi.hasExternalDNS }}
+{{- if and $v.otomi.hasExternalDNS (or (not (hasKey $p "aws")) ($p | get "aws.credentials.secretKey" nil)) }}
   - apiVersion: v1
     kind: Secret
     metadata:
