@@ -6,12 +6,8 @@ rules:
 - apiGroups: [""]
   resources:
     - services
-  verbs: ["get", "watch", "list"]
-- apiGroups: [""]
-  resources:
     - secrets
-  resourceNames: 
-    - harbor-pushsecret
+    - serviceaccounts
   verbs: ["get", "watch", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
