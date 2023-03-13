@@ -29,6 +29,9 @@ k8s:
       app: grafana
     - name: istio-system
       disableIstioInjection: true
+    - name: istio-operator
+      istio-operator-managed: Reconcile
+      istio-injection: disabled
     - name: httpbin
       app: httpbin
     - name: ingress
