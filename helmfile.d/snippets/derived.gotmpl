@@ -63,7 +63,7 @@ environments:
           aws-alb-ingress-controller:
             enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}
           aws-ebs-csi-driver:
-            enabled: false # {{ eq $provider "aws" }}
+            enabled: {{ $a | get "aws-ebs-csi-driver.enabled" (and (eq $provider "aws") (gt ($v.cluster.k8sVersion | float64) 1.22)) }}
           {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
           cert-manager:
             enabled: true
