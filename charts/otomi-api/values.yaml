@@ -5,7 +5,6 @@
 priorityClassName: "otomi-critical"
 
 replicaCount: 1
-
 image:
   registry: docker.io
   repository: otomi/api
@@ -21,6 +20,8 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
+  annotations: {}
+  labels: {}
 
 imagePullSecrets: {}
 
