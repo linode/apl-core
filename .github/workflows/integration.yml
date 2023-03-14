@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       kubernetes_versions:
-        description: "Kubernetes versions (JSON formatted list e.g.: ['1.23'])"
+        description: "Kubernetes versions (JSON formatted list e.g.: ['1.24'])"
         type: string
       install_profile:
         description: Otomi installation profile
@@ -39,16 +39,16 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.22']"
-          - "['1.23']"
           - "['1.24']"
-        default: "['1.23']"
+          - "['1.25']"
+        default: "['1.24']"
       install_profile:
         description: Otomi installation profile
         default: minimal
         type: choice
         options:
           - minimal
+          - minimal-with-team
           - full
       cluster_region:
         description: DigitalOcean cluster region
@@ -108,6 +108,8 @@ jobs:
     steps:
       - name: Print user input
         run: |
+          echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
+          echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
           echo 'cluster_region: ${{ inputs.cluster_region }}'
           echo 'cluster_persistence: ${{ inputs.cluster_persistence }}'

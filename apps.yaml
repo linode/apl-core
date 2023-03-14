@@ -267,6 +267,17 @@ appsInfo:
     license: Apache 2.0
     about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
     integration: Otomi installs and configures Thanos in a Remote Write setup. The Receiver is exposed for external Prometheus instances to upload metrics in real-time. By default Thanos Object Store is configured to use the thanos bucket of the local Minio instance. When Thanos is enabled, an extra data source is added to Grafana for Thanos Query.
+  trivy:
+    title: Trivy Operator
+    appVersion: 0.11.0
+    repo: https://github.com/aquasecurity/trivy-operator
+    maintainers: Aqua Security
+    relatedLinks:
+      - https://otomi.io/docs/apps/trivy-operator
+      - https://aquasecurity.github.io/trivy-operator/v0.11.0/
+    license: Apache 2.0
+    about: Trivy Operator continuously scans your Kubernetes cluster for security issues, and generates security reports as Kubernetes Custom Resources. It does it by watching Kubernetes for state changes and automatically triggering scans in response to changes.
+    integration: Otomi installs and configures Trivy Operator to scan all resources deployed by a team and makes results visible in a Grafana dashboard.
   vault:
     title: Vault
     appVersion: 1.11.5

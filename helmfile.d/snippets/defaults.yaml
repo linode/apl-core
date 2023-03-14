@@ -169,7 +169,7 @@ environments:
             emitAdmissionEvents: false
             emitAuditEvents: false
             logLevel: INFO
-            replicas: 1
+            replicas: 2
           gitea:
             enabled: true
             adminUsername: otomi-admin
@@ -190,7 +190,7 @@ environments:
             enabled: true
             autoscaling:
               enabled: true
-              minReplicas: 1
+              minReplicas: 2
               maxReplicas: 10
             modsecurity:
               enabled: false
@@ -200,19 +200,19 @@ environments:
               enabled: false
               autoscaling:
                 enabled: true
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
           istio:
             enabled: true
             autoscaling:
               egressgateway:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
               ingressgateway:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
               pilot:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
             egressGateway:
               enabled: false
@@ -296,6 +296,7 @@ environments:
                 cpu: 1
                 memory: 1Gi
           oauth2-proxy: {}
+          opa-exporter: {}
           oauth2-proxy-redis: {}
           otomi-api:
             editorInactivityTimeout: 1
@@ -401,6 +402,25 @@ environments:
                 size: 8Gi
               ruler:
                 size: 8Gi
+          trivy:
+            enabled: false
+            operator:
+              replicaCount: 1
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              trivy:
+                requests:
+                  cpu: 100m
+                  memory: 64M
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
           vault:
             enabled: false
             resources:

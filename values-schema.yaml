@@ -593,10 +593,10 @@ definitions:
   k8sVersion:
     description: The cluster k8s version. Must match one of the list.
     enum:
-      - '1.20'
       - '1.21'
       - '1.22'
       - '1.23'
+      - '1.24'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -708,6 +708,8 @@ definitions:
               default:
                 - number: 443
                   protocol: HTTPS
+          required:
+            - domain
   path:
     description: An absolute path
     type: string
@@ -1208,6 +1210,10 @@ definitions:
           description: When set a user can define egress towards FQDNs and public IPs for a team service
           type: boolean
           default: true
+      workloads:
+        type: array
+        items:
+          $ref: '#/definitions/workload'
   teamSelfService:
     title: Team self service flags
     description: Grant team permissions to modify certain configuration parameters.
@@ -1223,7 +1229,7 @@ definitions:
         type: array
         items:
           type: string
-          enum: [alerts, oidc, resourceQuota, downloadKubeConfig, networkPolicy]
+          enum: [alerts, oidc, resourceQuota, downloadKubeConfig, downloadDockerConfig, networkPolicy]
         uniqueItems: true
       apps:
         type: array
@@ -1250,6 +1256,29 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
+  workload:
+    type: object
+    description: Define location of the application's manifests or chart
+    properties:
+      name:
+        $ref: '#/definitions/wordCharacterPattern'
+      url:
+        description: URL to either Helm or Git repository
+        $ref: '#/definitions/url'
+      path:
+        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
+        $ref: '#/definitions/wordCharacterPattern'
+      chart:
+        description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
+        $ref: '#/definitions/wordCharacterPattern'
+      revision:
+        description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
+        $ref: '#/definitions/wordCharacterPattern'
+        default: HEAD
+    required:
+      - name
+      - url
+
 properties:
   alerts:
     $ref: '#/definitions/alerts'
@@ -2288,6 +2317,14 @@ properties:
                 x-secret: 'randAlphaNum 32 | b64enc'
       oauth2-proxy-redis:
         $ref: '#/definitions/redisChart'
+      opa-exporter:
+        description: Expose OPA/Gatekeeper Constraint Violations metrics.
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
       otomi-api:
         additionalProperties: false
         properties:
@@ -2547,6 +2584,26 @@ properties:
                 size:
                   $ref: '#/definitions/size'
                   default: 8Gi
+      trivy:
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          operator:
+            properties:
+              replicaCount:
+                description: Number of Operator replicas.
+                type: integer
+                default: 1
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+              trivy:
+                $ref: '#/definitions/resources'
       vault:
         additionalProperties: false
         properties:

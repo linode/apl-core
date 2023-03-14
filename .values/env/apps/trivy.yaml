@@ -1,0 +1,3 @@
+apps:
+    trivy:
+        enabled: false

@@ -29,6 +29,9 @@ k8s:
       app: grafana
     - name: istio-system
       disableIstioInjection: true
+    - name: istio-operator
+      istio-operator-managed: Reconcile
+      istio-injection: disabled
     - name: httpbin
       app: httpbin
     - name: ingress
@@ -70,6 +73,9 @@ k8s:
     - name: olm
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: opa-exporter
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: operators
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -82,6 +88,10 @@ k8s:
       disableIstioInjection: true
     - name: team-admin
     - name: tigera-operator
+      disableIstioInjection: true
+      disablePolicyChecks: true
+    - name: trivy-operator
+      app: trivy
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: vault
@@ -335,6 +345,9 @@ adminApps:
         paths: [/api/]
         forwardPath: true
         type: public
+  - name: trivy
+    tags: [security]
+    deps: [prometheus, grafana]
   - name: vault
     tags: [secrets, security, observability]
     deps: [external-secrets]

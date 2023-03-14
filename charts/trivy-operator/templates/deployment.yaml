@@ -1,0 +1,157 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "trivy-operator.fullname" . }}
+  namespace: {{ include "trivy-operator.namespace" . }}
+  labels:
+    {{- include "trivy-operator.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.operator.replicas }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "trivy-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "trivy-operator.selectorLabels" . | nindent 8 }}
+        {{- if .Values.operator.podLabels }}
+        {{- toYaml .Values.operator.podLabels | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "trivy-operator.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      containers:
+        - name: {{ .Chart.Name | quote }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          env:
+            - name: OPERATOR_NAMESPACE
+              value: {{ include "trivy-operator.namespace" . }}
+            - name: OPERATOR_TARGET_NAMESPACES
+              value: {{ .Values.targetNamespaces | quote }}
+            - name: OPERATOR_EXCLUDE_NAMESPACES
+              value: {{ .Values.excludeNamespaces | quote }}
+            - name: OPERATOR_TARGET_WORKLOADS
+              value: {{ tpl .Values.targetWorkloads . | quote }}
+            - name: OPERATOR_SERVICE_ACCOUNT
+              value: {{ include "trivy-operator.serviceAccountName" . | quote }}
+            - name: OPERATOR_LOG_DEV_MODE
+              value: {{ .Values.operator.logDevMode | quote }}
+            - name: OPERATOR_SCAN_JOB_TIMEOUT
+              value: {{ .Values.operator.scanJobTimeout | quote }}
+            - name: OPERATOR_CONCURRENT_SCAN_JOBS_LIMIT
+              value: {{ .Values.operator.scanJobsConcurrentLimit | quote }}
+            - name: OPERATOR_SCAN_JOB_RETRY_AFTER
+              value: {{ .Values.operator.scanJobsRetryDelay | quote }}
+            - name: OPERATOR_BATCH_DELETE_LIMIT
+              value: {{ .Values.operator.batchDeleteLimit | quote }}
+            - name: OPERATOR_BATCH_DELETE_DELAY
+              value: {{ .Values.operator.batchDeleteDelay | quote }}
+            - name: OPERATOR_METRICS_BIND_ADDRESS
+              value: ":8080"
+            - name: OPERATOR_METRICS_FINDINGS_ENABLED
+              value: {{ .Values.operator.metricsFindingsEnabled | quote }}
+            - name: OPERATOR_METRICS_VULN_ID_ENABLED
+              value: {{ .Values.operator.metricsVulnIdEnabled | quote }}
+            - name: OPERATOR_HEALTH_PROBE_BIND_ADDRESS
+              value: ":9090"
+            - name: OPERATOR_VULNERABILITY_SCANNER_ENABLED
+              value: {{ .Values.operator.vulnerabilityScannerEnabled | quote }}
+            - name: OPERATOR_VULNERABILITY_SCANNER_SCAN_ONLY_CURRENT_REVISIONS
+              value: {{ .Values.operator.vulnerabilityScannerScanOnlyCurrentRevisions | quote }}
+            - name: OPERATOR_SCANNER_REPORT_TTL
+              value: {{ .Values.operator.scannerReportTTL | quote }}
+            - name: OPERATOR_CONFIG_AUDIT_SCANNER_ENABLED
+              value: {{ .Values.operator.configAuditScannerEnabled | quote }}
+            - name: OPERATOR_RBAC_ASSESSMENT_SCANNER_ENABLED
+              value: {{ .Values.operator.rbacAssessmentScannerEnabled | quote }}
+            - name: OPERATOR_INFRA_ASSESSMENT_SCANNER_ENABLED
+              value: {{ .Values.operator.infraAssessmentScannerEnabled | quote }}
+            - name: OPERATOR_CONFIG_AUDIT_SCANNER_SCAN_ONLY_CURRENT_REVISIONS
+              value: {{ .Values.operator.configAuditScannerScanOnlyCurrentRevisions | quote }}
+            - name: OPERATOR_EXPOSED_SECRET_SCANNER_ENABLED
+              value: {{ .Values.operator.exposedSecretScannerEnabled | quote }}
+            - name: OPERATOR_WEBHOOK_BROADCAST_URL
+              value: {{ .Values.operator.webhookBroadcastURL | quote }}
+            - name: OPERATOR_WEBHOOK_BROADCAST_TIMEOUT
+              value: {{ .Values.operator.webhookBroadcastTimeout | quote }}
+            - name: OPERATOR_PRIVATE_REGISTRY_SCAN_SECRETS_NAMES
+              value: {{ .Values.operator.privateRegistryScanSecretsNames | toJson | quote }}
+            - name: OPERATOR_ACCESS_GLOBAL_SECRETS_SERVICE_ACCOUNTS
+              value: {{ .Values.operator.accessGlobalSecretsAndServiceAccount | quote }}
+            - name: OPERATOR_BUILT_IN_TRIVY_SERVER
+              value: {{ .Values.operator.builtInTrivyServer | quote }}
+            - name: TRIVY_SERVER_HEALTH_CHECK_CACHE_EXPIRATION
+              value: {{ .Values.operator.trivyServerHealthCheckCacheExpiration | quote }}
+            - name: OPERATOR_MERGE_RBAC_FINDING_WITH_CONFIG_AUDIT
+              value: {{ .Values.operator.mergeRbacFindingWithConfigAudit | quote }}
+            {{- if gt (int .Values.operator.replicas) 1 }}
+            - name: OPERATOR_LEADER_ELECTION_ENABLED
+              value: "true"
+            - name: OPERATOR_LEADER_ELECTION_ID
+              value: {{ .Values.operator.leaderElectionId | quote }}
+            {{- end }}
+          ports:
+            - name: metrics
+              containerPort: 8080
+            - name: probes
+              containerPort: 9090
+          readinessProbe:
+            httpGet:
+              path: /readyz/
+              port: probes
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz/
+              port: probes
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          resources:
+            {{- .Values.resources | toYaml | nindent 12 }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- .Values.podSecurityContext | toYaml | nindent 8 }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- . | toYaml | nindent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
