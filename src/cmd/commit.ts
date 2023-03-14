@@ -6,7 +6,7 @@ import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { setDeploymentState, waitTillAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
-import { getRepo, Repo } from 'src/common/values'
+import { getRepo } from 'src/common/values'
 import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
@@ -20,21 +20,7 @@ interface Arguments extends HelmArguments, DroneArgs {
   message?: string
 }
 
-const gitPush = async (values: Record<string, any>, repo: Repo): Promise<boolean> => {
-  const d = terminal(`cmd:${cmdName}:gitPush`)
-  d.info('Starting git push.')
-  try {
-    await $`git push -u origin ${repo.branch}`
-    d.log('Otomi values have been pushed to git.')
-    return true
-  } catch (e) {
-    d.info(e.stdout)
-    d.error(e.stderr)
-    return false
-  }
-}
-
-const commitAndPush = async (values: Record<string, any>, repo: Repo): Promise<void> => {
+const commitAndPush = async (values: Record<string, any>, branch: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
@@ -47,7 +33,8 @@ const commitAndPush = async (values: Record<string, any>, repo: Repo): Promise<v
     d.log('Could not commit. Did you make any changes?')
     return
   }
-  await gitPush(values, repo)
+  if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
+  await $`git push -u origin ${branch}`
   d.log('Successfully pushed the updated values')
 }
 
@@ -58,10 +45,9 @@ export const commit = async (firstTime = false): Promise<void> => {
   const values = (await hfValues()) as Record<string, any>
   // we call this here again, as we might not have completed (happens upon first install):
   await bootstrapGit(values)
-  const repo = getRepo(values)
+  const { username, password, remote, branch } = getRepo(values)
   // lets wait until the remote is ready
   if (values?.apps!.gitea!.enabled ?? true) {
-    const { username, password, remote } = repo
     await waitTillAvailable(remote, {
       status: 200,
       skipSsl: values._derived?.untrustedCA,
@@ -72,7 +58,7 @@ export const commit = async (firstTime = false): Promise<void> => {
   // continue
   await genDrone()
   await encrypt()
-  await commitAndPush(values, repo)
+  await commitAndPush(values, branch)
   await setDeploymentState({ status: 'deployed' })
   if (firstTime) {
     const credentials = values.apps.keycloak
