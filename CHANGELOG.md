@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.19.0](https://github.com/redkubes/otomi-core/compare/v0.18.1...v0.19.0) (2023-03-14)
+
+
+### Features
+
+* add OPA Gatekeeper metrics exporter ([#1033](https://github.com/redkubes/otomi-core/issues/1033)) ([304a3fd](https://github.com/redkubes/otomi-core/commit/304a3fdd3e35965995be14c6db30d17e6054d1c1))
+* add Trivy Operator ([#1032](https://github.com/redkubes/otomi-core/issues/1032)) ([ceda5db](https://github.com/redkubes/otomi-core/commit/ceda5dbd08fb44f88d6df1ea4e795039cd802667))
+* custom role for otomi api  ([#1054](https://github.com/redkubes/otomi-core/issues/1054)) ([3437339](https://github.com/redkubes/otomi-core/commit/34373395664edc5dcffee08c36072253247680d8))
+* define team workloads ([#1034](https://github.com/redkubes/otomi-core/issues/1034)) ([3551a42](https://github.com/redkubes/otomi-core/commit/3551a423525863c97979e0e1f54cfe35765f31cc))
+
+
+### Bug Fixes
+
+* activation link [ci skip] ([7eca541](https://github.com/redkubes/otomi-core/commit/7eca54134c4fd1aa33f2ab6abec9cc19aed3d276))
+* aws csi driver expected from 1.23 onwards, regression fix for non required secret (node role) ([#1051](https://github.com/redkubes/otomi-core/issues/1051)) ([e43162d](https://github.com/redkubes/otomi-core/commit/e43162d634de716b4ff5ca53930009d3679dd8da))
+* aws node role support means no secret needed (see schema) ([#1052](https://github.com/redkubes/otomi-core/issues/1052)) ([854a0c6](https://github.com/redkubes/otomi-core/commit/854a0c6d57c409bf055bf4236a17dee8066f568b))
+* cluster autoscaler memory requests ([#1049](https://github.com/redkubes/otomi-core/issues/1049)) ([a0f1e3c](https://github.com/redkubes/otomi-core/commit/a0f1e3c8f597b7216b581c61be00f6ef976eb646))
+* links [ci skip] ([8f84f69](https://github.com/redkubes/otomi-core/commit/8f84f690012ed991fd4d9fb62765df362ee46053))
+* readme [ci skip] ([efc7bc2](https://github.com/redkubes/otomi-core/commit/efc7bc2ed23e5ea636326a6554fda2952fcf8def))
+* required property for egress policy ([#1036](https://github.com/redkubes/otomi-core/issues/1036)) ([4b84ee4](https://github.com/redkubes/otomi-core/commit/4b84ee43935478846488cc3142c4eb3e7624ec95)), closes [#1035](https://github.com/redkubes/otomi-core/issues/1035)
+* scaling defaults ([#1038](https://github.com/redkubes/otomi-core/issues/1038)) ([4c24b6f](https://github.com/redkubes/otomi-core/commit/4c24b6fb474ad28e968807f3cc3dbd04fe718c87))
+* selfservice schema ([#1048](https://github.com/redkubes/otomi-core/issues/1048)) ([38c3c38](https://github.com/redkubes/otomi-core/commit/38c3c38c9f5007fc3febf9ffabcddc4c33ef8f58))
+* spell [ci skip] ([03fe810](https://github.com/redkubes/otomi-core/commit/03fe8102b8f5a7c98a74837d38e25ba27ed9648f))
+* text [ci skip] ([db2d360](https://github.com/redkubes/otomi-core/commit/db2d3607b71f2ca986f07f866e4a7e93de000b86))
+
+
+### Tests
+
+* update k8s versions for ci setup [ci skip] ([#1045](https://github.com/redkubes/otomi-core/issues/1045)) ([5b316e8](https://github.com/redkubes/otomi-core/commit/5b316e8d33799a2685009170f2e625f6c456a33c))
+
+
+### Others
+
+* ci ([3a71f42](https://github.com/redkubes/otomi-core/commit/3a71f4272833eaf3b9163fa2a9dbde17f78c7417))
+* tasks from main ([#1047](https://github.com/redkubes/otomi-core/issues/1047)) ([d16e716](https://github.com/redkubes/otomi-core/commit/d16e7168ecaaea809de3bbadba5b0705b12d791d))
+* versions ([d938ebe](https://github.com/redkubes/otomi-core/commit/d938ebe1e2f15adce542665681410bda10196089))
+
 ### [0.18.1](https://github.com/redkubes/otomi-core/compare/v0.18.0...v0.18.1) (2023-02-07)
 
 
