@@ -34,6 +34,8 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
     return
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
+  d.log('git config:')
+  await $`cat .git/config`
   await $`git push -u origin ${branch}`
   d.log('Successfully pushed the updated values')
 }
