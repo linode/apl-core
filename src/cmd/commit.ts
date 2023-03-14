@@ -6,7 +6,7 @@ import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { setDeploymentState, waitTillAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
-import { getRepo } from 'src/common/values'
+import { getRepo, Repo } from 'src/common/values'
 import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
@@ -20,15 +20,11 @@ interface Arguments extends HelmArguments, DroneArgs {
   message?: string
 }
 
-const gitPush = async (values: Record<string, any>): Promise<boolean> => {
+const gitPush = async (values: Record<string, any>, repo: Repo): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:gitPush`)
-  let branch = 'main'
-  if (values.apps?.gitea?.enabled === false) {
-    branch = values.apps!['otomi-api']!.git!.branch ?? branch
-  }
   d.info('Starting git push.')
   try {
-    await $`git push -u origin ${branch}`
+    await $`git push -u origin ${repo.branch}`
     d.log('Otomi values have been pushed to git.')
     return true
   } catch (e) {
@@ -38,7 +34,7 @@ const gitPush = async (values: Record<string, any>): Promise<boolean> => {
   }
 }
 
-const commitAndPush = async (values: Record<string, any>): Promise<void> => {
+const commitAndPush = async (values: Record<string, any>, repo: Repo): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
@@ -51,20 +47,8 @@ const commitAndPush = async (values: Record<string, any>): Promise<void> => {
     d.log('Could not commit. Did you make any changes?')
     return
   }
-  try {
-    const giteaEnabled = values?.apps?.gitea?.enabled
-    const byor = !!values?.apps?.['otomi-api']?.git
-    if (giteaEnabled && !byor && values._derived?.untrustedCA) {
-      process.env.GIT_SSL_NO_VERIFY = '1'
-    }
-    await $`git remote show origin`
-    if (await gitPush(values)) {
-      d.log('Successfully pushed the updated values')
-    }
-  } catch (error) {
-    d.error(error.stderr)
-    throw new Error('Origin does not exist yet')
-  }
+  await gitPush(values, repo)
+  d.log('Successfully pushed the updated values')
 }
 
 export const commit = async (firstTime = false): Promise<void> => {
@@ -74,8 +58,10 @@ export const commit = async (firstTime = false): Promise<void> => {
   const values = (await hfValues()) as Record<string, any>
   // we call this here again, as we might not have completed (happens upon first install):
   await bootstrapGit(values)
+  const repo = getRepo(values)
+  // lets wait until the remote is ready
   if (values?.apps!.gitea!.enabled ?? true) {
-    const { username, password, remote } = getRepo(values)
+    const { username, password, remote } = repo
     await waitTillAvailable(remote, {
       status: 200,
       skipSsl: values._derived?.untrustedCA,
@@ -83,9 +69,10 @@ export const commit = async (firstTime = false): Promise<void> => {
       password,
     })
   }
+  // continue
   await genDrone()
   await encrypt()
-  await commitAndPush(values)
+  await commitAndPush(values, repo)
   await setDeploymentState({ status: 'deployed' })
   if (firstTime) {
     const credentials = values.apps.keycloak
