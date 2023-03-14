@@ -212,6 +212,17 @@ appsInfo:
     license: Apache 2.0
     about: KubeClarity is a tool for detection and management of Software Bill Of Materials (SBOM) and vulnerabilities of container images and filesystems. It scans both runtime K8s clusters and CI/CD pipelines for enhanced software supply chain security.
     integration: KubeClarity can be activated to scan running containers and filesystems for vulnerabilities.
+  kured:
+    title: Kured
+    appVersion: 1.9.2
+    repo: https://github.com/kubereboot/kured
+    maintainers: Kured project
+    relatedLinks:
+      - https://otomi.io/docs/apps/kured
+      - https://kured.dev/
+    license: Apache 2.0
+    about: Kured (KUbernetes REboot Daemon) is a Kubernetes daemonset that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS.
+    integration: Kured can be activated to perform safe automatic node reboots. Only activate Kured if cluster autoscaling is enabled and make sure the cloud resource quota is sufficent.
   loki:
     title: Loki
     appVersion: 2.4.1

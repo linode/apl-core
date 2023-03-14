@@ -105,8 +105,6 @@ environments:
             enabled: true
             address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
-          kured:
-            enabled: {{ $a | get "kured.enabled" (has $provider (list "azure")) }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean")) }}
           prometheus-msteams:
