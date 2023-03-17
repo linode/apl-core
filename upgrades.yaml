@@ -47,14 +47,7 @@ operations:
   - version: 0.18.0
     post:
       # convert secrets to new format and apply
-      - vendor/kes-to-eso/migrate-post.sh && true
-  - version: dev
+      - vendor/kes-to-eso/migrate-post.sh || true
+  - version: 0.18.1
     pre:
-      # we can remove the release because helm does not remove CRDs
-      # replace OLM crds because helm won't upgrade them
-      # The olmconfigs is a new CRD so it cannot be replaced before applying
-      - |
-        [[ ! $(helm status -n operator-lifecycle-manager operator-lifecycle-manager) ]] && echo "The operator-lifecycle-manager release does not exists. Skipping" && exit 0
-        helm uninstall -n operator-lifecycle-manager operator-lifecycle-manager
-        kubectl apply -f charts/operator-lifecycle-manager/crds/0000_50_olm_00-olmconfigs.crd.yaml
-        kubectl replace -f charts/operator-lifecycle-manager/crds
+      - upgrades/pre/upgrade-0-18-1.sh || true
