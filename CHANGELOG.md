@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.19.1](https://github.com/redkubes/otomi-core/compare/v0.19.0...v0.19.1) (2023-03-17)
+
+
+### Bug Fixes
+
+* do not derive enable flag for aws-ebs-csi-driver ([6075bfa](https://github.com/redkubes/otomi-core/commit/6075bfa96c8c45d15fd30246d774f3ce06de71a2))
+* removed dependency on the snapshot-controller ([97eb07b](https://github.com/redkubes/otomi-core/commit/97eb07b4a7ad622caeb62cb462977a2ef6f7a56c))
+
 ## [0.19.0](https://github.com/redkubes/otomi-core/compare/v0.18.1...v0.19.0) (2023-03-14)
 
 
