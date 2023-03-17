@@ -112,7 +112,8 @@ environments:
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
-            enabled: {{ eq $provider "aws" }}
+            # TODO: upgrade snapshot-controller from piraeus-charts/snapshot-controller and toggle below:
+            enabled: false # {{ $a | get "snapshot-controller.enabled" (and (eq $provider "aws") (gt ($v.cluster.k8sVersion | float64) 1.22)) }}
           tigera-operator:
             enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
         ingress:

@@ -33,7 +33,6 @@ releases:
     <<: *default
   - name: aws-ebs-csi-driver
     installed: {{ $a | get "aws-ebs-csi-driver.enabled" }}
-    needs: [snapshot-controller]
     namespace: kube-system
     labels:
       init: true
