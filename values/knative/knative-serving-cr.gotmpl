@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $k8sToVersionMap := dict "1.21" "1.3" "1.22" "1.7" "1.23" "1.8" "1.24" "1.9" }}
+{{- $k8sToVersionMap := dict "1.22" "1.7" "1.23" "1.8" "1.24" "1.9" }}
 {{- $knativeVersion := index $k8sToVersionMap (printf "%s" $v.cluster.k8sVersion) }}
 {{- $apiVersion := ternary "v1alpha1" "v1beta1" (le $knativeVersion "1.5") }}
 apiVersion: operator.knative.dev/{{ $apiVersion }}
