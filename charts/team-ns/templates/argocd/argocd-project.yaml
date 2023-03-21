@@ -22,9 +22,9 @@ spec:
   - namespace: team-{{ $v.teamId }}
     server: https://kubernetes.default.svc
   # Deny all cluster-scoped resources from being created
-  clusterResourceWhitelist: []
-  # - group: ''
-  #   kind: Namespace
+  clusterResourceWhitelist: 
+  - group: '*'
+    kind: '*'
   # Allow all namespaced-scoped resources to be created, except for ResourceQuota, LimitRange, NetworkPolicy
   namespaceResourceBlacklist:
   - group: ''
