@@ -51,3 +51,6 @@ operations:
   - version: 0.18.1
     pre:
       - upgrades/pre/upgrade-0-18-1.sh || true
+  - version: 0.20.0
+    pre:
+      - upgrades/pre/upgrade-0-20-0.sh || true
