@@ -1276,7 +1276,7 @@ definitions:
         $ref: '#/definitions/wordCharacterPattern'
         default: HEAD
       namespace:
-        description: Namespace where the workload will be deployed. It is customizable only for admin workloads, otherwise will be restricted to 'team-<team_id>'
+        description: Workload namespace. Applicable only for team-admin. Default values is 'team-<team_id>'
         $ref: '#/definitions/domain'
 
     required:

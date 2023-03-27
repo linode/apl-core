@@ -45,13 +45,11 @@ spec:
         syncOptions: []
       destination:
         server: 'https://kubernetes.default.svc'
-        # namespace is restricted to team-<teamId> for team members. For team admins '$v.admin.namespace' is used.  
         {{- if and ( eq $v.teamId "admin" ) .namespace }} 
-        namespace: '{{- .namespace }}' # dbg
+        namespace: '{{- .namespace }}'
         {{- else }} 
-        namespace: 'team-{{ $v.teamId }}' # dbg
+        namespace: 'team-{{ $v.teamId }}'
         {{- end }}
-        
         # helm-specific config
 {{- end }}
 {{- end }}
