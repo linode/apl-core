@@ -2,5 +2,7 @@
 
 set -eu
 
-# bump Istio annotations so old release and new release are compatible
-kubectl annotate --overwrite deployment,replicaset,service,serviceaccount,clusterrole,clusterrolebinding istio-operator -n istio-operator meta.helm.sh/release-namespace=istio-operator
+[[ ! $(helm status -n default istio-operator) ]] && echo "The old istio-operator release does not exists. Skipping" && exit 0
+
+# Istio release has been moved to the istio-operator namespace. It is safet to delete it because helm does not remove CRDs and removing operator itself does not impact service mesh
+helm uninstall istio-operator -n default
