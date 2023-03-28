@@ -1276,7 +1276,7 @@ definitions:
         $ref: '#/definitions/wordCharacterPattern'
         default: HEAD
       namespace:
-        description: Workload namespace. Applicable only for team-admin. Default values is 'team-<team_id>'
+        description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
 
     required:
