@@ -1,4 +1,4 @@
-api: argo-admin-workloads
-console: argo-admin-workloads
+api: main
+console: main
 tasks: main
 tools: 1.4.25
