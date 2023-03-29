@@ -12,9 +12,9 @@ teamConfig:
             - name: crossplane-custom-namespace
               chart: crossplane
               namespace: crossplane
-              revision: HEAD
+              revision: '1.11.2'
               url: https://charts.crossplane.io/stable
             - name: crossplane-team-namespace
               chart: crossplane
-              revision: HEAD
+              revision: '1.11.2'
               url: https://charts.crossplane.io/stable
