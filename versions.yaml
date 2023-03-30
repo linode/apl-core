@@ -1,4 +1,4 @@
-api: main
-console: main
+api: rel-0.7
+console: rel-0.7
 tasks: main
 tools: 1.4.25
