@@ -68,10 +68,9 @@ jobs:
       - name: Show me the logic
         run: |
           echo github.ref == ${{ github.ref }}
-
   release:
     needs: push-to-docker
-    if: always() && github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
+    if: always() && startsWith(github.ref, 'refs/heads/releases/) && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
