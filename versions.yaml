@@ -1,4 +1,4 @@
 api: rel-0.7
 console: rel-0.7
-tasks: main
+tasks: 0.3.0
 tools: 1.4.25
