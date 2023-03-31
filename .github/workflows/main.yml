@@ -87,8 +87,8 @@ jobs:
           TAG=${GITHUB_REF##*/}
           docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
           docker pull $REPO:$TAG
-          docker tag $REPO:$TAG $REPO:latest
-          docker push $REPO:latest
+          # docker tag $REPO:$TAG $REPO:latest
+          # docker push $REPO:latest
           release_tag="v$(echo $COMMIT_MSG | cut -d' ' -f2)"
           echo ::set-output name=tag::$release_tag
           echo "Releasing $REPO:$release_tag"
