@@ -66,7 +66,7 @@ and then install the Helm chart:
 
 ```bash
 helm install otomi otomi/otomi \
---set cluster.k8sVersion=$VERSION \ # 1.22, 1.23 and 1.23 are supported
+--set cluster.k8sVersion=$VERSION \ # 1.22, 1.23 and 1.24 are supported
 --set cluster.name=$CLUSTERNAME \
 --set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', or 'custom' for any other cloud or onprem K8s
 ```
