@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.20.0](https://github.com/redkubes/otomi-core/compare/v0.18.1...v0.20.0) (2023-03-31)
+
+### ⚠ BREAKING CHANGES
+* drop support for Kubernetes 1.21 and 1.22
+* kuerd app disable by default
+
+### Features
+* add support for Kubernetes 1.24
+* add OPA Gatekeeper metrics exporter ([#1033](https://github.com/redkubes/otomi-core/issues/1033)) ([304a3fd](https://github.com/redkubes/otomi-core/commit/304a3fdd3e35965995be14c6db30d17e6054d1c1))
+* add Trivy Operator ([#1032](https://github.com/redkubes/otomi-core/issues/1032)) ([ceda5db](https://github.com/redkubes/otomi-core/commit/ceda5dbd08fb44f88d6df1ea4e795039cd802667))
+* add admin workloads ([#1062](https://github.com/redkubes/otomi-core/issues/1062)) ([2186cce](https://github.com/redkubes/otomi-core/commit/2186ccea3eebe0cd8ea0c5b3a1a54ed3bbdb8bcb))
+* add service account with role for otomi-api ([#1054](https://github.com/redkubes/otomi-core/issues/1054)) ([73a18da](https://github.com/redkubes/otomi-core/commit/73a18da691430375886cae72d28d4bffdad0251f))
+* add team workloads ([#1034](https://github.com/redkubes/otomi-core/issues/1034)) ([3551a42](https://github.com/redkubes/otomi-core/commit/3551a423525863c97979e0e1f54cfe35765f31cc))
+* upgrade Istio ([#1053](https://github.com/redkubes/otomi-core/issues/1053)) ([aefd020](https://github.com/redkubes/otomi-core/commit/aefd020d1ca1aac862d7c1afa49d0c7f21e1e02f))
+* add upgrade script for Istio ([#1059](https://github.com/redkubes/otomi-core/issues/1059)) ([a186441](https://github.com/redkubes/otomi-core/commit/a1864414f88d370efcbc41c28c0cb2a07cf68adf))
+* move upgrade script to a separate file ([#1060](https://github.com/redkubes/otomi-core/issues/1060)) ([9317a22](https://github.com/redkubes/otomi-core/commit/9317a229276b68144ba816e77b245945fb31e9d1))
+* upgrade Knative ([#1058](https://github.com/redkubes/otomi-core/issues/1058)) ([8571040](https://github.com/redkubes/otomi-core/commit/8571040befea4bc6e1d26fd55f2325acd798efd8))
+* make Kured optional app ([#1037](https://github.com/redkubes/otomi-core/issues/1037)) ([98f1f2f](https://github.com/redkubes/otomi-core/commit/98f1f2f0ec831c7a5ed4169116c8962f800de829))
+* increase default minimum number of replicas for Istio and Nignx Ingress Controller ([#1038](https://github.com/redkubes/otomi-core/issues/1038)) ([4c24b6f](https://github.com/redkubes/otomi-core/commit/4c24b6fb474ad28e968807f3cc3dbd04fe718c87))
+
+
+### Bug Fixes
+
+* aws-ebs-csi-driver without dependency on snapshot-controller and disabled by default  ([#1057](https://github.com/redkubes/otomi-core/issues/1057)) ([f481fb8](https://github.com/redkubes/otomi-core/commit/f481fb845aa9c2af40e5dac40701cdc1b994a5c0))
+* aws csi driver expected from 1.23 onwards, regression fix for non required secret (node role) ([#1051](https://github.com/redkubes/otomi-core/issues/1051)) ([570a8e8](https://github.com/redkubes/otomi-core/commit/570a8e8c5615cd18a29a8c115e45045b571cd2ef))
+* increase cluster autoscaler memory requests ([#1049](https://github.com/redkubes/otomi-core/issues/1049)) ([a0f1e3c](https://github.com/redkubes/otomi-core/commit/a0f1e3c8f597b7216b581c61be00f6ef976eb646))
+* add required property for egress policy ([#1036](https://github.com/redkubes/otomi-core/issues/1036)) ([4b84ee4](https://github.com/redkubes/otomi-core/commit/4b84ee43935478846488cc3142c4eb3e7624ec95)), closes [#1035](https://github.com/redkubes/otomi-core/issues/1035)
+* add enum item to the SelfService schema ([#1048](https://github.com/redkubes/otomi-core/issues/1048)) ([38c3c38](https://github.com/redkubes/otomi-core/commit/38c3c38c9f5007fc3febf9ffabcddc4c33ef8f58))
+
+
+### Tests
+
+* add httpbin as test app ([#1061](https://github.com/redkubes/otomi-core/issues/1061)) ([21f2ff9](https://github.com/redkubes/otomi-core/commit/21f2ff9111a9979652b2d1728cfe4c226a7287dc))
+* update k8s versions for ci setup [ci skip] ([#1045](https://github.com/redkubes/otomi-core/issues/1045)) ([5b316e8](https://github.com/redkubes/otomi-core/commit/5b316e8d33799a2685009170f2e625f6c456a33c))
+
+
+### Others
+
+* do not push latest tag ([fb361b4](https://github.com/redkubes/otomi-core/commit/fb361b416906137d88522f6a313cebbd700f0571))
+* github-ci git tag ([054181d](https://github.com/redkubes/otomi-core/commit/054181dade9d885a52742df8ae9dd0db0e99aef7))
+* release form releases/ branches ([cc55993](https://github.com/redkubes/otomi-core/commit/cc5599388576196c422f683bbb290daa5dec631e))
+
 ### [0.18.1](https://github.com/redkubes/otomi-core/compare/v0.18.0...v0.18.1) (2023-02-07)
 
 
