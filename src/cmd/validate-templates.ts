@@ -153,7 +153,7 @@ export const validateTemplates = async (): Promise<void> => {
   ]
   // TODO: revisit these excluded resources and see it they exist now (from original sh script)
   const skipKinds = ['CustomResourceDefinition', ...constraintKinds]
-  const skipFilenames = ['crd', 'constraint']
+  const skipFilenames = ['crd', 'constraint', 'knative-operator']
 
   d.log('Validating resources')
   const quiet = !argv.verbose ? [] : ['--quiet']

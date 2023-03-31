@@ -264,6 +264,16 @@ environments:
             logLevel: warning
           kube-descheduler:
             enabled: false
+          kured:
+            enabled: false
+            resources:
+              kuredDaemonSet:
+                  requests:
+                      cpu: 20m
+                      memory: 16Mi
+                  limits:
+                      cpu: 50m
+                      memory: 32Mi
           loki:
             enabled: false
           metrics-server:

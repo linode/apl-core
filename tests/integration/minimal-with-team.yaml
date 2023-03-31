@@ -17,12 +17,28 @@ teamConfig:
     networkPolicy:
       egressPublic: true
       ingressPrivate: true
-    services: []
+    services:
+      - headers:
+          response:
+            set: []
+        id: 78595314-cdaf-4b60-acc2-3b1a7f80fe2b
+        ingressClassName: platform
+        name: httpbin
+        networkPolicy:
+          ingressPrivate:
+            mode: DenyAll
+        ownHost: true
+        port: 80
+        type: public
     workloads:
       - name: nodejs-helloworld
         url: https://github.com/redkubes/nodejs-helloworld.git
         path: /
         revision: HEAD
+      - name: httpbin
+        path: charts/httpbin
+        revision: HEAD
+        url: https://github.com/redkubes/otomi-core.git
   admin:
     services: []
     workloads:
