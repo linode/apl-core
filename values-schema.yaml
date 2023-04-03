@@ -593,10 +593,10 @@ definitions:
   k8sVersion:
     description: The cluster k8s version. Must match one of the list.
     enum:
-      - '1.21'
       - '1.22'
       - '1.23'
       - '1.24'
+      - '1.25'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -1275,6 +1275,10 @@ definitions:
         description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
         $ref: '#/definitions/wordCharacterPattern'
         default: HEAD
+      namespace:
+        description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
+        $ref: '#/definitions/domain'
+
     required:
       - name
       - url

@@ -10,12 +10,10 @@ set -ex
 #   X.Y.Z-local - relative references, useful to avoid the network dependency
 
 declare -a K8S_VERSIONS=(
-  v1.24.11
-  v1.23.5
-  v1.22.8
-  v1.21.7
-  v1.20.13
-  v1.19.16
+  v1.24.12
+  v1.23.17
+  v1.22.17
+  v1.21.13
 )
 
 pushd schemas
