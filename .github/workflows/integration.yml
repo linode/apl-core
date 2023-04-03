@@ -65,6 +65,7 @@ on:
         type: choice
         description: Select DNS provider
         options:
+          - none
           - nip_io
           - az_dns
         default: nip_io
@@ -75,6 +76,12 @@ on:
           - no_kms
           - az_kms
         default: az_kms
+      password:
+        type: choice
+        description: Should a unique password be generated?
+        options:
+          - generate
+          - use-default
       oidc:
         type: choice
         description: Should Otomi use external OIDC?
