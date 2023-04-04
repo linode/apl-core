@@ -124,6 +124,7 @@ jobs:
           echo 'cluster_persistence: ${{ inputs.cluster_persistence }}'
           echo 'dns: ${{ inputs.dns }}'
           echo 'kms: ${{ inputs.kms }}'
+          echo 'generate_password: ${{ inputs.generate_password }}'
           echo 'oidc: ${{ inputs.oidc }}'
           echo 'certificate: ${{ inputs.certificate }}'
       - name: Install doctl
