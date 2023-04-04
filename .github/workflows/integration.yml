@@ -224,7 +224,7 @@ jobs:
         run: |
           domainSuffix=''
           touch values.yaml
-          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix=' --set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
+          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
@@ -232,16 +232,17 @@ jobs:
           install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml
-            --values values.yaml \"
+            --values values.yaml \
+            $domainSuffix"
 
-          if [[ "${{ inputs.generate_password }}" == "true" ]]; then
+          if [[ '${{ inputs.generate_password }}' ]]; then
             password=$(openssl rand -base64 12 | tr -dc A-Za-z0-9)
             install_args="$install_args --set otomi.adminPassword=$password"
           else
             install_args="$install_args --set otomi.adminPassword=welcomeotomi"
           fi
 
-          helm install $install_args $domainSuffix
+          helm install $install_args
       - name: Gather k8s events on failure
         if: failure()
         run: |
