@@ -25,6 +25,10 @@ on:
         type: string
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
         default: az_kms
+      generate_password:
+        type: boolean
+        description: Should a unique password be generated?
+        default: true
       oidc:
         type: string
         description: Should Otomi use external OIDC?
@@ -76,12 +80,9 @@ on:
           - no_kms
           - az_kms
         default: az_kms
-      password:
-        type: choice
+      generate_password:
+        type: boolean
         description: Should a unique password be generated?
-        options:
-          - generate
-          - use-default
       oidc:
         type: choice
         description: Should Otomi use external OIDC?
