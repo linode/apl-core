@@ -234,7 +234,7 @@ jobs:
             --values values.yaml \
             $domainSuffix"
 
-          if [[ '${{ inputs.generate_password }}' ]]; then
+          if [[ inputs.generate_password ]]; then
             password=$(openssl rand -base64 16 | tr -dc A-Za-z0-9)
             install_args="$install_args --set otomi.adminPassword=$password"
           else
