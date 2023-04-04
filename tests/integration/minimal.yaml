@@ -6,4 +6,3 @@ cluster:
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
   version: 'OTOMI_VERSION_PLACEHOLDER'
-  adminPassword: welcomeotomi

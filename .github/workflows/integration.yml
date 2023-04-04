@@ -25,6 +25,10 @@ on:
         type: string
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
         default: az_kms
+      generate_password:
+        type: string
+        description: Should a unique password be generated?
+        default: 'no'
       oidc:
         type: string
         description: Should Otomi use external OIDC?
@@ -75,6 +79,13 @@ on:
           - no_kms
           - az_kms
         default: az_kms
+      generate_password:
+        type: choice
+        description: Should a unique password be generated?
+        options:
+          - 'yes'
+          - 'no'
+        default: 'no'
       oidc:
         type: choice
         description: Should Otomi use external OIDC?
@@ -115,6 +126,7 @@ jobs:
           echo 'cluster_persistence: ${{ inputs.cluster_persistence }}'
           echo 'dns: ${{ inputs.dns }}'
           echo 'kms: ${{ inputs.kms }}'
+          echo 'generate_password: ${{ inputs.generate_password }}'
           echo 'oidc: ${{ inputs.oidc }}'
           echo 'certificate: ${{ inputs.certificate }}'
       - name: Install doctl
@@ -214,16 +226,20 @@ jobs:
         run: |
           domainSuffix=''
           touch values.yaml
-          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix=' --set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
+          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
-          # Sometimes the DO cluster is having hiccups while scaling up nodes, thus we need keep the timeout high.
-          helm install --wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
-          --values tests/integration/${{ inputs.install_profile }}.yaml \
-          --values values-container-registry.yaml \
-          --values values.yaml \
-          $domainSuffix
+
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+            --values tests/integration/${{ inputs.install_profile }}.yaml \
+            --values values-container-registry.yaml
+            --values values.yaml \
+            $domainSuffix"
+
+          [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
+
+          helm install $install_args
       - name: Gather k8s events on failure
         if: failure()
         run: |

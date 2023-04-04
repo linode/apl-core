@@ -1,11 +1,11 @@
-name: Scheduled - minimal with nip.io
+name: Scheduled - minimal with DNS, KMS and Letsencrypt, without admin password
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
     - cron: '0 0 * * *'
 
 jobs:
-  start-integration-test-minimal:
+  start-integration-test-minimal-dns:
     name: Start integration test (minimal)
     uses: ./.github/workflows/integration.yml
     secrets: inherit
@@ -13,4 +13,8 @@ jobs:
       install_profile: minimal
       cluster_region: ams3
       kubernetes_versions: "['1.24']"
-      generate_password: 'yes'
+      dns: az_dns
+      kms: az_kms
+      generate_password: 'no'
+      oidc: keycloak
+      certificate: letsencrypt_staging
