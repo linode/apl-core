@@ -237,7 +237,7 @@ jobs:
             --values values.yaml \
             $domainSuffix"
 
-          If [[ ${{ inputs.generate_password }} -eq "no" ]]; then install_args="$install_args --set otomi.adminPassword=welcomeotomi"
+          If [[ '${{ inputs.generate_password }}' -eq "no" ]]; then install_args="$install_args --set otomi.adminPassword=welcomeotomi"
 
           helm install $install_args
       - name: Gather k8s events on failure
