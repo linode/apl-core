@@ -17,3 +17,4 @@ jobs:
       kms: az_kms
       oidc: keycloak
       certificate: letsencrypt_staging
+      generate_password: 'yes'
