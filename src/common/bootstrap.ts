@@ -2,10 +2,10 @@ import { copyFile, pathExists } from 'fs-extra'
 import { isIPv6 } from 'net'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
-import { env, isChart, isCli } from 'src/common/envalid'
+import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { getOtomiLoadBalancerIP } from 'src/common/k8s'
-import { getFilename, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getRepo, writeValues } from 'src/common/values'
 import { getParsedArgs } from 'src/common/yargs'
 import { $, cd, nothrow } from 'zx'
@@ -41,12 +41,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     d.info(`Git repo was already bootstrapped`)
     return
   }
-  let values = inValues
-  if (!values) {
-    if (isCli) values = (await hfValues({ filesOnly: true })) as Record<string, any>
-    else if (isChart) values = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
-    else return
-  }
+  const values = inValues ?? ((await hfValues()) as Record<string, any>)
   const argv = getParsedArgs()
   if (!values?.cluster?.domainSuffix && !argv.destroy) return // too early, commit will handle it
   if (!values?.cluster?.domainSuffix && argv.destroy) {
