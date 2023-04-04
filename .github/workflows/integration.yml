@@ -26,9 +26,9 @@ on:
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
         default: az_kms
       generate_password:
-        type: boolean
+        type: string
         description: Should a unique password be generated?
-        default: true
+        default: 'no'
       oidc:
         type: string
         description: Should Otomi use external OIDC?
@@ -80,9 +80,12 @@ on:
           - az_kms
         default: az_kms
       generate_password:
-        type: boolean
+        type: choice
         description: Should a unique password be generated?
-        default: true
+        options:
+          - 'yes'
+          - 'no'
+        default: 'no'
       oidc:
         type: choice
         description: Should Otomi use external OIDC?
@@ -234,12 +237,7 @@ jobs:
             --values values.yaml \
             $domainSuffix"
 
-          if [[ inputs.generate_password ]]; then
-            password=$(openssl rand -base64 16 | tr -dc A-Za-z0-9)
-            install_args="$install_args --set otomi.adminPassword=$password"
-          else
-            install_args="$install_args --set otomi.adminPassword=welcomeotomi"
-          fi
+          If [[ ${{ inputs.generate_password }} -eq "no" ]]; then install_args="$install_args --set otomi.adminPassword=welcomeotomi"
 
           helm install $install_args
       - name: Gather k8s events on failure

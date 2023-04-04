@@ -15,6 +15,6 @@ jobs:
       kubernetes_versions: "['1.24']"
       dns: az_dns
       kms: az_kms
-      generate_password: false
+      generate_password: 'no'
       oidc: keycloak
       certificate: letsencrypt_staging
