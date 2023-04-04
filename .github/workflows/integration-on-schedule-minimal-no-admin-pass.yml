@@ -1,4 +1,4 @@
-name: Scheduled - minimal with nip.io
+name: Scheduled - minimal with nip.io, without admin password
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
@@ -13,4 +13,4 @@ jobs:
       install_profile: minimal
       cluster_region: ams3
       kubernetes_versions: "['1.24']"
-      generate_password: 'yes'
+      generate_password: 'no'
