@@ -83,6 +83,7 @@ on:
       generate_password:
         type: boolean
         description: Should a unique password be generated?
+        default: true
       oidc:
         type: choice
         description: Should Otomi use external OIDC?
