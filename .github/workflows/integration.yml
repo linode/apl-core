@@ -69,7 +69,6 @@ on:
         type: choice
         description: Select DNS provider
         options:
-          - none
           - nip_io
           - az_dns
         default: nip_io
