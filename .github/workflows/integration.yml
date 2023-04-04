@@ -226,12 +226,20 @@ jobs:
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
-          # Sometimes the DO cluster is having hiccups while scaling up nodes, thus we need keep the timeout high.
-          helm install --wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
-          --values tests/integration/${{ inputs.install_profile }}.yaml \
-          --values values-container-registry.yaml \
-          --values values.yaml \
-          $domainSuffix
+
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+            --values tests/integration/${{ inputs.install_profile }}.yaml \
+            --values values-container-registry.yaml
+            --values values.yaml \"
+
+          if [[ "${{ inputs.generate_password }}" == "true" ]]; then
+            password=$(openssl rand -base64 12 | tr -dc A-Za-z0-9)
+            install_args="$install_args --set otomi.adminPassword=$password"
+          else
+            install_args="$install_args --set otomi.adminPassword=welcomeotomi"
+          fi
+
+          helm install $install_args $domainSuffix
       - name: Gather k8s events on failure
         if: failure()
         run: |
