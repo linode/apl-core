@@ -1747,7 +1747,7 @@ properties:
                 additionalProperties: false
                 description: For reference go to https://github.com/distribution/distribution/blob/main/docs/configuration.md#storage
                 properties:
-                  aws:
+                  s3:
                     additionalProperties: false
                     properties:
                       accesskey:
@@ -1803,7 +1803,7 @@ properties:
                   type:
                     type: string
                     enum:
-                      - aws
+                      - s3
                       - azure
                       - gcs
                       - filesystem
