@@ -2176,6 +2176,8 @@ properties:
       kured:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             default: false
             type: boolean
