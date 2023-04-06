@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.20.1](https://github.com/redkubes/otomi-core/compare/v0.20.0...v0.20.1) (2023-04-06)
+
+
+### Bug Fixes
+
+* kured schema ([5a00750](https://github.com/redkubes/otomi-core/commit/5a00750601fe68e72cb202951c2932fd5b8334d0))
+
+
+### Others
+
+* bump api version ([cde2b1b](https://github.com/redkubes/otomi-core/commit/cde2b1b2a95714f5533e0152427a3f7dec70e48d))
+
 ## [0.20.0](https://github.com/redkubes/otomi-core/compare/v0.18.1...v0.20.0) (2023-03-31)
 
 ### ⚠ BREAKING CHANGES
