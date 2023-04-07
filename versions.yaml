@@ -1,4 +1,4 @@
-api: main
+api: is-multitennat
 console: is-multitennat
 tasks: main
 tools: 1.4.25
