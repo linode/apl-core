@@ -60,7 +60,15 @@ export const getCurrentVersion = async (): Promise<string> => {
   return /^[0-9.]+/.exec(potentialVersion) ? potentialVersion : pkg.version
 }
 
-export const getRepo = (values: Record<string, any>): Record<string, string> => {
+export interface Repo {
+  email: string
+  username: string
+  password: string
+  remote: string
+  branch: string
+}
+
+export const getRepo = (values: Record<string, any>): Repo => {
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
   const clusterDomain = values?.cluster?.domainSuffix
   const byor = !!values?.apps?.['otomi-api']?.git
