@@ -93,7 +93,6 @@ otomi:
     hasExternalDNS: true
     hasExternalIDP: true
     isHomeMonitored: true
-    isMultitenant: true
     nodeSelector:
         otomi: otomi-sys
     version: main
