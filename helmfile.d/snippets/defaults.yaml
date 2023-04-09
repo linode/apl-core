@@ -274,6 +274,8 @@ environments:
                   limits:
                       cpu: 50m
                       memory: 32Mi
+          kpack:
+            enabled: false
           loki:
             enabled: false
           metrics-server:

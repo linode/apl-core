@@ -1,0 +1,990 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kpack
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.25
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: builds.kpack.io
+spec:
+  group: kpack.io
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: false
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Image
+      type: string
+      jsonPath: .status.latestImage
+    - name: Succeeded
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Succeeded")].status
+  - name: v1alpha2
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Image
+      type: string
+      jsonPath: .status.latestImage
+    - name: Succeeded
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Succeeded")].status
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: kpack-webhook
+          namespace: kpack
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1
+  names:
+    kind: Build
+    listKind: BuildList
+    singular: build
+    plural: builds
+    shortNames:
+    - cnbbuild
+    - cnbbuilds
+    - bld
+    - blds
+    categories:
+    - kpack
+  scope: Namespaced
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: builders.kpack.io
+spec:
+  group: kpack.io
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: false
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: LatestImage
+      type: string
+      jsonPath: .status.latestImage
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  - name: v1alpha2
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: LatestImage
+      type: string
+      jsonPath: .status.latestImage
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: kpack-webhook
+          namespace: kpack
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1
+  names:
+    kind: Builder
+    listKind: BuilderList
+    singular: builder
+    plural: builders
+    shortNames:
+    - bldr
+    - bldrs
+    categories:
+    - kpack
+  scope: Namespaced
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: clusterbuilders.kpack.io
+spec:
+  group: kpack.io
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: false
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: LatestImage
+      type: string
+      jsonPath: .status.latestImage
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  - name: v1alpha2
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: LatestImage
+      type: string
+      jsonPath: .status.latestImage
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  names:
+    kind: ClusterBuilder
+    listKind: ClusterBuilderList
+    singular: clusterbuilder
+    plural: clusterbuilders
+    shortNames:
+    - clstbldr
+    - clstbldrs
+    categories:
+    - kpack
+  scope: Cluster
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: clusterstacks.kpack.io
+spec:
+  group: kpack.io
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: false
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  - name: v1alpha2
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  names:
+    kind: ClusterStack
+    listKind: ClusterStackList
+    singular: clusterstack
+    plural: clusterstacks
+    categories:
+    - kpack
+  scope: Cluster
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: clusterstores.kpack.io
+spec:
+  group: kpack.io
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: false
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    additionalPrinterColumns:
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+    subresources:
+      status: {}
+  - name: v1alpha2
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    additionalPrinterColumns:
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+    subresources:
+      status: {}
+  names:
+    kind: ClusterStore
+    listKind: ClusterStoreList
+    singular: clusterstore
+    plural: clusterstores
+    categories:
+    - kpack
+  scope: Cluster
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-logging
+  namespace: kpack
+data:
+  zap-logger-config: |
+    {
+      "level": "info",
+      "development": false,
+      "outputPaths": ["stdout"],
+      "errorOutputPaths": ["stderr"],
+      "encoding": "json",
+      "encoderConfig": {
+        "timeKey": "ts",
+        "levelKey": "level",
+        "nameKey": "logger",
+        "callerKey": "caller",
+        "messageKey": "msg",
+        "stacktraceKey": "stacktrace",
+        "lineEnding": "",
+        "levelEncoder": "",
+        "timeEncoder": "rfc3339nano",
+        "durationEncoder": "",
+        "callerEncoder": ""
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: build-init-image
+  namespace: kpack
+data:
+  image: gcr.io/cf-build-service-public/kpack/build-init@sha256:dc435942bf4bd03ad51a1033643c43699b5b305e743e9a01471cfb60d7a4e335
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: build-init-windows-image
+  namespace: kpack
+data:
+  image: gcr.io/cf-build-service-public/kpack/build-init-windows@sha256:5c6b4f632d6f5ddf98424464ad549e4e4df260f162e44e31754dcb2785d7c8e0
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: build-waiter-image
+  namespace: kpack
+data:
+  image: gcr.io/cf-build-service-public/kpack/build-waiter@sha256:98f432953f32d0c8aba893878d48a58fe1ea4bda0a8aef69a57b24d1a124bc76
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rebase-image
+  namespace: kpack
+data:
+  image: gcr.io/cf-build-service-public/kpack/rebase@sha256:290fb4ec6a7e2dac25adebf08a555b8708d03e2d6a39af8dfa01d159b37f810e
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lifecycle-image
+  namespace: kpack
+data:
+  image: gcr.io/cf-build-service-public/kpack/lifecycle@sha256:5e9f16f13ba5979ef0d553edf337b526c6f7f56550ef2872e97e278ce26a2b91
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: completion-image
+  namespace: kpack
+data:
+  image: gcr.io/cf-build-service-public/kpack/completion@sha256:7dc837880ead33ef2dddfad8e189e646dc1eb0b1efbb5a2be1276e8d08729da7
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: completion-windows-image
+  namespace: kpack
+data:
+  image: gcr.io/cf-build-service-public/kpack/completion-windows@sha256:6d6aad705e6ab8fa19e9c9ebde394dac00552b591d5ba7f3fdf77bd73f0894b1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kpack-controller
+  namespace: kpack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kpack-controller
+  template:
+    metadata:
+      labels:
+        app: kpack-controller
+        version: 0.10.1-rc.3
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      priorityClassName: kpack-control-plane
+      serviceAccountName: controller
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - name: controller
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          privileged: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+            - ALL
+        image: gcr.io/cf-build-service-public/kpack/controller@sha256:ecaa9774d8ef4536f1089b731d407a6f35774c1a52f4dd0ee92662d08e9c991b
+        env:
+        - name: ENABLE_PRIORITY_CLASSES
+          value: "false"
+        - name: INJECTED_SIDECAR_SUPPORT
+          value: "false"
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        - name: METRICS_DOMAIN
+          value: kpack.io
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: BUILD_INIT_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              name: build-init-image
+              key: image
+        - name: BUILD_INIT_WINDOWS_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              name: build-init-windows-image
+              key: image
+        - name: BUILD_WAITER_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              name: build-waiter-image
+              key: image
+        - name: REBASE_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              name: rebase-image
+              key: image
+        - name: COMPLETION_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              name: completion-image
+              key: image
+        - name: COMPLETION_WINDOWS_IMAGE
+          valueFrom:
+            configMapKeyRef:
+              name: completion-windows-image
+              key: image
+        resources:
+          requests:
+            cpu: 20m
+            memory: 1Gi
+          limits:
+            memory: 1Gi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: controller
+  namespace: kpack
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kpack-controller-admin
+rules:
+- apiGroups:
+  - kpack.io
+  resources:
+  - builds
+  - builds/status
+  - builds/finalizers
+  - images
+  - images/status
+  - images/finalizers
+  - builders
+  - builders/status
+  - clusterbuilders
+  - clusterbuilders/status
+  - clusterstores
+  - clusterstores/status
+  - clusterstacks
+  - clusterstacks/status
+  - sourceresolvers
+  - sourceresolvers/status
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - delete
+  - patch
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  - pods
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - delete
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kpack-controller-admin-binding
+subjects:
+- kind: ServiceAccount
+  name: controller
+  namespace: kpack
+roleRef:
+  kind: ClusterRole
+  name: kpack-controller-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kpack-controller-servicebindings-cluster-role
+aggregationRule:
+  clusterRoleSelectors:
+  - matchLabels:
+      servicebinding.io/controller: "true"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kpack-controller-servicebindings-binding
+subjects:
+- kind: ServiceAccount
+  name: controller
+  namespace: kpack
+roleRef:
+  kind: ClusterRole
+  name: kpack-controller-servicebindings-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kpack-controller-local-config
+  namespace: kpack
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kpack-controller-local-config-binding
+  namespace: kpack
+subjects:
+- kind: ServiceAccount
+  name: controller
+  namespace: kpack
+roleRef:
+  kind: Role
+  name: kpack-controller-local-config
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: images.kpack.io
+spec:
+  group: kpack.io
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: false
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: LatestImage
+      type: string
+      jsonPath: .status.latestImage
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  - name: v1alpha2
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: LatestImage
+      type: string
+      jsonPath: .status.latestImage
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: kpack-webhook
+          namespace: kpack
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1
+  names:
+    kind: Image
+    listKind: ImageList
+    singular: image
+    plural: images
+    shortNames:
+    - cnbimage
+    - cnbimages
+    - img
+    - imgs
+    categories:
+    - kpack
+  scope: Namespaced
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: kpack-control-plane
+value: 10000
+globalDefault: false
+description: Super High priority class for kpack control plane components
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: kpack-build-high-priority
+value: 1000
+globalDefault: false
+description: High priority class for kpack builds triggered by user changes.
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: kpack-build-low-priority
+value: 1
+globalDefault: false
+preemptionPolicy: Never
+description: Low priority class for kpack builds triggered by operator changes.
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kpack-webhook
+  namespace: kpack
+spec:
+  ports:
+  - port: 443
+    targetPort: 8443
+  selector:
+    role: webhook
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: sourceresolvers.kpack.io
+spec:
+  group: kpack.io
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: false
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  - name: v1alpha2
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        x-kubernetes-preserve-unknown-fields: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: kpack-webhook
+          namespace: kpack
+          path: /convert
+          port: 443
+      conversionReviewVersions:
+      - v1
+  names:
+    kind: SourceResolver
+    listKind: SourceResolverList
+    singular: sourceresolver
+    plural: sourceresolvers
+    categories:
+    - kpack
+  scope: Namespaced
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: defaults.webhook.kpack.io
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: kpack-webhook
+      namespace: kpack
+  failurePolicy: Fail
+  matchPolicy: Exact
+  sideEffects: None
+  name: defaults.webhook.kpack.io
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validation.webhook.kpack.io
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: kpack-webhook
+      namespace: kpack
+  failurePolicy: Fail
+  matchPolicy: Exact
+  sideEffects: None
+  name: validation.webhook.kpack.io
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: webhook-certs
+  namespace: kpack
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kpack-webhook
+  namespace: kpack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kpack-webhook
+  template:
+    metadata:
+      labels:
+        app: kpack-webhook
+        role: webhook
+        version: 0.10.1-rc.3
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      priorityClassName: kpack-control-plane
+      serviceAccountName: webhook
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+      - name: webhook
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          privileged: false
+          seccompProfile:
+            type: RuntimeDefault
+          capabilities:
+            drop:
+            - ALL
+        image: gcr.io/cf-build-service-public/kpack/webhook@sha256:39121532894b1bbbcde2331a411960171748c5e45fa47df9184e8f6bfd0b572f
+        ports:
+        - name: https-webhook
+          containerPort: 8443
+        env:
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        - name: METRICS_DOMAIN
+          value: kpack.io
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 200Mi
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: webhook
+  namespace: kpack
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kpack-webhook-certs-admin
+  namespace: kpack
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  resourceNames:
+  - webhook-certs
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - delete
+  - patch
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kpack-webhook-certs-admin-binding
+  namespace: kpack
+subjects:
+- kind: ServiceAccount
+  name: webhook
+  namespace: kpack
+roleRef:
+  kind: Role
+  name: kpack-webhook-certs-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kpack-webhook-mutatingwebhookconfiguration-admin
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  resourceNames:
+  - kpack
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - namespaces/finalizers
+  verbs:
+  - update
+  resourceNames:
+  - kpack
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  resourceNames:
+  - defaults.webhook.kpack.io
+  verbs:
+  - update
+  - delete
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - validatingwebhookconfigurations
+  resourceNames:
+  - validation.webhook.kpack.io
+  verbs:
+  - update
+  - delete
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - validatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  resourceNames:
+  - images.kpack.io
+  - builds.kpack.io
+  - builders.kpack.io
+  - sourceresolvers.kpack.io
+  verbs:
+  - update
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kpack-webhook-certs-mutatingwebhookconfiguration-admin-binding
+subjects:
+- kind: ServiceAccount
+  name: webhook
+  namespace: kpack
+roleRef:
+  kind: ClusterRole
+  name: kpack-webhook-mutatingwebhookconfiguration-admin
+  apiGroup: rbac.authorization.k8s.io

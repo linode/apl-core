@@ -62,6 +62,9 @@ k8s:
       disableIstioInjection: true
     - name: kubeclarity
       app: kubeclarity
+    - name: kpack
+      app: kpack
+      disableIstioInjection: true
     - name: maintenance
       disableIstioInjection: true
     - name: minio
@@ -279,6 +282,8 @@ adminApps:
         auth: true
   - name: kured
     tags: [security]
+  - name: kpack
+    tags: [buildpacks]
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus]

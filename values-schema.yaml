@@ -1214,6 +1214,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
+      builds:
+        type: array
+        items:
+          $ref: '#/definitions/build'
   teamSelfService:
     title: Team self service flags
     description: Grant team permissions to modify certain configuration parameters.
@@ -1256,6 +1260,28 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
+  build:
+    type: object
+    description: Define location of code to build
+    properties:
+      name:
+        $ref: '#/definitions/wordCharacterPattern'
+      repoUrl:
+        description: URL to a Git repository
+        $ref: '#/definitions/url'
+      path:
+        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
+        $ref: '#/definitions/wordCharacterPattern'
+      repo:
+        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
+        $ref: '#/definitions/wordCharacterPattern'
+        enum:
+          - otomi-gitea
+          - github
+        default: otomi-gitea
+    required:
+      - name
+      - repoUrl
   workload:
     type: object
     description: Define location of the application's manifests or chart
@@ -2184,6 +2210,14 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
+      kpack:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
       loki:
         additionalProperties: false
         properties:

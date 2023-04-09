@@ -1,0 +1,24 @@
+{{- $v := .Values }}
+{{- $l := $v.apps | get "kpack" }}
+resources:
+  - apiVersion: kpack.io/v1alpha2
+    kind: ClusterStack
+    metadata:
+      name: base
+    spec:
+      id: "io.buildpacks.stacks.bionic"
+      buildImage:
+        image: "paketobuildpacks/build:base-cnb"
+      runImage:
+        image: "paketobuildpacks/run:base-cnb"
+  - apiVersion: kpack.io/v1alpha2
+    kind: ClusterStore
+    metadata:
+      name: default
+    spec:
+      sources:
+      - image: gcr.io/paketo-buildpacks/java
+      - image: gcr.io/paketo-buildpacks/nodejs
+      - image: gcr.io/paketo-buildpacks/php
+      - image: gcr.io/paketo-buildpacks/go
+      - image: gcr.io/paketo-buildpacks/dotnet-core

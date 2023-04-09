@@ -1,0 +1,25 @@
+{{- $v := .Values }}
+{{- if $v.apps.kpack.enabled }}
+{{- range $v.builds }}
+apiVersion: kpack.io/v1alpha2
+kind: Image
+metadata:
+  name: {{ .name }}-image
+spec:
+  tag: harbor.{{ $v.cluster.domainSuffix }}/team-team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+  serviceAccountName: sa-team-{{ $v.teamId }}
+  builder:
+    name: team-{{ $v.teamId }}-builder
+    kind: Builder
+  source:
+    git:
+      url: {{ .repoUrl }}
+      revision: {{ .revision }}
+    subPath: {{ .path }}
+  build:
+    resources:
+        requests:
+          cpu: 500m
+          memory: 256Mi
+{{- end }}
+{{- end }}

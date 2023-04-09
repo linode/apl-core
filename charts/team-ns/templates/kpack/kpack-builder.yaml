@@ -1,0 +1,30 @@
+{{- $v := .Values }}
+{{- if $v.apps.kpack.enabled }}
+{{- range $v.builds }}
+apiVersion: kpack.io/v1alpha2
+kind: Builder
+metadata:
+  name: team-{{ $v.teamId }}-builder
+  namespace: team-{{ $v.teamId }}
+spec:
+  serviceAccountName: default
+  tag: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/builder
+  stack:
+    name: base
+    kind: ClusterStack
+  store:
+    name: default
+    kind: ClusterStore
+  order:
+  - group:
+    - id: paketo-buildpacks/java
+  - group:
+    - id: paketo-buildpacks/nodejs
+  - group:
+    - id: paketo-buildpacks/php
+  - group:
+    - id: paketo-buildpacks/go
+  - group:
+    - id: paketo-buildpacks/dotnet-core
+{{- end }}
+{{- end }}
