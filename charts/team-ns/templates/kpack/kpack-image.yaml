@@ -6,8 +6,8 @@ kind: Image
 metadata:
   name: {{ .name }}-image
 spec:
-  tag: harbor.{{ $v.cluster.domainSuffix }}/team-team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
-  serviceAccountName: sa-team-{{ $v.teamId }}
+  tag: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+  serviceAccountName: sa-team-{{ $v.teamId }}x
   builder:
     name: team-{{ $v.teamId }}-builder
     kind: Builder
