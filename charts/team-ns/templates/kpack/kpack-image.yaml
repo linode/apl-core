@@ -15,7 +15,9 @@ spec:
     git:
       url: {{ .repoUrl }}
       revision: {{ .revision }}
+    {{- if .path }}
     subPath: {{ .path }}
+    {{- end }}
   build:
     resources:
         requests:

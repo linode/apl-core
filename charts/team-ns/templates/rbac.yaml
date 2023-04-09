@@ -19,8 +19,8 @@ secrets:
 - name: harbor-pushsecret
 {{- end }}
 {{- range $v.builds }}
-{{- if eq .repo "github" }}
-- name: github-user-credentials-{{ .name }}
+{{- if eq .source.type "git" }}
+- name: git-user-credentials-{{ .name }}
 {{- end }}
 {{- if eq .repo "otomi-gitea" }}
 - name: gitea-user-credentials-{{ .name }}

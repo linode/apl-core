@@ -83,7 +83,6 @@ releases:
     <<: *default
   - name: kpack-artifacts
     installed: {{ $a | get "kpack.enabled" }}
-    # namespace: kpack
     labels:
       pkg: kpack
     <<: *raw

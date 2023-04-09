@@ -1270,30 +1270,39 @@ definitions:
       tag:
         description: Image tag
         $ref: '#/definitions/imageTag'
-      source:
-        description: The source of the application. Use 'otomi-gitea' for any private repo in the Otomi organization
-        $ref: '#/definitions/wordCharacterPattern'
-        enum:
-          - otomi-gitea
-          - github
-        default: otomi-gitea
       repoUrl:
         description: URL of the Git repository holding the application code.
         $ref: '#/definitions/url'
       revision:
-        description: This can be a commit, tag, or branch. If omitted, will equal to HEAD.
+        description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
         $ref: '#/definitions/wordCharacterPattern'
         default: HEAD
       path:
         description: A relative directory path within the Git repository.
         $ref: '#/definitions/wordCharacterPattern'
-      repoUserName:
-        description: The username used for basic authentication to access a private github repo.
-        $ref: '#/definitions/wordCharacterPattern'
-      repoPassword:
-        x-secret: ''
-        type: string
-        description: The password used for basic authentication to access a private github repo.
+      source:
+        description: The source of the application. Use 'otomi-gitea' for any private repo in the Otomi organization
+        properties:
+          git:
+            additionalProperties: false
+            properties:
+              public:
+                type: boolean
+                default: true
+                description: If not public, provide username/password or use a personal access token.
+              repoUserName:
+                description: The username used for basic authentication to access a private github repo.
+                $ref: '#/definitions/wordCharacterPattern'
+              repoPassword:
+                x-secret: ''
+                type: string
+                description: The password used for basic authentication to access a private github repo.
+          type:
+            type: string
+            enum:
+              - github
+              - otomi-gitea
+            default: otomi-gitea
     required:
       - name
       - source
