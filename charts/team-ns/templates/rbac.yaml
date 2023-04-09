@@ -20,7 +20,9 @@ secrets:
 {{- end }}
 {{- range $v.builds }}
 {{- if eq .source.type "git" }}
+{{- if not .source.git.public }}
 - name: git-user-credentials-{{ .name }}
+{{- end }}
 {{- end }}
 {{- if eq .repo "otomi-gitea" }}
 - name: gitea-user-credentials-{{ .name }}

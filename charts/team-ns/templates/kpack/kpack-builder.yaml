@@ -7,7 +7,7 @@ metadata:
   name: team-{{ $v.teamId }}-builder
   namespace: team-{{ $v.teamId }}
 spec:
-  serviceAccountName: default
+  serviceAccountName: sa-team-{{ $v.teamId }}
   tag: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/builder
   stack:
     name: base
