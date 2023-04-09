@@ -1300,7 +1300,7 @@ definitions:
           type:
             type: string
             enum:
-              - github
+              - git
               - otomi-gitea
             default: otomi-gitea
     required:
