@@ -1265,22 +1265,38 @@ definitions:
     description: Define location of code to build
     properties:
       name:
+        description: Name of the image
         $ref: '#/definitions/wordCharacterPattern'
-      repoUrl:
-        description: URL to a Git repository
-        $ref: '#/definitions/url'
-      path:
-        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
-        $ref: '#/definitions/wordCharacterPattern'
-      repo:
-        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
+      tag:
+        description: Image tag
+        $ref: '#/definitions/imageTag'
+      source:
+        description: The source of the application. Use 'otomi-gitea' for any private repo in the Otomi organization
         $ref: '#/definitions/wordCharacterPattern'
         enum:
           - otomi-gitea
           - github
         default: otomi-gitea
+      repoUrl:
+        description: URL of the Git repository holding the application code.
+        $ref: '#/definitions/url'
+      revision:
+        description: This can be a commit, tag, or branch. If omitted, will equal to HEAD.
+        $ref: '#/definitions/wordCharacterPattern'
+        default: HEAD
+      path:
+        description: A relative directory path within the Git repository.
+        $ref: '#/definitions/wordCharacterPattern'
+      repoUserName:
+        description: The username used for basic authentication to access a private github repo.
+        $ref: '#/definitions/wordCharacterPattern'
+      repoPassword:
+        x-secret: ''
+        type: string
+        description: The password used for basic authentication to access a private github repo.
     required:
       - name
+      - source
       - repoUrl
   workload:
     type: object
