@@ -1,4 +1,4 @@
-api: main
-console: main
+api: buildpack
+console: buildpack
 tasks: main
 tools: 1.4.25
