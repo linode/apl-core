@@ -65,6 +65,7 @@ k8s:
     - name: kpack
       app: kpack
       disableIstioInjection: true
+      disablePolicyChecks: true
     - name: maintenance
       disableIstioInjection: true
     - name: minio

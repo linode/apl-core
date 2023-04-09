@@ -435,9 +435,10 @@ spec:
         resources:
           requests:
             cpu: 20m
-            memory: 1Gi
+            memory: 512Mi
           limits:
             memory: 1Gi
+            cpu: 500m
 ---
 apiVersion: v1
 kind: ServiceAccount
