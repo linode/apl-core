@@ -4,10 +4,10 @@
 apiVersion: kpack.io/v1alpha2
 kind: Image
 metadata:
-  name: {{ .name }}-image
+  name: {{ .name }}
 spec:
   tag: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
-  serviceAccountName: sa-team-{{ $v.teamId }}x
+  serviceAccountName: sa-team-{{ $v.teamId }}
   builder:
     name: team-{{ $v.teamId }}-builder
     kind: Builder
