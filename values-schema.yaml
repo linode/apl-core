@@ -2264,24 +2264,12 @@ properties:
                 properties:
                   enabled:
                     type: boolean
-                    default: true
+                    default: false
               php:
                 properties:
                   enabled:
                     type: boolean
-                    default: true
-              custom:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                    image:
-                      type: string
-                  required:
-                    - name
-                    - image
+                    default: false
 
       loki:
         additionalProperties: false

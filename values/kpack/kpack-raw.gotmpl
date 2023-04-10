@@ -32,6 +32,3 @@ resources:
       {{- if $k.buildPacks.dotnetCore.enabled }}
       - image: gcr.io/paketo-buildpacks/dotnet-core
       {{- end }}
-      {{- range $k.buildPacks.custom }}
-      - image: {{- .image}}
-      {{- end }}

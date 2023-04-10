@@ -21,3 +21,8 @@ releases:
     values:
       - ../values/raw/istio-raw.gotmpl
       - snippets/common.gotmpl
+  - name: kpack-artifacts
+    installed: {{ $a | get "kpack.enabled" }}
+    labels:
+      pkg: kpack
+    <<: *raw

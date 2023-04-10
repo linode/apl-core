@@ -12,8 +12,3 @@ apps:
                 enabled: false
             php:
                 enabled: false
-            custom:
-                - name: custom1
-                  image: gcr.io/paketo-buildpacks/custom1
-                - name: custom2
-                  image: gcr.io/paketo-buildpacks/custom2
