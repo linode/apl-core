@@ -78,12 +78,7 @@ releases:
   - name: kpack
     installed: {{ $a | get "kpack.enabled" }}
     namespace: kpack
+    chart: ../charts/kpack
     labels:
       pkg: kpack
     <<: *default
-  - name: kpack-artifacts
-    installed: {{ $a | get "kpack.enabled" }}
-    needs: [kpack]
-    labels:
-      pkg: kpack
-    <<: *raw
