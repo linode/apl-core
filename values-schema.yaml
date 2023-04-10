@@ -2243,6 +2243,46 @@ properties:
           enabled:
             type: boolean
             default: false
+          buildPacks:
+            properties:
+              java:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+              nodejs:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+              go:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+              dotnetCore:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+              php:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+              custom:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    image:
+                      type: string
+                  required:
+                    - name
+                    - image
+
       loki:
         additionalProperties: false
         properties:

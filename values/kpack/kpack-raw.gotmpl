@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $l := $v.apps | get "kpack" }}
+{{- $k := $v.apps | get "kpack" }}
 resources:
   - apiVersion: kpack.io/v1alpha2
     kind: ClusterStack
@@ -17,8 +17,21 @@ resources:
       name: default
     spec:
       sources:
+      {{- if $k.buildPacks.java.enabled }}
       - image: gcr.io/paketo-buildpacks/java
+      {{- end }}
+      {{- if $k.buildPacks.nodejs.enabled }}
       - image: gcr.io/paketo-buildpacks/nodejs
+      {{- end }}
+      {{- if $k.buildPacks.php.enabled }}
       - image: gcr.io/paketo-buildpacks/php
+      {{- end }}
+      {{- if $k.buildPacks.go.enabled }}
       - image: gcr.io/paketo-buildpacks/go
+      {{- end }}
+      {{- if $k.buildPacks.dotnetCore.enabled }}
       - image: gcr.io/paketo-buildpacks/dotnet-core
+      {{- end }}
+      {{- range $k.buildPacks.custom }}
+      - image: {{- .image}}
+      {{- end }}
