@@ -1,8 +1,8 @@
 otomi:
-    hasCloudLB: false
-    hasExternalDNS: false
-    hasExternalIDP: false
-    isHomeMonitored: false
-    isMultitenant: true
-    version: main
-version: 5
+  hasCloudLB: false
+  hasExternalDNS: false
+  hasExternalIDP: false
+  isHomeMonitored: false
+  isMultitenant: true
+  version: main
+version: 7
