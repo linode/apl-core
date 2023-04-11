@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $a := $v.apps.argocd }}
-{{- if and (not (eq $v.teamId "admin")) $a.enabled }}
+{{- if $a.enabled }}
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
@@ -14,14 +14,21 @@ spec:
   # Allow manifests to deploy from any Git repos
   sourceRepos:
   - https://gitea.{{ $v.cluster.domainSuffix }}/otomi/team-{{ $v.teamId }}-argocd.git
+  {{- range $v.workloads }}
+  - {{ .url }}
+  {{- end }}
   # Only permit applications to deploy to the guestbook namespace in the same cluster
   destinations:
   - namespace: team-{{ $v.teamId }}
     server: https://kubernetes.default.svc
   # Deny all cluster-scoped resources from being created
+  {{- if eq $v.teamId "admin" }}
+  clusterResourceWhitelist: 
+  - group: '*'
+    kind: '*'
+  {{- else }}
   clusterResourceWhitelist: []
-  # - group: ''
-  #   kind: Namespace
+  {{- end }}
   # Allow all namespaced-scoped resources to be created, except for ResourceQuota, LimitRange, NetworkPolicy
   namespaceResourceBlacklist:
   - group: ''

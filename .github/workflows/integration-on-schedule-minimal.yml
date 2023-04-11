@@ -12,4 +12,5 @@ jobs:
     with:
       install_profile: minimal
       cluster_region: ams3
-      kubernetes_versions: "['1.23']"
+      kubernetes_versions: "['1.24']"
+      generate_password: 'yes'

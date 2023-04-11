@@ -1,0 +1,30 @@
+{{- $v := .Values }}
+{{- $t := $v.apps.trivy }}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+
+{{ $targets := list }}
+  {{- range $id, $_ := $v.teamConfig }}
+    {{- $targets = append $targets (print "team-" $id) }}
+  {{- end }}
+targetNamespaces: "{{- tpl $joinTpl (dict "list" $targets "sep" ",") }}"
+
+operator:
+  replicas: {{ $t.operator.replicaCount }}
+  metricsVulnIdEnabled: true
+
+serviceMonitor:
+  enabled: true
+  labels:
+    prometheus: system
+
+trivy:
+  mode: Standalone
+  resources: {{- $t.resources.trivy | toYaml | nindent 2 }}
+
+podAnnotations:
+  policy.otomi.io/ignore: psp-allowed-users
+
+podSecurityContext:
+  runAsUser: 1001
+
+resources: {{- $t.resources.operator | toYaml | nindent 2 }}
