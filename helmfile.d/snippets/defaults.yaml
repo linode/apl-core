@@ -303,6 +303,8 @@ environments:
           otomi-console: {}
           opencost:
             enabled: false
+            alerts:
+              enabled: false          
             resources:
               exporter:
                 requests:

@@ -1188,6 +1188,19 @@ definitions:
       resourceQuota:
         description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
         type: object
+      billingAlertQuotas:
+        title: Billing alert quotas
+        properties:
+          TeamCpuMonthQuotaReached:
+            properties:
+              quota:
+                type: integer
+                default: 100
+          TeamMemMonthQuotaReached:
+            properties:
+              quota:
+                type: integer
+                default: 100
       selfService:
         $ref: '#/definitions/teamSelfService'
       services:
@@ -1229,7 +1242,8 @@ definitions:
         type: array
         items:
           type: string
-          enum: [alerts, oidc, resourceQuota, downloadKubeConfig, downloadDockerConfig, networkPolicy]
+          enum:
+            [alerts, oidc, resourceQuota, billingAlertQuotas, downloadKubeConfig, downloadDockerConfig, networkPolicy]
         uniqueItems: true
       apps:
         type: array
@@ -2354,16 +2368,6 @@ properties:
                   quota:
                     type: integer
                     default: 500
-              TeamCpuMonthQuotaReached:
-                properties:
-                  quota:
-                    type: integer
-                    default: 100
-              TeamMemMonthQuotaReached:
-                properties:
-                  quota:
-                    type: integer
-                    default: 100
           resources:
             additionalProperties: false
             properties:
