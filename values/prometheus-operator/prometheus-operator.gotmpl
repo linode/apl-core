@@ -158,13 +158,13 @@ additionalPrometheusRules:
     groups:
       - name: opencost.rules
         rules:
-          - alert: CostOfAllNodesQuotaPerMonthReached
-            expr: sum(node_total_hourly_cost) * 730 > {{ $v.apps.opencost.alerts.CostOfAllNodesQuotaPerMonthReached.quota }}
+          - alert: costOfAllNodesQuotaPerMonthReached
+            expr: sum(node_total_hourly_cost) * 730 > {{ $v.apps.opencost.alerts.costOfAllNodesQuotaPerMonthReached.quota }}
             for: 1d
             labels:
               severity: warning
             annotations:
-              description: The monthly cost of all cluster nodes has reached {{ $v.apps.opencost.alerts.CostOfAllNodesQuotaPerMonthReached.quota }}
+              description: The monthly cost of all cluster nodes has reached {{ $v.apps.opencost.alerts.costOfAllNodesQuotaPerMonthReached.quota }}
               summary: Node cost quota p.m. reached
   {{- end }}
 {{- end }}

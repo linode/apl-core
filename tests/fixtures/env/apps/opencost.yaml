@@ -3,5 +3,5 @@ apps:
         enabled: true
         alerts:
             enabled: true
-            CostOfAllNodesQuotaPerMonthReached:
+            costOfAllNodesQuotaPerMonthReached:
                 quota: 500

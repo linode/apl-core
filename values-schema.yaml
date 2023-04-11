@@ -1191,12 +1191,12 @@ definitions:
       billingAlertQuotas:
         title: Billing alert quotas
         properties:
-          TeamCpuMonthQuotaReached:
+          teamCpuMonthQuotaReached:
             properties:
               quota:
                 type: integer
                 default: 100
-          TeamMemMonthQuotaReached:
+          teamMemMonthQuotaReached:
             properties:
               quota:
                 type: integer
@@ -2363,7 +2363,7 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              CostOfAllNodesQuotaPerMonthReached:
+              costOfAllNodesQuotaPerMonthReached:
                 properties:
                   quota:
                     type: integer
