@@ -14,7 +14,7 @@ spec:
   - name: opencost.rules
     rules:
       - alert: TeamCpuMonthQuotaReached
-        expr: sum(container_cpu_allocation{exported_namespace=~"team-{{ $v.teamId }}"} * on (node) group_left node_cpu_hourly_cost) * 730 > {{ $v.billingAlerts.TeamMemMonthQuotaReached.quota }}
+        expr: sum(container_cpu_allocation{exported_namespace=~"team-{{ $v.teamId }}"} * on (node) group_left node_cpu_hourly_cost) * 730 > {{ $v.billingAlertQuotas.TeamMemMonthQuotaReached.quota }}
         for: 1d
         labels:
           severity: warning
@@ -22,7 +22,7 @@ spec:
           description: The monthly CPU cost of team {{ $v.teamId }} reached {{ $v.billingAlertQuotas.TeamCpuMonthQuotaReached.quota }}
           summary: Team CPU cost quota p.m. reached
       - alert: TeamMemMonthQuotaReached
-        expr: sum(container_memory_allocation_bytes{exported_namespace=~"team-{{ $v.teamId }}"} / 1000000000 * on (node) group_left node_ram_hourly_cost) * 730 > {{ $v.billingAlerts.TeamMemMonthQuotaReached.quota }}
+        expr: sum(container_memory_allocation_bytes{exported_namespace=~"team-{{ $v.teamId }}"} / 1000000000 * on (node) group_left node_ram_hourly_cost) * 730 > {{ $v.billingAlertQuotas.TeamMemMonthQuotaReached.quota }}
         for: 1d
         labels:
           severity: warning
