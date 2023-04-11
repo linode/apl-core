@@ -158,7 +158,7 @@ additionalPrometheusRules:
     groups:
       - name: opencost.rules
         rules:
-          - alert: costOfAllNodesQuotaPerMonthReached
+          - alert: CostOfAllNodesQuotaPerMonthReached
             expr: sum(node_total_hourly_cost) * 730 > {{ $v.apps.opencost.alerts.costOfAllNodesQuotaPerMonthReached.quota }}
             for: 1d
             labels:
