@@ -17,9 +17,9 @@ teamConfig:
             services.loadbalancers: '1'
         billingAlertQuotas:
             TeamCpuMonthQuotaReached:
-                quota: 100
+                quota: 150
             TeamMemMonthQuotaReached:
-                quota: 100
+                quota: 200
         selfService:
             apps: []
             service:
