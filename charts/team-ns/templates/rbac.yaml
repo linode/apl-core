@@ -19,12 +19,10 @@ secrets:
 - name: harbor-pushsecret
 {{- end }}
 {{- range $v.builds }}
-{{- if eq .source.type "git" }}
-{{- if not .source.git.public }}
+{{- if .privateGit }}
 - name: git-user-credentials-{{ .name }}
 {{- end }}
-{{- end }}
-{{- if eq .repo "otomi-gitea" }}
+{{- if .otomiGit }}
 - name: gitea-user-credentials-{{ .name }}
 {{- end }}
 {{- end }}

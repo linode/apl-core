@@ -1270,6 +1270,12 @@ definitions:
       tag:
         description: Image tag
         $ref: '#/definitions/imageTag'
+      privateGit:
+        type: boolean
+        default: false
+      otomiGit:
+        type: boolean
+        default: false
       repoUrl:
         description: URL of the Git repository holding the application code.
         $ref: '#/definitions/url'
@@ -1285,7 +1291,7 @@ definitions:
         $ref: '#/definitions/wordCharacterPattern'
       repoPassword:
         x-secret: ''
-        type: string
+        $ref: '#/definitions/wordCharacterPattern'
         description: The password used for basic authentication to access a private github repo.
     required:
       - name
