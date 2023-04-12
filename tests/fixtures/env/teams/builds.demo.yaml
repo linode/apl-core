@@ -3,28 +3,18 @@ teamConfig:
         builds:
             - name: demo-java1
               tag: v.0.0.1
-              source:
-                  type: otomi-gitea
               repoUrl: https://github.com/buildpacks/samples
               revision: HEAD
               path: samples/apps/java-maven
             - name: demo-java2
               tag: v.0.0.1
-              source:
-                  git:
-                      public: false
-                      repoUserName: bla
-                      repoPassword: bla
-                  type: git
+              repoUserName: bla
+              repoPassword: bla
               repoUrl: https://github.com/buildpacks/samples
               revision: HEAD
               path: samples/apps/java-maven
             - name: demo-java3
               tag: v.0.0.1
-              source:
-                  git:
-                      public: true
-                  type: git
               repoUrl: https://github.com/buildpacks/samples
               revision: HEAD
               path: samples/apps/java-maven

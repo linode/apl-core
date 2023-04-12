@@ -1280,32 +1280,15 @@ definitions:
       path:
         description: A relative directory path within the Git repository.
         $ref: '#/definitions/wordCharacterPattern'
-      source:
-        description: The source of the application. Use 'otomi-gitea' for any private repo in the Otomi organization
-        properties:
-          git:
-            additionalProperties: false
-            properties:
-              public:
-                type: boolean
-                default: true
-                description: If not public, provide username/password or use a personal access token.
-              repoUserName:
-                description: The username used for basic authentication to access a private github repo.
-                $ref: '#/definitions/wordCharacterPattern'
-              repoPassword:
-                x-secret: ''
-                type: string
-                description: The password used for basic authentication to access a private github repo.
-          type:
-            type: string
-            enum:
-              - git
-              - otomi-gitea
-            default: otomi-gitea
+      repoUserName:
+        description: The username used for basic authentication to access a private github repo.
+        $ref: '#/definitions/wordCharacterPattern'
+      repoPassword:
+        x-secret: ''
+        type: string
+        description: The password used for basic authentication to access a private github repo.
     required:
       - name
-      - source
       - repoUrl
   workload:
     type: object
