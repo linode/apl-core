@@ -91,10 +91,10 @@ export const bootstrapSops = async (
         await deps.writeFile(secretsFile, `GCLOUD_SERVICE_KEY=${JSON.stringify(JSON.stringify(serviceKeyJson))}`)
       } else if (provider === 'aws') {
         const v = values.kms!.sops!.aws!
-        await deps.writeFile(secretsFile, `AWS_ACCESS_KEY_ID='${v.accessKey}'\nAWS_ACCESS_KEY_SECRET=${v.secretKey}`)
+        await deps.writeFile(secretsFile, `AWS_ACCESS_KEY_ID='${v.accessKey}'\nAWS_ACCESS_KEY_SECRET='${v.secretKey}'`)
       } else if (provider === 'azure') {
         const v = values.kms!.sops!.azure!
-        await deps.writeFile(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
+        await deps.writeFile(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET='${v.clientSecret}'`)
       } else if (provider === 'vault') {
         const v = values.kms!.sops!.vault!
         await deps.writeFile(secretsFile, `VAULT_TOKEN='${v.token}'`)

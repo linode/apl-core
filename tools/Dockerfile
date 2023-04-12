@@ -26,6 +26,10 @@ ARG CONFTEST_VERSION=0.32.1
 ARG KONSTRAINT_VERSION=0.21.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=16
+# https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/
+ARG AWS_AUTHENTICATOR_VERSION=0.5.9
+# https://github.com/vmware-tanzu/sonobuoy/releases/download/
+ARG SONOBUOY_VERSION=0.56.16
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz
 
@@ -54,6 +58,7 @@ RUN apt-get update -qq \
   nano \
   groff \
   rsync \
+  unzip \
   && rm -rf /var/lib/apt/lists/*
 
 # set locale
@@ -100,10 +105,13 @@ ADD https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${
 RUN chmod +x gucci
 
 # aws
-RUN pip3 install --upgrade --no-cache-dir awscli
+RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o awscliv2.zip && \
+  unzip awscliv2.zip && \
+  ./aws/install && \
+  rm -rf awscliv2.zip aws
 
 # aws-iam-authenticator
-ADD https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
+RUN curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v${AWS_AUTHENTICATOR_VERSION}/aws-iam-authenticator_${AWS_AUTHENTICATOR_VERSION}_linux_amd64
 RUN chmod +x aws-iam-authenticator
 
 # opa
@@ -126,6 +134,10 @@ RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 RUN apt-get install -y nodejs && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
+
+# conftest
+ADD https://github.com/vmware-tanzu/sonobuoy/releases/download/v${SONOBUOY_VERSION}/sonobuoy_${SONOBUOY_VERSION}_linux_amd64.tar.gz /tmp
+RUN tar -zxvf /tmp/sonobuoy_${SONOBUOY_VERSION}_linux_amd64.tar.gz -C /tmp && mv /tmp/sonobuoy sonobuoy
 
 RUN chown -R app:app /home/app
 USER app
