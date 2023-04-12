@@ -482,7 +482,7 @@ environments:
           isMultitenant: false
           nodeSelector: {}
         # TODO: update this when schema version changes: (and think more?)
-        version: 5
+        version: 7
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

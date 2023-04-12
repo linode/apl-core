@@ -58,3 +58,6 @@ changes:
   - version: 6
     relocations:
       - apps.ingress-nginx: 'apps.ingress-nginx-platform'
+  - version: 7
+    relocations:
+      - apps.harbor.persistence.aws: 'apps.harbor.persistence.s3'
