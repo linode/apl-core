@@ -276,6 +276,17 @@ environments:
                       memory: 32Mi
           kpack:
             enabled: false
+            buildPacks:
+                java:
+                    enabled: true
+                nodejs:
+                    enabled: true
+                go:
+                    enabled: true
+                dotnetCore:
+                    enabled: false
+                php:
+                    enabled: false
           loki:
             enabled: false
           metrics-server:
