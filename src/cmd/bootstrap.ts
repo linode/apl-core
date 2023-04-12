@@ -249,7 +249,7 @@ export const processValues = async (
     for (const [key, value] of Object.entries(originalValues.files as string)) {
       // Extract folder name
       const filePath = key.split('/').slice(0, -1).join('/')
-      // Evaluate absoulte file name and path
+      // Evaluate absolute file name and path
       const absPath = `${ENV_DIR}/${filePath}`
       const absFileName = `${ENV_DIR}/${key}`
       // Create Folder
