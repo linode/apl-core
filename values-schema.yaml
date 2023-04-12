@@ -1296,6 +1296,7 @@ definitions:
     required:
       - name
       - repoUrl
+
   workload:
     type: object
     description: Define location of the application's manifests or chart
