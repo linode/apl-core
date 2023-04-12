@@ -243,33 +243,20 @@ export const processValues = async (
     // Ensure newly generated secrets stored in .dec file are encrypted
     await encrypt()
   }
-  // MATTHEW AND LEIA CODE
+  // Write Values from File
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
-  d.log(`MATTHEW and LEIA WAS HERE`)
-
   if (originalValues.files) {
-    for (const key of Object.keys(originalValues.files)) {
-      d.log('1')
-      d.log(key)
-      const values = originalValues.files[key]
-      d.log(values)
-      const pathFileTmp = key.split('/')
-      const fileName = pathFileTmp.slice(-1)
-      d.log(fileName)
-      pathFileTmp.pop()
-      const pathFileStr = pathFileTmp.join('/')
-      const fullPathFile = `${ENV_DIR}/${pathFileStr}`
-      await deps.mkdir(fullPathFile, { recursive: true })
-      d.log(fullPathFile)
-      await deps.writeFile(`${fullPathFile}/${fileName}`, values)
-      d.log('')
+    for (const [key, value] of Object.entries(originalValues.files as string)) {
+      // Extract folder name
+      const filePath = key.split('/').slice(0, -1).join('/')
+      // Evaluate absoulte file name and path
+      const absPath = `${ENV_DIR}/${filePath}`
+      const absFileName = `${ENV_DIR}/${key}`
+      // Create Folder
+      await deps.mkdir(absPath, { recursive: true })
+      // Write File
+      await deps.writeFile(absFileName, value)
     }
-    // const fileValues = (await deps.loadYaml(originalValues.files)) as Record<string, any>
-    // d.log(fileValues)
-    // Create directory for workload files
-    // await createDirectories(originalValues.Files.Value)
-    // Create yaml file and Insert content into yaml file
-    // await fs.promises.writeFile(`${originalValues.Files.Value}/values.yaml`, ‘originalValues.Files.values’)
   }
   return originalInput
 }
