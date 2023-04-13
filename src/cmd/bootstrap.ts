@@ -257,7 +257,8 @@ export const handleFileEntry = async (
   // write Values from File
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
   if (originalValues && originalValues.files) {
-    for (const [key, value] of Object.entries(originalValues.files as string)) {
+    for (const key of Object.keys(originalValues.files as string)) {
+      const value: string = originalValues.files[key]
       // extract folder name
       const filePath = key.split('/').slice(0, -1).join('/')
       // evaluate absolute file name and path
