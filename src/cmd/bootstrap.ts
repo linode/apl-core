@@ -266,7 +266,7 @@ export const handleFileEntry = async (
       // create Folder
       await deps.mkdir(absPath, { recursive: true })
       // write File
-      await deps.writeFile(absFileName, value)
+      await deps.writeFile(absFileName, value.toString())
     }
   }
 }
