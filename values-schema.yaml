@@ -2983,6 +2983,9 @@ properties:
         description: Optional. A public IP address that will override (loadbalancer) ip used for registering hosts. This allows for access to private clusters.
   home:
     $ref: '#/definitions/alerts'
+  files:
+    type: object
+    description: 'Custom values for the workload chart.'
   kms:
     additionalProperties: false
     properties:
