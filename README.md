@@ -58,7 +58,7 @@ To install Otomi using Helm, make sure to have a K8s cluster running with at lea
 Add the Helm repository:
 
 ```bash
-helm repo add otomi https://otomi.io/otomi-core; \
+helm repo add otomi https://otomi.io/otomi-core
 helm repo update
 ```
 
