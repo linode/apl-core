@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { cloneDeep, merge } from 'lodash'
 import { pki } from 'node-forge'
+import { env } from 'process'
 import stubs from 'src/test-stubs'
 import { createMock } from 'ts-auto-mock'
 import {
@@ -8,8 +9,8 @@ import {
   bootstrapSops,
   copyBasicFiles,
   createCustomCA,
-  createWorkloadDirectories,
   getStoredClusterSecrets,
+  handleFileEntry,
   processValues,
 } from './bootstrap'
 
@@ -29,7 +30,7 @@ describe('Bootstrapping values', () => {
       copyBasicFiles: jest.fn(),
       copyFile: jest.fn(),
       createCustomCA: jest.fn(),
-      createWorkloadDirectories: jest.fn(),
+      handleFileEntry: jest.fn(),
       decrypt: jest.fn(),
       encrypt: jest.fn(),
       existsSync: jest.fn(),
@@ -100,15 +101,17 @@ describe('Bootstrapping values', () => {
     })
   })
   describe('Creating folders and files for workload', () => {
+    const values = {
+      values: {
+        image: {
+          repository: 'otomi/nodejs-helloworld',
+          tag: 'v1.2.13',
+        },
+      },
+    }
     const workload = {
       files: {
-        path: 'env/teams/workloads/demo/values.yaml',
-        values: {
-          image: {
-            repository: 'otomi/nodejs-helloworld',
-            tag: 'v1.2.13',
-          },
-        },
+        'env/teams/workloads/demo/values.yaml': JSON.stringify(values),
       },
     }
     const deps = {
@@ -117,9 +120,13 @@ describe('Bootstrapping values', () => {
       terminal,
       writeFile: jest.fn(),
     }
-    it('should create folders and files based on the workload', async () => {
-      const res = await createWorkloadDirectories(deps)
-      expect(res).toBe(undefined)
+    it('should create folders and files based on file entry in yaml', async () => {
+      await handleFileEntry(deps)
+      expect(deps.mkdir).toBeCalledWith(`${env.ENV_DIR}/env/teams/workloads/demo`, { recursive: true })
+      expect(deps.writeFile).toBeCalledWith(
+        `${env.ENV_DIR}/env/teams/workloads/demo/values.yaml`,
+        JSON.stringify(values),
+      )
     })
   })
   describe('Generating sops related files', () => {

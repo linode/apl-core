@@ -244,9 +244,8 @@ export const processValues = async (
   return originalInput
 }
 
-// retrieves input values from either VALUES_INPUT or ENV_DIR
-// creates missing directories for workload
-export const createWorkloadDirectories = async (
+// create file structure based on file entry
+export const handleFileEntry = async (
   deps = {
     loadYaml,
     mkdir,
@@ -255,18 +254,18 @@ export const createWorkloadDirectories = async (
   },
 ) => {
   const { ENV_DIR, VALUES_INPUT } = env
-  // Write Values from File
+  // write Values from File
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
   if (originalValues && originalValues.files) {
     for (const [key, value] of Object.entries(originalValues.files as string)) {
-      // Extract folder name
+      // extract folder name
       const filePath = key.split('/').slice(0, -1).join('/')
-      // Evaluate absolute file name and path
+      // evaluate absolute file name and path
       const absPath = `${ENV_DIR}/${filePath}`
       const absFileName = `${ENV_DIR}/${key}`
-      // Create Folder
+      // create Folder
       await deps.mkdir(absPath, { recursive: true })
-      // Write File
+      // write File
       await deps.writeFile(absFileName, value)
     }
   }
@@ -344,7 +343,7 @@ export const bootstrap = async (
     migrate,
     encrypt,
     decrypt,
-    createWorkloadDirectories,
+    handleFileEntry,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
@@ -395,7 +394,7 @@ export const bootstrap = async (
     }
     await deps.writeValues(add)
   }
-  await deps.createWorkloadDirectories()
+  await deps.handleFileEntry()
   await deps.bootstrapSops()
   // if we did not have the admin password before we know we have generated it for the first time
   // so tell the user about it
