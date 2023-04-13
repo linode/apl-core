@@ -245,7 +245,7 @@ export const processValues = async (
   }
   // Write Values from File
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
-  if (originalValues.files) {
+  if (originalValues && originalValues.files) {
     for (const [key, value] of Object.entries(originalValues.files as string)) {
       // Extract folder name
       const filePath = key.split('/').slice(0, -1).join('/')

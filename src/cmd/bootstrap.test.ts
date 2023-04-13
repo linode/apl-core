@@ -177,8 +177,10 @@ describe('Bootstrapping values', () => {
         hfValues: jest.fn().mockReturnValue(values),
         isChart: true,
         loadYaml: jest.fn(),
+        mkdir: jest.fn(),
         terminal,
         validateValues: jest.fn().mockReturnValue(true),
+        writeFile: jest.fn(),
         writeValues: jest.fn(),
       }
     })
