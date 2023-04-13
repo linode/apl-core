@@ -2986,6 +2986,10 @@ properties:
   files:
     type: object
     description: 'Custom values for the workload chart.'
+    patternProperties:
+      '^/|(/[\w-]+)+$':
+        type: string
+        pattern: ^[^\s]+$
   kms:
     additionalProperties: false
     properties:
