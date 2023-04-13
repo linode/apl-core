@@ -54,6 +54,7 @@ files:
         tag: v1.2.13
   env/teams/workloads/demo/httpbin.yaml: |
     values: |
+      {}
   env/teams/workloads/admin/nodejs-helloworld.yaml: |
     values: |
       image:
