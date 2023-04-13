@@ -8,6 +8,7 @@ import {
   bootstrapSops,
   copyBasicFiles,
   createCustomCA,
+  createWorkloadDirectories,
   getStoredClusterSecrets,
   processValues,
 } from './bootstrap'
@@ -28,6 +29,7 @@ describe('Bootstrapping values', () => {
       copyBasicFiles: jest.fn(),
       copyFile: jest.fn(),
       createCustomCA: jest.fn(),
+      createWorkloadDirectories: jest.fn(),
       decrypt: jest.fn(),
       encrypt: jest.fn(),
       existsSync: jest.fn(),
@@ -94,6 +96,29 @@ describe('Bootstrapping values', () => {
     }
     it('should not throw any exception', async () => {
       const res = await copyBasicFiles(deps)
+      expect(res).toBe(undefined)
+    })
+  })
+  describe('Creating folders and files for workload', () => {
+    const workload = {
+      files: {
+        path: 'env/teams/workloads/demo/values.yaml',
+        values: {
+          image: {
+            repository: 'otomi/nodejs-helloworld',
+            tag: 'v1.2.13',
+          },
+        },
+      },
+    }
+    const deps = {
+      loadYaml: jest.fn().mockReturnValue(workload),
+      mkdir: jest.fn(),
+      terminal,
+      writeFile: jest.fn(),
+    }
+    it('should create folders and files based on the workload', async () => {
+      const res = await createWorkloadDirectories(deps)
       expect(res).toBe(undefined)
     })
   })
@@ -177,10 +202,8 @@ describe('Bootstrapping values', () => {
         hfValues: jest.fn().mockReturnValue(values),
         isChart: true,
         loadYaml: jest.fn(),
-        mkdir: jest.fn(),
         terminal,
         validateValues: jest.fn().mockReturnValue(true),
-        writeFile: jest.fn(),
         writeValues: jest.fn(),
       }
     })

@@ -196,8 +196,6 @@ export const processValues = async (
     generateSecrets,
     createK8sSecret,
     createCustomCA,
-    mkdir,
-    writeFile,
   },
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
@@ -243,6 +241,20 @@ export const processValues = async (
     // Ensure newly generated secrets stored in .dec file are encrypted
     await encrypt()
   }
+  return originalInput
+}
+
+// retrieves input values from either VALUES_INPUT or ENV_DIR
+// creates missing directories for workload
+export const createWorkloadDirectories = async (
+  deps = {
+    loadYaml,
+    mkdir,
+    terminal,
+    writeFile,
+  },
+) => {
+  const { ENV_DIR, VALUES_INPUT } = env
   // Write Values from File
   const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
   if (originalValues && originalValues.files) {
@@ -258,7 +270,6 @@ export const processValues = async (
       await deps.writeFile(absFileName, value)
     }
   }
-  return originalInput
 }
 
 /**
@@ -333,6 +344,7 @@ export const bootstrap = async (
     migrate,
     encrypt,
     decrypt,
+    createWorkloadDirectories,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
@@ -383,6 +395,7 @@ export const bootstrap = async (
     }
     await deps.writeValues(add)
   }
+  await deps.createWorkloadDirectories()
   await deps.bootstrapSops()
   // if we did not have the admin password before we know we have generated it for the first time
   // so tell the user about it
