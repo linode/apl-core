@@ -50,7 +50,7 @@ data:
   HTTPS_PROXY: "{{ .Values.proxy.httpsProxy }}"
   NO_PROXY: "{{ template "harbor.noProxy" . }}"
   {{- end }}
-  PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE: "docker-hub,harbor,azure-acr,aws-ecr,google-gcr,quay,docker-registry"
+  PERMITTED_REGISTRY_TYPES_FOR_PROXY_CACHE: "docker-hub,harbor,azure-acr,aws-ecr,google-gcr,quay,docker-registry,jfrog-artifactory"
   {{- if .Values.metrics.enabled}}
   METRIC_ENABLE: "true"
   METRIC_PATH: "{{ .Values.metrics.core.path }}"
@@ -67,4 +67,15 @@ data:
 
   {{- if .Values.core.artifactPullAsyncFlushDuration | quote }}
   ARTIFACT_PULL_ASYNC_FLUSH_DURATION: {{ .Values.core.artifactPullAsyncFlushDuration }}
+  {{- end }}
+
+  {{- if .Values.core.gdpr}}
+  {{- if .Values.core.gdpr.deleteUser}}
+  GDPR_DELETE_USER: "true"
+  {{- end }}
+  {{- end }}
+
+  {{- if .Values.cache.enabled }}
+  CACHE_ENABLED: "true"
+  CACHE_EXPIRE_HOURS: "{{ .Values.cache.expireHours }}"
   {{- end }}

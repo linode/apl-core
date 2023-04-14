@@ -5,8 +5,12 @@ metadata:
   name: {{ template "harbor.notary-server" . }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
+{{- with .Values.notary.serviceAnnotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
 spec:
-{{- if  (eq .Values.expose.ingress.controller "gce") }}
+{{- if or (eq .Values.expose.ingress.controller "gce") (eq .Values.expose.ingress.controller "alb") (eq .Values.expose.ingress.controller "f5-bigip") }}
   type: NodePort
 {{- end }}
   ports:

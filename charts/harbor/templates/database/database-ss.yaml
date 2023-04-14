@@ -82,12 +82,14 @@ spec:
             - /docker-healthcheck.sh
           initialDelaySeconds: 300
           periodSeconds: 10
+          timeoutSeconds: {{ .Values.database.internal.livenessProbe.timeoutSeconds }}
         readinessProbe:
           exec:
             command:
             - /docker-healthcheck.sh
           initialDelaySeconds: 1
           periodSeconds: 10
+          timeoutSeconds: {{ .Values.database.internal.readinessProbe.timeoutSeconds }}
 {{- if .Values.database.internal.resources }}
         resources:
 {{ toYaml .Values.database.internal.resources | indent 10 }}
