@@ -237,6 +237,10 @@ postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.datab
   {{- printf "%s-jobservice" (include "harbor.fullname" .) -}}
 {{- end -}}
 
+{{- define "harbor.jobserviceScandata" -}}
+  {{- printf "%s-jobservice-scandata" (include "harbor.fullname" .) -}}
+{{- end -}}
+
 {{- define "harbor.registry" -}}
   {{- printf "%s-registry" (include "harbor.fullname" .) -}}
 {{- end -}}
