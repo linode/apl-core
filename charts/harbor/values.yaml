@@ -421,10 +421,10 @@ nginx:
   automountServiceAccountToken: false
   replicas: 1
   revisionHistoryLimit: 10
-  # resources:
-  #  requests:
-  #    memory: 256Mi
-  #    cpu: 100m
+  resources:
+   requests:
+     memory: 256Mi
+     cpu: 100m
   nodeSelector: {}
   tolerations: []
   affinity: {}
