@@ -115,6 +115,7 @@ describe('Bootstrapping values', () => {
       },
     }
     const deps = {
+      isChart: true,
       loadYaml: jest.fn().mockReturnValue(workload),
       mkdir: jest.fn(),
       terminal,

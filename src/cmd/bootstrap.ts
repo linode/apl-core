@@ -248,6 +248,7 @@ export const processValues = async (
 // create file structure based on file entry
 export const handleFileEntry = async (
   deps = {
+    isChart,
     loadYaml,
     mkdir,
     terminal,
@@ -255,19 +256,21 @@ export const handleFileEntry = async (
   },
 ) => {
   const { ENV_DIR, VALUES_INPUT } = env
-  // write Values from File
-  const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
-  if (originalValues && originalValues.files) {
-    for (const [key, value] of Object.entries(originalValues.files as string)) {
-      // extract folder name
-      const filePath = path.dirname(key)
-      // evaluate absolute file name and path
-      const absPath = `${ENV_DIR}/${filePath}`
-      const absFileName = `${ENV_DIR}/${key}`
-      // create Folder
-      await deps.mkdir(absPath, { recursive: true })
-      // write File
-      await deps.writeFile(absFileName, value.toString())
+  if (deps.isChart) {
+    // write Values from File
+    const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+    if (originalValues && originalValues.files) {
+      for (const [key, value] of Object.entries(originalValues.files as string)) {
+        // extract folder name
+        const filePath = path.dirname(key)
+        // evaluate absolute file name and path
+        const absPath = `${ENV_DIR}/${filePath}`
+        const absFileName = `${ENV_DIR}/${key}`
+        // create Folder
+        await deps.mkdir(absPath, { recursive: true })
+        // write File
+        await deps.writeFile(absFileName, value.toString())
+      }
     }
   }
 }
