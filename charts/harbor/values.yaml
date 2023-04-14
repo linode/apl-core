@@ -428,13 +428,12 @@ nginx:
   replicas: 1
   revisionHistoryLimit: 10
   resources:
-   requests:
-     memory: 256Mi
-     cpu: 100m
-  resources:
-   limits:
-     memory: 512Mi
-     cpu: 200m
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+       memory: 512Mi
+       cpu: 200m
   nodeSelector: {}
   tolerations: []
   affinity: {}
