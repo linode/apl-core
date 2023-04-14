@@ -492,10 +492,10 @@ environments:
           hasExternalDNS: false
           hasExternalIDP: false
           isHomeMonitored: false
-          isMultitenant: false
+          isMultitenant: true
           nodeSelector: {}
         # TODO: update this when schema version changes: (and think more?)
-        version: 5
+        version: 7
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

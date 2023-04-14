@@ -56,6 +56,16 @@
       "args": ["--runInBand", "--testTimeout=999999", "--watchAll=false", "${file}"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "name": "Bootstrap",
+      "request": "launch",
+      "runtimeArgs": ["run", "bootstrap"],
+      "runtimeExecutable": "npm",
+      "type": "node",
+      "envFile": ".env",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceRoot}"
     }
   ]
 }
