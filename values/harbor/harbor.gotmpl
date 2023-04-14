@@ -6,7 +6,7 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
-{{- $tag := $h | get "image.tag" "v2.5.4" }}
+{{- $tag := $h | get "image.tag" "v2.6.4" }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor

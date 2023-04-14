@@ -107,9 +107,6 @@ spec:
         - name: job-logs
           mountPath: /var/log/jobs
           subPath: {{ .Values.persistence.persistentVolumeClaim.jobservice.jobLog.subPath }}
-        - name: job-scandata-exports
-          mountPath: /var/scandata_exports
-          subPath: {{ .Values.persistence.persistentVolumeClaim.jobservice.scanDataExports.subPath }}
         {{- if .Values.internalTLS.enabled }}
         - name: jobservice-internal-certs
           mountPath: /etc/harbor/ssl/jobservice
@@ -125,13 +122,6 @@ spec:
         {{- if and .Values.persistence.enabled (has "file" .Values.jobservice.jobLoggers) }}
         persistentVolumeClaim:
           claimName: {{ .Values.persistence.persistentVolumeClaim.jobservice.jobLog.existingClaim | default (include "harbor.jobservice" .) }}
-        {{- else }}
-        emptyDir: {}
-        {{- end }}
-      - name: job-scandata-exports
-        {{- if and .Values.persistence.enabled }}
-        persistentVolumeClaim:
-          claimName: {{ .Values.persistence.persistentVolumeClaim.jobservice.scanDataExports.existingClaim | default (include "harbor.jobserviceScandata" .) }}
         {{- else }}
         emptyDir: {}
         {{- end }}
