@@ -14,7 +14,7 @@ import { getFilename, gucci, isCore, loadYaml, providerMap, rootDir } from 'src/
 import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $, nothrow, path } from 'zx'
 import { migrate } from './migrate'
 import { validateValues } from './validate-values'
 
@@ -251,6 +251,7 @@ export const handleFileEntry = async (
     mkdir,
     terminal,
     writeFile,
+    path,
   },
 ) => {
   const { ENV_DIR, VALUES_INPUT } = env
@@ -259,7 +260,7 @@ export const handleFileEntry = async (
   if (originalValues && originalValues.files) {
     for (const [key, value] of Object.entries(originalValues.files as string)) {
       // extract folder name
-      const filePath = key.split('/').slice(0, -1).join('/')
+      const filePath = deps.path.dirname(key)
       // evaluate absolute file name and path
       const absPath = `${ENV_DIR}/${filePath}`
       const absFileName = `${ENV_DIR}/${key}`
