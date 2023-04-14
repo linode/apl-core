@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.20.2](https://github.com/redkubes/otomi-core/compare/v0.20.1...v0.20.2) (2023-04-14)
+
+
+### Bug Fixes
+
+* harbor S3 storage and otomi pull/commit ([#1068](https://github.com/redkubes/otomi-core/issues/1068)) ([0e3b948](https://github.com/redkubes/otomi-core/commit/0e3b94822f866f17063cc98949b9609186d7118f))
+
+
+### Others
+
+* bump api version ([71d6609](https://github.com/redkubes/otomi-core/commit/71d6609f3ce13c6e809a1baea97577743f14c59a))
+* renable latest tag ([8c01a38](https://github.com/redkubes/otomi-core/commit/8c01a386c76b53e59acb583187f5ac48d03b1106))
+
 ### [0.20.1](https://github.com/redkubes/otomi-core/compare/v0.20.0...v0.20.1) (2023-04-06)
 
 
