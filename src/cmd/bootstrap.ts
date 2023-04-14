@@ -2,6 +2,7 @@ import { copy, pathExists } from 'fs-extra'
 import { copyFile, mkdir, readFile, writeFile } from 'fs/promises'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
+import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
@@ -14,7 +15,7 @@ import { getFilename, gucci, isCore, loadYaml, providerMap, rootDir } from 'src/
 import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { $, nothrow, path } from 'zx'
+import { $, nothrow } from 'zx'
 import { migrate } from './migrate'
 import { validateValues } from './validate-values'
 
@@ -251,7 +252,6 @@ export const handleFileEntry = async (
     mkdir,
     terminal,
     writeFile,
-    path,
   },
 ) => {
   const { ENV_DIR, VALUES_INPUT } = env
@@ -260,7 +260,7 @@ export const handleFileEntry = async (
   if (originalValues && originalValues.files) {
     for (const [key, value] of Object.entries(originalValues.files as string)) {
       // extract folder name
-      const filePath = deps.path.dirname(key)
+      const filePath = path.dirname(key)
       // evaluate absolute file name and path
       const absPath = `${ENV_DIR}/${filePath}`
       const absFileName = `${ENV_DIR}/${key}`
