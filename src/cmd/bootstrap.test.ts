@@ -4,6 +4,7 @@ import { pki } from 'node-forge'
 import { env } from 'process'
 import stubs from 'src/test-stubs'
 import { createMock } from 'ts-auto-mock'
+import { path } from 'zx'
 import {
   bootstrap,
   bootstrapSops,
@@ -117,6 +118,7 @@ describe('Bootstrapping values', () => {
     const deps = {
       loadYaml: jest.fn().mockReturnValue(workload),
       mkdir: jest.fn(),
+      path,
       terminal,
       writeFile: jest.fn(),
     }
