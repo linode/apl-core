@@ -1761,7 +1761,7 @@ properties:
                 additionalProperties: false
                 description: For reference go to https://github.com/distribution/distribution/blob/main/docs/configuration.md#storage
                 properties:
-                  aws:
+                  s3:
                     additionalProperties: false
                     properties:
                       accesskey:
@@ -1817,7 +1817,7 @@ properties:
                   type:
                     type: string
                     enum:
-                      - aws
+                      - s3
                       - azure
                       - gcs
                       - filesystem
@@ -3027,6 +3027,13 @@ properties:
         description: Optional. A public IP address that will override (loadbalancer) ip used for registering hosts. This allows for access to private clusters.
   home:
     $ref: '#/definitions/alerts'
+  files:
+    type: object
+    description: 'Custom values for the workload chart.'
+    patternProperties:
+      '^/|(/[\w-]+)+$':
+        type: string
+        pattern: ^[^\s]+$
   kms:
     additionalProperties: false
     properties:
@@ -3201,7 +3208,7 @@ properties:
         description: Whether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
         type: boolean
       isMultitenant:
-        default: false
+        default: true
         description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
       nodeSelector:

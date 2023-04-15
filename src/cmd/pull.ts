@@ -17,7 +17,7 @@ export const pull = async (): Promise<void> => {
   cd(env.ENV_DIR)
   try {
     await $`git fetch`
-    await $`if git log; then git merge origin/${branch}; fi`
+    await $`if git --no-pager log --decorate=short --pretty=oneline -n1; then git merge origin/${branch}; fi`
   } catch (error) {
     d.warn(
       `An error occured when trying to pull (maybe not problematic).\nIf you see merge conflicts then please resolve these and run \`otomi commit\` again.`,
