@@ -366,7 +366,7 @@ imagePullSecrets:
 # and chartmuseum): "RollingUpdate" or "Recreate"
 # Set it as "Recreate" when "RWM" for volumes isn't supported
 updateStrategy:
-  type: RollingUpdate
+  type: Recreate
 
 # debug, info, warning, error or fatal
 logLevel: info
