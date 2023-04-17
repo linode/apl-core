@@ -15,8 +15,10 @@ spec:
     - team-{{ $v.teamId }}
     includedResources: {{- toYaml $b.includedResources | nindent 4 }}
     includeClusterResources: false
+    {{- if hasKey $b "labelSelector" }}
     labelSelector:
-      matchLabels: {{- toYaml $b.labelSelector | nindent 8 }}
+      matchLabels: {{- toYaml $b.labelSelector | nindent 6 }}
+    {{- end }}
     snapshotVolumes: {{ $b.snapshotVolumes }}
     storageLocation: default
     volumeSnapshotLocations:

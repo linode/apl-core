@@ -10,8 +10,6 @@ teamConfig:
             ttl: 8h
             schedule: 0 0 0 * *
             snapshotVolumes: true
-            labelSelector:
-                app: my-app
             includedResources:
                 - pv
                 - secret
