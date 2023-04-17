@@ -20,8 +20,8 @@ spec:
       matchLabels: {{- toYaml $b.labelSelector | nindent 6 }}
     {{- end }}
     snapshotVolumes: {{ $b.snapshotVolumes }}
-    storageLocation: default
+    storageLocation: otomi
     volumeSnapshotLocations:
-      - default
+      - otomi
 {{- end }}
 {{- end }}
