@@ -13,9 +13,7 @@ metrics:
     additionalLabels:
       prometheus: system
 
-{{- if or (eq $cp.type "azure") (eq $cp.type "aws") (eq $cp.type "google") }}
 initContainers:
-{{- if eq $cp.type "azure" }}
   - name: velero-plugin-for-azure
     image: velero/velero-plugin-for-microsoft-azure:v1.5.0
     imagePullPolicy: IfNotPresent
@@ -29,8 +27,6 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
-{{- end }}
-{{- if eq $cp.type "aws" }}
   - name: velero-plugin-for-aws
     image: velero/velero-plugin-for-aws:v1.5.0
     imagePullPolicy: IfNotPresent
@@ -44,8 +40,6 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
-{{- end }}
-{{- if eq $cp.type "google" }}
   - name: velero-plugin-for-gcp
     image: velero/velero-plugin-for-gcp:v1.5.0
     imagePullPolicy: IfNotPresent
@@ -59,8 +53,6 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
-{{- end }}
-{{- end }}
 
 podSecurityContext:
   runAsUser: 1000
