@@ -1,0 +1,25 @@
+
+{{- $v := .Values }}
+{{- $b := $v.backup }}
+{{- if $v.apps.velero.enabled }}
+{{- if $b.enabled }}
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: team-{{ $v.teamId }}-backup-schedule
+  namespace: velero
+spec:
+  schedule: {{ $b.schedule }}
+  template:
+    includedNamespaces:
+    - team-{{ $v.teamId }}
+    includedResources: {{- toYaml $b.includedResources | nindent 4 }}
+    includeClusterResources: false
+    labelSelector:
+      matchLabels: {{- toYaml $b.labelSelector | nindent 8 }}
+    snapshotVolumes: {{ $b.snapshotVolumes }}
+    storageLocation: default
+    volumeSnapshotLocations:
+      - default
+{{- end }}
+{{- end }}

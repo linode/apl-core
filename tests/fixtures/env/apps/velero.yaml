@@ -1,6 +1,8 @@
 apps:
     velero:
         enabled: true
+        restic:
+            enabled: false
         cloud:
             azure:
                 resourceGroup: test
