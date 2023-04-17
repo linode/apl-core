@@ -37,3 +37,4 @@ teamConfig:
                 - networkPolicy
             team:
                 - alerts
+                - backup
