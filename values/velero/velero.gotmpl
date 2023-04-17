@@ -57,8 +57,6 @@ initContainers:
 podSecurityContext:
   runAsUser: 1000
 
-logLevel: {{ $vl.logLevel }}
-
 configuration:
   {{- if eq $sp.type "azureBlob" }}
   provider: azure
@@ -125,6 +123,7 @@ configuration:
 
   # if set Velero will back up all pod volumes using Restic with the exception of service account tokens, secrets, config maps and hostpath volumes
   defaultVolumesToRestic: {{ $vl.restic.enabled }}
+  logLevel: {{ $vl.logLevel }}
 
 credentials:
   secretContents:
