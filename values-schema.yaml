@@ -1263,8 +1263,8 @@ definitions:
           enum: [argocd, gitea]
         uniqueItems: true
   backupTtl:
-    default: 24h
-    description: Expiration of the backup.
+    default: 168h
+    description: Expiration of the backup. Defauls to 7 days.
     title: TTL after finished
     type: string
   url:
