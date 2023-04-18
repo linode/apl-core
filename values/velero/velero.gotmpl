@@ -65,7 +65,7 @@ configuration:
     bucket: {{ $sp.s3.bucket }}
     config:
       s3Url: {{ $sp.s3.s3Url }}
-      region: {{ $sp.s3.region }}
+      region: {{ $cp.aws.region }}
   {{- end }}
   {{- if eq $sp.type "minioLocal" }}
   provider: aws
