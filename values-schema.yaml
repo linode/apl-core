@@ -1264,7 +1264,7 @@ definitions:
         uniqueItems: true
   backupTtl:
     default: 168h
-    description: Expiration of the backup. Defauls to 7 days.
+    description: Expiration of the backup. Defaults to 7 days.
     title: TTL after finished
     type: string
   url:
