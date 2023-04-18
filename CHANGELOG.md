@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.20.3](https://github.com/redkubes/otomi-core/compare/v0.20.2...v0.20.3) (2023-04-18)
+
+
+### Bug Fixes
+
+* aws region ([#1084](https://github.com/redkubes/otomi-core/issues/1084)) ([f58620b](https://github.com/redkubes/otomi-core/commit/f58620b23c65d7d91cdb5417be7cee8c2d5cdcb7))
+* s3 objs for s3 ([#1085](https://github.com/redkubes/otomi-core/issues/1085)) ([77ea507](https://github.com/redkubes/otomi-core/commit/77ea507c082fec6c55cabd45eb8d73b17991e1f8))
+
 ### [0.20.2](https://github.com/redkubes/otomi-core/compare/v0.20.1...v0.20.2) (2023-04-14)
 
 
