@@ -16,38 +16,6 @@ harborAdminPassword: {{ $v.otomi.adminPassword }}
 nameOverride: harbor
 secretKey: {{ $h | get "secretKey" nil }}
 
-clair:
-  adapter:
-    image:
-      tag: {{ $tag }}
-    resources:
-      {{- with $h | get "resources.clair-adapter" nil }}
-      {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 400m
-        memory: 256Mi
-      requests:
-        cpu: 100m 
-        memory: 256Mi
-      {{- end }}
-  clair:
-    image:
-      tag: {{ $tag }}
-    resources:
-      {{- with $h | get "resources.clair" nil }}
-      {{- toYaml . | nindent 6 }}
-      {{- else }}
-      requests:
-        cpu: 100m 
-        memory: 1Gi
-      limits:
-        cpu: 400m
-        memory: 2Gi
-      {{- end }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
-
 chartmuseum:
   image:
     tag: {{ $tag }}
