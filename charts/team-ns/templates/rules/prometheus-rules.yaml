@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- if $v.apps.prometheus.enabled }}
-{{- if $v.apps.alertmanager.enabled }}
 {{- if $v.apps.opencost.enabled }}
 {{- if not (eq $v.teamId "admin") }}
+---
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
@@ -30,7 +30,6 @@ spec:
         annotations:
           description: The monthly memory cost of team {{ $v.teamId }} reached {{ $v.billingAlertQuotas.teamMemMonthQuotaReached.quota }}
           summary: team memory cost quota p.m. reached
-{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
