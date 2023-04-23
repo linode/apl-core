@@ -58,7 +58,7 @@ kms:
             clientId: somesecretvalue
             keys: somesecretvalue
             tenantId: somesecretvalue
-backups:
+platformBackups:
     gitea:
         enabled: false
     drone:

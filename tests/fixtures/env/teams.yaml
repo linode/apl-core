@@ -5,19 +5,6 @@ teamConfig:
         alerts:
             receivers:
                 - email
-        backup:
-            enabled: true
-            ttl: 8h
-            schedule: 0 0 0 * *
-            snapshotVolumes: true
-            includedResources:
-                - pv
-                - secret
-                - configmap
-                - deployment
-                - service
-                - statefulset
-                - replicaset
         id: demo
         # monitoringStack:
         #     enabled: false
@@ -35,4 +22,3 @@ teamConfig:
                 - networkPolicy
             team:
                 - alerts
-                - backup

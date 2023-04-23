@@ -352,11 +352,11 @@ definitions:
     pattern: ^([1-9][0-9]*|([0]|[1-9]+)\\.[0-9]{1,3}|[1-9][0-9]*m)$
     type: string
   backup:
-    title: Backup
+    type: object
+    description: Team backups
     properties:
-      enabled:
-        type: boolean
-        default: false
+      name:
+        $ref: '#/definitions/wordCharacterPattern'
       ttl:
         $ref: '#/definitions/backupTtl'
       schedule:
@@ -1182,8 +1182,10 @@ definitions:
             $ref: '#/definitions/shortcuts'
       azureMonitor:
         $ref: '#/definitions/azure/definitions/monitor'
-      backup:
-        $ref: '#/definitions/backup'
+      backups:
+        type: array
+        items:
+          $ref: '#/definitions/backup'
       secrets:
         items:
           $ref: '#/definitions/secret'
@@ -1245,6 +1247,12 @@ definitions:
     type: object
     properties:
       service:
+        type: array
+        items:
+          type: string
+          enum: [ingress, networkPolicy]
+        uniqueItems: true
+      backup:
         type: array
         items:
           type: string
@@ -3478,7 +3486,7 @@ properties:
         description: 'The smtp host:port combination.'
     required:
       - smarthost
-  backups:
+  platformBackups:
     properties:
       gitea:
         title: Gitea

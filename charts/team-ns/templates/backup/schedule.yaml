@@ -1,26 +1,26 @@
 
 {{- $v := .Values }}
-{{- $b := $v.backup }}
 {{- if $v.apps.velero.enabled }}
-{{- if $b.enabled }}
+{{- range $v.backups }}
+---
 apiVersion: velero.io/v1
 kind: Schedule
 metadata:
-  name: team-{{ $v.teamId }}-backup-schedule
+  name: team-{{ $v.teamId }}-backup-{{ .name }}
   namespace: velero
 spec:
-  schedule: {{ $b.schedule }}
+  schedule: {{ .schedule }}
   template:
     includedNamespaces:
     - team-{{ $v.teamId }}
-    includedResources: {{- toYaml $b.includedResources | nindent 4 }}
-    ttl: {{ $b.ttl }}
+    includedResources: {{- toYaml .includedResources | nindent 4 }}
+    ttl: {{ .ttl }}
     includeClusterResources: false
-    {{- if hasKey $b "labelSelector" }}
+    {{- if hasKey . "labelSelector" }}
     labelSelector:
-      matchLabels: {{- toYaml $b.labelSelector | nindent 6 }}
+      matchLabels: {{- toYaml .labelSelector | nindent 8 }}
     {{- end }}
-    snapshotVolumes: {{ $b.snapshotVolumes }}
+    snapshotVolumes: {{ .snapshotVolumes }}
     storageLocation: otomi
     volumeSnapshotLocations:
       - otomi
