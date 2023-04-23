@@ -4,23 +4,22 @@ teamConfig:
             - name: bu1
               ttl: 8h
               schedule: 0 0 0 * *
+              snapshotVolumes: true
+              includedResources:
+                  - pv
+                  - secret
+                  - configmap
+                  - deployment
+                  - service
+                  - statefulset
+                  - replicaset
             - name: bu2
               ttl: 8h
               schedule: 0 0 0 * *
-
-            #   snapshotVolumes: true
-            #   includedResources:
-            #       - pv
-            #       - secret
-            #       - configmap
-            #   labelSelector:
-            #     app: my-app
-            #   snapshotVolumes: true
-            #   includedResources:
-            #       - pv
-            #       - secret
-            #       - configmap
-            #       - deployment
-            #       - service
-            #       - statefulset
-            #       - replicaset
+              snapshotVolumes: true
+              includedResources:
+                  - pv
+                  - secret
+                  - configmap
+              labelSelector:
+                  app: my-app
