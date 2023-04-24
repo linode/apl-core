@@ -90,7 +90,7 @@ jobs:
           docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
           release_tag="v$(echo $COMMIT_MSG | cut -d' ' -f2)"
-          echo name=tag::$release_tag >> $GITHUB_OUTPUT
+          echo tag=$release_tag >> $GITHUB_OUTPUT
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag
           docker push $REPO:$release_tag
@@ -101,7 +101,7 @@ jobs:
           changelog="${changelog//'%'/'%25'}"
           changelog="${changelog//$'\n'/'%0A'}"
           changelog="${changelog//$'\r'/'%0D'}"
-          echo name=changes::$changelog >> $GITHUB_OUTPUT
+          echo changes=$changelog >> $GITHUB_OUTPUT
       - name: Create GitHub release
         uses: actions/create-release@v1
         env:
