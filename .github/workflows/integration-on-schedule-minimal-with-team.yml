@@ -1,16 +1,16 @@
-name: Scheduled - full with nip.io
+name: Scheduled - minimal with team
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
     - cron: '0 0 * * *'
 
 jobs:
-  start-integration-test-full:
-    name: Start integration test (full)
+  start-integration-test-minimal:
+    name: Start integration test (minimal)
     uses: ./.github/workflows/integration.yml
     secrets: inherit
     with:
-      install_profile: full
+      install_profile: minimal-with-team
       cluster_region: ams3
-      kubernetes_versions: "['1.24', '1.25']"
+      kubernetes_versions: "['1.24']"
       generate_password: 'yes'
