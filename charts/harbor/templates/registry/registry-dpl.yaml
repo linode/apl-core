@@ -1,3 +1,5 @@
+{{- $storage := .Values.persistence.imageChartStorage }}
+{{- $type := $storage.type }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -39,6 +41,7 @@ spec:
       securityContext:
         runAsUser: 10000
         fsGroup: 10000
+        fsGroupChangePolicy: OnRootMismatch
 {{- if .Values.registry.serviceAccountName }}
       serviceAccountName: {{ .Values.registry.serviceAccountName }}
 {{- end -}}
@@ -74,6 +77,10 @@ spec:
         envFrom:
         - secretRef:
             name: "{{ template "harbor.registry" . }}"
+        {{- if .Values.persistence.imageChartStorage.s3.existingSecret }}
+        - secretRef:
+            name: {{ .Values.persistence.imageChartStorage.s3.existingSecret }}
+        {{- end }}
         env:
         {{- if has "registry" .Values.proxy.components }}
         - name: HTTP_PROXY
@@ -93,6 +100,13 @@ spec:
         - name: INTERNAL_TLS_TRUST_CA_PATH
           value: /etc/harbor/ssl/registry/ca.crt
         {{- end }}
+        {{- if .Values.persistence.imageChartStorage.azure.existingSecret }}
+        - name: REGISTRY_STORAGE_AZURE_ACCOUNTKEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.persistence.imageChartStorage.azure.existingSecret }}
+              key: AZURE_STORAGE_ACCESS_KEY
+        {{- end }}
         ports:
         - containerPort: {{ template "harbor.registry.containerPort" . }}
         - containerPort: 5001
@@ -110,7 +124,7 @@ spec:
         - name: registry-internal-certs
           mountPath: /etc/harbor/ssl/registry
         {{- end }}
-        {{- if and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs") }}
+        {{- if and (and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs")) (not .Values.persistence.imageChartStorage.gcs.useWorkloadIdentity) }}
         - name: gcs-key
           mountPath: /etc/registry/gcs-key.json
           subPath: gcs-key.json
@@ -187,6 +201,20 @@ spec:
         - name: INTERNAL_TLS_TRUST_CA_PATH
           value: /etc/harbor/ssl/registry/ca.crt
         {{- end }}
+        {{- if .Values.redis.external.existingSecret }}
+        - name: REGISTRY_REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.redis.external.existingSecret }}
+              key: REDIS_PASSWORD
+        {{- end }}
+        {{- if .Values.persistence.imageChartStorage.azure.existingSecret }}
+        - name: REGISTRY_STORAGE_AZURE_ACCOUNTKEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.persistence.imageChartStorage.azure.existingSecret }}
+              key: AZURE_STORAGE_ACCESS_KEY
+        {{- end }}
         ports:
         - containerPort: {{ template "harbor.registryctl.containerPort" . }}
         volumeMounts:
@@ -208,7 +236,7 @@ spec:
           mountPath: /harbor_cust_cert/custom-ca-bundle.crt
           subPath: ca.crt
         {{- end }}
-        {{- if and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs") }}
+        {{- if and (and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs")) (not .Values.persistence.imageChartStorage.gcs.useWorkloadIdentity ) }}
         - name: gcs-key
           mountPath: /etc/registry/gcs-key.json
           subPath: gcs-key.json
@@ -219,7 +247,11 @@ spec:
       volumes:
       - name: registry-htpasswd
         secret:
+          {{- if not .Values.registry.credentials.existingSecret }}
           secretName: {{ template "harbor.registry" . }}-htpasswd
+          {{ else }}
+          secretName: {{ .Values.registry.credentials.existingSecret }}
+          {{- end }}
           items:
             - key: REGISTRY_HTPASSWD
               path: passwd
@@ -238,10 +270,14 @@ spec:
         secret:
           secretName: {{ template "harbor.internalTLS.registry.secretName" . }}
       {{- end }}
-      {{- if and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs") }}
+      {{- if and (and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs")) (not .Values.persistence.imageChartStorage.gcs.useWorkloadIdentity ) }}
       - name: gcs-key
         secret:
+          {{- if and (eq $type "gcs") $storage.gcs.existingSecret }}
+          secretName: {{ $storage.gcs.existingSecret }}
+          {{- else }}
           secretName: {{ template "harbor.registry" . }}
+          {{- end }}
           items:
             - key: GCS_KEY_DATA
               path: gcs-key.json
