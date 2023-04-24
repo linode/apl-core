@@ -19,6 +19,9 @@ global:
   # - ip: 192.168.137.2
   #   hostnames:
   #   - example.com
+  postgresql:
+    auth:
+      postgresPassword: gitea
 
 ## @param replicaCount number of replicas for the statefulset
 replicaCount: 1
