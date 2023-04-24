@@ -22,4 +22,7 @@ teamConfig:
                   - secret
                   - configmap
               labelSelector:
-                  app: my-app
+                  - name: app
+                    value: hello
+                  - name: backup
+                    value: all

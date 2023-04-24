@@ -18,7 +18,10 @@ spec:
     includeClusterResources: false
     {{- if hasKey . "labelSelector" }}
     labelSelector:
-      matchLabels: {{- toYaml .labelSelector | nindent 8 }}
+      matchLabels:
+        {{- range .labelSelector}}
+        {{ .name }}{{ printf ": " }}{{ .value }}
+        {{- end }}
     {{- end }}
     snapshotVolumes: {{ .snapshotVolumes }}
     storageLocation: otomi
