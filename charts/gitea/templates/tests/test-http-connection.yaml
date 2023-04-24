@@ -1,4 +1,3 @@
-{{- if .Values.test.enabled }}
 apiVersion: v1
 kind: Pod
 metadata:
@@ -10,8 +9,7 @@ metadata:
 spec:
   containers:
     - name: wget
-      image: "{{ .Values.test.image.name }}:{{ .Values.test.image.tag }}"
+      image: busybox
       command: ['wget']
       args:  ['{{ include "gitea.fullname" . }}-http:{{ .Values.service.http.port }}']
   restartPolicy: Never
-{{- end }}
