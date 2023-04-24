@@ -1834,10 +1834,6 @@ properties:
             properties:
               chartmuseum:
                 $ref: '#/definitions/resources'
-              clair:
-                $ref: '#/definitions/resources'
-              clair-adapter:
-                $ref: '#/definitions/resources'
               core:
                 $ref: '#/definitions/resources'
               database:
