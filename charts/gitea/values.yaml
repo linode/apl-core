@@ -6,6 +6,7 @@
 ## @param global.imageRegistry global image registry override
 ## @param global.imagePullSecrets global image pull secrets override; can be extended by `imagePullSecrets`
 ## @param global.storageClass global storage class override
+## @param global.hostAliases global hostAliases which will be added to the pod's hosts files
 global:
   imageRegistry: ""
   ## E.g.
@@ -14,6 +15,10 @@ global:
   ##
   imagePullSecrets: []
   storageClass: ""
+  hostAliases: []
+  # - ip: 192.168.137.2
+  #   hostnames:
+  #   - example.com
 
 ## @param replicaCount number of replicas for the statefulset
 replicaCount: 1
@@ -63,7 +68,7 @@ containerSecurityContext: {}
 #   runAsNonRoot: true
 #   runAsUser: 1000
 
-## @depracated The securityContext variable has been split two:
+## @deprecated The securityContext variable has been split two:
 ## - containerSecurityContext
 ## - podSecurityContext.
 ## @param securityContext Run init and Gitea containers as a specific securityContext
@@ -120,7 +125,6 @@ service:
     loadBalancerSourceRanges: []
     annotations: {}
 
-
 ## @section Ingress
 ## @param ingress.enabled Enable ingress
 ## @param ingress.className Ingress class name
@@ -134,7 +138,8 @@ ingress:
   enabled: false
   # className: nginx
   className:
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -153,7 +158,8 @@ ingress:
 ## @section StatefulSet
 #
 ## @param resources Kubernetes resources
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -183,12 +189,16 @@ affinity: {}
 ## @param dnsConfig dnsConfig for the statefulset
 dnsConfig: {}
 
+## @param priorityClassName priorityClassName for the statefulset
+priorityClassName: ""
+
 ## @param statefulset.env  Additional environment variables to pass to containers
 ## @param statefulset.terminationGracePeriodSeconds How long to wait until forcefully kill the pod
 ## @param statefulset.labels Labels for the statefulset
 ## @param statefulset.annotations Annotations for the Gitea StatefulSet to be created
 statefulset:
-  env: []
+  env:
+    []
     # - name: VARIABLE
     #   value: my-value
   terminationGracePeriodSeconds: 60
@@ -228,7 +238,7 @@ extraContainerVolumeMounts: []
 ## @param extraInitVolumeMounts Mounts that are only mapped into the init-containers. Can be used for additional preconfiguration.
 extraInitVolumeMounts: []
 
-## @depracated The extraVolumeMounts variable has been split two:
+## @deprecated The extraVolumeMounts variable has been split two:
 ## - extraContainerVolumeMounts
 ## - extraInitVolumeMounts
 ## As an example, can be used to mount a client cert when connecting to an external Postgres server.
@@ -248,14 +258,32 @@ initPreScript: ""
 #   chown -R git:git /data/git/.postgresql/
 #   chmod 400 /data/git/.postgresql/postgresql.key
 
+## @param initContainers.resources.limits initContainers.limits Kubernetes resource limits for init containers
+## @param initContainers.resources.requests.cpu initContainers.requests.cpu Kubernetes cpu resource limits for init containers
+## @param initContainers.resources.requests.memory initContainers.requests.memory Kubernetes memory resource limits for init containers
+initContainers:
+  resources:
+    limits: {}
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
 # Configure commit/action signing prerequisites
 ## @section Signing
 #
 ## @param signing.enabled Enable commit/action signing
 ## @param signing.gpgHome GPG home directory
+## @param signing.privateKey Inline private gpg key for signed Gitea actions
+## @param signing.existingSecret Use an existing secret to store the value of `signing.privateKey`
 signing:
   enabled: false
   gpgHome: /data/git/.gnupg
+  privateKey: ""
+  # privateKey: |-
+  #   -----BEGIN PGP PRIVATE KEY BLOCK-----
+  #   ...
+  #   -----END PGP PRIVATE KEY BLOCK-----
+  existingSecret: ""
 
 ## @section Gitea
 #
@@ -265,7 +293,7 @@ gitea:
   ## @param gitea.admin.password Password for the Gitea admin user
   ## @param gitea.admin.email Email for the Gitea admin user
   admin:
-    #existingSecret: gitea-admin-secret
+    # existingSecret: gitea-admin-secret
     existingSecret:
     username: gitea_admin
     password: r8sA8CPHD9!bt6d
@@ -281,7 +309,8 @@ gitea:
       #    prometheus-release: prom1
 
   ## @param gitea.ldap LDAP configuration
-  ldap: []
+  ldap:
+    []
     # - name: "LDAP 1"
     #  existingSecret:
     #  securityProtocol:
@@ -298,7 +327,8 @@ gitea:
 
   # Either specify inline `key` and `secret` or refer to them via `existingSecret`
   ## @param gitea.oauth OAuth configuration
-  oauth: []
+  oauth:
+    []
     # - name: 'OAuth 1'
     #   provider:
     #   key:
@@ -334,6 +364,10 @@ gitea:
 
   ## @param gitea.podAnnotations Annotations for the Gitea pod
   podAnnotations: {}
+
+  ## @param gitea.ssh.logLevel Configure OpenSSH's log level. Only available for root-based Gitea image.
+  ssh:
+    logLevel: "INFO"
 
   ## @section LivenessProbe
   #
@@ -398,72 +432,41 @@ gitea:
 ## @section Memcached
 #
 ## @param memcached.enabled Memcached is loaded as a dependency from [Bitnami](https://github.com/bitnami/charts/tree/master/bitnami/memcached) if enabled in the values. Complete Configuration can be taken from their website.
-## @param memcached.service.port Port for Memcached
+## ref: https://hub.docker.com/r/bitnami/memcached/tags/
+## @param memcached.service.ports.memcached Port for Memcached
 memcached:
   enabled: true
+  # image:
+  #   registry: docker.io
+  #   repository: bitnami/memcached
+  #   tag: ""
+  #   digest: ""
+  #   pullPolicy: IfNotPresent
+  #   pullSecrets: []
   service:
-    port: 11211
+    ports:
+      memcached: 11211
 
 ## @section PostgreSQL
 #
 ## @param postgresql.enabled Enable PostgreSQL
-## @param postgresql.global.postgresql.postgresqlDatabase PostgreSQL database (overrides postgresqlDatabase)
-## @param postgresql.global.postgresql.postgresqlUsername PostgreSQL username (overrides postgresqlUsername)
-## @param postgresql.global.postgresql.postgresqlPassword PostgreSQL admin password (overrides postgresqlPassword)
-## @param postgresql.global.postgresql.servicePort PostgreSQL port (overrides service.port)
-## @param postgresql.persistence.size PVC Storage Request for PostgreSQL volume
+## @param postgresql.global.postgresql.auth.password Password for the "gitea" user (overrides `auth.password`)
+## @param postgresql.global.postgresql.auth.database Name for a custom database to create (overrides `auth.database`)
+## @param postgresql.global.postgresql.auth.username Name for a custom user to create (overrides `auth.username`)
+## @param postgresql.global.postgresql.service.ports.postgresql PostgreSQL service port (overrides `service.ports.postgresql`)
+## @param postgresql.primary.persistence.size PVC Storage Request for PostgreSQL volume
 postgresql:
   enabled: true
   global:
     postgresql:
-      postgresqlDatabase: gitea
-      postgresqlUsername: gitea
-      postgresqlPassword: gitea
-      servicePort: 5432
-  persistence:
-    size: 10Gi
-
-## @section MySQL
-#
-## @param mysql.enabled Enable MySQL
-## @param mysql.root.password Password for the root user. Ignored if existing secret is provided
-## @param mysql.db.user Username of new user to create.
-## @param mysql.db.password Password for the new user.Ignored if existing secret is provided
-## @param mysql.db.name Name for new database to create.
-## @param mysql.service.port Port to connect to MySQL service
-## @param mysql.persistence.size PVC Storage Request for MySQL volume
-mysql:
-  enabled: false
-  root:
-    password: gitea
-  db:
-    user: gitea
-    password: gitea
-    name: gitea
-  service:
-    port: 3306
-  persistence:
-    size: 10Gi
-
-## @section MariaDB
-#
-## @param mariadb.enabled Enable MariaDB
-## @param mariadb.auth.database Name of the database to create.
-## @param mariadb.auth.username Username of the new user to create.
-## @param mariadb.auth.password Password for the new user. Ignored if existing secret is provided
-## @param mariadb.auth.rootPassword Password for the root user.
-## @param mariadb.primary.service.port Port to connect to MariaDB service
-## @param mariadb.primary.persistence.size Persistence size for MariaDB
-mariadb:
-  enabled: false
-  auth:
-    database: gitea
-    username: gitea
-    password: gitea
-    rootPassword: gitea
+      auth:
+        password: gitea
+        database: gitea
+        username: gitea
+      service:
+        ports:
+          postgresql: 5432
   primary:
-    service:
-      port: 3306
     persistence:
       size: 10Gi
 
@@ -471,4 +474,12 @@ mariadb:
 # Set it to false to skip this basic validation check.
 ## @section Advanced
 ## @param checkDeprecation Set it to false to skip this basic validation check.
+## @param test.enabled Set it to false to disable test-connection Pod.
+## @param test.image.name Image name for the wget container used in the test-connection Pod.
+## @param test.image.tag Image tag for the wget container used in the test-connection Pod.
 checkDeprecation: true
+test:
+  enabled: true
+  image:
+    name: busybox
+    tag: latest

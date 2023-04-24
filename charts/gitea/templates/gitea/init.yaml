@@ -6,6 +6,11 @@ metadata:
     {{- include "gitea.labels" . | nindent 4 }}
 type: Opaque
 stringData:
+  configure_gpg_environment.sh: |-
+    #!/usr/bin/env bash
+    set -eu
+
+    gpg --batch --import /raw/private.asc
   init_directory_structure.sh: |-
     #!/usr/bin/env bash
 
@@ -26,7 +31,7 @@ stringData:
     {{- end }}
     mkdir -p /data/git/.ssh
     chmod -R 700 /data/git/.ssh
-    [ ! -d /data/gitea ] && mkdir -p /data/gitea/conf
+    [ ! -d /data/gitea/conf ] && mkdir -p /data/gitea/conf
 
     # prepare temp directory structure
     mkdir -p "${GITEA_TEMP}"
@@ -34,6 +39,14 @@ stringData:
     chown 1000:1000 "${GITEA_TEMP}"
     {{- end }}
     chmod ug+rwx "${GITEA_TEMP}"
+
+    {{ if .Values.signing.enabled -}}
+    if [ ! -d "${GNUPGHOME}" ]; then
+      mkdir -p "${GNUPGHOME}"
+      chmod 700 "${GNUPGHOME}"
+      chown 1000:1000 "${GNUPGHOME}"
+    fi
+    {{- end }}
 
   configure_gitea.sh: |-
     #!/usr/bin/env bash
