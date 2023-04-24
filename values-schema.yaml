@@ -1270,29 +1270,34 @@ definitions:
       tag:
         description: Image tag
         $ref: '#/definitions/imageTag'
-      privateGit:
-        type: boolean
-        default: false
-      otomiGit:
-        type: boolean
-        default: false
-      repoUrl:
-        description: URL of the Git repository holding the application code.
-        $ref: '#/definitions/url'
-      revision:
-        description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
-        $ref: '#/definitions/wordCharacterPattern'
-        default: HEAD
-      path:
-        description: A relative directory path within the Git repository.
-        $ref: '#/definitions/wordCharacterPattern'
-      repoUserName:
-        description: The username used for basic authentication to access a private github repo.
-        $ref: '#/definitions/wordCharacterPattern'
-      repoPassword:
-        x-secret: ''
-        $ref: '#/definitions/wordCharacterPattern'
-        description: The password used for basic authentication to access a private github repo.
+      repoAccess:
+        properties:
+          privateGit:
+            type: boolean
+            default: false
+          otomiGit:
+            type: boolean
+            default: false
+          repoUserName:
+            description: The username used for basic authentication to access a private github repo.
+            $ref: '#/definitions/wordCharacterPattern'
+          repoPassword:
+            x-secret: ''
+            $ref: '#/definitions/wordCharacterPattern'
+            description: The password used for basic authentication to access a private github repo.
+      appSource:
+        properties:
+          repoUrl:
+            description: URL of the Git repository holding the application code.
+            $ref: '#/definitions/url'
+          revision:
+            description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
+            $ref: '#/definitions/wordCharacterPattern'
+            default: HEAD
+          path:
+            description: A relative directory path within the Git repository.
+            $ref: '#/definitions/wordCharacterPattern'
+
     required:
       - name
       - repoUrl

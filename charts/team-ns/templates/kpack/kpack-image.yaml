@@ -13,10 +13,10 @@ spec:
     kind: Builder
   source:
     git:
-      url: {{ .repoUrl }}
-      revision: {{ .revision }}
+      url: {{ .appSource.repoUrl }}
+      revision: {{ .appSource.revision }}
     {{- if .path }}
-    subPath: {{ .path }}
+    subPath: {{ .appSource.path }}
     {{- end }}
   build:
     resources:
