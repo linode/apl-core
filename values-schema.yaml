@@ -1297,10 +1297,10 @@ definitions:
           path:
             description: A relative directory path within the Git repository.
             $ref: '#/definitions/wordCharacterPattern'
-
+        required:
+          - repoUrl
     required:
       - name
-      - repoUrl
 
   workload:
     type: object
