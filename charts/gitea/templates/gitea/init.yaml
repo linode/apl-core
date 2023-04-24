@@ -108,12 +108,14 @@ stringData:
       {{- range $idx, $value := .Values.gitea.oauth }}
       local OAUTH_NAME={{ (printf "%s" $value.name) | squote }}
       local AUTH_ID=$(gitea admin auth list --vertical-bars | grep -E "\|${OAUTH_NAME}\s+\|" | grep -iE '\|OAuth2\s+\|' | awk -F " "  "{print \$1}")
+
       if [[ -z "${AUTH_ID}" ]]; then
         echo "No oauth configuration found with name '${OAUTH_NAME}'. Installing it now..."
-
+        gitea admin auth add-oauth {{- include "gitea.oauth_settings" (list $idx $value) | indent 1 }}
         echo '...installed.'
       else
         echo "Existing oauth configuration with name '${OAUTH_NAME}': '${AUTH_ID}'. Running update to sync settings..."
+        gitea admin auth update-oauth --id "${AUTH_ID}" {{- include "gitea.oauth_settings" (list $idx $value) | indent 1 }}
         echo '...sync settings done.'
       fi
       {{- end }}
