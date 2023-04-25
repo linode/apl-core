@@ -8,6 +8,9 @@
 nameOverride: gitea
 fullnameOverride: gitea
 
+auth:
+  enablePostgresUser: true
+
 resources:
   {{ with $g | get "resources.gitea" nil }}
     {{- toYaml . | nindent 2 }}
