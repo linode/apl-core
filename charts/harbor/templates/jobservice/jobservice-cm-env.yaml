@@ -20,3 +20,8 @@ data:
   METRIC_SUBSYSTEM: jobservice
   {{- end }}
   {{- template "harbor.traceEnvsForJobservice" . }}
+  {{- if .Values.cache.enabled }}
+  _REDIS_URL_CORE: "{{ template "harbor.redis.urlForCore" . }}"
+  CACHE_ENABLED: "true"
+  CACHE_EXPIRE_HOURS: "{{ .Values.cache.expireHours }}"
+  {{- end }}

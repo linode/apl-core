@@ -96,6 +96,20 @@ spec:
           - name: INTERNAL_TLS_TRUST_CA_PATH
             value: /etc/harbor/ssl/core/ca.crt
          {{- end }}
+         {{- if .Values.database.external.existingSecret }}
+          - name: POSTGRESQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.database.external.existingSecret }}
+                key: password
+         {{- end }}
+         {{- if .Values.registry.credentials.existingSecret }}
+          - name: REGISTRY_CREDENTIAL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.registry.credentials.existingSecret }}
+                key: REGISTRY_PASSWD
+         {{- end }}
         ports:
         - containerPort: {{ template "harbor.core.containerPort" . }}
         volumeMounts:
@@ -139,7 +153,11 @@ spec:
               path: app.conf
       - name: secret-key
         secret:
+          {{- if .Values.existingSecretSecretKey }}
+          secretName: {{ .Values.existingSecretSecretKey }}
+          {{- else }}
           secretName: {{ template "harbor.core" . }}
+          {{- end }}
           items:
             - key: secretKey
               path: key

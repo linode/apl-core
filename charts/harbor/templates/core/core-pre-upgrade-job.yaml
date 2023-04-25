@@ -40,6 +40,14 @@ spec:
             name: "{{ template "harbor.core" . }}"
         - secretRef:
             name: "{{ template "harbor.core" . }}"
+        {{- if .Values.database.external.existingSecret }}
+        env:
+          - name: POSTGRESQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.database.external.existingSecret }}
+                key: password
+        {{- end }}               
         volumeMounts:
         - name: config
           mountPath: /etc/core/app.conf
