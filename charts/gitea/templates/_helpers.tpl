@@ -331,3 +331,7 @@ https
     {{- toYaml .Values.extraVolumeMounts -}}
   {{- end -}}
 {{- end -}}
+
+{{- define "gitea.gpg-key-secret-name" -}}
+{{ default (printf "%s-gpg-key" (include "gitea.fullname" .)) .Values.signing.existingSecret }}
+{{- end -}}

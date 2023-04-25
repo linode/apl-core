@@ -63,7 +63,7 @@ containerSecurityContext: {}
 #   runAsNonRoot: true
 #   runAsUser: 1000
 
-## @depracated The securityContext variable has been split two:
+## @deprecated The securityContext variable has been split two:
 ## - containerSecurityContext
 ## - podSecurityContext.
 ## @param securityContext Run init and Gitea containers as a specific securityContext
@@ -228,7 +228,7 @@ extraContainerVolumeMounts: []
 ## @param extraInitVolumeMounts Mounts that are only mapped into the init-containers. Can be used for additional preconfiguration.
 extraInitVolumeMounts: []
 
-## @depracated The extraVolumeMounts variable has been split two:
+## @deprecated The extraVolumeMounts variable has been split two:
 ## - extraContainerVolumeMounts
 ## - extraInitVolumeMounts
 ## As an example, can be used to mount a client cert when connecting to an external Postgres server.
@@ -253,9 +253,17 @@ initPreScript: ""
 #
 ## @param signing.enabled Enable commit/action signing
 ## @param signing.gpgHome GPG home directory
+## @param signing.privateKey Inline private gpg key for signed Gitea actions
+## @param signing.existingSecret Use an existing secret to store the value of `signing.privateKey`
 signing:
   enabled: false
   gpgHome: /data/git/.gnupg
+  privateKey: ""
+  # privateKey: |-
+  #   -----BEGIN PGP PRIVATE KEY BLOCK-----
+  #   ...
+  #   -----END PGP PRIVATE KEY BLOCK-----
+  existingSecret: ""
 
 ## @section Gitea
 #

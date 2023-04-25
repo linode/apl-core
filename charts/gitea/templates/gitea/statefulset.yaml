@@ -59,6 +59,10 @@ spec:
             {{- if .Values.statefulset.env }}
             {{- toYaml .Values.statefulset.env | nindent 12 }}
             {{- end }}
+            {{- if .Values.signing.enabled }}
+            - name: GNUPGHOME
+              value: {{ .Values.signing.gpgHome }}
+            {{- end }}
           volumeMounts:
             - name: init
               mountPath: /usr/sbin
@@ -110,6 +114,36 @@ spec:
             {{- include "gitea.init-additional-mounts" . | nindent 12 }}
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+        {{- if .Values.signing.enabled }}
+        - name: configure-gpg
+          image: "{{ include "gitea.image" . }}"
+          command: ["/usr/sbin/configure_gpg_environment.sh"]
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- /* By default this container runs as user 1000 unless otherwise stated */ -}}
+            {{- $csc := deepCopy .Values.containerSecurityContext -}}
+            {{- if not (hasKey $csc "runAsUser") -}}
+            {{- $_ := set $csc "runAsUser" 1000 -}}
+            {{- end -}}
+            {{- toYaml $csc | nindent 12 }}
+          env:
+            - name: GNUPGHOME
+              value: {{ .Values.signing.gpgHome }}
+          volumeMounts:
+            - name: init
+              mountPath: /usr/sbin
+            - name: data
+              mountPath: /data
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+            - name: gpg-private-key
+              mountPath: /raw
+              readOnly: true
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- end }}
         - name: configure-gitea
           image: "{{ include "gitea.image" . }}"
           command: ["/usr/sbin/configure_gitea.sh"]
@@ -305,6 +339,15 @@ spec:
         {{- end }}
         - name: temp
           emptyDir: {}
+        {{- if .Values.signing.enabled }}
+        - name: gpg-private-key
+          secret:
+            secretName: {{ include "gitea.gpg-key-secret-name" . }}
+            items:
+              - key: privateKey
+                path: private.asc
+            defaultMode: 0100
+        {{- end }}
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: data
           persistentVolumeClaim:
