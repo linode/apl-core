@@ -179,7 +179,7 @@ postgresql:
   global:
     postgresql:
       auth:
-        postgresqlPassword: {{ $g | get "postgresqlPassword" }}
+        postgresPassword: {{ $g | get "postgresqlPassword" }}
         postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
   resources:
     {{ with $g | get "resources.postgresql" nil }}
