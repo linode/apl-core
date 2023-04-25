@@ -39,6 +39,9 @@ spec:
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
       {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: "{{ .Values.priorityClassName }}"
+      {{- end }}
       {{- include "gitea.images.pullSecrets" . | nindent 6 }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -76,6 +79,8 @@ spec:
             {{- include "gitea.init-additional-mounts" . | nindent 12 }}
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.initContainers.resources | nindent 12 }}
         - name: init-app-ini
           image: "{{ include "gitea.image" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -114,6 +119,8 @@ spec:
             {{- include "gitea.init-additional-mounts" . | nindent 12 }}
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.initContainers.resources | nindent 12 }}
         {{- if .Values.signing.enabled }}
         - name: configure-gpg
           image: "{{ include "gitea.image" . }}"
@@ -143,6 +150,8 @@ spec:
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
+          resources:
+            {{- toYaml .Values.initContainers.resources | nindent 12 }}
         {{- end }}
         - name: configure-gitea
           image: "{{ include "gitea.image" . }}"
@@ -232,6 +241,8 @@ spec:
               subPath: {{ .Values.persistence.subPath }}
               {{- end }}
             {{- include "gitea.init-additional-mounts" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.initContainers.resources | nindent 12 }}
       terminationGracePeriodSeconds: {{ .Values.statefulset.terminationGracePeriodSeconds }}
       containers:
         - name: {{ .Chart.Name }}
@@ -243,6 +254,10 @@ spec:
               value: {{ .Values.gitea.config.server.SSH_LISTEN_PORT | quote }}
             - name: SSH_PORT
               value: {{ .Values.gitea.config.server.SSH_PORT | quote }}
+            {{- if not .Values.image.rootless }}
+            - name: SSH_LOG_LEVEL
+              value: {{ .Values.gitea.ssh.logLevel | quote }}
+            {{- end }}
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
             - name: GITEA_CUSTOM
@@ -302,6 +317,10 @@ spec:
               subPath: {{ .Values.persistence.subPath }}
               {{- end }}
             {{- include "gitea.container-additional-mounts" . | nindent 12 }}
+      {{- with .Values.global.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

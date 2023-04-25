@@ -11,6 +11,22 @@ different approach in providing a database and cache with dependencies.
 Additionally, this chart provides LDAP and admin user configuration with values,
 as well as being deployed as a statefulset to retain stored repositories.
 
+## Update and versioning policy
+
+The Gitea helm chart versioning does not follow Gitea's versioning.
+The latest chart version can be looked up in [https://dl.gitea.com/charts](https://dl.gitea.com/charts) or in the [repository releases](https://gitea.com/gitea/helm-chart/releases).
+
+The chart aims to follow Gitea's releases closely.
+There might be times when the chart is behind the latest Gitea release.
+This might be caused by different reasons, most often due to time constraints of the maintainers (remember, all work here is done voluntarily in the spare time of people).
+If you're eager to use the latest Gitea version earlier than this chart catches up, then change the tag in `values.yaml` to the latest Gitea version.
+Note that besides the exact Gitea version one can also use the `:1` tag to automatically follow the latest Gitea version.
+This should be combined with `image.pullPolicy: "Always"`.
+Important: Using the `:1` will also automatically jump to new minor release (e.g. from 1.13 to 1.14) which may eventually cause incompatibilities if major/breaking changes happened between these versions.
+This is due to Gitea not strictly following [semantic versioning](https://semver.org/#summary) as breaking changes do not increase the major version.
+I.e., "minor" version bumps are considered "major".
+Yet most often no issues will be encountered and the chart maintainers aim to communicate early/upfront if this would be the case.
+
 ## Dependencies
 
 Gitea can be run with an external database and cache. This chart provides those
@@ -21,8 +37,6 @@ Dependencies:
 
 - PostgreSQL ([configuration](#postgresql))
 - Memcached ([configuration](#memcached))
-- MySQL ([configuration](#mysql))
-- MariaDB ([configuration](#mariadb))
 
 ## Installing
 
@@ -125,7 +139,7 @@ ENABLED = false
 ### Additional _app.ini_ settings
 
 > **The [generic](https://docs.gitea.io/en-us/config-cheat-sheet/#overall-default)
-section cannot be defined that way.**
+> section cannot be defined that way.**
 
 Some settings inside _app.ini_ (like passwords or whole authentication configurations)
 must be considered sensitive and therefore should not be passed via plain text
@@ -219,14 +233,17 @@ Priority (highest to lowest) for defining app.ini variables:
 
 ### External Database
 
-An external Database can be used instead of builtIn PostgreSQL or MySQL.
+Any external Database listed in [https://docs.gitea.io/en-us/database-prep/](https://docs.gitea.io/en-us/database-prep/) can be used instead of the built-in PostgreSQL.
+In fact, it is **highly recommended** to use an external database to ensure a stable Gitea installation longterm.
+
+If an external database is used, no matter which type, make sure to set `postgresql.enabled` to `false` to disable the use of the built-in PostgreSQL.
 
 ```yaml
 gitea:
   config:
     database:
       DB_TYPE: mysql
-      HOST: 127.0.0.1:3306
+      HOST: <mysql HOST>
       NAME: gitea
       USER: root
       PASSWD: gitea
@@ -347,31 +364,21 @@ by default.
 If you want to manage your own PVC you can simply pass the PVC name to the chart.
 
 ```yaml
-  persistence:
-    enabled: true
-    existingClaim: MyAwesomeGiteaClaim
+persistence:
+  enabled: true
+  existingClaim: MyAwesomeGiteaClaim
 ```
 
-In case that peristence has been disabled it will simply use an empty dir volume.
+In case that persistence has been disabled it will simply use an empty dir volume.
 
 PostgreSQL handles the persistence in the exact same way.
 You can interact with the postgres settings as displayed in the following example:
 
 ```yaml
-  postgresql:
-    persistence:
-      enabled: true
-      existingClaim: MyAwesomeGiteaPostgresClaim
-```
-
-MySQL also handles persistence the same, even though it is not deployed as a statefulset.
-You can interact with the postgres settings as displayed in the following example:
-
-```yaml
-  mysql:
-    persistence:
-      enabled: true
-      existingClaim: MyAwesomeGiteaMysqlClaim
+postgresql:
+  persistence:
+    enabled: true
+    existingClaim: MyAwesomeGiteaPostgresClaim
 ```
 
 ### Admin User
@@ -382,11 +389,11 @@ not possible to delete an admin user after it has been created. This has to be
 done in the ui. You cannot use `admin` as username.
 
 ```yaml
-  gitea:
-    admin:
-      username: "MyAwesomeGiteaAdmin"
-      password: "AReallyAwesomeGiteaPassword"
-      email: "gi@tea.com"
+gitea:
+  admin:
+    username: "MyAwesomeGiteaAdmin"
+    password: "AReallyAwesomeGiteaPassword"
+    email: "gi@tea.com"
 ```
 
 You can also use an existing Secret to configure the admin user:
@@ -404,8 +411,8 @@ stringData:
 
 ```yaml
 gitea:
-    admin:
-      existingSecret: gitea-admin-secret
+  admin:
+    existingSecret: gitea-admin-secret
 ```
 
 ### LDAP Settings
@@ -416,20 +423,20 @@ All LDAP values from <https://docs.gitea.io/en-us/command-line/#admin> are avail
 Multiple LDAP sources can be configured with additional LDAP list items.
 
 ```yaml
-  gitea:
-    ldap:
-      - name: MyAwesomeGiteaLdap
-        securityProtocol: unencrypted
-        host: "127.0.0.1"
-        port: "389"
-        userSearchBase: ou=Users,dc=example,dc=com
-        userFilter: sAMAccountName=%s
-        adminFilter: CN=Admin,CN=Group,DC=example,DC=com
-        emailAttribute: mail
-        bindDn: CN=ldap read,OU=Spezial,DC=example,DC=com
-        bindPassword: JustAnotherBindPw
-        usernameAttribute: CN
-        publicSSHKeyAttribute: publicSSHKey
+gitea:
+  ldap:
+    - name: MyAwesomeGiteaLdap
+      securityProtocol: unencrypted
+      host: "127.0.0.1"
+      port: "389"
+      userSearchBase: ou=Users,dc=example,dc=com
+      userFilter: sAMAccountName=%s
+      adminFilter: CN=Admin,CN=Group,DC=example,DC=com
+      emailAttribute: mail
+      bindDn: CN=ldap read,OU=Spezial,DC=example,DC=com
+      bindPassword: JustAnotherBindPw
+      usernameAttribute: CN
+      publicSSHKeyAttribute: publicSSHKey
 ```
 
 You can also use an existing secret to set the bindDn and bindPassword:
@@ -474,11 +481,11 @@ Multiple OAuth2 sources can be configured with additional OAuth list items.
 ```yaml
 gitea:
   oauth:
-    - name: 'MyAwesomeGiteaOAuth'
-      provider: 'openidConnect'
-      key: 'hello'
-      secret: 'world'
-      autoDiscoverUrl: 'https://gitea.example.com/.well-known/openid-configuration'
+    - name: "MyAwesomeGiteaOAuth"
+      provider: "openidConnect"
+      key: "hello"
+      secret: "world"
+      autoDiscoverUrl: "https://gitea.example.com/.well-known/openid-configuration"
       #useCustomUrls:
       #customAuthUrl:
       #customTokenUrl:
@@ -502,7 +509,7 @@ stringData:
 ```yaml
 gitea:
   oauth:
-    - name: 'MyAwesomeGiteaOAuth'
+    - name: "MyAwesomeGiteaOAuth"
       existingSecret: gitea-oauth-secret
         ...
 ```
@@ -527,7 +534,7 @@ signing:
 
 Regardless of the used container image the `signing` object allows to specify a
 private gpg key. Either using the `signing.privateKey` to define the key inline,
-or refer to an existing secret containing the key data by using `signing.existingKey`.
+or refer to an existing secret containing the key data by using `signing.existingSecret`.
 
 ```yaml
 apiVersion: v1
@@ -591,6 +598,7 @@ gitea:
 | `global.imageRegistry`    | global image registry override                                            | `""`            |
 | `global.imagePullSecrets` | global image pull secrets override; can be extended by `imagePullSecrets` | `[]`            |
 | `global.storageClass`     | global storage class override                                             | `""`            |
+| `global.hostAliases`      | global hostAliases which will be added to the pod's hosts files           | `[]`            |
 | `replicaCount`            | number of replicas for the statefulset                                    | `1`             |
 | `clusterDomain`           | cluster domain                                                            | `cluster.local` |
 
@@ -664,6 +672,7 @@ gitea:
 | `tolerations`                               | Tolerations for the statefulset                        | `[]`  |
 | `affinity`                                  | Affinity for the statefulset                           | `{}`  |
 | `dnsConfig`                                 | dnsConfig for the statefulset                          | `{}`  |
+| `priorityClassName`                         | priorityClassName for the statefulset                  | `""`  |
 | `statefulset.env`                           | Additional environment variables to pass to containers | `[]`  |
 | `statefulset.terminationGracePeriodSeconds` | How long to wait until forcefully kill the pod         | `60`  |
 | `statefulset.labels`                        | Labels for the statefulset                             | `{}`  |
@@ -688,9 +697,12 @@ gitea:
 
 ### Init
 
-| Name            | Description                                                           | Value |
-| --------------- | --------------------------------------------------------------------- | ----- |
-| `initPreScript` | Bash shell script copied verbatim to the start of the init-container. | `""`  |
+| Name                                       | Description                                                                          | Value   |
+| ------------------------------------------ | ------------------------------------------------------------------------------------ | ------- |
+| `initPreScript`                            | Bash shell script copied verbatim to the start of the init-container.                | `""`    |
+| `initContainers.resources.limits`          | initContainers.limits Kubernetes resource limits for init containers                 | `{}`    |
+| `initContainers.resources.requests.cpu`    | initContainers.requests.cpu Kubernetes cpu resource limits for init containers       | `100m`  |
+| `initContainers.resources.requests.memory` | initContainers.requests.memory Kubernetes memory resource limits for init containers | `128Mi` |
 
 ### Signing
 
@@ -717,6 +729,7 @@ gitea:
 | `gitea.additionalConfigSources`        | Additional configuration from secret or configmap                                                             | `[]`                 |
 | `gitea.additionalConfigFromEnvs`       | Additional configuration sources from environment variables                                                   | `[]`                 |
 | `gitea.podAnnotations`                 | Annotations for the Gitea pod                                                                                 | `{}`                 |
+| `gitea.ssh.logLevel`                   | Configure OpenSSH's log level. Only available for root-based Gitea image.                                     | `INFO`               |
 
 ### LivenessProbe
 
@@ -756,51 +769,30 @@ gitea:
 
 ### Memcached
 
-| Name                     | Description                                                                                                                                                                                           | Value   |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `memcached.enabled`      | Memcached is loaded as a dependency from [Bitnami](https://github.com/bitnami/charts/tree/master/bitnami/memcached) if enabled in the values. Complete Configuration can be taken from their website. | `true`  |
-| `memcached.service.port` | Port for Memcached                                                                                                                                                                                    | `11211` |
+| Name                                | Description                                                                                                                                                                                           | Value   |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `memcached.enabled`                 | Memcached is loaded as a dependency from [Bitnami](https://github.com/bitnami/charts/tree/master/bitnami/memcached) if enabled in the values. Complete Configuration can be taken from their website. | `true`  |
+| `memcached.service.ports.memcached` | Port for Memcached                                                                                                                                                                                    | `11211` |
 
 ### PostgreSQL
 
-| Name                                              | Description                                              | Value   |
-| ------------------------------------------------- | -------------------------------------------------------- | ------- |
-| `postgresql.enabled`                              | Enable PostgreSQL                                        | `true`  |
-| `postgresql.global.postgresql.postgresqlDatabase` | PostgreSQL database (overrides postgresqlDatabase)       | `gitea` |
-| `postgresql.global.postgresql.postgresqlUsername` | PostgreSQL username (overrides postgresqlUsername)       | `gitea` |
-| `postgresql.global.postgresql.postgresqlPassword` | PostgreSQL admin password (overrides postgresqlPassword) | `gitea` |
-| `postgresql.global.postgresql.servicePort`        | PostgreSQL port (overrides service.port)                 | `5432`  |
-| `postgresql.persistence.size`                     | PVC Storage Request for PostgreSQL volume                | `10Gi`  |
-
-### MySQL
-
-| Name                     | Description                                                        | Value   |
-| ------------------------ | ------------------------------------------------------------------ | ------- |
-| `mysql.enabled`          | Enable MySQL                                                       | `false` |
-| `mysql.root.password`    | Password for the root user. Ignored if existing secret is provided | `gitea` |
-| `mysql.db.user`          | Username of new user to create.                                    | `gitea` |
-| `mysql.db.password`      | Password for the new user.Ignored if existing secret is provided   | `gitea` |
-| `mysql.db.name`          | Name for new database to create.                                   | `gitea` |
-| `mysql.service.port`     | Port to connect to MySQL service                                   | `3306`  |
-| `mysql.persistence.size` | PVC Storage Request for MySQL volume                               | `10Gi`  |
-
-### MariaDB
-
-| Name                               | Description                                                       | Value   |
-| ---------------------------------- | ----------------------------------------------------------------- | ------- |
-| `mariadb.enabled`                  | Enable MariaDB                                                    | `false` |
-| `mariadb.auth.database`            | Name of the database to create.                                   | `gitea` |
-| `mariadb.auth.username`            | Username of the new user to create.                               | `gitea` |
-| `mariadb.auth.password`            | Password for the new user. Ignored if existing secret is provided | `gitea` |
-| `mariadb.auth.rootPassword`        | Password for the root user.                                       | `gitea` |
-| `mariadb.primary.service.port`     | Port to connect to MariaDB service                                | `3306`  |
-| `mariadb.primary.persistence.size` | Persistence size for MariaDB                                      | `10Gi`  |
+| Name                                                    | Description                                                      | Value   |
+| ------------------------------------------------------- | ---------------------------------------------------------------- | ------- |
+| `postgresql.enabled`                                    | Enable PostgreSQL                                                | `true`  |
+| `postgresql.global.postgresql.auth.password`            | Password for the "Gitea" user (overrides `auth.password`)        | `gitea` |
+| `postgresql.global.postgresql.auth.database`            | Name for a custom database to create (overrides `auth.database`) | `gitea` |
+| `postgresql.global.postgresql.auth.username`            | Name for a custom user to create (overrides `auth.username`)     | `gitea` |
+| `postgresql.global.postgresql.service.ports.postgresql` | PostgreSQL service port (overrides `service.ports.postgresql`)   | `5432`  |
+| `postgresql.primary.persistence.size`                   | PVC Storage Request for PostgreSQL volume                        | `10Gi`  |
 
 ### Advanced
 
-| Name               | Description                                          | Value  |
-| ------------------ | ---------------------------------------------------- | ------ |
-| `checkDeprecation` | Set it to false to skip this basic validation check. | `true` |
+| Name               | Description                                                        | Value     |
+| ------------------ | ------------------------------------------------------------------ | --------- |
+| `checkDeprecation` | Set it to false to skip this basic validation check.               | `true`    |
+| `test.enabled`     | Set it to false to disable test-connection Pod.                    | `true`    |
+| `test.image.name`  | Image name for the wget container used in the test-connection Pod. | `busybox` |
+| `test.image.tag`   | Image tag for the wget container used in the test-connection Pod.  | `latest`  |
 
 ## Contributing
 
@@ -813,11 +805,22 @@ See [CONTRIBUTORS GUIDE](CONTRIBUTING.md) for details.
 This section lists major and breaking changes of each Helm Chart version.
 Please read them carefully to upgrade successfully.
 
+### To 8.0.0
+
+#### Removal of MariaDB and MySQL DB chart dependencies
+
+In this version support for DB chart dependencies of MySQL and MariaDB have been removed to simplify the maintenance of the helm chart.
+External MySQL and MariaDB databases are still supported and will be in the future.
+
+#### Postgres Update from v11 to v15
+
+This Chart version updates the Postgres chart dependency and subsequently Postgres from v11 to v15.
+Please read the [Postgres Release Notes](https://www.postgresql.org/docs/release/) for version-specific changes.
+With respect to `values.yaml`, parameters `username`, `database` and `password` have been regrouped under `auth` and slightly renamed.
+`persistence` has also been regrouped under the `primary` key.
+Please adjust your `values.yaml` accordingly.
+
 ### To 7.0.0
-
-#### Gitea 1.18.1
-
-This Chart version updates Gitea to 1.18.1. Don't miss any application related [breaking changes of 1.18.0](https://blog.gitea.io/2022/12/gitea-1.18.0-is-released/#breaking-changes).
 
 #### Private GPG key configuration for Gitea signing actions
 
@@ -856,7 +859,7 @@ after the upgrade.
 #### Enable Dependencies
 
 The values to enable the dependencies,
-such as PostgreSQL, Memcached, MySQL and MariaDB
+such as PostgreSQL, Memcached, MySQL and MariaDB.
 have been moved from `gitea.database.builtIn.` to the dependency values.
 
 You can now enable the dependencies as followed:
@@ -892,9 +895,9 @@ automatically in certain situations:
   configuration nor via auto generation. We explicitly prevent to set new secrets.
 
 > 💡 It would be possible to set new secret keys manually by entering
-the running container and rewriting the app.ini by hand. However, this it is
-not advisable to do so for existing installations. Certain settings like
-_LDAP_ would not be readable anymore.
+> the running container and rewriting the app.ini by hand. However, this it is
+> not advisable to do so for existing installations. Certain settings like
+> _LDAP_ would not be readable anymore.
 
 #### Probes
 
