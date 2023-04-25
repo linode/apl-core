@@ -102,16 +102,16 @@ gitea:
       enabled: true
       additionalLabels:
         prometheus: system
-  oauth:
-    - name: {{ $k.idp.alias }}
-      provider: openidConnect
-      key: {{ $k.idp.clientID  }}
-      secret: {{ $k.idp.clientSecret }}
-      autoDiscoverUrl: {{ $v._derived.oidcWellKnownUrl }}
-      # autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrlBackchannel }}
-      autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
-      adminGroup: team-admin
-      groupClaimName: groups
+  # oauth:
+  #   - name: {{ $k.idp.alias }}
+  #     provider: openidConnect
+  #     key: {{ $k.idp.clientID  }}
+  #     secret: {{ $k.idp.clientSecret }}
+  #     autoDiscoverUrl: {{ $v._derived.oidcWellKnownUrl }}
+  #     # autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrlBackchannel }}
+  #     autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
+  #     adminGroup: team-admin
+  #     groupClaimName: groups
 
 init:
   resources:
@@ -178,8 +178,9 @@ postgresql:
     {{- end }}
   global:
     postgresql:
-      postgresqlPassword: {{ $g | get "postgresqlPassword" }}
-      postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
+      auth:
+        postgresqlPassword: {{ $g | get "postgresqlPassword" }}
+        postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
   resources:
     {{ with $g | get "resources.postgresql" nil }}
       {{- toYaml . | nindent 4 }}
