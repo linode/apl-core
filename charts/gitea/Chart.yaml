@@ -1,14 +1,14 @@
 apiVersion: v2
-appVersion: 1.19.1
+appVersion: 1.15.8
 dependencies:
 - condition: memcached.enabled
   name: memcached
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 6.3.13
+  repository: https://charts.bitnami.com/bitnami
+  version: 5.9.0
 - condition: postgresql.enabled
   name: postgresql
-  repository: oci://registry-1.docker.io/bitnamicharts
-  version: 12.2.6
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.3.17
 description: Gitea Helm chart for Kubernetes
 icon: https://docs.gitea.io/images/gitea.png
 keywords:
@@ -29,12 +29,10 @@ maintainers:
   name: Lucas Hahn
 - email: sk.bunsenbrenner@gmail.com
   name: Steven Kriegler
-- email: patrick.schratz@gmail.com
-  name: Patrick Schratz
 name: gitea
 sources:
 - https://gitea.com/gitea/helm-chart
 - https://github.com/go-gitea/gitea
 - https://hub.docker.com/r/gitea/gitea/
 type: application
-version: 8.0.3
+version: 5.0.0

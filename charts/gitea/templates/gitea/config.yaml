@@ -63,41 +63,6 @@ stringData:
       export "ENV_TO_INI__${masked_section^^}__${setting^^}=${value}"        # '^^' makes the variable content uppercase
     }
 
-    function env2ini::reload_preset_envs() {
-      env2ini::log "Reloading preset envs..."
-
-      while read -r line; do
-        if [[ -z "${line}" ]]; then
-          # skip empty line
-          return
-        fi
-
-        # 'xargs echo -n' trims all leading/trailing whitespaces and a trailing new line
-        local setting="$(awk -F '=' '{print $1}' <<< "${line}" | xargs echo -n)"
-
-        if [[ -z "${setting}" ]]; then
-          env2ini::log '  ! invalid setting'
-          exit 1
-        fi
-
-        local value=''
-        local regex="^${setting}(\s*)=(\s*)(.*)"
-        if [[ $line =~ $regex ]]; then
-          value="${BASH_REMATCH[3]}"
-        else
-          env2ini::log '  ! invalid setting'
-          exit 1
-        fi
-
-        env2ini::log "  + '${setting}'"
-
-        export "${setting^^}=${value}"                           # '^^' makes the variable content uppercase
-      done < "/tmp/existing-envs"
-
-      rm /tmp/existing-envs
-    }
-
-
     function env2ini::process_config_file() {
       local config_file="${1}"
       local section="$(basename "${config_file}")"
@@ -117,15 +82,13 @@ stringData:
     function env2ini::load_config_sources() {
       local path="${1}"
 
-      if [[ -d "${path}" ]]; then
-        env2ini::log "Processing $(basename "${path}")..."
+      env2ini::log "Processing $(basename "${path}")..."
 
-        while read -d '' configFile; do
-          env2ini::process_config_file "${configFile}"
-        done < <(find "${path}" -type l -not -name '..data' -print0)
+      while read -d '' configFile; do
+        env2ini::process_config_file "${configFile}"
+      done < <(find "${path}" -type l -not -name '..data' -print0)
 
-        env2ini::log "\n"
-      fi
+      env2ini::log "\n"
     }
 
     function env2ini::generate_initial_secrets() {
@@ -137,21 +100,15 @@ stringData:
       export ENV_TO_INI__SECURITY__INTERNAL_TOKEN=$(gitea generate secret INTERNAL_TOKEN)
       export ENV_TO_INI__SECURITY__SECRET_KEY=$(gitea generate secret SECRET_KEY)
       export ENV_TO_INI__OAUTH2__JWT_SECRET=$(gitea generate secret JWT_SECRET)
-      export ENV_TO_INI__SERVER__LFS_JWT_SECRET=$(gitea generate secret LFS_JWT_SECRET)
 
       env2ini::log "...Initial secrets generated\n"
     }
 
-    env | (grep ENV_TO_INI || [[ $? == 1 ]]) > /tmp/existing-envs
-    
     # MUST BE CALLED BEFORE OTHER CONFIGURATION
     env2ini::generate_initial_secrets
 
     env2ini::load_config_sources '/env-to-ini-mounts/inlines/'
     env2ini::load_config_sources '/env-to-ini-mounts/additionals/'
-
-    # load existing envs to override auto generated envs
-    env2ini::reload_preset_envs
 
     env2ini::log "=== All configuration sources loaded ===\n"
 
@@ -161,12 +118,10 @@ stringData:
       env2ini::log '  - security.INTERNAL_TOKEN'
       env2ini::log '  - security.SECRET_KEY'
       env2ini::log '  - oauth2.JWT_SECRET'
-      env2ini::log '  - server.LFS_JWT_SECRET'
 
       unset ENV_TO_INI__SECURITY__INTERNAL_TOKEN
       unset ENV_TO_INI__SECURITY__SECRET_KEY
       unset ENV_TO_INI__OAUTH2__JWT_SECRET
-      unset ENV_TO_INI__SERVER__LFS_JWT_SECRET
     fi
 
     environment-to-ini -o $GITEA_APP_INI -p ENV_TO_INI

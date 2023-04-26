@@ -35,40 +35,10 @@ Create chart name and version as used by the chart label.
 Create image name and tag used by the deployment.
 */}}
 {{- define "gitea.image" -}}
-{{- $registry := .Values.global.imageRegistry | default .Values.image.registry -}}
 {{- $name := .Values.image.repository -}}
-{{- $tag := .Values.image.tag | default .Chart.AppVersion -}}
+{{- $tag := ternary .Values.image.version .Values.image.tag (hasKey .Values.image "version") -}}
 {{- $rootless := ternary "-rootless" "" (.Values.image.rootless) -}}
-{{- if $registry -}}
-  {{- printf "%s/%s:%s%s" $registry $name $tag $rootless -}}
-{{- else -}}
-  {{- printf "%s:%s%s" $name $tag $rootless -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
-Docker Image Registry Secret Names evaluating values as templates
-*/}}
-{{- define "gitea.images.pullSecrets" -}}
-{{- $pullSecrets := .Values.imagePullSecrets -}}
-{{- range .Values.global.imagePullSecrets -}}
-    {{- $pullSecrets = append $pullSecrets (dict "name" .) -}}
-{{- end -}}
-{{- if (not (empty $pullSecrets)) }}
-imagePullSecrets:
-{{ toYaml $pullSecrets }}
-{{- end }}
-{{- end -}}
-
-
-{{/*
-Storage Class
-*/}}
-{{- define "gitea.persistence.storageClass" -}}
-{{- $storageClass := .Values.global.storageClass | default .Values.persistence.storageClass }}
-{{- if $storageClass }}
-storageClassName: {{ $storageClass | quote }}
-{{- end }}
+{{- printf "%s:%s%s" $name $tag $rootless -}}
 {{- end -}}
 
 {{/*
@@ -78,8 +48,10 @@ Common labels
 helm.sh/chart: {{ include "gitea.chart" . }}
 app: {{ include "gitea.name" . }}
 {{ include "gitea.selectorLabels" . }}
-app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
-version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+version: {{ .Chart.AppVersion | quote }}
+{{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
@@ -91,12 +63,44 @@ app.kubernetes.io/name: {{ include "gitea.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
+{{- define "db.servicename" -}}
+{{- if .Values.postgresql.enabled -}}
+{{- printf "%s-postgresql" .Release.Name -}}
+{{- else if .Values.mysql.enabled -}}
+{{- printf "%s-mysql" .Release.Name -}}
+{{- else if .Values.mariadb.enabled -}}
+{{- printf "%s-mariadb" .Release.Name -}}
+{{- else if ne .Values.gitea.config.database.DB_TYPE "sqlite3" -}}
+{{- $parts := split ":" .Values.gitea.config.database.HOST -}}
+{{- printf "%s %s" $parts._0 $parts._1 -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "db.port" -}}
+{{- if .Values.postgresql.enabled -}}
+{{ .Values.postgresql.global.postgresql.servicePort }}
+{{- else if .Values.mysql.enabled -}}
+{{ .Values.mysql.service.port }}
+{{- else if .Values.mariadb.enabled -}}
+{{ .Values.mariadb.primary.service.port }}
+{{- else -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "postgresql.dns" -}}
-{{- printf "%s-postgresql.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.postgresql.global.postgresql.service.ports.postgresql -}}
+{{- printf "%s-postgresql.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.postgresql.global.postgresql.servicePort -}}
+{{- end -}}
+
+{{- define "mysql.dns" -}}
+{{- printf "%s-mysql.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.mysql.service.port | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "mariadb.dns" -}}
+{{- printf "%s-mariadb.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.mariadb.primary.service.port | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "memcached.dns" -}}
-{{- printf "%s-memcached.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.memcached.service.ports.memcached | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-memcached.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.memcached.service.port | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "gitea.default_domain" -}}
@@ -149,14 +153,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if ne $key "existingSecret" -}}
 {{- printf "--%s %s " ($key | kebabcase) ($val | quote) -}}
 {{- end -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "gitea.public_protocol" -}}
-{{- if and .Values.ingress.enabled (gt (len .Values.ingress.tls) 0) -}}
-https
-{{- else -}}
-{{ .Values.gitea.config.server.PROTOCOL }}
 {{- end -}}
 {{- end -}}
 
@@ -250,7 +246,15 @@ https
     {{- end -}}
   {{- end -}}
   {{- if not .Values.gitea.config.server.ROOT_URL -}}
-    {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" (include "gitea.public_protocol" .) .Values.gitea.config.server.DOMAIN) -}}
+    {{- if .Values.ingress.enabled -}}
+      {{- if gt (len .Values.ingress.tls) 0 -}}
+        {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" .Values.gitea.config.server.PROTOCOL (index (index .Values.ingress.tls 0).hosts 0)) -}}
+      {{- else -}}
+        {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" .Values.gitea.config.server.PROTOCOL (index .Values.ingress.hosts 0).host) -}}
+      {{- end -}}
+    {{- else -}}
+      {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" .Values.gitea.config.server.PROTOCOL .Values.gitea.config.server.DOMAIN) -}}
+    {{- end -}}
   {{- end -}}
   {{- if not .Values.gitea.config.server.SSH_DOMAIN -}}
     {{- $_ := set .Values.gitea.config.server "SSH_DOMAIN" .Values.gitea.config.server.DOMAIN -}}
@@ -284,30 +288,24 @@ https
     {{- if not (.Values.gitea.config.database.HOST) -}}
       {{- $_ := set .Values.gitea.config.database "HOST"      (include "postgresql.dns" .) -}}
     {{- end -}}
-    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.postgresql.global.postgresql.auth.database -}}
-    {{- $_ := set .Values.gitea.config.database "USER"      .Values.postgresql.global.postgresql.auth.username -}}
-    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.postgresql.global.postgresql.auth.password -}}
+    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.postgresql.global.postgresql.postgresqlDatabase -}}
+    {{- $_ := set .Values.gitea.config.database "USER"      .Values.postgresql.global.postgresql.postgresqlUsername -}}
+    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.postgresql.global.postgresql.postgresqlPassword -}}
+  {{- else if .Values.mysql.enabled -}}
+    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "mysql" -}}
+    {{- if not (.Values.gitea.config.database.HOST) -}}
+      {{- $_ := set .Values.gitea.config.database "HOST"      (include "mysql.dns" .) -}}
+    {{- end -}}
+    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.mysql.db.name -}}
+    {{- $_ := set .Values.gitea.config.database "USER"      .Values.mysql.db.user -}}
+    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.mysql.db.password -}}
+  {{- else if .Values.mariadb.enabled -}}
+    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "mysql" -}}
+    {{- if not (.Values.gitea.config.database.HOST) -}}
+      {{- $_ := set .Values.gitea.config.database "HOST"      (include "mariadb.dns" .) -}}
+    {{- end -}}
+    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.mariadb.auth.database -}}
+    {{- $_ := set .Values.gitea.config.database "USER"      .Values.mariadb.auth.username -}}
+    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.mariadb.auth.password -}}
   {{- end -}}
-{{- end -}}
-
-{{- define "gitea.init-additional-mounts" -}}
-  {{- /* Honor the deprecated extraVolumeMounts variable when defined */ -}}
-  {{- if gt (len .Values.extraInitVolumeMounts) 0 -}}
-    {{- toYaml .Values.extraInitVolumeMounts -}}
-  {{- else if gt (len .Values.extraVolumeMounts) 0 -}}
-    {{- toYaml .Values.extraVolumeMounts -}}
-  {{- end -}}
-{{- end -}}
-
-{{- define "gitea.container-additional-mounts" -}}
-  {{- /* Honor the deprecated extraVolumeMounts variable when defined */ -}}
-  {{- if gt (len .Values.extraContainerVolumeMounts) 0 -}}
-    {{- toYaml .Values.extraContainerVolumeMounts -}}
-  {{- else if gt (len .Values.extraVolumeMounts) 0 -}}
-    {{- toYaml .Values.extraVolumeMounts -}}
-  {{- end -}}
-{{- end -}}
-
-{{- define "gitea.gpg-key-secret-name" -}}
-{{ default (printf "%s-gpg-key" (include "gitea.fullname" .)) .Values.signing.existingSecret }}
 {{- end -}}

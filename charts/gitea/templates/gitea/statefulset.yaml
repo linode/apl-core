@@ -2,10 +2,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ include "gitea.fullname" . }}
-  annotations:
-    {{- if .Values.statefulset.annotations }}
-    {{- toYaml .Values.statefulset.annotations | nindent 4 }}
-    {{- end }}
   labels:
     {{- include "gitea.labels" . | nindent 4 }}
 spec:
@@ -39,16 +35,15 @@ spec:
       {{- if .Values.schedulerName }}
       schedulerName: "{{ .Values.schedulerName }}"
       {{- end }}
-      {{- if .Values.priorityClassName }}
-      priorityClassName: "{{ .Values.priorityClassName }}"
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- include "gitea.images.pullSecrets" . | nindent 6 }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
         - name: init-directories
           image: "{{ include "gitea.image" . }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/usr/sbin/init_directory_structure.sh"]
           env:
             - name: GITEA_APP_INI
@@ -62,10 +57,6 @@ spec:
             {{- if .Values.statefulset.env }}
             {{- toYaml .Values.statefulset.env | nindent 12 }}
             {{- end }}
-            {{- if .Values.signing.enabled }}
-            - name: GNUPGHOME
-              value: {{ .Values.signing.gpgHome }}
-            {{- end }}
           volumeMounts:
             - name: init
               mountPath: /usr/sbin
@@ -76,14 +67,13 @@ spec:
               {{- if .Values.persistence.subPath }}
               subPath: {{ .Values.persistence.subPath }}
               {{- end }}
-            {{- include "gitea.init-additional-mounts" . | nindent 12 }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
-          resources:
-            {{- toYaml .Values.initContainers.resources | nindent 12 }}
         - name: init-app-ini
           image: "{{ include "gitea.image" . }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/usr/sbin/config_environment.sh"]
           env:
             - name: GITEA_APP_INI
@@ -96,9 +86,6 @@ spec:
               value: /tmp/gitea
             {{- if .Values.statefulset.env }}
             {{- toYaml .Values.statefulset.env | nindent 12 }}
-            {{- end }}
-            {{- if .Values.gitea.additionalConfigFromEnvs }}
-            {{- toYaml .Values.gitea.additionalConfigFromEnvs | nindent 12 }}
             {{- end }}
           volumeMounts:
             - name: config
@@ -116,47 +103,14 @@ spec:
             - name: additional-config-sources-{{ $idx }}
               mountPath: "/env-to-ini-mounts/additionals/{{ $idx }}/"
             {{- end }}
-            {{- include "gitea.init-additional-mounts" . | nindent 12 }}
-          securityContext:
-            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
-          resources:
-            {{- toYaml .Values.initContainers.resources | nindent 12 }}
-        {{- if .Values.signing.enabled }}
-        - name: configure-gpg
-          image: "{{ include "gitea.image" . }}"
-          command: ["/usr/sbin/configure_gpg_environment.sh"]
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          securityContext:
-            {{- /* By default this container runs as user 1000 unless otherwise stated */ -}}
-            {{- $csc := deepCopy .Values.containerSecurityContext -}}
-            {{- if not (hasKey $csc "runAsUser") -}}
-            {{- $_ := set $csc "runAsUser" 1000 -}}
-            {{- end -}}
-            {{- toYaml $csc | nindent 12 }}
-          env:
-            - name: GNUPGHOME
-              value: {{ .Values.signing.gpgHome }}
-          volumeMounts:
-            - name: init
-              mountPath: /usr/sbin
-            - name: data
-              mountPath: /data
-              {{- if .Values.persistence.subPath }}
-              subPath: {{ .Values.persistence.subPath }}
-              {{- end }}
-            - name: gpg-private-key
-              mountPath: /raw
-              readOnly: true
             {{- if .Values.extraVolumeMounts }}
             {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
             {{- end }}
-          resources:
-            {{- toYaml .Values.initContainers.resources | nindent 12 }}
-        {{- end }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
         - name: configure-gitea
           image: "{{ include "gitea.image" . }}"
           command: ["/usr/sbin/configure_gitea.sh"]
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             {{- /* By default this container runs as user 1000 unless otherwise stated */ -}}
             {{- $csc := deepCopy .Values.containerSecurityContext -}}
@@ -240,9 +194,9 @@ spec:
               {{- if .Values.persistence.subPath }}
               subPath: {{ .Values.persistence.subPath }}
               {{- end }}
-            {{- include "gitea.init-additional-mounts" . | nindent 12 }}
-          resources:
-            {{- toYaml .Values.initContainers.resources | nindent 12 }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
       terminationGracePeriodSeconds: {{ .Values.statefulset.terminationGracePeriodSeconds }}
       containers:
         - name: {{ .Chart.Name }}
@@ -254,10 +208,6 @@ spec:
               value: {{ .Values.gitea.config.server.SSH_LISTEN_PORT | quote }}
             - name: SSH_PORT
               value: {{ .Values.gitea.config.server.SSH_PORT | quote }}
-            {{- if not .Values.image.rootless }}
-            - name: SSH_LOG_LEVEL
-              value: {{ .Values.gitea.ssh.logLevel | quote }}
-            {{- end }}
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
             - name: GITEA_CUSTOM
@@ -278,26 +228,23 @@ spec:
           ports:
             - name: ssh
               containerPort: {{ .Values.gitea.config.server.SSH_LISTEN_PORT }}
-            {{- if .Values.service.ssh.hostPort }}
-              hostPort: {{ .Values.service.ssh.hostPort }}
-            {{- end }}
             - name: http
               containerPort: {{ .Values.gitea.config.server.HTTP_PORT }}
             {{- if .Values.gitea.config.server.ENABLE_PPROF }}
             - name: profiler
               containerPort: 6060
             {{- end }}
-          {{- if .Values.gitea.livenessProbe.enabled }}
+          {{- if .Values.gitea.livenessProbe }}
           livenessProbe:
-            {{- toYaml (omit .Values.gitea.livenessProbe "enabled") | nindent 12 }}
+            {{- toYaml .Values.gitea.livenessProbe | nindent 12 }}
           {{- end }}
-          {{- if .Values.gitea.readinessProbe.enabled }}
+          {{- if .Values.gitea.readinessProbe }}
           readinessProbe:
-            {{- toYaml (omit .Values.gitea.readinessProbe "enabled") | nindent 12 }}
+            {{- toYaml .Values.gitea.readinessProbe | nindent 12 }}
           {{- end }}
-          {{- if .Values.gitea.startupProbe.enabled }}
+          {{- if .Values.gitea.startupProbe }}
           startupProbe:
-            {{- toYaml (omit .Values.gitea.startupProbe "enabled") | nindent 12 }}
+            {{- toYaml .Values.gitea.startupProbe | nindent 12 }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -316,11 +263,9 @@ spec:
               {{- if .Values.persistence.subPath }}
               subPath: {{ .Values.persistence.subPath }}
               {{- end }}
-            {{- include "gitea.container-additional-mounts" . | nindent 12 }}
-      {{- with .Values.global.hostAliases }}
-      hostAliases:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- toYaml .Values.extraVolumeMounts | nindent 12 }}
+            {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -333,10 +278,6 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-    {{- if .Values.dnsConfig }}
-      dnsConfig:
-        {{- toYaml .Values.dnsConfig | nindent 8 }}
-    {{- end }}
       volumes:
         - name: init
           secret:
@@ -346,7 +287,7 @@ spec:
           secret:
             secretName: {{ include "gitea.fullname" . }}
             defaultMode: 110
-        {{- if gt (len .Values.extraVolumes) 0 }}
+        {{- if .Values.extraVolumes }}
         {{- toYaml .Values.extraVolumes | nindent 8 }}
         {{- end }}
         - name: inline-config-sources
@@ -358,15 +299,6 @@ spec:
         {{- end }}
         - name: temp
           emptyDir: {}
-        {{- if .Values.signing.enabled }}
-        - name: gpg-private-key
-          secret:
-            secretName: {{ include "gitea.gpg-key-secret-name" . }}
-            items:
-              - key: privateKey
-                path: private.asc
-            defaultMode: 0100
-        {{- end }}
   {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
         - name: data
           persistentVolumeClaim:
@@ -397,7 +329,9 @@ spec:
           {{- range .Values.persistence.accessModes }}
             - {{ . | quote }}
           {{- end }}
-        {{- include "gitea.persistence.storageClass" . | indent 8 }}
+        {{- if .Values.persistence.storageClass }}
+        storageClassName: {{ .Values.persistence.storageClass | quote }}
+        {{- end }}
         resources:
           requests:
             storage: {{ .Values.persistence.size | quote }}

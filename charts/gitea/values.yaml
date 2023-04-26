@@ -1,55 +1,23 @@
 # Default values for gitea.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
-## @section Global
-#
-## @param global.imageRegistry global image registry override
-## @param global.imagePullSecrets global image pull secrets override; can be extended by `imagePullSecrets`
-## @param global.storageClass global storage class override
-## @param global.hostAliases global hostAliases which will be added to the pod's hosts files
-global:
-  imageRegistry: ""
-  ## E.g.
-  ## imagePullSecrets:
-  ##   - myRegistryKeySecretName
-  ##
-  imagePullSecrets: []
-  storageClass: ""
-  hostAliases: []
-  # - ip: 192.168.137.2
-  #   hostnames:
-  #   - example.com
 
-## @param replicaCount number of replicas for the statefulset
 replicaCount: 1
 
-## @param clusterDomain cluster domain
 clusterDomain: cluster.local
 
-## @section Image
-## @param image.registry image registry, e.g. gcr.io,docker.io
-## @param image.repository Image to start for this pod
-## @param image.tag Visit: [Image tag](https://hub.docker.com/r/gitea/gitea/tags?page=1&ordering=last_updated). Defaults to `appVersion` within Chart.yaml.
-## @param image.pullPolicy Image pull policy
-## @param image.rootless Wether or not to pull the rootless version of Gitea, only works on Gitea 1.14.x or higher
 image:
-  registry: ""
   repository: gitea/gitea
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: 1.15.8
   pullPolicy: Always
   rootless: false # only possible when running 1.14 or later
 
-## @param imagePullSecrets Secret to use for pulling the image
 imagePullSecrets: []
 
-## @section Security
 # Security context is only usable with rootless image due to image design
-## @param podSecurityContext.fsGroup Set the shared file system group for all containers in the pod.
 podSecurityContext:
   fsGroup: 1000
 
-## @param containerSecurityContext Security context
 containerSecurityContext: {}
 #   allowPrivilegeEscalation: false
 #   capabilities:
@@ -68,78 +36,37 @@ containerSecurityContext: {}
 #   runAsNonRoot: true
 #   runAsUser: 1000
 
-## @deprecated The securityContext variable has been split two:
-## - containerSecurityContext
-## - podSecurityContext.
-## @param securityContext Run init and Gitea containers as a specific securityContext
+# DEPRECATED. The securityContext variable has been split two:
+# - containerSecurityContext
+# - podSecurityContext.
 securityContext: {}
 
-## @section Service
 service:
-  ## @param service.http.type Kubernetes service type for web traffic
-  ## @param service.http.port Port number for web traffic
-  ## @param service.http.clusterIP ClusterIP setting for http autosetup for statefulset is None
-  ## @param service.http.loadBalancerIP LoadBalancer IP setting
-  ## @param service.http.nodePort NodePort for http service
-  ## @param service.http.externalTrafficPolicy If `service.http.type` is `NodePort` or `LoadBalancer`, set this to `Local` to enable source IP preservation
-  ## @param service.http.externalIPs External IPs for service
-  ## @param service.http.ipFamilyPolicy HTTP service dual-stack policy
-  ## @param service.http.ipFamilies HTTP service dual-stack familiy selection,for dual-stack parameters see official kubernetes [dual-stack concept documentation](https://kubernetes.io/docs/concepts/services-networking/dual-stack/).
-  ## @param service.http.loadBalancerSourceRanges Source range filter for http loadbalancer
-  ## @param service.http.annotations HTTP service annotations
   http:
     type: ClusterIP
     port: 3000
     clusterIP: None
-    loadBalancerIP:
-    nodePort:
-    externalTrafficPolicy:
-    externalIPs:
-    ipFamilyPolicy:
-    ipFamilies:
+    #loadBalancerIP:
+    #nodePort:
+    #externalTrafficPolicy:
+    #externalIPs:
     loadBalancerSourceRanges: []
-    annotations: {}
-  ## @param service.ssh.type Kubernetes service type for ssh traffic
-  ## @param service.ssh.port Port number for ssh traffic
-  ## @param service.ssh.clusterIP ClusterIP setting for ssh autosetup for statefulset is None
-  ## @param service.ssh.loadBalancerIP LoadBalancer IP setting
-  ## @param service.ssh.nodePort NodePort for ssh service
-  ## @param service.ssh.externalTrafficPolicy If `service.ssh.type` is `NodePort` or `LoadBalancer`, set this to `Local` to enable source IP preservation
-  ## @param service.ssh.externalIPs External IPs for service
-  ## @param service.ssh.ipFamilyPolicy SSH service dual-stack policy
-  ## @param service.ssh.ipFamilies SSH service dual-stack familiy selection,for dual-stack parameters see official kubernetes [dual-stack concept documentation](https://kubernetes.io/docs/concepts/services-networking/dual-stack/).
-  ## @param service.ssh.hostPort HostPort for ssh service
-  ## @param service.ssh.loadBalancerSourceRanges Source range filter for ssh loadbalancer
-  ## @param service.ssh.annotations SSH service annotations
+    annotations:
   ssh:
     type: ClusterIP
     port: 22
     clusterIP: None
-    loadBalancerIP:
-    nodePort:
-    externalTrafficPolicy:
-    externalIPs:
-    ipFamilyPolicy:
-    ipFamilies:
-    hostPort:
+    #loadBalancerIP:
+    #nodePort:
+    #externalTrafficPolicy:
+    #externalIPs:
     loadBalancerSourceRanges: []
-    annotations: {}
+    annotations:
 
-## @section Ingress
-## @param ingress.enabled Enable ingress
-## @param ingress.className Ingress class name
-## @param ingress.annotations Ingress annotations
-## @param ingress.hosts[0].host Default Ingress host
-## @param ingress.hosts[0].paths[0].path Default Ingress path
-## @param ingress.hosts[0].paths[0].pathType Ingress path type
-## @param ingress.tls Ingress tls settings
-## @extra ingress.apiVersion Specify APIVersion of ingress object. Mostly would only be used for argocd.
 ingress:
   enabled: false
   # className: nginx
-  className:
-  annotations:
-    {}
+  annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -155,11 +82,7 @@ ingress:
   # If helm doesn't correctly detect your ingress API version you can set it here.
   # apiVersion: networking.k8s.io/v1
 
-## @section StatefulSet
-#
-## @param resources Kubernetes resources
-resources:
-  {}
+resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -174,82 +97,48 @@ resources:
 ## Use an alternate scheduler, e.g. "stork".
 ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
 ##
-## @param schedulerName Use an alternate scheduler, e.g. "stork"
-schedulerName: ""
+# schedulerName:
 
-## @param nodeSelector NodeSelector for the statefulset
 nodeSelector: {}
 
-## @param tolerations Tolerations for the statefulset
 tolerations: []
 
-## @param affinity Affinity for the statefulset
 affinity: {}
 
-## @param dnsConfig dnsConfig for the statefulset
-dnsConfig: {}
-
-## @param priorityClassName priorityClassName for the statefulset
-priorityClassName: ""
-
-## @param statefulset.env  Additional environment variables to pass to containers
-## @param statefulset.terminationGracePeriodSeconds How long to wait until forcefully kill the pod
-## @param statefulset.labels Labels for the statefulset
-## @param statefulset.annotations Annotations for the Gitea StatefulSet to be created
 statefulset:
-  env:
-    []
+  env: []
     # - name: VARIABLE
     #   value: my-value
   terminationGracePeriodSeconds: 60
   labels: {}
-  annotations: {}
 
-## @section Persistence
-#
-## @param persistence.enabled Enable persistent storage
-## @param persistence.existingClaim Use an existing claim to store repository information
-## @param persistence.size Size for persistence to store repo information
-## @param persistence.accessModes AccessMode for persistence
-## @param persistence.labels Labels for the persistence volume claim to be created
-## @param persistence.annotations Annotations for the persistence volume claim to be created
-## @param persistence.storageClass Name of the storage class to use
-## @param persistence.subPath Subdirectory of the volume to mount at
 persistence:
   enabled: true
-  existingClaim:
+  # existingClaim:
   size: 10Gi
   accessModes:
     - ReadWriteOnce
   labels: {}
   annotations: {}
-  storageClass:
-  subPath:
+  # storageClass:
+  # subPath:
 
-## @param extraVolumes Additional volumes to mount to the Gitea statefulset
-extraVolumes: []
+# additional volumes to add to the Gitea statefulset.
+extraVolumes:
 # - name: postgres-ssl-vol
 #   secret:
 #     secretName: gitea-postgres-ssl
 
-## @param extraContainerVolumeMounts Mounts that are only mapped into the Gitea runtime/main container, to e.g. override custom templates.
-extraContainerVolumeMounts: []
 
-## @param extraInitVolumeMounts Mounts that are only mapped into the init-containers. Can be used for additional preconfiguration.
-extraInitVolumeMounts: []
-
-## @deprecated The extraVolumeMounts variable has been split two:
-## - extraContainerVolumeMounts
-## - extraInitVolumeMounts
-## As an example, can be used to mount a client cert when connecting to an external Postgres server.
-## @param extraVolumeMounts **DEPRECATED** Additional volume mounts for init containers and the Gitea main container
-extraVolumeMounts: []
+# additional volumes to mount, both to the init container and to the main
+# container. As an example, can be used to mount a client cert when connecting
+# to an external Postgres server.
+extraVolumeMounts:
 # - name: postgres-ssl-vol
 #   readOnly: true
 #   mountPath: "/pg-ssl"
 
-## @section Init
-## @param initPreScript Bash shell script copied verbatim to the start of the init-container.
+# bash shell script copied verbatim to the start of the init-container.
 initPreScript: ""
 #
 # initPreScript: |
@@ -258,49 +147,18 @@ initPreScript: ""
 #   chown -R git:git /data/git/.postgresql/
 #   chmod 400 /data/git/.postgresql/postgresql.key
 
-## @param initContainers.resources.limits initContainers.limits Kubernetes resource limits for init containers
-## @param initContainers.resources.requests.cpu initContainers.requests.cpu Kubernetes cpu resource limits for init containers
-## @param initContainers.resources.requests.memory initContainers.requests.memory Kubernetes memory resource limits for init containers
-initContainers:
-  resources:
-    limits: {}
-    requests:
-      cpu: 100m
-      memory: 128Mi
-
 # Configure commit/action signing prerequisites
-## @section Signing
-#
-## @param signing.enabled Enable commit/action signing
-## @param signing.gpgHome GPG home directory
-## @param signing.privateKey Inline private gpg key for signed Gitea actions
-## @param signing.existingSecret Use an existing secret to store the value of `signing.privateKey`
 signing:
   enabled: false
   gpgHome: /data/git/.gnupg
-  privateKey: ""
-  # privateKey: |-
-  #   -----BEGIN PGP PRIVATE KEY BLOCK-----
-  #   ...
-  #   -----END PGP PRIVATE KEY BLOCK-----
-  existingSecret: ""
 
-## @section Gitea
-#
 gitea:
-  ## @param gitea.admin.username Username for the Gitea admin user
-  ## @param gitea.admin.existingSecret Use an existing secret to store admin user credentials
-  ## @param gitea.admin.password Password for the Gitea admin user
-  ## @param gitea.admin.email Email for the Gitea admin user
   admin:
-    # existingSecret: gitea-admin-secret
-    existingSecret:
+    #existingSecret: gitea-admin-secret
     username: gitea_admin
     password: r8sA8CPHD9!bt6d
     email: "gitea@local.domain"
 
-  ## @param gitea.metrics.enabled Enable Gitea metrics
-  ## @param gitea.metrics.serviceMonitor.enabled Enable Gitea metrics service monitor
   metrics:
     enabled: false
     serviceMonitor:
@@ -308,9 +166,7 @@ gitea:
       #  additionalLabels:
       #    prometheus-release: prom1
 
-  ## @param gitea.ldap LDAP configuration
-  ldap:
-    []
+  ldap: []
     # - name: "LDAP 1"
     #  existingSecret:
     #  securityProtocol:
@@ -326,9 +182,7 @@ gitea:
     #  publicSSHKeyAttribute:
 
   # Either specify inline `key` and `secret` or refer to them via `existingSecret`
-  ## @param gitea.oauth OAuth configuration
-  oauth:
-    []
+  oauth: []
     # - name: 'OAuth 1'
     #   provider:
     #   key:
@@ -341,7 +195,6 @@ gitea:
     #   customProfileUrl:
     #   customEmailUrl:
 
-  ## @param gitea.config  Configuration for the Gitea server,ref: [config-cheat-sheet](https://docs.gitea.io/en-us/config-cheat-sheet/)
   config: {}
   #  APP_NAME: "Gitea: Git with a cup of tea"
   #  RUN_MODE: dev
@@ -352,35 +205,16 @@ gitea:
   #  security:
   #    PASSWORD_COMPLEXITY: spec
 
-  ## @param gitea.additionalConfigSources Additional configuration from secret or configmap
   additionalConfigSources: []
   #   - secret:
   #       secretName: gitea-app-ini-oauth
   #   - configMap:
   #       name: gitea-app-ini-plaintext
 
-  ## @param gitea.additionalConfigFromEnvs Additional configuration sources from environment variables
-  additionalConfigFromEnvs: []
-
-  ## @param gitea.podAnnotations Annotations for the Gitea pod
   podAnnotations: {}
 
-  ## @param gitea.ssh.logLevel Configure OpenSSH's log level. Only available for root-based Gitea image.
-  ssh:
-    logLevel: "INFO"
-
-  ## @section LivenessProbe
-  #
-  ## @param gitea.livenessProbe.enabled Enable liveness probe
-  ## @param gitea.livenessProbe.tcpSocket.port Port to probe for liveness
-  ## @param gitea.livenessProbe.initialDelaySeconds Initial delay before liveness probe is initiated
-  ## @param gitea.livenessProbe.timeoutSeconds Timeout for liveness probe
-  ## @param gitea.livenessProbe.periodSeconds Period for liveness probe
-  ## @param gitea.livenessProbe.successThreshold Success threshold for liveness probe
-  ## @param gitea.livenessProbe.failureThreshold Failure threshold for liveness probe
   # Modify the liveness probe for your needs or completely disable it by commenting out.
   livenessProbe:
-    enabled: true
     tcpSocket:
       port: http
     initialDelaySeconds: 200
@@ -389,18 +223,8 @@ gitea:
     successThreshold: 1
     failureThreshold: 10
 
-  ## @section ReadinessProbe
-  #
-  ## @param gitea.readinessProbe.enabled Enable readiness probe
-  ## @param gitea.readinessProbe.tcpSocket.port Port to probe for readiness
-  ## @param gitea.readinessProbe.initialDelaySeconds Initial delay before readiness probe is initiated
-  ## @param gitea.readinessProbe.timeoutSeconds Timeout for readiness probe
-  ## @param gitea.readinessProbe.periodSeconds Period for readiness probe
-  ## @param gitea.readinessProbe.successThreshold Success threshold for readiness probe
-  ## @param gitea.readinessProbe.failureThreshold Failure threshold for readiness probe
   # Modify the readiness probe for your needs or completely disable it by commenting out.
   readinessProbe:
-    enabled: true
     tcpSocket:
       port: http
     initialDelaySeconds: 5
@@ -410,76 +234,57 @@ gitea:
     failureThreshold: 3
 
   # # Uncomment the startup probe to enable and modify it for your needs.
-  ## @section StartupProbe
-  #
-  ## @param gitea.startupProbe.enabled Enable startup probe
-  ## @param gitea.startupProbe.tcpSocket.port Port to probe for startup
-  ## @param gitea.startupProbe.initialDelaySeconds Initial delay before startup probe is initiated
-  ## @param gitea.startupProbe.timeoutSeconds Timeout for startup probe
-  ## @param gitea.startupProbe.periodSeconds Period for startup probe
-  ## @param gitea.startupProbe.successThreshold Success threshold for startup probe
-  ## @param gitea.startupProbe.failureThreshold Failure threshold for startup probe
-  startupProbe:
-    enabled: false
-    tcpSocket:
-      port: http
-    initialDelaySeconds: 60
-    timeoutSeconds: 1
-    periodSeconds: 10
-    successThreshold: 1
-    failureThreshold: 10
+  # startupProbe:
+  #   tcpSocket:
+  #     port: http
+  #   initialDelaySeconds: 60
+  #   timeoutSeconds: 1
+  #   periodSeconds: 10
+  #   successThreshold: 1
+  #   failureThreshold: 10
 
-## @section Memcached
-#
-## @param memcached.enabled Memcached is loaded as a dependency from [Bitnami](https://github.com/bitnami/charts/tree/master/bitnami/memcached) if enabled in the values. Complete Configuration can be taken from their website.
-## ref: https://hub.docker.com/r/bitnami/memcached/tags/
-## @param memcached.service.ports.memcached Port for Memcached
 memcached:
   enabled: true
-  # image:
-  #   registry: docker.io
-  #   repository: bitnami/memcached
-  #   tag: ""
-  #   digest: ""
-  #   pullPolicy: IfNotPresent
-  #   pullSecrets: []
   service:
-    ports:
-      memcached: 11211
+    port: 11211
 
-## @section PostgreSQL
-#
-## @param postgresql.enabled Enable PostgreSQL
-## @param postgresql.global.postgresql.auth.password Password for the "gitea" user (overrides `auth.password`)
-## @param postgresql.global.postgresql.auth.database Name for a custom database to create (overrides `auth.database`)
-## @param postgresql.global.postgresql.auth.username Name for a custom user to create (overrides `auth.username`)
-## @param postgresql.global.postgresql.service.ports.postgresql PostgreSQL service port (overrides `service.ports.postgresql`)
-## @param postgresql.primary.persistence.size PVC Storage Request for PostgreSQL volume
 postgresql:
   enabled: true
   global:
     postgresql:
-      auth:
-        password: gitea
-        database: gitea
-        username: gitea
-      service:
-        ports:
-          postgresql: 5432
+      postgresqlDatabase: gitea
+      postgresqlUsername: gitea
+      postgresqlPassword: gitea
+      servicePort: 5432
+  persistence:
+    size: 10Gi
+
+mysql:
+  enabled: false
+  root:
+    password: gitea
+  db:
+    user: gitea
+    password: gitea
+    name: gitea
+  service:
+    port: 3306
+  persistence:
+    size: 10Gi
+
+mariadb:
+  enabled: false
+  auth:
+    database: gitea
+    username: gitea
+    password: gitea
+    rootPassword: gitea
   primary:
+    service:
+      port: 3306
     persistence:
       size: 10Gi
 
 # By default, removed or moved settings that still remain in a user defined values.yaml will cause Helm to fail running the install/update.
 # Set it to false to skip this basic validation check.
-## @section Advanced
-## @param checkDeprecation Set it to false to skip this basic validation check.
-## @param test.enabled Set it to false to disable test-connection Pod.
-## @param test.image.name Image name for the wget container used in the test-connection Pod.
-## @param test.image.tag Image tag for the wget container used in the test-connection Pod.
 checkDeprecation: true
-test:
-  enabled: true
-  image:
-    name: busybox
-    tag: latest
