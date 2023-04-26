@@ -306,6 +306,8 @@ environments:
           prometheus-blackbox-exporter: {}
           prometheus:
             enabled: false
+            disabledRules:
+              - InfoInhibitor
             remoteWrite:
               enabled: false
               rwConfig:

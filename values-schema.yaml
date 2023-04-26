@@ -2383,6 +2383,10 @@ properties:
           enabled:
             type: boolean
             default: false
+          disabledRules:
+            type: array
+            items:
+              type: string
           remoteWrite:
             properties:
               enabled:
