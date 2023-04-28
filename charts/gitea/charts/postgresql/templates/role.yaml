@@ -2,30 +2,19 @@
 kind: Role
 apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
 metadata:
-  name: {{ include "common.names.fullname" . }}
-  namespace: {{ .Release.Namespace | quote }}
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    {{- if .Values.commonLabels }}
-    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
-    {{- end }}
+  name: {{ template "common.names.fullname" . }}
+  labels:
+  {{- include "common.labels.standard" . | nindent 4 }}
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
-# yamllint disable rule:indentation
+  namespace: {{ .Release.Namespace }}
 rules:
-  {{- $pspAvailable := (semverCompare "<1.25-0" (include "common.capabilities.kubeVersion" .)) -}}
-  {{- if and $pspAvailable .Values.psp.create }}
-  - apiGroups:
-      - 'policy'
-    resources:
-      - 'podsecuritypolicies'
-    verbs:
-      - 'use'
+  {{- if .Values.psp.create }}
+  - apiGroups: ["extensions"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["use"]
     resourceNames:
-      - {{ include "common.names.fullname" . }}
+      - {{ template "common.names.fullname" . }}
   {{- end }}
-  {{- if .Values.rbac.rules }}
-  {{- include "common.tplvalues.render" ( dict "value" .Values.rbac.rules "context" $ ) | nindent 2 }}
-  {{- end }}
-# yamllint enable rule:indentation
 {{- end }}

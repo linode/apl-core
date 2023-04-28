@@ -36,7 +36,6 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  # tag: {{ $g | get "image.gitea.tag" "1.15.8" }}
   tag: {{ $g | get "image.gitea.tag" "1.19.1" }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
   rootless: true
@@ -170,18 +169,16 @@ postgresql:
   metrics:
     image:
       tag: 0.10.0
-  primary:
-    persistence:
-      {{- if eq $v.cluster.provider "vultr" }}
-      size: 10Gi
-      {{- else }}
-      size: 1Gi
-      {{- end }}
+  persistence:
+    {{- if eq $v.cluster.provider "vultr" }}
+    size: 10Gi
+    {{- else }}
+    size: 1Gi
+    {{- end }}
   global:
     postgresql:
-      auth:
-        postgresqlPassword: {{ $g | get "password" }}
-        postgresqlPostgresPassword: {{ $g | get "password" }}
+      postgresqlPassword: {{ $g | get "postgresqlPassword" }}
+      postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
   resources:
     {{ with $g | get "resources.postgresql" nil }}
       {{- toYaml . | nindent 4 }}
