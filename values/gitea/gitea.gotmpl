@@ -125,7 +125,7 @@ init:
 memcached:
   # @TODO:
   image:
-    tag: {{ $g | get "image.memcached.tag" "1.6.12" }}
+    tag: {{ $g | get "image.memcached.tag" "1.6.19-debian-11-r3" }}
     pullPolicy:  {{ $g | get "image.memcached.pullPolicy" "IfNotPresent" }}
   resources:
     {{ with $g | get "resources.memcached" nil }}
@@ -165,7 +165,7 @@ persistence:
 postgresql:
   # @TODO:
   image:
-    tag: {{ $g | get "image.postgresql.tag" "13.5.0" }}
+    tag: {{ $g | get "image.postgresql.tag" "15.2.0-debian-11-r14" }}
     pullPolicy:  {{ $g | get "image.postgresql.pullPolicy" "IfNotPresent" }}
   metrics:
     image:
