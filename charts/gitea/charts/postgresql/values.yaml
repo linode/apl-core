@@ -765,7 +765,7 @@ metrics:
   image:
     registry: docker.io
     repository: bitnami/postgres-exporter
-    tag: 0.9.0-debian-10-r34
+    tag: 0.12.0-debian-11-r71    
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
     ## Secrets must be manually created in the namespace.
