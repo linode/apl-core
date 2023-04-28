@@ -37,7 +37,7 @@ image:
     - name: otomi-pullsecret-global
   {{- end }}
   # tag: {{ $g | get "image.gitea.tag" "1.15.8" }}
-  tag: {{ $g | get "image.gitea.tag" "1.19.1" }}
+  tag: {{ $g | get "image.gitea.tag" "1.16.6" }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
   rootless: true
 
@@ -125,7 +125,7 @@ init:
 memcached:
   # @TODO:
   image:
-    tag: {{ $g | get "image.memcached.tag" "1.6.19-debian-11-r3" }}
+    tag: {{ $g | get "image.memcached.tag" "1.6.12" }}
     pullPolicy:  {{ $g | get "image.memcached.pullPolicy" "IfNotPresent" }}
   resources:
     {{ with $g | get "resources.memcached" nil }}
@@ -165,7 +165,7 @@ persistence:
 postgresql:
   # @TODO:
   image:
-    tag: {{ $g | get "image.postgresql.tag" "15.2.0-debian-11-r14" }}
+    tag: {{ $g | get "image.postgresql.tag" "13.5.0" }}
     pullPolicy:  {{ $g | get "image.postgresql.pullPolicy" "IfNotPresent" }}
   metrics:
     image:
