@@ -367,20 +367,6 @@ definitions:
       labelSelector:
         $ref: '#/definitions/labels'
         description: Individual objects must match this label selector to be included in the backup.
-      includedResources:
-        description: Resources to include in the backup
-        items:
-          enum:
-            - pv
-            - secret
-            - configmap
-            - deployment
-            - service
-            - statefulset
-            - replicaset
-          type: string
-        type: array
-        uniqueItems: true
   domain:
     pattern: ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))|([a-f0-9:]+:+)+[a-f0-9]+$
     type: string

@@ -186,6 +186,8 @@ schedules:
       ttl: {{ $b.gitea.ttl }}
       includedNamespaces:
       - gitea
+      includedResources:
+      - pv
 {{- end }}
 {{- if $b.keycloak.enabled }} 
   keycloak:
@@ -196,6 +198,8 @@ schedules:
       ttl: {{ $b.keycloak.ttl }}
       includedNamespaces:
       - keycloak
+      includedResources:
+      - pv
 {{- end }}
 {{- if $b.drone.enabled }} 
   drone:
@@ -206,6 +210,8 @@ schedules:
       ttl: {{ $b.drone.ttl }}
       includedNamespaces:
       - drone
+      includedResources:
+      - pv
 {{- end }}
 {{- if $b.harbor.enabled }} 
   harbor:
@@ -216,6 +222,8 @@ schedules:
       ttl: {{ $b.harbor.ttl }}
       includedNamespaces:
       - harbor
+      includedResources:
+      - pv
 {{- end }}
 {{- if $b.vault.enabled }}
   vault:
@@ -226,6 +234,8 @@ schedules:
       ttl: {{ $b.vault.ttl }}
       includedNamespaces:
       - vault
+      includedResources:
+      - pv
 {{- end }}
 {{- if $b.argo.enabled }}
   argocd:
@@ -236,6 +246,8 @@ schedules:
       ttl: {{ $b.argo.ttl }}
       includedNamespaces:
       - argocd
+      includedResources:
+      - pv
 {{- end }}
 {{- if $b.kubeapps.enabled }}
   kubeapps:
@@ -246,6 +258,8 @@ schedules:
       ttl: {{ $b.kubeapps.ttl }}
       includedNamespaces:
       - kubeapps
+      includedResources:
+      - pv
 {{- end }}
 {{- if $b.minio.enabled }}
   kubeapps:
@@ -256,4 +270,6 @@ schedules:
       ttl: {{ $b.kubeapps.ttl }}
       includedNamespaces:
       - minio
+      includedResources:
+      - pv
 {{- end }}

@@ -13,7 +13,8 @@ spec:
   template:
     includedNamespaces:
     - team-{{ $v.teamId }}
-    includedResources: {{- toYaml .includedResources | nindent 4 }}
+    includedResources:
+    - pv
     ttl: {{ .ttl }}
     includeClusterResources: false
     {{- if hasKey . "labelSelector" }}
