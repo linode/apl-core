@@ -316,7 +316,8 @@ trivy:
   priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
-  resources: {{- $h.resources.trivy }}
+  resources: 
+    {{- $h.resources.trivy | toYaml  | nindent 4 }}
   automountServiceAccountToken: true
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
