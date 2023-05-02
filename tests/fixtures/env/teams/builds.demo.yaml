@@ -1,0 +1,32 @@
+teamConfig:
+    demo:
+        builds:
+            - name: demo-java1
+              tag: v.0.0.1
+              repoAccess:
+                  otomiGit: true
+                  privateGit: false
+              appSource:
+                  repoUrl: https://github.com/buildpacks/samples
+                  revision: HEAD
+                  path: samples/apps/java-maven
+            - name: demo-java2
+              tag: v.0.0.1
+              repoAccess:
+                  otomiGit: false
+                  privateGit: true
+                  repoUserName: bla
+                  repoPassword: bla1111111
+              appSource:
+                  repoUrl: https://github.com/buildpacks/samples
+                  revision: HEAD
+                  path: samples/apps/java-maven
+            - name: demo-java3
+              tag: v.0.0.1
+              repoAccess:
+                  otomiGit: false
+                  privateGit: false
+              appSource:
+                  repoUrl: https://github.com/buildpacks/samples
+                  revision: main
+                  path: samples/apps/java-maven
