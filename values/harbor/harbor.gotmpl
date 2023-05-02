@@ -149,7 +149,7 @@ notary:
       tag: {{ $tag }}
   enabled: false
   secretName: {{ $notarySecretName }}
-  
+
 persistence:
   enabled: true
   # resourcePolicy: 'keep'
@@ -316,17 +316,8 @@ trivy:
   priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
-  resources:
-    {{- with $h | get "resources.trivy" nil }}
-      {{- toYaml . | nindent 6 }}
-    {{- else }}
-      requests:
-        cpu: 100m 
-        memory: 1Gi
-      limits:
-        cpu: 400m
-        memory: 2Gi
-    {{- end }}
+  resources: 
+    {{- $h.resources.trivy | toYaml  | nindent 4 }}
   automountServiceAccountToken: true
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}

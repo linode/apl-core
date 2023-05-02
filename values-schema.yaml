@@ -1894,6 +1894,8 @@ properties:
                 $ref: '#/definitions/resources'
               registry-controller:
                 $ref: '#/definitions/resources'
+              trivy:
+                $ref: '#/definitions/resources'
           secretKey:
             type: string
             x-secret: 'randAlpha 16'
@@ -2465,6 +2467,10 @@ properties:
           enabled:
             type: boolean
             default: false
+          disabledRules:
+            type: array
+            items:
+              type: string
           remoteWrite:
             properties:
               enabled:
