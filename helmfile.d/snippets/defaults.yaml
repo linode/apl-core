@@ -182,6 +182,14 @@ environments:
                 username: otomi-admin
             backup:
               enabled: false
+            resources:
+              trivy:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: 400m
+                  memory: 512Mi
           hello:
             enabled: false
           httpbin:
@@ -306,6 +314,8 @@ environments:
           prometheus-blackbox-exporter: {}
           prometheus:
             enabled: false
+            disabledRules:
+              - InfoInhibitor
             remoteWrite:
               enabled: false
               rwConfig:
