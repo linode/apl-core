@@ -17,7 +17,7 @@
 </p>
 
 <h4 align="center">
-Add developer- and operations-centric tools, automation and self-service on top of Kubernetes to offer a complete platform experience out-of-the-box.
+Add developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud. One install, one spec, one console to build, deploy, secure, expose and monitor containerized applications.
 </h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
@@ -25,17 +25,17 @@ Add developer- and operations-centric tools, automation and self-service on top 
 ## Otomi helps 
 
 **Developers** - To focus on their apps only
-* Easy deployment of containerized workloads
+* Build images from application code
+* Easy deployment of containerized workloads without writing any YAML
 * Direct access to logs and metrics
 * Store charts and images in a private registry
 * Build and run custom CI pipelines
-* Enable declarative end-to-end workload lifecycle management
 * Easy ingress and network policy configuration
 * Manage your own secrets
 
 **Platform teams** - To setup and manage production-ready Kubernetes-based platforms
 * Onboard development teams in a comprehensive multi-tenant setup
-* Get all the required K8s tools in an integrated way
+* Get all the required K8s tools in an integrated and automated way
 * Create your platform profile and deploy to any K8s
 * One schema to manage all platform configuration
 * Ensure governance with security policies
@@ -103,20 +103,23 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [Trivy](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit
 - [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
+- [Opencost](https://github.com/opencost/opencost)
+- [Kpack](https://github.com/pivotal/kpack)
+- [Paketo build packs](https://github.com/paketo-buildpacks)
 
 ## Otomi Features
 
-- Drag and drop tools to create your own preferred suite
+- Activate capabilities to compose your own platform
 - GitOps out-of-the-box
 - Container image scanning (at the gate and during runtime)
 - Security policies (at the gate and during runtime)
-- Advanced ingress architecture with self-service
+- Advanced ingress architecture
 - Network policies for internal ingress and external egress
-- Deploy workloads without writing any YAML
+- Deploy workloads the GitOps way without writing any YAML
 - Create and manage secrets in Vault and use them in workloads
 - Role-based access to all integrated tools
 - Comprehensive multi-tenant setup
-- Automation tasks for Harbor, Keycloak, ArgoCD, Vault, Gitea and Drone
+- Automation tasks for Harbor, Keycloak, ArgoCD, Vault, Velero, Gitea and Drone
 - Expose services on multiple (public/private) networks
 - SOPS/KMS for encryption of sensitive configuration values
 - BYO IdP, DNS and/or CA
