@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { cloneDeep, merge } from 'lodash'
 import { pki } from 'node-forge'
+import { env } from 'process'
 import stubs from 'src/test-stubs'
 import { createMock } from 'ts-auto-mock'
 import {
@@ -9,6 +10,7 @@ import {
   copyBasicFiles,
   createCustomCA,
   getStoredClusterSecrets,
+  handleFileEntry,
   processValues,
 } from './bootstrap'
 
@@ -28,6 +30,7 @@ describe('Bootstrapping values', () => {
       copyBasicFiles: jest.fn(),
       copyFile: jest.fn(),
       createCustomCA: jest.fn(),
+      handleFileEntry: jest.fn(),
       decrypt: jest.fn(),
       encrypt: jest.fn(),
       existsSync: jest.fn(),
@@ -95,6 +98,36 @@ describe('Bootstrapping values', () => {
     it('should not throw any exception', async () => {
       const res = await copyBasicFiles(deps)
       expect(res).toBe(undefined)
+    })
+  })
+  describe('Creating folders and files for workload', () => {
+    const values = {
+      values: {
+        image: {
+          repository: 'otomi/nodejs-helloworld',
+          tag: 'v1.2.13',
+        },
+      },
+    }
+    const workload = {
+      files: {
+        'env/teams/workloads/demo/values.yaml': JSON.stringify(values),
+      },
+    }
+    const deps = {
+      isChart: true,
+      loadYaml: jest.fn().mockReturnValue(workload),
+      mkdir: jest.fn(),
+      terminal,
+      writeFile: jest.fn(),
+    }
+    it('should create folders and files based on file entry in yaml', async () => {
+      await handleFileEntry(deps)
+      expect(deps.mkdir).toBeCalledWith(`${env.ENV_DIR}/env/teams/workloads/demo`, { recursive: true })
+      expect(deps.writeFile).toBeCalledWith(
+        `${env.ENV_DIR}/env/teams/workloads/demo/values.yaml`,
+        JSON.stringify(values),
+      )
     })
   })
   describe('Generating sops related files', () => {

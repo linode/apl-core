@@ -2,6 +2,7 @@ import { copy, pathExists } from 'fs-extra'
 import { copyFile, mkdir, readFile, writeFile } from 'fs/promises'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
+import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { DEPLOYMENT_PASSWORDS_SECRET } from 'src/common/constants'
@@ -244,6 +245,36 @@ export const processValues = async (
   return originalInput
 }
 
+// create file structure based on file entry
+export const handleFileEntry = async (
+  deps = {
+    isChart,
+    loadYaml,
+    mkdir,
+    terminal,
+    writeFile,
+  },
+) => {
+  const { ENV_DIR, VALUES_INPUT } = env
+  if (deps.isChart) {
+    // write Values from File
+    const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
+    if (originalValues && originalValues.files) {
+      for (const [key, value] of Object.entries(originalValues.files as string)) {
+        // extract folder name
+        const filePath = path.dirname(key)
+        // evaluate absolute file name and path
+        const absPath = `${ENV_DIR}/${filePath}`
+        const absFileName = `${ENV_DIR}/${key}`
+        // create Folder
+        await deps.mkdir(absPath, { recursive: true })
+        // write File
+        await deps.writeFile(absFileName, value.toString())
+      }
+    }
+  }
+}
+
 /**
  * Creates a custom CA cert and key pair in the location as defined in the schema.
  */
@@ -316,6 +347,7 @@ export const bootstrap = async (
     migrate,
     encrypt,
     decrypt,
+    handleFileEntry,
   },
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:bootstrap`)
@@ -366,6 +398,7 @@ export const bootstrap = async (
     }
     await deps.writeValues(add)
   }
+  await deps.handleFileEntry()
   await deps.bootstrapSops()
   // if we did not have the admin password before we know we have generated it for the first time
   // so tell the user about it

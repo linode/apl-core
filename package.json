@@ -149,7 +149,8 @@
     "test:ts-cov": "jest --coverage",
     "validate-templates": "NODE_ENV=test binzx/otomi validate-templates",
     "validate-templates:all": "set -e; i=19; while [ $i -le 23 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
-    "validate-values": "NODE_ENV=test binzx/otomi validate-values"
+    "validate-values": "NODE_ENV=test binzx/otomi validate-values",
+    "bootstrap": "binzx/otomi bootstrap"
   },
   "standard-version": {
     "skip": {

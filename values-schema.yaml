@@ -1214,6 +1214,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
+      builds:
+        type: array
+        items:
+          $ref: '#/definitions/build'
   teamSelfService:
     title: Team self service flags
     description: Grant team permissions to modify certain configuration parameters.
@@ -1256,6 +1260,48 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
+  build:
+    type: object
+    description: Define location of code to build
+    properties:
+      name:
+        description: Name of the image
+        $ref: '#/definitions/wordCharacterPattern'
+      tag:
+        description: Image tag
+        $ref: '#/definitions/imageTag'
+      repoAccess:
+        properties:
+          privateGit:
+            type: boolean
+            default: false
+          otomiGit:
+            type: boolean
+            default: false
+          repoUserName:
+            description: The username used for basic authentication to access a private github repo.
+            $ref: '#/definitions/wordCharacterPattern'
+          repoPassword:
+            x-secret: ''
+            $ref: '#/definitions/wordCharacterPattern'
+            description: The password used for basic authentication to access a private github repo.
+      appSource:
+        properties:
+          repoUrl:
+            description: URL of the Git repository holding the application code.
+            $ref: '#/definitions/url'
+          revision:
+            description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
+            $ref: '#/definitions/wordCharacterPattern'
+            default: HEAD
+          path:
+            description: A relative directory path within the Git repository.
+            $ref: '#/definitions/wordCharacterPattern'
+        required:
+          - repoUrl
+    required:
+      - name
+
   workload:
     type: object
     description: Define location of the application's manifests or chart
@@ -1834,10 +1880,6 @@ properties:
             properties:
               chartmuseum:
                 $ref: '#/definitions/resources'
-              clair:
-                $ref: '#/definitions/resources'
-              clair-adapter:
-                $ref: '#/definitions/resources'
               core:
                 $ref: '#/definitions/resources'
               database:
@@ -1851,6 +1893,8 @@ properties:
               registry:
                 $ref: '#/definitions/resources'
               registry-controller:
+                $ref: '#/definitions/resources'
+              trivy:
                 $ref: '#/definitions/resources'
           secretKey:
             type: string
@@ -2186,6 +2230,42 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
+      kpack:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          buildPacks:
+            properties:
+              java:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+              nodejs:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+              go:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+              dotnetCore:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: false
+              php:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: false
+
       loki:
         additionalProperties: false
         properties:
@@ -2387,6 +2467,10 @@ properties:
           enabled:
             type: boolean
             default: false
+          disabledRules:
+            type: array
+            items:
+              type: string
           remoteWrite:
             properties:
               enabled:
@@ -2983,6 +3067,13 @@ properties:
         description: Optional. A public IP address that will override (loadbalancer) ip used for registering hosts. This allows for access to private clusters.
   home:
     $ref: '#/definitions/alerts'
+  files:
+    type: object
+    description: 'Custom values for the workload chart.'
+    patternProperties:
+      '^/|(/[\w-]+)+$':
+        type: string
+        pattern: ^[^\s]+$
   kms:
     additionalProperties: false
     properties:
@@ -3157,7 +3248,7 @@ properties:
         description: Whether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
         type: boolean
       isMultitenant:
-        default: false
+        default: true
         description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
       nodeSelector:

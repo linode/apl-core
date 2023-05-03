@@ -24,6 +24,12 @@ global:
   imagePullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
+
+defaultRules:
+  disabled:
+    {{- range $p.disabledRules }}
+    {{ . }}: true
+    {{- end }}
 prometheusOperator:
   resources:
     limits:
