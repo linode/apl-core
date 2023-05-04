@@ -16,7 +16,11 @@ harborAdminPassword: {{ $v.otomi.adminPassword }}
 nameOverride: harbor
 secretKey: {{ $h | get "secretKey" nil }}
 
+updateStrategy:
+    type: Recreate
+
 chartmuseum:
+  priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
   podAnnotations:
@@ -34,6 +38,7 @@ chartmuseum:
     {{- end }}
 
 core:
+  priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
   podAnnotations:
@@ -55,6 +60,7 @@ core:
 
 database:
   internal:
+    priorityClassName: otomi-critical
     image:
       tag: {{ $tag }}
     initContainer:
@@ -92,6 +98,7 @@ database:
   type: internal
 
 exporter:
+  priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
 
@@ -105,6 +112,7 @@ internalTLS:
   enabled: false
 
 jobservice:
+  priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
   jobLoggers:
@@ -132,14 +140,16 @@ metrics:
 
 notary:
   server:
+    priorityClassName: otomi-critical
     image:
       tag: {{ $tag }}
   signer:
+    priorityClassName: otomi-critical
     image:
       tag: {{ $tag }}
   enabled: false
   secretName: {{ $notarySecretName }}
-  
+
 persistence:
   enabled: true
   # resourcePolicy: 'keep'
@@ -225,6 +235,7 @@ postgresql:
     enabled: true
 
 portal:
+  priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
   resources:
@@ -243,6 +254,7 @@ portal:
 
 redis:
   internal:
+    priorityClassName: otomi-critical
     image:
       tag: {{ $tag }}
   podAnnotations:
@@ -261,6 +273,7 @@ redis:
       {{- end }}
 
 registry:
+  priorityClassName: otomi-critical
   secret: {{ $h | get "registry.secret" nil }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
@@ -300,19 +313,11 @@ registry:
     htpasswdString: {{ $h | get "registry.credentials.htpasswd" nil }}
 
 trivy:
+  priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
-  resources:
-    {{- with $h | get "resources.trivy" nil }}
-      {{- toYaml . | nindent 6 }}
-    {{- else }}
-      requests:
-        cpu: 100m 
-        memory: 1Gi
-      limits:
-        cpu: 400m
-        memory: 2Gi
-    {{- end }}
+  resources: 
+    {{- $h.resources.trivy | toYaml  | nindent 4 }}
   automountServiceAccountToken: true
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
