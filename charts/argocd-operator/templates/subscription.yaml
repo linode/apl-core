@@ -3,10 +3,9 @@ kind: Subscription
 metadata:
   name: argocd-operator
 spec:
-  # channel: alpha
+  channel: alpha
   name: argocd-operator
-  # source: argocd-catalog
-  source: operatorhubio-catalog
+  source: argocd-catalog
   sourceNamespace: olm
   config:
     env:
@@ -14,3 +13,4 @@ spec:
         value: "true"
       - name: ARGOCD_CLUSTER_CONFIG_NAMESPACES
         value: argocd
+  # installPlanApproval: Manual
