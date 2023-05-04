@@ -1,6 +1,9 @@
 apps:
     prometheus:
         enabled: true
+        disabledRules:
+            - InfoInhibitor
+            - PrometheusOperatorListErrors
         remoteWrite:
             enabled: true
             otomiThanos: false

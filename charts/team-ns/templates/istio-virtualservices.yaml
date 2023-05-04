@@ -88,7 +88,7 @@ spec:
             response:
               set:
               {{- range . }}
-                {{ .name }}: {{ .value}}
+                {{ .name }}: {{ .value | quote }}
               {{- end }}
             {{- end }}
 
