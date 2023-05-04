@@ -103,12 +103,12 @@ jobs:
           changelog="${changelog//$'\r'/'%0D'}"
           echo changes=$changelog >> $GITHUB_OUTPUT
       - name: Create GitHub release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1.12.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.git_tag.outputs.tag }}
-          release_name: Release ${{ steps.git_tag.outputs.tag }}
+          tag: ${{ steps.git_tag.outputs.tag }}
+          name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
 
   chart-release:
