@@ -96,9 +96,12 @@ otomi:
     nodeSelector:
         otomi: otomi-sys
     version: main
+    globalPullSecret:
+        username: otomi
+        password: blablabla
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
-version: 7
+version: 8

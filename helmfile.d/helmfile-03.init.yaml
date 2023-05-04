@@ -75,3 +75,10 @@ releases:
       - ../values/vault-operator/vault-operator.gotmpl
       - {{- $v.apps.vault | get "_rawValues" dict | toYaml | nindent 8 }}
     <<: *upgrade
+  - name: kpack
+    installed: {{ $a | get "kpack.enabled" }}
+    namespace: kpack
+    chart: ../charts/kpack
+    labels:
+      pkg: kpack
+    <<: *default

@@ -182,6 +182,14 @@ environments:
                 username: otomi-admin
             backup:
               enabled: false
+            resources:
+              trivy:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: 400m
+                  memory: 512Mi
           hello:
             enabled: false
           httpbin:
@@ -274,6 +282,19 @@ environments:
                   limits:
                       cpu: 50m
                       memory: 32Mi
+          kpack:
+            enabled: false
+            buildPacks:
+                java:
+                    enabled: true
+                nodejs:
+                    enabled: true
+                go:
+                    enabled: true
+                dotnetCore:
+                    enabled: false
+                php:
+                    enabled: false
           loki:
             enabled: false
           metrics-server:
@@ -326,6 +347,8 @@ environments:
           prometheus-blackbox-exporter: {}
           prometheus:
             enabled: false
+            disabledRules:
+              - InfoInhibitor
             remoteWrite:
               enabled: false
               rwConfig:
@@ -502,7 +525,7 @@ environments:
           isMultitenant: true
           nodeSelector: {}
         # TODO: update this when schema version changes: (and think more?)
-        version: 7
+        version: 8
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

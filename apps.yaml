@@ -111,12 +111,12 @@ appsInfo:
     integration: Otomi uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.5.4
+    appVersion: 2.6.4
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
       - https://otomi.io/docs/apps/harbor
-      - https://goharbor.io/docs/2.5.0/
+      - https://goharbor.io/docs/2.6.0/
     license: Apache 2.0
     about: Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. Otomi runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
@@ -141,7 +141,7 @@ appsInfo:
     integration: Otomi integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.10.1
+    appVersion: 1.16.4
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -223,6 +223,18 @@ appsInfo:
     license: Apache 2.0
     about: Kured (KUbernetes REboot Daemon) is a Kubernetes daemonset that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS.
     integration: Kured can be activated to perform safe automatic node reboots. Only activate Kured if cluster autoscaling is enabled and make sure the cloud resource quota is sufficent.
+  kpack:
+    title: Kpack
+    appVersion: 0.10.1
+    repo: https://github.com/pivotal/kpack
+    maintainers: Vmware / Pivotal
+    relatedLinks:
+      - https://otomi.io/docs/apps/kpack
+      - https://github.com/paketo-buildpacks
+      - https://buildpacks.io/
+    license: Apache 2.0
+    about: Kpack extends Kubernetes and utilizes unprivileged kubernetes primitives to provide builds of OCI images as a platform implementation of Cloud Native Buildpacks (CNB).
+    integration: Otomi uses Kpack to provide an easy way to build images from application source code. Kpack is configured to have access to Harbor and ccreated images are directly pushed to the teams private registry.
   loki:
     title: Loki
     appVersion: 2.4.1

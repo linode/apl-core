@@ -30,3 +30,8 @@ releases:
     labels:
       pkg: opa-exporter
     <<: *raw
+  - name: kpack-artifacts
+    installed: {{ $a | get "kpack.enabled" }}
+    labels:
+      pkg: kpack
+    <<: *raw

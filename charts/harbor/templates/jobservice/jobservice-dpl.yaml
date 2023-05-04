@@ -86,6 +86,13 @@ spec:
           - name: INTERNAL_TLS_TRUST_CA_PATH
             value: /etc/harbor/ssl/jobservice/ca.crt
           {{- end }}
+          {{- if .Values.registry.credentials.existingSecret }}
+          - name: REGISTRY_CREDENTIAL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.registry.credentials.existingSecret }}
+                key: REGISTRY_PASSWD
+          {{- end }}
         envFrom:
         - configMapRef:
             name: "{{ template "harbor.jobservice" . }}-env"
@@ -99,7 +106,7 @@ spec:
           subPath: config.yml
         - name: job-logs
           mountPath: /var/log/jobs
-          subPath: {{ .Values.persistence.persistentVolumeClaim.jobservice.subPath }}
+          subPath: {{ .Values.persistence.persistentVolumeClaim.jobservice.jobLog.subPath }}
         {{- if .Values.internalTLS.enabled }}
         - name: jobservice-internal-certs
           mountPath: /etc/harbor/ssl/jobservice
@@ -114,7 +121,7 @@ spec:
       - name: job-logs
         {{- if and .Values.persistence.enabled (has "file" .Values.jobservice.jobLoggers) }}
         persistentVolumeClaim:
-          claimName: {{ .Values.persistence.persistentVolumeClaim.jobservice.existingClaim | default (include "harbor.jobservice" .) }}
+          claimName: {{ .Values.persistence.persistentVolumeClaim.jobservice.jobLog.existingClaim | default (include "harbor.jobservice" .) }}
         {{- else }}
         emptyDir: {}
         {{- end }}

@@ -168,16 +168,16 @@ postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.datab
   {{- end }}
 {{- end -}}
 
-/*scheme://[redis:password@]host:port[/master_set]*/
+/*scheme://[:password@]host:port[/master_set]*/
 {{- define "harbor.redis.url" -}}
   {{- with .Values.redis }}
     {{- $path := ternary "" (printf "/%s" (include "harbor.redis.masterSet" $)) (not (include "harbor.redis.masterSet" $)) }}
-    {{- $cred := ternary (printf "redis:%s@" (.external.password | urlquery)) "" (and (eq .type "external" ) (not (not .external.password))) }}
+    {{- $cred := ternary (printf ":%s@" (.external.password | urlquery)) "" (and (eq .type "external" ) (not (not .external.password))) }}
     {{- printf "%s://%s%s%s" (include "harbor.redis.scheme" $) $cred (include "harbor.redis.addr" $) $path -}}
   {{- end }}
 {{- end -}}
 
-/*scheme://[redis:password@]addr/db_index?idle_timeout_seconds=30*/
+/*scheme://[:password@]addr/db_index?idle_timeout_seconds=30*/
 {{- define "harbor.redis.urlForCore" -}}
   {{- with .Values.redis }}
     {{- $index := ternary "0" .external.coreDatabaseIndex (eq .type "internal") }}
@@ -185,7 +185,7 @@ postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.datab
   {{- end }}
 {{- end -}}
 
-/*scheme://[redis:password@]addr/db_index*/
+/*scheme://[:password@]addr/db_index*/
 {{- define "harbor.redis.urlForJobservice" -}}
   {{- with .Values.redis }}
     {{- $index := ternary "1" .external.jobserviceDatabaseIndex (eq .type "internal") }}
@@ -193,7 +193,7 @@ postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.datab
   {{- end }}
 {{- end -}}
 
-/*scheme://[redis:password@]addr/db_index?idle_timeout_seconds=30*/
+/*scheme://[:password@]addr/db_index?idle_timeout_seconds=30*/
 {{- define "harbor.redis.urlForRegistry" -}}
   {{- with .Values.redis }}
     {{- $index := ternary "2" .external.registryDatabaseIndex (eq .type "internal") }}
@@ -201,7 +201,7 @@ postgres://{{ template "harbor.database.username" . }}:{{ template "harbor.datab
   {{- end }}
 {{- end -}}
 
-/*scheme://[redis:password@]addr/db_index?idle_timeout_seconds=30*/
+/*scheme://[:password@]addr/db_index?idle_timeout_seconds=30*/
 {{- define "harbor.redis.urlForTrivy" -}}
   {{- with .Values.redis }}
     {{- $index := ternary "5" .external.trivyAdapterIndex (eq .type "internal") }}
