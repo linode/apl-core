@@ -446,7 +446,7 @@ environments:
               limits:
                 cpu: 1000m
                 memory: 512Mi
-        PlatformBackups:
+        platformBackups:
             gitea:
               enabled: false
             drone:
