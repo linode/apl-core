@@ -1,0 +1,35 @@
+{{- $v := .Values }}
+{{- if $v.apps.prometheus.enabled }}
+{{- if $v.apps.opencost.enabled }}
+{{- if not (eq $v.teamId "admin") }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    prometheus: system
+  name: rules-team-{{ $v.teamId }}
+  namespace: monitoring
+spec:
+  groups:
+  - name: opencost.rules
+    rules:
+      - alert: TeamCpuMonthQuotaReached
+        expr: sum(container_cpu_allocation{exported_namespace=~"team-{{ $v.teamId }}"} * on (node) group_left node_cpu_hourly_cost) * 730 > {{ $v.billingAlertQuotas.teamCpuMonthQuotaReached.quota }}
+        for: 1d
+        labels:
+          severity: warning
+        annotations:
+          description: The monthly CPU cost of team {{ $v.teamId }} reached {{ $v.billingAlertQuotas.teamCpuMonthQuotaReached.quota }}
+          summary: team CPU cost quota p.m. reached
+      - alert: TeamMemMonthQuotaReached
+        expr: sum(container_memory_allocation_bytes{exported_namespace=~"team-{{ $v.teamId }}"} / 1000000000 * on (node) group_left node_ram_hourly_cost) * 730 > {{ $v.billingAlertQuotas.teamMemMonthQuotaReached.quota }}
+        for: 1d
+        labels:
+          severity: warning
+        annotations:
+          description: The monthly memory cost of team {{ $v.teamId }} reached {{ $v.billingAlertQuotas.teamMemMonthQuotaReached.quota }}
+          summary: team memory cost quota p.m. reached
+{{- end }}
+{{- end }}
+{{- end }}

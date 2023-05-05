@@ -1,0 +1,7 @@
+apps:
+    opencost:
+        enabled: true
+        alerts:
+            enabled: true
+            costOfAllNodesQuotaPerMonthReached:
+                quota: 500

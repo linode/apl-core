@@ -15,6 +15,11 @@ teamConfig:
             groupMapping: somesecretvalue
         resourceQuota:
             services.loadbalancers: '1'
+        billingAlertQuotas:
+            teamCpuMonthQuotaReached:
+                quota: 150
+            teamMemMonthQuotaReached:
+                quota: 200
         selfService:
             apps: []
             service:
