@@ -455,6 +455,8 @@ environments:
                 memory: 256Mi
           velero:
             enabled: false
+            restic:
+              enabled: false
             cloud:
                 type: custom
             storage:
@@ -467,8 +469,7 @@ environments:
               limits:
                 cpu: 1000m
                 memory: 512Mi
-        backup:
-          platform:
+        platformBackups:
             gitea:
               enabled: false
             drone:
@@ -484,9 +485,7 @@ environments:
             kubeapps:
               enabled: false
             minio:
-              enabled: false         
-          teams:
-            enabled: false
+              enabled: false
         cluster: {}
         dns:
           domainFilters: []

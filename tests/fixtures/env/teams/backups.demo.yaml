@@ -1,0 +1,16 @@
+teamConfig:
+    demo:
+        backups:
+            - name: bu1
+              ttl: 8h
+              schedule: 0 0 0 * *
+              snapshotVolumes: true
+            - name: bu2
+              ttl: 8h
+              schedule: 0 0 0 * *
+              snapshotVolumes: true
+              labelSelector:
+                  - name: app
+                    value: hello
+                  - name: backup
+                    value: all

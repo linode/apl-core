@@ -258,17 +258,6 @@ definitions:
         title: Resource group
         description: An Azure resource group.
         $ref: '#/definitions/wordCharacterPattern'
-  backup:
-    definitions:
-      ttl:
-        default: 240h
-        description: Expiration of the backup.
-        title: TTL after finished
-        type: string
-      schedule:
-        default: 0 0 * * *
-        description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
-        type: string
   cluster:
     additionalProperties: false
     properties:
@@ -362,6 +351,22 @@ definitions:
       - 200m
     pattern: ^([1-9][0-9]*|([0]|[1-9]+)\\.[0-9]{1,3}|[1-9][0-9]*m)$
     type: string
+  backup:
+    type: object
+    description: Team backups
+    properties:
+      name:
+        $ref: '#/definitions/wordCharacterPattern'
+      ttl:
+        $ref: '#/definitions/backupTtl'
+      schedule:
+        $ref: '#/definitions/backupSchedule'
+      snapshotVolumes:
+        type: boolean
+        default: false
+      labelSelector:
+        $ref: '#/definitions/labels'
+        description: Individual objects must match this label selector to be included in the backup.
   domain:
     pattern: ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))|([a-f0-9:]+:+)+[a-f0-9]+$
     type: string
@@ -872,6 +877,10 @@ definitions:
     required:
       - name
       - type
+  backupSchedule:
+    default: 0 0 * * *
+    description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
+    type: string
   secret:
     type: object
     properties:
@@ -1160,6 +1169,10 @@ definitions:
             $ref: '#/definitions/shortcuts'
       azureMonitor:
         $ref: '#/definitions/azure/definitions/monitor'
+      backups:
+        type: array
+        items:
+          $ref: '#/definitions/backup'
       secrets:
         items:
           $ref: '#/definitions/secret'
@@ -1234,7 +1247,7 @@ definitions:
         type: array
         items:
           type: string
-          enum: [alerts, oidc, resourceQuota, downloadKubeConfig, downloadDockerConfig, networkPolicy]
+          enum: [alerts, backup, oidc, resourceQuota, downloadKubeConfig, downloadDockerConfig, networkPolicy]
         uniqueItems: true
       apps:
         type: array
@@ -1242,6 +1255,11 @@ definitions:
           type: string
           enum: [argocd, gitea]
         uniqueItems: true
+  backupTtl:
+    default: 168h
+    description: Expiration of the backup. Defaults to 7 days.
+    title: TTL after finished
+    type: string
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
@@ -1906,7 +1924,7 @@ properties:
                 type: boolean
                 default: false
               schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
+                $ref: '#/definitions/backupSchedule'
         required:
           - databasePassword
       hello:
@@ -2790,6 +2808,10 @@ properties:
           enabled:
             type: boolean
             default: false
+          restic:
+            enabled:
+              type: boolean
+              default: false
           cloud:
             properties:
               azure:
@@ -2841,11 +2863,27 @@ properties:
                     description: The secret of the access key
                     $ref: '#/definitions/wordCharacterPattern'
                     x-secret: ''
+              google:
+                additionalProperties: false
+                description: Google Cloud Platform
+                properties:
+                  serviceAccount:
+                    type: string
+                    description: The IAM account with permissions to manage snapshot resources in the GCP Project.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  project:
+                    type: string
+                    description: The name of the GCP project.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  saKeyJson:
+                    type: string
+                    x-secret: ''
               type:
                 type: string
                 enum:
                   - aws
                   - azure
+                  - google
                   - custom
                 default: custom
           storage:
@@ -2900,11 +2938,28 @@ properties:
                 required:
                   - bucket
                   - s3Url
+              gcs:
+                additionalProperties: false
+                properties:
+                  bucket:
+                    type: string
+                    description: Name of the bucket.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  serviceAccount:
+                    description: The name of the GCP service account to use.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  saKeyJson:
+                    type: string
+                    x-secret: ''
+                required:
+                  - bucket
+                  - serviceAccount
               type:
                 type: string
                 enum:
                   - azureBlob
                   - s3
+                  - gcs
                   - minioLocal
                 default: minioLocal
           logLevel:
@@ -3502,100 +3557,88 @@ properties:
         description: 'The smtp host:port combination.'
     required:
       - smarthost
-  backup:
+  platformBackups:
     properties:
-      platform:
-        title: Platform applications
-        description: Select platform apps to backup.
+      gitea:
+        title: Gitea
         properties:
-          gitea:
-            title: Gitea
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          drone:
-            title: Drone
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          keycloak:
-            title: Keycloak
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          harbor:
-            title: Harbor
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          vault:
-            title: Vault
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          argo:
-            title: ArgoCD
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          kubeapps:
-            title: Kubeapps
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          minio:
-            title: Minio
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-      teams:
-        enabled:
-          type: boolean
-          default: false
-        ttl:
-          $ref: '#/definitions/backup/definitions/ttl'
-        schedule:
-          $ref: '#/definitions/backup/definitions/schedule'
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      drone:
+        title: Drone
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      keycloak:
+        title: Keycloak
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      harbor:
+        title: Harbor
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      vault:
+        title: Vault
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      argo:
+        title: ArgoCD
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      kubeapps:
+        title: Kubeapps
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      minio:
+        title: Minio
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
   teamConfig:
     additionalProperties: false
     patternProperties:
