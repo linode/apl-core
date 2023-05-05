@@ -764,6 +764,7 @@ definitions:
       - kind
       - ovh
       - vultr
+      - scaleway
   redisChart:
     properties:
       _rawValues:
