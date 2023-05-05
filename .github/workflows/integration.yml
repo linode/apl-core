@@ -43,6 +43,7 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
+          - "['1.23']"
           - "['1.24']"
           - "['1.25']"
         default: "['1.24']"
@@ -143,7 +144,7 @@ jobs:
             versions='${{ inputs.kubernetes_versions }}'
           fi
           echo $versions
-          echo "::set-output name=versions::$versions"
+          echo "versions=$versions" >> $GITHUB_OUTPUT
 
   run-integration-test:
     name: Run integration test on cluster

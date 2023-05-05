@@ -54,3 +54,4 @@ releases:
         secrets: {{- $tca | get "secrets" list | toYaml | nindent 10 }}
         workloads: {{- $tca | get "workloads" list | toYaml | nindent 10 }}
         backups: {{- $tca | get "backups" list | toYaml | nindent 10 }}
+        builds: {{- $tca | get "builds" list | toYaml | nindent 10 }}
