@@ -149,8 +149,8 @@ credentials:
 {{- end }}
 {{- if eq $cp.type "aws" }}
       [default]
-      aws_access_key_id={{ $sp.s3.accessKeyId }}
-      aws_secret_access_key={{ $sp.s3.secretAccessKey }}
+      aws_access_key_id={{ $cp.s3.accessKeyId }}
+      aws_secret_access_key={{ $cp.s3.secretAccessKey }}
 {{- end }}
 {{- if and (eq $sp.type "s3") (not (eq $cp.type "aws")) }}
       [default]
@@ -158,7 +158,10 @@ credentials:
       aws_secret_access_key={{ $sp.s3.secretAccessKey }}
 {{- end }}
 {{- if eq $cp.type "google" }}
-      iam-account={{ $cp.google.iamAccount }}
+      '{{ $cp.google.saKeyJson }}'
+{{- end }}
+{{- if and (eq $sp.type "gcs") (not (eq $cp.type "google")) }}
+      '{{ $sp.gcs.saKeyJson }}'
 {{- end }}
 
 kubectl:

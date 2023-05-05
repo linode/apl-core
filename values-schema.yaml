@@ -2786,6 +2786,9 @@ properties:
                     type: string
                     description: The name of the GCP project.
                     $ref: '#/definitions/wordCharacterPattern'
+                  saKeyJson:
+                    type: string
+                    x-secret: ''
               type:
                 type: string
                 enum:
@@ -2856,8 +2859,12 @@ properties:
                   serviceAccount:
                     description: The name of the GCP service account to use.
                     $ref: '#/definitions/wordCharacterPattern'
+                  saKeyJson:
+                    type: string
+                    x-secret: ''
                 required:
                   - bucket
+                  - saKeyJson
                   - serviceAccount
               type:
                 type: string
