@@ -68,7 +68,7 @@ and then install the Helm chart:
 helm install otomi otomi/otomi \
 --set cluster.k8sVersion=$VERSION \ # 1.22, 1.23 and 1.24 are supported
 --set cluster.name=$CLUSTERNAME \
---set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', or 'custom' for any other cloud or onprem K8s
+--set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', 'scaleway' or 'custom' for any other cloud or onprem K8s
 ```
 
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/get-started/activation).
@@ -82,7 +82,6 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
 - [Velero](https://github.com/vmware-tanzu/velero): Back up and restore your Kubernetes cluster resources and persistent volumes
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
-- [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
 - [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics
 - [Grafana](https://github.com/grafana/grafana): Visualize metrics, logs, and traces from multiple sources
@@ -106,6 +105,7 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [Opencost](https://github.com/opencost/opencost)
 - [Kpack](https://github.com/pivotal/kpack)
 - [Paketo build packs](https://github.com/paketo-buildpacks)
+- [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 
 ## Otomi Features
 
