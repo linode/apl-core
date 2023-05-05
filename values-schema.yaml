@@ -1238,12 +1238,6 @@ definitions:
           type: string
           enum: [ingress, networkPolicy]
         uniqueItems: true
-      backup:
-        type: array
-        items:
-          type: string
-          enum: [ingress, networkPolicy]
-        uniqueItems: true
       team:
         type: array
         items:
