@@ -58,25 +58,22 @@ kms:
             clientId: somesecretvalue
             keys: somesecretvalue
             tenantId: somesecretvalue
-backup:
-    platform:
-        gitea:
-            enabled: false
-        drone:
-            enabled: false
-        keycloak:
-            enabled: false
-        harbor:
-            enabled: false
-        vault:
-            enabled: false
-        argo:
-            enabled: false
-        kubeapps:
-            enabled: false
-        minio:
-            enabled: false
-    teams:
+platformBackups:
+    gitea:
+        enabled: false
+    drone:
+        enabled: false
+    keycloak:
+        enabled: false
+    harbor:
+        enabled: false
+    vault:
+        enabled: false
+    argo:
+        enabled: false
+    kubeapps:
+        enabled: false
+    minio:
         enabled: false
 oidc:
     adminGroupID: someAdminGroupID
