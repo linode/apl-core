@@ -21,7 +21,6 @@ apps:
             google:
                 project: velero
                 serviceAccount: bla
-                saKeyJson: bla
             type: google
         storage:
             gcs:

@@ -2952,7 +2952,6 @@ properties:
                     x-secret: ''
                 required:
                   - bucket
-                  - saKeyJson
                   - serviceAccount
               type:
                 type: string
