@@ -60,8 +60,6 @@ environments:
           oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
           oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
         apps:
-          aws-alb-ingress-controller:
-            enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}
           aws-ebs-csi-driver:
             enabled: false
           {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
@@ -101,8 +99,6 @@ environments:
             enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
           knative:
             enabled: {{ and ($a | get "knative.enabled") (le $v.cluster.k8sVersion "1.24") }}
-          ingress-azure:
-            enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
