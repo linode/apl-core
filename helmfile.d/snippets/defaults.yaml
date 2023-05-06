@@ -25,8 +25,6 @@ environments:
                 memory: 384Mi
           cluster-overprovisioner:
             enabled: false
-          demo-tlspass:
-            enabled: false
           drone:
             enabled: true
             debug: false
