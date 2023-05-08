@@ -85,37 +85,39 @@ files:
         repository: otomi/nodejs-helloworld
         tag: v1.2.13
   env/teams/workloads/demo/nginx-deployment.yaml: |
-    fullnameOverride: nginx-deployment
-    image:
-      repository: nginxinc/nginx-unprivileged
-      tag: stable
-    containerPorts:
-      - containerPort: 8080
-        protocol: TCP
-        name: http
-    resources:
-      requests:
-        cpu: 200m
-        memory: 32Mi
-    autoscaling:
-      minReplicas: 2
-      maxReplicas: 10
+    values: |
+      fullnameOverride: nginx-deployment
+      image:
+        repository: nginxinc/nginx-unprivileged
+        tag: stable
+      containerPorts:
+        - containerPort: 8080
+          protocol: TCP
+          name: http
+      resources:
+        requests:
+          cpu: 200m
+          memory: 32Mi
+      autoscaling:
+        minReplicas: 2
+        maxReplicas: 10
   env/teams/workloads/demo/nginx-ksvc.yaml: |
-    fullnameOverride: nginx-ksvc
-    image:
-      repository: nginxinc/nginx-unprivileged
-      tag: stable
-    containerPorts:
-      - containerPort: 8080
-        protocol: TCP
-        name: http
-    resources:
-      requests:
-        cpu: 200m
-        memory: 32Mi
-    autoscaling:
-      minReplicas: 0
-      maxReplicas: 10
+    values: |
+      fullnameOverride: nginx-ksvc
+      image:
+        repository: nginxinc/nginx-unprivileged
+        tag: stable
+      containerPorts:
+        - containerPort: 8080
+          protocol: TCP
+          name: http
+      resources:
+        requests:
+          cpu: 200m
+          memory: 32Mi
+      autoscaling:
+        minReplicas: 0
+        maxReplicas: 10
   env/teams/workloads/demo/httpbin.yaml: |
     values: |
       {}
