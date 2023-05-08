@@ -118,6 +118,10 @@ spec:
           name: profiling
         - containerPort: 8080
           name: probes
+        resources:
+          limits:
+            cpu: 1
+            memory: 1G
         readinessProbe:
           httpGet:
             path: /readiness
