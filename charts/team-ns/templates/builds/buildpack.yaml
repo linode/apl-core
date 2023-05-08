@@ -1,0 +1,67 @@
+{{- $v := .Values }}
+{{- if $v.apps.tekton.enabled }}
+{{- range $v.builds }}
+{{- if eq .mode.type "buildpacks" }}
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: buildpacks-build-{{ .name }}
+  annotations:
+    sidecar.istio.io/inject: "false"
+spec:
+  workspaces:
+    - name: shared-data
+  tasks:
+  - name: fetch-source
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: url
+      value: {{ .mode.buildpacks.repoUrl }}
+    - name: revision
+      value: {{ .mode.buildpacks.revision }}
+  - name: buildpacks
+    taskRef:
+      name: buildpacks
+    runAfter:
+      - fetch-source
+    workspaces:
+      - name: source
+        workspace: shared-data
+    params:
+      - name: APP_IMAGE
+        value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+      - name: SOURCE_SUBPATH
+        value: {{ .mode.buildpacks.path }}
+      - name: BUILDER_IMAGE
+        value: paketobuildpacks/builder:full
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: buildpacks-build-{{ .name }}
+  annotations:
+    sidecar.istio.io/inject: "false"
+spec:
+  serviceAccountName: sa-team-demo
+  pipelineRef:
+    name: buildpacks-build-{{ .name }}
+  podTemplate:
+    securityContext:
+      fsGroup: 65532
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1327,20 +1327,36 @@ definitions:
             x-secret: ''
             $ref: '#/definitions/wordCharacterPattern'
             description: The password used for basic authentication to access a private github repo.
-      appSource:
+      mode:
         properties:
-          repoUrl:
-            description: URL of the Git repository holding the application code.
-            $ref: '#/definitions/url'
-          revision:
-            description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
-            $ref: '#/definitions/wordCharacterPattern'
-            default: HEAD
-          path:
-            description: A relative directory path within the Git repository.
-            $ref: '#/definitions/wordCharacterPattern'
-        required:
-          - repoUrl
+          docker:
+            properties:
+              repoUrl:
+                description: URL of the Git repository holding the application code.
+                $ref: '#/definitions/url'
+              revision:
+                description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
+                $ref: '#/definitions/wordCharacterPattern'
+                default: HEAD
+              path:
+                description: A relative directory path within the Git repository.
+                $ref: '#/definitions/wordCharacterPattern'
+            required:
+              - repoUrl
+          buildpacks:
+            properties:
+              repoUrl:
+                description: URL of the Git repository holding the application code.
+                $ref: '#/definitions/url'
+              revision:
+                description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
+                $ref: '#/definitions/wordCharacterPattern'
+                default: HEAD
+              path:
+                description: A relative directory path within the Git repository.
+                $ref: '#/definitions/wordCharacterPattern'
+            required:
+              - repoUrl
     required:
       - name
 
@@ -2272,7 +2288,7 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
-      kpack:
+      tekton:
         additionalProperties: false
         properties:
           _rawValues:
@@ -2280,34 +2296,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          buildPacks:
-            properties:
-              java:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-              nodejs:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-              go:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-              dotnetCore:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: false
-              php:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: false
-
       loki:
         additionalProperties: false
         properties:

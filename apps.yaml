@@ -223,8 +223,8 @@ appsInfo:
     license: Apache 2.0
     about: Kured (KUbernetes REboot Daemon) is a Kubernetes daemonset that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS.
     integration: Kured can be activated to perform safe automatic node reboots. Only activate Kured if cluster autoscaling is enabled and make sure the cloud resource quota is sufficent.
-  kpack:
-    title: Kpack
+  tekton:
+    title: Tekton Pipelines
     appVersion: 0.10.1
     repo: https://github.com/pivotal/kpack
     maintainers: Vmware / Pivotal
