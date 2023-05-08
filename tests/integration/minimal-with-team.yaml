@@ -10,6 +10,8 @@ otomi:
 apps:
   argocd:
     enabled: true
+  knative:
+    enabled: true
 teamConfig:
   demo:
     password: somesecretvalue
