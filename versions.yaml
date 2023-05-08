@@ -1,4 +1,4 @@
 api: builds-2
-console: main
+console: builds-2
 tasks: 0.4.0
 tools: 1.4.25
