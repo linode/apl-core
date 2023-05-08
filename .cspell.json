@@ -71,7 +71,8 @@
     "minio",
     "vultr",
     "ovh",
-    "thanos"
+    "thanos",
+    "tekton"
   ],
   "language": "en",
   "words": [
