@@ -109,8 +109,12 @@ files:
         tag: stable
       containerPorts:
         - containerPort: 8080
+          name: http1
           protocol: TCP
-          name: http
+      readinessProbe:
+          httpGet:
+              path: /
+              port: http1
       resources:
         requests:
           cpu: 200m
