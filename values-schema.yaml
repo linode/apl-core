@@ -1340,9 +1340,8 @@ definitions:
                 default: HEAD
               path:
                 description: A relative directory path within the Git repository.
-                $ref: '#/definitions/wordCharacterPattern'
-            required:
-              - repoUrl
+                type: string
+                default: ./Dockerfile
           buildpacks:
             properties:
               repoUrl:
@@ -1354,9 +1353,7 @@ definitions:
                 default: HEAD
               path:
                 description: A relative directory path within the Git repository.
-                $ref: '#/definitions/wordCharacterPattern'
-            required:
-              - repoUrl
+                type: string
     required:
       - name
 

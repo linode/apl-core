@@ -10,7 +10,7 @@ teamConfig:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples
                       revision: HEAD
-                      path: samples/apps/java-maven
+                      path: ./Docker
                   type: docker
             - name: demo-java2
               tag: v.0.0.1
@@ -34,5 +34,5 @@ teamConfig:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples
                       revision: HEAD
-                      path: samples/apps/java-maven
+                      path: ./Docker
                   type: docker
