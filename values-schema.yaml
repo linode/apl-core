@@ -1050,40 +1050,12 @@ definitions:
         description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
         type: boolean
       ksvc:
-        anyOf:
-          - description: Details for a knative service that will be deployed and operated.
-            allOf:
-              - properties:
-                  annotations:
-                    $ref: '#/definitions/annotations'
-                    title: Pod annotations
-                type: object
-              - properties:
-                  securityContext:
-                    properties:
-                      runAsUser:
-                        $ref: '#/definitions/unixOwnerId'
-                      readOnlyRootFilesystem:
-                        description: Whether this container has a read-only root filesystem. Default is false.
-                        type: boolean
-                        default: false
-              - $ref: '#/definitions/containerSpecNoSec'
-              - properties:
-                  containerPort:
-                    $ref: '#/definitions/portNumber'
-                    description: Container port the knative pod will connect with. Leaving this empty will let knative infer the port from the container, which usually works, but might be problematic when the container does not specifically expose a port. (As is the case with nginx derived images!)
-                    title: Container port
-                  scaleToZero:
-                    default: false
-                    description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
-                    title: Scale to zero
-                    type: boolean
-          - description: Choose this when the ksvc is already deployed
-            properties:
-              predeployed:
-                default: true
-                description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
-                type: boolean
+        type: object
+        properties:
+          predeployed:
+            description: Set this flag it the service is managed by knative service
+            type: boolean
+            default: false
       logo:
         description: Used by otomi-console as an override mechanism to display another logo.
         properties:
