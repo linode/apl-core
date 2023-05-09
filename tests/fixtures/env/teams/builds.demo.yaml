@@ -21,7 +21,7 @@ teamConfig:
                   buildpacks:
                       repoUrl: https://github.com/buildpacks/samples
                       revision: HEAD
-                      path: samples/apps/java-maven
+                      path: apps/java-maven
                   type: buildpacks
             - name: demo-java3
               tag: v.0.0.1
