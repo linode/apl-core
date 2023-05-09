@@ -223,18 +223,20 @@ appsInfo:
     license: Apache 2.0
     about: Kured (KUbernetes REboot Daemon) is a Kubernetes daemonset that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS.
     integration: Kured can be activated to perform safe automatic node reboots. Only activate Kured if cluster autoscaling is enabled and make sure the cloud resource quota is sufficent.
-  kpack:
-    title: Kpack
-    appVersion: 0.10.1
-    repo: https://github.com/pivotal/kpack
-    maintainers: Vmware / Pivotal
+  tekton:
+    title: Tekton Pipelines
+    appVersion: 0.36.1
+    repo: https://github.com/tektoncd/pipeline
+    maintainers: Tekton
     relatedLinks:
-      - https://otomi.io/docs/apps/kpack
-      - https://github.com/paketo-buildpacks
-      - https://buildpacks.io/
+      - https://otomi.io/docs/apps/tekton
+      - https://github.com/tektoncd/pipeline/blob/main/docs/README.md
+      - https://github.com/tektoncd/catalog/tree/main/task/buildpacks/0.6
+      - https://github.com/tektoncd/catalog/tree/main/task/git-clone/0.9
+      - https://github.com/tektoncd/catalog/tree/main/task/kaniko/0.6
     license: Apache 2.0
-    about: Kpack extends Kubernetes and utilizes unprivileged kubernetes primitives to provide builds of OCI images as a platform implementation of Cloud Native Buildpacks (CNB).
-    integration: Otomi uses Kpack to provide an easy way to build images from application source code. Kpack is configured to have access to Harbor and ccreated images are directly pushed to the teams private registry.
+    about: Tekton Pipelines provides k8s resources for declaring CI/CD-style pipelines.
+    integration: Otomi uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
   loki:
     title: Loki
     appVersion: 2.4.1

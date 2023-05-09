@@ -282,19 +282,8 @@ environments:
                   limits:
                       cpu: 50m
                       memory: 32Mi
-          kpack:
+          tekton:
             enabled: false
-            buildPacks:
-                java:
-                    enabled: true
-                nodejs:
-                    enabled: true
-                go:
-                    enabled: true
-                dotnetCore:
-                    enabled: false
-                php:
-                    enabled: false
           loki:
             enabled: false
           metrics-server:
