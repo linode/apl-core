@@ -1,0 +1,32 @@
+{{- $v := .Values }}
+{{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
+
+
+resources:
+- apiVersion: cert-manager.io/v1
+  kind: Certificate
+  metadata:
+    name: internal-harbor-token-service-ca
+    namespace: {{ .Release.Namespace }}
+  spec:
+    # Secret names are always required.
+    secretName: harbor-token-service-ca
+    duration: 8760h # 365d
+    renewBefore: 360h # 15d
+    subject:
+      organizations:
+        - otomi
+    isCA: false
+    privateKey:
+      algorithm: RSA
+      encoding: PKCS1
+      size: 2048
+    usages:
+      - server auth
+      - client auth
+    # At least one of a DNS Name, URI, or IP address is required.
+    dnsNames:
+      - {{ $$harborDomain }}
+    issuerRef:
+      name: custom-ca
+      kind: ClusterIssuer
