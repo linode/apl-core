@@ -47,7 +47,7 @@ metadata:
   annotations:
     sidecar.istio.io/inject: "false"
 spec:
-  serviceAccountName: sa-team-demo
+  serviceAccountName: sa-team-{{ $v.teamId }}
   pipelineRef:
     name: buildpacks-build-{{ .name }}
   podTemplate:
