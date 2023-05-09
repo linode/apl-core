@@ -58,12 +58,6 @@ releases:
       init: true
       pkg: knative
     <<: *skeleton
-  - name: harbor-artifacts
-    installed: {{ $a | get "harbor.enabled" }}
-    namespace: harbor
-    labels:
-      pkg: harbor
-    <<: *raw
   - name: loki-artifacts
     installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
