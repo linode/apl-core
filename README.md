@@ -102,9 +102,9 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [Trivy](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit
 - [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
-- [Opencost](https://github.com/opencost/opencost)
-- [Tekton Pipeline](https://github.com/tektoncd/pipeline)
-- [Paketo build packs](https://github.com/paketo-buildpacks)
+- [Opencost](https://github.com/opencost/opencost): Cost monitoring for Kubernetes
+- [Tekton Pipeline](https://github.com/tektoncd/pipeline): K8s-style resources for declaring CI/CD pipelines.
+- [Paketo build packs](https://github.com/paketo-buildpacks): Cloud Native Buildpack implementations for popular programming language ecosystems
 - [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 
 ## Otomi Features
