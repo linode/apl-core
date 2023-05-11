@@ -17,7 +17,7 @@
 </p>
 
 <h4 align="center">
-Add developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud. One install, one spec, one console to build, deploy, secure, expose and monitor containerized applications.
+Add developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud. 1 install, 1 spec, and 1 console to build, deploy, secure, expose and monitor containerized applications.
 </h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
@@ -26,7 +26,7 @@ Add developer- and operations-centric tools, automation and self-service on top 
 
 **Developers** - To focus on their apps only
 * Build images from application code
-* Easy deployment of containerized workloads without writing any YAML
+* Deploy containerized workloads without writing any YAML
 * Direct access to logs and metrics
 * Store charts and images in a private registry
 * Build and run custom CI pipelines
@@ -42,7 +42,7 @@ Add developer- and operations-centric tools, automation and self-service on top 
 * Implement zero-trust networking
 * Make development teams self-serving
 * Change the desired state of the platform based on Configuration-as-Code
-* Support multi and hybrid cloud scenarios
+* Support multi- and hybrid cloud scenarios
 
 ## Getting started
 
@@ -103,7 +103,7 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
 - [Opencost](https://github.com/opencost/opencost)
-- [Kpack](https://github.com/pivotal/kpack)
+- [Tekton Pipeline](https://github.com/tektoncd/pipeline)
 - [Paketo build packs](https://github.com/paketo-buildpacks)
 - [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 
