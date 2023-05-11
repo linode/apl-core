@@ -161,6 +161,7 @@
     "unencrypted",
     "untrusted",
     "velero",
+    "tekton",
     "xlarge"
   ]
 }
