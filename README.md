@@ -17,7 +17,7 @@
 </p>
 
 <h4 align="center">
-Add developer- and operations-centric tools, automation and self-service on top of Kubernetes to offer a complete platform experience out-of-the-box.
+Add developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud. 1 install, 1 spec, and 1 console to build, deploy, secure, expose and monitor containerized applications.
 </h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
@@ -25,24 +25,24 @@ Add developer- and operations-centric tools, automation and self-service on top 
 ## Otomi helps 
 
 **Developers** - To focus on their apps only
-* Easy deployment of containerized workloads
+* Build images from application code
+* Deploy containerized workloads without writing any YAML
 * Direct access to logs and metrics
 * Store charts and images in a private registry
 * Build and run custom CI pipelines
-* Enable declarative end-to-end workload lifecycle management
 * Easy ingress and network policy configuration
 * Manage your own secrets
 
 **Platform teams** - To setup and manage production-ready Kubernetes-based platforms
 * Onboard development teams in a comprehensive multi-tenant setup
-* Get all the required K8s tools in an integrated way
+* Get all the required K8s tools in an integrated and automated way
 * Create your platform profile and deploy to any K8s
 * One schema to manage all platform configuration
 * Ensure governance with security policies
 * Implement zero-trust networking
 * Make development teams self-serving
 * Change the desired state of the platform based on Configuration-as-Code
-* Support multi and hybrid cloud scenarios
+* Support multi- and hybrid cloud scenarios
 
 ## Getting started
 
@@ -68,7 +68,7 @@ and then install the Helm chart:
 helm install otomi otomi/otomi \
 --set cluster.k8sVersion=$VERSION \ # 1.22, 1.23 and 1.24 are supported
 --set cluster.name=$CLUSTERNAME \
---set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', or 'custom' for any other cloud or onprem K8s
+--set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', 'scaleway' or 'custom' for any other cloud or onprem K8s
 ```
 
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/get-started/activation).
@@ -82,7 +82,6 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
 - [Velero](https://github.com/vmware-tanzu/velero): Back up and restore your Kubernetes cluster resources and persistent volumes
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
-- [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
 - [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics
 - [Grafana](https://github.com/grafana/grafana): Visualize metrics, logs, and traces from multiple sources
@@ -103,20 +102,24 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [Trivy](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit
 - [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
+- [Opencost](https://github.com/opencost/opencost)
+- [Tekton Pipeline](https://github.com/tektoncd/pipeline)
+- [Paketo build packs](https://github.com/paketo-buildpacks)
+- [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 
 ## Otomi Features
 
-- Drag and drop tools to create your own preferred suite
+- Activate capabilities to compose your own platform
 - GitOps out-of-the-box
 - Container image scanning (at the gate and during runtime)
 - Security policies (at the gate and during runtime)
-- Advanced ingress architecture with self-service
+- Advanced ingress architecture
 - Network policies for internal ingress and external egress
-- Deploy workloads without writing any YAML
+- Deploy workloads the GitOps way without writing any YAML
 - Create and manage secrets in Vault and use them in workloads
 - Role-based access to all integrated tools
 - Comprehensive multi-tenant setup
-- Automation tasks for Harbor, Keycloak, ArgoCD, Vault, Gitea and Drone
+- Automation tasks for Harbor, Keycloak, ArgoCD, Vault, Velero, Gitea and Drone
 - Expose services on multiple (public/private) networks
 - SOPS/KMS for encryption of sensitive configuration values
 - BYO IdP, DNS and/or CA

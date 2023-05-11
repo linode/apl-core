@@ -13,7 +13,7 @@ to renew certificates at an appropriate time before expiry.
 ## Installing the Chart
 
 Full installation instructions, including details on how to configure extra
-functionality in cert-manager can be found in the [installation docs](https://cert-manager.io/docs/installation/kubernetes/).
+functionality in cert-manager can be found in the [installation docs](https://cert-manager.io/docs/get-started/installation).
 
 Before installing the chart, you must first install the cert-manager CustomResourceDefinition resources.
 This is performed in a separate step to allow you to easily uninstall and reinstall cert-manager without deleting your installed custom resources.
@@ -47,7 +47,7 @@ Certificates for Ingress resources, take a look at the
 ## Upgrading the Chart
 
 Special considerations may be required when upgrading the Helm chart, and these
-are documented in our full [upgrading guide](https://cert-manager.io/docs/installation/upgrading/).
+are documented in our full [installation guide](https://cert-manager.io/docs/get-started/installation).
 
 **Please check here before performing upgrades!**
 
