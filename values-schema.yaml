@@ -258,17 +258,6 @@ definitions:
         title: Resource group
         description: An Azure resource group.
         $ref: '#/definitions/wordCharacterPattern'
-  backup:
-    definitions:
-      ttl:
-        default: 240h
-        description: Expiration of the backup.
-        title: TTL after finished
-        type: string
-      schedule:
-        default: 0 0 * * *
-        description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
-        type: string
   cluster:
     additionalProperties: false
     properties:
@@ -362,6 +351,22 @@ definitions:
       - 200m
     pattern: ^([1-9][0-9]*|([0]|[1-9]+)\\.[0-9]{1,3}|[1-9][0-9]*m)$
     type: string
+  backup:
+    type: object
+    description: Team backups
+    properties:
+      name:
+        $ref: '#/definitions/wordCharacterPattern'
+      ttl:
+        $ref: '#/definitions/backupTtl'
+      schedule:
+        $ref: '#/definitions/backupSchedule'
+      snapshotVolumes:
+        type: boolean
+        default: false
+      labelSelector:
+        $ref: '#/definitions/labels'
+        description: Individual objects must match this label selector to be included in the backup.
   domain:
     pattern: ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))|([a-f0-9:]+:+)+[a-f0-9]+$
     type: string
@@ -759,6 +764,7 @@ definitions:
       - kind
       - ovh
       - vultr
+      - scaleway
   redisChart:
     properties:
       _rawValues:
@@ -871,6 +877,10 @@ definitions:
     required:
       - name
       - type
+  backupSchedule:
+    default: 0 0 * * *
+    description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
+    type: string
   secret:
     type: object
     properties:
@@ -1040,40 +1050,12 @@ definitions:
         description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
         type: boolean
       ksvc:
-        anyOf:
-          - description: Details for a knative service that will be deployed and operated.
-            allOf:
-              - properties:
-                  annotations:
-                    $ref: '#/definitions/annotations'
-                    title: Pod annotations
-                type: object
-              - properties:
-                  securityContext:
-                    properties:
-                      runAsUser:
-                        $ref: '#/definitions/unixOwnerId'
-                      readOnlyRootFilesystem:
-                        description: Whether this container has a read-only root filesystem. Default is false.
-                        type: boolean
-                        default: false
-              - $ref: '#/definitions/containerSpecNoSec'
-              - properties:
-                  containerPort:
-                    $ref: '#/definitions/portNumber'
-                    description: Container port the knative pod will connect with. Leaving this empty will let knative infer the port from the container, which usually works, but might be problematic when the container does not specifically expose a port. (As is the case with nginx derived images!)
-                    title: Container port
-                  scaleToZero:
-                    default: false
-                    description: Scales to zero after 60 seconds and needs approximately 8 seconds to start back up.
-                    title: Scale to zero
-                    type: boolean
-          - description: Choose this when the ksvc is already deployed
-            properties:
-              predeployed:
-                default: true
-                description: Has this service been predeployed? Otherwise otomi will start it with the configuration given.
-                type: boolean
+        type: object
+        properties:
+          predeployed:
+            description: Set this flag it the service is managed by knative service
+            type: boolean
+            default: false
       logo:
         description: Used by otomi-console as an override mechanism to display another logo.
         properties:
@@ -1159,6 +1141,10 @@ definitions:
             $ref: '#/definitions/shortcuts'
       azureMonitor:
         $ref: '#/definitions/azure/definitions/monitor'
+      backups:
+        type: array
+        items:
+          $ref: '#/definitions/backup'
       secrets:
         items:
           $ref: '#/definitions/secret'
@@ -1188,6 +1174,19 @@ definitions:
       resourceQuota:
         description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
         type: object
+      billingAlertQuotas:
+        title: Billing alert quotas
+        properties:
+          teamCpuMonthQuotaReached:
+            properties:
+              quota:
+                type: integer
+                default: 100
+          teamMemMonthQuotaReached:
+            properties:
+              quota:
+                type: integer
+                default: 100
       selfService:
         $ref: '#/definitions/teamSelfService'
       services:
@@ -1233,7 +1232,17 @@ definitions:
         type: array
         items:
           type: string
-          enum: [alerts, oidc, resourceQuota, downloadKubeConfig, downloadDockerConfig, networkPolicy]
+          enum:
+            [
+              alerts,
+              backup,
+              billingAlertQuotas,
+              oidc,
+              resourceQuota,
+              downloadKubeConfig,
+              downloadDockerConfig,
+              networkPolicy,
+            ]
         uniqueItems: true
       apps:
         type: array
@@ -1241,6 +1250,11 @@ definitions:
           type: string
           enum: [argocd, gitea]
         uniqueItems: true
+  backupTtl:
+    default: 168h
+    description: Expiration of the backup. Defaults to 7 days.
+    title: TTL after finished
+    type: string
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
@@ -1285,20 +1299,33 @@ definitions:
             x-secret: ''
             $ref: '#/definitions/wordCharacterPattern'
             description: The password used for basic authentication to access a private github repo.
-      appSource:
+      mode:
         properties:
-          repoUrl:
-            description: URL of the Git repository holding the application code.
-            $ref: '#/definitions/url'
-          revision:
-            description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
-            $ref: '#/definitions/wordCharacterPattern'
-            default: HEAD
-          path:
-            description: A relative directory path within the Git repository.
-            $ref: '#/definitions/wordCharacterPattern'
-        required:
-          - repoUrl
+          docker:
+            properties:
+              repoUrl:
+                description: URL of the Git repository holding the application code.
+                $ref: '#/definitions/url'
+              revision:
+                description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
+                $ref: '#/definitions/wordCharacterPattern'
+                default: HEAD
+              path:
+                description: A relative directory path within the Git repository.
+                type: string
+                default: ./Dockerfile
+          buildpacks:
+            properties:
+              repoUrl:
+                description: URL of the Git repository holding the application code.
+                $ref: '#/definitions/url'
+              revision:
+                description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
+                $ref: '#/definitions/wordCharacterPattern'
+                default: HEAD
+              path:
+                description: A relative directory path within the Git repository.
+                type: string
     required:
       - name
 
@@ -1905,7 +1932,7 @@ properties:
                 type: boolean
                 default: false
               schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
+                $ref: '#/definitions/backupSchedule'
         required:
           - databasePassword
       hello:
@@ -2230,7 +2257,7 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
-      kpack:
+      tekton:
         additionalProperties: false
         properties:
           _rawValues:
@@ -2238,34 +2265,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          buildPacks:
-            properties:
-              java:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-              nodejs:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-              go:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-              dotnetCore:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: false
-              php:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: false
-
       loki:
         additionalProperties: false
         properties:
@@ -2411,6 +2410,36 @@ properties:
           enabled:
             type: boolean
             default: false
+      opencost:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          keys:
+            properties:
+              gcp:
+                type: string
+                $ref: '#/definitions/wordCharacterPattern'
+          alerts:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              costOfAllNodesQuotaPerMonthReached:
+                properties:
+                  quota:
+                    type: integer
+                    default: 500
+          resources:
+            additionalProperties: false
+            properties:
+              exporter:
+                $ref: '#/definitions/resources'
+              ui:
+                $ref: '#/definitions/resources'
       otomi-api:
         additionalProperties: false
         properties:
@@ -2789,6 +2818,10 @@ properties:
           enabled:
             type: boolean
             default: false
+          restic:
+            enabled:
+              type: boolean
+              default: false
           cloud:
             properties:
               azure:
@@ -2840,11 +2873,27 @@ properties:
                     description: The secret of the access key
                     $ref: '#/definitions/wordCharacterPattern'
                     x-secret: ''
+              google:
+                additionalProperties: false
+                description: Google Cloud Platform
+                properties:
+                  serviceAccount:
+                    type: string
+                    description: The IAM account with permissions to manage snapshot resources in the GCP Project.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  project:
+                    type: string
+                    description: The name of the GCP project.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  saKeyJson:
+                    type: string
+                    x-secret: ''
               type:
                 type: string
                 enum:
                   - aws
                   - azure
+                  - google
                   - custom
                 default: custom
           storage:
@@ -2899,11 +2948,28 @@ properties:
                 required:
                   - bucket
                   - s3Url
+              gcs:
+                additionalProperties: false
+                properties:
+                  bucket:
+                    type: string
+                    description: Name of the bucket.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  serviceAccount:
+                    description: The name of the GCP service account to use.
+                    $ref: '#/definitions/wordCharacterPattern'
+                  saKeyJson:
+                    type: string
+                    x-secret: ''
+                required:
+                  - bucket
+                  - serviceAccount
               type:
                 type: string
                 enum:
                   - azureBlob
                   - s3
+                  - gcs
                   - minioLocal
                 default: minioLocal
           logLevel:
@@ -3501,100 +3567,88 @@ properties:
         description: 'The smtp host:port combination.'
     required:
       - smarthost
-  backup:
+  platformBackups:
     properties:
-      platform:
-        title: Platform applications
-        description: Select platform apps to backup.
+      gitea:
+        title: Gitea
         properties:
-          gitea:
-            title: Gitea
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          drone:
-            title: Drone
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          keycloak:
-            title: Keycloak
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          harbor:
-            title: Harbor
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          vault:
-            title: Vault
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          argo:
-            title: ArgoCD
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          kubeapps:
-            title: Kubeapps
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-          minio:
-            title: Minio
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backup/definitions/ttl'
-              schedule:
-                $ref: '#/definitions/backup/definitions/schedule'
-      teams:
-        enabled:
-          type: boolean
-          default: false
-        ttl:
-          $ref: '#/definitions/backup/definitions/ttl'
-        schedule:
-          $ref: '#/definitions/backup/definitions/schedule'
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      drone:
+        title: Drone
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      keycloak:
+        title: Keycloak
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      harbor:
+        title: Harbor
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      vault:
+        title: Vault
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      argo:
+        title: ArgoCD
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      kubeapps:
+        title: Kubeapps
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+      minio:
+        title: Minio
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          ttl:
+            $ref: '#/definitions/backupTtl'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
   teamConfig:
     additionalProperties: false
     patternProperties:

@@ -1,18 +1,29 @@
 apps:
     velero:
         enabled: true
+        restic:
+            enabled: false
         cloud:
-            azure:
-                resourceGroup: test
-                environment: AzurePublicCloud
-                subscriptionId: test
-                tenantId: test
-                aadClientId: bla12344556666658457847476
-                aadClientSecret: bla383736363653
-            type: azure
+            #     azure:
+            #         resourceGroup: test
+            #         environment: AzurePublicCloud
+            #         subscriptionId: test
+            #         tenantId: test
+            #         aadClientId: bla12344556666658457847476
+            #         aadClientSecret: bla383736363653
+            #     type: azure
+            # storage:
+            #     azureBlob:
+            #         storageAccount: bla
+            #         bucket: velero
+            #         resourceGroup: bla
+            #     type: azureBlob
+            google:
+                project: velero
+                serviceAccount: bla
+            type: google
         storage:
-            azureBlob:
-                storageAccount: bla
+            gcs:
                 bucket: velero
-                resourceGroup: bla
-            type: azureBlob
+                serviceAccount: bla
+            type: gcs

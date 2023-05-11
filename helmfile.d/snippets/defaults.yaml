@@ -282,19 +282,8 @@ environments:
                   limits:
                       cpu: 50m
                       memory: 32Mi
-          kpack:
+          tekton:
             enabled: false
-            buildPacks:
-                java:
-                    enabled: true
-                nodejs:
-                    enabled: true
-                go:
-                    enabled: true
-                dotnetCore:
-                    enabled: false
-                php:
-                    enabled: false
           loki:
             enabled: false
           metrics-server:
@@ -322,6 +311,26 @@ environments:
           otomi-api:
             editorInactivityTimeout: 1
           otomi-console: {}
+          opencost:
+            enabled: false
+            alerts:
+              enabled: false          
+            resources:
+              exporter:
+                requests:
+                  cpu: 500m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+              ui:
+                requests:
+                  cpu: 500m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+
           promtail:
             enabled: false
           prometheus-blackbox-exporter: {}
@@ -455,6 +464,8 @@ environments:
                 memory: 256Mi
           velero:
             enabled: false
+            restic:
+              enabled: false
             cloud:
                 type: custom
             storage:
@@ -467,8 +478,7 @@ environments:
               limits:
                 cpu: 1000m
                 memory: 512Mi
-        backup:
-          platform:
+        platformBackups:
             gitea:
               enabled: false
             drone:
@@ -484,9 +494,7 @@ environments:
             kubeapps:
               enabled: false
             minio:
-              enabled: false         
-          teams:
-            enabled: false
+              enabled: false
         cluster: {}
         dns:
           domainFilters: []

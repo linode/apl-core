@@ -62,8 +62,8 @@ k8s:
       disableIstioInjection: true
     - name: kubeclarity
       app: kubeclarity
-    - name: kpack
-      app: kpack
+    - name: tekton
+      app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: maintenance
@@ -81,6 +81,9 @@ k8s:
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: operators
+      disableIstioInjection: true
+      disablePolicyChecks: true
+    - name: opencost
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: otomi
@@ -283,7 +286,7 @@ adminApps:
         auth: true
   - name: kured
     tags: [security]
-  - name: kpack
+  - name: tekton
     tags: [buildpacks]
   - name: loki
     tags: [logging, telemetry, observability]
@@ -311,6 +314,15 @@ adminApps:
         auth: true
         removeRequestHeaders:
           - authorization
+  - name: opencost
+    tags: [finops]
+    ownHost: true
+    ingress:
+      - svc: opencost
+        port: 9090
+        namespace: opencost
+        type: public
+        auth: true
   - name: otomi
     hide: true
     isShared: true

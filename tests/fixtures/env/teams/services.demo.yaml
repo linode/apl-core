@@ -12,19 +12,7 @@ teamConfig:
                             value: same-origin
               id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
               ksvc:
-                  image:
-                      repository: otomi/nodejs-helloworld
-                      tag: v1.2.12
-                  resources:
-                      limits:
-                          cpu: 50m
-                          memory: 64Mi
-                      requests:
-                          cpu: 50m
-                          memory: 64Mi
-                  scaleToZero: false
-                  secrets:
-                      - mysecret-generic
+                  predeployed: true
               name: hello
               networkPolicy:
                   ingressPrivate:
@@ -35,21 +23,7 @@ teamConfig:
             - domain: tlspass.eks.dev.otomi.cloud
               id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
               ksvc:
-                  image:
-                      repository: otomi/nodejs-helloworld
-                      tag: v1.2.12
-                  resources:
-                      limits:
-                          cpu: 50m
-                          memory: 64Mi
-                      requests:
-                          cpu: 50m
-                          memory: 64Mi
-                  scaleToZero: false
-                  secrets:
-                      - mysecret-generic
-                  securityContext:
-                      runAsUser: 1002
+                  predeployed: true
               name: hello-auth
               ownHost: true
               paths: []
@@ -57,43 +31,7 @@ teamConfig:
               type: public
             - id: cb5149c4-8ea5-4c5a-be04-a37258658bd5
               ksvc:
-                  containerPort: 80
-                  # files:
-                  #     /etc/nginx.conf: |
-                  #         events {
-                  #         }
-
-                  #         http {
-                  #           log_format main '$remote_addr - $remote_user [$time_local]  $status '
-                  #           '"$request" $body_bytes_sent "$http_referer" '
-                  #           '"$http_user_agent" "$http_x_forwarded_for"';
-                  #           access_log /var/log/nginx/access.log main;
-                  #           error_log  /var/log/nginx/error.log;
-
-                  #           server {
-                  #             listen 443 ssl;
-
-                  #             root /usr/share/nginx/html;
-                  #             index index.html;
-
-                  #             server_name tlspass.eks.dev.otomi.cloud;
-                  #             ssl_certificate /etc/nginx-server-certs/tls.crt;
-                  #             ssl_certificate_key /etc/nginx-server-certs/tls.key;
-                  #           }
-                  #         }
-                  image:
-                      repository: nginx
-                      tag: latest
-                  resources:
-                      limits:
-                          cpu: 50m
-                          memory: 64Mi
-                      requests:
-                          cpu: 50m
-                          memory: 64Mi
-                  scaleToZero: false
-                  secretMounts:
-                      /etc/nginx-server-certs: mysecret-tls
+                  predeployed: true
               name: tlspass
               port: 443
               tlsPass: true

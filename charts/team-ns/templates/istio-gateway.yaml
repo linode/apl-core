@@ -7,10 +7,11 @@
 {{- $publicDomainsPass :=  list }}
 {{- $privateDomainsPass := list }}
 {{- range $s := $v.services }}
+  {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
   {{- $type := $s.type | default "public" }}
   {{- $tlsPass := $s.tlsPass | default false }}
   {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
-  {{- if and (or (hasKey $s "domain") $shared ) (not (hasKey $s "ksvc")) }}
+  {{- if and (or (hasKey $s "domain") $shared ) (not ($isKnativeService)) }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $) }}
     {{- if eq $type "public" }}
       {{- if and $tlsPass (not (has $domain $publicDomainsPass)) }}

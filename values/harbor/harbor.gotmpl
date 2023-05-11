@@ -38,6 +38,7 @@ chartmuseum:
     {{- end }}
 
 core:
+  secretName: harbor-token-service-ca
   priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
