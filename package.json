@@ -138,6 +138,7 @@
     "prepare": "husky install",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
+    "release:bump:minor": "standard-version --skip.changelog true --release-as minor",
     "run-if-changed": "run-if-changed",
     "score-templates": "binzx/otomi score-templates",
     "server": "binzx/otomi server",
