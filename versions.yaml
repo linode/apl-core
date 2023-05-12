@@ -1,4 +1,4 @@
-api: main
-console: main
-tasks: 0.4.0
+api: licensing-finalize
+console: licensing-finalize
+tasks: main
 tools: 1.4.25
