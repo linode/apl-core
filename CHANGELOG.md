@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.20.4](https://github.com/redkubes/otomi-core/compare/v0.20.3...v0.20.4) (2023-05-12)
+
+
+### Features
+
+* olm channel ([#1102](https://github.com/redkubes/otomi-core/issues/1102)) ([57b80f4](https://github.com/redkubes/otomi-core/commit/57b80f4d911d58612b0dbd3e28418d2080ec6836))
+
+
+### Bug Fixes
+
+* argocd operator ([#1104](https://github.com/redkubes/otomi-core/issues/1104)) ([44050a3](https://github.com/redkubes/otomi-core/commit/44050a3df44fca965d1fd69aa0bc70517b6b5d32))
+
 ### [0.20.3](https://github.com/redkubes/otomi-core/compare/v0.20.2...v0.20.3) (2023-04-18)
 
 
