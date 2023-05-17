@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.21.1](https://github.com/redkubes/otomi-core/compare/v0.21.0...v0.21.1) (2023-05-17)
+
+
+### Features
+
+* license as secret in schema ([6ca35f3](https://github.com/redkubes/otomi-core/commit/6ca35f315d753badf6da3c9d21917ed50ee9c5ad))
+
+
+### Bug Fixes
+
+* changed version names ([9ddf47d](https://github.com/redkubes/otomi-core/commit/9ddf47dd9f79c030368da8d8edacee10ee821a24))
+* reverted versions ([95f8827](https://github.com/redkubes/otomi-core/commit/95f8827e1cf88d13d50c13eab40f8d516681f31e))
+
+
+### Tests
+
+* add license fixtures ([6bec98c](https://github.com/redkubes/otomi-core/commit/6bec98ce2be1e63a6ac16c21f11c6f47ead2d026))
+
+
+### Others
+
+* set versions ([d9c5c59](https://github.com/redkubes/otomi-core/commit/d9c5c593a78ec0194261e0ffad4c7d11ea2211aa))
+
 ## [0.21.0](https://github.com/redkubes/otomi-core/compare/v0.20.0-pre...v0.21.0) (2023-05-12)
 
 
