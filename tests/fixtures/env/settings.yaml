@@ -101,4 +101,5 @@ smtp:
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
+license: license-in-jwt-format
 version: 8

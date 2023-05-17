@@ -3663,5 +3663,9 @@ properties:
   version:
     type: integer
     description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.
+  license:
+    type: string
+    describe: License in form of JWT
+    x-secret: ''
 required:
   - cluster
