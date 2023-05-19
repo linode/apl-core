@@ -23,6 +23,8 @@ environments:
               limits:
                 cpu: 200m
                 memory: 384Mi
+          cloudnative-pg:
+            enabled: true
           cluster-overprovisioner:
             enabled: false
           demo-tlspass:
