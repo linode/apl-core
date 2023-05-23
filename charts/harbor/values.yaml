@@ -798,6 +798,7 @@ database:
       #    memory: 128Mi
       #    cpu: 100m
   external:
+    name: harbor-database
     instances: 2
     storage:
       size: "1Gi"

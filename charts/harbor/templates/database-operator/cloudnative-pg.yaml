@@ -2,7 +2,7 @@
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: harbor-database
+  name: {{ .Values.database.external.name }}
 spec:
   instances: {{ .Values.database.external.instances }}
 {{- if .Values.database.external.imageName }}
