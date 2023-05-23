@@ -798,23 +798,6 @@ database:
       #    memory: 128Mi
       #    cpu: 100m
   external:
-    name: harbor-database
-    instances: 2
-    storage:
-      size: "1Gi"
-    # backupLocation:
-    #   backup:
-    #     barmanObjectStore:
-    #       destinationPath: s3://postgresql-backups/
-    #       endpointURL: http://minio.minio.svc:9000
-    #       s3Credentials:
-    #         accessKeyId:
-    #           name: minio-creds
-    #           key: MINIO_ACCESS_KEY
-    #         secretAccessKey:
-    #           name: minio-creds
-    #           key: MINIO_SECRET_KEY
-    # imageName: "ghcr.io/cloudnative-pg/postgresql:15.3"
     host: "harbor-database-rw.harbor.svc.cluster.local"
     port: "5432"
     username: "harbor"

@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
-
+{{- $h := $v.apps.harbor }}
 
 resources:
 - apiVersion: cert-manager.io/v1
@@ -30,3 +30,18 @@ resources:
     issuerRef:
       name: custom-ca
       kind: ClusterIssuer
+- apiVersion: postgresql.cnpg.io/v1
+  kind: Cluster
+  metadata:
+    name: {{ $h.database.name }}
+  spec:
+    instances: 2
+    imageName: ghcr.io/cloudnative-pg/postgresql:15.3
+    bootstrap:
+      initdb:
+        database: {{ $h.database.coreDatabase }}
+        owner: {{ $h.database.user }}
+        localeCollate: 'en_US.UTF-8'
+        localeCType: 'en_US.UTF-8'
+    storage:
+      size: 1Gi
