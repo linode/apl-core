@@ -710,7 +710,7 @@ trivy:
   priorityClassName:
 
 notary:
-  enabled: true
+  enabled: false
   server:
     # set the service account to be used, default if left empty
     serviceAccountName: ""
@@ -762,7 +762,7 @@ notary:
 database:
   # if external database is used, set "type" to "external"
   # and fill the connection informations in "external" section
-  type: internal
+  type: external
   internal:
     # set the service account to be used, default if left empty
     serviceAccountName: ""
@@ -798,15 +798,31 @@ database:
       #    memory: 128Mi
       #    cpu: 100m
   external:
-    host: "192.168.0.1"
+    instances: 2
+    storage:
+      size: "1Gi"
+    # backupLocation:
+    #   backup:
+    #     barmanObjectStore:
+    #       destinationPath: s3://postgresql-backups/
+    #       endpointURL: http://minio.minio.svc:9000
+    #       s3Credentials:
+    #         accessKeyId:
+    #           name: minio-creds
+    #           key: MINIO_ACCESS_KEY
+    #         secretAccessKey:
+    #           name: minio-creds
+    #           key: MINIO_SECRET_KEY
+    # imageName: "ghcr.io/cloudnative-pg/postgresql:15.3"
+    host: "harbor-database-rw.harbor.svc.cluster.local"
     port: "5432"
-    username: "user"
-    password: "password"
+    username: "harbor"
+    # password: "password"
     coreDatabase: "registry"
     notaryServerDatabase: "notary_server"
     notarySignerDatabase: "notary_signer"
     # if using existing secret, the key must be "password"
-    existingSecret: ""
+    existingSecret: "harbor-database-app"
     # "disable" - No SSL
     # "require" - Always SSL (skip verification)
     # "verify-ca" - Always SSL (verify that the certificate presented by the
