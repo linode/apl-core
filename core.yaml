@@ -62,8 +62,8 @@ k8s:
       disableIstioInjection: true
     - name: kubeclarity
       app: kubeclarity
-    - name: kpack
-      app: kpack
+    - name: tekton
+      app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: maintenance
@@ -286,7 +286,7 @@ adminApps:
         auth: true
   - name: kured
     tags: [security]
-  - name: kpack
+  - name: tekton
     tags: [buildpacks]
   - name: loki
     tags: [logging, telemetry, observability]

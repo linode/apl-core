@@ -1,0 +1,65 @@
+{{- $v := .Values }}
+{{- if $v.apps.tekton.enabled }}
+{{- range $v.builds }}
+{{- if eq .mode.type "docker" }}
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: docker-build-{{ .name }}
+  annotations:
+    sidecar.istio.io/inject: "false"
+spec:
+  workspaces:
+  - name: shared-data
+  tasks:
+  - name: fetch-source
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: url
+      value: {{ .mode.docker.repoUrl }}
+    - name: revision
+      value: {{ .mode.docker.revision }}
+  - name: build-push
+    runAfter: 
+    - fetch-source
+    taskRef:
+      name: kaniko
+    workspaces:
+    - name: source
+      workspace: shared-data
+    params:
+    - name: DOCKERFILE
+      value: {{ .mode.docker.path }}
+    - name: IMAGE
+      value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: docker-build-{{ .name }}
+  annotations:
+    sidecar.istio.io/inject: "false"
+spec:
+  serviceAccountName: sa-team-{{ $v.teamId }}
+  pipelineRef:
+    name: docker-build-{{ .name }}
+  podTemplate:
+    securityContext:
+      fsGroup: 65532
+  workspaces:
+  - name: shared-data
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+{{- end }}
+{{- end }}
+{{- end }}

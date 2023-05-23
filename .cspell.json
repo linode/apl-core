@@ -71,7 +71,9 @@
     "minio",
     "vultr",
     "ovh",
-    "thanos"
+    "thanos",
+    "Paketo",
+    "tekton"
   ],
   "language": "en",
   "words": [
@@ -160,6 +162,7 @@
     "unencrypted",
     "untrusted",
     "velero",
+    "tekton",
     "xlarge"
   ]
 }

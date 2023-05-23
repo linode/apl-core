@@ -138,6 +138,7 @@
     "prepare": "husky install",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
+    "release:bump:minor": "standard-version --skip.changelog true --release-as minor",
     "run-if-changed": "run-if-changed",
     "score-templates": "binzx/otomi score-templates",
     "server": "binzx/otomi server",
@@ -158,5 +159,5 @@
     }
   },
   "type": "commonjs",
-  "version": "0.20.0"
+  "version": "0.21.0"
 }

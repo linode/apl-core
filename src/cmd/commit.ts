@@ -69,7 +69,7 @@ export const commit = async (firstTime = false): Promise<void> => {
     #
     #  To start using Otomi, go to https://otomi.${values.cluster.domainSuffix} and sign in to the web console
     #  with username "${credentials.adminUsername}" and password "${credentials.adminPassword}".
-    #  Then activate Drone. For more information see: https://otomi.io/docs/installation/activation/
+    #  Then activate Drone. For more information see: https://otomi.io/docs/get-started/activation
     #
     ########################################################################################################################################`
     d.info(message)

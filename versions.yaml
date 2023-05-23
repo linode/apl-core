@@ -1,4 +1,4 @@
 api: main
-console: getDynamicUiSchema-teamPage
-tasks: 0.4.0
+console: main
+tasks: main
 tools: 1.4.25
