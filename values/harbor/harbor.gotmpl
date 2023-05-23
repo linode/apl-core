@@ -7,6 +7,8 @@
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 {{- $tag := $h | get "image.tag" "v2.6.4" }}
+{{- $databaseExistingSecret := printf "%s-app" $h.databaseName }}
+{{- $databaseHost := printf "%s-rw.harbor.svc.cluster.local" $h.databaseName }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -60,43 +62,14 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
-  internal:
-    priorityClassName: otomi-critical
-    image:
-      tag: {{ $tag }}
-    initContainer:
-      migrator:
-        resources:
-          limits:
-            cpu: 100m
-            memory: 512Mi
-          requests:
-            cpu: 50m
-            memory: 256Mi
-      permissions:
-        resources:
-          limits:
-            cpu: 100m
-            memory: 512Mi
-          requests:
-            cpu: 50m
-            memory: 256Mi
-    resources:
-      {{- with $h | get "resources.database" nil }}
-      {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 100m
-        memory: 512Mi
-      requests:
-        cpu: 50m
-        memory: 256Mi
-      {{- end }}
-    password: {{ $h.databasePassword }}
+  external:
+    name: {{ $h.databaseName }}
+    host: {{ $databaseHost }}
+    existingSecret: {{ $databaseExistingSecret }}
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users
-  type: internal
+  type: external
 
 exporter:
   priorityClassName: otomi-critical

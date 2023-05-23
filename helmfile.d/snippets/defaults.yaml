@@ -190,6 +190,7 @@ environments:
                 username: otomi-admin
             backup:
               enabled: false
+            databaseName: harbor-database
             resources:
               trivy:
                 requests:
