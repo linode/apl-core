@@ -7,8 +7,8 @@
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 {{- $tag := $h | get "image.tag" "v2.6.4" }}
-{{- $databaseExistingSecret := printf "%s-app" $h.databaseName }}
-{{- $databaseHost := printf "%s-rw.harbor.svc.cluster.local" $h.databaseName }}
+{{- $databaseExistingSecret := printf "%s-app" $h.database.name }}
+{{- $databaseHost := printf "%s-rw.harbor.svc.cluster.local" $h.database.name }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -63,7 +63,8 @@ core:
 
 database:
   external:
-    name: {{ $h.databaseName }}
+    coreDatbase: {{ $h.database.coreDatabase }}
+    username: {{ $h.database.user }}
     host: {{ $databaseHost }}
     existingSecret: {{ $databaseExistingSecret }}
   podAnnotations:
