@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Derived from https://github.com/instrumenta/openapi2jsonschema
 import yaml
