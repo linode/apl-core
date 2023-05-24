@@ -710,7 +710,7 @@ trivy:
   priorityClassName:
 
 notary:
-  enabled: false
+  enabled: true
   server:
     # set the service account to be used, default if left empty
     serviceAccountName: ""
@@ -762,7 +762,7 @@ notary:
 database:
   # if external database is used, set "type" to "external"
   # and fill the connection informations in "external" section
-  type: external
+  type: internal
   internal:
     # set the service account to be used, default if left empty
     serviceAccountName: ""
@@ -798,15 +798,15 @@ database:
       #    memory: 128Mi
       #    cpu: 100m
   external:
-    host: "harbor-database-rw.harbor.svc.cluster.local"
+    host: "192.168.0.1"
     port: "5432"
-    username: "harbor"
+    username: "user"
     # password: "password"
     coreDatabase: "registry"
     notaryServerDatabase: "notary_server"
     notarySignerDatabase: "notary_signer"
     # if using existing secret, the key must be "password"
-    existingSecret: "harbor-database-app"
+    existingSecret: ""
     # "disable" - No SSL
     # "require" - Always SSL (skip verification)
     # "verify-ca" - Always SSL (verify that the certificate presented by the

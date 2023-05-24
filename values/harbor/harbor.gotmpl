@@ -62,6 +62,7 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
+  type: internal
   external:
     coreDatbase: {{ $h.database.coreDatabase }}
     username: {{ $h.database.user }}
