@@ -1213,6 +1213,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
+      projects:
+        type: array
+        items:
+          $ref: '#/definitions/project'
       builds:
         type: array
         items:
@@ -1274,6 +1278,15 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
+  project:
+    type: object
+    description: Define location of code to project
+    properties:
+      name:
+        description: Name of the project
+        $ref: '#/definitions/wordCharacterPattern'
+    required:
+      - name
   build:
     type: object
     description: Define location of code to build
