@@ -2,20 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: tty
-  name: tty
+    app: tty-${SUB}
+  name: tty-${SUB}
   namespace: team-${TEAM}
 spec:
   selector:
     matchLabels:
-      app: tty
+      app: tty-${SUB}
   strategy: {}
   template:
     metadata:
       labels:
-        app: tty
+        app: tty-${SUB}
     spec:
-      serviceAccountName: team-${TEAM}-sa
+      serviceAccountName: tty-${SUB}
       volumes:
         - name: kconfig
           configMap:
@@ -27,7 +27,7 @@ spec:
               memory: '128Mi'
               cpu: '250m'
             limits:
-              memory: '265Mi'
+              memory: '256Mi'
               cpu: '500m'
           name: cloudshell-debian
           volumeMounts:

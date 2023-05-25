@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: team-${TEAM}-sa
+  name: tty-${SUB}
   namespace: team-${TEAM}
 ---
 
