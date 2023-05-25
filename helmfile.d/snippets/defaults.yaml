@@ -191,6 +191,7 @@ environments:
             backup:
               enabled: false
             database: 
+              import: false
               name: harbor-database
               user: harbor
               coreDatabase: registry
