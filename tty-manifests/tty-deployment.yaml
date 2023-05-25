@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tty
+  name: tty
+  namespace: team-${TEAM}
+spec:
+  selector:
+    matchLabels:
+      app: tty
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: tty
+    spec:
+      serviceAccountName: team-${TEAM}-sa
+      volumes:
+        - name: kconfig
+          configMap:
+            name: kconfig
+      containers:
+        - image: ani509/otomi-ttyd
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '250m'
+            limits:
+              memory: '265Mi'
+              cpu: '500m'
+          name: cloudshell-debian
+          volumeMounts:
+            - name: kconfig
+              mountPath: /etc/kconfig
+          command:
+            - su
+            - '-'
+            - user
+            - -c
+            - sh /etc/kconfig/kconfig.sh && ttyd -w /home/user -m 1 -u 1000 -g 1000 -p 8080 sh
+---
+

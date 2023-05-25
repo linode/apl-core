@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: ${TLS_SECRET_NAME}
+  namespace: team-${TEAM}
+spec:
+  gateways:
+    - team-${TEAM}/team-${TEAM}-public-tlsterm
+  hosts:
+    - tty.${FQDN}
+  http:
+    - match:
+        - uri:
+            prefix: /logout-otomi
+      redirect:
+        authority: auth.${FQDN}
+        uri: /oauth2/sign_out?rd=https://keycloak.${FQDN}/realms/otomi/protocol/openid-connect/logout?redirect_uri=https://otomi.${FQDN}
+    - match:
+        - uri:
+            prefix: /
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: tty.team-${TEAM}.svc.cluster.local
+            port:
+              number: 8080
+          headers:
+            request:
+              set:
+                X-Forwarded-Proto: https
+---
+
