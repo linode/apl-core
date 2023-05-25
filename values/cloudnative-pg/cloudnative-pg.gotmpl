@@ -2,3 +2,6 @@
 {{- $cnpg := $v.apps | get "cloudnative-pg" }}
 
 resources: {{- $cnpg.resources | toYaml | nindent 2 }}
+
+data:
+  INHERITED_LABELS: prometheus
