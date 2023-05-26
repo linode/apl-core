@@ -1,6 +1,7 @@
 apiVersion: v1
 data:
   kconfig.sh: |
+    # Creating the kubeconfig file needed for k9s
     mkdir "${HOME}/.kube"
     KUBECONFIG="${HOME}/.kube/config"
     TOKEN="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
@@ -29,5 +30,6 @@ data:
 kind: ConfigMap
 metadata:
   name: kconfig
-  namespace: team-{{ $v.teamId }}
+  namespace: team-${TEAM}
+---
 

@@ -1,0 +1,7 @@
+FROM alpine:latest
+
+RUN apk update && apk upgrade && apk add ttyd k9s yq jq curl vim
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+RUN wget "https://github.com/vmware-tanzu/velero/releases/download/v1.11.0/velero-v1.11.0-linux-amd64.tar.gz" && tar zxvf velero-v1.11.0-linux-amd64.tar.gz && mv velero-v1.11.0-linux-amd64/velero /usr/local/bin/ && rm -rf velero-v1.11.0-linux-amd64*
+RUN adduser -D -s /bin/sh -u 1000 user && sed -i -r 's/^user:!:/user:x:/' /etc/shadow
+CMD ["ttyd", "-p", "8080","-w", "/home/user","-u", "1000", "-g", "1000", "sh"]
