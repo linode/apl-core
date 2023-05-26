@@ -344,7 +344,7 @@ otomi bootstrap
 ```
 cluster:
     name: 'dev'
-    k8sVersion: '1.22'
+    k8sVersion: '1.24'
     provider: 'custom'
 ```
 
