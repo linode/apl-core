@@ -1,4 +1,4 @@
-api: projects
-console: projects
+api: main
+console: main
 tasks: main
 tools: 1.4.25
