@@ -3665,5 +3665,17 @@ properties:
     type: string
     describe: License in form of JWT
     x-secret: ''
+  otomiStatus:
+    type: object
+    properties:
+      deployingTag:
+        type: string
+      deployingVersion:
+        type: string
+      status:
+        type: string
+        enum: [deploying, deployed]
+      version:
+        type: string
 required:
   - cluster

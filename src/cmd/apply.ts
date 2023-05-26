@@ -7,8 +7,8 @@ import { env, isCli } from 'src/common/envalid'
 import { hf } from 'src/common/hf'
 import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
-import { getCurrentVersion, getImageTag } from 'src/common/values'
-import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
+import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
@@ -41,6 +41,9 @@ const applyAll = async () => {
   const tag = await getImageTag()
   const version = await getCurrentVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+
+  const state = await getDeploymentState()
+  await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, state, false)
 
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },

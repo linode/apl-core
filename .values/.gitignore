@@ -10,3 +10,4 @@ core.yaml
 .secrets
 *.sample
 .env
+env/status.yaml
