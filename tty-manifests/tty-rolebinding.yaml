@@ -10,6 +10,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: tty-${SUB}
-    namespace: team-${TEAM}
+    namespace: team-admin
 ---
 

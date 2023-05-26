@@ -30,6 +30,6 @@ data:
 kind: ConfigMap
 metadata:
   name: kconfig
-  namespace: team-${TEAM}
+  namespace: team-admin
 ---
 

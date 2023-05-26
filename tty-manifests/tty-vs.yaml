@@ -2,7 +2,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: tty-${SUB}
-  namespace: team-${TEAM}
+  namespace: team-admin
 spec:
   gateways:
     - team-admin/team-admin-public-tlsterm
@@ -22,7 +22,7 @@ spec:
         uri: /
       route:
         - destination:
-            host: tty-${SUB}.team-${TEAM}.svc.cluster.local
+            host: tty-${SUB}.team-admin.svc.cluster.local
             port:
               number: 8080
           headers:

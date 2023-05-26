@@ -4,7 +4,7 @@ metadata:
   labels:
     app: tty-${SUB}
   name: tty-${SUB}
-  namespace: team-${TEAM}
+  namespace: team-admin
 spec:
   ports:
     - name: 8080-8080

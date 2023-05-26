@@ -7,14 +7,13 @@ In order to test this POC follow the steps below:
 
   
 
-- Create 3 env variables:
+- Create 3 env variables(like this example):
 
-  - `export TEAM=admin`
-  - `export FQDN=192.168.64.101.nip.io`
-  - `export SUB=$(echo $RANDOM)` 
+  - `export TARGET_TEAM=dev`
+  - `export FQDN=192.168.64.101.nip.io # Replace with the FQDN provided from the  otomi job`
+  - `export SUB=$(echo $RANDOM) # Random number to mock the user subject field` 
 - From inside the manifests folder generate a single manifest by also substituting the vaues
-	- `envsubst '$TEAM, $FQDN, $SUB' < tty-* > ttyd.yaml`
+	- `envsubst '$TARGET_TEAM, $FQDN, $SUB' < tty-* > ttyd.yaml`
 - Create the resources
 	- `kubectl apply -f ttyd.yaml`
-
-*Note: In case we will deploy to the an other namespace than admin, we need to modify the `team-admin-public-tlsterm` istio gateway to allow virtualservices from other namespaces to use it(at the moment it allows only from team-admin).
+- Test it in the browser by navigating to tty.< FQDN > (ex. `tty.192.168.64.101.nip.io/<random number generated above>` )
