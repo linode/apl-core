@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.21.2](https://github.com/redkubes/otomi-core/compare/v0.21.1...v0.21.2) (2023-05-29)
+
+
+### Bug Fixes
+
+* schema with supported k8s versions ([0013ac4](https://github.com/redkubes/otomi-core/commit/0013ac4513b3fde90b44f9dc273807bd43807872))
+
+
+### Others
+
+* versions ([2feebb8](https://github.com/redkubes/otomi-core/commit/2feebb8c1f72bec564ba60714ebd56695e5df6aa))
+* versions ([7c98e87](https://github.com/redkubes/otomi-core/commit/7c98e871fab2a5b8491f0c1bf136e255e3ecd62a))
+
 ### [0.21.1](https://github.com/redkubes/otomi-core/compare/v0.21.0...v0.21.1) (2023-05-17)
 
 
