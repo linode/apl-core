@@ -1278,7 +1278,7 @@ definitions:
     pattern: ^[^\s]+$
   project:
     type: object
-    description: Define location of code to project
+    description: A single project can represent application's build, workload and service.
     properties:
       name:
         description: Name of the project
