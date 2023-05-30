@@ -47,6 +47,7 @@ resources:
     {{- if eq $otomiVersion "default" }}
     bootstrap:
       initdb:
+        database: {{ $h.database.coreDatabase }}
         owner: {{ $h.database.user }}
         import:
           type: microservice

@@ -1,0 +1,43 @@
+name: database
+labels:
+  prometheus: system
+instances: 1
+imageName: ghcr.io/cloudnative-pg/postgresql:15.3
+storage:
+  storageClass: ""
+  size: 1Gi
+
+monitoring: true
+
+clusterAffinity:
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+    podAntiAffinityType: preferred
+
+clusterBackup:
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://bucket/
+      endpointURL: "http://minio.minio.svc.cluster.local:9000"
+      s3Credentials:
+        accessKeyId:
+          name: minio-creds
+          key: MINIO_ACCESS_KEY
+        secretAccessKey:
+          name: minio-creds
+          key: MINIO_SECRET_KEY
+
+clusterSpec:
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+
+backup:
+  enabled: false
+  suspend: false
+  immediate: true
+  target: primary
+  schedule: "0 0 0 * * *"
+  backupOwnerReference: none

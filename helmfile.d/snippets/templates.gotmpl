@@ -30,6 +30,10 @@ templates:
     chart: ../charts/raw
     values:
       - ../values/{{ .Release.Name | replace "-artifacts" "" }}/{{ .Release.Name | replace "-artifacts" "" }}-raw.gotmpl
+  database: &database
+    chart: ../charts/cnpg-cluster
+    values:
+      - ../values/{{ .Release.Name | replace "-database" "" }}/{{ .Release.Name}}.gotmpl
   rawCR: &rawCR
     chart: ../charts/raw-cr
     values:
