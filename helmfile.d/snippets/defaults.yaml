@@ -190,8 +190,7 @@ environments:
                 username: otomi-admin
             backup:
               enabled: false
-            database: 
-              import: false
+            database:
               name: harbor-database
               user: harbor
               coreDatabase: registry

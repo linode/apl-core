@@ -3,6 +3,7 @@
 {{- $h := $v.apps.harbor }}
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $databaseBackupName := printf "%s-backup" $h.database.name }}
+{{- $otomiVersion := $v | get "otomiStatus.version" "default" }}
 
 resources:
 - apiVersion: cert-manager.io/v1
@@ -43,35 +44,33 @@ resources:
     imageName: ghcr.io/cloudnative-pg/postgresql:15.3
     storage:
       size: 1Gi
-    {{- if $h.database.import }}
+    {{- if eq $otomiVersion "default" }}
     bootstrap:
       initdb:
+        owner: {{ $h.database.user }}
         import:
-          type: monolith
+          type: microservice
           databases:
             - {{ $h.database.coreDatabase }}
           source:
             externalCluster: {{ $h.database.name }}
-
-      externalClusters:
-      - name: {{ $h.database.name }}
-        connectionParameters:
-          host: harbor-database.harbor.svc.cluster.local
-          user: postgres
-          dbname: registry
-          sslmode: disable
-        password:
-          name: {{ $h.database.name }}
-          key: POSTGRES_PASSWORD    
+    externalClusters:
+    - name: {{ $h.database.name }}
+      connectionParameters:
+        host: harbor-database.harbor.svc.cluster.local
+        user: postgres
+        dbname: registry
+        sslmode: disable
+      password:
+        name: {{ $h.database.name }}
+        key: POSTGRES_PASSWORD
     {{- else }}
-    
     bootstrap:
       initdb:
         database: {{ $h.database.coreDatabase }}
         owner: {{ $h.database.user }}
         localeCollate: 'en_US.UTF-8'
         localeCType: 'en_US.UTF-8'
-    
     {{- end }}
     monitoring:
       enablePodMonitor: true

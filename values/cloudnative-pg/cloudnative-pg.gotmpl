@@ -3,5 +3,6 @@
 
 resources: {{- $cnpg.resources | toYaml | nindent 2 }}
 
-data:
-  INHERITED_LABELS: prometheus
+config:
+  data:
+    INHERITED_LABELS: prometheus

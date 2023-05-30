@@ -62,7 +62,7 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
-  type: internal
+  type: external
   external:
     coreDatbase: {{ $h.database.coreDatabase }}
     username: {{ $h.database.user }}
@@ -71,7 +71,6 @@ database:
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users
-  type: external
 
 exporter:
   priorityClassName: otomi-critical
