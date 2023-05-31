@@ -1,0 +1,12 @@
+status:
+    otomi:
+        version: 0.22.0
+    helm:
+        drone/drone:
+            name: drone
+            namespace: drone
+            revision: '1'
+            updated: 2023-05-31 09:54:32.168150254 +0000 UTC
+            status: deployed
+            chart: drone-3.0.0
+            app_version: 1.6.1
