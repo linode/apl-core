@@ -65,3 +65,6 @@ changes:
     deletions:
       - 'apps.harbor.resources.clair'
       - 'apps.harbor.resources.clair-adapter'
+  - version: 9
+    relocations:
+      - cluster.entrypoint: ingressClassParameters.entrypoint

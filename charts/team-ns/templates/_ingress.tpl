@@ -113,6 +113,8 @@ metadata:
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
       {{- if and (hasKey $v.ingress.platformClass "entrypoint") $internetFacing }}
     external-dns.alpha.kubernetes.io/target: {{ $v.ingress.platformClass.entrypoint }}
+      {{- else if hasKey $v.ingress.platformClass "entrypoint" }}
+    external-dns.alpha.kubernetes.io/target: {{ $v._derived.ingress.classes[].entrypoint }}
       {{- end }}
       {{- end }}
     # websocket upgrade snippet
