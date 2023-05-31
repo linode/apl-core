@@ -5,7 +5,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { hf } from 'src/common/hf'
-import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
+import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -43,7 +43,8 @@ const applyAll = async () => {
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
 
   const state = await getDeploymentState()
-  await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, state, false)
+  const releases = await getHelmReleases()
+  await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },

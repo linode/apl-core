@@ -5,10 +5,10 @@ import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
-import { parse, stringify } from 'yaml'
 import { isEmpty, map } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
+import { parse, stringify } from 'yaml'
 import { $, nothrow, sleep } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
 import { terminal } from './debug'
@@ -62,6 +62,16 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
   if (env.isDev && env.DISABLE_SYNC) return {}
   const result = await nothrow($`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`)
   return JSON.parse(result.stdout || '{}')
+}
+
+export const getHelmReleases = async (): Promise<Record<string, any>> => {
+  const result = await $`helm list -A -a -o json`
+  const data = JSON.parse(result.stdout || '[]') as []
+  const status = {}
+  data.forEach((item) => {
+    status[`${item['namespace']}/${item['name']}`] = item
+  })
+  return status
 }
 
 export const setDeploymentState = async (state: Record<string, any>): Promise<void> => {

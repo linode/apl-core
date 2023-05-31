@@ -1,7 +1,5 @@
 {{- $v := .Values }}
 {{- $h := $v.apps.harbor }}
-{{- $otomiVersion := $v | get "otomiStatus.version" "default" }}
-
 name: {{ $h.database.name }}
 backup:
   enabled: {{ $h.backup.enabled }}
@@ -19,7 +17,8 @@ clusterBackup:
           name: {{ $h.backup.credentialsName }}
           key: MINIO_SECRET_KEY
 
-{{- if eq $otomiVersion "default" }}
+
+{{- if and (not $v._derived.isInitialDeployment) ($v | get "status.helm.harbor/harbor" nil) }}
 clusterSpec:
   bootstrap:
     initdb:

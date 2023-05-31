@@ -7,9 +7,9 @@
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 {{- $tag := $h | get "image.tag" "v2.6.4" }}
+{{/*The cloudNativeDb operator is responsible for creating the secret*/}}
 {{- $databaseExistingSecret := printf "%s-app" $h.database.name }}
 {{- $databaseHost := printf "%s-rw.harbor.svc.cluster.local" $h.database.name }}
-{{- $otomiVersion := $v | get "otomiStatus.version" "default" }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -63,11 +63,7 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
-{{- if eq $otomiVersion "default" }}
   type: {{ $h.database.type }}
-{{- else }}
-  type: external
-{{- end }}
   internal:
     priorityClassName: otomi-critical
     image:
@@ -102,6 +98,7 @@ database:
       {{- end }}
     password: {{ $h.databasePassword }}
   external:
+    # erase default password value from the Harbor Helm chart
     password: null
     coreDatbase: {{ $h.database.coreDatabase }}
     username: {{ $h.database.user }}
