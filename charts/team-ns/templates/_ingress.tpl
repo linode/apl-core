@@ -114,7 +114,7 @@ metadata:
       {{- if and (hasKey $v.ingress.platformClass "entrypoint") $internetFacing }}
     external-dns.alpha.kubernetes.io/target: {{ $v.ingress.platformClass.entrypoint }}
       {{- else if hasKey $v.ingress.classes "entrypoint" }}
-    external-dns.alpha.kubernetes.io/target: {{ $v._derived.ingress.classes.entrypoint }}
+    external-dns.alpha.kubernetes.io/target: {{ $v._derived.ingress.classes[].entrypoint }}
       {{- end }}
       {{- end }}
     # websocket upgrade snippet
