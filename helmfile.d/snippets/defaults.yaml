@@ -190,6 +190,7 @@ environments:
                 username: otomi-admin
             backup:
               enabled: false
+              credentialsName: minio-creds
             database:
               name: harbor-database
               user: harbor

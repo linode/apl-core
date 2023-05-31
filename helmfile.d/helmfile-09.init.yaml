@@ -48,9 +48,9 @@ releases:
     labels:
       pkg: harbor
     <<: *raw
-  # - name: harbor-database
-  #   installed: {{ $a | get "harbor.enabled" }}
-  #   namespace: harbor
-  #   labels:
-  #     pkg: harbor
-  #   <<: *database
+  - name: harbor-database
+    installed: {{ $a | get "harbor.enabled" }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *database
