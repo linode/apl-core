@@ -10,8 +10,3 @@ otomi:
 apps:
   harbor:
     enabled: true
-    registry:
-      credentials:
-        username: admin
-        password: PBlikabOHXuWBzi6CsZLspF0DQrcHVFQ
-        htpasswd: PBlikabOHXuWBzi6CsZLspF0DQrcHVFQ
