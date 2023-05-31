@@ -1,0 +1,17 @@
+# Minimal values file with defaults
+cluster:
+  k8sVersion: 'K8S_VERSION_PLACEHOLDER'
+  name: 'dev'
+  provider: digitalocean
+  k8sContext: CONTEXT_PLACEHOLDER
+otomi:
+  version: 'OTOMI_VERSION_PLACEHOLDER'
+  adminPassword: test
+apps:
+  harbor:
+    enabled: true
+    registry:
+      credentials:
+        username: admin
+        password: PBlikabOHXuWBzi6CsZLspF0DQrcHVFQ
+        htpasswd: PBlikabOHXuWBzi6CsZLspF0DQrcHVFQ
