@@ -801,7 +801,7 @@ database:
     host: "192.168.0.1"
     port: "5432"
     username: "user"
-    # password: "password"
+    password: "password"
     coreDatabase: "registry"
     notaryServerDatabase: "notary_server"
     notarySignerDatabase: "notary_signer"

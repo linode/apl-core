@@ -4,7 +4,8 @@
 
 name: {{ $h.database.name }}
 backup:
-  enabled: true
+  enabled: {{ $h.backup.enabled }}
+  schedule: {{ $h.backup.schedule }}
 clusterBackup:
   backup:
     barmanObjectStore:

@@ -1,6 +1,7 @@
 name: database
 labels:
   prometheus: system
+  helm.sh/resource-policy: keep
 instances: 1
 imageName: ghcr.io/cloudnative-pg/postgresql:15.3
 storage:

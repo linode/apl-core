@@ -192,6 +192,7 @@ environments:
               enabled: false
               credentialsName: minio-creds
             database:
+              type: internal
               name: harbor-database
               user: harbor
               coreDatabase: registry
