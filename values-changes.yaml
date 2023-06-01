@@ -67,4 +67,4 @@ changes:
       - 'apps.harbor.resources.clair-adapter'
   - version: 9
     relocations:
-      - cluster.entrypoint: ingressClassParameters.entrypoint
+      - cluster.entrypoint: ingress.platformClass.entrypoint
