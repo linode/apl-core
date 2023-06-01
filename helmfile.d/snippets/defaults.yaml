@@ -190,6 +190,7 @@ environments:
                 username: otomi-admin
             backup:
               enabled: false
+              schedule: '0 0 0 * * *'
               credentialsName: minio-creds
             database:
               type: internal
