@@ -1485,6 +1485,13 @@ properties:
               anyOf:
                 - required:
                     - issuer
+      cloudnative-pg:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
       cluster-autoscaler:
         additionalProperties: false
         properties:
