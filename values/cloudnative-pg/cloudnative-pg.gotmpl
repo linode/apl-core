@@ -1,9 +1,8 @@
 {{- $v := .Values }}
-{{- $es := $v.apps | get "cloudnative-pg" }}
 
 limits:
-  cpu: 100m
-  memory: 200Mi
+  cpu: 500m
+  memory: 512Mi
 requests:
   cpu: 100m
   memory: 100Mi
