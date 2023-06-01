@@ -1477,9 +1477,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
           resources:
             $ref: '#/definitions/resources'
       cluster-autoscaler:
