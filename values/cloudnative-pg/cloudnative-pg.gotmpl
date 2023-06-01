@@ -1,8 +1,4 @@
 {{- $v := .Values }}
+{{- $cnpg := $v.apps | get "cloudnative-pg" }}
 
-limits:
-  cpu: 500m
-  memory: 512Mi
-requests:
-  cpu: 100m
-  memory: 100Mi
+resources: {{- $cnpg.resources | toYaml | nindent 2 }}
