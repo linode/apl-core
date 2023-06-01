@@ -197,6 +197,7 @@ environments:
               name: harbor-database
               user: harbor
               coreDatabase: registry
+              import: false
             resources:
               trivy:
                 requests:

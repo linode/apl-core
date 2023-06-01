@@ -3,7 +3,6 @@ status:
         deployingTag: main
         deployingVersion: 0.21.0
         status: deployed
-        version: 0.21.0
     helm:
         drone/drone:
             name: drone

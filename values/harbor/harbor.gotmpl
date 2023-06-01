@@ -64,6 +64,7 @@ core:
 
 database:
   type: {{ $h.database.type }}
+  {{- if eq $h.database.type "internal" }}
   internal:
     priorityClassName: otomi-critical
     image:
@@ -97,6 +98,7 @@ database:
         memory: 256Mi
       {{- end }}
     password: {{ $h.databasePassword }}
+  {{- else }}
   external:
     # erase default password value from the Harbor Helm chart
     password: null
@@ -104,6 +106,7 @@ database:
     username: {{ $h.database.user }}
     host: {{ $databaseHost }}
     existingSecret: {{ $databaseExistingSecret }}
+  {{- end }}
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users

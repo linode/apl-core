@@ -10,4 +10,4 @@ core.yaml
 .secrets
 *.sample
 .env
-env/status.yaml
+# Disabled for testing purposes env/status.yaml

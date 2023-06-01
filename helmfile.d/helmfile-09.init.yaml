@@ -49,7 +49,7 @@ releases:
       pkg: harbor
     <<: *raw
   - name: harbor-database
-    installed: {{ $a | get "harbor.enabled" }}
+    installed: {{ and ($a | get "harbor.enabled") (eq $a.harbor.database.type "external") }}
     namespace: harbor
     labels:
       pkg: harbor

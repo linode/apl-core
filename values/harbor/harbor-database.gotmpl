@@ -18,7 +18,7 @@ clusterBackup:
           key: MINIO_SECRET_KEY
 
 
-{{- if and (not $v._derived.isInitialDeployment) ($v | get "status.helm.harbor/harbor" nil) }}
+{{- if $h.database.import }}
 clusterSpec:
   bootstrap:
     initdb:
