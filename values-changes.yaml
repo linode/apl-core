@@ -65,3 +65,6 @@ changes:
     deletions:
       - 'apps.harbor.resources.clair'
       - 'apps.harbor.resources.clair-adapter'
+  - version: 9
+    additions:
+      - apps.harbor.database.type: internal

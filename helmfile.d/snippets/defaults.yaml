@@ -193,7 +193,7 @@ environments:
               schedule: '0 0 0 * * *'
               credentialsName: minio-creds
             database:
-              type: internal
+              type: external
               name: harbor-database
               user: harbor
               coreDatabase: registry
