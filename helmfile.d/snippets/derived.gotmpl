@@ -94,12 +94,6 @@ environments:
             registry:
               credentials:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
-            database:
-              {{- if $v | get "status.helm.harbor/harbor" nil }}
-                type: {{ $a.harbor.database.type }}
-              {{- else }}
-                type: external
-              {{- end}}
           gatekeeper:
             enabled: {{ or ($a | get "gatekeeper.enabled" false) (not (empty ($v.otomi.nodeSelector))) }}
           gitea:
