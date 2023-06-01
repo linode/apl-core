@@ -31,7 +31,7 @@ templates:
     values:
       - ../values/{{ .Release.Name | replace "-artifacts" "" }}/{{ .Release.Name | replace "-artifacts" "" }}-raw.gotmpl
   database: &database
-    chart: ../charts/cnpg-cluster
+    chart: ../charts/otomi-db
     values:
       - ../values/{{ .Release.Name | replace "-database" "" }}/{{ .Release.Name}}.gotmpl
   rawCR: &rawCR
