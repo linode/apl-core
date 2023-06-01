@@ -1,4 +1,4 @@
-api: fc/feat/cloudtty
-console: fc/feat/cloudtty
+api: cloudtty
+console: cloudtty
 tasks: main
 tools: 1.4.25
