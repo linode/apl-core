@@ -1,3 +1,41 @@
-Verify the application is working by running these commands:
-  kubectl --namespace {{ .Release.Namespace }} port-forward service/{{ include "loki.fullname" . }} {{ .Values.service.port }}
-  curl http://127.0.0.1:{{ .Values.service.port }}/api/prom/label
+***********************************************************************
+ Welcome to Grafana Loki
+ Chart version: {{ .Chart.Version }}
+ Loki version: {{ .Chart.AppVersion }}
+***********************************************************************
+
+Installed components:
+{{- if .Values.gateway.enabled }}
+* gateway
+{{- end }}
+* ingester
+* distributor
+* querier
+* query-frontend
+{{- if .Values.queryScheduler.enabled }}
+* query-scheduler
+{{- end }}
+{{- if .Values.tableManager.enabled }}
+* table-manager
+{{- end }}
+{{- if .Values.compactor.enabled }}
+* compactor
+{{- end }}
+{{- if .Values.ruler.enabled }}
+* ruler
+{{- end }}
+{{- if .Values.indexGateway.enabled }}
+* index-gateway
+{{- end }}
+{{- if .Values.memcachedChunks.enabled }}
+* memcached-chunks
+{{- end }}
+{{- if .Values.memcachedFrontend.enabled }}
+* memcached-frontend
+{{- end }}
+{{- if .Values.memcachedIndexQueries.enabled }}
+* memcached-index-queries
+{{- end }}
+{{- if .Values.memcachedIndexWrites.enabled }}
+* memcached-index-writes
+{{- end }}

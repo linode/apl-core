@@ -1,0 +1,19 @@
+{{- if and .Values.ruler.enabled (gt (int .Values.ruler.replicas) 1) }}
+{{- if not .Values.ruler.maxUnavailable }}
+{{- fail "`.Values.ruler.maxUnavailable` must be set when `.Values.ruler.replicas` is greater than 1." }}
+{{- else }}
+apiVersion: {{ include "loki.pdb.apiVersion" . }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "loki.rulerFullname" . }}
+  labels:
+    {{- include "loki.rulerLabels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "loki.rulerSelectorLabels" . | nindent 6 }}
+  {{- with .Values.ruler.maxUnavailable }}
+  maxUnavailable: {{ . }}
+  {{- end }}
+{{- end }}
+{{- end }}

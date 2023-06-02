@@ -1,0 +1,4 @@
+
+{{- if and .Values.ingress.enabled .Values.gateway.enabled }}
+{{- fail "The 'top level' ingress and gateway service shouldn't both be enabled.  If you'd like to use the gateway service, there's an ingress configuration under it. See values.yaml for further details" -}}
+{{- end }}

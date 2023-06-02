@@ -1,0 +1,23 @@
+{{- if .Values.indexGateway.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "loki.indexGatewayFullname" . }}-headless
+  labels:
+    {{- include "loki.indexGatewaySelectorLabels" . | nindent 4 }}
+    prometheus.io/service-monitor: "false"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 3100
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: grpc
+      protocol: TCP
+  selector:
+    {{- include "loki.indexGatewaySelectorLabels" . | nindent 4 }}
+{{- end }}
