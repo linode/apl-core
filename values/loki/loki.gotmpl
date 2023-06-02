@@ -5,11 +5,13 @@
 {{- $teamNames = print "%s%s" $teamNames $name }}
 {{- end }}
 
+nameOverride: loki
+
+imagePullSecrets:
+- name: otomi-pullsecret-global
+
 global:
   priorityClassName: otomi-critical
-  
-imagePullSecrets:
-  - otomi-pullsecret-global
 
 serviceMonitor:
   enabled: true
@@ -97,7 +99,6 @@ queryFrontend:
   - name: reverse-proxy-auth-config
     secret:
       secretName: reverse-proxy-auth-config
-
   extraPorts:
   - port: 3101
     protocol: TCP
