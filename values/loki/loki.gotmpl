@@ -1,9 +1,5 @@
 {{- $v := .Values -}}
 {{- $l := $v.apps | get "loki" }}
-{{- $teamNames := "" }}
-{{- range $name, $config := $v.teamConfig }}
-{{- $teamNames = print "%s%s" $teamNames $name }}
-{{- end }}
 
 nameOverride: loki
 
@@ -25,7 +21,6 @@ loki:
     sidecar.istio.io/inject: "false"
   podAnnotations:
     sidecar.istio.io/inject: "false"
-    checksum/teams: {{ $teamNames | sha256sum }}
   schemaConfig:
     configs:
     {{- if $l | get "v11StartDate" nil }}
