@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.21.4](https://github.com/redkubes/otomi-core/compare/v0.21.3...v0.21.4) (2023-06-02)
+
+
+### Features
+
+* define kubectl SA for each team ([#1140](https://github.com/redkubes/otomi-core/issues/1140)) ([af009b2](https://github.com/redkubes/otomi-core/commit/af009b2aa8d26aba84f710c99321238e7f0c55c2))
+
 ### [0.21.3](https://github.com/redkubes/otomi-core/compare/v0.21.2...v0.21.3) (2023-06-01)
 
 
