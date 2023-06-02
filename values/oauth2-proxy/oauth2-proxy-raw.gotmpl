@@ -13,7 +13,7 @@ resources:
         externaldns: "true"
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         {{- end }}
-        {{- if and (eq $v.cluster.provider "custom") (hasKey $v.ingress.platformClass "entrypoint") }}
+        {{- if and (eq $v.cluster.provider "custom") (hasKey $v.ingress.platformClass "entrypoint") (ne $ingress.entrypoint "") }}
         external-dns.alpha.kubernetes.io/target: {{ $v.ingress.platformClass }}
         {{- end }}
         ingress.kubernetes.io/ssl-redirect: {{ if $v.otomi.hasCloudLB }}"false"{{ else }}"true"{{ end }}
