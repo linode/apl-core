@@ -2272,7 +2272,16 @@ properties:
             type: boolean
             default: false
           resources:
-            $ref: '#/definitions/resources'
+            ingester:
+              $ref: '#/definitions/resources'
+            gateway:
+              $ref: '#/definitions/resources'
+            querier:
+              $ref: '#/definitions/resources'
+            distributor:
+              $ref: '#/definitions/resources'
+            queryFrontend:
+              $ref: '#/definitions/resources'
           adminPassword:
             type: string
             x-secret: 'randAlphaNum 20'

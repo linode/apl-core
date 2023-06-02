@@ -7,15 +7,21 @@
 
 global:
   priorityClassName: otomi-critical
+  
 imagePullSecrets:
   - otomi-pullsecret-global
+
+serviceMonitor:
+  enabled: true
+  labels:
+    prometheus: system
+
 loki:
   annotations:
     sidecar.istio.io/inject: "false"
   podAnnotations:
     sidecar.istio.io/inject: "false"
     checksum/teams: {{ $teamNames | sha256sum }}
-
   schemaConfig:
     configs:
     {{- if $l | get "v11StartDate" nil }}
@@ -34,7 +40,6 @@ loki:
       index:
         prefix: index_
         period: 24h
-
   storageConfig:
     boltdb_shipper:
       shared_store: {{ $l | get "storage.storageType" "filesystem" }}
@@ -98,9 +103,4 @@ queryFrontend:
     protocol: TCP
     name: http
     targetPort: http
-
-serviceMonitor:
-  enabled: true
-  labels:
-    prometheus: system
 
