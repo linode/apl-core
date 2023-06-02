@@ -112,7 +112,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
       {{- end }}
-      {{- if and (hasKey $ingress "entrypoint") $internetFacing }} # TODO: Check if the entrypoint field is empty
+      {{- if and (hasKey $ingress "entrypoint") $internetFacing (ne $ingress.entrypoint "")}}
     external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }} 
       {{- end }}
     # websocket upgrade snippet
