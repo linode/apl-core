@@ -7,8 +7,10 @@
 
 nameOverride: loki
 
+{{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
 - name: otomi-pullsecret-global
+{{- end }}
 
 global:
   priorityClassName: otomi-critical
@@ -82,7 +84,7 @@ queryFrontend:
       - "--loki-server=http://localhost:3100"
       - "--auth-config=/etc/reverse-proxy-conf/authn.yaml"
     ports:
-      - name: http
+      - name: auth
         containerPort: 3101
         protocol: TCP
     resources:
