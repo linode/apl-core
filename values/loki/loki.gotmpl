@@ -56,6 +56,8 @@ loki:
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-host-filesystem
   autoscaling:
     enabled: {{ $l.autoscaling.ingester.enabled }}
     minReplicas: {{ $l.autoscaling.ingester.minReplicas }}
@@ -90,6 +92,8 @@ gateway:
 
 querier:
   resources: {{- $l.resources.querier | toYaml | nindent 4 }}
+  podAnnotations:
+    policy.otomi.io/ignore: psp-host-filesystem
   autoscaling:
     enabled: {{ $l.autoscaling.querier.enabled }}
     minReplicas: {{ $l.autoscaling.querier.minReplicas }}
