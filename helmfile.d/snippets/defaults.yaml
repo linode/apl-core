@@ -287,6 +287,8 @@ environments:
           loki:
             enabled: false
             resources:
+              compactor:
+                
               ingester:
                   requests:
                       cpu: 50m

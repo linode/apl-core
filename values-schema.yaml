@@ -2280,6 +2280,8 @@ properties:
           resources:
             additionalProperties: false
             properties:
+              compactor:
+                $ref: '#/definitions/resources'
               ingester:
                 $ref: '#/definitions/resources'
               gateway:
@@ -2306,21 +2308,17 @@ properties:
             type: string
             x-secret: 'randAlphaNum 20'
           persistence:
-            additionalProperties: false
             properties:
-              ingester:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
               querier:
                 properties:
-                  enabled:
-                    type: boolean
-                    default: true
                   size:
                     default: 20Gi
-                    type: string
+                    $ref: '#/definitions/size'
+            ingester:
+              properties:
+                size:
+                  default: 20Gi
+                  $ref: '#/definitions/size'
           retention:
             additionalProperties: false
             properties:
@@ -2335,6 +2333,8 @@ properties:
               - duration
           storage:
             properties:
+              filesystem:
+                type: object
               aws:
                 type: object
               azure:

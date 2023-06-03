@@ -6,32 +6,49 @@ apps:
             period: 24h
         v11StartDate: '2021-05-13'
         storage:
-            storageType: azure
-            azure:
-                account_name: account_name
-                container_name: container_name
+            storageType: filesystem
+            # azure:
+            #     account_name: account_name
+            #     container_name: container_name
         autoscaling:
             ingester:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
             gateway:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
             querier:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
             distributor:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
             queryFrontend:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
         resources:
+            compactor:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
             ingester:
                 requests:
                     cpu: 100m
@@ -69,8 +86,6 @@ apps:
                     memory: 512Mi
         persistence:
             ingester:
-                enabled: true
                 size: 20Gi
             querier:
-                enabled: true
                 size: 10Gi
