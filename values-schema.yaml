@@ -2314,11 +2314,11 @@ properties:
                   size:
                     default: 20Gi
                     $ref: '#/definitions/size'
-            ingester:
-              properties:
-                size:
-                  default: 20Gi
-                  $ref: '#/definitions/size'
+              ingester:
+                properties:
+                  size:
+                    default: 20Gi
+                    $ref: '#/definitions/size'
           retention:
             additionalProperties: false
             properties:

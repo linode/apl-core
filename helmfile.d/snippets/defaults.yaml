@@ -286,82 +286,8 @@ environments:
             enabled: false
           loki:
             enabled: false
-            resources:
-              compactor:
-                
-              ingester:
-                  requests:
-                      cpu: 50m
-                      memory: 128Mi
-                  limits:
-                      cpu: 200m
-                      memory: 256Mi
-              gateway:
-                  requests:
-                      cpu: 50m
-                      memory: 64Mi
-                  limits:
-                      cpu: 200m
-                      memory: 256Mi
-              querier:
-                  requests:
-                      cpu: 50m
-                      memory: 64Mi
-                  limits:
-                      cpu: 200m
-                      memory: 256Mi
-              distributor:
-                  requests:
-                      cpu: 50m
-                      memory: 64Mi
-                  limits:
-                      cpu: 200m
-                      memory: 256Mi
-              queryFrontend:
-                  requests:
-                      cpu: 50m
-                      memory: 64Mi
-                  limits:
-                      cpu: 200m
-                      memory: 256Mi
-            persistence:
-              ingester:
-                enabled: true
-                size: 20Gi
-              querier:
-                enabled: true
-                size: 10Gi
-            autoscaling:
-              ingester:
-                enabled: false
-                minReplicas: 1
-                maxReplicas: 5
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
-              gateway:
-                enabled: false
-                minReplicas: 1
-                maxReplicas: 5
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
-              querier:
-                enabled: false
-                minReplicas: 1
-                maxReplicas: 5
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
-              distributor:
-                enabled: false
-                minReplicas: 1
-                maxReplicas: 5
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
-              queryFrontend:
-                enabled: false
-                minReplicas: 1
-                maxReplicas: 5
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
+            storage:
+              storageType: filesystem
           metrics-server:
             apiServer:
               create: true
