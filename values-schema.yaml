@@ -138,6 +138,12 @@ definitions:
       minReplicas:
         type: integer
         default: 1
+      targetCPUUtilizationPercentage:
+        type: integer
+        default: 80
+      targetMemoryUtilizationPercentage:
+        type: integer
+        default: 80
   aws:
     definitions:
       accessKey:
@@ -2272,25 +2278,49 @@ properties:
             type: boolean
             default: false
           resources:
-            ingester:
-              $ref: '#/definitions/resources'
-            gateway:
-              $ref: '#/definitions/resources'
-            querier:
-              $ref: '#/definitions/resources'
-            distributor:
-              $ref: '#/definitions/resources'
-            queryFrontend:
-              $ref: '#/definitions/resources'
+            additionalProperties: false
+            properties:
+              ingester:
+                $ref: '#/definitions/resources'
+              gateway:
+                $ref: '#/definitions/resources'
+              querier:
+                $ref: '#/definitions/resources'
+              distributor:
+                $ref: '#/definitions/resources'
+              queryFrontend:
+                $ref: '#/definitions/resources'
+          autoscaling:
+            properties:
+              ingester:
+                $ref: '#/definitions/autoscalingEnabled'
+              gateway:
+                $ref: '#/definitions/autoscalingEnabled'
+              querier:
+                $ref: '#/definitions/autoscalingEnabled'
+              distributor:
+                $ref: '#/definitions/autoscalingEnabled'
+              queryFrontend:
+                $ref: '#/definitions/autoscalingEnabled'
           adminPassword:
             type: string
             x-secret: 'randAlphaNum 20'
           persistence:
             additionalProperties: false
             properties:
-              size:
-                default: 20Gi
-                type: string
+              ingester:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+              querier:
+                properties:
+                  enabled:
+                    type: boolean
+                    default: true
+                  size:
+                    default: 20Gi
+                    type: string
           retention:
             additionalProperties: false
             properties:
@@ -2308,7 +2338,6 @@ properties:
               aws:
                 type: object
               azure:
-                description: Missing from docs but available with this schema.
                 properties:
                   account_key:
                     type: string

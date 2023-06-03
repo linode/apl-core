@@ -54,22 +54,55 @@ loki:
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
   persistence:
-    enabled: true
+    enabled: {{- $l.persistence.ingester.enabled }}
+    claims:
+      - name: data
+        size: {{- $l.persistence.ingester.size }}
+  autoscaling:
+    enabled: {{ $l.autoscaling.ingester.enabled }} # false
+    minReplicas: {{ $l.autoscaling.ingester.minReplicas }} # 1
+    maxReplicas: {{ $l.autoscaling.ingester.maxReplicas }} # 3
+    targetCPUUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetCPUUtilizationPercentage }}
+    targetMemoryUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetMemoryUtilizationPercentage }}
 
 gateway:
   resources: {{- $l.resources.gateway | toYaml | nindent 4 }}
+  autoscaling:
+    enabled: {{ $l.autoscaling.gateway.enabled }} # false
+    minReplicas: {{ $l.autoscaling.gateway.minReplicas }} # 1
+    maxReplicas: {{ $l.autoscaling.gateway.maxReplicas }} # 3
+    targetCPUUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetCPUUtilizationPercentage }}
+    targetMemoryUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetMemoryUtilizationPercentage }}
 
 querier:
   resources: {{- $l.resources.querier | toYaml | nindent 4 }}
   persistence:
-    enabled: true
-    size: 10Gi
+    enabled: {{- $l.persistence.querier.enabled }}
+    size: {{- $l.persistence.querier.size }}
+  autoscaling:
+    enabled: {{ $l.autoscaling.querier.enabled }}
+    minReplicas: {{ $l.autoscaling.querier.minReplicas }}
+    maxReplicas: {{ $l.autoscaling.querier.maxReplicas }}
+    targetCPUUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetCPUUtilizationPercentage }}
+    targetMemoryUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetMemoryUtilizationPercentage }}
 
 distributor:
   resources: {{- $l.resources.distributor | toYaml | nindent 4 }}
+  autoscaling:
+    enabled: {{ $l.autoscaling.distributor.enabled }}
+    minReplicas: {{ $l.autoscaling.distributor.minReplicas }}
+    maxReplicas: {{ $l.autoscaling.distributor.maxReplicas }}
+    targetCPUUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetCPUUtilizationPercentage }}
+    targetMemoryUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetMemoryUtilizationPercentage }}
 
 queryFrontend:
   resources: {{- $l.resources.queryFrontend | toYaml | nindent 4 }}
+  autoscaling:
+    enabled: {{ $l.autoscaling.queryFrontend.enabled }}
+    minReplicas: {{ $l.autoscaling.queryFrontend.minReplicas }}
+    maxReplicas: {{ $l.autoscaling.queryFrontend.maxReplicas }}
+    targetCPUUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetCPUUtilizationPercentage }}
+    targetMemoryUtilizationPercentage: {{ $l.autoscaling.distributor.maxReplicas.targetMemoryUtilizationPercentage }}
   extraContainers:
   - name: reverse-proxy
     image: k8spin/loki-multi-tenant-proxy:v1.0.0
@@ -84,11 +117,11 @@ queryFrontend:
         protocol: TCP
     resources:
       limits:
-        cpu: 250m
-        memory: 200Mi
+        cpu: 100m
+        memory: 32Mi
       requests:
         cpu: 50m
-        memory: 40Mi
+        memory: 16Mi
     volumeMounts:
       - name: reverse-proxy-auth-config
         mountPath: /etc/reverse-proxy-conf

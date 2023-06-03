@@ -1,8 +1,6 @@
 apps:
     loki:
         enabled: true
-        persistence:
-            size: 20Gi
         retention:
             duration: 24h
             period: 24h
@@ -12,6 +10,27 @@ apps:
             azure:
                 account_name: account_name
                 container_name: container_name
+        autoscaling:
+            ingester:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+            gateway:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+            querier:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+            distributor:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+            queryFrontend:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
         resources:
             ingester:
                 requests:
@@ -48,3 +67,10 @@ apps:
                 limits:
                     cpu: 900m
                     memory: 512Mi
+        persistence:
+            ingester:
+                enabled: true
+                size: 20Gi
+            querier:
+                enabled: true
+                size: 10Gi
