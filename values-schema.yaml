@@ -2333,41 +2333,58 @@ properties:
               - duration
           storage:
             properties:
-              filesystem:
-                type: object
-              aws:
-                type: object
               azure:
+                additionalProperties: false
                 properties:
-                  account_key:
-                    type: string
-                    x-secret: ''
                   account_name:
-                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
                   container_name:
-                    type: string
-                type: object
-              bigtable:
-                type: object
-              cassandra:
-                type: object
+                    $ref: '#/definitions/wordCharacterPattern'
+                  account_key:
+                    $ref: '#/definitions/wordCharacterPattern'
+                    x-secret: ''
+                required:
+                  - container_name
+                  - account_name
+                  - account_key
+              s3:
+                additionalProperties: false
+                properties:
+                  bucket:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  s3Url:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  accessKeyId:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  secretAccessKey:
+                    $ref: '#/definitions/wordCharacterPattern'
+                    x-secret: ''
+                required:
+                  - bucket
+                  - accessKeyId
+                  - s3Url
+                  - secretAccessKey
               gcs:
-                type: object
-              swift:
-                type: object
-              local:
-                type: object
-              storageType:
+                additionalProperties: false
+                properties:
+                  bucket:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  project:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  instance:
+                    $ref: '#/definitions/wordCharacterPattern'
+                required:
+                  - bucket
+                  - serviceAccount
+              type:
                 type: string
                 enum:
-                  - aws
                   - azure
-                  - bigtable
-                  - cassandra
-                  - filesystem
+                  - s3
                   - gcs
-                  - swift
-                  - local
+                  - minioLocal
+                  - filesystem
+                default: minioLocal
           v11StartDate:
             description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
             title: Schema v11 start date
