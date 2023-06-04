@@ -1217,6 +1217,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
+      projects:
+        type: array
+        items:
+          $ref: '#/definitions/project'
       builds:
         type: array
         items:
@@ -1278,6 +1282,15 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
+  project:
+    type: object
+    description: A single project can represent application's build, workload and service.
+    properties:
+      name:
+        description: Name of the project
+        $ref: '#/definitions/wordCharacterPattern'
+    required:
+      - name
   build:
     type: object
     description: Define location of code to build
@@ -1478,6 +1491,13 @@ properties:
               anyOf:
                 - required:
                     - issuer
+      cloudnative-pg:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
       cluster-autoscaler:
         additionalProperties: false
         properties:
