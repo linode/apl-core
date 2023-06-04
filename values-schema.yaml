@@ -2336,17 +2336,17 @@ properties:
               azure:
                 additionalProperties: false
                 properties:
-                  account_name:
+                  accountName:
                     $ref: '#/definitions/wordCharacterPattern'
-                  container_name:
+                  containerName:
                     $ref: '#/definitions/wordCharacterPattern'
-                  account_key:
+                  accountKey:
                     $ref: '#/definitions/wordCharacterPattern'
                     x-secret: ''
                 required:
-                  - container_name
-                  - account_name
-                  - account_key
+                  - containerName
+                  - accountName
+                  - accountKey
               s3:
                 additionalProperties: false
                 properties:

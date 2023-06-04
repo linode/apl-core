@@ -286,8 +286,6 @@ environments:
             enabled: false
           loki:
             enabled: false
-            storage:
-              storageType: filesystem
             resources:
               compactor:
                   requests:

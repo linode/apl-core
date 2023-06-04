@@ -75,16 +75,16 @@ loki:
           compress_responses: true
           tail_proxy_url: http://loki-querier.monitoring:3100
       compactor:
-          {{- if eq $st.storageType "s3" }}
+          {{- if eq $st.type "s3" }}
           shared_store: s3
           {{- end }}
-          {{- if eq $st.storageType "minioLocal" }}
+          {{- if eq $st.type "minioLocal" }}
           shared_store: s3
           {{- end }}
-          {{- if eq $st.storageType "azure" }}
+          {{- if eq $st.type "azure" }}
           shared_store: azure
           {{- end }}
-          {{- if eq $st.storageType "gcs" }}
+          {{- if eq $st.type "gcs" }}
           shared_store: gcs
           {{- end }}
           working_directory: /loki/compactor
@@ -103,22 +103,22 @@ loki:
 
   schemaConfig:
     configs:
-    - from: {{ $l | get "v11StartDate" "2021-05-12" }}
-      {{- if eq $st.storageType "gcs" }}
+    - from: {{ $l | get "v11StartDate" "2023-01-01" }}
+      {{- if eq $st.type "gcs" }}
       store: bigtable
       {{- else }}
       store: boltdb-shipper
       {{- end }}
-      {{- if eq $st.storageType "minioLocal" }}
+      {{- if eq $st.type "minioLocal" }}
       object_store: s3
       {{- end }}
-      {{- if eq $st.storageType "s3" }}
+      {{- if eq $st.type "s3" }}
       object_store: s3
       {{- end }}
-      {{- if eq $st.storageType "azure" }}
+      {{- if eq $st.type "azure" }}
       object_store: azure
       {{- end }}
-      {{- if eq $st.storageType "gcs" }}
+      {{- if eq $st.type "gcs" }}
       object_store: gcs
       {{- end }}
       schema: v11
@@ -126,18 +126,18 @@ loki:
         prefix: index_
         period: 24h
   storageConfig:
-    {{- if ne $st.storageType "gcs" }}
+    {{- if ne $st.type "gcs" }}
     boltdb_shipper:
-      {{- if eq $st.storageType "minioLocal" }}
+      {{- if eq $st.type "minioLocal" }}
       shared_store: s3
       {{- end }}
-      {{- if eq $st.storageType "s3" }}
+      {{- if eq $st.type "s3" }}
       shared_store: s3
       {{- end }}
-      {{- if eq $st.storageType "azure" }}
+      {{- if eq $st.type "azure" }}
       shared_store: azure
       {{- end }}
-      {{- if eq $st.storageType "filesystem" }}
+      {{- if eq $st.type "filesystem" }}
       shared_store: filesystem
       {{- end }}
       active_index_directory: /var/loki/index
@@ -145,32 +145,32 @@ loki:
       cache_ttl: 168h
     {{- else }}
     bigtable:
-      instance: {{ $st.storageType.gcs.instance }}
-      project: {{ $st.storageType.gcs.project }}
+      instance: {{ $st.gcs.instance }}
+      project: {{ $st.gcs.project }}
     gcs:
-      bucket_name: {{ $st.storageType.gcs.bucket }}   
+      bucket_name: {{ $st.gcs.bucket }}   
     {{- end }}
-    {{- if eq $st.storageType "filesystem" }}
+    {{- if eq $st.type "filesystem" }}
     filesystem:
       directory: "/var/loki/chunks"
     {{- else }}
     filesystem: null
     {{- end }}
-    {{- if eq $st.storageType "minioLocal" }}
+    {{- if eq $st.type "minioLocal" }}
     aws:
       s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/loki
       s3forcepathstyle: true
     {{- end }}
-    {{- if eq $st.storageType "S3" }}
+    {{- if eq $st.type "S3" }}
     aws:
-      s3: s3://{{ $st.storageType.s3.accessKeyId }}:{{ $st.storageType.s3.secretAccessKey }}@{{ $st.storageType.s3.s3Url }}/{{ $st.storageType.s3.bucket }}
+      s3: s3://{{ $st.s3.accessKeyId }}:{{ $st.s3.secretAccessKey }}@{{ $st.s3.s3Url }}/{{ $st.s3.bucket }}
       s3forcepathstyle: true
     {{- end }}
-    {{- if eq $st.storageType "azure" }}
+    {{- if eq $st.type "azure" }}
     azure:
-      account_name: {{ $st.storageType.azure.account_name }}
-      account_key: {{ $st.storageType.azure.account_key }}
-      container_name: {{ $st.storageType.azure.container_name }}
+      account_name: {{ $st.azure.accountName }}
+      account_key: {{ $st.azure.accountKey }}
+      container_name: {{ $st.azure.containerName }}
     {{- end }}
 
 ingester:
@@ -183,7 +183,7 @@ ingester:
     maxReplicas: {{ $l.autoscaling.ingester.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $l.autoscaling.ingester.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.ingester.targetMemoryUtilizationPercentage }}
-  {{- if eq $st.storageType "filesystem" }}
+  {{- if eq $st.type "filesystem" }}
   persistence:
     enabled: true
     claims:
@@ -211,7 +211,7 @@ querier:
     maxReplicas: {{ $l.autoscaling.querier.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $l.autoscaling.querier.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.querier.targetMemoryUtilizationPercentage }}
-  {{- if eq $st.storageType "filesystem" }}
+  {{- if eq $st.type "filesystem" }}
   persistence:
     enabled: true
     size: {{ $l.persistence.querier.size }}

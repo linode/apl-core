@@ -6,11 +6,11 @@ apps:
             period: 24h
         v11StartDate: '2021-05-13'
         storage:
-            # storageType: filesystem
+            type: azure
             azure:
-                account_name: account_name
-                container_name: container_name
-                account_key: shshsheyeywywiqwioqw
+                accountName: account_name
+                containerName: container_name
+                accountKey: shshsheyeywywiqwioqw
         autoscaling:
             ingester:
                 enabled: true
