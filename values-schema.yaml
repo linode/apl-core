@@ -2334,7 +2334,6 @@ properties:
           storage:
             properties:
               azure:
-                additionalProperties: false
                 properties:
                   accountName:
                     $ref: '#/definitions/wordCharacterPattern'
@@ -2348,7 +2347,6 @@ properties:
                   - accountName
                   - accountKey
               s3:
-                additionalProperties: false
                 properties:
                   bucket:
                     $ref: '#/definitions/wordCharacterPattern'
@@ -2365,7 +2363,6 @@ properties:
                   - s3Url
                   - secretAccessKey
               gcs:
-                additionalProperties: false
                 properties:
                   bucket:
                     $ref: '#/definitions/wordCharacterPattern'
