@@ -26,10 +26,10 @@ templates:
       - ../values/{{ .Release.Name }}/{{ .Release.Name }}.gotmpl
       - snippets/common.gotmpl
     <<: *upgrade
-  database: &database
+  otomiDb: &otomiDb
     chart: ../charts/otomi-db
     values:
-      - ../values/{{ .Release.Name | replace "-database" "" }}/{{ .Release.Name}}.gotmpl
+      - ../values/{{ .Release.Name | replace "-otomiDb" "" }}/{{ .Release.Name}}.gotmpl
   raw: &raw
     chart: ../charts/raw
     values:

@@ -3,6 +3,10 @@ apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
   name: {{ .Values.name }}
+  labels:
+  {{- with .Values.labels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   suspend: {{ .Values.backup.suspend }}
   immediate: {{ .Values.backup.immediate }}
