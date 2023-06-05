@@ -1,0 +1,50 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Values.name }}
+  labels:
+  {{- with .Values.labels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  instances: {{ .Values.instances }}
+  
+  {{- with .Values.imageName }}
+  imageName: {{ . }}
+  {{- end }}
+
+  storage:
+    {{- with .Values.storage.storageClass }}
+    storageClass: {{ . }}
+    {{- end }}
+    size: {{ .Values.storage.size }}
+
+  {{- with .Values.monitoring }}
+  monitoring:
+    enablePodMonitor: {{ . }}
+  {{- end }}
+
+  resources:
+    {{- with .Values.resources }}
+    {{- toYaml . | nindent 4 }}
+    {{- else }}
+    limits:
+      cpu: 100m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    {{- end }}
+
+  {{- with .Values.clusterAffinity }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+
+  {{- with .Values.clusterBackup }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+
+
+  {{- with .Values.clusterSpec }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
