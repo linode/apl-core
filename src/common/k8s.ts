@@ -65,12 +65,13 @@ export const getDeploymentState = async (): Promise<DeploymentState> => {
 }
 
 export const getHelmReleases = async (): Promise<Record<string, any>> => {
-  const result = await $`helm list -A -a -o json`
+  const result = await nothrow($`helm list -A -a -o json`)
   const data = JSON.parse(result.stdout || '[]') as []
-  const status = {}
-  data.forEach((item) => {
-    status[`${item['namespace']}/${item['name']}`] = item
-  })
+  const status = data.reduce((acc, item) => {
+    // eslint-disable-next-line no-param-reassign
+    acc[`${item['namespace']}/${item['name']}`] = item
+    return acc
+  }, {})
   return status
 }
 

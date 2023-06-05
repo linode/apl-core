@@ -9,9 +9,9 @@ async function play() {
   // console.log(version)
 
   const state = await getDeploymentState()
-  const releses = await getHelmReleases()
+  const releases = await getHelmReleases()
 
-  await writeValuesToFile(`/tmp/status.yaml`, { status: { otomi: state, helm: releses } }, true)
+  await writeValuesToFile(`/tmp/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 }
 
 play()
