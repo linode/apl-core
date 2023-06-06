@@ -3,5 +3,9 @@
 
 resources: {{- $cnpg.resources | toYaml | nindent 2 }}
 
-data:
-  INHERITED_LABELS: prometheus
+config:
+  data:
+    INHERITED_LABELS: prometheus
+
+# -- Priority indicates the importance of a Pod relative to other Pods.
+priorityClassName: "otomi-critical"

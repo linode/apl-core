@@ -29,7 +29,7 @@ templates:
   otomiDb: &otomiDb
     chart: ../charts/otomi-db
     values:
-      - ../values/{{ .Release.Name | replace "-otomiDb" "" }}/{{ .Release.Name}}.gotmpl
+      - ../values/{{ .Release.Name | replace "-otomi-db" "" | replace "-import" "" }}/{{ .Release.Name}}.gotmpl
   raw: &raw
     chart: ../charts/raw
     values:

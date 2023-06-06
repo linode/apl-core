@@ -48,3 +48,15 @@ releases:
     labels:
       pkg: harbor
     <<: *raw
+  - name: harbor-otomi-db-import
+    installed: {{ and ($a | get "harbor.enabled") ($v._derived.harborImportDatabase) }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *otomiDb
+  - name: harbor-otomi-db
+    installed: {{ and ($a | get "harbor.enabled")  (not $v._derived.harborImportDatabase) }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *otomiDb
