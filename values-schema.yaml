@@ -598,10 +598,8 @@ definitions:
   k8sVersion:
     description: The cluster k8s version. Must match one of the list.
     enum:
-      - '1.22'
       - '1.23'
       - '1.24'
-      - '1.25'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -1213,6 +1211,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
+      projects:
+        type: array
+        items:
+          $ref: '#/definitions/project'
       builds:
         type: array
         items:
@@ -1274,6 +1276,15 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
+  project:
+    type: object
+    description: A single project can represent application's build, workload and service.
+    properties:
+      name:
+        description: Name of the project
+        $ref: '#/definitions/wordCharacterPattern'
+    required:
+      - name
   build:
     type: object
     description: Define location of code to build
@@ -1474,6 +1485,13 @@ properties:
               anyOf:
                 - required:
                     - issuer
+      cloudnative-pg:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
       cluster-autoscaler:
         additionalProperties: false
         properties:
@@ -3667,5 +3685,21 @@ properties:
     type: string
     describe: License in form of JWT
     x-secret: ''
+  status:
+    type: object
+    properties:
+      otomi:
+        properties:
+          deployingTag:
+            type: string
+          deployingVersion:
+            type: string
+          status:
+            type: string
+            enum: [deploying, deployed]
+          version:
+            type: string
+      helm:
+        type: object
 required:
   - cluster

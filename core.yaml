@@ -5,6 +5,10 @@ k8s:
       app: argocd
     - name: cert-manager
       disableIstioInjection: true
+    - name: cnpg-system
+      app: cloudnative-pg
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: default
       disableIstioInjection: true
       disablePolicyChecks: true
