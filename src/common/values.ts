@@ -133,9 +133,10 @@ export const writeValuesToFile = async (
         await encrypt(targetPath)
         await decrypt(targetPath)
         return
-      } else await writeFile(targetPath, objectToYaml(useValues))
+      }
+      await writeFile(targetPath, objectToYaml(useValues))
+      return
     }
-    return
   }
   if (isEqual(originalValues, useValues)) {
     d.info(`No changes for ${targetPath}${suffix}, skipping...`)

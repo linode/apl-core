@@ -172,7 +172,7 @@ appsInfo:
     integration: The SSO login page for Otomi is served by Keycloak. Keycloak is used as an identity broker or provider for all Otomi integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of Otomi and is always enabled.
   kiali:
     title: Kiali
-    appVersion: 1.47.0
+    appVersion: 1.68.0
     repo: https://github.com/kiali/kiali
     maintainers: Kiali
     relatedLinks:
