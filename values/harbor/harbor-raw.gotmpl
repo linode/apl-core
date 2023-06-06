@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $h := $v.apps.harbor }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $otomiAdmin := "otomi-admin" }}
 
@@ -33,7 +34,7 @@ resources:
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: minio-creds
+    name: {{ $h.backup.credentialsName }}
   data:
     MINIO_ACCESS_KEY: "{{ $otomiAdmin | b64enc }}"
     MINIO_SECRET_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
