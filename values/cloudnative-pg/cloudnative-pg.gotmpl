@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $cnpg := $v.apps | get "cloudnative-pg" }}
+{{- $cnpg := $v.apps | get "cnpg" }}
 
 resources: {{- $cnpg.resources | toYaml | nindent 2 }}
 

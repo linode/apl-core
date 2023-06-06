@@ -2,6 +2,8 @@
 {{- $h := $v.apps.harbor }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $otomiAdmin := "otomi-admin" }}
+{{- $cnpg := $v.apps.cnpg }}
+{{- $sp := $v.apps.cnpg.storageProvider }}
 
 resources:
 - apiVersion: cert-manager.io/v1
@@ -31,10 +33,39 @@ resources:
     issuerRef:
       name: custom-ca
       kind: ClusterIssuer
+{{- if eq $sp.type "minioLocal" }}
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: {{ $h.backup.credentialsName }}
+    name: minio-creds
   data:
     MINIO_ACCESS_KEY: "{{ $otomiAdmin | b64enc }}"
     MINIO_SECRET_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
+{{- end }}
+{{- if eq $sp.type "azure" }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: azure-creds
+  data:
+    AZURE_STORAGE_ACCOUNT: "{{ $cnpg.azure.accountName | b64enc }}"
+    AZURE_STORAGE_KEY: "{{ $cnpg.azure.accountKey | b64enc }}"
+{{- end }}
+{{- if eq $sp.type "s3" }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: s3-creds
+  data:
+    S3_STORAGE_ACCOUNT: "{{ $cnpg.s3.accessKeyId | b64enc }}"
+    S3_STORAGE_KEY: "{{ $cnpg.s3.secretAccessKey | b64enc }}"
+{{- end }}
+{{- if eq $sp.type "gcs" }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: gcs-creds
+  data:
+  #ToDo JSON credentials
+    gcsCredentials: "{{ $cnpg.gcs.jsonString | b64enc }}"
+{{- end }}

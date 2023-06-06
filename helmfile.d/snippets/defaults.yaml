@@ -23,7 +23,9 @@ environments:
               limits:
                 cpu: 200m
                 memory: 384Mi
-          cloudnative-pg:
+          cnpg:
+            storageProvider:
+              type: minioLocal
             resources:
               requests:
                 cpu: 100m
@@ -188,11 +190,8 @@ environments:
             registry:
               credentials:
                 username: otomi-admin
-            backup:
-              enabled: false
-              schedule: '0 0 0 * * *'
-              credentialsName: minio-creds
             database:
+              size: '2Gi'
               type: external
               name: harbor-database
               user: harbor
@@ -575,6 +574,10 @@ environments:
                 cpu: 1000m
                 memory: 512Mi
         platformBackups:
+          database:
+            harbor:
+              enabled: false
+          persistentVolumes:
             gitea:
               enabled: false
             drone:

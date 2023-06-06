@@ -1,22 +1,79 @@
 {{- $v := .Values }}
 {{- $h := $v.apps.harbor }}
+{{- $cnpg := $v.apps.cnpg }}
+{{- $sp := $cnpg.storageProvider }}
+{{- $b := $v.platformBackups.database.harbor }}
 
 name: {{ $h.database.name }}
+storage:
+  size: {{ $h.database.size }}
+
+{{- if $b.enabled }}
 backup:
-  enabled: {{ $h.backup.enabled }}
-  schedule: {{ $h.backup.schedule }}
+  enabled: {{ $b.enabled }}
+  schedule: {{ $b.schedule }}
+{{- end }}
+
+resources:
+  {{- with $h | get "resources.database" nil }}
+  {{- toYaml . | nindent 6 }}
+  {{- else }}
+  limits:
+    cpu: 100m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  {{- end }}
+
 clusterBackup:
+{{- if eq $sp.type "minioLocal" }}
   backup:
     barmanObjectStore:
-      destinationPath: s3://harbor/
+      destinationPath: s3://database/harbor
       endpointURL: "http://minio.minio.svc.cluster.local:9000"
       s3Credentials:
         accessKeyId:
-          name: {{ $h.backup.credentialsName }}
+          name: minio-creds
           key: MINIO_ACCESS_KEY
         secretAccessKey:
-          name: {{ $h.backup.credentialsName }}
+          name: minio-creds
           key: MINIO_SECRET_KEY
+{{- end }}
+{{- if eq $sp.type "azure" }}
+  backup:
+    barmanObjectStore:
+      destinationPath: {{ $sp.azure.containerName }}
+      azureCredentials:
+        storageAccount:
+          name: azure-creds
+          key: AZURE_STORAGE_ACCOUNT
+        storageKey:
+          name: azure-creds
+          key: AZURE_STORAGE_KEY
+{{- end }}
+{{- if eq $sp.type "s3" }}
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://{{ $sp.s3.bucket }}/harbor
+      endpointURL: {{ $sp.s3.s3Url }}
+      s3Credentials:
+        accessKeyId:
+          name: s3-creds
+          key: S3_ACCESS_KEY
+        secretAccessKey:
+          name: s3-creds
+          key: S3_SECRET_KEY
+{{- end }}
+{{- if eq $sp.type "gcs" }}
+  backup:
+    barmanObjectStore:
+      destinationPath: "gs://{{ $sp.gcs3.bucket }}"
+      googleCredentials:
+        applicationCredentials:
+          name: backup-creds
+          key: gcsCredentials
+{{- end }}
 
 clusterSpec:
   bootstrap:
