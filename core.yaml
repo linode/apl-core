@@ -152,6 +152,15 @@ adminApps:
         forwardPath: true
         removeRequestHeaders:
           - authorization
+  - name: tty
+    tags: [tty]
+    isShared: true
+    ownHost: true
+    ingress:
+      - svc: tty
+        namespace: ingress # virtual service is not going to be used.
+        type: public
+        auth: true
   - name: external-dns
     tags: [ingress, security, tls]
   - name: external-secrets
