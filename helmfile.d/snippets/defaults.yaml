@@ -190,8 +190,10 @@ environments:
                 username: otomi-admin
             backup:
               enabled: false
-            database: 
-              import: false
+              schedule: '0 0 0 * * *'
+              credentialsName: minio-creds
+            database:
+              type: external
               name: harbor-database
               user: harbor
               coreDatabase: registry

@@ -1,0 +1,27 @@
+{{- $v := .Values }}
+{{- $h := $v.apps.harbor }}
+
+name: {{ $h.database.name }}
+backup:
+  enabled: {{ $h.backup.enabled }}
+  schedule: {{ $h.backup.schedule }}
+clusterBackup:
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://harbor/
+      endpointURL: "http://minio.minio.svc.cluster.local:9000"
+      s3Credentials:
+        accessKeyId:
+          name: {{ $h.backup.credentialsName }}
+          key: MINIO_ACCESS_KEY
+        secretAccessKey:
+          name: {{ $h.backup.credentialsName }}
+          key: MINIO_SECRET_KEY
+
+clusterSpec:  
+  bootstrap:
+    initdb:
+      database: {{ $h.database.coreDatabase }}
+      owner: {{ $h.database.user }}
+      localeCollate: 'en_US.UTF-8'
+      localeCType: 'en_US.UTF-8'

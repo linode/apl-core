@@ -1,8 +1,6 @@
 {{- $v := .Values }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
-{{- $h := $v.apps.harbor }}
 {{- $otomiAdmin := "otomi-admin" }}
-{{- $databaseBackupName := printf "%s-backup" $h.database.name }}
 
 resources:
 - apiVersion: cert-manager.io/v1
@@ -32,75 +30,6 @@ resources:
     issuerRef:
       name: custom-ca
       kind: ClusterIssuer
-- apiVersion: postgresql.cnpg.io/v1
-  kind: Cluster
-  metadata:
-    name: {{ $h.database.name }}
-    labels:
-      prometheus: system
-  spec:
-    instances: 2
-    imageName: ghcr.io/cloudnative-pg/postgresql:15.3
-    storage:
-      size: 1Gi
-    {{- if $h.database.import }}
-    bootstrap:
-      initdb:
-        import:
-          type: monolith
-          databases:
-            - {{ $h.database.coreDatabase }}
-          source:
-            externalCluster: {{ $h.database.name }}
-
-      externalClusters:
-      - name: {{ $h.database.name }}
-        connectionParameters:
-          host: harbor-database.harbor.svc.cluster.local
-          user: postgres
-          dbname: registry
-          sslmode: disable
-        password:
-          name: {{ $h.database.name }}
-          key: POSTGRES_PASSWORD    
-    {{- else }}
-    
-    bootstrap:
-      initdb:
-        database: {{ $h.database.coreDatabase }}
-        owner: {{ $h.database.user }}
-        localeCollate: 'en_US.UTF-8'
-        localeCType: 'en_US.UTF-8'
-    
-    {{- end }}
-    monitoring:
-      enablePodMonitor: true
-    affinity:
-      enablePodAntiAffinity: true
-      topologyKey: kubernetes.io/hostname
-      podAntiAffinityType: preferred
-    backup:
-      barmanObjectStore:
-        destinationPath: s3://harbor/
-        endpointURL: "http://minio.minio.svc.cluster.local:9000"
-        s3Credentials:
-          accessKeyId:
-            name: minio-creds
-            key: MINIO_ACCESS_KEY
-          secretAccessKey:
-            name: minio-creds
-            key: MINIO_SECRET_KEY
-    resources:
-      {{- with $h | get "resources.database" nil }}
-      {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 100m
-        memory: 512Mi
-      requests:
-        cpu: 50m
-        memory: 256Mi
-      {{- end }}
 - apiVersion: v1
   kind: Secret
   metadata:
@@ -108,17 +37,3 @@ resources:
   data:
     MINIO_ACCESS_KEY: "{{ $otomiAdmin | b64enc }}"
     MINIO_SECRET_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
-{{- if $h.backup.enabled }}
-- apiVersion: postgresql.cnpg.io/v1
-  kind: ScheduledBackup
-  metadata:
-    name: {{ $databaseBackupName }}
-  spec:
-    suspend: false
-    immediate: true
-    target: primary
-    schedule: {{ $h.backup.schedule }}
-    backupOwnerReference: none
-    cluster:
-      name: {{ $h.database.name }}
-{{- end }}
