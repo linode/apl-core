@@ -24,6 +24,12 @@ global:
   imagePullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
+
+defaultRules:
+  disabled:
+    {{- range $p.disabledRules }}
+    {{ . }}: true
+    {{- end }}
 prometheusOperator:
   resources:
     limits:
@@ -143,7 +149,7 @@ prometheus:
       additionalLabels:
         prometheus: system
     {{- end }}
-{{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") }}  
+{{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") ($v.apps.opencost.alerts.enabled) }}  
 additionalPrometheusRules:
   {{- if not $v.otomi.isMultitenant }}
   - name: blackbox
@@ -152,6 +158,20 @@ additionalPrometheusRules:
   {{- if eq $v.cluster.provider "aws" }}
   - name: cluster-autoscaler
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
+  {{- end }}
+  {{- if and ($v.apps.opencost.alerts.enabled) }}
+  - name: opencost
+    groups:
+      - name: opencost.rules
+        rules:
+          - alert: CostOfAllNodesQuotaPerMonthReached
+            expr: sum(node_total_hourly_cost) * 730 > {{ $v.apps.opencost.alerts.costOfAllNodesQuotaPerMonthReached.quota }}
+            for: 1d
+            labels:
+              severity: warning
+            annotations:
+              description: The monthly cost of all cluster nodes has reached {{ $v.apps.opencost.alerts.costOfAllNodesQuotaPerMonthReached.quota }}
+              summary: Node cost quota p.m. reached
   {{- end }}
 {{- end }}
 alertmanager:

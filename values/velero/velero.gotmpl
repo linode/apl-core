@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
-{{- $pa := $v.backup.platform }}
+{{- $b := $v.platformBackups }}
 {{- $cp := $vl.cloud }}
 {{- $sp := $vl.storage }}
 
@@ -28,7 +28,20 @@ initContainers:
       - mountPath: /target
         name: plugins
   - name: velero-plugin-for-aws
-    image: velero/velero-plugin-for-aws:v1.4.0
+    image: velero/velero-plugin-for-aws:v1.5.0
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 50m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 32Mi
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+  - name: velero-plugin-for-gcp
+    image: velero/velero-plugin-for-gcp:v1.5.0
     imagePullPolicy: IfNotPresent
     resources:
       requests:
@@ -43,8 +56,6 @@ initContainers:
 
 podSecurityContext:
   runAsUser: 1000
-
-logLevel: {{ $vl.logLevel }}
 
 configuration:
   {{- if eq $sp.type "azureBlob" }}
@@ -65,7 +76,7 @@ configuration:
     bucket: {{ $sp.s3.bucket }}
     config:
       s3Url: {{ $sp.s3.s3Url }}
-      region: {{ $sp.s3.region }}
+      region: {{ $cp.aws.region }}
   {{- end }}
   {{- if eq $sp.type "minioLocal" }}
   provider: aws
@@ -78,6 +89,15 @@ configuration:
       publicUrl: http://minio.minio.svc.cluster.local:9000
       region: minio
       s3ForcePathStyle: true
+  {{- end }}
+  {{- if eq $sp.type "gcs" }}
+  provider: gcp
+  backupStorageLocation:
+    name: otomi
+    default: true
+    bucket: {{ $sp.gcs.bucket }}   
+    config:
+      serviceAccount: {{ $sp.gcs.serviceAccount }}
   {{- end }}
 
   {{- if eq $cp.type "azure" }}
@@ -94,8 +114,16 @@ configuration:
       region: {{ $cp.aws.region }}
   {{- end }}
 
+  {{- if eq $cp.type "google" }}
+  volumeSnapshotLocation:
+    name: otomi
+    config:
+      project: {{ $cp.google.project }}
+  {{- end }}
+
   # if set Velero will back up all pod volumes using Restic with the exception of service account tokens, secrets, config maps and hostpath volumes
-  defaultVolumesToRestic: true
+  defaultVolumesToRestic: {{ $vl.restic.enabled }}
+  logLevel: {{ $vl.logLevel }}
 
 credentials:
   secretContents:
@@ -121,13 +149,19 @@ credentials:
 {{- end }}
 {{- if eq $cp.type "aws" }}
       [default]
-      aws_access_key_id={{ $sp.s3.accessKeyId }}
-      aws_secret_access_key={{ $sp.s3.secretAccessKey }}
+      aws_access_key_id={{ $cp.s3.accessKeyId }}
+      aws_secret_access_key={{ $cp.s3.secretAccessKey }}
 {{- end }}
 {{- if and (eq $sp.type "s3") (not (eq $cp.type "aws")) }}
       [default]
       aws_access_key_id={{ $sp.s3.accessKeyId }}
       aws_secret_access_key={{ $sp.s3.secretAccessKey }}
+{{- end }}
+{{- if eq $cp.type "google" }}
+      '{{ $cp.google.saKeyJson }}'
+{{- end }}
+{{- if and (eq $sp.type "gcs") (not (eq $cp.type "google")) }}
+      '{{ $sp.gcs.saKeyJson }}'
 {{- end }}
 
 kubectl:
@@ -143,99 +177,102 @@ kubectl:
     # do not inject sidecar, so the kubectl k8s job can exit and return the completed status
     sidecar.istio.io/inject: "false"
 
-deployRestic: true
+deployRestic: {{ $vl.restic.enabled }}
 
 schedules:
-{{- if $pa.gitea.enabled }}
+{{- if $b.gitea.enabled }}
   gitea:
     disabled: false
-    schedule: {{ $pa.gitea.schedule }}
+    schedule: {{ $b.gitea.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: {{ $pa.gitea.ttl }}
+      ttl: {{ $b.gitea.ttl }}
       includedNamespaces:
       - gitea
+      includedResources:
+      - pv
 {{- end }}
-{{- if $pa.keycloak.enabled }} 
+{{- if $b.keycloak.enabled }} 
   keycloak:
     disabled: false
-    schedule: {{ $pa.keycloak.schedule }}
+    schedule: {{ $b.keycloak.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: {{ $pa.keycloak.ttl }}
+      ttl: {{ $b.keycloak.ttl }}
       includedNamespaces:
       - keycloak
+      includedResources:
+      - pv
 {{- end }}
-{{- if $pa.drone.enabled }} 
+{{- if $b.drone.enabled }} 
   drone:
     disabled: false
-    schedule: {{ $pa.drone.schedule }}
+    schedule: {{ $b.drone.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: {{ $pa.drone.ttl }}
+      ttl: {{ $b.drone.ttl }}
       includedNamespaces:
       - drone
+      includedResources:
+      - pv
 {{- end }}
-{{- if $pa.harbor.enabled }} 
+{{- if $b.harbor.enabled }} 
   harbor:
     disabled: false
-    schedule: {{ $pa.harbor.schedule }}
+    schedule: {{ $b.harbor.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: {{ $pa.harbor.ttl }}
+      ttl: {{ $b.harbor.ttl }}
       includedNamespaces:
       - harbor
+      includedResources:
+      - pv
 {{- end }}
-{{- if $pa.vault.enabled }}
+{{- if $b.vault.enabled }}
   vault:
     disabled: false
-    schedule: {{ $pa.vault.schedule }}
+    schedule: {{ $b.vault.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: {{ $pa.vault.ttl }}
+      ttl: {{ $b.vault.ttl }}
       includedNamespaces:
       - vault
+      includedResources:
+      - pv
 {{- end }}
-{{- if $pa.argo.enabled }}
+{{- if $b.argo.enabled }}
   argocd:
     disabled: false
-    schedule: {{ $pa.argo.schedule }}
+    schedule: {{ $b.argo.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: {{ $pa.argo.ttl }}
+      ttl: {{ $b.argo.ttl }}
       includedNamespaces:
       - argocd
+      includedResources:
+      - pv
 {{- end }}
-{{- if $pa.kubeapps.enabled }}
+{{- if $b.kubeapps.enabled }}
   kubeapps:
     disabled: false
-    schedule: {{ $pa.kubeapps.schedule }}
+    schedule: {{ $b.kubeapps.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: {{ $pa.kubeapps.ttl }}
+      ttl: {{ $b.kubeapps.ttl }}
       includedNamespaces:
       - kubeapps
+      includedResources:
+      - pv
 {{- end }}
-{{- if $pa.minio.enabled }}
+{{- if $b.minio.enabled }}
   kubeapps:
     disabled: false
-    schedule: {{ $pa.minio.schedule }}
+    schedule: {{ $b.minio.schedule }}
     useOwnerReferencesInBackup: false
     template:
-      ttl: {{ $pa.kubeapps.ttl }}
+      ttl: {{ $b.kubeapps.ttl }}
       includedNamespaces:
       - minio
-{{- end }}
-  # create backups of all team namespaces
-{{- if $v.backup.teams.enabled }}
-  {{- range $teamId := keys $v.teamConfig }}
-  team-{{$teamId}}:
-    disabled: false
-    schedule: {{ $v.backup.teams.schedule }}
-    useOwnerReferencesInBackup: false
-    template:
-      ttl: {{ $v.backup.teams.ttl }}
-      includedNamespaces:
-      - team-{{$teamId}}
-  {{- end }}
+      includedResources:
+      - pv
 {{- end }}

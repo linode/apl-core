@@ -21,3 +21,13 @@ folders:
   {{- if $v.apps.thanos.enabled }}
   - thanos
   {{- end }}
+  {{- if $v.apps.trivy.enabled }}
+  - trivy
+  {{- end }}
+  {{- if $v.apps.gatekeeper.enabled }}
+  - gatekeeper
+  {{- end }}
+  {{- if $v.apps.opencost.enabled }}
+  - opencost
+  {{- end }}
+  - cloudnative-pg

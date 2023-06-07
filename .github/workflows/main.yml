@@ -26,7 +26,7 @@ jobs:
           git config --global user.email $GIT_USER@users.noreply.github.com
           git config --global user.name $GIT_USER
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       # - name: CI tests, image build and push tag for main or branch
       #   uses: whoan/docker-build-with-cache-action@v5
       #   with:
@@ -37,15 +37,15 @@ jobs:
       #     image_tag: ${{ env.TAG }}
       #     pull_image_and_stages: true
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Login to Github Packages
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2.1.0
         with:
           registry: ${{ env.CACHE_REGISTRY }}
           username: ${{ env.GIT_USER }}
           password: '${{ secrets.NPM_TOKEN }}'
       - name: CI tests, image build and push tag for main or branch
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           push: true
           tags: |
@@ -68,16 +68,15 @@ jobs:
       - name: Show me the logic
         run: |
           echo github.ref == ${{ github.ref }}
-
   release:
     needs: push-to-docker
-    if: always() && github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
+    if: always() && startsWith(github.ref, 'refs/heads/releases/') && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set env
         run: |
           git config --global user.email $GIT_USER@users.noreply.github.com
@@ -91,25 +90,25 @@ jobs:
           docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
           release_tag="v$(echo $COMMIT_MSG | cut -d' ' -f2)"
-          echo ::set-output name=tag::$release_tag
+          echo tag=$release_tag >> $GITHUB_OUTPUT
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag
           docker push $REPO:$release_tag
           echo "machine github.com login $GIT_USER password ${{ secrets.GIT_PASSWORD }}" > ~/.netrc
-          git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags origin main
+          git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags
           changelog=$(cat CHANGELOG.md | awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}')
           # now do some escaping because github does not help us here:
           changelog="${changelog//'%'/'%25'}"
           changelog="${changelog//$'\n'/'%0A'}"
           changelog="${changelog//$'\r'/'%0D'}"
-          echo ::set-output name=changes::$changelog
+          echo changes=$changelog >> $GITHUB_OUTPUT
       - name: Create GitHub release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1.12.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.git_tag.outputs.tag }}
-          release_name: Release ${{ steps.git_tag.outputs.tag }}
+          tag: ${{ steps.git_tag.outputs.tag }}
+          name: Release ${{ steps.git_tag.outputs.tag }}
           body: ${{ steps.git_tag.outputs.changes }}
 
   chart-release:
@@ -121,7 +120,7 @@ jobs:
       options: --user 0
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Prepare chart
         run: |
           # Release new chart only if its version changes
@@ -149,7 +148,7 @@ jobs:
           git config --global user.name $GIT_USER
       - name: Create and publish otomi chart release
         id: chart_release
-        uses: helm/chart-releaser-action@v1.4.0
+        uses: helm/chart-releaser-action@v1.5.0
         with:
           charts_dir: chart
           charts_repo_url: https://otomi.io/charts/

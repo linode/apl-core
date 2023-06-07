@@ -51,7 +51,7 @@ apps:
   promtail:
     enabled: true
   redis-shared:
-    enabled: true
+    enabled: false
   snapshot-controller:
     enabled: true
   tigera-operator:

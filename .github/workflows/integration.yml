@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       kubernetes_versions:
-        description: "Kubernetes versions (JSON formatted list e.g.: ['1.23'])"
+        description: "Kubernetes versions (JSON formatted list e.g.: ['1.24'])"
         type: string
       install_profile:
         description: Otomi installation profile
@@ -25,6 +25,10 @@ on:
         type: string
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
         default: az_kms
+      generate_password:
+        type: string
+        description: Should a unique password be generated?
+        default: 'no'
       oidc:
         type: string
         description: Should Otomi use external OIDC?
@@ -39,16 +43,17 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.22']"
           - "['1.23']"
           - "['1.24']"
-        default: "['1.23']"
+          - "['1.25']"
+        default: "['1.24']"
       install_profile:
         description: Otomi installation profile
         default: minimal
         type: choice
         options:
           - minimal
+          - minimal-with-team
           - full
       cluster_region:
         description: DigitalOcean cluster region
@@ -75,6 +80,13 @@ on:
           - no_kms
           - az_kms
         default: az_kms
+      generate_password:
+        type: choice
+        description: Should a unique password be generated?
+        options:
+          - 'yes'
+          - 'no'
+        default: 'no'
       oidc:
         type: choice
         description: Should Otomi use external OIDC?
@@ -108,11 +120,14 @@ jobs:
     steps:
       - name: Print user input
         run: |
+          echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
+          echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
           echo 'cluster_region: ${{ inputs.cluster_region }}'
           echo 'cluster_persistence: ${{ inputs.cluster_persistence }}'
           echo 'dns: ${{ inputs.dns }}'
           echo 'kms: ${{ inputs.kms }}'
+          echo 'generate_password: ${{ inputs.generate_password }}'
           echo 'oidc: ${{ inputs.oidc }}'
           echo 'certificate: ${{ inputs.certificate }}'
       - name: Install doctl
@@ -129,7 +144,7 @@ jobs:
             versions='${{ inputs.kubernetes_versions }}'
           fi
           echo $versions
-          echo "::set-output name=versions::$versions"
+          echo "versions=$versions" >> $GITHUB_OUTPUT
 
   run-integration-test:
     name: Run integration test on cluster
@@ -212,16 +227,20 @@ jobs:
         run: |
           domainSuffix=''
           touch values.yaml
-          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix=' --set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
+          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
-          # Sometimes the DO cluster is having hiccups while scaling up nodes, thus we need keep the timeout high.
-          helm install --wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
-          --values tests/integration/${{ inputs.install_profile }}.yaml \
-          --values values-container-registry.yaml \
-          --values values.yaml \
-          $domainSuffix
+
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+            --values tests/integration/${{ inputs.install_profile }}.yaml \
+            --values values-container-registry.yaml
+            --values values.yaml \
+            $domainSuffix"
+
+          [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
+
+          helm install $install_args
       - name: Gather k8s events on failure
         if: failure()
         run: |

@@ -115,6 +115,7 @@
     "values-schema.yaml": "npm run gen:chart-schema"
   },
   "scripts": {
+    "app-versions:csv": "echo 'name,appVersion,chartVersion'; for f in $(find charts -name Chart.yaml -type f -maxdepth 2| sort); do yq eval -o=json $f | jq -rc '. | [.name, .appVersion, .version] | @csv' | tr -d '\"'; done",
     "adr": "adr-log -d adr -i",
     "check-policies": "NODE_ENV=test binzx/otomi check-policies",
     "clean": "rm -rf dist >/dev/null",
@@ -138,6 +139,7 @@
     "prepare": "husky install",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
+    "release:bump:minor": "standard-version --skip.changelog true --release-as minor",
     "run-if-changed": "run-if-changed",
     "score-templates": "binzx/otomi score-templates",
     "server": "binzx/otomi server",
@@ -149,7 +151,8 @@
     "test:ts-cov": "jest --coverage",
     "validate-templates": "NODE_ENV=test binzx/otomi validate-templates",
     "validate-templates:all": "set -e; i=19; while [ $i -le 23 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
-    "validate-values": "NODE_ENV=test binzx/otomi validate-values"
+    "validate-values": "NODE_ENV=test binzx/otomi validate-values",
+    "bootstrap": "binzx/otomi bootstrap"
   },
   "standard-version": {
     "skip": {
@@ -157,5 +160,5 @@
     }
   },
   "type": "commonjs",
-  "version": "0.18.0"
+  "version": "0.21.0"
 }

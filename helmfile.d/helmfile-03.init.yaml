@@ -75,3 +75,10 @@ releases:
       - ../values/vault-operator/vault-operator.gotmpl
       - {{- $v.apps.vault | get "_rawValues" dict | toYaml | nindent 8 }}
     <<: *upgrade
+  - name: tekton-pipeline
+    installed: {{ $a | get "tekton.enabled" }}
+    namespace: tekton-pipeline
+    chart: ../charts/tekton-pipeline
+    labels:
+      pkg: tekton-pipeline
+    <<: *default

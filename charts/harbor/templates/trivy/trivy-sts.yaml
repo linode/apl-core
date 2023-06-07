@@ -82,6 +82,8 @@ spec:
               value: {{ .Values.trivy.skipUpdate | default false | quote }}
             - name: "SCANNER_TRIVY_OFFLINE_SCAN"
               value: {{ .Values.trivy.offlineScan | default false | quote }}
+            - name: "SCANNER_TRIVY_SECURITY_CHECKS"
+              value: {{ .Values.trivy.securityCheck | quote }}
             - name: "SCANNER_TRIVY_INSECURE"
               value: {{ .Values.trivy.insecure | default false | quote }}
             - name: SCANNER_API_SERVER_ADDR

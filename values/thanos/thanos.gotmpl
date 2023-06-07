@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $vl:= $v.apps.thanos }}
 {{- $obj := $vl.objstore }}
-{{- $sp := $obj.storageProvider | get "type" dict }}
+{{- $sp := $obj.storageProvider }}
 
 ## @section Thanos Query parameters
 query:
@@ -83,7 +83,7 @@ ruler:
 
 ## @param objstoreConfig The [objstore configuration](https://thanos.io/tip/thanos/storage.md/)
 ## Specify content for objstore.yml
-{{- if eq $sp "minioLocal" }}
+{{- if eq $sp.type "minioLocal" }}
 objstoreConfig: |-
   type: s3
   config:
@@ -93,14 +93,14 @@ objstoreConfig: |-
     secret_key: {{ $v.otomi.adminPassword }}
     insecure: true
 {{- end }}
-{{- if eq $sp "s3" }}
+{{- if eq $sp.type "s3" }}
 objstoreConfig: |-
   type: s3
   config:
     bucket: {{ $sp.s3.bucket }}
     endpoint: {{ $sp.s3.s3Url }}
-    access_key: {{ $sp.s3.accessKey }}
-    secret_key: {{ $sp.s3.secretKey }}
+    access_key: {{ $sp.s3.accessKeyId }}
+    secret_key: {{ $sp.s3.secretAccessKey }}
     insecure: true
 {{- end }}
 

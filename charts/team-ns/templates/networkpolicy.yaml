@@ -116,6 +116,7 @@ spec:
     - Ingress
 
   {{- range $s := $v.services }}
+    {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
     {{- if not $s.isCore }}
       {{- $ingressPrivateMode := dig "networkPolicy" "ingressPrivate" "mode" "DenyAll" $s }}
       {{- if eq $ingressPrivateMode "AllowAll" }}
@@ -128,7 +129,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-        {{- if hasKey $s "ksvc" }}
+        {{- if $isKnativeService }}
       # The app label cannot be used because Knative appends revision number to the service
       serving.knative.dev/service: {{ $s.name }}
         {{- else }}
@@ -151,7 +152,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-        {{- if hasKey $s "ksvc" }}
+        {{- if $isKnativeService }}
       # The app label cannot be used because Knative appends revision number to its value
       serving.knative.dev/service: {{ $s.name }}
         {{- else }}

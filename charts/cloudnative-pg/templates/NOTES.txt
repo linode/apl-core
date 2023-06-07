@@ -1,0 +1,18 @@
+
+CloudNativePG operator should be installed in namespace "{{ .Release.Namespace }}".
+You can now create a PostgreSQL cluster with 3 nodes in the current namespace as follows:
+
+cat <<EOF | kubectl apply -f -
+# Example of PostgreSQL cluster
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: cluster-example
+spec:
+  instances: 3
+  storage:
+    size: 1Gi
+EOF
+
+kubectl get cluster
+

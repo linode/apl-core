@@ -23,6 +23,14 @@ environments:
               limits:
                 cpu: 200m
                 memory: 384Mi
+          cloudnative-pg:
+            resources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
           cluster-overprovisioner:
             enabled: false
           demo-tlspass:
@@ -169,7 +177,7 @@ environments:
             emitAdmissionEvents: false
             emitAuditEvents: false
             logLevel: INFO
-            replicas: 1
+            replicas: 2
           gitea:
             enabled: true
             adminUsername: otomi-admin
@@ -182,6 +190,14 @@ environments:
                 username: otomi-admin
             backup:
               enabled: false
+            resources:
+              trivy:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: 400m
+                  memory: 512Mi
           hello:
             enabled: false
           httpbin:
@@ -190,7 +206,7 @@ environments:
             enabled: true
             autoscaling:
               enabled: true
-              minReplicas: 1
+              minReplicas: 2
               maxReplicas: 10
             modsecurity:
               enabled: false
@@ -200,19 +216,19 @@ environments:
               enabled: false
               autoscaling:
                 enabled: true
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
           istio:
             enabled: true
             autoscaling:
               egressgateway:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
               ingressgateway:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
               pilot:
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 10
             egressGateway:
               enabled: false
@@ -227,6 +243,21 @@ environments:
               clientID: otomi
           kiali:
             enabled: false
+            resources:
+              pod:
+                  requests:
+                      cpu: 50m
+                      memory: 128Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              operator:
+                  requests:
+                      cpu: 50m
+                      memory: 256Mi
+                  limits:
+                      cpu: 200m
+                      memory: 1Gi
           knative:
             enabled: false
             serving:
@@ -307,6 +338,18 @@ environments:
                   cpu: '1'
           kube-descheduler:
             enabled: false
+          kured:
+            enabled: false
+            resources:
+              kuredDaemonSet:
+                  requests:
+                      cpu: 20m
+                      memory: 16Mi
+                  limits:
+                      cpu: 50m
+                      memory: 32Mi
+          tekton:
+            enabled: false
           loki:
             enabled: false
           metrics-server:
@@ -329,15 +372,38 @@ environments:
                 cpu: 1
                 memory: 1Gi
           oauth2-proxy: {}
+          opa-exporter: {}
           oauth2-proxy-redis: {}
           otomi-api:
             editorInactivityTimeout: 1
           otomi-console: {}
+          opencost:
+            enabled: false
+            alerts:
+              enabled: false          
+            resources:
+              exporter:
+                requests:
+                  cpu: 500m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+              ui:
+                requests:
+                  cpu: 500m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+
           promtail:
             enabled: false
           prometheus-blackbox-exporter: {}
           prometheus:
             enabled: false
+            disabledRules:
+              - InfoInhibitor
             remoteWrite:
               enabled: false
               rwConfig:
@@ -434,6 +500,25 @@ environments:
                 size: 8Gi
               ruler:
                 size: 8Gi
+          trivy:
+            enabled: false
+            operator:
+              replicaCount: 1
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              trivy:
+                requests:
+                  cpu: 100m
+                  memory: 64M
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
           vault:
             enabled: false
             resources:
@@ -445,6 +530,8 @@ environments:
                 memory: 256Mi
           velero:
             enabled: false
+            restic:
+              enabled: false
             cloud:
                 type: custom
             storage:
@@ -457,8 +544,7 @@ environments:
               limits:
                 cpu: 1000m
                 memory: 512Mi
-        backup:
-          platform:
+        platformBackups:
             gitea:
               enabled: false
             drone:
@@ -474,9 +560,7 @@ environments:
             kubeapps:
               enabled: false
             minio:
-              enabled: false         
-          teams:
-            enabled: false
+              enabled: false
         cluster: {}
         dns:
           domainFilters: []
@@ -492,10 +576,10 @@ environments:
           hasExternalDNS: false
           hasExternalIDP: false
           isHomeMonitored: false
-          isMultitenant: false
+          isMultitenant: true
           nodeSelector: {}
         # TODO: update this when schema version changes: (and think more?)
-        version: 5
+        version: 8
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

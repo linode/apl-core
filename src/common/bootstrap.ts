@@ -2,10 +2,10 @@ import { copyFile, pathExists } from 'fs-extra'
 import { isIPv6 } from 'net'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
-import { env, isChart, isCli } from 'src/common/envalid'
+import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { getOtomiLoadBalancerIP } from 'src/common/k8s'
-import { getFilename, loadYaml, rootDir } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getRepo, writeValues } from 'src/common/values'
 import { getParsedArgs } from 'src/common/yargs'
 import { $, cd, nothrow } from 'zx'
@@ -30,6 +30,11 @@ export const prepareDomainSuffix = async (inValues: Record<string, any> | undefi
   }
 }
 
+export const setIdentity = async (username, password, email) => {
+  await nothrow($`git config --local user.name ${username}`)
+  await nothrow($`git config --local user.password ${password}`)
+  await nothrow($`git config --local user.email ${email}`)
+}
 /**
  * Prepare the ENV_DIR before anything else. Scenario's:
  * - It might be a fresh empty folder that needs init and files added
@@ -37,16 +42,7 @@ export const prepareDomainSuffix = async (inValues: Record<string, any> | undefi
  */
 export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
-  if (await pathExists(`${env.ENV_DIR}/.git`)) {
-    d.info(`Git repo was already bootstrapped`)
-    return
-  }
-  let values = inValues
-  if (!values) {
-    if (isCli) values = (await hfValues({ filesOnly: true })) as Record<string, any>
-    else if (isChart) values = (await loadYaml(env.VALUES_INPUT)) as Record<string, any>
-    else return
-  }
+  const values = inValues ?? ((await hfValues()) as Record<string, any>)
   const argv = getParsedArgs()
   if (!values?.cluster?.domainSuffix && !argv.destroy) return // too early, commit will handle it
   if (!values?.cluster?.domainSuffix && argv.destroy) {
@@ -55,6 +51,11 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   }
   const { remote, branch, email, username, password } = getRepo(values)
   cd(env.ENV_DIR)
+  if (await pathExists(`${env.ENV_DIR}/.git`)) {
+    d.info(`Git repo was already bootstrapped, setting identity just in case`)
+    await setIdentity(username, password, email)
+    return
+  }
   // we don't care about ssl verification as repo endpoint is either ours or user input
   process.env.GIT_SSL_NO_VERIFY = '1'
   let hasCommits = false
@@ -89,16 +90,13 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     d.debug(e)
     d.info('Remote does not exist yet. Expecting first commit to come later.')
   }
-  cd(env.ENV_DIR)
   if (!(await pathExists(`${env.ENV_DIR}/.git`))) {
     d.info('Initializing values git repo.')
     await $`git init .`
   }
   if (isCli) await copyFile(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
   else await nothrow($`git config --global --add safe.directory ${env.ENV_DIR}`)
-  await nothrow($`git config --local user.name ${username}`)
-  await nothrow($`git config --local user.password ${password}`)
-  await nothrow($`git config --local user.email ${email}`)
+  await setIdentity(username, password, email)
   if (!hasCommits) {
     await nothrow($`git checkout -b ${branch}`)
     await nothrow($`git remote add origin ${remote}`)

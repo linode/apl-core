@@ -1,4 +1,6 @@
 {{- if .Values.chartmuseum.enabled }}
+{{- $storage := .Values.persistence.imageChartStorage }}
+{{- $type := $storage.type }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,6 +76,14 @@ spec:
             name: "{{ template "harbor.chartmuseum" . }}"
         - secretRef:
             name: "{{ template "harbor.chartmuseum" . }}"
+        {{- if .Values.persistence.imageChartStorage.s3.existingSecret }}
+        - secretRef:
+            name: {{ .Values.persistence.imageChartStorage.s3.existingSecret }}
+        {{- end }}
+        {{- if .Values.persistence.imageChartStorage.azure.existingSecret }}
+        - secretRef:
+            name: {{ .Values.persistence.imageChartStorage.azure.existingSecret }}
+        {{- end }}
         env:
           {{- if has "chartmuseum" .Values.proxy.components }}
           - name: HTTP_PROXY
@@ -101,6 +111,13 @@ spec:
           - # Needed to make AWS' client connect correctly (see https://github.com/helm/chartmuseum/issues/280)
             name: AWS_SDK_LOAD_CONFIG
             value: "1"
+          {{- if .Values.redis.external.existingSecret }}
+          - name: CACHE_REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.redis.external.existingSecret }}
+                key: REDIS_PASSWORD
+          {{- end }}
         ports:
         - containerPort: {{ template "harbor.chartmuseum.containerPort" . }}
         volumeMounts:
@@ -111,7 +128,7 @@ spec:
         - name: chart-internal-certs
           mountPath: /etc/harbor/ssl/chartmuseum
         {{- end }}
-        {{- if and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs") }}
+        {{- if and (and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs")) (not .Values.persistence.imageChartStorage.gcs.useWorkloadIdentity ) }}
         - name: gcs-key
           mountPath: /etc/chartmuseum/gcs-key.json
           subPath: gcs-key.json
@@ -137,10 +154,14 @@ spec:
         secret:
           secretName: {{ template "harbor.internalTLS.chartmuseum.secretName" . }}
       {{- end }}
-      {{- if and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs") }}
+      {{- if and (and .Values.persistence.enabled (eq .Values.persistence.imageChartStorage.type "gcs")) (not .Values.persistence.imageChartStorage.gcs.useWorkloadIdentity ) }}
       - name: gcs-key
         secret:
+          {{- if and (eq $type "gcs") $storage.gcs.existingSecret }}
+          secretName: {{ $storage.gcs.existingSecret }}
+          {{- else }}
           secretName: {{ template "harbor.registry" . }}
+          {{- end }}
           items:
             - key: GCS_KEY_DATA
               path: gcs-key.json

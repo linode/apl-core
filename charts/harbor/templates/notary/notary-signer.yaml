@@ -60,7 +60,10 @@ spec:
         - name: MIGRATIONS_PATH
           value: migrations/signer/postgresql
         - name: DB_URL
-          value: {{ template "harbor.database.notarySigner" . }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "harbor.notary-server" . }}
+              key: NOTARY_SIGNER_DB_URL
         - name: NOTARY_SIGNER_DEFAULTALIAS
           value: defaultalias
         volumeMounts:

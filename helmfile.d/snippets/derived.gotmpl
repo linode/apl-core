@@ -31,6 +31,7 @@
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
 {{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
+{{- $otomiVersion := $v | get "status.otomi.version" "" }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -59,11 +60,12 @@ environments:
           oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
           oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
           oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
+          isInitialDeployment: {{ empty $otomiVersion }} 
         apps:
           aws-alb-ingress-controller:
             enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}
           aws-ebs-csi-driver:
-            enabled: false # {{ eq $provider "aws" }}
+            enabled: false
           {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
           cert-manager:
             enabled: true
@@ -99,20 +101,21 @@ environments:
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
             enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
+          knative:
+            enabled: {{ and ($a | get "knative.enabled") (le $v.cluster.k8sVersion "1.24") }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
-          kured:
-            enabled: {{ $a | get "kured.enabled" (has $provider (list "azure")) }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean")) }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
-            enabled: false #{{ eq $provider "aws" }}
+            # TODO: upgrade snapshot-controller from piraeus-charts/snapshot-controller and toggle below:
+            enabled: false # {{ $a | get "snapshot-controller.enabled" (and (eq $provider "aws") (gt ($v.cluster.k8sVersion | float64) 1.22)) }}
           tigera-operator:
             enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
         ingress:

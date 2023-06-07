@@ -58,3 +58,10 @@ changes:
   - version: 6
     relocations:
       - apps.ingress-nginx: 'apps.ingress-nginx-platform'
+  - version: 7
+    relocations:
+      - apps.harbor.persistence.aws: 'apps.harbor.persistence.s3'
+  - version: 8
+    deletions:
+      - 'apps.harbor.resources.clair'
+      - 'apps.harbor.resources.clair-adapter'

@@ -1,0 +1,38 @@
+teamConfig:
+    demo:
+        builds:
+            - name: demo-java1
+              tag: v.0.0.1
+              repoAccess:
+                  otomiGit: true
+                  privateGit: false
+              mode:
+                  docker:
+                      repoUrl: https://github.com/buildpacks/samples
+                      revision: HEAD
+                      path: ./Docker
+                  type: docker
+            - name: demo-java2
+              tag: v.0.0.1
+              repoAccess:
+                  otomiGit: true
+                  privateGit: true
+              mode:
+                  buildpacks:
+                      repoUrl: https://github.com/buildpacks/samples
+                      revision: HEAD
+                      path: apps/java-maven
+                  type: buildpacks
+            - name: demo-java3
+              tag: v.0.0.1
+              repoAccess:
+                  otomiGit: false
+                  privateGit: true
+                  repoUserName: bla
+                  repoPassword: bla1111111
+              mode:
+                  docker:
+                      repoUrl: https://github.com/buildpacks/samples
+                      revision: HEAD
+                      path: ./Docker
+                  type: docker

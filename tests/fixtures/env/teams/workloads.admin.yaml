@@ -1,0 +1,20 @@
+teamConfig:
+    admin:
+        workloads:
+            - name: wa1
+              url: https://myrepo.local/mychart.git
+              path: /
+              revision: HEAD
+            - name: wa2
+              url: https://myregistry.local/mychart
+              chart: mychart
+              revision: '1.2.3'
+            - name: crossplane-custom-namespace
+              chart: crossplane
+              namespace: crossplane
+              revision: '1.11.2'
+              url: https://charts.crossplane.io/stable
+            - name: crossplane-team-namespace
+              chart: crossplane
+              revision: '1.11.2'
+              url: https://charts.crossplane.io/stable

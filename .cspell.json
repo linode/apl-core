@@ -16,6 +16,7 @@
     "adrlog",
     "adrlogstop",
     "anyuid",
+    "trivy",
     "appgw",
     "auths",
     "azuredns",
@@ -41,6 +42,7 @@
     "kubeapps",
     "kubes",
     "kubeval",
+    "kured",
     "madr",
     "millis",
     "mkilled",
@@ -71,7 +73,9 @@
     "minio",
     "vultr",
     "ovh",
-    "thanos"
+    "thanos",
+    "Paketo",
+    "tekton"
   ],
   "language": "en",
   "words": [
@@ -121,6 +125,7 @@
     "kubectl",
     "kubeclarity",
     "kubernetes",
+    "kpack",
     "millicores",
     "minikube",
     "modsecurity",
@@ -155,9 +160,11 @@
     "sysctls",
     "testmode",
     "textconv",
+    "trivy",
     "unencrypted",
     "untrusted",
     "velero",
+    "tekton",
     "xlarge"
   ]
 }

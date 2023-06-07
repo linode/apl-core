@@ -3,27 +3,27 @@ FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.23.8
+ARG KUBECTL_VERSION=1.24.12
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.9.0
+ARG HELM_VERSION=3.9.4
 # https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=3.5.0
+ARG HELM_DIFF_VERSION=3.6.0
 # https://github.com/jkroepke/helm-secrets/releases
-ARG HELM_SECRETS_VERSION=3.14.0
+ARG HELM_SECRETS_VERSION=3.15.0
 # https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=3.7.3
 # https://github.com/noqcks/gucci/releases
-ARG GUCCI_VERSION=1.5.5
+ARG GUCCI_VERSION=1.6.6
 # https://github.com/helmfile/helmfile/releases
-ARG HELMFILE_VERSION=0.145.0
+ARG HELMFILE_VERSION=0.147.0
 # https://github.com/open-policy-agent/opa/releases
-ARG OPA_VERSION=0.42.0
+ARG OPA_VERSION=0.50.1
 # https://github.com/instrumenta/kubeval/releases
 ARG KUBEVAL_VERSION=0.16.1
 # https://github.com/open-policy-agent/conftest/releases
-ARG CONFTEST_VERSION=0.32.1
+ARG CONFTEST_VERSION=0.39.2
 # https://github.com/plexsystems/konstraint/releases
-ARG KONSTRAINT_VERSION=0.21.0
+ARG KONSTRAINT_VERSION=0.26.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=16
 

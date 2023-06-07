@@ -23,7 +23,7 @@ appsInfo:
     integration: Argo CD is configured by Otomi to use the SSO provided by keycloak, and maps otomi groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
   cert-manager:
     title: CertManager
-    appVersion: 1.8.0
+    appVersion: 1.10.0
     repo: https://github.com/cert-manager/cert-manager
     maintainers: The Linux Foundation
     relatedLinks:
@@ -111,12 +111,12 @@ appsInfo:
     integration: Otomi uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
-    appVersion: 2.5.4
+    appVersion: 2.6.4
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
       - https://otomi.io/docs/apps/harbor
-      - https://goharbor.io/docs/2.5.0/
+      - https://goharbor.io/docs/2.6.0/
     license: Apache 2.0
     about: Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
     integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. Otomi runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
@@ -141,7 +141,7 @@ appsInfo:
     integration: Otomi integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.10.1
+    appVersion: 1.16.4
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -172,7 +172,7 @@ appsInfo:
     integration: The SSO login page for Otomi is served by Keycloak. Keycloak is used as an identity broker or provider for all Otomi integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of Otomi and is always enabled.
   kiali:
     title: Kiali
-    appVersion: 1.47.0
+    appVersion: 1.68.0
     repo: https://github.com/kiali/kiali
     maintainers: Kiali
     relatedLinks:
@@ -212,6 +212,31 @@ appsInfo:
     license: Apache 2.0
     about: KubeClarity is a tool for detection and management of Software Bill Of Materials (SBOM) and vulnerabilities of container images and filesystems. It scans both runtime K8s clusters and CI/CD pipelines for enhanced software supply chain security.
     integration: KubeClarity can be activated to scan running containers and filesystems for vulnerabilities.
+  kured:
+    title: Kured
+    appVersion: 1.9.2
+    repo: https://github.com/kubereboot/kured
+    maintainers: Kured project
+    relatedLinks:
+      - https://otomi.io/docs/apps/kured
+      - https://kured.dev/
+    license: Apache 2.0
+    about: Kured (KUbernetes REboot Daemon) is a Kubernetes daemonset that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS.
+    integration: Kured can be activated to perform safe automatic node reboots. Only activate Kured if cluster autoscaling is enabled and make sure the cloud resource quota is sufficent.
+  tekton:
+    title: Tekton Pipelines
+    appVersion: 0.36.1
+    repo: https://github.com/tektoncd/pipeline
+    maintainers: Tekton
+    relatedLinks:
+      - https://otomi.io/docs/apps/tekton
+      - https://github.com/tektoncd/pipeline/blob/main/docs/README.md
+      - https://github.com/tektoncd/catalog/tree/main/task/buildpacks/0.6
+      - https://github.com/tektoncd/catalog/tree/main/task/git-clone/0.9
+      - https://github.com/tektoncd/catalog/tree/main/task/kaniko/0.6
+    license: Apache 2.0
+    about: Tekton Pipelines provides k8s resources for declaring CI/CD-style pipelines.
+    integration: Otomi uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
   loki:
     title: Loki
     appVersion: 2.4.1
@@ -234,6 +259,17 @@ appsInfo:
     license: Apache 2.0
     about: MinIO is a High Performance Object Storage and its API is compatible with the Amazon Web Services S3 cloud storage service.
     integration: Otomi installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in Otomi capable of using object storage for data persistence.
+  opencost:
+    title: Opencost
+    appVersion: 1.9.8
+    repo: https://github.com/opencost/opencost
+    maintainers: Opencost
+    relatedLinks:
+      - https://otomi.io/docs/apps/opencost
+      - https://www.opencost.io/
+    license: Apache 2.0
+    about: OpenCost models give teams visibility into current and historical Kubernetes spend and resource allocation.
+    integration: Opencost can be activated to provide insight into cost spend for the platform and Otomi teams. The platform admin can set CPU and memory quotas for teams on the platform and receive an alert when a quota has been reached.
   prometheus:
     title: Prometheus
     appVersion: 0.57.0
@@ -256,6 +292,17 @@ appsInfo:
     license: Apache 2.0
     about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
     integration: Otomi installs and configures Thanos in a Remote Write setup. The Receiver is exposed for external Prometheus instances to upload metrics in real-time. By default Thanos Object Store is configured to use the thanos bucket of the local Minio instance. When Thanos is enabled, an extra data source is added to Grafana for Thanos Query.
+  trivy:
+    title: Trivy Operator
+    appVersion: 0.11.0
+    repo: https://github.com/aquasecurity/trivy-operator
+    maintainers: Aqua Security
+    relatedLinks:
+      - https://otomi.io/docs/apps/trivy-operator
+      - https://aquasecurity.github.io/trivy-operator/v0.11.0/
+    license: Apache 2.0
+    about: Trivy Operator continuously scans your Kubernetes cluster for security issues, and generates security reports as Kubernetes Custom Resources. It does it by watching Kubernetes for state changes and automatically triggering scans in response to changes.
+    integration: Otomi installs and configures Trivy Operator to scan all resources deployed by a team and makes results visible in a Grafana dashboard.
   vault:
     title: Vault
     appVersion: 1.11.5

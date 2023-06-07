@@ -1,5 +1,31 @@
 {{- $v := .Values }}
 {{- $ns := .Release.Namespace }}
+{{- $h := $v.apps.harbor }}
+---
+apiVersion: v1
+imagePullSecrets:
+{{- with $v.otomi.globalPullSecret }}
+- name: otomi-pullsecret-global
+{{- end }}
+{{- if $h.enabled }}
+- name: harbor-pullsecret
+{{- end }}
+kind: ServiceAccount
+metadata:
+  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
+  name: sa-team-{{ $v.teamId }}
+secrets:
+{{- if $h.enabled }}
+- name: harbor-pushsecret
+{{- end }}
+{{- range $v.builds }}
+{{- if .privateGit }}
+- name: git-user-credentials-{{ .name }}
+{{- end }}
+{{- if .otomiGit }}
+- name: gitea-user-credentials-{{ .name }}
+{{- end }}
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -12,7 +38,7 @@ roleRef:
   name: admin
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: sa-team-{{ $v.teamId }}
   namespace: {{ $ns }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -26,7 +52,7 @@ roleRef:
   name: psp:unprivileged
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: sa-team-{{ $v.teamId }}
   namespace: {{ $ns }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -40,5 +66,25 @@ roleRef:
   name: ingress-update
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: sa-team-{{ $v.teamId }}
+  namespace: {{ $ns }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubectl
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubectl
+  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: kubectl
   namespace: {{ $ns }}

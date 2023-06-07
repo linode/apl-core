@@ -5,10 +5,10 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { hf } from 'src/common/hf'
-import { getDeploymentState, setDeploymentState } from 'src/common/k8s'
+import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
-import { getCurrentVersion, getImageTag } from 'src/common/values'
-import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
+import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
@@ -41,6 +41,10 @@ const applyAll = async () => {
   const tag = await getImageTag()
   const version = await getCurrentVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+
+  const state = await getDeploymentState()
+  const releases = await getHelmReleases()
+  await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
@@ -79,6 +83,7 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   await upgrade({ when: 'post' })
+  await setDeploymentState({ version })
   if (!(env.isDev && env.DISABLE_SYNC))
     if (!isCli || isEmpty(prevState.status))
       // commit first time when not deployed only, always commit in chart (might have previous failure)

@@ -58,25 +58,22 @@ kms:
             clientId: somesecretvalue
             keys: somesecretvalue
             tenantId: somesecretvalue
-backup:
-    platform:
-        gitea:
-            enabled: false
-        drone:
-            enabled: false
-        keycloak:
-            enabled: false
-        harbor:
-            enabled: false
-        vault:
-            enabled: false
-        argo:
-            enabled: false
-        kubeapps:
-            enabled: false
-        minio:
-            enabled: false
-    teams:
+platformBackups:
+    gitea:
+        enabled: false
+    drone:
+        enabled: false
+    keycloak:
+        enabled: false
+    harbor:
+        enabled: false
+    vault:
+        enabled: false
+    argo:
+        enabled: false
+    kubeapps:
+        enabled: false
+    minio:
         enabled: false
 oidc:
     adminGroupID: someAdminGroupID
@@ -93,13 +90,16 @@ otomi:
     hasExternalDNS: true
     hasExternalIDP: true
     isHomeMonitored: true
-    isMultitenant: true
     nodeSelector:
         otomi: otomi-sys
     version: main
+    globalPullSecret:
+        username: otomi
+        password: blablabla
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
-version: 6
+license: license-in-jwt-format
+version: 8

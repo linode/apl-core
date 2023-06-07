@@ -61,8 +61,7 @@ releases:
     labels:
       pkg: otomi
     <<: *default
-  - name: redis-shared
+  - name: redis
     installed: {{ $a | get "redis-shared.enabled" }}
     namespace: redis
     <<: *default
-    chart: ../charts/redis

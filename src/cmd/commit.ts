@@ -20,25 +20,7 @@ interface Arguments extends HelmArguments, DroneArgs {
   message?: string
 }
 
-const gitPush = async (values: Record<string, any>): Promise<boolean> => {
-  const d = terminal(`cmd:${cmdName}:gitPush`)
-  let branch = 'main'
-  if (values.apps?.gitea?.enabled === false) {
-    branch = values.apps!['otomi-api']!.git!.branch ?? branch
-  }
-  d.info('Starting git push.')
-  try {
-    await $`git push -u origin ${branch}`
-    d.log('Otomi values have been pushed to git.')
-    return true
-  } catch (e) {
-    d.info(e.stdout)
-    d.error(e.stderr)
-    return false
-  }
-}
-
-const commitAndPush = async (values: Record<string, any>): Promise<void> => {
+const commitAndPush = async (values: Record<string, any>, branch: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
@@ -51,20 +33,11 @@ const commitAndPush = async (values: Record<string, any>): Promise<void> => {
     d.log('Could not commit. Did you make any changes?')
     return
   }
-  try {
-    const giteaEnabled = values?.apps?.gitea?.enabled
-    const byor = !!values?.apps?.['otomi-api']?.git
-    if (giteaEnabled && !byor && values._derived?.untrustedCA) {
-      process.env.GIT_SSL_NO_VERIFY = '1'
-    }
-    await $`git remote show origin`
-    if (await gitPush(values)) {
-      d.log('Successfully pushed the updated values')
-    }
-  } catch (error) {
-    d.error(error.stderr)
-    throw new Error('Origin does not exist yet')
-  }
+  if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
+  d.log('git config:')
+  await $`cat .git/config`
+  await $`git push -u origin ${branch}`
+  d.log('Successfully pushed the updated values')
 }
 
 export const commit = async (firstTime = false): Promise<void> => {
@@ -72,21 +45,22 @@ export const commit = async (firstTime = false): Promise<void> => {
   await validateValues()
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  const { remote } = getRepo(values)
   // we call this here again, as we might not have completed (happens upon first install):
   await bootstrapGit(values)
-  if (values?.apps!.gitea!.enabled) {
-    const { adminPassword } = values.apps!.gitea
+  const { username, password, remote, branch } = getRepo(values)
+  // lets wait until the remote is ready
+  if (values?.apps!.gitea!.enabled ?? true) {
     await waitTillAvailable(remote, {
       status: 200,
       skipSsl: values._derived?.untrustedCA,
-      username: 'otomi-admin',
-      password: adminPassword,
+      username,
+      password,
     })
   }
+  // continue
   await genDrone()
   await encrypt()
-  await commitAndPush(values)
+  await commitAndPush(values, branch)
   await setDeploymentState({ status: 'deployed' })
   if (firstTime) {
     const credentials = values.apps.keycloak
@@ -95,7 +69,7 @@ export const commit = async (firstTime = false): Promise<void> => {
     #
     #  To start using Otomi, go to https://otomi.${values.cluster.domainSuffix} and sign in to the web console
     #  with username "${credentials.adminUsername}" and password "${credentials.adminPassword}".
-    #  Then activate Drone. For more information see: https://otomi.io/docs/installation/activation/
+    #  Then activate Drone. For more information see: https://otomi.io/docs/get-started/activation
     #
     ########################################################################################################################################`
     d.info(message)
