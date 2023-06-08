@@ -9,7 +9,7 @@ roleRef:
   name: tty-admin
 subjects:
   - kind: ServiceAccount
-    name: tty-${SUB}
+    name: tty-${SUB}-${TARGET_TEAM}
     namespace: team-admin
 ---
 
