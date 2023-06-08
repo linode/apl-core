@@ -38,6 +38,6 @@ kubeclarity-sbom-db:
   resources: {{- $k.resources.sbomDb | toYaml | nindent 4 }}
 
 kubeclarity-postgresql:
-  resources: {{- $k.resources.postgresql | toYaml | nindent 4 }}
-  nameOverride: postgresql
+  primary:
+    resources: {{- $k.resources.postgresql | toYaml | nindent 6 }}
 

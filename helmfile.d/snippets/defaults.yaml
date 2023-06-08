@@ -278,14 +278,6 @@ environments:
           kubeclarity:
             enabled: false
             logLevel: warning
-            analyser:
-              trivyAnalyser:
-                enabled: true
-            scanner:
-              grypeScanner:
-                enabled: false
-              trivyScanner:
-                enabled: true
             resources:
               kubeclarity:
                 requests:
@@ -308,13 +300,6 @@ environments:
                 limits:
                   memory: 2Gi
                   cpu: '1'
-              grypeServer:
-                requests:
-                  cpu: 200m
-                  memory: 200Mi
-                limits:
-                  cpu: '1'
-                  memory: 1Gi
               trivyServer:
                 requests:
                   cpu: 200m
