@@ -15,31 +15,22 @@ kubeclarity-runtime-scan:
     resources: {{- $k.resources.cdbScanner | toYaml | nindent 6 }}
   vulnerability-scanner:
     analyzer:
-      {{- if $k.analyser.trivyAnalyser.enabled }}
       analyzerList: "syft gomod trivy"
-      {{- else }}
-      analyzerList: "syft gomod"
-      {{- end }}
       trivy:
-        enabled: {{ $k.analyser.trivyAnalyser.enabled }}
+        enabled: true
     scanner:
       grype:
-        enabled: {{ $k.scanner.grypeScanner.enabled }}
+        enabled: false
       trivy:
-        enabled: {{ $k.scanner.trivyScanner.enabled }}
-      scannerList: {{ if $k.scanner.trivyScanner.enabled }}trivy{{ end }} {{ if $k.scanner.grypeScanner.enabled }}grype{{ end }}
+        enabled: true
+      scannerList: trivy
     resources: {{- $k.resources.vulnerabilityScanner | toYaml | nindent 6 }}
 
 kubeclarity-grype-server:
-  enabled: {{ $k.scanner.grypeScanner.enabled }}
-  resources: {{- $k.resources.grypeServer | toYaml | nindent 4 }}
+  enabled: false
 
 kubeclarity-trivy-server:
-  {{- if or ($k.analyser.trivyAnalyser.enabled) ($k.scanner.trivyScanner.enabled) }}
   enabled: true
-  {{- else }}
-  enabled: false
-  {{- end }}
   resources: {{- $k.resources.trivyServer | toYaml | nindent 4 }}
   nameOverride: trivy
 

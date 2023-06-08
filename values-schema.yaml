@@ -2230,25 +2230,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          analyser:
-            properties:
-              trivyAnalyser:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
-          scanner:
-            properties:
-              grypeScanner:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: false
-              trivyScanner:
-                properties:
-                  enabled:
-                    type: boolean
-                    default: true
           logLevel:
             enum:
               - debug
@@ -2269,8 +2250,6 @@ properties:
               cdbScanner:
                 $ref: '#/definitions/resources'
               vulnerabilityScanner:
-                $ref: '#/definitions/resources'
-              grypeServer:
                 $ref: '#/definitions/resources'
               trivyServer:
                 $ref: '#/definitions/resources'
