@@ -1,6 +1,8 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.kubeclarity }}
 
+fullnameOverride: kubeclarity
+
 global:
   databasePassword: {{ $k | get "databasePassword" }}
 
@@ -40,4 +42,5 @@ kubeclarity-sbom-db:
 kubeclarity-postgresql:
   primary:
     resources: {{- $k.resources.postgresql | toYaml | nindent 6 }}
+  nameOverride: postgresql
 

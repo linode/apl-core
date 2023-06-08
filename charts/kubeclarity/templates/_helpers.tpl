@@ -2,20 +2,37 @@
 {{/*
 Name of the chart.
 */}}
+
 {{- define "kubeclarity.name" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
 {{- printf "%s-%s" .Release.Name .Chart.Name -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "kubeclarity.sbom-db.name" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
 {{- printf "%s-%s-sbom-db" .Release.Name .Chart.Name -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "kubeclarity.grype-server.name" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
 {{- printf "%s-%s-grype-server" .Release.Name .Chart.Name -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "kubeclarity.trivy-server.name" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
 {{- printf "%s-%s-trivy-server" .Release.Name .Chart.Name -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
