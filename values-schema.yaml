@@ -2042,6 +2042,18 @@ properties:
             required:
               - secret
               - credentials
+          database:
+            properties:
+              size:
+                type: string
+              type:
+                type: string
+              name:
+                type: string
+              user:
+                type: string
+              core-database:
+                type: string
           image:
             $ref: '#/definitions/imageSimple'
           resources:
