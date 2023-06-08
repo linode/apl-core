@@ -5,7 +5,8 @@ metadata:
   labels:
     {{- include "otomi-api.labels" . | nindent 4 }}
 rules:
-- apiGroups: [""]
+- apiGroups:
+    - "*"
   resources:
     - "*"
   verbs: 
