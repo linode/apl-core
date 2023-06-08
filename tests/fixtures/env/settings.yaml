@@ -65,7 +65,7 @@ kms:
 platformBackups:
     database:
         harbor:
-            enabled: true
+            enabled: false
             schedule: '0 0 0 * * *'
     persistentVolumes:
         gitea:

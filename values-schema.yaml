@@ -1263,6 +1263,11 @@ definitions:
     description: Expiration of the backup. Defaults to 7 days.
     title: TTL after finished
     type: string
+  backupRetentionPolicy:
+    default: 7d
+    description: Delete backups according to retention policy. In DAYS|WEEKS|MONTHS
+    title: Retention policy
+    type: string
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
@@ -2067,13 +2072,6 @@ properties:
           secretKey:
             type: string
             x-secret: 'randAlpha 16'
-          backup:
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              schedule:
-                $ref: '#/definitions/backupSchedule'
         required:
           - databasePassword
       hello:
@@ -3757,8 +3755,8 @@ properties:
                 default: false
               resources:
                 $ref: '#/definitions/resources'
-              ttl:
-                $ref: '#/definitions/backupTtl'
+              retentionPolicy:
+                $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
       persistentVolumes:
