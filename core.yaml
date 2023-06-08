@@ -66,6 +66,7 @@ k8s:
       disableIstioInjection: true
     - name: kubeclarity
       app: kubeclarity
+      disableIstioInjection: true
     - name: tekton
       app: tekton
       disableIstioInjection: true

@@ -23,7 +23,7 @@ kubeclarity-runtime-scan:
         enabled: false
       trivy:
         enabled: true
-      scannerList: trivy
+      scannerList: "trivy"
     resources: {{- $k.resources.vulnerabilityScanner | toYaml | nindent 6 }}
 
 kubeclarity-grype-server:
@@ -38,7 +38,6 @@ kubeclarity-sbom-db:
   resources: {{- $k.resources.sbomDb | toYaml | nindent 4 }}
 
 kubeclarity-postgresql:
-  primary:
-    resources: {{- $k.resources.postgresql | toYaml | nindent 6 }}
+  resources: {{- $k.resources.postgresql | toYaml | nindent 4 }}
   nameOverride: postgresql
 
