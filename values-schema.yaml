@@ -1464,23 +1464,19 @@ definitions:
         properties:
           gcs:
             type: object
-            title: Google Object Storage
-            description: Select to store backups in Google Object Storage.
+            title: Google Cloud Storage
+            description: Select to store backups in Google Cloud Storage.
             properties:
               bucket:
                 type: string
                 description: Name of the bucket.
                 $ref: '#/definitions/wordCharacterPattern'
-              project:
-                description: Big Table Project.
-                $ref: '#/definitions/wordCharacterPattern'
-              instance:
-                description: Big Table Instance.
-                $ref: '#/definitions/wordCharacterPattern'
+              serviceAccountKey:
+                $ref: '#/definitions/google/definitions/accountJson'
+                description: A service account key in json format for authentication.
             required:
               - bucket
-              - project
-              - instance
+              - serviceAccountKey
           type:
             type: string
             enum:

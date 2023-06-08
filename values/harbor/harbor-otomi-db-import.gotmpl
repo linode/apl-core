@@ -18,7 +18,7 @@ clusterBackup:
   backup:
     retentionPolicy: {{ $b.retentionPolicy }}
     barmanObjectStore:
-      destinationPath: s3://database/harbor
+      destinationPath: s3://database/database
       endpointURL: "http://minio.minio.svc.cluster.local:9000"
       s3Credentials:
         accessKeyId:
@@ -33,7 +33,8 @@ clusterBackup:
     retentionPolicy: {{ $b.retentionPolicy }}
     barmanObjectStore:
       # <http|https>://<account-name>.<service-name>.core.windows.net/<resource-path>
-      destinationPath: {{ $sp.azure.containerName }}
+      # https://castest.blob.core.windows.net/database-backups
+      destinationPath: "https://{{ $sp.azure.accountName }}.blob.core.windows.net/{{ $sp.azure.containerName }}"
       azureCredentials:
         storageAccount:
           name: azure-creds
@@ -46,7 +47,7 @@ clusterBackup:
   backup:
   retentionPolicy: {{ $b.retentionPolicy }}
     barmanObjectStore:
-      destinationPath: s3://{{ $sp.s3.bucket }}/harbor
+      destinationPath: s3://{{ $sp.s3.bucket }}
       endpointURL: {{ $sp.s3.s3Url }}
       s3Credentials:
         accessKeyId:

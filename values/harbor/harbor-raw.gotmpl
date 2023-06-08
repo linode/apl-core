@@ -66,6 +66,5 @@ resources:
   metadata:
     name: gcs-creds
   data:
-  #ToDo JSON credentials
-    gcsCredentials: "{{ $sp.gcs.jsonString | b64enc }}"
+    gcsCredentials: "{{ $sp.gcs.serviceAccountKey | b64enc }}"
 {{- end }}
