@@ -12,7 +12,7 @@ global:
     ## Configure registry
     ##
     registry: "ghcr.io/openclarity"
-    tag: "v2.12.2"
+    tag: "latest"
     imagePullPolicy: Always
 
   ## Is this being installed under OpenShift restricted SCC?
@@ -93,9 +93,6 @@ kubeclarity:
       memory: "1000Mi"
       cpu: "1000m"
 
-  clusterRole:
-    readClusterSecrets: true
-
   initContainers:
     resources:
       requests:
@@ -121,15 +118,26 @@ kubeclarity-runtime-scan:
     app: kubeclarity-scanner
     sidecar.istio.io/inject: "false"
 
+  ## Scanner jobs namespace.
+  # If left blank, the scanner jobs will run in the same namespace as pod being scanned.
+  # If set, the scanner jobs will run in the given namespace unless:
+  # 1. The scanner job must run in the pod namespace to fetch image pull secrets, OR
+  # 2. The scanner job must run in the release namespace to fetch service credentials (more info in https://github.com/openclarity/kubeclarity#private-registries-support-for-k8s-runtime-scan)
+  namespace: ""
+
   ## Scanner pods tolerations.
-  tolerations:
-#   - key: key1
-#     operator: Exists
-#     effect: NoSchedule
-#   - key: key1
-#     operator: Equal
-#     effect: NoSchedule
-#     value: "value1"
+  # tolerations:
+  # - key: key1
+  #   operator: Exists
+  #   effect: NoSchedule
+  # - key: key1
+  #   operator: Equal
+  #   effect: NoSchedule
+  #   value: "value1"
+
+  ## Scanner pods nodeSelector.
+  # nodeSelector:
+  #   key1: value1
 
   registry:
     skipVerifyTlS: "false"
@@ -231,8 +239,8 @@ kubeclarity-grype-server:
 
   ## Docker Image values.
   docker:
-    imageRepo: "gcr.io/eticloud/k8sec"
-    imageTag: "v0.1.4"
+    imageRepo: "ghcr.io/openclarity"
+    imageTag: "v0.2.0"
     imagePullPolicy: Always
 
   ## Logging level (debug, info, warning, error, fatal, panic).
@@ -262,7 +270,7 @@ kubeclarity-trivy-server:
   image:
     registry: docker.io
     repository: aquasec/trivy
-    tag: 0.34.0
+    tag: 0.41.0
     pullPolicy: IfNotPresent
 
   ## By default disable requirement for persistent storage
@@ -315,8 +323,8 @@ kubeclarity-sbom-db:
       memory: "20Mi"
       cpu: "10m"
     limits:
-      memory: "100Mi"
-      cpu: "100m"
+      memory: "1Gi"
+      cpu: "200m"
 
 ## End of KubeClarity SBOM DB Values
 #######################################################################################
@@ -331,7 +339,7 @@ kubeclarity-postgresql:
   image:
     registry: docker.io
     repository: bitnami/postgresql
-    tag: 14.4.0-debian-11-r4
+    tag: 14.6.0-debian-11-r31
 
   ## initdb parameters
   # initdb:

@@ -1,4 +1,4 @@
 api: kubeclarity
-console: kubeclarity
+console: kubeclarity-logo
 tasks: pushcred
 tools: 1.4.25

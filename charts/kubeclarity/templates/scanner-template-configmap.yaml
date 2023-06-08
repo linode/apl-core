@@ -17,6 +17,7 @@ data:
     apiVersion: batch/v1
     kind: Job
     metadata:
+      namespace: {{ index .Values "kubeclarity-runtime-scan" "namespace" | quote }}
       labels:
 {{- toYaml (index .Values "kubeclarity-runtime-scan" "labels") | nindent 8 }}
     spec:
@@ -30,6 +31,10 @@ data:
 {{- if (index .Values "kubeclarity-runtime-scan" "tolerations") }}
           tolerations:
 {{- toYaml (index .Values "kubeclarity-runtime-scan" "tolerations") | nindent 12 }}
+{{- end}}
+{{- if (index .Values "kubeclarity-runtime-scan" "nodeSelector") }}
+          nodeSelector:
+{{- toYaml (index .Values "kubeclarity-runtime-scan" "nodeSelector") | nindent 12 }}
 {{- end}}
           restartPolicy: Never
           volumes:
