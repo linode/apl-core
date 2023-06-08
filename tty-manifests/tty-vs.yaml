@@ -22,7 +22,7 @@ spec:
         uri: /
       route:
         - destination:
-            host: tty-${SUB}.team-admin.svc.cluster.local
+            host: tty-${SUB}-${TARGET_TEAM}.team-admin.svc.cluster.local
             port:
               number: 8080
           headers:

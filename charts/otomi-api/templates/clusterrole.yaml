@@ -9,7 +9,11 @@ rules:
   resources:
     - services
     - serviceaccounts
-  verbs: ["get", "list"]
+    - deployments
+    - virtualservices
+    - rolebinding
+    - ingress
+  verbs: ["get", "list", "create", "delete"]
 - apiGroups: [""]
   resources:
     - secrets
