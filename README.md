@@ -22,27 +22,29 @@ Add developer- and operations-centric tools, automation and self-service on top 
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
-## Otomi helps 
+## Otomi helps
 
 **Developers** - To focus on their apps only
-* Build images from application code
-* Deploy containerized workloads without writing any YAML
-* Direct access to logs and metrics
-* Store charts and images in a private registry
-* Build and run custom CI pipelines
-* Easy ingress and network policy configuration
-* Manage your own secrets
+
+- Build images from application code
+- Deploy containerized workloads without writing any YAML
+- Direct access to logs and metrics
+- Store charts and images in a private registry
+- Build and run custom CI pipelines
+- Easy ingress and network policy configuration
+- Manage your own secrets
 
 **Platform teams** - To setup and manage production-ready Kubernetes-based platforms
-* Onboard development teams in a comprehensive multi-tenant setup
-* Get all the required K8s tools in an integrated and automated way
-* Create your platform profile and deploy to any K8s
-* One schema to manage all platform configuration
-* Ensure governance with security policies
-* Implement zero-trust networking
-* Make development teams self-serving
-* Change the desired state of the platform based on Configuration-as-Code
-* Support multi- and hybrid cloud scenarios
+
+- Onboard development teams in a comprehensive multi-tenant setup
+- Get all the required K8s tools in an integrated and automated way
+- Create your platform profile and deploy to any K8s
+- One schema to manage all platform configuration
+- Ensure governance with security policies
+- Implement zero-trust networking
+- Make development teams self-serving
+- Change the desired state of the platform based on Configuration-as-Code
+- Support multi- and hybrid cloud scenarios
 
 ## Getting started
 
@@ -50,7 +52,7 @@ Add developer- and operations-centric tools, automation and self-service on top 
 
 To install Otomi using Helm, make sure to have a K8s cluster running with at least:
 
-- Version `1.22` up to `1.24`
+- Version `1.23` up to `1.24`
 - A node pool with **6 vCPU** and **8GB+ RAM** (more is advised!)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by `Otomi` can obtain an external accessible IP (using a cloud load balancer or MetalLB)
@@ -66,7 +68,7 @@ and then install the Helm chart:
 
 ```bash
 helm install otomi otomi/otomi \
---set cluster.k8sVersion=$VERSION \ # 1.22, 1.23 and 1.24 are supported
+--set cluster.k8sVersion=$VERSION \ # 1.23 and 1.24 are supported
 --set cluster.name=$CLUSTERNAME \
 --set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', 'scaleway' or 'custom' for any other cloud or onprem K8s
 ```
@@ -125,6 +127,7 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - BYO IdP, DNS and/or CA
 
 And much more...
+
 ## Otomi Projects
 
 The open source Core of Otomi consists out of the following projects:

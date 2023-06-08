@@ -68,6 +68,28 @@ subjects:
 - kind: ServiceAccount
   name: sa-team-{{ $v.teamId }}
   namespace: {{ $ns }}
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubectl
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubectl
+  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+subjects:
+- kind: ServiceAccount
+  name: kubectl
+  namespace: {{ $ns }}
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -82,4 +104,3 @@ rules:
       - '*'
     verbs:
       - '*'
----

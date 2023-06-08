@@ -1,0 +1,18 @@
+{{- if .Values.backup.enabled }}
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: {{ .Values.name }}
+  labels:
+  {{- with .Values.labels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  suspend: {{ .Values.backup.suspend }}
+  immediate: {{ .Values.backup.immediate }}
+  target: {{ .Values.backup.target }}
+  schedule: {{ .Values.backup.schedule }}
+  backupOwnerReference: {{ .Values.backup.backupOwnerReference }}
+  cluster:
+    name: {{ .Values.name }}
+{{- end }}
