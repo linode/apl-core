@@ -48,8 +48,8 @@ resources:
   metadata:
     name: azure-creds
   data:
-    AZURE_STORAGE_ACCOUNT: "{{ $cnpg.azure.accountName | b64enc }}"
-    AZURE_STORAGE_KEY: "{{ $cnpg.azure.accountKey | b64enc }}"
+    AZURE_STORAGE_ACCOUNT: "{{ $sp.azure.accountName | b64enc }}"
+    AZURE_STORAGE_KEY: "{{ $sp.azure.accountKey | b64enc }}"
 {{- end }}
 {{- if eq $sp.type "s3" }}
 - apiVersion: v1
@@ -67,5 +67,5 @@ resources:
     name: gcs-creds
   data:
   #ToDo JSON credentials
-    gcsCredentials: "{{ $cnpg.gcs.jsonString | b64enc }}"
+    gcsCredentials: "{{ $sp.gcs.jsonString | b64enc }}"
 {{- end }}
