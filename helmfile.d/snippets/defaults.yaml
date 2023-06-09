@@ -24,7 +24,7 @@ environments:
                 cpu: 200m
                 memory: 384Mi
           cnpg:
-            storageProvider:
+            storage:
               type: minioLocal
             resources:
               requests:

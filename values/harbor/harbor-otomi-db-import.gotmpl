@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $h := $v.apps.harbor }}
 {{- $cnpg := $v.apps.cnpg }}
-{{- $sp := $cnpg.storageProvider }}
+{{- $sp := $cnpg.storage }}
 {{- $b := $v.platformBackups.database.harbor }}
 
 name: {{ $h.database.name }}
@@ -18,7 +18,7 @@ clusterBackup:
   backup:
     retentionPolicy: {{ $b.retentionPolicy }}
     barmanObjectStore:
-      destinationPath: s3://database/database
+      destinationPath: s3://database
       endpointURL: "http://minio.minio.svc.cluster.local:9000"
       s3Credentials:
         accessKeyId:
@@ -32,8 +32,6 @@ clusterBackup:
   backup:
     retentionPolicy: {{ $b.retentionPolicy }}
     barmanObjectStore:
-      # <http|https>://<account-name>.<service-name>.core.windows.net/<resource-path>
-      # https://castest.blob.core.windows.net/database-backups
       destinationPath: "https://{{ $sp.azure.accountName }}.blob.core.windows.net/{{ $sp.azure.containerName }}"
       azureCredentials:
         storageAccount:
@@ -61,10 +59,10 @@ clusterBackup:
   backup:
     retentionPolicy: {{ $b.retentionPolicy }}
     barmanObjectStore:
-      destinationPath: "gs://{{ $sp.gcs3.bucket }}"
+      destinationPath: "gs://{{ $sp.gcs.bucket }}"
       googleCredentials:
         applicationCredentials:
-          name: backup-creds
+          name: gcs-creds
           key: gcsCredentials
 {{- end }}
 {{- end }}

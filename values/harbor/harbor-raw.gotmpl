@@ -3,7 +3,7 @@
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $cnpg := $v.apps.cnpg }}
-{{- $sp := $v.apps.cnpg.storageProvider }}
+{{- $sp := $v.apps.cnpg.storage }}
 
 resources:
 - apiVersion: cert-manager.io/v1
