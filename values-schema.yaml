@@ -2362,10 +2362,6 @@ properties:
                   accountKey:
                     $ref: '#/definitions/wordCharacterPattern'
                     x-secret: ''
-                required:
-                  - containerName
-                  - accountName
-                  - accountKey
               s3:
                 properties:
                   bucket:
@@ -2377,11 +2373,6 @@ properties:
                   secretAccessKey:
                     $ref: '#/definitions/wordCharacterPattern'
                     x-secret: ''
-                required:
-                  - bucket
-                  - accessKeyId
-                  - s3Url
-                  - secretAccessKey
               gcs:
                 properties:
                   bucket:
@@ -2390,9 +2381,6 @@ properties:
                     $ref: '#/definitions/wordCharacterPattern'
                   instance:
                     $ref: '#/definitions/wordCharacterPattern'
-                required:
-                  - bucket
-                  - serviceAccount
               type:
                 type: string
                 enum:
