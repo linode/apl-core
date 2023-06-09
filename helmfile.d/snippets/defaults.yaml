@@ -294,6 +294,8 @@ environments:
             enabled: false
           loki:
             enabled: false
+            storage:
+              type: minioLocal
             resources:
               compactor:
                   requests:

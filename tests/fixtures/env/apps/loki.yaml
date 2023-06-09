@@ -6,11 +6,11 @@ apps:
             period: 24h
         v11StartDate: '2021-05-13'
         storage:
-            type: azure
-            azure:
-                accountName: account_name
-                containerName: container_name
-                accountKey: shshsheyeywywiqwioqw
+            type: minioLocal
+            # azure:
+            #     accountName: account_name
+            #     containerName: container_name
+            #     accountKey: shshsheyeywywiqwioqw
         autoscaling:
             ingester:
                 enabled: true
