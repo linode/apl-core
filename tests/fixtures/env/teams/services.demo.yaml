@@ -85,7 +85,7 @@ teamConfig:
                   ingressPrivate:
                       mode: AllowOnly
               type: cluster
-            - ingressClassName: private
+            - ingressClassName: net-a
               name: service-e
               type: public
               headers:

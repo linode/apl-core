@@ -1,4 +1,4 @@
-api: many-entrypoints
+api: main
 console: main
 tasks: main
 tools: 1.4.25
