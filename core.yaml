@@ -294,7 +294,7 @@ adminApps:
     tags: [buildpacks]
   - name: loki
     tags: [logging, telemetry, observability]
-    deps: [grafana, prometheus]
+    deps: [grafana, prometheus, minio]
     useHost: grafana
     path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
     shortcuts:

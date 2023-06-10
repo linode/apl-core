@@ -101,7 +101,7 @@ releases:
               editable: false
               type: loki
               access: proxy
-              url: http://loki.monitoring:3101
+              url: http://loki-query-frontend-headless.monitoring:3101
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               secureJsonData: 
