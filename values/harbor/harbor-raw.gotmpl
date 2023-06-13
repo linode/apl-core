@@ -57,8 +57,8 @@ resources:
   metadata:
     name: s3-creds
   data:
-    S3_STORAGE_ACCOUNT: "{{ $cnpg.s3.accessKeyId | b64enc }}"
-    S3_STORAGE_KEY: "{{ $cnpg.s3.secretAccessKey | b64enc }}"
+    S3_STORAGE_ACCOUNT: "{{ $sp.s3.accessKeyId | b64enc }}"
+    S3_STORAGE_KEY: "{{ $sp.s3.secretAccessKey | b64enc }}"
 {{- end }}
 {{- if eq $sp.type "gcs" }}
 - apiVersion: v1
