@@ -2,7 +2,7 @@ name: database
 labels:
   prometheus: system
   helm.sh/resource-policy: keep
-instances: 1
+instances: 2
 imageName: ghcr.io/cloudnative-pg/postgresql:15.3
 storage:
   storageClass: ""
