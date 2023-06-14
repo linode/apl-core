@@ -43,13 +43,12 @@ podAnnotations:
 
 config:
   clients:
-    - url: http://loki.monitoring:3100/loki/api/v1/push
+    - url: http://loki-gateway.monitoring/loki/api/v1/push
       tenant_id: admins
 
   snippets:
     pipelineStages:
       - cri: {}
-      {{- if $v.otomi.isMultitenant }}
       - json:
           expressions:
             namespace:
@@ -64,7 +63,6 @@ config:
       {{- end }}
       - output: 
           source: message
-      {{- end }}
 
 priorityClassName: otomi-critical
 
