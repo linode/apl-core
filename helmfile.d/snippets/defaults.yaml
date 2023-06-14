@@ -32,7 +32,7 @@ environments:
                 cpu: 100m
                 memory: 100Mi
               limits:
-                cpu: 500m
+                cpu: 1000m
                 memory: 512Mi
           cluster-overprovisioner:
             enabled: false
