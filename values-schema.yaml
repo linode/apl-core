@@ -138,6 +138,12 @@ definitions:
       minReplicas:
         type: integer
         default: 1
+      targetCPUUtilizationPercentage:
+        type: integer
+        default: 80
+      targetMemoryUtilizationPercentage:
+        type: integer
+        default: 80
   aws:
     definitions:
       accessKey:
@@ -2305,16 +2311,47 @@ properties:
             type: boolean
             default: false
           resources:
-            $ref: '#/definitions/resources'
+            additionalProperties: false
+            properties:
+              compactor:
+                $ref: '#/definitions/resources'
+              ingester:
+                $ref: '#/definitions/resources'
+              gateway:
+                $ref: '#/definitions/resources'
+              querier:
+                $ref: '#/definitions/resources'
+              distributor:
+                $ref: '#/definitions/resources'
+              queryFrontend:
+                $ref: '#/definitions/resources'
+          autoscaling:
+            properties:
+              ingester:
+                $ref: '#/definitions/autoscalingEnabled'
+              gateway:
+                $ref: '#/definitions/autoscalingEnabled'
+              querier:
+                $ref: '#/definitions/autoscalingEnabled'
+              distributor:
+                $ref: '#/definitions/autoscalingEnabled'
+              queryFrontend:
+                $ref: '#/definitions/autoscalingEnabled'
           adminPassword:
             type: string
             x-secret: 'randAlphaNum 20'
           persistence:
-            additionalProperties: false
             properties:
-              size:
-                default: 20Gi
-                type: string
+              querier:
+                properties:
+                  size:
+                    default: 20Gi
+                    $ref: '#/definitions/size'
+              ingester:
+                properties:
+                  size:
+                    default: 20Gi
+                    $ref: '#/definitions/size'
           retention:
             additionalProperties: false
             properties:
@@ -2329,40 +2366,43 @@ properties:
               - duration
           storage:
             properties:
-              aws:
-                type: object
               azure:
-                description: Missing from docs but available with this schema.
                 properties:
-                  account_key:
-                    type: string
+                  accountName:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  containerName:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  accountKey:
+                    $ref: '#/definitions/wordCharacterPattern'
                     x-secret: ''
-                  account_name:
-                    type: string
-                  container_name:
-                    type: string
-                type: object
-              bigtable:
-                type: object
-              cassandra:
-                type: object
+              s3:
+                properties:
+                  bucket:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  s3Url:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  accessKeyId:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  secretAccessKey:
+                    $ref: '#/definitions/wordCharacterPattern'
+                    x-secret: ''
               gcs:
-                type: object
-              swift:
-                type: object
-              local:
-                type: object
-              storageType:
+                properties:
+                  bucket:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  project:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  instance:
+                    $ref: '#/definitions/wordCharacterPattern'
+              type:
                 type: string
                 enum:
-                  - aws
                   - azure
-                  - bigtable
-                  - cassandra
-                  - filesystem
+                  - s3
                   - gcs
-                  - swift
-                  - local
+                  - minioLocal
+                  - filesystem
+                default: minioLocal
           v11StartDate:
             description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
             title: Schema v11 start date

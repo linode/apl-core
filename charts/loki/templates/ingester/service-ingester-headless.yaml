@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "loki.ingesterFullname" . }}-headless
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.ingesterSelectorLabels" . | nindent 4 }}
+    prometheus.io/service-monitor: "false"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 3100
+      targetPort: http
+      protocol: TCP
+    - name: grpc
+      port: 9095
+      targetPort: grpc
+      protocol: TCP
+      {{- if .Values.ingester.appProtocol.grpc }}
+      appProtocol: {{ .Values.ingester.appProtocol.grpc }}
+      {{- end }}
+  selector:
+    {{- include "loki.ingesterSelectorLabels" . | nindent 4 }}

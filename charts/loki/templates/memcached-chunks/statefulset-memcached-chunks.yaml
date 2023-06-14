@@ -1,0 +1,146 @@
+{{- if .Values.memcachedChunks.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "loki.memcachedChunksFullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.memcachedChunksLabels" . | nindent 4 }}
+  {{- with .Values.loki.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.memcachedChunks.replicas }}
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+  serviceName: {{ include "loki.memcachedChunksFullname" . }}
+  revisionHistoryLimit: {{ .Values.loki.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "loki.memcachedChunksSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- if or .Values.loki.podAnnotations .Values.memcachedChunks.podAnnotations }}
+      annotations:
+        {{- with .Values.loki.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.memcachedChunks.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      labels:
+        {{- include "loki.memcachedChunksSelectorLabels" . | nindent 8 }}
+        {{- with .Values.loki.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.memcachedChunks.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "loki.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- include "loki.memcachedChunksPriorityClassName" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.memcached.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.memcachedChunks.terminationGracePeriodSeconds }}
+      containers:
+        - name: memcached
+          {{- if .Values.memcachedChunks.persistence.enabled }}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -ec
+                - |
+                  /usr/bin/pkill -10 memcached
+                  sleep 60s
+          {{- end }}
+          image: {{ include "loki.memcachedImage" . }}
+          imagePullPolicy: {{ .Values.memcached.image.pullPolicy }}
+          {{- if or .Values.memcachedChunks.extraArgs .Values.memcachedChunks.persistence.enabled }}
+          args:
+          {{- if .Values.memcachedChunks.persistence.enabled }}
+            - --memory-file=/cache-state/memory_file
+          {{- end }}
+          {{- with .Values.memcachedChunks.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 11211
+              protocol: TCP
+          {{- with .Values.memcachedChunks.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.memcachedChunks.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          securityContext:
+            {{- toYaml .Values.memcached.containerSecurityContext | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.memcached.readinessProbe | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.memcached.livenessProbe | nindent 12 }}
+          {{- if .Values.memcachedChunks.persistence.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: /cache-state
+          {{- end }}
+          resources:
+            {{- toYaml .Values.memcachedChunks.resources | nindent 12 }}
+        {{- if .Values.memcachedExporter.enabled }}
+        - name: exporter
+          args:
+            - --memcached.address=localhost:11211
+            - --web.listen-address=0.0.0.0:9150
+          image: {{ include "loki.memcachedExporterImage" . }}
+          imagePullPolicy: {{ .Values.memcachedExporter.image.pullPolicy }}
+          ports:
+            - name: http-metrics
+              containerPort: 9150
+              protocol: TCP
+          securityContext:
+            {{- toYaml .Values.memcachedExporter.containerSecurityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.memcachedExporter.resources | nindent 12 }}
+        {{- end }}
+        {{- if .Values.memcachedChunks.extraContainers }}
+        {{- toYaml .Values.memcachedChunks.extraContainers | nindent 8}}
+        {{- end }}
+      {{- with .Values.memcachedChunks.affinity }}
+      affinity:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.memcachedChunks.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.memcachedChunks.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if .Values.memcachedChunks.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- with .Values.memcachedChunks.persistence.storageClass }}
+        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.memcachedChunks.persistence.size | quote }}
+  {{- end }}
+{{- end }}

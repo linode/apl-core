@@ -1,9 +1,9 @@
-{{- if .Values.daemonset.enabled -}}
+{{- if .Values.daemonset.enabled }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: {{ include "promtail.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "promtail.namespaceName" . }}
   labels:
     {{- include "promtail.labels" . | nindent 4 }}
   {{- with .Values.annotations }}
@@ -17,5 +17,5 @@ spec:
   updateStrategy:
     {{- toYaml .Values.updateStrategy | nindent 4 }}
   template:
-    {{- include "promtail.podTemplate" . -}}
-{{- end -}}
+    {{- include "promtail.podTemplate" . | nindent 4 }}
+{{- end }}

@@ -1,14 +1,92 @@
 apps:
     loki:
         enabled: true
-        persistence:
-            size: 20Gi
         retention:
             duration: 24h
             period: 24h
         v11StartDate: '2021-05-13'
         storage:
-            storageType: azure
-            azure:
-                account_name: account_name
-                container_name: container_name
+            type: minioLocal
+            # azure:
+            #     accountName: account_name
+            #     containerName: container_name
+            #     accountKey: shshsheyeywywiqwioqw
+        autoscaling:
+            ingester:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            gateway:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            querier:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            distributor:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            queryFrontend:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+        resources:
+            compactor:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            ingester:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            gateway:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            querier:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            distributor:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            queryFrontend:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+        persistence:
+            ingester:
+                size: 20Gi
+            querier:
+                size: 10Gi
