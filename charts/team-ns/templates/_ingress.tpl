@@ -96,9 +96,6 @@ metadata:
           {{- end }}
         {{- end }}
       {{- end }}
-      {{- if and (hasKey $v.cluster "entrypoint") $internetFacing }}
-    external-dns.alpha.kubernetes.io/target: {{ $v.cluster.entrypoint }}
-      {{- end }}
       {{- if $.isApps }}
     nginx.ingress.kubernetes.io/upstream-vhost: $1.{{ $v.domain }}
         {{- if $.hasForward }}
@@ -114,6 +111,9 @@ metadata:
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
+      {{- end }}
+      {{- if and (hasKey $ingress "entrypoint") $internetFacing (ne $ingress.entrypoint "")}}
+    external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }} 
       {{- end }}
     # websocket upgrade snippet
     nginx.ingress.kubernetes.io/server-snippets: |
