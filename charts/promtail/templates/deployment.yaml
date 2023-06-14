@@ -1,9 +1,9 @@
-{{- if .Values.deployment.enabled -}}
+{{- if .Values.deployment.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "promtail.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "promtail.namespaceName" . }}
   labels:
     {{- include "promtail.labels" . | nindent 4 }}
   {{- with .Values.annotations }}
@@ -18,5 +18,5 @@ spec:
     matchLabels:
       {{- include "promtail.selectorLabels" . | nindent 6 }}
   template:
-    {{- include "promtail.podTemplate" . -}}
-{{- end -}}
+    {{- include "promtail.podTemplate" . | nindent 4 }}
+{{- end }}
