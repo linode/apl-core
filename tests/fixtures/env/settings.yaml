@@ -43,15 +43,19 @@ home:
         channel: mon-otomi
         channelCrit: mon-otomi-crit
 ingress:
+    platformClass:
+        entrypoint: ''
     classes:
         - className: private
           loadBalancerSubnet: subnet
           network: private
+          entrypoint: ''
         - className: net-a
           loadBalancerIP: 11.0.0.1
           loadBalancerRG: myrg
           network: public
           sourceIpAddressFiltering: 10.0.0.0/24
+          entrypoint: ''
 kms:
     sops:
         azure:

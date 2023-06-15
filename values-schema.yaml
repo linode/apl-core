@@ -278,9 +278,6 @@ definitions:
       domainSuffix:
         $ref: '#/definitions/domain'
         description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
-      entrypoint:
-        description: A public IP address that has a route to a private loadbalancer ip, allowing access to private clusters. (Provider "custom" only.)
-        type: string
       k8sContext:
         $ref: '#/definitions/k8sContext'
         description: Optional. Must be set for development mode and must point to an existing context in KUBECONFIG.
@@ -507,6 +504,9 @@ definitions:
   ingressClassParameters:
     type: object
     properties:
+      entrypoint:
+        description: A public IP address that has a route to a private loadbalancer ip, allowing access to private clusters. (Provider "custom" only.)
+        type: string
       network:
         title: Load balancer type
         type: string
