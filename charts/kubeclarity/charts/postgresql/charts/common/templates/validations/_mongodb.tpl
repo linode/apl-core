@@ -22,7 +22,7 @@ Params:
 
   {{- $authEnabled := include "common.utils.getValueFromKey" (dict "key" $valueKeyAuthEnabled "context" .context) -}}
 
-  {{- if and (not $existingSecret) (eq $enabled "true") (eq $authEnabled "true") -}}
+  {{- if and (or (not $existingSecret) (eq $existingSecret "\"\"")) (eq $enabled "true") (eq $authEnabled "true") -}}
     {{- $requiredPasswords := list -}}
 
     {{- $requiredRootPassword := dict "valueKey" $valueKeyRootPassword "secret" .secret "field" "mongodb-root-password" -}}
@@ -97,7 +97,7 @@ Auxiliary function to get the right value for architecture
 Usage:
 {{ include "common.mongodb.values.architecture" (dict "subchart" "true" "context" $) }}
 Params:
-  - subchart - Boolean - Optional. Whether MariaDB is used as subchart or not. Default: false
+  - subchart - Boolean - Optional. Whether MongoDB&reg; is used as subchart or not. Default: false
 */}}
 {{- define "common.mongodb.values.architecture" -}}
   {{- if .subchart -}}
