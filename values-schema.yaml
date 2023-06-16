@@ -1613,9 +1613,6 @@ properties:
             $ref: '#/definitions/resources'
           storage:
             $ref: '#/definitions/storageProvider'
-          enabled:
-            default: true
-            type: boolean
       cluster-autoscaler:
         additionalProperties: false
         properties:

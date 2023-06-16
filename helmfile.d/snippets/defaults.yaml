@@ -24,7 +24,6 @@ environments:
                 cpu: 200m
                 memory: 384Mi
           cnpg:
-            enabled: true
             storage:
               type: minioLocal
             resources:

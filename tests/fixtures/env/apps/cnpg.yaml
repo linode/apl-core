@@ -1,6 +1,5 @@
 apps:
     cnpg:
-        enabled: true
         resources:
             limits:
                 cpu: 1000m
@@ -10,6 +9,6 @@ apps:
                 memory: 200Mi
         storage:
             azure:
-                accountName: castest
+                accountName: name
                 containerName: database
             type: azure
