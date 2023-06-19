@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.21.5](https://github.com/redkubes/otomi-core/compare/v0.21.4...v0.21.5) (2023-06-19)
+
+
+### Bug Fixes
+
+* service account for generating kubeconfig ([#1147](https://github.com/redkubes/otomi-core/issues/1147)) ([0459aa4](https://github.com/redkubes/otomi-core/commit/0459aa4556d021622d5c7e93c169fa662e90f55c))
+
 ### [0.21.4](https://github.com/redkubes/otomi-core/compare/v0.21.3...v0.21.4) (2023-06-02)
 
 
