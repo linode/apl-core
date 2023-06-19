@@ -1,0 +1,18 @@
+{{- $v := .Values }}
+{{- if $v.dashboards}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: team-{{ $v.teamId }}-custom-dashboards
+  labels:
+    dashboard-provider: custom-dashboards
+    custom_label: custom-dashboards
+    grafana_dashboard: '1'
+data:
+  {{- range $v.dashboards}}
+  {{ .name }}.json: |-
+  {{- .file | nindent 4 }}
+  {{- end }}
+{{- end }}
+

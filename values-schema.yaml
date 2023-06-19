@@ -1217,6 +1217,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
+      dashboards:
+        type: array
+        items:
+          $ref: '#/definitions/dashboard'
       projects:
         type: array
         items:
@@ -1372,6 +1376,19 @@ definitions:
     required:
       - name
       - url
+
+  dashboard:
+    type: object
+    description: Define location of the application's manifests or chart
+    properties:
+      name:
+        $ref: '#/definitions/wordCharacterPattern'
+      file:
+        description: URL to either Helm or Git repository
+        $ref: '#/definitions/files'
+    required:
+      - name
+      - file
 
 properties:
   alerts:
