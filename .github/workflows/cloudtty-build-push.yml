@@ -1,0 +1,55 @@
+name: CloudTTY Build and Versioning
+
+on:
+  push:
+    branches:
+      - 'ani/feat/cloudshell'
+
+env:
+  CACHE_REGISTRY: ghcr.io
+  CACHE_REPO: redkubes/otomi-core
+  REPO: otomi/core
+  GIT_USER: redkubesbot
+
+jobs:
+  build-and-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-docker@v1
+
+      - name: Determine version
+        id: determine-version
+        run: |
+          if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MAJOR\]"; then
+            # If a "[MAJOR]" commit is found, increment the major version
+            echo "VERSION=$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$1 = $1 + 1; $2 = 0; $3 = 0} {print $0}')"
+          else
+            if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MINOR\]"; then
+              # If a "[MINOR]" commit is found, increment the minor version
+              echo "VERSION=$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$2 = $2 + 1; $3 = 0} {print $0}')"
+            else
+              # No special tag found, increment the patch version
+              echo "VERSION=$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')"
+            fi
+          fi
+      - name: Build and tag Docker image
+        run: |
+          docker build -t your-docker-image .
+          docker tag your-docker-image your-docker-image:${{ env.VERSION }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ${{ env.CACHE_REGISTRY }}
+          username: ${{ env.GIT_USER }}
+          password: '${{ secrets.NPM_TOKEN }}'
+
+      - name: Push Docker image
+        run: |
+          docker push your-docker-image:${{ env.VERSION }}
+          docker push your-docker-image:latest
