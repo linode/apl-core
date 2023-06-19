@@ -1379,7 +1379,7 @@ definitions:
 
   dashboard:
     type: object
-    description: Define location of the application's manifests or chart
+    description: Make a custom Team Grafana dashboard persistent in otomi-values
     properties:
       name:
         $ref: '#/definitions/wordCharacterPattern'
