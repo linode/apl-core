@@ -5,7 +5,7 @@ import { isEmpty } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { hfValues } from 'src/common/hf'
 import { getDeploymentState } from 'src/common/k8s'
-import { getFilename, guccify, loadYaml, rootDir, semverCompare } from 'src/common/utils'
+import { getFilename, loadYaml, rootDir, semverCompare } from 'src/common/utils'
 import { getCurrentVersion } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -41,17 +41,8 @@ export function filterUpgrades(version: string, upgrades: Upgrades): Upgrades {
   return upgrades.filter((c) => c.version === 'dev' || semverCompare(version, c.version) === -1)
 }
 
-async function execute(d: typeof console, dryRun: boolean, operations: string[], values: Record<string, any>) {
-  for (const o of operations) {
-    const matches: string[] = []
-    const opStr = o.replace(/(\$\([^)]*\)|`[^`]*`)/g, (_, token: string) => {
-      matches.push(token)
-      return `T${matches.length - 1}X`
-    })
-    const op = (await guccify(opStr, values))
-      .replaceAll(/do\W?\n/g, 'do ')
-      .replaceAll('\n', ';')
-      .replaceAll(/T([0-9]+)X/g, (match, token) => matches[token])
+async function execute(d: typeof console, dryRun: boolean, operations: string[]) {
+  for (const op of operations) {
     d[dryRun ? 'log' : 'info'](`operation: ${op}`)
     if (dryRun) return
     const res = await $`${op}`
@@ -87,14 +78,14 @@ export const upgrade = async ({ dryRun = false, release, when }: Arguments): Pro
         // before everything
         if (c[when]) {
           d.info(`Upgrade records detected for version ${c.version}`)
-          await execute(d, dryRun, c[when] as string[], values)
+          await execute(d, dryRun, c[when] as string[])
         }
       } else if (c.releases?.[release]) {
         // just in time before a release gets synced
         const r = c.releases[release]
         if (r[when]) {
           d.info(`Upgrade records detected for version ${c.version}, release: ${release}`)
-          await execute(d, dryRun, r[when] as string[], values)
+          await execute(d, dryRun, r[when] as string[])
         }
       }
     }
