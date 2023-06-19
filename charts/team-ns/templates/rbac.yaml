@@ -68,7 +68,6 @@ subjects:
 - kind: ServiceAccount
   name: sa-team-{{ $v.teamId }}
   namespace: {{ $ns }}
-
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -89,7 +88,6 @@ subjects:
 - kind: ServiceAccount
   name: kubectl
   namespace: {{ $ns }}
-
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -104,3 +102,4 @@ rules:
       - '*'
     verbs:
       - '*'
+---
