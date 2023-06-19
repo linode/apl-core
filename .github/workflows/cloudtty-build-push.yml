@@ -39,7 +39,8 @@ jobs:
           fi
       - name: Build and tag Docker image
         run: |
-          docker build -t $REPO .
+          cd 
+          docker build -t $REPO -f tools/Dockerfile-tty
           docker tag $REPO $REPO:${{ env.VERSION }}
 
       - name: Login to Docker Hub
