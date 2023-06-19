@@ -74,6 +74,8 @@ kind: ServiceAccount
 metadata:
   name: kubectl
 automountServiceAccountToken: false
+secrets:
+- name: kubectl-token
 ---
 apiVersion: v1
 kind: Secret
