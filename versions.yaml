@@ -1,4 +1,4 @@
-api: kubeclarity
-console: kubeclarity-logo
+api: main
+console: main
 tasks: main
 tools: 1.4.25
