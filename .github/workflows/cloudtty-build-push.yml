@@ -3,7 +3,7 @@ name: CloudTTY Build and Versioning
 on:
   push:
     branches:
-      - 'main'
+      - 'ani/feat/cloudshell'
 
 env:
   CACHE_REGISTRY: ghcr.io
