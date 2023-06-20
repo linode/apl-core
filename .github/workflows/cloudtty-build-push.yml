@@ -30,8 +30,8 @@ jobs:
           if ! curl -s -L --fail "https://hub.docker.com/v2/repositories/${{ env.NAMESPACE }}/${{ env.REPO }}"; then echo "NEW_VERSION=0.1.0" >> $GITHUB_ENV && exit 0; fi
 
           # Get data for latest 1000 versions of the image and filter the ones matching our semver pattern. Set the OLD_VERSION environment variable to the latest version.
-          # The grep command matches the strings following this pattern: starts with a 'v' letter, an up to 2 digits number, a dot, an up to 3 digit number, a dot, an up to 4 digits number
-          echo "OLD_VERSION=$(curl -s -L --fail "https://hub.docker.com/v2/repositories/${{ env.NAMESPACE }}/${{ env.REPO }}/tags/?page_size=10000" | jq '.results[].name' -r | grep -E '^v[0-9]{0,2}.[0-9]{0,3}.[0-9]{0,4}$' | head -n 1)" >> $GITHUB_ENV
+          # The grep command matches the strings following this pattern: starts with an up to 2 digits number, a dot, an up to 3 digit number, a dot, ends with an up to 4 digits number
+          echo "OLD_VERSION=$(curl -s -L --fail "https://hub.docker.com/v2/repositories/${{ env.NAMESPACE }}/${{ env.REPO }}/tags/?page_size=10000" | jq '.results[].name' -r | grep -E '^[0-9]{0,2}.[0-9]{0,3}.[0-9]{0,4}$' | head -n 1)" >> $GITHUB_ENV
 
           if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MAJOR\]"; then
             # If a "[MAJOR]" commit is found, increment the major version by one and reset the minor and patch version to '0'.
