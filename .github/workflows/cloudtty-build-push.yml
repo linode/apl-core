@@ -46,6 +46,7 @@ jobs:
           else
             # No special tag found, increment only the patch version by one.
             echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')" >> $GITHUB_ENV
+            echo $NEW_VERSION
           fi
 
       - name: Build and tag Docker image
