@@ -52,11 +52,13 @@ jobs:
           docker tag ${{ env.NAMESPACE }}/${{ env.REPO }} ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
 
       - name: Login to GitHub Container Registry
+        if: ${{ env.NEW_VERSION != null }}
         uses: docker/login-action@v2.1.0
         with:
           username: 'otomi'
           password: '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
 
       - name: Push Docker image
+        if: ${{ env.NEW_VERSION != null }}
         run: |
           docker push ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
