@@ -27,14 +27,14 @@ jobs:
         run: |
           if git log --format=%B -n 1  | grep -q "\[MAJOR\]"; then
             # If a "[MAJOR]" commit is found, increment the major version
-            echo "$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$1 = $1 + 1; $2 = 0; $3 = 0} {print $0} || echo no major change')"
+            echo "VERSION=$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$1 = $1 + 1; $2 = 0; $3 = 0} {print $0} || echo no major change')"
           else
           if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MINOR\]"; then
               # If a "[MINOR]" commit is found, increment the minor version
-              echo "$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$2 = $2 + 1; $3 = 0} {print $0}|| echo no minor change')"
+              echo "VERSION=$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$2 = $2 + 1; $3 = 0} {print $0}|| echo no minor change')"
             else
               # No special tag found, increment the patch version
-              echo "$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')"
+              echo "VERSION=$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')"
             fi
           fi
       - name: Build and tag Docker image
