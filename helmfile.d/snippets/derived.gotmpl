@@ -61,7 +61,9 @@ environments:
           oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
           oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
           isInitialDeployment: {{ empty $otomiVersion }}
-          {{- if or (not ($v | get "status.helm.harbor/harbor" nil)) ($v | get "status.helm.harbor/harbor-database" nil)}}
+          {{- if $v | get "status.helm.harbor/harbor-database-import" false }}
+          harborImportDatabase: true
+          {{- else if or (not ($v | get "status.helm.harbor/harbor" false)) ($v | get "status.helm.harbor/harbor-database" false)}}
           harborImportDatabase: false
           {{- else }}
           harborImportDatabase: true

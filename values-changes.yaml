@@ -71,5 +71,3 @@ changes:
   - version: 10
     additions:
       - apps.harbor.database.type: internal
-    fileAdditions:
-      - env/apps/cnpg.yaml
