@@ -3,7 +3,7 @@ name: CloudTTY Build and Versioning
 on:
   push:
     branches:
-      - 'ani/feat/cloudshell'
+      - 'main'
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -61,4 +61,5 @@ jobs:
       - name: Push Docker image
         run: |
           docker push $REPO:${{ env.NEW_VERSION }}
+          docker tag $REPO:${{ env.NEW_VERSION }} $REPO:latest
           docker push $REPO:latest
