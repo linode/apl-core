@@ -56,7 +56,7 @@ jobs:
         with:
           registry: ${{ env.CACHE_REGISTRY }}
           username: ${{ env.GIT_USER }}
-          password: '${{ secrets.NPM_TOKEN }}'
+          password: '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
 
       - name: Push Docker image
         run: |
