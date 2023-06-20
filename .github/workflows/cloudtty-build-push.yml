@@ -10,7 +10,7 @@ env:
   CACHE_NAMESPACE: redkubes
   CACHE_REPO: otomi-core
   NAMESPACE: otomi
-  REPO: core
+  REPO: ${{ env.CACHE_NAMESPACE }}/${{ env.CACHE_REPO }}
   GIT_USER: redkubesbot
 
 jobs:
@@ -31,11 +31,11 @@ jobs:
           set -e
 
           # Set the first image version to '0.1.0' if the repo does  not exists.
-          if ! curl -s -L --fail "https://hub.docker.com/v2/repositories/${REPO}"; then echo "NEW_VERSION=0.1.0" >> $GITHUB_ENV && exit 0; fi
+          if ! curl -s -L --fail "https://hub.docker.com/v2/repositories/${{ env.NAMESPACE }}/${{ env.REPO }}"; then echo "NEW_VERSION=0.1.0" >> $GITHUB_ENV && exit 0; fi
 
           # Get data for latest 1000 versions of the image and filter the ones matching our semver pattern. Set the OLD_VERSION environment variable to the latest version.
           # The grep command matches the strings following this pattern: starts with a 'v' letter, an up to 2 digits number, a dot, an up to 3 digit number, a dot, an up to 4 digits number
-          echo "OLD_VERSION=$(curl -s -L --fail "https://hub.docker.com/v2/repositories/${REPO}/tags/?page_size=10000" | jq '.results[].name' -r | grep -E '^v[0-9]{0,2}.[0-9]{0,3}.[0-9]{0,4}$' | head -n 1)" >> $GITHUB_ENV
+          echo "OLD_VERSION=$(curl -s -L --fail "https://hub.docker.com/v2/repositories/${{ env.NAMESPACE }}/${{ env.REPO }}/tags/?page_size=10000" | jq '.results[].name' -r | grep -E '^v[0-9]{0,2}.[0-9]{0,3}.[0-9]{0,4}$' | head -n 1)" >> $GITHUB_ENV
 
           if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MAJOR\]"; then
             # If a "[MAJOR]" commit is found, increment the major version by one and reset the minor and patch version to '0'.
