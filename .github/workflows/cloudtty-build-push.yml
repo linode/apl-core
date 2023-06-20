@@ -42,10 +42,11 @@ jobs:
           elif git log  --name-only --oneline  | sed -n '2 p' | grep -q "tools\/Dockerfile-tty"; then
             # No special tag found, but changes were made to the tools/Dockerfile-tty so will upgrade the patch version.
             echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')" >> $GITHUB_ENV
-            echo $NEW_VERSION
           fi
+          exit 0
 
       - name: Build and tag Docker image
+        if: ${{ env.NEW_VERSION != null }}
         run: |
           docker build -t ${{ env.NAMESPACE }}/${{ env.REPO }} -f tools/Dockerfile-tty .
           docker tag ${{ env.NAMESPACE }}/${{ env.REPO }} ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
