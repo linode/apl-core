@@ -29,7 +29,7 @@ jobs:
           set -e
 
           # If the repo does  not exists it will set the first image version to '0.1.0'.
-          if ! curl -s -L --fail "https://hub.docker.com/v2/repositories/${REPO}"; then echo "NEW_VERSION=0.1.0" >> $GITHUB_ENV && exit 0 fi
+          if ! curl -s -L --fail "https://hub.docker.com/v2/repositories/${REPO}"; then echo "NEW_VERSION=0.1.0" >> $GITHUB_ENV && exit 0; fi
 
           # Get data for latest 1000 versions of the image and filter the ones matching our semver pattern and save the most recent one to as OLD_VERSION
           # The grep extended regrex matches the strings following this pattern: starts with a 'v' letter, an up to 2 digits number, a dot, an up to 3 digit number, a dot, an up to 4 digits number
