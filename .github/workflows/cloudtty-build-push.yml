@@ -10,7 +10,7 @@ env:
   CACHE_NAMESPACE: redkubes
   CACHE_REPO: otomi-core
   NAMESPACE: otomi
-  REPO: ${{ env.CACHE_NAMESPACE }}/${{ env.CACHE_REPO }}
+  REPO: core
   GIT_USER: redkubesbot
 
 jobs:
