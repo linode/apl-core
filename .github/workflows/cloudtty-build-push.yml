@@ -8,7 +8,7 @@ on:
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: redkubes/otomi-tty
-  REPO: otomi/cloudtty
+  REPO: otomi/otomi-tty
   GIT_USER: redkubesbot
 
 jobs:
@@ -25,19 +25,19 @@ jobs:
       - name: Determine version
         id: determine-version
         run: |
-          # if git log --format=%B -n 1  | grep -q "\[MAJOR\]"; then
-          #   # If a "[MAJOR]" commit is found, increment the major version
-          #   echo "VERSION=$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$1 = $1 + 1; $2 = 0; $3 = 0} {print $0} || echo no major change')"
-          # else
-          # if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MINOR\]"; then
-          #     # If a "[MINOR]" commit is found, increment the minor version
-          #     echo "VERSION=$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$2 = $2 + 1; $3 = 0} {print $0}|| echo no minor change')"
-          #   else
-          #     # No special tag found, increment the patch version
-          #     echo "VERSION=$(git describe --abbrev=0 --tags | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')"
-          #   fi
-          # fi
-          echo "VERSION='0.1.0'" >> $GITHUB_ENV
+
+          #echo "OLD_VERSION=$(curl -s -L --fail "https://hub.docker.com/v2/repositories/${REPO}/tags/?page_size=10000" | jq '.results | .[] | .name' -r| grep -E '^v[0-9]{0,2}.[0-9]{0,3}.[0-9]{0,4}$' | head -n 1)" >> $GITHUB_ENV
+          OLD_VERSION='v0.1.0'
+          if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MAJOR\]"; then
+            # If a "[MAJOR]" commit is found, increment the major version
+            echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$1 = $1 + 1; $2 = 0; $3 = 0} {print $0}')" >> $GITHUB_ENV
+          elif git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MINOR\]"; then
+              # If a "[MINOR]" commit is found, increment the minor version
+              echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$2 = $2 + 1; $3 = 0} {print $0}')" >> $GITHUB_ENV
+          else
+              # No special tag found, increment the patch version
+              echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')" >> $GITHUB_ENV
+          fi
       - name: Build and tag Docker image
         run: |
           docker build -t $REPO -f tools/Dockerfile-tty .
