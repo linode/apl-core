@@ -3,7 +3,7 @@ name: CloudTTY Build and Versioning
 on:
   push:
     branches:
-      - 'ani/feat/cloudshell'
+      - 'main'
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -26,18 +26,26 @@ jobs:
         id: determine-version
         run: |
 
-          #echo "OLD_VERSION=$(curl -s -L --fail "https://hub.docker.com/v2/repositories/${REPO}/tags/?page_size=10000" | jq '.results | .[] | .name' -r| grep -E '^v[0-9]{0,2}.[0-9]{0,3}.[0-9]{0,4}$' | head -n 1)" >> $GITHUB_ENV
-          OLD_VERSION='v0.1.0'
+          set -e
+
+          # If the repo does  not exists it will set the first image version to '0.1.0'.
+          if ! curl -s -L --fail "https://hub.docker.com/v2/repositories/${REPO}"; then echo "NEW_VERSION=0.1.0" >> $GITHUB_ENV && exit 0 fi
+
+          # Get data for latest 1000 versions of the image and filter the ones matching our semver pattern and save the most recent one to as OLD_VERSION
+          # The grep extended regrex matches the strings following this pattern: starts with a 'v' letter, an up to 2 digits number, a dot, an up to 3 digit number, a dot, an up to 4 digits number
+          echo "OLD_VERSION=$(curl -s -L --fail "https://hub.docker.com/v2/repositories/${REPO}/tags/?page_size=10000" | jq '.results[].name' -r | grep -E '^v[0-9]{0,2}.[0-9]{0,3}.[0-9]{0,4}$' | head -n 1)" >> $GITHUB_ENV
+
           if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MAJOR\]"; then
-            # If a "[MAJOR]" commit is found, increment the major version
+            # If a "[MAJOR]" commit is found, increment the major version by one and reset the minor and patch version to '0'.
             echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$1 = $1 + 1; $2 = 0; $3 = 0} {print $0}')" >> $GITHUB_ENV
           elif git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[MINOR\]"; then
-              # If a "[MINOR]" commit is found, increment the minor version
-              echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$2 = $2 + 1; $3 = 0} {print $0}')" >> $GITHUB_ENV
+            # If a "[MINOR]" commit is found, increment the minor version by one and reset the patch version to '0'.
+            echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$2 = $2 + 1; $3 = 0} {print $0}')" >> $GITHUB_ENV
           else
-              # No special tag found, increment the patch version
-              echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')" >> $GITHUB_ENV
+            # No special tag found, increment only the patch version by one.
+            echo "NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')" >> $GITHUB_ENV
           fi
+
       - name: Build and tag Docker image
         run: |
           docker build -t $REPO -f tools/Dockerfile-tty .
