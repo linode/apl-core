@@ -7,8 +7,10 @@ on:
 
 env:
   CACHE_REGISTRY: ghcr.io
-  CACHE_REPO: redkubes/otomi-tty
-  REPO: otomi/otomi-tty
+  CACHE_NAMESPACE: redkubes
+  CACHE_REPO: otomi-core
+  NAMESPACE: otomi
+  REPO: core
   GIT_USER: redkubesbot
 
 jobs:
@@ -48,8 +50,8 @@ jobs:
 
       - name: Build and tag Docker image
         run: |
-          docker build -t ${{ env.CACHE_REPO }} -f tools/Dockerfile-tty .
-          docker tag ${{ env.CACHE_REPO }} ${{ env.CACHE_REPO }}:${{ env.NEW_VERSION }}
+          docker build -t ${{ env.CACHE_NAMESPACE }}/${{ env.CACHE_REPO }} -f tools/Dockerfile-tty .
+          docker tag ${{ env.CACHE_NAMESPACE }}/${{ env.CACHE_REPO }} ${{ env.CACHE_NAMESPACE }}/${{ env.CACHE_REPO }}:${{ env.NEW_VERSION }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2.1.0
@@ -58,11 +60,16 @@ jobs:
           username: ${{ env.GIT_USER }}
           password: '${{ secrets.GITHUB_TOKEN }}'
 
-      - name: Push Docker image (GCR)
+      - name: Push Docker image (GHCR)
         run: |
-          docker push ${{ env.CACHE_REPO }}:${{ env.NEW_VERSION }}
-          docker tag ${{ env.CACHE_REPO }}:${{ env.NEW_VERSION }} ${{ env.CACHE_REPO }}:latest
-          docker push ${{ env.CACHE_REPO }}:latest
+          docker push ${{ env.CACHE_NAMESPACE }}/${{ env.CACHE_REPO }}:${{ env.NEW_VERSION }}
+          docker tag ${{ env.CACHE_NAMESPACE }}/${{ env.CACHE_REPO }}:${{ env.NEW_VERSION }} ${{ env.CACHE_NAMESPACE }}/${{ env.CACHE_REPO }}:latest
+          docker push ${{ env.CACHE_NAMESPACE }}/${{ env.CACHE_REPO }}:latest
+
+      # - name: Pull from ghcr and re-tag
+      #   run: |
+      #     docker pull
+      #     docker tag
 
       # - name: Login to Docker Hub
       #   uses: docker/login-action@v2.1.0
