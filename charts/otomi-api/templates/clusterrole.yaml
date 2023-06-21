@@ -1,18 +1,4 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: otomi-api
-  labels:
-    {{- include "otomi-api.labels" . | nindent 4 }}
-rules:
-- apiGroups:
-    - "*"
-  resources:
-    - "*"
-  verbs: 
-    - "*"
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ template "otomi-api.serviceAccountName" . }}
@@ -21,7 +7,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: otomi-api
+  name: cluster-admin
 subjects:
 - kind: ServiceAccount
   name: {{ template "otomi-api.serviceAccountName" . }}
