@@ -40,8 +40,56 @@ spec:
   {{- toYaml . | nindent 2 }}
   {{- end }}
 
-  {{- with .Values.clusterBackup }}
-  {{- toYaml . | nindent 2 }}
+  {{- if eq .Values.backup.type "minioLocal" }}
+  backup:
+    retentionPolicy: {{ .Values.backup.retentionPolicy }}
+    barmanObjectStore:
+      destinationPath: s3://database
+      endpointURL: "http://minio.minio.svc.cluster.local:9000"
+      s3Credentials:
+        accessKeyId:
+          name: minio-creds
+          key: MINIO_ACCESS_KEY
+        secretAccessKey:
+          name: minio-creds
+          key: MINIO_SECRET_KEY
+  {{- end }}
+  {{- if eq .Values.backup.type "azure" }}
+  backup:
+    retentionPolicy: {{ .Values.backup.retentionPolicy }}
+    barmanObjectStore:
+      destinationPath: "https://{{ .Values.backup.azure.accountName }}.blob.core.windows.net/{{ .Values.backup.azure.containerName }}"
+      azureCredentials:
+        storageAccount:
+          name: azure-creds
+          key: AZURE_STORAGE_ACCOUNT
+        storageKey:
+          name: azure-creds
+          key: AZURE_STORAGE_KEY
+  {{- end }}
+  {{- if eq .Values.backup.type "s3" }}
+  backup:
+  retentionPolicy: {{ .Values.backup.retentionPolicy }}
+    barmanObjectStore:
+      destinationPath: s3://{{ .Values.backup.s3.bucket }}
+      endpointURL: {{ .Values.backup.endpointURL }}
+      s3Credentials:
+        accessKeyId:
+          name: s3-creds
+          key: S3_STORAGE_ACCOUNT
+        secretAccessKey:
+          name: s3-creds
+          key: S3_STORAGE_KEY
+  {{- end }}
+  {{- if eq .Values.backup.type "gcs" }}
+  backup:
+    retentionPolicy: {{ .Values.backup.retentionPolicy }}
+    barmanObjectStore:
+      destinationPath: "gs://{{ .Values.backup.gcs.bucket }}"
+      googleCredentials:
+        applicationCredentials:
+          name: gcs-creds
+          key: gcsCredentials
   {{- end }}
 
   {{- with .Values.clusterSpec }}

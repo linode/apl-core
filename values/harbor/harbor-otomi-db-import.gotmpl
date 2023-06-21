@@ -12,74 +12,23 @@ storage:
 backup:
   enabled: {{ $b.enabled }}
   schedule: {{ $b.schedule }}
-
-clusterBackup:
-{{- if eq $sp.type "minioLocal" }}
-  backup:
-    retentionPolicy: {{ $b.retentionPolicy }}
-    barmanObjectStore:
-      destinationPath: s3://database
-      endpointURL: "http://minio.minio.svc.cluster.local:9000"
-      s3Credentials:
-        accessKeyId:
-          name: minio-creds
-          key: MINIO_ACCESS_KEY
-        secretAccessKey:
-          name: minio-creds
-          key: MINIO_SECRET_KEY
-{{- end }}
+  retentionPolicy: {{ $b.retentionPolicy }}
+  type:  {{ $sp.type }}
 {{- if eq $sp.type "azure" }}
-  backup:
-    retentionPolicy: {{ $b.retentionPolicy }}
-    barmanObjectStore:
-      destinationPath: "https://{{ $sp.azure.accountName }}.blob.core.windows.net/{{ $sp.azure.containerName }}"
-      azureCredentials:
-        storageAccount:
-          name: azure-creds
-          key: AZURE_STORAGE_ACCOUNT
-        storageKey:
-          name: azure-creds
-          key: AZURE_STORAGE_KEY
+  azure:
+    storageAccount: {{ $sp.azure.accountName }}
+    container: {{ $sp.azure.containerName }}
 {{- end }}
 {{- if eq $sp.type "s3" }}
-  backup:
-  retentionPolicy: {{ $b.retentionPolicy }}
-    barmanObjectStore:
-      destinationPath: s3://{{ $sp.s3.bucket }}
-      endpointURL: {{ $sp.s3.s3Url }}
-      s3Credentials:
-        accessKeyId:
-          name: s3-creds
-          key: S3_STORAGE_ACCOUNT
-        secretAccessKey:
-          name: s3-creds
-          key: S3_STORAGE_KEY
+  s3:
+    endpointURL: {{ $sp.s3.s3Url }}
+    bucket: {{ $sp.s3.bucket }}
 {{- end }}
 {{- if eq $sp.type "gcs" }}
-  backup:
-    retentionPolicy: {{ $b.retentionPolicy }}
-    barmanObjectStore:
-      destinationPath: "gs://{{ $sp.gcs.bucket }}"
-      googleCredentials:
-        applicationCredentials:
-          name: gcs-creds
-          key: gcsCredentials
+  gcs: 
+    bucket: {{ $sp.gcs.bucket }}
 {{- end }}
 {{- end }}
-
-resources:
-  {{- with $h | get "resources.database" nil }}
-  {{- toYaml . | nindent 6 }}
-  {{- else }}
-  limits:
-    cpu: 100m
-    memory: 512Mi
-  requests:
-    cpu: 50m
-    memory: 256Mi
-  {{- end }}
-
-
 
 clusterSpec:
   bootstrap:
@@ -102,3 +51,15 @@ clusterSpec:
     password:
       name: {{ $h.database.name }}
       key: POSTGRES_PASSWORD
+
+resources:
+  {{- with $h | get "resources.database" nil }}
+  {{- toYaml . | nindent 6 }}
+  {{- else }}
+  limits:
+    cpu: 100m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  {{- end }}

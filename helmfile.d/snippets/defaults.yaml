@@ -193,7 +193,7 @@ environments:
             database:
               size: '2Gi'
               type: external
-              name: harbor-database
+              name: harbor-otomi-db
               user: harbor
               coreDatabase: registry
             resources:
