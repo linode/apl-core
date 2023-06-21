@@ -65,3 +65,7 @@ crds:
       memory: 64Mi
 
 otomiVersions: {{- toYaml .Values.versions | nindent 2 }}
+
+#Disable for k8s 1.25
+psp:
+  enabled: false
