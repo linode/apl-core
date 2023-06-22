@@ -7,13 +7,13 @@
 query:
   enabled: true
   replicaCount: {{ $vl.query.replicaCount }}
+  service:
+    additionalHeadless: true
   dnsDiscovery:
     enabled: false
   stores:
     - "thanos-storegateway:10901"
-    {{- range $i := until $vl.receiver.replicaCount }}
-    - "thanos-receive-{{ $i }}.thanos-receive-headless.monitoring.svc.cluster.local:10901"
-    {{- end }}
+    - dnssrv+_grpc._tcp.thanos-receive-headless.thanos.svc
   resources: {{- $vl.resources.query | toYaml | nindent 4 }}
   extraFlags:
     - "--query.auto-downsampling"

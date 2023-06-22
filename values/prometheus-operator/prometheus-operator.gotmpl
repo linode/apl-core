@@ -131,7 +131,7 @@ prometheus:
         insecureSkipVerify: {{ $p.remoteWrite.rwConfig.insecureSkipVerify }}
       {{- if $p.remoteWrite.otomiThanos }}
       headers:
-        cluster: "{{ $v.cluster.domainSuffix }}"
+        THANOS-TENANT: "{{ $v.cluster.domainSuffix }}"
       {{- end }}
       {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
       {{- . | nindent 6 }}
