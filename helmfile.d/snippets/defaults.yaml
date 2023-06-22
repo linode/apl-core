@@ -191,8 +191,8 @@ environments:
               credentials:
                 username: otomi-admin
             database:
-              size: '2Gi'
               type: external
+              size: '2Gi'
               name: harbor-otomi-db
               user: harbor
               coreDatabase: registry
