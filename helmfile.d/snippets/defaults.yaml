@@ -196,6 +196,7 @@ environments:
               name: harbor-otomi-db
               user: harbor
               coreDatabase: registry
+              importHarborDb: false
             resources:
               trivy:
                 requests:

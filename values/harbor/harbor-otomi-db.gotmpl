@@ -30,6 +30,30 @@ backup:
 {{- end }}
 {{- end }}
 
+
+{{- if $h.database.importHarborDb }}
+clusterSpec:
+  bootstrap:
+    initdb:
+      database: {{ $h.database.coreDatabase }}
+      owner: {{ $h.database.user }}
+      import:
+        type: microservice
+        databases:
+          - {{ $h.database.coreDatabase }}
+        source:
+          externalCluster: harbor-database
+  externalClusters:
+  - name: harbor-database
+    connectionParameters:
+      host: harbor-database.harbor.svc.cluster.local
+      user: postgres
+      dbname: {{ $h.database.coreDatabase }}
+      sslmode: disable
+    password:
+      name: harbor-database
+      key: POSTGRES_PASSWORD
+{{- else }}
 clusterSpec:  
   bootstrap:
     initdb:
@@ -37,6 +61,8 @@ clusterSpec:
       owner: {{ $h.database.user }}
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
+{{- end }}
+
 
 resources:
   {{- with $h | get "resources.database" nil }}
