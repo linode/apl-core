@@ -23,7 +23,19 @@ data:
     {
         "annotations": {
             "list": [
-
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "${datasource}"
+                },
+                "enable": true,
+                "expr": "changes(kube_pod_container_status_restarts_total{pod=\"$pod\"}[$__interval]) > 0",
+                "iconColor": "red",
+                "name": "Container restart",
+                "step": "",
+                "textFormat": "Container \"{{`{{ container }}`}}\" restarted",
+                "titleFormat": "Container restarted"
+              }
             ]
         },
         "editable": true,
@@ -49,7 +61,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 1,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -183,7 +195,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 2,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -291,7 +303,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 3,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -567,7 +579,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 4,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -703,7 +715,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 5,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1063,7 +1075,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 6,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1152,7 +1164,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 7,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1253,7 +1265,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 8,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1342,7 +1354,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 9,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1443,7 +1455,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 10,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1532,7 +1544,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 11,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1634,7 +1646,7 @@ data:
                         "decimals": -1,
                         "fill": 10,
                         "id": 12,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1665,7 +1677,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "ceil(sum by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))",
+                                "expr": "ceil(sum by(pod) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "Reads",
@@ -1673,7 +1685,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "ceil(sum by(pod) (rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))",
+                                "expr": "ceil(sum by(pod) (rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\",namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval])))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "Writes",
@@ -1731,7 +1743,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 13,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1762,7 +1774,7 @@ data:
                         "steppedLine": false,
                         "targets": [
                             {
-                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval]))",
+                                "expr": "sum by(pod) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "Reads",
@@ -1770,7 +1782,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(pod) (rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval]))",
+                                "expr": "sum by(pod) (rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=~\"$pod\"}[$__rate_interval]))",
                                 "format": "time_series",
                                 "intervalFactor": 2,
                                 "legendFormat": "Writes",
@@ -1841,7 +1853,7 @@ data:
                         "decimals": -1,
                         "fill": 10,
                         "id": 14,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1930,7 +1942,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 10,
                         "id": 15,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -2031,7 +2043,7 @@ data:
                         "datasource": "$datasource",
                         "fill": 1,
                         "id": 16,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -2222,7 +2234,7 @@ data:
                         ],
                         "targets": [
                             {
-                                "expr": "sum by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
+                                "expr": "sum by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -2231,7 +2243,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
+                                "expr": "sum by(container) (rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\",device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -2240,7 +2252,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]) + rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
+                                "expr": "sum by(container) (rate(container_fs_reads_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]) + rate(container_fs_writes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -2249,7 +2261,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
+                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -2258,7 +2270,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
+                                "expr": "sum by(container) (rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,
@@ -2267,7 +2279,7 @@ data:
                                 "step": 10
                             },
                             {
-                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|dasd.+\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
+                                "expr": "sum by(container) (rate(container_fs_reads_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]) + rate(container_fs_writes_bytes_total{job=\"kubelet\", metrics_path=\"/metrics/cadvisor\", device=~\"(/dev/)?(mmcblk.p.+|nvme.+|rbd.+|sd.+|vd.+|xvd.+|dm-.+|md.+|dasd.+)\", container!=\"\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[$__rate_interval]))",
                                 "format": "table",
                                 "instant": true,
                                 "intervalFactor": 2,

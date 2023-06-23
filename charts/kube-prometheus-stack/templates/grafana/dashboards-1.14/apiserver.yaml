@@ -88,7 +88,7 @@ data:
 
                         },
                         "id": 3,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "rightSide": true
@@ -170,7 +170,7 @@ data:
 
                         },
                         "id": 4,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -289,7 +289,7 @@ data:
 
                         },
                         "id": 5,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "rightSide": true
@@ -370,7 +370,7 @@ data:
 
                         },
                         "id": 6,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -480,7 +480,7 @@ data:
 
                         },
                         "id": 7,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -575,7 +575,7 @@ data:
 
                         },
                         "id": 8,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -692,7 +692,7 @@ data:
 
                         },
                         "id": 9,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "rightSide": true
@@ -773,7 +773,7 @@ data:
 
                         },
                         "id": 10,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -883,7 +883,7 @@ data:
 
                         },
                         "id": 11,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -978,7 +978,7 @@ data:
 
                         },
                         "id": 12,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1085,7 +1085,7 @@ data:
 
                         },
                         "id": 13,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1179,7 +1179,7 @@ data:
 
                         },
                         "id": 14,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1273,7 +1273,7 @@ data:
 
                         },
                         "id": 15,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1380,7 +1380,7 @@ data:
 
                         },
                         "id": 16,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1474,7 +1474,7 @@ data:
 
                         },
                         "id": 17,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,
@@ -1568,7 +1568,7 @@ data:
 
                         },
                         "id": 18,
-                        "interval": "1m",
+                        "interval": "30s",
                         "legend": {
                             "alignAsTable": true,
                             "avg": false,

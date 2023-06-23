@@ -8,6 +8,7 @@ metadata:
     app: {{ template "kube-prometheus-stack.name" . }}-alertmanager
 {{ include "kube-prometheus-stack.labels" . | indent 4 }}
 spec:
+  {{- include "servicemonitor.scrapeLimits" .Values.alertmanager.serviceMonitor | nindent 2 }}
   selector:
     matchLabels:
       app: {{ template "kube-prometheus-stack.name" . }}-alertmanager
@@ -18,6 +19,7 @@ spec:
       - {{ printf "%s" (include "kube-prometheus-stack.namespace" .) | quote }}
   endpoints:
   - port: {{ .Values.alertmanager.alertmanagerSpec.portName }}
+    enableHttp2: {{ .Values.alertmanager.serviceMonitor.enableHttp2 }}
     {{- if .Values.alertmanager.serviceMonitor.interval }}
     interval: {{ .Values.alertmanager.serviceMonitor.interval }}
     {{- end }}

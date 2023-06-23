@@ -6,8 +6,12 @@ metadata:
   namespace: {{ template "kube-prometheus-stack.namespace" . }}
   labels:
     app: {{ template "kube-prometheus-stack.name" . }}-apiserver
+  {{- with .Values.kubeApiServer.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{ include "kube-prometheus-stack.labels" . | indent 4 }}
 spec:
+  {{- include "servicemonitor.scrapeLimits" .Values.kubeApiServer.serviceMonitor | nindent 2 }}
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
     {{- if .Values.kubeApiServer.serviceMonitor.interval }}
