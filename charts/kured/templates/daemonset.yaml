@@ -36,6 +36,7 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ template "kured.serviceAccountName" . }}
+      hostNetwork: {{ .Values.hostNetwork }}
       hostPID: true
       restartPolicy: Always
       {{- with .Values.image.pullSecrets }}
@@ -44,6 +45,12 @@ spec:
       {{- end }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      {{- if .Values.initContainers }}
+          {{- with .Values.initContainers }}
+      initContainers:
+{{ toYaml . | indent 8 }}
+          {{- end }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -92,13 +99,19 @@ spec:
             - --drain-timeout={{ .Values.configuration.drainTimeout }}
           {{- end }}
           {{- if .Values.configuration.skipWaitForDeleteTimeout }}
-             - --skip-wait-for-delete-timeout={{ .Values.configuration.skipWaitForDeleteTimeout }}
+            - --skip-wait-for-delete-timeout={{ .Values.configuration.skipWaitForDeleteTimeout }}
           {{- end }}
           {{- if .Values.configuration.prometheusUrl }}
             - --prometheus-url={{ .Values.configuration.prometheusUrl }}
           {{- end }}
           {{- range .Values.configuration.rebootDays }}
             - --reboot-days={{ . }}
+          {{- end }}
+          {{- range .Values.configuration.preRebootNodeLabels }}
+            - --pre-reboot-node-labels={{ . }}
+          {{- end }}
+          {{- range .Values.configuration.postRebootNodeLabels }}
+            - --post-reboot-node-labels={{ . }}
           {{- end }}
           {{- if .Values.configuration.rebootSentinel }}
             - --reboot-sentinel={{ .Values.configuration.rebootSentinel }}
@@ -129,6 +142,9 @@ spec:
           {{- end }}
           {{- if .Values.configuration.messageTemplateReboot }}
             - --message-template-reboot={{ .Values.configuration.messageTemplateReboot }}
+          {{- end }}
+          {{- if .Values.configuration.messageTemplateUncordon }}
+            - --message-template-uncordon={{ .Values.configuration.messageTemplateUncordon }}
           {{- end }}
           {{- if .Values.configuration.startTime }}
             - --start-time={{ .Values.configuration.startTime }}
@@ -169,9 +185,22 @@ spec:
             {{- if .Values.extraEnvVars }}
               {{ toYaml .Values.extraEnvVars | nindent 12 }}
             {{- end }}
-      {{- with .Values.tolerations }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe: {{- toYaml . | nindent 12 }}
+          {{- end }}
       tolerations:
+      {{- if .Values.tolerations }}
+          {{- with .Values.tolerations }}
 {{ toYaml . | indent 8 }}
+          {{- end }}
+      {{- else }}
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
