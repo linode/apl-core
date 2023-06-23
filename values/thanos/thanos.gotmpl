@@ -3,6 +3,8 @@
 {{- $obj := $vl.objstore }}
 {{- $sp := $obj.storageProvider }}
 
+existingObjstoreSecret: thanos-objectstorage-secret-objstore-secret
+
 ## @section Thanos Query parameters
 query:
   enabled: true
@@ -13,7 +15,7 @@ query:
     enabled: false
   stores:
     - "thanos-storegateway:10901"
-    - dnssrv+_grpc._tcp.thanos-receive-headless.thanos.svc
+    - dnssrv+_grpc._tcp.thanos-receive-headless.monitoring.svc
   resources: {{- $vl.resources.query | toYaml | nindent 4 }}
   extraFlags:
     - "--query.auto-downsampling"

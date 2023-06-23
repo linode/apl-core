@@ -1,4 +1,4 @@
-{{- if and .Values.compactor.enabled .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled (not .Values.compactor.cronJob.enabled) }}
+{{- if and .Values.compactor.enabled .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -45,5 +45,7 @@ spec:
   selector:
     matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
       app.kubernetes.io/component: compactor
-      {{- include "thanos.servicemonitor.selector" . | nindent 6 -}}
+      {{- if .Values.metrics.serviceMonitor.selector }}
+      {{- include "common.tplvalues.render" (dict "value" .Values.metrics.serviceMonitor.selector "context" $) | nindent 6 }}
+      {{- end }}
 {{- end }}
