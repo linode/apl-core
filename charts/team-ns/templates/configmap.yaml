@@ -20,7 +20,7 @@ data:
     - name: default-context
       context:
         cluster: otomi
-        namespace: {{ $v.teamId }}
+        namespace: team-{{ $v.teamId }}
         user: team-demo-user
     current-context: default-context
     users:
