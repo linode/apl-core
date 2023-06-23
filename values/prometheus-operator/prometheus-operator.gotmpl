@@ -159,6 +159,10 @@ additionalPrometheusRules:
   - name: cluster-autoscaler
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
   {{- end }}
+  {{- if $c.thanos.enabled }}
+  - name: thanos
+    {{- readFile "rules/thanos.yaml" | nindent 4 }}
+  {{- end }}
   {{- if and ($v.apps.opencost.alerts.enabled) }}
   - name: opencost
     groups:
