@@ -13,7 +13,8 @@ query:
     enabled: false
   stores:
     - "thanos-storegateway:10901"
-    - dnssrv+_grpc._tcp.thanos-receive-headless.monitoring.svc
+    - "dnssrv+_grpc._tcp.thanos-storegateway.monitoring.svc"
+    - "dnssrv+_grpc._tcp.thanos-receive-headless.monitoring.svc"
   resources: {{- $vl.resources.query | toYaml | nindent 4 }}
   extraFlags:
     - "--query.auto-downsampling"

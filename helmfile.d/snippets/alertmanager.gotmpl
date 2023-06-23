@@ -20,7 +20,7 @@ global:
   smtp_auth_identity: {{ .root | get "smtp.auth_identity" nil }}
 {{- end }}
 route:
-  receiver: default
+  receiver: "null"
   group_by: [alertname]
   group_interval: {{ .instance | get "alerts.groupInterval" (.root | get "alerts.groupInterval" "5m") }}
   repeat_interval: {{ .instance | get "alerts.repeatInterval" (.root | get "alerts.repeatInterval" "3h") }}
@@ -30,11 +30,11 @@ route:
       receiver: "null"
     - match:
         alertname: CPUThrottlingHigh
-      receiver: "null"
+      receiver: default
     {{- if eq .root.cluster.provider "azure" }}
     - match:
         alertname: KubeAPILatencyHigh
-      receiver: "null"
+      receiver: default
     {{- end }}
     - match:
         severity: critical
