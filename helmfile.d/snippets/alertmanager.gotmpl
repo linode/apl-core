@@ -20,7 +20,7 @@ global:
   smtp_auth_identity: {{ .root | get "smtp.auth_identity" nil }}
 {{- end }}
 route:
-  receiver: "null"
+  receiver: default
   group_by: [alertname]
   group_interval: {{ .instance | get "alerts.groupInterval" (.root | get "alerts.groupInterval" "5m") }}
   repeat_interval: {{ .instance | get "alerts.repeatInterval" (.root | get "alerts.repeatInterval" "3h") }}
@@ -30,40 +30,23 @@ route:
       receiver: "null"
     - match:
         alertname: CPUThrottlingHigh
-      {{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
-      receiver: default
-      {{- else }}
       receiver: "null"
-      {{- end }}
     {{- if eq .root.cluster.provider "azure" }}
     - match:
         alertname: KubeAPILatencyHigh
-      {{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
-      receiver: default
-      {{- else }}
       receiver: "null"
-      {{- end }}
     {{- end }}
     - match:
         severity: critical
-      {{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
       receiver: critical
-      {{- else }}
-      receiver: "null"
-      {{- end }}
     {{- if $isHomeMonitored }}
       continue: true
     - match:
         severity: critical
-      {{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
       receiver: critical-home
-      {{- else }}
-      receiver: "null"
-      {{- end }}
     {{- end }}
 receivers:
   - name: "null"
-{{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
   - name: default
 {{- if has "slack" $receivers  }}
     slack_configs:
@@ -91,8 +74,6 @@ receivers:
         send_resolved: true
     {{- end }}
 {{- end }}
-{{- end }}
-{{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
   - name: critical
 {{- if has "slack" $receivers  }}
     slack_configs:
@@ -118,7 +99,6 @@ receivers:
       - to: {{ $criticalTo }}
         send_resolved: true
     {{- end }}
-{{- end }}
 {{- end }}
 {{- if $isHomeMonitored }}
   - name: critical-home

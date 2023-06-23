@@ -74,13 +74,44 @@ ruler:
     size: {{ $vl.persistence.ruler.size }}
   resources: {{- $vl.resources.ruler | toYaml | nindent 4 }}
   alertmanagers:
-    - http://prometheus-operator-alertmanager.monitoring.svc.cluster.local:9093
-  config: |-
-    groups:
-      - name: "metamonitoring"
-        rules:
-          - alert: "PrometheusDown"
-            expr: absent(up{prometheus="monitoring/prometheus-operator"}) 
+    - "dnssrv+http://_http-web._tcp.alertmanager-operated.monitoring.svc"
+  service:
+    additionalHeadless: true
+  queries:
+    - dnssrv+_http._tcp.thanos-query-headless.monitoring.svc
+  clusterName: {{ $v.cluster.domainSuffix }}
+  existingConfigmap: thanos-ruler-thanos-ruler-rulefiles-0
+  extraFlags:
+    - --rule-file=/conf/rules/*.yaml
+  sidecars:
+    - name: config-reloader
+      image: quay.io/prometheus-operator/prometheus-config-reloader:v0.50.0
+      imagePullPolicy: IfNotPresent
+      command:
+      - /bin/prometheus-config-reloader
+      args:
+      - --reload-url=http://127.0.0.1:10902/-/reload
+      - --watched-dir=/etc/thanos/rules/thanos-ruler-thanos-ruler-rulefiles-0
+      env:
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.name
+      resources:
+        limits:
+          cpu: 100m
+          memory: 50Mi
+        requests:
+          cpu: 100m
+          memory: 50Mi
+      securityContext:
+        runAsNonRoot: true
+        runAsGroup: 65534
+        runAsUser: 65534
+      volumeMounts:
+      - mountPath: /etc/thanos/rules/thanos-ruler-thanos-ruler-rulefiles-0
+        name: ruler-config
 
 ## @param objstoreConfig The [objstore configuration](https://thanos.io/tip/thanos/storage.md/)
 ## Specify content for objstore.yml
