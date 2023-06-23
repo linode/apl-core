@@ -3,11 +3,11 @@
 {{- $kk := $v.apps.keycloak }}
 {{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
 
+{{- with .Values.otomi | get "globalPullSecret" nil }}
 image:
-  {{- with .Values.otomi | get "globalPullSecret" nil }}
   pullSecrets:
     - name: otomi-pullsecret-global
-  {{- end }}
+{{- end }}
 
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
