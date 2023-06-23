@@ -85,8 +85,6 @@ receiveDistributor:
 #   clusterName: {{ $v.cluster.domainSuffix }}
 #   extraFlags:
 #     - --rule-file=/conf/rules/*.yaml
-#   config:
-#     {{- readFile "rules/thanos.yaml" | nindent 4 }}
 
 ## @param objstoreConfig The [objstore configuration](https://thanos.io/tip/thanos/storage.md/)
 ## Specify content for objstore.yml
