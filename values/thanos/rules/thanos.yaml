@@ -4,7 +4,7 @@ groups:
       - alert: ThanosCompactMultipleRunning
         annotations:
           description: No more than one Thanos Compact instance should be running at once.
-            There are {{$value}} instances running.
+            There are {{ $value }} instances running.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompactmultiplerunning
           summary: Thanos Compact has multiple instances running.
         expr: sum by (cluster, job) (up{job=~".*thanos-receiver-compact.*"}) > 1
@@ -13,7 +13,7 @@ groups:
           severity: warning
       - alert: ThanosCompactHalted
         annotations:
-          description: Thanos Compact {{$labels.job}} has failed to run and now is halted.
+          description: Thanos Compact {{ $labels.job }} has failed to run and now is halted.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompacthalted
           summary: Thanos Compact has failed to run and is now halted.
         expr: thanos_compact_halted{job=~".*thanos-receiver-compact.*"} == 1
@@ -22,8 +22,8 @@ groups:
           severity: warning
       - alert: ThanosCompactHighCompactionFailures
         annotations:
-          description: Thanos Compact {{$labels.job}} is failing to execute {{$value |
-            humanize}}% of compactions.
+          description: Thanos Compact {{ $labels.job }} is failing to execute {{ $value |
+            humanize }}% of compactions.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompacthighcompactionfailures
           summary: Thanos Compact is failing to execute compactions.
         expr: |
@@ -38,8 +38,7 @@ groups:
           severity: warning
       - alert: ThanosCompactBucketHighOperationFailures
         annotations:
-          description: Thanos Compact {{$labels.job}} Bucket is failing to execute {{$value
-            | humanize}}% of operations.
+          description: Thanos Compact {{ $labels.job }} Bucket is failing to execute {{ $value | humanize }}% of operations.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompactbuckethighoperationfailures
           summary: Thanos Compact Bucket is having a high number of operation failures.
         expr: |
@@ -54,7 +53,7 @@ groups:
           severity: warning
       - alert: ThanosCompactHasNotRun
         annotations:
-          description: Thanos Compact {{$labels.job}} has not uploaded anything for 24
+          description: Thanos Compact {{ $labels.job }} has not uploaded anything for 24
             hours.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanoscompacthasnotrun
           summary: Thanos Compact has not uploaded anything for last 24 hours.
@@ -67,7 +66,7 @@ groups:
     rules:
       - alert: ThanosQueryHttpRequestQueryErrorRateHigh
         annotations:
-          description: Thanos Query {{$labels.job}} is failing to handle {{$value | humanize}}%
+          description: Thanos Query {{ $labels.job }} is failing to handle {{ $value | humanize }}%
             of "query" requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryhttprequestqueryerrorratehigh
           summary: Thanos Query is failing to handle requests.
@@ -82,7 +81,7 @@ groups:
           severity: critical
       - alert: ThanosQueryHttpRequestQueryRangeErrorRateHigh
         annotations:
-          description: Thanos Query {{$labels.job}} is failing to handle {{$value | humanize}}%
+          description: Thanos Query {{ $labels.job }} is failing to handle {{ $value | humanize }}%
             of "query_range" requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryhttprequestqueryrangeerrorratehigh
           summary: Thanos Query is failing to handle requests.
@@ -97,7 +96,7 @@ groups:
           severity: critical
       - alert: ThanosQueryGrpcServerErrorRate
         annotations:
-          description: Thanos Query {{$labels.job}} is failing to handle {{$value | humanize}}%
+          description: Thanos Query {{ $labels.job }} is failing to handle {{ $value | humanize }}%
             of requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosquerygrpcservererrorrate
           summary: Thanos Query is failing to handle requests.
@@ -113,7 +112,7 @@ groups:
           severity: warning
       - alert: ThanosQueryGrpcClientErrorRate
         annotations:
-          description: Thanos Query {{$labels.job}} is failing to send {{$value | humanize}}%
+          description: Thanos Query {{ $labels.job }} is failing to send {{ $value | humanize }}%
             of requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosquerygrpcclienterrorrate
           summary: Thanos Query is failing to send requests.
@@ -128,7 +127,7 @@ groups:
           severity: warning
       - alert: ThanosQueryHighDNSFailures
         annotations:
-          description: Thanos Query {{$labels.job}} have {{$value | humanize}}% of failing
+          description: Thanos Query {{ $labels.job }} have {{ $value | humanize }}% of failing
             DNS queries for store endpoints.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryhighdnsfailures
           summary: Thanos Query is having high number of DNS failures.
@@ -143,7 +142,7 @@ groups:
           severity: warning
       - alert: ThanosQueryInstantLatencyHigh
         annotations:
-          description: Thanos Query {{$labels.job}} has a 99th percentile latency of {{$value}}
+          description: Thanos Query {{ $labels.job }} has a 99th percentile latency of {{ $value }}
             seconds for instant queries.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryinstantlatencyhigh
           summary: Thanos Query has high latency for queries.
@@ -158,7 +157,7 @@ groups:
           severity: critical
       - alert: ThanosQueryRangeLatencyHigh
         annotations:
-          description: Thanos Query {{$labels.job}} has a 99th percentile latency of {{$value}}
+          description: Thanos Query {{ $labels.job }} has a 99th percentile latency of {{ $value }}
             seconds for range queries.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosqueryrangelatencyhigh
           summary: Thanos Query has high latency for queries.
@@ -175,8 +174,7 @@ groups:
     rules:
       - alert: ThanosReceiveHttpRequestErrorRateHigh
         annotations:
-          description: Thanos Receive {{$labels.job}} is failing to handle {{$value |
-            humanize}}% of requests.
+          description: Thanos Receive {{ $labels.job }} is failing to handle {{ $value | humanize }}% of requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceivehttprequesterrorratehigh
           summary: Thanos Receive is failing to handle requests.
         expr: |
@@ -190,8 +188,7 @@ groups:
           severity: critical
       - alert: ThanosReceiveHttpRequestLatencyHigh
         annotations:
-          description: Thanos Receive {{$labels.job}} has a 99th percentile latency of
-            {{ $value }} seconds for requests.
+          description: Thanos Receive {{ $labels.job }} has a 99th percentile latency of {{ $value }} seconds for requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceivehttprequestlatencyhigh
           summary: Thanos Receive has high HTTP requests latency.
         expr: |
@@ -205,8 +202,7 @@ groups:
           severity: critical
       - alert: ThanosReceiveHighReplicationFailures
         annotations:
-          description: Thanos Receive {{$labels.job}} is failing to replicate {{$value
-            | humanize}}% of requests.
+          description: Thanos Receive {{ $labels.job }} is failing to replicate {{ $value | humanize }}% of requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceivehighreplicationfailures
           summary: Thanos Receive is having high number of replication failures.
         expr: |
@@ -230,8 +226,7 @@ groups:
           severity: warning
       - alert: ThanosReceiveHighForwardRequestFailures
         annotations:
-          description: Thanos Receive {{$labels.job}} is failing to forward {{$value |
-            humanize}}% of requests.
+          description: Thanos Receive {{ $labels.job }} is failing to forward {{ $value | humanize}}% of requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceivehighforwardrequestfailures
           summary: Thanos Receive is failing to forward requests.
         expr: |
@@ -245,8 +240,7 @@ groups:
           severity: info
       - alert: ThanosReceiveHighHashringFileRefreshFailures
         annotations:
-          description: Thanos Receive {{$labels.job}} is failing to refresh hashring file,
-            {{$value | humanize}} of attempts failed.
+          description: Thanos Receive {{ $labels.job }} is failing to refresh hashring file, {{ $value | humanize }} of attempts failed.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceivehighhashringfilerefreshfailures
           summary: Thanos Receive is failing to refresh hasring file.
         expr: |
@@ -261,7 +255,7 @@ groups:
           severity: warning
       - alert: ThanosReceiveConfigReloadFailure
         annotations:
-          description: Thanos Receive {{$labels.job}} has not been able to reload hashring
+          description: Thanos Receive {{ $labels.job }} has not been able to reload hashring
             configurations.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceiveconfigreloadfailure
           summary: Thanos Receive has not been able to reload configuration.
@@ -272,7 +266,7 @@ groups:
           severity: warning
       - alert: ThanosReceiveNoUpload
         annotations:
-          description: Thanos Receive {{$labels.instance}} has not uploaded latest data
+          description: Thanos Receive {{ $labels.instance }} has not uploaded latest data
             to object storage.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceivenoupload
           summary: Thanos Receive has not uploaded latest data to object storage.
@@ -285,9 +279,8 @@ groups:
           severity: critical
       - alert: ThanosReceiveTrafficBelowThreshold
         annotations:
-          description: At Thanos Receive {{$labels.job}} in {{$labels.namespace}} , the
-            average 1-hr avg. metrics ingestion rate  is {{$value | humanize}}% of 12-hr
-            avg. ingestion rate.
+          description: At Thanos Receive {{ $labels.job }} in {{ $labels.namespace }} , the
+            average 1-hr avg. metrics ingestion rate  is {{ $value | humanize}}% of 12-hr avg. ingestion rate.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosreceivetrafficbelowthreshold
           summary: Thanos Receive is experiencing low avg. 1-hr ingestion rate relative
             to avg. 12-hr ingestion rate.
@@ -304,8 +297,7 @@ groups:
     rules:
       - alert: ThanosStoreGrpcErrorRate
         annotations:
-          description: Thanos Store {{$labels.job}} is failing to handle {{$value | humanize}}%
-            of requests.
+          description: Thanos Store {{ $labels.job }} is failing to handle {{ $value | humanize }}% of requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstoregrpcerrorrate
           summary: Thanos Store is failing to handle qrpcd requests.
         expr: |
@@ -320,8 +312,7 @@ groups:
           severity: warning
       - alert: ThanosStoreSeriesGateLatencyHigh
         annotations:
-          description: Thanos Store {{$labels.job}} has a 99th percentile latency of {{$value}}
-            seconds for store series gate requests.
+          description: Thanos Store {{ $labels.job }} has a 99th percentile latency of {{ $value }} seconds for store series gate requests.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstoreseriesgatelatencyhigh
           summary: Thanos Store has high latency for store series gate requests.
         expr: |
@@ -335,8 +326,7 @@ groups:
           severity: warning
       - alert: ThanosStoreBucketHighOperationFailures
         annotations:
-          description: Thanos Store {{$labels.job}} Bucket is failing to execute {{$value
-            | humanize}}% of operations.
+          description: Thanos Store {{ $labels.job }} Bucket is failing to execute {{ $value | humanize }}% of operations.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstorebuckethighoperationfailures
           summary: Thanos Store Bucket is failing to execute operations.
         expr: |
@@ -351,8 +341,7 @@ groups:
           severity: warning
       - alert: ThanosStoreObjstoreOperationLatencyHigh
         annotations:
-          description: Thanos Store {{$labels.job}} Bucket has a 99th percentile latency
-            of {{$value}} seconds for the bucket operations.
+          description: Thanos Store {{ $labels.job }} Bucket has a 99th percentile latency of {{ $value }} seconds for the bucket operations.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosstoreobjstoreoperationlatencyhigh
           summary: Thanos Store is having high latency for bucket operations.
         expr: |
@@ -368,8 +357,7 @@ groups:
     rules:
       - alert: ThanosBucketReplicateErrorRate
         annotations:
-          description: Thanos Replicate is failing to run, {{$value | humanize}}% of attempts
-            failed.
+          description: Thanos Replicate is failing to run, {{ $value | humanize }}% of attempts failed.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosbucketreplicateerrorrate
           summary: Thanos Replicate is failing to run.
         expr: |
@@ -383,8 +371,7 @@ groups:
           severity: critical
       - alert: ThanosBucketReplicateRunLatency
         annotations:
-          description: Thanos Replicate {{$labels.job}} has a 99th percentile latency
-            of {{$value}} seconds for the replicate operations.
+          description: Thanos Replicate {{ $labels.job}} has a 99th percentile latency of {{ $value }} seconds for the replicate operations.
           runbook_url: https://github.com/thanos-io/thanos/tree/main/mixin/runbook.md#alert-name-thanosbucketreplicaterunlatency
           summary: Thanos Replicate has a high latency for replicate operations.
         expr: |
