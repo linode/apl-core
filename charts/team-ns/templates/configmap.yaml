@@ -7,7 +7,6 @@ data:
     KUBECONFIG="${HOME}/.kube/config"
     TOKEN="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
     CA_CRT="$(base64 -w 0 /var/run/secrets/kubernetes.io/serviceaccount/ca.crt)"
-    NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
 
     cat <<EOF > "${KUBECONFIG}"
     apiVersion: v1
@@ -21,7 +20,7 @@ data:
     - name: default-context
       context:
         cluster: otomi
-        namespace: ${NAMESPACE}
+        namespace: {{ $v.teamId }}
         user: team-demo-user
     current-context: default-context
     users:
@@ -31,6 +30,5 @@ data:
     EOF
 kind: ConfigMap
 metadata:
-  name: kconfig
-  namespace: team-{{ $v.teamId }}
-
+  name: kconfig-team-{{ $v.teamId }}
+  namespace: team-admin
