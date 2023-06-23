@@ -47,6 +47,7 @@ route:
     {{- end }}
 receivers:
   - name: "null"
+{{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
   - name: default
 {{- if has "slack" $receivers  }}
     slack_configs:
@@ -74,6 +75,8 @@ receivers:
         send_resolved: true
     {{- end }}
 {{- end }}
+{{- end }}
+{{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
   - name: critical
 {{- if has "slack" $receivers  }}
     slack_configs:
@@ -99,6 +102,7 @@ receivers:
       - to: {{ $criticalTo }}
         send_resolved: true
     {{- end }}
+{{- end }}
 {{- end }}
 {{- if $isHomeMonitored }}
   - name: critical-home
