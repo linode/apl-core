@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "grafana-label-enforcer.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+  - name: promql
+    port: 9090
+    targetPort: promql
+  selector:
+    app: {{ include "grafana-label-enforcer.fullname" . }}

@@ -131,7 +131,7 @@ prometheus:
         insecureSkipVerify: {{ $p.remoteWrite.rwConfig.insecureSkipVerify }}
       {{- if $p.remoteWrite.otomiThanos }}
       headers:
-        THANOS-TENANT: "{{ $v.cluster.domainSuffix }}"
+        cluster: "{{ $v.cluster.domainSuffix }}"
       {{- end }}
       {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
       {{- . | nindent 6 }}
@@ -270,9 +270,15 @@ grafana:
     {{- end }}
     {{- if $t.enabled }}
     - name: Thanos Query
+      access: proxy
+      basicAuth: false
       editable: false
+      orgId: 1
       type: prometheus
-      url: http://thanos-query-frontend.monitoring.svc.cluster.local:9090/thanos/query  
+      url: http://thanos-query-frontend.monitoring:9090
+      jsonData:
+        prometheusType: Thanos
+        timeInterval: "30s"
     {{- end }}
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
   grafana.ini: {{- $grafanaIni | nindent 4 }}
