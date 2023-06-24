@@ -166,6 +166,7 @@ jobs:
           default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
       - name: Set k8s cluster name
         run: |
+          scw account project list
           scw k8s cluster list
       # - name: Set k8s cluster name
       #   run: |
