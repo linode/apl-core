@@ -1,4 +1,4 @@
-name: Deploy Otomi on Scaleway
+name: Deploy Otomi
 on:
   workflow_call:
     inputs:
