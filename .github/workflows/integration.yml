@@ -148,11 +148,11 @@ jobs:
     name: Run integration test on cluster
     needs: preprocess-input
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        kubernetes_version: ${{ fromJSON(needs.preprocess-input.outputs.kubernetes_versions) }}
-      max-parallel: 5
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     kubernetes_version: ${{ fromJSON(needs.preprocess-input.outputs.kubernetes_versions) }}
+    #   max-parallel: 5
     steps:
       - name: Use Scaleway CLI
         uses: scaleway/action-scw@v0
