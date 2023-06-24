@@ -157,8 +157,8 @@ jobs:
       - name: Use Scaleway CLI
         uses: scaleway/action-scw@v0
         with:
-          save_config: true
-          export_config: true
+          save-config: true
+          export-config: true
           version: v2.13.0
           access-key: ${{ secrets.SCW_ACCESS_KEY }}
           secret-key: ${{ secrets.SCW_SECRET_KEY }}
