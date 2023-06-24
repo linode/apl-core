@@ -2,6 +2,9 @@ name: Deploy Otomi
 on:
   workflow_call:
     inputs:
+      provider:
+        description: 'Provider'
+        type: string
       kubernetes_versions:
         description: "Kubernetes versions (JSON formatted list e.g.: ['1.24'])"
         type: string
@@ -39,6 +42,13 @@ on:
         default: gen_custom_ca
   workflow_dispatch:
     inputs:
+      provider:
+        description: 'Provider'
+        type: choice
+        options:
+          - 'scaleway'
+          - 'digitalocean'
+        default: scaleway
       kubernetes_versions:
         description: 'Kubernetes version'
         type: choice
@@ -156,6 +166,16 @@ jobs:
         kubernetes_version: ${{ fromJSON(needs.preprocess-input.outputs.kubernetes_versions) }}
       max-parallel: 5
     steps:
+      - name: Use Scaleway CLI
+        uses: scaleway/action-scw@v0
+        with:
+          save_config: true
+          export_config: true
+          version: v2.13.0
+          access-key: ${{ secrets.SCW_ACCESS_KEY }}
+          secret-key: ${{ secrets.SCW_SECRET_KEY }}
+          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
@@ -164,14 +184,21 @@ jobs:
         run: |
           echo DIGITALOCEAN_CLUSTER_NAME=i-${{ github.run_id }}-${{ strategy.job-index }} >> $GITHUB_ENV
           # Cluster name must be no longer than 63 characters
-      - name: Determine exact k8s version
+      - name: Create k8s cluster at Scaleway
+        if: ${{ inputs.provider == 'scaleway'}}
+        uses: jawher/action-scw@v2.12.0
+        env:
+          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          SCW_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
+        with:
+          args: k8s cluster create name=${{ env.DIGITALOCEAN_CLUSTER_NAME }} auto-upgrade.enable=false cni=calico pools.0.node-type=PRO2-S pools.0.min-size=1 pools.0.size=2 pools.0.max-size=10 pools.0.autohealing=true pools.0.autoscaling=true pools.0.name=default version='1.24.14' --wait
+      - name: Create k8s cluster at Digital Ocean
+        if: ${{ inputs.provider == 'digitalocean' }}
         run: |
+          echo "digital ocean"
           echo DIGITALOCEAN_K8S_VERSION=`doctl kubernetes options versions -o json | jq -re 'map(select(.kubernetes_version | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .slug'` >> $GITHUB_ENV
-      - name: Get default VPC for region
-        run: |
           echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list -o json | jq -re 'map(select((.region == "${{ inputs.cluster_region }}") and .default)) | .[0] | .id'` >> $GITHUB_ENV
-      - name: Create k8s cluster for testing
-        run: |
           doctl kubernetes cluster create ${{ env.DIGITALOCEAN_CLUSTER_NAME }} \
             --tag source:github \
             --ha \
@@ -181,14 +208,16 @@ jobs:
             --node-pool "name=int-test-${{ strategy.job-index }}-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
             --version ${{ env.DIGITALOCEAN_K8S_VERSION }} \
             --wait
-      - name: Retrieve cluster id
-        run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get ${{ env.DIGITALOCEAN_CLUSTER_NAME }} --format ID --no-header` >> $GITHUB_ENV
-      - name: Assign the cluster to the project
-        run: doctl projects resources assign ${{ secrets.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
-      - name: Save kubectl config with auth token
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
-      - name: Get kubectl environment
-        run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+
+          echo 'Retrieve cluster id'
+          echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get ${{ env.DIGITALOCEAN_CLUSTER_NAME }} --format ID --no-header` >> $GITHUB_ENV
+          echo 'Assign the cluster to the project'
+          doctl projects resources assign ${{ secrets.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
+          echo 'Save kubectl config with auth token'
+          doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
+          echo 'Get kubectl environment'
+          echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+
       - name: Create image pull secret on test cluster
         run: |
           kubectl create secret docker-registry reg-otomi-github \
@@ -258,6 +287,15 @@ jobs:
         run: |
           [[ "${{ inputs.cluster_persistence }}" == "preserve" ]] && echo "The cluster ${{ env.DIGITALOCEAN_CLUSTER_NAME }} will NOT be destroyed!!" && exit 0
           doctl kubernetes cluster delete ${{ env.DIGITALOCEAN_CLUSTER_NAME }} -f --dangerous
+      - name: Create k8s cluster at Scaleway
+        if: ${{ always() && inputs.provider == 'scaleway' && inputs.cluster_persistence != 'preserve' }}
+        uses: jawher/action-scw@v2.12.0
+        env:
+          SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          SCW_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
+        with:
+          args: k8s cluster delete with-additional-resources=true
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2
