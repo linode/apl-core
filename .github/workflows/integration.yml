@@ -166,30 +166,31 @@ jobs:
           default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
       - name: Set k8s cluster name
         run: |
-          scw account project list
-          scw k8s cluster list
-      # - name: Set k8s cluster name
-      #   run: |
-      #     echo DIGITALOCEAN_CLUSTER_NAME=i-${{ github.run_id }}-${{ strategy.job-index }} >> $GITHUB_ENV
-      #     # Cluster name must be no longer than 63 characters
-      # - name: Create k8s cluster at Scaleway
-      #   if: ${{ inputs.provider == 'scaleway'}}
-      #   uses: jawher/action-scw@v2.12.0
-      #   env:
-      #     SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
-      #     SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-      #     SCW_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
-      #   with:
-      #     args: k8s cluster create name=${{ env.DIGITALOCEAN_CLUSTER_NAME }} auto-upgrade.enable=false cni=calico pools.0.node-type=PRO2-S pools.0.min-size=1 pools.0.size=2 pools.0.max-size=10 pools.0.autohealing=true pools.0.autoscaling=true pools.0.name=default version='1.24.14' --wait
-      # - name: Delete  k8s cluster at Scaleway
-      #   if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
-      #   uses: jawher/action-scw@v2.12.0
-      #   env:
-      #     SCW_ACCESS_KEY: ${{ secrets.SCW_ACCESS_KEY }}
-      #     SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
-      #     SCW_ORGANIZATION_ID: ${{ secrets.SCW_ORGANIZATION_ID }}
-      #   with:
-      #     args: k8s cluster delete with-additional-resources=true
+          echo DIGITALOCEAN_CLUSTER_NAME=i-${{ github.run_id }}-${{ strategy.job-index }} >> $GITHUB_ENV
+          # Cluster name must be no longer than 63 characters
+      - name: Create k8s cluster at Scaleway ${{env.DIGITALOCEAN_CLUSTER_NAME}}
+        run: |
+          out=$(scw k8s cluster create name=${{env.DIGITALOCEAN_CLUSTER_NAME}} \
+              auto-upgrade.enable=false \
+              cni=calico \
+              pools.0.node-type=PRO2-S \
+              pools.0.min-size=1 \
+              pools.0.size=2 \
+              pools.0.max-size=10 \
+              pools.0.autohealing=true \
+              pools.0.autoscaling=true \
+              pools.0.name=default \
+              version='1.24.14' \
+              --wait \
+              -o=json)
+
+          clusterId=$(echo $out | jq -r '.id')
+          echo "CLUSTER_ID=$clusterId" >> $GITHUB_OUTPUT
+
+      - name: Delete  k8s cluster at Scaleway
+        if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
+        run: |
+          scw k8s cluster delete ${{ env.CLUSTER_ID }} with-additional-resources=true
       # - name: Slack Notification
       #   if: always()
       #   uses: rtCamp/action-slack-notify@v2
