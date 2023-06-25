@@ -105,6 +105,8 @@ spec:
       labels:
         name: grafana-agent-traces
     spec:
+      securityContext:
+        runAsNonRoot: true
       containers:
       - args:
         - -config.expand-env=true
