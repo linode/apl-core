@@ -480,6 +480,81 @@ environments:
             storageSize: 5Gi
           redis-shared:
             enabled: false
+          tempo:
+            enabled: false
+            storage:
+              type: minioLocal
+            resources:
+              compactor:
+                  requests:
+                      cpu: 50m
+                      memory: 128Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi                
+              ingester:
+                  requests:
+                      cpu: 50m
+                      memory: 128Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              memcached:
+                  requests:
+                      cpu: 50m
+                      memory: 64Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              querier:
+                  requests:
+                      cpu: 50m
+                      memory: 64Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              distributor:
+                  requests:
+                      cpu: 50m
+                      memory: 64Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              queryFrontend:
+                  requests:
+                      cpu: 50m
+                      memory: 64Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+            persistence:
+              ingester:
+                size: 10Gi
+            autoscaling:
+              ingester:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 5
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              gateway:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 5
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              distributor:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 5
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              queryFrontend:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 5
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
           thanos:
             enabled: false
             query:
