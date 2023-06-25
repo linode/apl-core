@@ -1,0 +1,32 @@
+{{- if .Values.metricsGenerator.enabled }}
+{{- $dict := dict "ctx" . "component" "metrics-generator" "memberlist" true }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "tempo.resourceName" $dict }}-discovery
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+    prometheus.io/service-monitor: "false"
+  {{- with .Values.metricsGenerator.service.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    {{- range .Values.metricsGenerator.ports }}
+    {{- if .service }}
+    - name: {{ .name | quote }}
+      port: {{ .port }}
+      protocol: TCP
+      targetPort: {{ .port }}
+      {{- if and (hasPrefix .name "grpc") ($.Values.metricsGenerator.appProtocol.grpc) }}
+      appProtocol: {{ $.Values.metricsGenerator.appProtocol.grpc }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
+  selector:
+    {{- include "tempo.selectorLabels" $dict | nindent 4 }}
+{{- end }}

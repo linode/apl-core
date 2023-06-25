@@ -1,0 +1,57 @@
+{{- if .Values.enterprise.enabled -}}
+{{ $dict := dict "ctx" . "component" "enterprise-gateway" }}
+{{- if .Values.enterpriseGateway.ingress.enabled -}}
+{{- $ingressApiIsStable := eq (include "tempo.ingress.isStable" .) "true" -}}
+{{- $ingressSupportsIngressClassName := eq (include "tempo.ingress.supportsIngressClassName" .) "true" -}}
+{{- $ingressSupportsPathType := eq (include "tempo.ingress.supportsPathType" .) "true" -}}
+apiVersion: {{ include "tempo.ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: {{ include "tempo.resourceName" $dict }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+  {{- with .Values.enterpriseGateway.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  {{- if and $ingressSupportsIngressClassName .Values.enterpriseGateway.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.enterpriseGateway.ingress.ingressClassName }}
+  {{- end -}}
+  {{- if .Values.enterpriseGateway.ingress.tls }}
+  tls:
+    {{- range .Values.enterpriseGateway.ingress.tls }}
+    - hosts:
+        {{- range .hosts }}
+        - {{ . | quote }}
+        {{- end }}
+      {{- with .secretName }}
+      secretName: {{ . }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.enterpriseGateway.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if $ingressSupportsPathType }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              {{- if $ingressApiIsStable }}
+              service:
+                name: {{ include "tempo.resourceName" $dict }}
+                port:
+                  number: {{ $.Values.enterpriseGateway.service.port | default (include "tempo.serverHttpListenPort" $ ) }}
+              {{- else }}
+              serviceName: {{ include "tempo.resourceName" $dict }}
+              servicePort: {{ $.Values.enterpriseGateway.service.port | default (include "tempo.serverHttpListenPort" $ ) }}
+              {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end -}}
+{{- end -}}

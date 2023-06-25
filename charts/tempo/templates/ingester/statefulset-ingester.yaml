@@ -1,0 +1,159 @@
+{{ $dict := dict "ctx" . "component" "ingester" "memberlist" true }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+  {{- with .Values.ingester.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if not .Values.ingester.autoscaling.enabled }}
+  replicas: {{ .Values.ingester.replicas }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" $dict | nindent 6}}
+  serviceName: ingester
+  podManagementPolicy: Parallel
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+  template:
+    metadata:
+      labels:
+        {{- include "tempo.podLabels" $dict | nindent 8 }}
+        {{- with .Values.tempo.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.ingester.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-tempo.yaml") . | sha256sum }}
+        {{- with .Values.tempo.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.ingester.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if or (.Values.ingester.priorityClassName) (.Values.global.priorityClassName) }}
+      priorityClassName: {{ default .Values.ingester.priorityClassName .Values.global.priorityClassName }}
+      {{- end }}
+      serviceAccountName: {{ include "tempo.serviceAccountName" . }}
+      {{- with .Values.tempo.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      enableServiceLinks: false
+      {{- include "tempo.ingesterImagePullSecrets" . | nindent 6 -}}
+      containers:
+        - args:
+            - -target=ingester
+            - -config.file=/conf/tempo.yaml
+            - -mem-ballast-size-mbs=1024
+            {{- with .Values.ingester.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          image: {{ include "tempo.imageReference" $dict }}
+          imagePullPolicy: {{ .Values.tempo.image.pullPolicy }}
+          name: ingester
+          ports:
+            - name: grpc
+              containerPort: 9095
+            - name: http-memberlist
+              containerPort: 7946
+            - name: http-metrics
+              containerPort: 3100
+          {{- with .Values.ingester.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.ingester.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            {{- toYaml .Values.tempo.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.ingester.resources | nindent 12 }}
+          {{- with .Values.tempo.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /conf
+              name: config
+            - mountPath: /var/tempo
+              name: data
+            {{- if .Values.enterprise.enabled }}
+            - name: license
+              mountPath: /license
+            {{- end }}
+            {{- with .Values.ingester.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.ingester.terminationGracePeriodSeconds }}
+      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- with .Values.ingester.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.ingester.affinity }}
+      affinity:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ingester.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ingester.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          {{- include "tempo.configVolume" . | nindent 10 }}
+        {{- if .Values.enterprise.enabled }}
+        - name: license
+          secret:
+            secretName: {{ tpl .Values.license.secretName . }}
+        {{- end }}
+        {{- with .Values.ingester.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+  {{- if not .Values.ingester.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+  {{- else if .Values.ingester.persistence.inMemory }}
+        - name: data
+        {{- if .Values.ingester.persistence.inMemory }}
+          emptyDir:
+            medium: Memory
+        {{- end }}
+        {{- if .Values.ingester.persistence.size }}
+            sizeLimit: {{ .Values.ingester.persistence.size }}
+        {{- end }}
+  {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        {{- with .Values.ingester.persistence.annotations }}
+        annotations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- with .Values.ingester.persistence.storageClass }}
+        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.ingester.persistence.size | quote }}
+  {{- end }}

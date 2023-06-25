@@ -292,6 +292,17 @@ appsInfo:
     license: Apache 2.0
     about: Prometheus is a systems and service monitoring system. It collects metrics from configured targets at given intervals, evaluates rule expressions, displays the results, and can trigger alerts when specified conditions are observed.
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
+  tempo:
+    title: Tempo
+    appVersion: 2.1.1
+    repo: https://github.com/grafana/tempo
+    maintainers: Grafana labs
+    relatedLinks:
+      - https://grafana.com/docs/tempo/latest/
+    license: AGPL-3.0
+    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
+    about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
+    integration: Otomi installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
   thanos:
     title: Thanos
     appVersion: 0.28.1

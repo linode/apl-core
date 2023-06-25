@@ -1,0 +1,27 @@
+{{- if not .Values.useExternalConfig }}
+apiVersion: v1
+{{- if eq .Values.configStorageType "Secret" }}
+kind: Secret
+{{- else }}
+kind: ConfigMap
+{{- end }}
+metadata:
+  name: {{ tpl .Values.externalConfigSecretName . }}
+  labels:
+    {{- include "tempo.labels" (dict "ctx" .) | nindent 4 }}
+  namespace: {{ .Release.Namespace | quote }}
+{{- if eq .Values.configStorageType "Secret" }}
+data:
+  tempo-query.yaml: {{ tpl .Values.queryFrontend.query.config . | b64enc }}
+  overrides.yaml: {{ include "tempo.overridesConfig" . | b64enc }}
+  tempo.yaml: {{ include "tempo.calculatedConfig" . | b64enc }}
+{{- else }}
+data:
+  tempo-query.yaml: |
+    {{- tpl .Values.queryFrontend.query.config . | nindent 4 }}
+  overrides.yaml: |
+    {{ include "tempo.overridesConfig" . | nindent 4 }}
+  tempo.yaml: |
+    {{ include "tempo.calculatedConfig" . | nindent 4 }}
+{{- end -}}
+{{- end }}

@@ -1,4 +1,4 @@
-api: kubeclarity
-console: kubeclarity-logo
+api: tempo
+console: tempo
 tasks: main
 tools: 1.4.25

@@ -1,0 +1,112 @@
+{{- if .Values.memcached.enabled }}
+{{ $dict := dict "ctx" . "component" "memcached" }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+  {{- with .Values.memcached.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.memcached.replicas }}
+  selector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+  serviceName: memcached
+  template:
+    metadata:
+      {{- if or .Values.tempo.podAnnotations .Values.memcached.podAnnotations }}
+      annotations:
+        {{- with .Values.tempo.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.memcached.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      labels:
+        {{- include "tempo.labels" $dict | nindent 8 }}
+        {{- with .Values.tempo.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.memcached.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if or (.Values.memcached.priorityClassName) (.Values.global.priorityClassName) }}
+      priorityClassName: {{ default .Values.memcached.priorityClassName .Values.global.priorityClassName }}
+      {{- end }}
+      serviceAccountName: {{ include "tempo.serviceAccountName" . }}
+      {{- with .Values.tempo.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      enableServiceLinks: false
+      {{- include "tempo.memcachedExporterImagePullSecrets" . | nindent 6 -}}
+      containers:
+        - image: {{ include "tempo.imageReference" $dict }}
+          imagePullPolicy: {{ .Values.memcached.image.pullPolicy }}
+          name: memcached
+          {{- with .Values.memcached.extraArgs }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 11211
+              name: client
+          {{- with .Values.memcached.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.memcached.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.memcached.resources | nindent 12 }}
+          {{- with .Values.tempo.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- if .Values.memcachedExporter.enabled }}
+        - args:
+            - --memcached.address=localhost:11211
+            - --web.listen-address=0.0.0.0:9150
+          image: {{ include "tempo.imageReference" (dict "ctx" . "component" "memcached-exporter") }}
+          imagePullPolicy: {{ .Values.memcachedExporter.image.pullPolicy }}
+          name: exporter
+          ports:
+            - containerPort: 9150
+              name: http-metrics
+          resources:
+            {{- toYaml .Values.memcachedExporter.resources | nindent 12 }}
+          {{- with .Values.tempo.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- with .Values.memcached.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.memcached.affinity }}
+      affinity:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.memcached.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.memcached.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  updateStrategy:
+    type: RollingUpdate
+{{- end}}

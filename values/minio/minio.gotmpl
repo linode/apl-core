@@ -67,6 +67,7 @@ provisioning:
     - name: thanos
     - name: loki
     - name: harbor
+    - name: tempo
   policies:
     - name: otomi-apps
       statements:
@@ -81,7 +82,8 @@ provisioning:
           - arn:aws:s3:::velero
           - arn:aws:s3:::thanos
           - arn:aws:s3:::loki
-          - arn:aws:s3:::harbor 
+          - arn:aws:s3:::harbor
+          - arn:aws:s3:::tempo
         - effect: Allow
           principal:
             AWS:
@@ -93,6 +95,7 @@ provisioning:
           - arn:aws:s3:::thanos
           - arn:aws:s3:::loki
           - arn:aws:s3:::harbor
+          - arn:aws:s3:::tempo
           condition:
             StringEquals:
               s3:prefix:
@@ -112,3 +115,4 @@ provisioning:
           - arn:aws:s3:::thanos/**
           - arn:aws:s3:::loki/**
           - arn:aws:s3:::harbor/**
+          - arn:aws:s3:::tempo/**

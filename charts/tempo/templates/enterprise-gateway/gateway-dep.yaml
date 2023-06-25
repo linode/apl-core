@@ -1,0 +1,124 @@
+{{- if .Values.enterprise.enabled -}}
+{{ $dict := dict "ctx" . "component" "enterprise-gateway" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    {{- toYaml .Values.enterpriseGateway.annotations | nindent 4 }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+  name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  replicas: {{ .Values.enterpriseGateway.replicas }}
+  selector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+  strategy:
+    {{- toYaml .Values.enterpriseGateway.strategy | nindent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tempo.podLabels" $dict | nindent 8 }}
+        {{- with .Values.enterpriseGateway.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "tempo.podAnnotations" $dict | nindent 8 }}
+      namespace: {{ .Release.Namespace | quote }}
+    spec:
+      serviceAccountName: {{ template "tempo.serviceAccountName" . }}
+      {{- if .Values.enterpriseGateway.priorityClassName }}
+      priorityClassName: {{ .Values.enterpriseGateway.priorityClassName }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.enterpriseGateway.securityContext | nindent 8 }}
+      initContainers:
+        {{- toYaml .Values.enterpriseGateway.initContainers | nindent 8 }}
+      {{- if .Values.tempo.image.pullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      containers:
+        - name: gateway
+          image: "{{ include "tempo.imageReference" $dict }}"
+          imagePullPolicy: {{ .Values.tempo.image.pullPolicy }}
+          args:
+            - "-target=gateway"
+            - "-config.expand-env=true"
+            - "-config.file=/conf/tempo.yaml"
+            {{- range $key, $value := .Values.enterpriseGateway.extraArgs }}
+            - "-{{ $key }}={{ $value }}"
+            {{- end }}
+          volumeMounts:
+            {{- if .Values.enterpriseGateway.extraVolumeMounts }}
+              {{ toYaml .Values.enterpriseGateway.extraVolumeMounts | nindent 12}}
+            {{- end }}
+            - name: config
+              mountPath: /conf
+            - name: license
+              mountPath: /license
+            - name: storage
+              mountPath: "/data"
+              subPath: {{ .Values.enterpriseGateway.persistence.subPath }}
+          ports:
+            - name: http-metrics
+              containerPort: {{ include "tempo.serverHttpListenPort" . }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.enterpriseGateway.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.enterpriseGateway.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.enterpriseGateway.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.enterpriseGateway.containerSecurityContext | nindent 12 }}
+          env:
+            {{- with .Values.global.extraEnv }}
+              {{ toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.enterpriseGateway.env }}
+              {{ toYaml . | nindent 12 }}
+            {{- end }}
+          envFrom:
+            {{- with .Values.global.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.enterpriseGateway.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+        {{- with .Values.enterpriseGateway.extraContainers }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+      nodeSelector:
+        {{- toYaml .Values.enterpriseGateway.nodeSelector | nindent 8 }}
+      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- with .Values.enterpriseGateway.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.enterpriseGateway.affinity }}
+      affinity:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      tolerations:
+        {{- toYaml .Values.enterpriseGateway.tolerations | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.enterpriseGateway.terminationGracePeriodSeconds }}
+      volumes:
+        - name: config
+          {{- include "tempo.configVolume" . | nindent 10 }}
+        - name: runtime-config
+          configMap:
+            name: {{ template "tempo.fullname" . }}-runtime
+        {{- if .Values.enterpriseGateway.extraVolumes }}
+        {{ toYaml .Values.enterpriseGateway.extraVolumes | nindent 8}}
+        {{- end }}
+        - name: license
+          secret:
+            secretName: {{ tpl .Values.license.secretName . }}
+        - name: storage
+          emptyDir: {}
+{{- end -}}

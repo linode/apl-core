@@ -1,0 +1,23 @@
+{{- if .Values.memcached.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tempo.resourceName" (dict "ctx" . "component" "memcached") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "tempo.labels" (dict "ctx" . "component" "memcached") | nindent 4 }}
+  {{- with .Values.memcached.service.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ports:
+  - name: memcached-client
+    port: 11211
+    targetPort: 11211
+  - name: http-metrics
+    port: 9150
+    targetPort: http-metrics
+  selector:
+    {{- include "tempo.selectorLabels" (dict "ctx" . "component" "memcached") | nindent 4 }}
+{{- end}}

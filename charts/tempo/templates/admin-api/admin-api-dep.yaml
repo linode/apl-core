@@ -1,0 +1,132 @@
+{{- if .Values.enterprise.enabled -}}
+{{ $dict := dict "ctx" . "component" "admin-api" "memberlist" true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    {{- toYaml .Values.adminApi.annotations | nindent 4 }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+  name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  replicas: {{ .Values.adminApi.replicas }}
+  selector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+  strategy:
+    {{- toYaml .Values.adminApi.strategy | nindent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tempo.podLabels" $dict | nindent 8 }}
+        {{- with .Values.adminApi.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- include "tempo.podAnnotations" $dict | nindent 8 }}
+      namespace: {{ .Release.Namespace | quote }}
+    spec:
+      serviceAccountName: {{ template "tempo.serviceAccountName" . }}
+      {{- if .Values.adminApi.priorityClassName }}
+      priorityClassName: {{ .Values.adminApi.priorityClassName }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.adminApi.securityContext | nindent 8 }}
+      initContainers:
+        {{- with .Values.adminApi.initContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- if .Values.tempo.image.pullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.pullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      containers:
+        - name: admin-api
+          image: "{{ include "tempo.imageReference" $dict }}"
+          imagePullPolicy: {{ .Values.tempo.image.pullPolicy }}
+          args:
+            - "-target=admin-api"
+            - "-config.expand-env=true"
+            - "-config.file=/conf/tempo.yaml"
+            {{- range $key, $value := .Values.adminApi.extraArgs }}
+            - "-{{ $key }}={{ $value }}"
+            {{- end }}
+          volumeMounts:
+            - mountPath: /conf
+              name: config
+            - name: license
+              mountPath: /license
+            - name: storage
+              mountPath: "/data"
+              subPath: {{ .Values.adminApi.persistence.subPath }}
+            {{- if .Values.adminApi.extraVolumeMounts }}
+              {{ toYaml .Values.adminApi.extraVolumeMounts | nindent 12}}
+            {{- end }}
+          ports:
+            - name: http-metrics
+              containerPort: {{ include "tempo.serverHttpListenPort" . }}
+              protocol: TCP
+            - name: grpc
+              containerPort: {{ include "tempo.serverGrpcListenPort" . }}
+              protocol: TCP
+            - name: memberlist
+              containerPort: {{ include "tempo.memberlistBindPort" . }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.adminApi.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.adminApi.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.adminApi.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.adminApi.containerSecurityContext | nindent 12 }}
+          env:
+            {{- with .Values.global.extraEnv }}
+              {{ toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.adminApi.env }}
+              {{ toYaml . | nindent 12 }}
+            {{- end }}
+          envFrom:
+            {{- with .Values.global.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.adminApi.extraEnvFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+        {{- with .Values.adminApi.extraContainers }}
+        {{ toYaml . | nindent 8 }}
+        {{- end }}
+      nodeSelector:
+        {{- toYaml .Values.adminApi.nodeSelector | nindent 8 }}
+      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- with .Values.adminApi.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.adminApi.affinity }}
+      affinity:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      tolerations:
+        {{- toYaml .Values.adminApi.tolerations | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.adminApi.terminationGracePeriodSeconds }}
+      volumes:
+        - name: config
+          {{- include "tempo.configVolume" . | nindent 10 }}
+        - name: runtime-config
+          configMap:
+            name: {{ template "tempo.fullname" . }}-runtime
+        {{- if .Values.adminApi.extraVolumes }}
+        {{ toYaml .Values.adminApi.extraVolumes | nindent 8}}
+        {{- end }}
+        - name: license
+          secret:
+            secretName: {{ tpl .Values.license.secretName . }}
+        - name: storage
+          emptyDir: {}
+{{- end -}}
