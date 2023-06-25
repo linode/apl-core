@@ -59,7 +59,12 @@ memcached:
 
 storage:
   trace:
-    backend:
+    {{- if eq $st.type "minioLocal" "s3" }}
+    backend: s3
+    {{- end }}
+    {{- if eq $st.type "azure" }}
+    backend: azure
+    {{- end }}    
     {{- if eq $st.type "minioLocal" }}
     s3:
       bucket: tempo
