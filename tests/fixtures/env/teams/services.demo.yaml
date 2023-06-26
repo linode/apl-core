@@ -95,3 +95,7 @@ teamConfig:
                             value: same-origin
                           - name: sander
                             value: same-origin
+                  request:
+                      set:
+                          - name: someheader
+                            value: somevalue
