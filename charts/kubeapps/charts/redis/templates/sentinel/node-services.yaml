@@ -11,8 +11,6 @@
 {{ $redisport = index $portsmap (printf "%s-node-%s-%s" (include "common.names.fullname" $) (toString $i) "redis") }}
 {{- else }}
 {{- end }}
-
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -44,7 +42,7 @@ spec:
     port: {{ $sentinelport }}
     {{- end }}
     protocol: TCP
-    targetPort: {{ $.Values.sentinel.containerPort }}
+    targetPort: {{ $.Values.sentinel.containerPorts.sentinel }}
   - name: redis
     {{- if $.Values.sentinel.service.nodePorts.redis }}
     nodePort: {{ (add $.Values.sentinel.service.nodePorts.redis $i 1) }}
@@ -54,18 +52,19 @@ spec:
     port: {{ $redisport }}
     {{- end }}
     protocol: TCP
-    targetPort: {{ $.Values.replica.containerPort }}
+    targetPort: {{ $.Values.replica.containerPorts.redis }}
   - name: sentinel-internal
     nodePort: null
-    port: {{ $.Values.sentinel.containerPort }}
+    port: {{ $.Values.sentinel.containerPorts.sentinel }}
     protocol: TCP
-    targetPort: {{ $.Values.sentinel.containerPort }}
+    targetPort: {{ $.Values.sentinel.containerPorts.sentinel }}
   - name: redis-internal
     nodePort: null
-    port: {{ $.Values.replica.containerPort }}
+    port: {{ $.Values.replica.containerPorts.redis }}
     protocol: TCP
-    targetPort: {{ $.Values.replica.containerPort }}
+    targetPort: {{ $.Values.replica.containerPorts.redis }}
   selector:
     statefulset.kubernetes.io/pod-name: {{ template "common.names.fullname" $ }}-node-{{ $i }}
+---
 {{- end }}
 {{- end }}

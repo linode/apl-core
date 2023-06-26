@@ -232,7 +232,7 @@ jobs:
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
 
-          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+          install_args="--wait --wait-for-jobs --timeout 45m0s otomi chart/otomi \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml
             --values values.yaml \
