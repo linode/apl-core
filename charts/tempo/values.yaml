@@ -783,7 +783,7 @@ traces:
       receiverConfig: {}
   zipkin:
     # -- Enable Tempo to ingest Zipkin traces
-    enabled: false
+    enabled: true
     # -- Zipkin receiver config
     receiverConfig: {}
   otlp:

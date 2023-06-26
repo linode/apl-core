@@ -4,6 +4,7 @@ metadata:
   name: grafana-agent-traces
   annotations:
     sidecar.istio.io/inject: "false"
+    policy.otomi.io/ignore: psp-allowed-users,psp-privileged
 spec:
   minReadySeconds: 10
   replicas: 1
@@ -16,8 +17,6 @@ spec:
       labels:
         name: grafana-agent-traces
     spec:
-      securityContext:
-        runAsNonRoot: true
       containers:
       - args:
         - -config.expand-env=true
