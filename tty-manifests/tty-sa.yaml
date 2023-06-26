@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: tty-${SUB}-${TARGET_TEAM}
-  namespace: team-${TARGET_TEAM}
----
-
