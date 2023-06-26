@@ -48,6 +48,9 @@ spec:
 {{- end }}
   selector:
     app.kubernetes.io/name: alertmanager
-    alertmanager: {{ template "kube-prometheus-stack.fullname" . }}-alertmanager
+    alertmanager: {{ template "kube-prometheus-stack.alertmanager.crname" . }}
+{{- if .Values.alertmanager.service.sessionAffinity }}
+  sessionAffinity: {{ .Values.alertmanager.service.sessionAffinity }}
+{{- end }}
   type: "{{ .Values.alertmanager.service.type }}"
 {{- end }}
