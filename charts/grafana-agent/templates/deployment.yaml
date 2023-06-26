@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-agent-traces
+  annotations:
+    sidecar.istio.io/inject: "false"
+spec:
+  minReadySeconds: 10
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: grafana-agent-traces
+  template:
+    metadata:
+      labels:
+        name: grafana-agent-traces
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - args:
+        - -config.expand-env=true
+        - -config.file=/etc/agent/agent.yaml
+        - -server.http.address=0.0.0.0:80
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        image: grafana/agent:v0.34.0
+        imagePullPolicy: IfNotPresent
+        name: grafana-agent-traces
+        resources: {{- toYaml .Values.resources | nindent 10 }}
+        ports:
+        - containerPort: 80
+          name: http-metrics
+        - containerPort: 6831
+          name: thrift-compact
+          protocol: UDP
+        - containerPort: 6832
+          name: thrift-binary
+          protocol: UDP
+        - containerPort: 14268
+          name: thrift-http
+          protocol: TCP
+        - containerPort: 14250
+          name: thrift-grpc
+          protocol: TCP
+        - containerPort: 9411
+          name: zipkin
+          protocol: TCP
+        - containerPort: 4317
+          name: otlp-grpc
+          protocol: TCP
+        - containerPort: 4318
+          name: otlp-http
+          protocol: TCP
+        - containerPort: 55678
+          name: opencensus
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /etc/agent
+          name: grafana-agent-traces
+      serviceAccountName: grafana-agent-traces
+      volumes:
+      - configMap:
+          name: grafana-agent-traces
+        name: grafana-agent-traces

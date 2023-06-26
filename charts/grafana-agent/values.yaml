@@ -1,0 +1,11 @@
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+endpoint: distributor.monitoring.svc.cluster.local:4317
+
+teamId: ""
