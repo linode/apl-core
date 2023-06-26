@@ -7,11 +7,9 @@ metadata:
     {{- if .Values.commonLabels }}
     {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
     {{- end }}
-  annotations:
   {{- if .Values.commonAnnotations }}
-  {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
-  {{- include "redis.externalDNS.annotations" . | nindent 4 }}
 spec:
   type: ClusterIP
   clusterIP: None
@@ -20,11 +18,11 @@ spec:
   {{- end }}
   ports:
     - name: tcp-redis
-      port: {{ if .Values.sentinel.enabled }}{{ .Values.sentinel.service.ports.redis }}{{ else }}{{ .Values.master.service.ports.redis }}{{ end }}
+      port: {{ if .Values.sentinel.enabled }}{{ .Values.sentinel.service.port }}{{ else }}{{ .Values.master.service.port }}{{ end }}
       targetPort: redis
     {{- if .Values.sentinel.enabled }}
     - name: tcp-sentinel
-      port: {{ .Values.sentinel.service.ports.sentinel }}
+      port: {{ .Values.sentinel.service.sentinelPort }}
       targetPort: redis-sentinel
     {{- end }}
   selector: {{- include "common.labels.matchLabels" . | nindent 4 }}

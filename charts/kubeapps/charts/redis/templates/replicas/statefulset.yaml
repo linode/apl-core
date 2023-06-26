@@ -23,9 +23,6 @@ spec:
   {{- if .Values.replica.updateStrategy }}
   updateStrategy: {{- toYaml .Values.replica.updateStrategy | nindent 4 }}
   {{- end }}
-  {{- if .Values.replica.podManagementPolicy }}
-  podManagementPolicy: {{ .Values.replica.podManagementPolicy | quote }}
-  {{- end }}
   template:
     metadata:
       labels: {{- include "common.labels.standard" . | nindent 8 }}
@@ -75,20 +72,14 @@ spec:
       {{- if .Values.replica.tolerations }}
       tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.replica.tolerations "context" $) | nindent 8 }}
       {{- end }}
-      {{- if .Values.replica.topologySpreadConstraints }}
-      topologySpreadConstraints: {{- include "common.tplvalues.render" (dict "value" .Values.replica.topologySpreadConstraints "context" $) | nindent 8 }}
+      {{- if .Values.replica.spreadConstraints }}
+      topologySpreadConstraints: {{- include "common.tplvalues.render" (dict "value" .Values.replica.spreadConstraints "context" $) | nindent 8 }}
       {{- end }}
       {{- if .Values.replica.shareProcessNamespace }}
       shareProcessNamespace: {{ .Values.replica.shareProcessNamespace }}
       {{- end }}
       {{- if .Values.replica.schedulerName }}
       schedulerName: {{ .Values.replica.schedulerName | quote }}
-      {{- end }}
-      {{- if .Values.replica.dnsPolicy }}
-      dnsPolicy: {{ .Values.replica.dnsPolicy }}
-      {{- end }}
-      {{- if .Values.replica.dnsConfig }}
-      dnsConfig: {{- include "common.tplvalues.render" (dict "value" .Values.replica.dnsConfig "context" $) | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.replica.terminationGracePeriodSeconds }}
       containers:
@@ -124,15 +115,11 @@ spec:
             - name: BITNAMI_DEBUG
               value: {{ ternary "true" "false" (or .Values.image.debug .Values.diagnosticMode.enabled) | quote }}
             - name: REDIS_REPLICATION_MODE
-              value: replica
+              value: slave
             - name: REDIS_MASTER_HOST
-            {{- if and (eq (int64 .Values.master.count) 1) (ne .Values.master.kind "Deployment") }}
               value: {{ template "common.names.fullname" . }}-master-0.{{ template "common.names.fullname" . }}-headless.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}
-            {{- else }}
-              value: {{ template "common.names.fullname" . }}-master.{{ .Release.Namespace }}.svc.{{ .Values.clusterDomain }}
-            {{- end }}
             - name: REDIS_MASTER_PORT_NUMBER
-              value: {{ .Values.master.containerPorts.redis | quote }}
+              value: {{ .Values.master.containerPort | quote }}
             - name: ALLOW_EMPTY_PASSWORD
               value: {{ ternary "no" "yes" .Values.auth.enabled | quote }}
             {{- if .Values.auth.enabled }}
@@ -158,7 +145,7 @@ spec:
               value: {{ ternary "yes" "no" .Values.tls.enabled | quote }}
             {{- if .Values.tls.enabled }}
             - name: REDIS_TLS_PORT
-              value: {{ .Values.replica.containerPorts.redis | quote }}
+              value: {{ .Values.replica.containerPort | quote }}
             - name:  REDIS_TLS_AUTH_CLIENTS
               value: {{ ternary "yes" "no" .Values.tls.authClients | quote }}
             - name:  REDIS_TLS_CERT_FILE
@@ -173,7 +160,7 @@ spec:
             {{- end }}
             {{- else }}
             - name: REDIS_PORT
-              value: {{ .Values.replica.containerPorts.redis | quote }}
+              value: {{ .Values.replica.containerPort | quote }}
             {{- end }}
             {{- if .Values.replica.extraEnvVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.replica.extraEnvVars "context" $) | nindent 12 }}
@@ -191,15 +178,8 @@ spec:
           {{- end }}
           ports:
             - name: redis
-              containerPort: {{ .Values.replica.containerPorts.redis }}
+              containerPort: {{ .Values.replica.containerPort }}
           {{- if not .Values.diagnosticMode.enabled }}
-          {{- if .Values.replica.startupProbe.enabled }}
-          startupProbe: {{- include "common.tplvalues.render" (dict "value" (omit .Values.replica.startupProbe "enabled") "context" $) | nindent 12 }}
-            tcpSocket:
-              port: redis
-          {{- else if .Values.replica.customStartupProbe }}
-          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.replica.customStartupProbe "context" $) | nindent 12 }}
-          {{- end }}
           {{- if .Values.replica.livenessProbe.enabled }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.replica.livenessProbe.initialDelaySeconds }}
@@ -213,7 +193,7 @@ spec:
                 - -c
                 - /health/ping_liveness_local_and_master.sh {{ .Values.replica.livenessProbe.timeoutSeconds }}
           {{- else if .Values.replica.customLivenessProbe }}
-          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.replica.customLivenessProbe "context" $) | nindent 12 }}
+          livenessProbe: {{- toYaml .Values.replica.customLivenessProbe | nindent 12 }}
           {{- end }}
           {{- if .Values.replica.readinessProbe.enabled }}
           readinessProbe:
@@ -228,7 +208,7 @@ spec:
                 - -c
                 - /health/ping_readiness_local_and_master.sh {{ .Values.replica.readinessProbe.timeoutSeconds }}
           {{- else if .Values.replica.customReadinessProbe }}
-          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.replica.customReadinessProbe "context" $) | nindent 12 }}
+          readinessProbe: {{- toYaml .Values.replica.customReadinessProbe | nindent 12 }}
           {{- end }}
           {{- end }}
           {{- if .Values.replica.resources }}
@@ -267,8 +247,6 @@ spec:
           {{- end }}
           {{- if .Values.diagnosticMode.enabled }}
           command: {{- include "common.tplvalues.render" (dict "value" .Values.diagnosticMode.command "context" $) | nindent 12 }}
-          {{- else if .Values.metrics.command }}
-          command: {{- include "common.tplvalues.render" (dict "value" .Values.metrics.command "context" $) | nindent 12 }}
           {{- else }}
           command:
             - /bin/bash
@@ -298,7 +276,7 @@ spec:
             {{- end }}
             {{- if .Values.tls.enabled }}
             - name: REDIS_ADDR
-              value: rediss://{{ .Values.metrics.redisTargetHost }}:{{ .Values.replica.containerPorts.redis }}
+              value: rediss://{{ .Values.metrics.redisTargetHost }}:{{ .Values.replica.containerPort }}
               {{- if .Values.tls.authClients }}
             - name: REDIS_EXPORTER_TLS_CLIENT_KEY_FILE
               value: {{ template "redis.tlsCertKey" . }}
@@ -410,11 +388,9 @@ spec:
         {{- end }}
         - name: redis-tmp-conf
           {{- if .Values.replica.persistence.medium }}
-          emptyDir:
+          emptyDir: {
             medium: {{ .Values.replica.persistence.medium | quote }}
-            {{- if .Values.replica.persistence.sizeLimit }}
-            sizeLimit: {{ .Values.replica.persistence.sizeLimit | quote }}
-            {{- end }}
+          }
           {{- else }}
           emptyDir: {}
           {{- end }}
@@ -439,10 +415,6 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
-  {{- else if .Values.replica.persistence.existingClaim }}
-        - name: redis-data
-          persistentVolumeClaim:
-            claimName: {{ printf "%s" (tpl .Values.replica.persistence.existingClaim .) }}
   {{- else }}
   volumeClaimTemplates:
     - metadata:

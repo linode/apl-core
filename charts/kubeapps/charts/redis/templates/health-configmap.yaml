@@ -33,10 +33,6 @@ data:
 {{- end }}
         ping
     )
-    if [ "$?" -eq "124" ]; then
-      echo "Timed out"
-      exit 1
-    fi
     if [ "$response" != "PONG" ]; then
       echo "$response"
       exit 1
@@ -63,12 +59,7 @@ data:
 {{- end }}
         ping
     )
-    if [ "$?" -eq "124" ]; then
-      echo "Timed out"
-      exit 1
-    fi
-    responseFirstWord=$(echo $response | head -n1 | awk '{print $1;}')
-    if [ "$response" != "PONG" ] && [ "$responseFirstWord" != "LOADING" ] && [ "$responseFirstWord" != "MASTERDOWN" ]; then
+    if [ "$response" != "PONG" ] && [ "$response" != "LOADING Redis is loading the dataset in memory" ]; then
       echo "$response"
       exit 1
     fi
@@ -87,20 +78,16 @@ data:
 {{- if .Values.tls.enabled }}
         -p $REDIS_SENTINEL_TLS_PORT_NUMBER \
         --tls \
-        --cacert "$REDIS_SENTINEL_TLS_CA_FILE" \
+        --cacert {{ template "redis.tlsCACert" . }} \
         {{- if .Values.tls.authClients }}
-          --cert "$REDIS_SENTINEL_TLS_CERT_FILE" \
-          --key "$REDIS_SENTINEL_TLS_KEY_FILE" \
+          --cert {{ template "redis.tlsCert" . }} \
+          --key {{ template "redis.tlsCertKey" . }} \
         {{- end }}
 {{- else }}
         -p $REDIS_SENTINEL_PORT \
 {{- end }}
         ping
     )
-    if [ "$?" -eq "124" ]; then
-      echo "Timed out"
-      exit 1
-    fi
     if [ "$response" != "PONG" ]; then
       echo "$response"
       exit 1
@@ -141,10 +128,6 @@ data:
 {{- end }}
         ping
     )
-    if [ "$?" -eq "124" ]; then
-      echo "Timed out"
-      exit 1
-    fi
     if [ "$response" != "PONG" ]; then
       echo "$response"
       exit 1
@@ -169,12 +152,7 @@ data:
 {{- end }}
         ping
     )
-    if [ "$?" -eq "124" ]; then
-      echo "Timed out"
-      exit 1
-    fi
-    responseFirstWord=$(echo $response | head -n1 | awk '{print $1;}')
-    if [ "$response" != "PONG" ] && [ "$responseFirstWord" != "LOADING" ]; then
+    if [ "$response" != "PONG" ] && [ "$response" != "LOADING Redis is loading the dataset in memory" ]; then
       echo "$response"
       exit 1
     fi
