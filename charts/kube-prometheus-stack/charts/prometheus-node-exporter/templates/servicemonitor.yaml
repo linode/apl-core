@@ -12,6 +12,10 @@ metadata:
 spec:
   jobLabel: {{ default "app.kubernetes.io/name" .Values.prometheus.monitor.jobLabel }}
   {{- include "servicemonitor.scrapeLimits" .Values.prometheus.monitor | nindent 2 }}
+  {{- with .Values.prometheus.monitor.podTargetLabels }}
+  podTargetLabels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
     {{- with .Values.prometheus.monitor.selectorOverride }}
@@ -19,6 +23,10 @@ spec:
     {{- else }}
       {{- include "prometheus-node-exporter.selectorLabels" . | nindent 6 }}
     {{- end }}
+  {{- with .Values.prometheus.monitor.attachMetadata }}
+  attachMetadata:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   endpoints:
     - port: {{ .Values.service.portName }}
       scheme: {{ .Values.prometheus.monitor.scheme }}

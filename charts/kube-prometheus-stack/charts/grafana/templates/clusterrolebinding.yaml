@@ -1,4 +1,4 @@
-{{- if and .Values.rbac.create (not .Values.rbac.namespaced) }}
+{{- if and .Values.rbac.create (or (not .Values.rbac.namespaced) .Values.rbac.extraClusterRoleRules) }}
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:

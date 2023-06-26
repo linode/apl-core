@@ -87,6 +87,7 @@ This version requires Helm >= 3.1.0.
 | `ingress.hosts`                           | Ingress accepted hostnames                    | `["chart-example.local"]`                                                    |
 | `ingress.extraPaths`                      | Ingress extra paths to prepend to every host configuration. Useful when configuring [custom actions with AWS ALB Ingress Controller](https://kubernetes-sigs.github.io/aws-alb-ingress-controller/guide/ingress/annotation/#actions). Requires `ingress.hosts` to have one or more host entries. | `[]`                                                    |
 | `ingress.tls`                             | Ingress TLS configuration                     | `[]`                                                    |
+| `ingress.ingressClassName`                | Ingress Class Name. MAY be required for Kubernetes versions >= 1.18 | `""`                              |
 | `resources`                               | CPU/Memory resource requests/limits           | `{}`                                                    |
 | `nodeSelector`                            | Node labels for pod assignment                | `{}`                                                    |
 | `tolerations`                             | Toleration labels for pod assignment          | `[]`                                                    |
@@ -146,7 +147,7 @@ This version requires Helm >= 3.1.0.
 | `podPortName`                             | Name of the grafana port on the pod           | `grafana`                                               |
 | `lifecycleHooks`                          | Lifecycle hooks for podStart and preStop [Example](https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/#define-poststart-and-prestop-handlers)     | `{}`                                                    |
 | `sidecar.image.repository`                | Sidecar image repository                      | `quay.io/kiwigrid/k8s-sidecar`                          |
-| `sidecar.image.tag`                       | Sidecar image tag                             | `1.22.0`                                                |
+| `sidecar.image.tag`                       | Sidecar image tag                             | `1.24.3`                                                |
 | `sidecar.image.sha`                       | Sidecar image sha (optional)                  | `""`                                                    |
 | `sidecar.imagePullPolicy`                 | Sidecar image pull policy                     | `IfNotPresent`                                          |
 | `sidecar.resources`                       | Sidecar resources                             | `{}`                                                    |
@@ -216,8 +217,8 @@ This version requires Helm >= 3.1.0.
 | `rbac.create`                             | Create and use RBAC resources                 | `true`                                                  |
 | `rbac.namespaced`                         | Creates Role and Rolebinding instead of the default ClusterRole and ClusteRoleBindings for the grafana instance  | `false` |
 | `rbac.useExistingRole`                    | Set to a rolename to use existing role - skipping role creating - but still doing serviceaccount and rolebinding to the rolename set here. | `nil` |
-| `rbac.pspEnabled`                         | Create PodSecurityPolicy (with `rbac.create`, grant roles permissions as well) | `true`                 |
-| `rbac.pspUseAppArmor`                     | Enforce AppArmor in created PodSecurityPolicy (requires `rbac.pspEnabled`)  | `true`                    |
+| `rbac.pspEnabled`                         | Create PodSecurityPolicy (with `rbac.create`, grant roles permissions as well) | `false`                |
+| `rbac.pspUseAppArmor`                     | Enforce AppArmor in created PodSecurityPolicy (requires `rbac.pspEnabled`)  | `false`                   |
 | `rbac.extraRoleRules`                     | Additional rules to add to the Role           | []                                                      |
 | `rbac.extraClusterRoleRules`              | Additional rules to add to the ClusterRole    | []                                                      |
 | `command`                                 | Define command to be executed by grafana container at startup | `nil`                                   |
@@ -251,6 +252,7 @@ This version requires Helm >= 3.1.0.
 | `imageRenderer.image.sha`                  | image-renderer Image sha (optional)                                                | `""`                             |
 | `imageRenderer.image.pullPolicy`           | image-renderer ImagePullPolicy                                                     | `Always`                         |
 | `imageRenderer.env`                        | extra env-vars for image-renderer                                                  | `{}`                             |
+| `imageRenderer.envValueFrom`               | Environment variables for image-renderer from alternate sources. See the API docs on [EnvVarSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.17/#envvarsource-v1-core) for format details. Can be templated | `{}` |
 | `imageRenderer.serviceAccountName`         | image-renderer deployment serviceAccountName                                       | `""`                             |
 | `imageRenderer.securityContext`            | image-renderer deployment securityContext                                          | `{}`                             |
 | `imageRenderer.hostAliases`                | image-renderer deployment Host Aliases                                             | `[]`                             |
@@ -277,11 +279,10 @@ This version requires Helm >= 3.1.0.
 | `networkPolicy.egress.ports`               | An array of ports to allow for the egress                    | `[]`    |
 | `enableKubeBackwardCompatibility`          | Enable backward compatibility of kubernetes where pod's defintion version below 1.13 doesn't have the enableServiceLinks option  | `false`     |
 
-
-
 ### Example ingress with path
 
 With grafana 6.3 and above
+
 ```yaml
 grafana.ini:
   server:
@@ -398,8 +399,40 @@ filters out the ones with a label as defined in `sidecar.datasources.label`. The
 those secrets are written to a folder and accessed by grafana on startup. Using these yaml files,
 the data sources in grafana can be imported.
 
+Should you aim for reloading datasources in Grafana each time the config is changed, set `sidecar.datasources.skipReload: false` and adjust `sidecar.datasources.reloadURL` to `http://<svc-name>.<namespace>.svc.cluster.local/api/admin/provisioning/datasources/reload`.
+
 Secrets are recommended over configmaps for this usecase because datasources usually contain private
 data like usernames and passwords. Secrets are the more appropriate cluster resource to manage those.
+
+Example values to add a postgres datasource as a kubernetes secret:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-datasources
+  labels:
+    grafana_datasource: 'true' # default value for: sidecar.datasources.label
+stringData:
+  pg-db.yaml: |-
+    apiVersion: 1
+    datasources:
+      - name: My pg db datasource
+        type: postgres
+        url: my-postgresql-db:5432
+        user: db-readonly-user
+        secureJsonData:
+          password: 'SUperSEcretPa$$word'
+        jsonData:
+          database: my_datase
+          sslmode: 'disable' # disable/require/verify-ca/verify-full
+          maxOpenConns: 0 # Grafana v5.4+
+          maxIdleConns: 2 # Grafana v5.4+
+          connMaxLifetime: 14400 # Grafana v5.4+
+          postgresVersion: 1000 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+          timescaledb: false
+        # <bool> allow users to edit datasources from the UI.
+        editable: false
+```
 
 Example values to add a datasource adapted from [Grafana](http://docs.grafana.org/administration/provisioning/#example-datasource-config-file):
 
@@ -491,6 +524,51 @@ delete_notifiers:
   - name: notification-channel-2
     # default org_id: 1
 ```
+
+## Provision alert rules, contact points, notification policies and notification templates
+
+There are two methods to provision alerting configuration in Grafana. Below are some examples and explanations as to how to use each method:
+
+```yaml
+alerting:
+  team1-alert-rules.yaml:
+    file: alerting/team1/rules.yaml
+  team2-alert-rules.yaml:
+    file: alerting/team2/rules.yaml
+  team3-alert-rules.yaml:
+    file: alerting/team3/rules.yaml
+  notification-policies.yaml:
+    file: alerting/shared/notification-policies.yaml
+  notification-templates.yaml:
+    file: alerting/shared/notification-templates.yaml
+  contactpoints.yaml:
+    apiVersion: 1
+    contactPoints:
+      - orgId: 1
+        name: Slack channel
+        receivers:
+          - uid: default-receiver
+            type: slack
+            settings:
+              # Webhook URL to be filled in
+              url: ""
+              # We need to escape double curly braces for the tpl function.
+              text: '{{ `{{ template "default.message" . }}` }}'
+              title: '{{ `{{ template "default.title" . }}` }}'
+```
+
+There are two possibilities:
+
+* Inlining the file contents as described in the example `values.yaml` and the official [Grafana documentation](https://grafana.com/docs/grafana/next/alerting/set-up/provision-alerting-resources/file-provisioning/).
+* Importing a file using a relative path starting from the chart root directory.
+
+### Important notes on file provisioning
+
+* The chart supports importing YAML and JSON files.
+* The filename must be unique, otherwise one volume mount will overwrite the other.
+* In case of inlining, double curly braces that arise from the Grafana configuration format and are not intended as templates for the chart must be escaped.
+* The number of total files under `alerting:` is not limited. Each file will end up as a volume mount in the corresponding provisioning folder of the deployed Grafana instance.
+* The file size for each import is limited by what the function `.Files.Get` can handle, which suffices for most cases.
 
 ## How to serve Grafana with a path prefix (/grafana)
 

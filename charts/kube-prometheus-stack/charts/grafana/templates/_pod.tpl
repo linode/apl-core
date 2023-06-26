@@ -786,7 +786,7 @@ containers:
       {{- range .Values.extraConfigmapMounts }}
       - name: {{ tpl .name $root }}
         mountPath: {{ tpl .mountPath $root }}
-        subPath: {{ (tpl .subPath $root) | default "" }}
+        subPath: {{ tpl (.subPath | default "") $root }}
         readOnly: {{ .readOnly }}
       {{- end }}
       - name: storage

@@ -12,7 +12,7 @@ metadata:
   {{- end }}
 {{- if or .Values.rbac.pspEnabled (and .Values.rbac.namespaced (or .Values.sidecar.dashboards.enabled .Values.sidecar.datasources.enabled .Values.sidecar.plugins.enabled .Values.rbac.extraRoleRules)) }}
 rules:
-  {{- if .Values.rbac.pspEnabled }}
+  {{- if and .Values.rbac.pspEnabled (.Capabilities.APIVersions.Has "policy/v1beta1/PodSecurityPolicy") }}
   - apiGroups:      ['extensions']
     resources:      ['podsecuritypolicies']
     verbs:          ['use']

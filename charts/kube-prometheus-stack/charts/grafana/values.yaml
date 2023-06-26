@@ -17,8 +17,8 @@ rbac:
   create: true
   ## Use an existing ClusterRole/Role (depending on rbac.namespaced false/true)
   # useExistingRole: name-of-some-(cluster)role
-  pspEnabled: true
-  pspUseAppArmor: true
+  pspEnabled: false
+  pspUseAppArmor: false
   namespaced: false
   extraRoleRules: []
   # - apiGroups: []
@@ -84,7 +84,7 @@ livenessProbe:
 # schedulerName: "default-scheduler"
 
 image:
-  repository: grafana/grafana
+  repository: docker.io/grafana/grafana
   # Overrides the Grafana image tag whose default is the chart appVersion
   tag: ""
   sha: ""
@@ -100,17 +100,24 @@ image:
 
 testFramework:
   enabled: true
-  image: "bats/bats"
+  image: docker.io/bats/bats
   tag: "v1.4.1"
   imagePullPolicy: IfNotPresent
   securityContext: {}
 
 securityContext:
+  runAsNonRoot: true
   runAsUser: 472
   runAsGroup: 472
   fsGroup: 472
 
-containerSecurityContext: {}
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  seccompProfile:
+    type: RuntimeDefault
 
 # Enable creating the grafana configmap
 createConfigmap: true
@@ -137,7 +144,7 @@ extraLabels: {}
 # priorityClassName:
 
 downloadDashboardsImage:
-  repository: curlimages/curl
+  repository: docker.io/curlimages/curl
   tag: 7.85.0
   sha: ""
   pullPolicy: IfNotPresent
@@ -146,7 +153,13 @@ downloadDashboards:
   env: {}
   envFromSecret: ""
   resources: {}
-  securityContext: {}
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    seccompProfile:
+      type: RuntimeDefault
   envValueFrom: {}
   #  ENV_NAME:
   #    configMapKeyRef:
@@ -346,7 +359,7 @@ initChownData:
   ## initChownData container image
   ##
   image:
-    repository: busybox
+    repository: docker.io/library/busybox
     tag: "1.31.1"
     sha: ""
     pullPolicy: IfNotPresent
@@ -364,7 +377,11 @@ initChownData:
   securityContext:
     runAsNonRoot: false
     runAsUser: 0
-
+    seccompProfile:
+      type: RuntimeDefault
+    capabilities:
+      add:
+        - CHOWN
 
 # Administrator credentials when not using an existing secret (see below)
 adminUser: admin
@@ -520,6 +537,9 @@ lifecycleHooks: {}
 plugins: []
   # - digrich-bubblechart-panel
   # - grafana-clock-panel
+  ## You can also use other plugin download URL, as long as they are valid zip files,
+  ## and specify the name of the plugin after the semicolon. Like this:
+  # - https://grafana.com/api/plugins/marcusolsson-json-datasource/versions/1.3.2/download;marcusolsson-json-datasource
 
 ## Configure grafana datasources
 ## ref: http://docs.grafana.org/administration/provisioning/#datasources
@@ -673,6 +693,10 @@ dashboards: {}
   #   local-dashboard-bitbucket:
   #     url: https://example.com/repository/test-bitbucket.json
   #     bearerToken: ''
+  #   local-dashboard-azure:
+  #     url: https://example.com/repository/test-azure.json
+  #     basic: ''
+  #     acceptHeader: '*/*'
 
 ## Reference to external ConfigMap per provider. Use provider name as key and ConfigMap name as value.
 ## A provider dashboards must be defined either by external ConfigMaps or in values.yaml, not in both.
@@ -764,7 +788,7 @@ smtp:
 sidecar:
   image:
     repository: quay.io/kiwigrid/k8s-sidecar
-    tag: 1.22.0
+    tag: 1.24.3
     sha: ""
   imagePullPolicy: IfNotPresent
   resources: {}
@@ -774,7 +798,13 @@ sidecar:
 #   requests:
 #     cpu: 50m
 #     memory: 50Mi
-  securityContext: {}
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    seccompProfile:
+      type: RuntimeDefault
   # skipTlsVerify Set to true to skip tls verification for kube api calls
   # skipTlsVerify: true
   enableUniqueFilenames: false
@@ -1027,7 +1057,7 @@ imageRenderer:
     behavior: {}
   image:
     # image-renderer Image repository
-    repository: grafana/grafana-image-renderer
+    repository: docker.io/grafana/grafana-image-renderer
     # image-renderer Image tag
     tag: latest
     # image-renderer Image sha (optional)
@@ -1040,12 +1070,29 @@ imageRenderer:
     # RENDERING_ARGS: --no-sandbox,--disable-gpu,--window-size=1280x758
     # RENDERING_MODE: clustered
     # IGNORE_HTTPS_ERRORS: true
+
+  ## "valueFrom" environment variable references that will be added to deployment pods. Name is templated.
+  ## ref: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.19/#envvarsource-v1-core
+  ## Renders in container spec as:
+  ##   env:
+  ##     ...
+  ##     - name: <key>
+  ##       valueFrom:
+  ##         <value rendered as YAML>
+  envValueFrom: {}
+    #  ENV_NAME:
+    #    configMapKeyRef:
+    #      name: configmap-name
+    #      key: value_key
+
   # image-renderer deployment serviceAccount
   serviceAccountName: ""
   # image-renderer deployment securityContext
   securityContext: {}
   # image-renderer deployment container securityContext
   containerSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
     capabilities:
       drop: ['ALL']
     allowPrivilegeEscalation: false

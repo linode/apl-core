@@ -24,7 +24,7 @@ spec:
       from:
         - namespaceSelector:
             matchLabels:
-              name: {{ include "grafana.namespace" . }}
+              kubernetes.io/metadata.name: {{ include "grafana.namespace" . }}
           podSelector:
             matchLabels:
               {{- include "grafana.selectorLabels" . | nindent 14 }}
