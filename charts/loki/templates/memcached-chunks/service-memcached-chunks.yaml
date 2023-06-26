@@ -1,0 +1,33 @@
+{{- if .Values.memcachedChunks.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "loki.memcachedChunksFullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "loki.memcachedChunksSelectorLabels" . | nindent 4 }}
+    {{- with .Values.memcachedChunks.serviceLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.memcached.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: memcached-client
+      port: 11211
+      targetPort: http
+      protocol: TCP
+      {{- if .Values.memcached.appProtocol }}
+      appProtocol: {{ .Values.memcached.appProtocol }}
+      {{- end }}
+    - name: http-metrics
+      port: 9150
+      targetPort: http-metrics
+      protocol: TCP
+  selector:
+    {{- include "loki.memcachedChunksSelectorLabels" . | nindent 4 }}
+{{- end }}

@@ -7,6 +7,8 @@
   "ignoreRegExpList": ["/'s\\b/"],
   "ignoreWords": [
     "adrs",
+    "trivy",
+    "grype",
     "KUBECFG",
     "CNAME",
     "SBOM",

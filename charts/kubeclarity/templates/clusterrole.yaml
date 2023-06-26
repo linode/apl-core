@@ -5,13 +5,9 @@ metadata:
   labels:
     {{ include "kubeclarity.labels" . }}
 rules:
-  # Runtime scan permissions
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get"]
+  # Runtime scan permissions. We need to be able to list namespaces, and pods
+  # in those namespaces across the whole cluster to determine what to scan, as
+  # well as start and delete the scanner jobs in those namespaces.
   - apiGroups: [""]
     resources: ["pods"]
     verbs: ["list"]

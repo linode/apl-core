@@ -8,22 +8,37 @@ kubeclarity:
   logLevel: {{ $k.logLevel }}
   podAnnotations:
     policy.otomi.io/ignore: "banned-image-tags"
+  resources: {{- $k.resources.kubeclarity | toYaml | nindent 4 }}
+
+kubeclarity-runtime-scan:
+  cis-docker-benchmark-scanner:
+    resources: {{- $k.resources.cdbScanner | toYaml | nindent 6 }}
+  vulnerability-scanner:
+    analyzer:
+      analyzerList: "syft gomod trivy"
+      trivy:
+        enabled: true
+    scanner:
+      grype:
+        enabled: false
+      trivy:
+        enabled: true
+      scannerList: "trivy"
+    resources: {{- $k.resources.vulnerabilityScanner | toYaml | nindent 6 }}
+
+kubeclarity-grype-server:
+  enabled: false
+
+kubeclarity-trivy-server:
+  enabled: true
+  resources: {{- $k.resources.trivyServer | toYaml | nindent 4 }}
+  nameOverride: trivy
+
+kubeclarity-sbom-db:
+  resources: {{- $k.resources.sbomDb | toYaml | nindent 4 }}
 
 kubeclarity-postgresql:
-  fullnameOverride: kubeclarity-postgresql
-  metrics:
-    enabled: true
-    resources:
-      limits:
-        cpu: 200m
-        memory: 128M
-      requests:
-        cpu: 50m
-        memory: 64M
-    securityContext:
-      enabled: true
-    serviceMonitor:
-      enabled: true
-      additionalLabels:
-        prometheus: system
+  primary:
+    resources: {{- $k.resources.postgresql | toYaml | nindent 6 }}
+  nameOverride: postgresql
 

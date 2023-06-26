@@ -1,0 +1,3 @@
+loki:
+  annotations:
+    foo: bar
