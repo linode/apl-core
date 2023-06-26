@@ -85,6 +85,11 @@ spec:
                 # fix for istio (=envoy) incorrectly setting proto to http
                 # (@see https://github.com/istio/istio/issues/7964):
                 X-Forwarded-Proto: https
+            {{- with (dig "headers" "request" "set" nil $s) }}
+              {{- range . }}
+                {{ .name }}: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
             {{- with (dig "headers" "response" "set" nil $s) }}
             response:
               set:
