@@ -108,7 +108,7 @@ releases:
                 basicAuthPassword: {{ $team.password }}
             - name: Tempo
               type: tempo
-              url: http://query-frontend.monitoring:3200
+              url: http://tempo-query-frontend.monitoring:3100
     {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
     {{- end }}
