@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.21.6](https://github.com/redkubes/otomi-core/compare/v0.21.5...v0.21.6) (2023-06-27)
+
+
+### Features
+
+* add custom request headers ([#1160](https://github.com/redkubes/otomi-core/issues/1160)) ([89c77fa](https://github.com/redkubes/otomi-core/commit/89c77fad1e7c0d73823cd885239684e2e0c6b3db))
+* allow to configure istio mesh config ([#1163](https://github.com/redkubes/otomi-core/issues/1163)) ([3ce405d](https://github.com/redkubes/otomi-core/commit/3ce405d281ad569ad09f69bcdda60888fd2b04b1))
+
 ### [0.21.5](https://github.com/redkubes/otomi-core/compare/v0.21.4...v0.21.5) (2023-06-19)
 
 
