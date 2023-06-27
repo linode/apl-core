@@ -2089,7 +2089,7 @@ properties:
                   resources:
                     $ref: '#/definitions/resources'
           meshConfig:
-            descrition: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
+            description: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
             type: object
           image:
             $ref: '#/definitions/imageSimple'
