@@ -21,10 +21,10 @@ data:
       context:
         cluster: otomi
         namespace: team-{{ $v.teamId }}
-        user: team-demo-user
+        user: team-{{ $v.teamId }}-user
     current-context: default-context
     users:
-    - name: team-demo-user
+    - name: team-{{ $v.teamId }}-user
       user:
         token: ${TOKEN}
     EOF
