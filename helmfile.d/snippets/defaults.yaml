@@ -224,6 +224,12 @@ environments:
                 maxReplicas: 10
             egressGateway:
               enabled: false
+            meshConfig:
+              accessLogFile: "/dev/stdout"
+              enableAutoMtls: true
+              defaultConfig:
+                tracing:
+                  sampling: 0.1
           jaeger:
             enabled: false
           keycloak:

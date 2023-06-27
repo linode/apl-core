@@ -2063,11 +2063,8 @@ properties:
                   resources:
                     $ref: '#/definitions/resources'
           meshConfig:
-            properties:
-              defaultConfig:
-                type: object
-            required:
-              - defaultConfig
+            description: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
+            type: object
           image:
             $ref: '#/definitions/imageSimple'
           resources:
