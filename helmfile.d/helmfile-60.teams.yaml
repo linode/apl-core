@@ -181,15 +181,6 @@ releases:
         svc: prometheus-blackbox-exporter
         port: 9115
   {{- end }}
-  - name: grafana-agent-{{ $teamId }}
-    installed: {{ $a.tempo.enabled }}
-    namespace: team-{{ $teamId }}
-    chart: ../charts/grafana-agent
-    labels:
-      tag: teams
-      team: {{ $teamId }}
-    values:
-      - teamId: {{ $teamId }}
   {{- range $job := $team | get "jobs" list }}
   - name: job-{{ $teamId }}-{{ $job.name }}
     installed: {{ $job.enabled }}

@@ -1,0 +1,29 @@
+{{- $v := .Values }}
+{{- $p := $v.apps | get "tempo" }}
+resources:
+  - apiVersion: opentelemetry.io/v1alpha1
+    kind: OpenTelemetryCollector
+    metadata:
+      name: oltpCollector
+    spec:
+      config: |
+        receivers:
+          zipkin:
+            endpoint: jaeger-operator-jaeger-collector.jaeger:9411 
+        processors:
+          memory_limiter:
+            check_interval: 1s
+            limit_percentage: 75
+            spike_limit_percentage: 15
+          batch:
+            send_batch_size: 10000
+            timeout: 10s
+        exporters:
+          otlp:
+            endpoint: distributor.monitoring.svc.cluster.local:4317
+            insecure: true
+        service:
+          pipelines:
+            traces:
+              receivers: [zipkin]
+              exporters: [otlp]

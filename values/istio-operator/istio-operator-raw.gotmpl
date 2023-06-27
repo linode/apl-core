@@ -149,18 +149,21 @@ resources:
                 memory: 80Mi
             {{- end }}
             autoInject: enabled
-          tracer:
-            zipkin:
-              address: jaeger-operator-jaeger-collector.jaeger:9411 
+          # tracer:
+          #   zipkin:
+          #     address: jaeger-operator-jaeger-collector.jaeger:9411 
           useMCP: false
         meshConfig:
           accessLogFile: "/dev/stdout"
+          enableTracing: true
           defaultConfig:
           {{ with $i | get "meshConfig.defaultConfig" nil }}
             {{- toYaml . | nindent 14 }}
           {{- else }}
             tracing:
               sampling: 0.1
+              zipkin:
+                address: jaeger-operator-jaeger-collector.jaeger:9411 
           {{- end }}
           enableAutoMtls: true
         {{- if $v._derived.untrustedCA }}
