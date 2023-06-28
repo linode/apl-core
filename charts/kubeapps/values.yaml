@@ -919,7 +919,7 @@ kubeops:
   ##
   image:
     registry: docker.io
-    repository: bitnami/kubeapps-kubeops
+    repository: bitnami/kubeapps-kubeops-archived
     tag: 2.4.3-scratch-r2
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
