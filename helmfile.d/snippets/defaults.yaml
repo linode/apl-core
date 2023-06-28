@@ -235,9 +235,12 @@ environments:
             meshConfig:
               accessLogFile: "/dev/stdout"
               enableAutoMtls: true
+              enableTracing: true
               defaultConfig:
                 tracing:
-                  sampling: 0.1
+                  sampling: 1
+                zipkin:
+                  address: jaeger-operator-jaeger-collector.jaeger:9411
           jaeger:
             enabled: false
           keycloak:

@@ -100,14 +100,23 @@ releases:
             - name: Loki
               editable: false
               type: loki
+              uid: loki
               access: proxy
               url: http://loki-query-frontend-headless.monitoring:3101
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               secureJsonData: 
                 basicAuthPassword: {{ $team.password }}
+              jsonData:
+                derivedFields:
+                  - datasourceName: Tempo
+                    matcherRegex: "traceID=(\\w+)"
+                    name: TraceID
+                    url: "$${__value.raw}"
+                    datasourceUid: tempo
             - name: Tempo
               type: tempo
+              uid: tempo
               url: http://tempo-query-frontend.monitoring:3100
     {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
