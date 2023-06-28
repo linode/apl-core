@@ -1,13 +1,11 @@
-{{- if .Values.pspEnabled }}
-apiVersion: rbac.authorization.k8s.io/v1
+{{- if and .Values.pspEnabled (.Capabilities.APIVersions.Has "policy/v1beta1/PodSecurityPolicy") }}
+apiVersion: {{ template "rbac.apiVersion" . }}
 kind: RoleBinding
 metadata:
   labels:
-    app.kubernetes.io/name: {{ include "prometheus-blackbox-exporter.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    helm.sh/chart: {{ include "prometheus-blackbox-exporter.chart" . }}
+    {{- include "prometheus-blackbox-exporter.labels" . | nindent 4 }}
   name: {{ template "prometheus-blackbox-exporter.fullname" . }}
+  namespace: {{ template "prometheus-blackbox-exporter.namespace" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
