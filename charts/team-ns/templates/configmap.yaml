@@ -1,0 +1,34 @@
+{{- $v := .Values }}
+
+apiVersion: v1
+data:
+  kconfig.sh: |
+    mkdir "${HOME}/.kube"
+    KUBECONFIG="${HOME}/.kube/config"
+    TOKEN="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
+    CA_CRT="$(base64 -w 0 /var/run/secrets/kubernetes.io/serviceaccount/ca.crt)"
+
+    cat <<EOF > "${KUBECONFIG}"
+    apiVersion: v1
+    kind: Config
+    clusters:
+    - name: otomi
+      cluster:
+        certificate-authority-data: ${CA_CRT}
+        server: https://kubernetes.default.svc.cluster.local
+    contexts:
+    - name: default-context
+      context:
+        cluster: otomi
+        namespace: team-{{ $v.teamId }}
+        user: team-{{ $v.teamId }}-user
+    current-context: default-context
+    users:
+    - name: team-{{ $v.teamId }}-user
+      user:
+        token: ${TOKEN}
+    EOF
+kind: ConfigMap
+metadata:
+  name: kconfig-team-{{ $v.teamId }}
+  namespace: team-admin
