@@ -606,6 +606,7 @@ definitions:
     enum:
       - '1.23'
       - '1.24'
+      - '1.25'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -1025,6 +1026,20 @@ definitions:
       headers:
         properties:
           response:
+            properties:
+              set:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
+          request:
             properties:
               set:
                 type: array
@@ -2075,11 +2090,8 @@ properties:
                   resources:
                     $ref: '#/definitions/resources'
           meshConfig:
-            properties:
-              defaultConfig:
-                type: object
-            required:
-              - defaultConfig
+            description: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
+            type: object
           image:
             $ref: '#/definitions/imageSimple'
           resources:
