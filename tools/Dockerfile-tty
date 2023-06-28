@@ -6,6 +6,8 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
 
 RUN wget "https://github.com/vmware-tanzu/velero/releases/download/v1.11.0/velero-v1.11.0-linux-amd64.tar.gz" && tar zxvf velero-v1.11.0-linux-amd64.tar.gz && mv velero-v1.11.0-linux-amd64/velero /usr/local/bin/ && rm -rf velero-v1.11.0-linux-amd64*
 
+RUN curl -LO https://github.com/tektoncd/cli/releases/download/v0.31.1/tkn_0.31.1_Linux_x86_64.tar.gz && tar zxvf tkn_0.31.1_Linux_x86_64.tar.gz -C /usr/local/bin/ tkn 
+
 RUN adduser -D -s /bin/sh -u 1000 user && sed -i -r 's/^user:!:/user:x:/' /etc/shadow
 
 USER user
