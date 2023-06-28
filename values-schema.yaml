@@ -1038,6 +1038,20 @@ definitions:
                   required:
                     - name
                     - value
+          request:
+            properties:
+              set:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
       hide:
         description: Used by otomi console to determine wether to render it on screen or not. Only used by core services.
         type: boolean
@@ -2075,11 +2089,8 @@ properties:
                   resources:
                     $ref: '#/definitions/resources'
           meshConfig:
-            properties:
-              defaultConfig:
-                type: object
-            required:
-              - defaultConfig
+            description: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
+            type: object
           image:
             $ref: '#/definitions/imageSimple'
           resources:
