@@ -606,6 +606,7 @@ definitions:
     enum:
       - '1.23'
       - '1.24'
+      - '1.25'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
@@ -2089,11 +2090,8 @@ properties:
                   resources:
                     $ref: '#/definitions/resources'
           meshConfig:
-            properties:
-              defaultConfig:
-                type: object
-            required:
-              - defaultConfig
+            description: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
+            type: object
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -2741,10 +2739,24 @@ properties:
                       - s3Url
                       - accessKeyId
                       - secretAccessKey
+                  azureBlob:
+                    properties:
+                      accountName:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      containerName:
+                        $ref: '#/definitions/wordCharacterPattern'
+                      accountKey:
+                        $ref: '#/definitions/wordCharacterPattern'
+                        x-secret: ''
+                    required:
+                      - accountName
+                      - containerName
+                      - accountKey
                   type:
                     type: string
                     enum:
                       - s3
+                      - azureBlob
                       - minioLocal
                     default: minioLocal
           resources:

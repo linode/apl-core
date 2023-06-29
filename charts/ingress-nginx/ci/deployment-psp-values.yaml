@@ -6,5 +6,6 @@ controller:
   service:
     type: ClusterIP
 
+#Disabled for k8s 1.25
 podSecurityPolicy:
-  enabled: true
+  enabled: false
