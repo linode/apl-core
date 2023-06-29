@@ -53,6 +53,8 @@ jobs:
           fi
           echo git diff-tree --no-commit-id --name-only ${{ github.sha }} -r
           git diff-tree --no-commit-id --name-only ${{ github.sha }} -r
+          echo git version
+          git version
           echo OLD_VERSION = ${OLD_VERSION}
           echo NEW_VERSION = ${NEW_VERSION}
 
