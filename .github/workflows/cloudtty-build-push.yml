@@ -51,6 +51,8 @@ jobs:
             git diff --name-only ${{ github.sha }}..HEAD
             # echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
           fi
+          echo git diff --name-only ${{ github.sha }}..HEAD
+          git diff --name-only ${{ github.sha }}..HEAD
           echo OLD_VERSION = ${OLD_VERSION}
           echo NEW_VERSION = ${NEW_VERSION}
 
