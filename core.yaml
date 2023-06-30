@@ -71,6 +71,9 @@ k8s:
       app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: otel
+      app: otel
+      disableIstioInjection: true
     - name: tempo
       app: tempo
       disableIstioInjection: true

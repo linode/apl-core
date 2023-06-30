@@ -1,15 +1,15 @@
 {{- $v := .Values }}
-{{- $p := $v.apps | get "tempo" }}
+{{- $p := $v.apps | get "otel" }}
 resources:
   - apiVersion: opentelemetry.io/v1alpha1
     kind: OpenTelemetryCollector
     metadata:
-      name: oltpCollector
+      name: otel-collector
     spec:
       config: |
         receivers:
           zipkin:
-            endpoint: jaeger-operator-jaeger-collector.jaeger:9411 
+            endpoint: otel.monitoring.svc.cluster.local:8443
         processors:
           memory_limiter:
             check_interval: 1s
@@ -20,7 +20,7 @@ resources:
             timeout: 10s
         exporters:
           otlp:
-            endpoint: distributor.monitoring.svc.cluster.local:4317
+            endpoint: tempo-distributor.monitoring.svc.cluster.local:4318
             insecure: true
         service:
           pipelines:
