@@ -643,6 +643,9 @@ environments:
             network: public
           classes: []
         oidc: {}
+        alerts:
+          receivers:
+              - none
         otomi:
           hasCloudLB: false
           hasExternalDNS: false
