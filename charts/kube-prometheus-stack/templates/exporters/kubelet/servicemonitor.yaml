@@ -1,4 +1,4 @@
-{{- if .Values.kubelet.enabled }}
+{{- if and .Values.kubelet.enabled .Values.kubernetesServiceMonitors.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -6,8 +6,12 @@ metadata:
   namespace: {{ template "kube-prometheus-stack.namespace" . }}
   labels:
     app: {{ template "kube-prometheus-stack.name" . }}-kubelet
+  {{- with .Values.kubelet.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- include "kube-prometheus-stack.labels" . | indent 4 }}
 spec:
+  {{- include "servicemonitor.scrapeLimits" .Values.kubelet.serviceMonitor | nindent 2 }}
   endpoints:
   {{- if .Values.kubelet.serviceMonitor.https }}
   - port: https-metrics

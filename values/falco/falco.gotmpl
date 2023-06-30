@@ -40,8 +40,9 @@ driver:
 
 falcosidekick:
   enabled: true
+  #Disabled for k8s 1.25
   podSecurityPolicy:
-    create: true
+    create: false
   config:
     debug: false
     {{- if $v.apps.alertmanager.enabled }}

@@ -20,7 +20,7 @@ global:
   smtp_auth_identity: {{ .root | get "smtp.auth_identity" nil }}
 {{- end }}
 route:
-  receiver: default
+  receiver: "null"
   group_by: [alertname]
   group_interval: {{ .instance | get "alerts.groupInterval" (.root | get "alerts.groupInterval" "5m") }}
   repeat_interval: {{ .instance | get "alerts.repeatInterval" (.root | get "alerts.repeatInterval" "3h") }}
@@ -30,30 +30,48 @@ route:
       receiver: "null"
     - match:
         alertname: CPUThrottlingHigh
+      {{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
+      receiver: default
+      {{- else }}
       receiver: "null"
+      {{- end }}
     {{- if eq .root.cluster.provider "azure" }}
     - match:
         alertname: KubeAPILatencyHigh
+      {{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
+      receiver: default
+      {{- else }}
       receiver: "null"
+      {{- end }}
     {{- end }}
     - match:
         severity: critical
+      {{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
       receiver: critical
+      {{- else }}
+      receiver: "null"
+      {{- end }}
     {{- if $isHomeMonitored }}
       continue: true
     - match:
         severity: critical
+      {{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
       receiver: critical-home
+      {{- else }}
+      receiver: "null"
+      {{- end }}
     {{- end }}
 receivers:
   - name: "null"
+{{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
   - name: default
-{{- if has "slack" $receivers  }}
+{{- end }}
+    {{- if has "slack" $receivers  }}
     slack_configs:
       - channel: "#{{ .instance | get "alerts.slack.channel" (.root | get "alerts.slack.channel" "mon-otomi") }}"
         send_resolved: true
         {{- .slackTpl | nindent 8 }}
-{{- end }}
+    {{- end }}
 {{- if has "opsgenie" $receivers  }}
     opsgenie_configs:
       - priority: "P2"
@@ -74,7 +92,10 @@ receivers:
         send_resolved: true
     {{- end }}
 {{- end }}
+
+{{- if or (has "slack" $receivers ) (has "opsgenie" $receivers) (has "msteams" $receivers) (has "email" $receivers) }}
   - name: critical
+{{- end }}
 {{- if has "slack" $receivers  }}
     slack_configs:
       - channel: "#{{ .instance | get "alerts.slack.channelCrit" (.root | get "alerts.slack.channelCrit" "mon-otomi-crit") }}"
@@ -100,6 +121,7 @@ receivers:
         send_resolved: true
     {{- end }}
 {{- end }}
+
 {{- if $isHomeMonitored }}
   - name: critical-home
   {{- $receivers := .root.home | get "receivers" }}
