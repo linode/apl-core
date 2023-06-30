@@ -8,102 +8,169 @@ metadata:
 {{ include "jaeger-operator.labels" . | indent 4 }}
 rules:
 - apiGroups:
-  - ''
+  - apps
   resources:
-  - namespaces
+  - daemonsets
+  - deployments
+  - replicasets
+  - statefulsets
   verbs:
+  - create
+  - delete
+  - get
   - list
+  - patch
+  - update
   - watch
-- apiGroups:
-  - ''
-  resources:
-  - pods
-  - services
-  - endpoints
-  - persistentvolumeclaims
-  - events
-  - configmaps
-  - secrets
-  - serviceaccounts
-  verbs:
-  - '*'
 - apiGroups:
   - apps
   resources:
   - deployments
-  - daemonsets
-  - replicasets
-  - statefulsets
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
-  - networking.k8s.io
+  - apps
   resources:
-  - ingresses
-  verbs:
-  - '*'
-- apiGroups:
-  - monitoring.coreos.com
-  resources:
-  - servicemonitors
+  - deployments/status
   verbs:
   - get
+  - patch
+  - update
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
   - create
-- apiGroups:
-  - io.jaegertracing
-  resources:
-  - '*'
-  verbs:
-  - '*'
-- apiGroups:
-  - extensions
-  resources:
-  - replicasets
-  - deployments
-  - daemonsets
-  - statefulsets
-  - ingresses
-  verbs:
-  - '*'
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - batch
   resources:
-  - jobs
   - cronjobs
+  - jobs
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
-  - route.openshift.io
+  - console.openshift.io
   resources:
-  - routes
+  - consolelinks
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
-  - logging.openshift.io
+  - coordination.k8s.io
   resources:
-  - elasticsearches
+  - leases
   verbs:
-  - '*'
+  - create
+  - get
+  - list
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - persistentvolumeclaims
+  - pods
+  - secrets
+  - serviceaccounts
+  - services
+  - services/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - image.openshift.io
+  resources:
+  - imagestreams
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - jaegertracing.io
   resources:
-  - '*'
+  - jaegers
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
-  - rbac.authorization.k8s.io
+  - jaegertracing.io
   resources:
-  - clusterrolebindings
+  - jaegers/finalizers
   verbs:
-  - '*'
+  - update
 - apiGroups:
-  - apps
-  - extensions
-  resourceNames:
-  - jaeger-operator
+  - jaegertracing.io
   resources:
-  - deployments/finalizers
+  - jaegers/status
   verbs:
+  - get
+  - patch
   - update
 - apiGroups:
   - kafka.strimzi.io
@@ -111,17 +178,89 @@ rules:
   - kafkas
   - kafkausers
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
-  - autoscaling
+  - logging.openshift.io
   resources:
-  - horizontalpodautoscalers
+  - elasticsearch
   verbs:
-  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - logging.openshift.io
+  resources:
+  - elasticsearches
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 {{- if .Values.rbac.pspEnabled }}
-- apiGroups: [policy]
-  resources: [podsecuritypolicies]
-  verbs:     [use]
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
   resourceNames:
   - {{ include "jaeger-operator.fullname" . }}-operator-psp
 {{- end }}
