@@ -3,7 +3,7 @@
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
 import { existsSync, pathExists, readFileSync } from 'fs-extra'
-import { readdir, readFile } from 'fs/promises'
+import { readFile, readdir } from 'fs/promises'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
@@ -115,13 +115,6 @@ export const gucci = async (
   } finally {
     $.quote = quoteBackup
   }
-}
-
-export const guccify = async (str: string, ctx: { [key: string]: any }): Promise<string> => {
-  const escaped = str.replaceAll('\n', '@@').replace(/([^{{]+|{{[^}]*}})/g, (match, token) => {
-    return token.includes('{{') ? token : token.replaceAll('$', '##')
-  })
-  return ((await gucci(escaped, ctx, true)) as string).replaceAll('##', '$').replaceAll('@@', '\n')
 }
 
 export const extract = (
