@@ -4,12 +4,33 @@
 
 image:
   repository: jaegertracing/jaeger-operator
-  tag: '1.25'
+  tag: 1.46.0
   pullPolicy: IfNotPresent
   imagePullSecrets: []
 
-crd:
-  install: true
+certs:
+  issuer:
+    create: true
+    name: ""
+  certificate:
+    create: true
+    namespace: ""
+    secretName: ""
+    # Specify the cert-manager issuer kind to use an existing cert-manager
+    # issuer; typically Issuer or ClusterIssuer
+    # This field will be ignored if issuer.create is true
+    issuerKind: Issuer
+
+webhooks:
+  mutatingWebhook:
+    create: true
+  validatingWebhook:
+    create: true
+  port: 9443
+  service:
+    annotations: {}
+    create: true
+    name: ""
 
 jaeger:
   # Specifies whether Jaeger instance should be created
@@ -28,6 +49,8 @@ service:
   type: ClusterIP
   # Specify a specific node port when type is NodePort
   # nodePort: 32500
+  # Annotations for service
+  annotations: {}
 
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
@@ -35,12 +58,22 @@ serviceAccount:
   # The name of the ServiceAccount to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
+  # Annotations for serviceAccount
+  annotations: {}
 
 # Specifies extra environment variables passed to the operator:
 extraEnv: []
   # Specifies log-level for the operator:
   # - name: LOG-LEVEL
   #   value: debug
+
+serviceExtraLabels: {}
+  # Specifies extra labels for the operator-metric service:
+  # foo: bar
+
+extraLabels: {}
+  # Specifies extra labels for the operator deployment:
+  # foo: bar
 
 resources: {}
   # limits:
@@ -58,4 +91,11 @@ affinity: {}
 
 securityContext: {}
 
+containerSecurityContext: {}
+
 priorityClassName:
+
+# Specifies weather host network should be used
+hostNetwork: false
+
+metricsPort: 8383
