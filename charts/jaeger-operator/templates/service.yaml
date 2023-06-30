@@ -5,12 +5,19 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
 {{ include "jaeger-operator.labels" . | indent 4 }}
+{{- with .Values.serviceExtraLabels }}
+{{ . | toYaml | indent 4 }}
+{{- end }}
+{{- if .Values.service.annotations }}
+  annotations:
+{{ toYaml .Values.service.annotations | indent 4 }}
+{{- end }}
 spec:
   ports:
   - name: metrics
-    port: 8383
+    port: {{ .Values.metricsPort }}
     protocol: TCP
-    targetPort: 8383
+    targetPort: {{ .Values.metricsPort }}
 {{- if and (eq .Values.service.type "NodePort") (.Values.service.nodePort) }}
     nodePort: {{ .Values.service.nodePort }}
 {{- end }}
@@ -18,3 +25,24 @@ spec:
     app.kubernetes.io/name: {{ include "jaeger-operator.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
   type: {{ .Values.service.type }}
+---
+{{- if .Values.webhooks.service.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+{{ include "jaeger-operator.labels" . | indent 4 }}
+  name: {{ default "jaeger-operator-webhook-service" .Values.webhooks.service.name }}
+  namespace: {{ .Release.Namespace }}
+{{- if .Values.webhooks.service.annotations }}
+  annotations:
+{{ toYaml .Values.webhooks.service.annotations | indent 4 }}
+{{- end }}
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: {{ .Values.webhooks.port }}
+  selector:
+{{ include "jaeger-operator.labels" . | indent 4 }}
+{{- end }}
