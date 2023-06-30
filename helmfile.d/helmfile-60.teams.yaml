@@ -48,6 +48,7 @@ releases:
           namespaceOverride: team-{{ $teamId }}
           alertmanagerSpec:
             externalUrl: https://{{ $appsDomain }}/alertmanager
+          # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
           appNamespacesTarget: team-{{ $teamId }}
