@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $ns := .Release.Namespace }}
 {{- $h := $v.apps.harbor }}
+{{- $b := $v.apps.tekton }}
 ---
 apiVersion: v1
 imagePullSecrets:
@@ -18,13 +19,8 @@ secrets:
 {{- if $h.enabled }}
 - name: harbor-pushsecret
 {{- end }}
-{{- range $v.builds }}
-{{- if .privateGit }}
-- name: git-user-credentials-{{ .name }}
-{{- end }}
-{{- if .otomiGit }}
-- name: gitea-user-credentials-{{ .name }}
-{{- end }}
+{{- if $b.enabled }}
+- name: harbor-pushsecret-build
 {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -112,4 +108,16 @@ rules:
       - '*'
     verbs:
       - '*'
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: gitea-credentials
+type: Opaque
+stringData:
+  .gitconfig: |
+    [credential "https://gitea.{{ $v.cluster.domainSuffix }}"]
+      helper = store
+  .git-credentials: |
+    https://otomi-admin:{{ $v.otomi.adminPassword }}@gitea.{{ $v.cluster.domainSuffix }}
 ---
