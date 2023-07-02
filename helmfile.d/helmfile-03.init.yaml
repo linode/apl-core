@@ -78,7 +78,7 @@ releases:
   - name: tekton-pipelines
     installed: {{ $a | get "tekton.enabled" }}
     namespace: tekton-pipelines
-    chart: ../charts/tekton-pipeline
+    chart: ../charts/tekton-pipelines
     labels:
       pkg: tekton-pipelines
     <<: *default
