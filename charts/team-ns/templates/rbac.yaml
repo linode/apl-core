@@ -20,7 +20,7 @@ secrets:
 - name: harbor-pushsecret
 {{- end }}
 {{- if $b.enabled }}
-- name: harbor-pushsecret-build
+- name: harbor-pushsecret-builds
 {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1

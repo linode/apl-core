@@ -77,7 +77,7 @@ spec:
   {{- end }}
   - name: docker-credentials
     secret:
-      secretName: harbor-pushsecret-build
+      secretName: harbor-pushsecret-builds
 {{- end }}
 {{- end }}
 {{- end }}
