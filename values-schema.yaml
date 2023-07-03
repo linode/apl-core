@@ -51,6 +51,7 @@ definitions:
             - msteams
             - opsgenie
             - email
+            - none
           type: string
         type: array
         uniqueItems: true
