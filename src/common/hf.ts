@@ -1,11 +1,11 @@
 import { pathExists } from 'fs-extra'
-import { set } from 'lodash'
 import { parse } from 'yaml'
+import { omit } from 'lodash'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
 import { asArray, extract, flattenObject, getValuesSchema, rootDir } from './utils'
-import { HelmArguments, getParsedArgs } from './yargs'
+import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
@@ -96,10 +96,7 @@ export const hfValues = async (
     // strip secrets
     const schema = await getValuesSchema()
     const allSecrets = extract(schema, 'x-secret')
-    Object.keys(flattenObject(allSecrets)).forEach((path) => {
-      set(res, path, '<redacted>')
-    })
-    return res
+    return omit(res, Object.keys(flattenObject(allSecrets)))
   }
   return res
 }
