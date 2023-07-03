@@ -56,5 +56,4 @@ operations:
       - upgrades/pre/upgrade-0-20-0.sh || true
   - version: 0.22.0
     pre:
-      - chmod +x upgrades/pre/upgrade-0-22-0.sh
       - upgrades/pre/upgrade-0-22-0.sh || true
