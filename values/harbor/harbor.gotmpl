@@ -7,6 +7,9 @@
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 {{- $tag := $h | get "image.tag" "v2.6.4" }}
+{{/*The cloudNativeDb operator is responsible for creating the secret*/}}
+{{- $databaseExistingSecret := printf "%s-app" $h.database.name }}
+{{- $databaseHost := printf "%s-rw.harbor.svc.cluster.local" $h.database.name }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -60,6 +63,8 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
+  type: {{ $h.database.type }}
+  {{- if eq $h.database.type "internal" }}
   internal:
     priorityClassName: otomi-critical
     image:
@@ -93,10 +98,18 @@ database:
         memory: 256Mi
       {{- end }}
     password: {{ $h.databasePassword }}
+  {{- else }}
+  external:
+    # erase default password value from the Harbor Helm chart
+    password: null
+    coreDatbase: {{ $h.database.coreDatabase }}
+    username: {{ $h.database.user }}
+    host: {{ $databaseHost }}
+    existingSecret: {{ $databaseExistingSecret }}
+  {{- end }}
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users
-  type: internal
 
 exporter:
   priorityClassName: otomi-critical

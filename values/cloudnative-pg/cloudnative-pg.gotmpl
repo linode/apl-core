@@ -1,4 +1,12 @@
 {{- $v := .Values }}
-{{- $cnpg := $v.apps | get "cloudnative-pg" }}
+{{- $cnpg := $v.apps | get "cnpg" }}
 
 resources: {{- $cnpg.resources | toYaml | nindent 2 }}
+
+config:
+  data:
+# -- This adds the labels specified below to all the things that get created when you use the otomi-db chart
+    INHERITED_LABELS: prometheus
+
+# -- Priority indicates the importance of a Pod relative to other Pods.
+priorityClassName: "otomi-critical"

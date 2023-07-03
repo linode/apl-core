@@ -1,0 +1,77 @@
+{{- $v := .Values }}
+{{- $h := $v.apps.harbor }}
+{{- $cnpg := $v.apps.cnpg }}
+{{- $sp := $cnpg.storage }}
+{{- $b := $v.platformBackups.database.harbor }}
+
+name: {{ $h.database.name }}
+storage:
+  size: {{ $h.database.size }}
+
+{{- if $b.enabled }}
+backup:
+  enabled: {{ $b.enabled }}
+  schedule: {{ $b.schedule }}
+  retentionPolicy: {{ $b.retentionPolicy }}
+  type:  {{ $sp.type }}
+{{- if eq $sp.type "azure" }}
+  azure:
+    storageAccount: {{ $sp.azure.accountName }}
+    container: {{ $sp.azure.containerName }}
+{{- end }}
+{{- if eq $sp.type "s3" }}
+  s3:
+    endpointURL: {{ $sp.s3.s3Url }}
+    bucket: {{ $sp.s3.bucket }}
+{{- end }}
+{{- if eq $sp.type "gcs" }}
+  gcs: 
+    bucket: {{ $sp.gcs.bucket }}
+{{- end }}
+{{- end }}
+
+
+{{- if $h.database.importHarborDb }}
+clusterSpec:
+  bootstrap:
+    initdb:
+      database: {{ $h.database.coreDatabase }}
+      owner: {{ $h.database.user }}
+      import:
+        type: microservice
+        databases:
+          - {{ $h.database.coreDatabase }}
+        source:
+          externalCluster: harbor-database
+  externalClusters:
+  - name: harbor-database
+    connectionParameters:
+      host: harbor-database.harbor.svc.cluster.local
+      user: postgres
+      dbname: {{ $h.database.coreDatabase }}
+      sslmode: disable
+    password:
+      name: harbor-database
+      key: POSTGRES_PASSWORD
+{{- else }}
+clusterSpec:  
+  bootstrap:
+    initdb:
+      database: {{ $h.database.coreDatabase }}
+      owner: {{ $h.database.user }}
+      localeCollate: 'en_US.UTF-8'
+      localeCType: 'en_US.UTF-8'
+{{- end }}
+
+
+resources:
+  {{- with $h | get "resources.database" nil }}
+  {{- toYaml . | nindent 6 }}
+  {{- else }}
+  limits:
+    cpu: 100m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  {{- end }}

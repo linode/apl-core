@@ -17,11 +17,11 @@ rm -rf $input_folder/*
 
 # match all the crds of charts that didn't ship crds (some operators don't), and pull them
 # (expects kube context to have a cluster that has them all)
-# for pkg in "argoproj" "external-secrets" "operators.coreos" "cert-manager" "istio" "jaeger" "kiali" "knative"; do
-for pkg in "istio" "knative"; do
+# for pkg in "argoproj" "external-secrets" "operators.coreos" "cert-manager" "istio" "jaeger" "kiali" "knative" "cnpg"; do
+for pkg in "cnpg"; do
   pkg_file="$input_folder/$pkg.yaml"
   echo '' >$pkg_file
-  for crd in $(kubectl get crd | grep $pkg | awk '{print $1}'); do kubectl get crd $crd -o yaml | yq d - 'metadata' | yq d - 'status' >>$pkg_file && printf "\n---\n" >>$pkg_file; done
+  for crd in $(kubectl get crd | grep $pkg | awk '{print $1}'); do kubectl get crd $crd -o yaml | yq e 'del(.metadata)' | yq e 'del(.status)' >>$pkg_file && printf "\n---\n" >>$pkg_file; done
   pushd $gen_folder
   ../crd2jsonschema.py ../input-crds/$pkg.yaml
   popd

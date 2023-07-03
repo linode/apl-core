@@ -6,7 +6,7 @@ k8s:
     - name: cert-manager
       disableIstioInjection: true
     - name: cnpg-system
-      app: cloudnative-pg
+      app: cnpg
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: default
@@ -135,6 +135,8 @@ adminApps:
         #   - authorization
   - name: cert-manager
     tags: [ingress, security, tls]
+  - name: cnpg
+    tags: [database]
   - name: drone
     tags: [cicd, deployment, pipeline]
     isShared: true
