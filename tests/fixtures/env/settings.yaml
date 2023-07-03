@@ -1,11 +1,16 @@
 alerts:
-    drone:
-        - slack
-    groupInterval: 5m
+    # groupInterval: 5m
+    # opsgenie:
+    #     responders:
+    #         - id: "7575"
+    #           type: escalation
     receivers:
-        - slack
-        - email
-    repeatInterval: 3h
+        - none
+        # - opsgenie
+    # repeatInterval: 3h
+    # slack:
+    #     channel: mon-otomi
+    #     channelCrit: mon-otomi-crit
 azure:
     appgw:
         isManaged: true
@@ -99,7 +104,7 @@ otomi:
     hasCloudLB: false
     hasExternalDNS: true
     hasExternalIDP: true
-    isHomeMonitored: true
+    isHomeMonitored: false
     nodeSelector:
         otomi: otomi-sys
     version: main

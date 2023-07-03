@@ -1,0 +1,9 @@
+{{- if .Values.certs.issuer.create }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ default "selfsigned-issuer" .Values.certs.issuer.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selfSigned: {}
+{{- end }}
