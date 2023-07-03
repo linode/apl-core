@@ -2061,12 +2061,17 @@ properties:
                 type: string
               type:
                 type: string
+                description: Internal is a database provided by community chart. Whereas external is database provided by cloudnative-pg.
+                enum:
+                  - internal
+                  - external
               name:
                 type: string
               user:
                 type: string
-              core-database:
-                type: string
+              importHarborDb:
+                description: Indicate if an exisitng database should be importend. (Once set to true you must not change it back)
+                type: boolean
           image:
             $ref: '#/definitions/imageSimple'
           resources:
