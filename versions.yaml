@@ -1,4 +1,4 @@
-api: builds-sec
+api: main
 console: main
-tasks: builds-sec
+tasks: main
 tools: 1.4.25
