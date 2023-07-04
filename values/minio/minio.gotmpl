@@ -67,6 +67,7 @@ provisioning:
     - name: thanos
     - name: loki
     - name: harbor
+    - name: database
   policies:
     - name: otomi-apps
       statements:
@@ -82,6 +83,7 @@ provisioning:
           - arn:aws:s3:::thanos
           - arn:aws:s3:::loki
           - arn:aws:s3:::harbor 
+          - arn:aws:s3:::database
         - effect: Allow
           principal:
             AWS:
@@ -93,6 +95,7 @@ provisioning:
           - arn:aws:s3:::thanos
           - arn:aws:s3:::loki
           - arn:aws:s3:::harbor
+          - arn:aws:s3:::database
           condition:
             StringEquals:
               s3:prefix:
@@ -112,3 +115,4 @@ provisioning:
           - arn:aws:s3:::thanos/**
           - arn:aws:s3:::loki/**
           - arn:aws:s3:::harbor/**
+          - arn:aws:s3:::database/**
