@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 
-RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget tmux
+RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget tmux bash-completion
 
 RUN curl -LO https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz && tar zxf k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && rm k9s_Linux_amd64.tar.gz
 
