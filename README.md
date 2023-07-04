@@ -17,7 +17,9 @@
 </p>
 
 <h4 align="center">
-Add developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud. 1 install, 1 spec, and 1 console to build, deploy, secure, expose and monitor containerized applications.
+Add developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud. 
+
+ONE install, ONE spec, and ONE console to build, deploy, expose, secure and monitor containerized applications.
 </h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
