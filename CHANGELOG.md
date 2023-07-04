@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.22.0](https://github.com/redkubes/otomi-core/compare/v0.21.0...v0.22.0) (2023-07-04)
+
+
+### Features
+
+* add azureblob for thanos ([#1152](https://github.com/redkubes/otomi-core/issues/1152)) ([17b0f69](https://github.com/redkubes/otomi-core/commit/17b0f692e1b4e5f7fe3247e2c59f1c777982aaad))
+* add cloudnative-pg and use it for harbor external database ([#1120](https://github.com/redkubes/otomi-core/issues/1120)) ([796d31a](https://github.com/redkubes/otomi-core/commit/796d31a7e9a4719f379340c10a658428fbf5b993))
+* add cloudnative-pg operator ([#1137](https://github.com/redkubes/otomi-core/issues/1137)) ([88afbbe](https://github.com/redkubes/otomi-core/commit/88afbbef3f69a3e92697e2b269fd8118ae0e5a55))
+* add custom request headers ([#1160](https://github.com/redkubes/otomi-core/issues/1160)) ([aaea96d](https://github.com/redkubes/otomi-core/commit/aaea96dc5c3906ad173115348819a1d9b543d8cc))
+* add dependencies to app info ([#1145](https://github.com/redkubes/otomi-core/issues/1145)) ([5fcb1d7](https://github.com/redkubes/otomi-core/commit/5fcb1d7177502aec665a9d49fa36f6f0471d3503))
+* add otomi-db chart ([#1139](https://github.com/redkubes/otomi-core/issues/1139)) ([cc3520b](https://github.com/redkubes/otomi-core/commit/cc3520b83bbcb94efc5884c296d1cfe58c01747b))
+* add otomi-status in status.yaml ([#1138](https://github.com/redkubes/otomi-core/issues/1138)) ([26ef150](https://github.com/redkubes/otomi-core/commit/26ef15045020d21f7ba8826cf7efafe93db2d8ca))
+* allow to deine additional entrypoints ([#1142](https://github.com/redkubes/otomi-core/issues/1142)) ([6af078a](https://github.com/redkubes/otomi-core/commit/6af078a2780546296118ef15e47fc1fcc52099f2))
+* allow to configure istio mesh config ([#1163](https://github.com/redkubes/otomi-core/issues/1163)) ([c86009a](https://github.com/redkubes/otomi-core/commit/c86009a9e8203acbc36b0bbaea330faf92fb4e6d))
+* bootstrap values for dev ([#1133](https://github.com/redkubes/otomi-core/issues/1133)) ([19be65f](https://github.com/redkubes/otomi-core/commit/19be65f2f372276a578deea6072970299d1b477f))
+* add ttyd shell ([#1162](https://github.com/redkubes/otomi-core/issues/1162)) ([bc8a747](https://github.com/redkubes/otomi-core/commit/bc8a747553bdd35932a0715426b61151159b5613))
+* add kubectl SA for each team ([#1140](https://github.com/redkubes/otomi-core/issues/1140)) ([b761b8b](https://github.com/redkubes/otomi-core/commit/b761b8ba1a89a931946b609932d4026a3fa6412c))
+* support k8s 1.25 ([#1154](https://github.com/redkubes/otomi-core/issues/1154)) ([2fe9dd3](https://github.com/redkubes/otomi-core/commit/2fe9dd34e49b22a7e6500b92f3da953fd7aa9dea))
+* define license as a secret in schema ([6ca35f3](https://github.com/redkubes/otomi-core/commit/6ca35f315d753badf6da3c9d21917ed50ee9c5ad))
+* upgrade loki and promtail ([#1143](https://github.com/redkubes/otomi-core/issues/1143)) ([e6b0fc2](https://github.com/redkubes/otomi-core/commit/e6b0fc20af92a9b4ff685cfc99471c237061ef94))
+* redefine Tekton build on image tag change([#1151](https://github.com/redkubes/otomi-core/issues/1151)) ([7d0af57](https://github.com/redkubes/otomi-core/commit/7d0af5772fa34c842f39cc37591f1066795b9af8))
+* add team projects ([#1132](https://github.com/redkubes/otomi-core/issues/1132)) ([2678865](https://github.com/redkubes/otomi-core/commit/2678865cdc547315e9f36a63568a566aa669c5d9))
+* upgrade jaeger-operator ([#1169](https://github.com/redkubes/otomi-core/issues/1169)) ([ea53e4c](https://github.com/redkubes/otomi-core/commit/ea53e4cb41b5835f863eebcf588a4166ccbc4468))
+* upgrade kubeclarity ([#1144](https://github.com/redkubes/otomi-core/issues/1144)) ([76b28db](https://github.com/redkubes/otomi-core/commit/76b28dbfd17b7dc926b7859ff6f433df4045bca3))
+* upgrade kured ([#1148](https://github.com/redkubes/otomi-core/issues/1148)) ([d5f3ae3](https://github.com/redkubes/otomi-core/commit/d5f3ae37fd4d8e3c9db4b7315f924311c138ad2c))
+* upgrade prom stack ([#1161](https://github.com/redkubes/otomi-core/issues/1161)) ([323f27c](https://github.com/redkubes/otomi-core/commit/323f27c2aac25825ffe7cf26d3136396c6f19ab5))
+* upgrade prometheus blackbox exporter ([#1155](https://github.com/redkubes/otomi-core/issues/1155)) ([6135ee3](https://github.com/redkubes/otomi-core/commit/6135ee3197252e8c6aca78122e655685c97a1608))
+* upgrade thanos ([#1158](https://github.com/redkubes/otomi-core/issues/1158)) ([e75f282](https://github.com/redkubes/otomi-core/commit/e75f282528b0f06e97ccec8fa5fa3c9abf8306b7))
+* upgrade kiali to version 1.68.0 ([#1127](https://github.com/redkubes/otomi-core/issues/1127)) ([50f7a07](https://github.com/redkubes/otomi-core/commit/50f7a076376b3bada795acb4210c1e6952b7a329))
+* add upgrade script for kube prom stack ([#1168](https://github.com/redkubes/otomi-core/issues/1168)) ([b2f5e00](https://github.com/redkubes/otomi-core/commit/b2f5e0016e29056eb48930c192d41617bf59976f))
+* add alert manager default receiver ([#1164](https://github.com/redkubes/otomi-core/issues/1164)) ([e125c36](https://github.com/redkubes/otomi-core/commit/e125c3675b5c9615dcba92e6f48e6db0963f92bc))
+
+### Bug Fixes
+* changed version names ([9ddf47d](https://github.com/redkubes/otomi-core/commit/9ddf47dd9f79c030368da8d8edacee10ee821a24))
+* cloudtty image versioning ([#1166](https://github.com/redkubes/otomi-core/issues/1166)) ([ff551f9](https://github.com/redkubes/otomi-core/commit/ff551f9431898dab17285fdd64bbc26f54f3b88e))
+* configure null receiver for alertmanager ([#1165](https://github.com/redkubes/otomi-core/issues/1165)) ([08e6b08](https://github.com/redkubes/otomi-core/commit/08e6b08b08fc69949b2c9a3e3fb134a9a6c353ef))
+* do not template values with gucci ([#1157](https://github.com/redkubes/otomi-core/issues/1157)) ([18e2a15](https://github.com/redkubes/otomi-core/commit/18e2a1563dea5406c40f08838e54fd1c272d4eed))
+* tekton build issues and k8s 1.25 support ([#1170](https://github.com/redkubes/otomi-core/issues/1170)) ([3dac623](https://github.com/redkubes/otomi-core/commit/3dac623e6e613db5f47fd1182417a4e2e115953a))
+* do not require recceivers while installing alert manager ([#1156](https://github.com/redkubes/otomi-core/issues/1156)) ([7ce464f](https://github.com/redkubes/otomi-core/commit/7ce464f58395eb7de6a58dc09fcf5281ecfd3b06))
+* generate SA token ([#1147](https://github.com/redkubes/otomi-core/issues/1147)) ([21ae146](https://github.com/redkubes/otomi-core/commit/21ae146c141dfd7ca3bf2f46b0f827df2e3e791d))
+* increase version number after succesful values migration ([#1131](https://github.com/redkubes/otomi-core/issues/1131)) ([3c437cb](https://github.com/redkubes/otomi-core/commit/3c437cb844c98bcd5b023f72541770d9d88ca9de))
+
+### Docs
+
+* update supported k8s versions ([43c85af](https://github.com/redkubes/otomi-core/commit/43c85afb97c46974bdeb1a4d8cd93e1f124ea000))
+* update supported k8s versions ([206e783](https://github.com/redkubes/otomi-core/commit/206e783a3b67e0958be23512a942b3dd28331f2a))
+
+
+### Tests
+
+* add license fixtures ([6bec98c](https://github.com/redkubes/otomi-core/commit/6bec98ce2be1e63a6ac16c21f11c6f47ead2d026))
+* enable thanos ([#1167](https://github.com/redkubes/otomi-core/issues/1167)) ([b2e71bc](https://github.com/redkubes/otomi-core/commit/b2e71bcccbdbf030e41707a6fb5e1d08e32a9eaf))
+
+
+### Others
+
+* package version ([#1174](https://github.com/redkubes/otomi-core/issues/1174)) ([bdbc98a](https://github.com/redkubes/otomi-core/commit/bdbc98a2ad4e2ed10dc68277b06615448997860a))
+* print all app versions ([#1130](https://github.com/redkubes/otomi-core/issues/1130)) ([3b86edf](https://github.com/redkubes/otomi-core/commit/3b86edfcc414bf5f09f0cbbcdb53f500eaa36adf))
+* versions ([e33e9ef](https://github.com/redkubes/otomi-core/commit/e33e9ef5075800fe20169860ccea66a1767d5368))
+
 ### [0.18.1](https://github.com/redkubes/otomi-core/compare/v0.18.0...v0.18.1) (2023-02-07)
 
 
