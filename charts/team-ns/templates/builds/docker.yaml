@@ -12,6 +12,10 @@ metadata:
 spec:
   workspaces:
   - name: shared-data
+  - name: docker-credentials
+  {{- if .repoAccess.otomiGit }}
+  - name: git-credentials
+  {{- end }}
   tasks:
   - name: fetch-source
     taskRef:
@@ -19,6 +23,10 @@ spec:
     workspaces:
     - name: output
       workspace: shared-data
+    {{- if .repoAccess.otomiGit }}
+    - name: ssh-directory
+      workspace: git-credentials
+    {{- end }}
     params:
     - name: url
       value: {{ .mode.docker.repoUrl }}
@@ -32,6 +40,8 @@ spec:
     workspaces:
     - name: source
       workspace: shared-data
+    - name: dockerconfig
+      workspace: docker-credentials
     params:
     - name: DOCKERFILE
       value: {{ .mode.docker.path }}
@@ -60,6 +70,14 @@ spec:
         resources:
           requests:
             storage: 1Gi
+  {{- if .repoAccess.otomiGit }}
+  - name: git-credentials
+    secret:
+      secretName: gitea-credentials
+  {{- end }}
+  - name: docker-credentials
+    secret:
+      secretName: harbor-pushsecret-builds
 {{- end }}
 {{- end }}
 {{- end }}

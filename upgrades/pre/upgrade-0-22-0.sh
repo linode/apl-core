@@ -21,3 +21,11 @@ if [[ $(helm status -n monitoring prometheus-operator) ]]; then
 else
   echo "The old prometheus-operator release does not exists. Skipping"
 fi
+
+if [[ $(helm status -n tekton-pipeline tekton) ]]; then
+  helm uninstall -n tekton-pipeline tekton
+  [[ $(kubectl get ns tekton) ]] && kubectl delete ns tekton
+  [[ $(kubectl get ns tekton-pipeline) ]] && kubectl delete ns tekton-pipeline
+else
+  echo "The old tekton release does not exists. Skipping"
+fi

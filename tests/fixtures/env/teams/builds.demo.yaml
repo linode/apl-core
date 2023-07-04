@@ -5,7 +5,7 @@ teamConfig:
               tag: v.0.0.1
               repoAccess:
                   otomiGit: true
-                  privateGit: false
+                  #   privateGit: false
               mode:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples
@@ -16,7 +16,6 @@ teamConfig:
               tag: v.0.0.1
               repoAccess:
                   otomiGit: true
-                  privateGit: true
               mode:
                   buildpacks:
                       repoUrl: https://github.com/buildpacks/samples
@@ -27,9 +26,6 @@ teamConfig:
               tag: v_0_0_1
               repoAccess:
                   otomiGit: false
-                  privateGit: true
-                  repoUserName: bla
-                  repoPassword: bla1111111
               mode:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples
