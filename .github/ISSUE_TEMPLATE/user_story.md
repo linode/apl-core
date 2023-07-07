@@ -2,7 +2,7 @@
 name: User report
 about: Define a user story
 title: ''
-labels: 'user story'
+labels: 'story'
 assignees: ''
 ---
 
