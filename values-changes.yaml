@@ -73,6 +73,7 @@ changes:
       - apps.harbor.database.type: internal
     relocations:
       - apps.velero.platformBackups: apps.velero.platformBackups.persistentVolumes
+  - version: 11
     deleteions:
       - 'apps.loki.resources'
       - 'apps.harbor.backup'
