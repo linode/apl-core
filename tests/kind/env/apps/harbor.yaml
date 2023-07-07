@@ -1,5 +1,0 @@
-apps:
-  harbor:
-    enabled: false
-    database:
-      type: internal
