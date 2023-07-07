@@ -1,0 +1,13 @@
+.history
+.prettierrc.yml
+.vscode
+*.json
+*.yaml.dec
+.decrypted~*
+docker-compose*
+bin/
+core.yaml
+.secrets
+*.sample
+.env
+env/status.yaml

@@ -1,3 +1,5 @@
 apps:
-    harbor:
-        enabled: false
+  harbor:
+    enabled: false
+    database:
+      type: internal

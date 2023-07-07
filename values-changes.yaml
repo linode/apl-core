@@ -75,5 +75,6 @@ changes:
       - apps.velero.platformBackups: apps.velero.platformBackups.persistentVolumes
   - version: 11
     deleteions:
-      - 'apps.loki.resources'
       - 'apps.harbor.backup'
+      - 'apps.loki.resources.limits'
+      - 'apps.loki.resources.requests'
