@@ -54,33 +54,33 @@ podAnnotations:
   sidecar.istio.io/inject: "false"
   policy.otomi.io/ignore: psp-allowed-users
 extraArgs:
-  ssl-insecure-skip-verify: {{ $v._derived.untrustedCA }}
-  # supported: oidc, google, azure, github
-  provider: oidc
-  whitelist-domain: {{ $domainList }}
-  scope: {{ $o | get "scope" "openid email profile" }}
-  session-store-type: redis
-  redis-connection-url: redis://oauth2-proxy-redis-master
-  redis-password: {{ $r | get "password" }}
-  redirect-url: https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
-  email-domain: "*"
-  cookie-domain: {{ $domainList }}
-  cookie-samesite: none
-  cookie-secure: true
-  # cookie-httponly: true
-  reverse-proxy: true
-  cookie-refresh: 0h1m0s # set to the same as keycloak realm's accessCodeLifespan 
-  pass-authorization-header: true
-  # pass-basic-auth: true
-  skip-auth-regex: '/manifest.json'
-  silence-ping-logging: true
-  # exclude-logging-paths: /ping
-  set-authorization-header: true
-  # set-xauthrequest: true
-  oidc-issuer-url: {{ $v._derived.oidcBaseUrl }}
-  # oidc-issuer-url: {{ $v._derived.oidcBaseUrlBackchannel }}
-  insecure-oidc-allow-unverified-email: true
-  show-debug-on-error: true
+  - --ssl-insecure-skip-verify={{ $v._derived.untrustedCA }}
+  # - # supported=oidc, google, azure, github
+  - --provider=oidc
+  - --whitelist-domain={{ $domainList }}
+  - --scope="{{ $o | get "scope" "openid email profile" }}"
+  - --session-store-type=redis
+  - --redis-connection-url=redis://oauth2-proxy-redis-master
+  - --redis-password={{ $r | get "password" }}
+  - --redirect-url=https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
+  - --email-domain="*"
+  - --cookie-domain={{ $domainList }}
+  - --cookie-samesite=none
+  - --cookie-secure=true
+  # - # cookie-httponly=true
+  - --reverse-proxy=true
+  - --cookie-refresh=0h1m0s # set to the same as keycloak realm's accessCodeLifespan 
+  - --pass-authorization-header=true
+  # - # pass-basic-auth=true
+  - --skip-auth-regex='/manifest.json'
+  - --silence-ping-logging=true
+  # - # exclude-logging-paths=/ping
+  - --set-authorization-header=true
+  # - # set-xauthrequest=true
+  - --oidc-issuer-url={{ $v._derived.oidcBaseUrl }}
+  # - # oidc-issuer-url={{ $v._derived.oidcBaseUrlBackchannel }}
+  - --insecure-oidc-allow-unverified-email=true
+  - --show-debug-on-error=true
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
