@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.22.1](https://github.com/redkubes/otomi-core/compare/v0.22.0...v0.22.1) (2023-07-10)
+
+
+### Features
+
+* updated tty image [MAJOR] ([#1175](https://github.com/redkubes/otomi-core/issues/1175)) ([1fc0220](https://github.com/redkubes/otomi-core/commit/1fc0220db9220b990fa5bfc960da20b5f60b892d))
+
+
+### Bug Fixes
+
+* add missing migrations ([#1179](https://github.com/redkubes/otomi-core/issues/1179)) ([b4503a1](https://github.com/redkubes/otomi-core/commit/b4503a1edab0de17cf72b2676ee23122869c4b9b))
+* upgrade script for kube-prom stack ([#1173](https://github.com/redkubes/otomi-core/issues/1173)) ([962ba02](https://github.com/redkubes/otomi-core/commit/962ba02f86316ca92d0b424283ac954818cc7998))
+
+
+### Others
+
+* versions ([0baf569](https://github.com/redkubes/otomi-core/commit/0baf569f2f762dc77d976a6b307a132d7332c90a))
+* versions ([cdaee4c](https://github.com/redkubes/otomi-core/commit/cdaee4ca0aec5dc2930f5b4fe67408ba91762784))
+
 ## [0.22.0](https://github.com/redkubes/otomi-core/compare/v0.21.0...v0.22.0) (2023-07-04)
 
 
