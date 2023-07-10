@@ -7,8 +7,8 @@
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
 image:
-  tag: "v7.4.0"
-  repository: quay.io/oauth2-proxy/oauth2-proxy
+  tag: "7.4.0-debian-11-r81"
+  repository: bitnami/oauth2-proxy
 
 configuration:
   clientID: {{ $k.idp.clientID  }}
