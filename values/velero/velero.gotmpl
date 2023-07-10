@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
-{{- $b := $v.platformBackups }}
+{{- $b := $v.platformBackups.persistentVolumes }}
 {{- $cp := $vl.cloud }}
 {{- $sp := $vl.storage }}
 

@@ -34,6 +34,17 @@ appsInfo:
     license: Apache 2.0
     about: Cert-manager adds certificates and certificate issuers as resource types in Kubernetes clusters, and simplifies the process of obtaining, renewing and using those certificates. It can issue certificates from a variety of supported sources, including Let's Encrypt, HashiCorp Vault, and Venafi as well as private PKI, and it ensures certificates remain valid and up to date, attempting to renew certificates at an appropriate time before expiry.
     integration: Cert-manager is used by Otomi to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let Otomi create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces Otomi to install external-dns. Because a lot of DNS settings are used by other Otomi contexts, most DNS configuration is found under settings/dns.
+  cnpg:
+    title: CloudNative-pg
+    appVersion: 1.20.0
+    repo: https://github.com/cloudnative-pg/cloudnative-pg
+    maintainers: EnterpriseDB
+    relatedLinks:
+      - https://cloudnative-pg.io/
+      - https://cloudnative-pg.io/documentation/1.20/
+    license: Apache 2.0
+    about: CloudNativePG is an open source operator designed to manage PostgreSQL workloads on any supported Kubernetes cluster running in private, public, hybrid, or multi-cloud environments.
+    integration: CloudNativePG is used by Otomi to provide Postgresql database for various applications. In the values you can configure a storageprovider for backups. The backups can be enabled in settings.
   drone:
     title: Drone
     appVersion: 2.7.3

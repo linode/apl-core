@@ -1,0 +1,57 @@
+{{- if and (.Values.webhooks.mutatingWebhook.create) (.Values.webhooks.service.create) }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: {{ default .Release.Namespace .Values.certs.certificate.namespace }}/{{ default "jaeger-operator-service-cert" .Values.certs.certificate.secretName }}
+  labels:
+{{ include "jaeger-operator.labels" . | indent 4 }}
+  name: jaeger-operator-mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ default "jaeger-operator-webhook-service" .Values.webhooks.service.name }}
+      namespace: {{ .Release.Namespace }}
+      path: /mutate-v1-deployment
+  failurePolicy: Ignore
+  name: deployment.sidecar-injector.jaegertracing.io
+  objectSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/name
+      operator: NotIn
+      values:
+      - {{ include "jaeger-operator.name" . }}
+  rules:
+  - apiGroups:
+    - apps
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - deployments
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ default "jaeger-operator-webhook-service" .Values.webhooks.service.name }}
+      namespace: {{ .Release.Namespace }}
+      path: /mutate-jaegertracing-io-v1-jaeger
+  failurePolicy: Fail
+  name: mjaeger.kb.io
+  rules:
+  - apiGroups:
+    - jaegertracing.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - jaegers
+  sideEffects: None
+{{- end }}

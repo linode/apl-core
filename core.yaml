@@ -6,7 +6,7 @@ k8s:
     - name: cert-manager
       disableIstioInjection: true
     - name: cnpg-system
-      app: cloudnative-pg
+      app: cnpg
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: default
@@ -67,7 +67,7 @@ k8s:
     - name: kubeclarity
       app: kubeclarity
       disableIstioInjection: true
-    - name: tekton
+    - name: tekton-pipelines
       app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -141,6 +141,8 @@ adminApps:
         #   - authorization
   - name: cert-manager
     tags: [ingress, security, tls]
+  - name: cnpg
+    tags: [database]
   - name: drone
     tags: [cicd, deployment, pipeline]
     isShared: true
@@ -383,7 +385,7 @@ adminApps:
       - svc: thanos-receive
         port: 19291
         namespace: monitoring
-        paths: [/api/]
+        paths: [/api/v1/receive/]
         forwardPath: true
         type: public
   - name: trivy

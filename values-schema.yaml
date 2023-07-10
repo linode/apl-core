@@ -51,6 +51,7 @@ definitions:
             - msteams
             - opsgenie
             - email
+            - none
           type: string
         type: array
         uniqueItems: true
@@ -1278,6 +1279,11 @@ definitions:
     description: Expiration of the backup. Defaults to 7 days.
     title: TTL after finished
     type: string
+  backupRetentionPolicy:
+    default: 7d
+    description: Delete backups according to retention policy. In DAYS|WEEKS|MONTHS
+    title: Retention policy
+    type: string
   url:
     pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
     type: string
@@ -1387,6 +1393,114 @@ definitions:
     required:
       - name
       - url
+  storageProvider:
+    type: object
+    title: Storage provider
+    description: Select the preferred provider for storing database backups.
+    oneOf:
+      - title: Local Minio
+        type: object
+        description: Select to use the in-cluster Minio instance.
+        properties:
+          type:
+            type: string
+            enum:
+              - minioLocal
+            default: minioLocal
+      - title: Azure Blob
+        type: object
+        x-hideTitle: true
+        properties:
+          azure:
+            type: object
+            description: Select to store in Azure Blob storage.
+            title: Azure blob (container) storage
+            properties:
+              accountKey:
+                type: string
+                x-secret: ''
+              accountName:
+                type: string
+              containerName:
+                type: string
+            required:
+              - accountKey
+              - accountName
+              - containerName
+          type:
+            type: string
+            enum:
+              - azure
+            default: azure
+        required:
+          - azure
+          - type
+      - title: S3
+        type: object
+        x-hideTitle: true
+        properties:
+          s3:
+            type: object
+            title: S3
+            description: Select to store in AWS S3 or S3 compatible blob storage.
+            properties:
+              bucket:
+                type: string
+                description: The name of the bucket.
+                $ref: '#/definitions/wordCharacterPattern'
+              s3Url:
+                type: string
+                description: The full S3 URL.
+                $ref: '#/definitions/wordCharacterPattern'
+              accessKeyId:
+                type: string
+                description: The ID of the access key. Optional if cloud provider is AWS.
+                $ref: '#/definitions/wordCharacterPattern'
+              secretAccessKey:
+                type: string
+                description: The secret of the access key. Optional if cloud provider is AWS.
+                $ref: '#/definitions/wordCharacterPattern'
+                x-secret: true
+            required:
+              - bucket
+              - s3Url
+              - accessKeyId
+              - secretAccessKey
+          type:
+            type: string
+            enum:
+              - s3
+            default: s3
+        required:
+          - s3
+          - type
+      - title: gcs
+        type: object
+        x-hideTitle: true
+        properties:
+          gcs:
+            type: object
+            title: Google Cloud Storage
+            description: Select to store backups in Google Cloud Storage.
+            properties:
+              bucket:
+                type: string
+                description: Name of the bucket.
+                $ref: '#/definitions/wordCharacterPattern'
+              serviceAccountKey:
+                $ref: '#/definitions/google/definitions/accountJson'
+                description: A service account key in json format for authentication.
+            required:
+              - bucket
+              - serviceAccountKey
+          type:
+            type: string
+            enum:
+              - gcs
+            default: gcs
+        required:
+          - gcs
+          - type
 
 properties:
   alerts:
@@ -1506,13 +1620,15 @@ properties:
               anyOf:
                 - required:
                     - issuer
-      cloudnative-pg:
+      cnpg:
         additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
+          storage:
+            $ref: '#/definitions/storageProvider'
       cluster-autoscaler:
         additionalProperties: false
         properties:
@@ -1939,6 +2055,23 @@ properties:
             required:
               - secret
               - credentials
+          database:
+            properties:
+              size:
+                type: string
+              type:
+                type: string
+                description: Internal is a database provided by the community chart. The external is database provided by the cloudnative-pg.
+                enum:
+                  - internal
+                  - external
+              name:
+                type: string
+              user:
+                type: string
+              importHarborDb:
+                description: Indicate if an existing database should be importend. (Once set to true you must not change it back)
+                type: boolean
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -1965,13 +2098,6 @@ properties:
           secretKey:
             type: string
             x-secret: 'randAlpha 16'
-          backup:
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              schedule:
-                $ref: '#/definitions/backupSchedule'
         required:
           - databasePassword
       hello:
@@ -3742,87 +3868,110 @@ properties:
     required:
       - smarthost
   platformBackups:
+    type: object
     properties:
-      gitea:
-        title: Gitea
+      database:
+        type: object
+        title: Database backups
         properties:
-          enabled:
-            type: boolean
-            default: false
-          ttl:
-            $ref: '#/definitions/backupTtl'
-          schedule:
-            $ref: '#/definitions/backupSchedule'
-      drone:
-        title: Drone
+          harbor:
+            title: Harbor
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+              retentionPolicy:
+                $ref: '#/definitions/backupRetentionPolicy'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+      persistentVolumes:
+        type: object
+        title: PersistentVolumes backups
         properties:
-          enabled:
-            type: boolean
-            default: false
-          ttl:
-            $ref: '#/definitions/backupTtl'
-          schedule:
-            $ref: '#/definitions/backupSchedule'
-      keycloak:
-        title: Keycloak
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          ttl:
-            $ref: '#/definitions/backupTtl'
-          schedule:
-            $ref: '#/definitions/backupSchedule'
-      harbor:
-        title: Harbor
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          ttl:
-            $ref: '#/definitions/backupTtl'
-          schedule:
-            $ref: '#/definitions/backupSchedule'
-      vault:
-        title: Vault
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          ttl:
-            $ref: '#/definitions/backupTtl'
-          schedule:
-            $ref: '#/definitions/backupSchedule'
-      argo:
-        title: ArgoCD
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          ttl:
-            $ref: '#/definitions/backupTtl'
-          schedule:
-            $ref: '#/definitions/backupSchedule'
-      kubeapps:
-        title: Kubeapps
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          ttl:
-            $ref: '#/definitions/backupTtl'
-          schedule:
-            $ref: '#/definitions/backupSchedule'
-      minio:
-        title: Minio
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          ttl:
-            $ref: '#/definitions/backupTtl'
-          schedule:
-            $ref: '#/definitions/backupSchedule'
+          gitea:
+            title: Gitea
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          drone:
+            title: Drone
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          keycloak:
+            title: Keycloak
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          harbor:
+            title: Harbor
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          vault:
+            title: Vault
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          argo:
+            title: ArgoCD
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          kubeapps:
+            title: Kubeapps
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          minio:
+            title: Minio
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
   teamConfig:
     additionalProperties: false
     patternProperties:

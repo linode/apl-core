@@ -17,24 +17,26 @@
 </p>
 
 <h4 align="center">
-Add developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud. 1 install, 1 spec, and 1 console to build, deploy, secure, expose and monitor containerized applications.
+Add developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud. 
+
+ONE install, ONE spec, and ONE console to build, deploy, expose, secure and monitor containerized applications.
 </h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
 ## Otomi helps
 
-**Developers** - To focus on their apps only
+**Developers** - With an Internal Developer Platform that helps them to focus on their apps only
 
-- Build images from application code
-- Deploy containerized workloads without writing any YAML
-- Direct access to logs and metrics
+- Build OCI compliant images from application code
+- Deploy containerized workloads the GitOps way without writing any YAML
+- Get instant access to logs and metrics
 - Store charts and images in a private registry
 - Build and run custom CI pipelines
-- Easy ingress and network policy configuration
-- Manage your own secrets
+- Expose applications and network policies with just a few clicks
+- Manage your own secrets in a self-hosted Vault
 
-**Platform teams** - To setup and manage production-ready Kubernetes-based platforms
+**Platform engineers** - To setup and manage secure and production-ready Kubernetes-based platforms
 
 - Onboard development teams in a comprehensive multi-tenant setup
 - Get all the required K8s tools in an integrated and automated way
@@ -52,7 +54,7 @@ Add developer- and operations-centric tools, automation and self-service on top 
 
 To install Otomi using Helm, make sure to have a K8s cluster running with at least:
 
-- Version `1.23` up to `1.24`
+- Version `1.24` and `1.25`
 - A node pool with **6 vCPU** and **8GB+ RAM** (more is advised!)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by `Otomi` can obtain an external accessible IP (using a cloud load balancer or MetalLB)
@@ -68,7 +70,7 @@ and then install the Helm chart:
 
 ```bash
 helm install otomi otomi/otomi \
---set cluster.k8sVersion=$VERSION \ # 1.23 and 1.24 are supported
+--set cluster.k8sVersion=$VERSION \ # 1.24 and 1.25 are supported
 --set cluster.name=$CLUSTERNAME \
 --set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', 'scaleway' or 'custom' for any other cloud or onprem K8s
 ```
@@ -108,14 +110,15 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - [Tekton Pipeline](https://github.com/tektoncd/pipeline): K8s-style resources for declaring CI/CD pipelines.
 - [Paketo build packs](https://github.com/paketo-buildpacks): Cloud Native Buildpack implementations for popular programming language ecosystems
 - [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
+- [Cloudnative-pg](https://github.com/cloudnative-pg/cloudnative-pg): Open source operator designed to manage PostgreSQL workloads
 
 ## Otomi Features
 
 - Activate capabilities to compose your own platform
 - GitOps out-of-the-box
-- Container image scanning (at the gate and during runtime)
-- Security policies (at the gate and during runtime)
-- Advanced ingress architecture
+- Container image scanning (at the gate and at runtime)
+- Security policies (at the gate and at runtime)
+- Advanced ingress architecture using Istio, Nginx and Oauth2
 - Network policies for internal ingress and external egress
 - Deploy workloads the GitOps way without writing any YAML
 - Create and manage secrets in Vault and use them in workloads
@@ -123,6 +126,7 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - Comprehensive multi-tenant setup
 - Automation tasks for Harbor, Keycloak, ArgoCD, Vault, Velero, Gitea and Drone
 - Expose services on multiple (public/private) networks
+- Automated Istio resource creation and configuration
 - SOPS/KMS for encryption of sensitive configuration values
 - BYO IdP, DNS and/or CA
 

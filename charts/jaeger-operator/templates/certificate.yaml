@@ -1,0 +1,22 @@
+{{- if .Values.certs.certificate.create }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ default "jaeger-operator-service-cert" .Values.certs.certificate.secretName }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  dnsNames:
+  - "{{ default "jaeger-operator-webhook-service" .Values.webhooks.service.name }}.{{ .Release.Namespace }}.svc"
+  - "{{ default "jaeger-operator-webhook-service" .Values.webhooks.service.name }}.{{ .Release.Namespace }}.svc.cluster.local"
+  issuerRef:
+    {{- if .Values.certs.issuer.create }}
+    kind: Issuer
+    {{- else }}
+    kind: {{ .Values.certs.certificate.issuerKind }}
+    {{- end }}
+    name: {{ default "selfsigned-issuer" .Values.certs.issuer.name }}
+  secretName: {{ default "jaeger-operator-service-cert" .Values.certs.certificate.secretName }}
+  subject:
+    organizationalUnits:
+      - "{{ include "jaeger-operator.name" . }}"
+{{- end }}

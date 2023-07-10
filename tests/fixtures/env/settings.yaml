@@ -1,11 +1,16 @@
 alerts:
-    drone:
-        - slack
-    groupInterval: 5m
+    # groupInterval: 5m
+    # opsgenie:
+    #     responders:
+    #         - id: "7575"
+    #           type: escalation
     receivers:
-        - slack
-        - email
-    repeatInterval: 3h
+        - none
+        # - opsgenie
+    # repeatInterval: 3h
+    # slack:
+    #     channel: mon-otomi
+    #     channelCrit: mon-otomi-crit
 azure:
     appgw:
         isManaged: true
@@ -63,22 +68,28 @@ kms:
             keys: somesecretvalue
             tenantId: somesecretvalue
 platformBackups:
-    gitea:
-        enabled: false
-    drone:
-        enabled: false
-    keycloak:
-        enabled: false
-    harbor:
-        enabled: false
-    vault:
-        enabled: false
-    argo:
-        enabled: false
-    kubeapps:
-        enabled: false
-    minio:
-        enabled: false
+    database:
+        harbor:
+            enabled: true
+            schedule: '0 0 0 * * *'
+            retentionPolicy: 7d
+    persistentVolumes:
+        gitea:
+            enabled: false
+        drone:
+            enabled: false
+        keycloak:
+            enabled: false
+        harbor:
+            enabled: false
+        vault:
+            enabled: false
+        argo:
+            enabled: false
+        kubeapps:
+            enabled: false
+        minio:
+            enabled: false
 oidc:
     adminGroupID: someAdminGroupID
     clientID: someClientID
@@ -93,7 +104,7 @@ otomi:
     hasCloudLB: false
     hasExternalDNS: true
     hasExternalIDP: true
-    isHomeMonitored: true
+    isHomeMonitored: false
     nodeSelector:
         otomi: otomi-sys
     version: main

@@ -23,13 +23,15 @@ environments:
               limits:
                 cpu: 200m
                 memory: 384Mi
-          cloudnative-pg:
+          cnpg:
+            storage:
+              type: minioLocal
             resources:
               requests:
                 cpu: 100m
                 memory: 100Mi
               limits:
-                cpu: 500m
+                cpu: 1000m
                 memory: 512Mi
           cluster-overprovisioner:
             enabled: false
@@ -188,8 +190,13 @@ environments:
             registry:
               credentials:
                 username: otomi-admin
-            backup:
-              enabled: false
+            database:
+              type: external
+              size: '2Gi'
+              name: harbor-otomi-db
+              user: harbor
+              coreDatabase: registry
+              importHarborDb: false
             resources:
               trivy:
                 requests:
@@ -695,6 +702,10 @@ environments:
                 cpu: 1000m
                 memory: 512Mi
         platformBackups:
+          database:
+            harbor:
+              enabled: false
+          persistentVolumes:
             gitea:
               enabled: false
             drone:
@@ -721,6 +732,9 @@ environments:
             network: public
           classes: []
         oidc: {}
+        alerts:
+          receivers:
+              - none
         otomi:
           hasCloudLB: false
           hasExternalDNS: false
