@@ -123,8 +123,6 @@ jobs:
   preprocess-input:
     name: Preprocess input variables
     runs-on: ubuntu-latest
-    outputs:
-      kubernetes_versions: ${{ steps.k8s-versions.outputs.versions }}
     steps:
       - name: Print user input
         run: |
@@ -138,6 +136,14 @@ jobs:
           echo 'generate_password: ${{ inputs.generate_password }}'
           echo 'oidc: ${{ inputs.oidc }}'
           echo 'certificate: ${{ inputs.certificate }}'
+  preprocess-scaleway-input:
+    needs: preprocess-input
+    if: ${{ inputs.server_providers == 'scaleway' }}
+    name: Preprocess input variables for scaleway
+    runs-on: ubuntu-latest
+    outputs:
+      kubernetes_versions: ${{ steps.k8s-versions.outputs.versions }}
+    steps:
       - name: Install scw-cli
         uses: scaleway/action-scw@v0
         with:
@@ -153,10 +159,34 @@ jobs:
           fi
           echo $versions
           echo "versions=$versions" >> $GITHUB_OUTPUT
-
-  run-integration-test:
-    name: Run integration test on cluster
+  preprocess-digitalocean-input:
     needs: preprocess-input
+    if: ${{ inputs.server_providers == 'digital ocean' }}
+    name: Preprocess input variables for digital ocean
+    runs-on: ubuntu-latest
+    outputs:
+      kubernetes_versions: ${{ steps.k8s-versions.outputs.versions }}
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - id: k8s-versions
+        name: Process k8s version input
+        run: |
+          if [ -z '${{ inputs.kubernetes_versions }}' ]; then
+            echo "Kubernetes versions not specified, determine DO supported versions"
+            versions=`doctl kubernetes options versions -o json | jq -ce 'map(.kubernetes_version)'`
+          else
+            versions='${{ inputs.kubernetes_versions }}'
+          fi
+          echo $versions
+          echo "versions=$versions" >> $GITHUB_OUTPUT
+
+  run-integration-test-scaleway:
+    if: ${{ inputs.server_providers == 'scaleway' }}
+    name: Run integration test on cluster
+    needs: preprocess-scaleway-input
     runs-on: ubuntu-latest
     # strategy:
     #   fail-fast: false
