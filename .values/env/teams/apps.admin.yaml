@@ -1,33 +1,3 @@
 teamConfig:
     admin:
-        apps:
-            alertmanager: {}
-            argocd: {}
-            cert-manager: {}
-            cnpg: {}
-            drone: {}
-            external-dns: {}
-            falco: {}
-            gatekeeper: {}
-            gitea: {}
-            grafana: {}
-            harbor: {}
-            httpbin: {}
-            ingress-nginx-platform: {}
-            istio: {}
-            jaeger: {}
-            keycloak: {}
-            kiali: {}
-            knative: {}
-            kubeapps: {}
-            kubeclarity: {}
-            kured: {}
-            loki: {}
-            minio: {}
-            opencost: {}
-            prometheus: {}
-            tekton: {}
-            thanos: {}
-            trivy: {}
-            vault: {}
-            velero: {}
+        apps: {}
