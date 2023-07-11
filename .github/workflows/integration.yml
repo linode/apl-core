@@ -225,8 +225,8 @@ jobs:
               --wait \
               -o=json)
 
-          clusterId=$(scw k8s cluster list -o json| jq -r '.[] | select(.name == ${{ env.SCALEWAY_CLUSTER_NAME }} | .id'))
-          echo "CLUSTER_ID=$clusterId" >> $GITHUB_OUTPUT
+          clusterId=$(scw k8s cluster list -o json | jq -r '.[] | select(.name == ${{ env.SCALEWAY_CLUSTER_NAME }}) | .id')
+          echo CLUSTER_ID=$clusterId >> $GITHUB_OUTPUT
 
       - name: Delete  k8s cluster at Scaleway
         if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
