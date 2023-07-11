@@ -1,248 +1,386 @@
-# cert-manager
+<!--- app-name: cert-manager -->
 
-cert-manager is a Kubernetes addon to automate the management and issuance of
-TLS certificates from various issuing sources.
+# cert-manager packaged by Bitnami
 
-It will ensure certificates are valid and up to date periodically, and attempt
-to renew certificates at an appropriate time before expiry.
+cert-manager is a Kubernetes add-on to automate the management and issuance of TLS certificates from various issuing sources.
+
+[Overview of cert-manager](https://github.com/jetstack/cert-manager)
+
+Trademarks: This software listing is packaged by Bitnami. The respective trademarks mentioned in the offering are owned by the respective companies, and use of them does not imply any affiliation or endorsement.
+
+## TL;DR
+
+```console
+helm install my-release oci://registry-1.docker.io/bitnamicharts/cert-manager
+```
+
+## Introduction
+
+Bitnami charts for Helm are carefully engineered, actively maintained and are the quickest and easiest way to deploy containers on a Kubernetes cluster that are ready to handle production workloads.
+
+This chart bootstraps a [cert-manager](https://cert-manager.io/) Deployment in a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+
+Bitnami charts can be used with [Kubeapps](https://kubeapps.dev/) for deployment and management of Helm Charts in clusters.
+
+Looking to use cert-manager in production? Try [VMware Application Catalog](https://bitnami.com/enterprise), the enterprise edition of Bitnami Application Catalog.
 
 ## Prerequisites
 
-- Kubernetes 1.20+
+- Kubernetes 1.19+
+- Helm 3.2.0+
+- PV provisioner support in the underlying infrastructure
 
 ## Installing the Chart
-
-Full installation instructions, including details on how to configure extra
-functionality in cert-manager can be found in the [installation docs](https://cert-manager.io/docs/get-started/installation).
-
-Before installing the chart, you must first install the cert-manager CustomResourceDefinition resources.
-This is performed in a separate step to allow you to easily uninstall and reinstall cert-manager without deleting your installed custom resources.
-
-```bash
-$ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.0/cert-manager.crds.yaml
-```
 
 To install the chart with the release name `my-release`:
 
 ```console
-## Add the Jetstack Helm repository
-$ helm repo add jetstack https://charts.jetstack.io
-
-## Install the cert-manager helm chart
-$ helm install my-release --namespace cert-manager --version v1.10.0 jetstack/cert-manager
+helm install my-release oci://registry-1.docker.io/bitnamicharts/cert-manager
 ```
-
-In order to begin issuing certificates, you will need to set up a ClusterIssuer
-or Issuer resource (for example, by creating a 'letsencrypt-staging' issuer).
-
-More information on the different types of issuers and how to configure them
-can be found in [our documentation](https://cert-manager.io/docs/configuration/).
-
-For information on how to configure cert-manager to automatically provision
-Certificates for Ingress resources, take a look at the
-[Securing Ingresses documentation](https://cert-manager.io/docs/usage/ingress/).
 
 > **Tip**: List all releases using `helm list`
 
-## Upgrading the Chart
-
-Special considerations may be required when upgrading the Helm chart, and these
-are documented in our full [installation guide](https://cert-manager.io/docs/get-started/installation).
-
-**Please check here before performing upgrades!**
-
 ## Uninstalling the Chart
 
-To uninstall/delete the `my-release` deployment:
+To uninstall/delete the `my-release` helm release:
 
 ```console
-$ helm delete my-release
+helm uninstall my-release
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
-If you want to completely uninstall cert-manager from your cluster, you will also need to
-delete the previously installed CustomResourceDefinition resources:
+## Parameters
+
+### Global parameters
+
+| Name                      | Description                                     | Value |
+| ------------------------- | ----------------------------------------------- | ----- |
+| `global.imageRegistry`    | Global Docker image registry                    | `""`  |
+| `global.imagePullSecrets` | Global Docker registry secret names as an array | `[]`  |
+| `global.storageClass`     | Global StorageClass for Persistent Volume(s)    | `""`  |
+
+### Common parameters
+
+| Name                       | Description                                                                                                                                       | Value         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `kubeVersion`              | Override Kubernetes version                                                                                                                       | `""`          |
+| `nameOverride`             | String to partially override common.names.fullname                                                                                                | `""`          |
+| `fullnameOverride`         | String to fully override common.names.fullname                                                                                                    | `""`          |
+| `commonLabels`             | Labels to add to all deployed objects                                                                                                             | `{}`          |
+| `commonAnnotations`        | Annotations to add to all deployed objects                                                                                                        | `{}`          |
+| `extraDeploy`              | Array of extra objects to deploy with the release                                                                                                 | `[]`          |
+| `logLevel`                 | Set up cert-manager log level                                                                                                                     | `2`           |
+| `clusterResourceNamespace` | Namespace used to store DNS provider credentials etc. for ClusterIssuer resources. If empty, uses the namespace where the controller is deployed. | `""`          |
+| `leaderElection.namespace` | Namespace which leaderElection works.                                                                                                             | `kube-system` |
+| `installCRDs`              | Flag to install cert-manager CRDs                                                                                                                 | `false`       |
+| `replicaCount`             | Number of cert-manager replicas                                                                                                                   | `1`           |
+
+### Controller deployment parameters
+
+| Name                                                     | Description                                                                                                | Value                  |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `controller.replicaCount`                                | Number of Controller replicas                                                                              | `1`                    |
+| `controller.image.registry`                              | Controller image registry                                                                                  | `docker.io`            |
+| `controller.image.repository`                            | Controller image repository                                                                                | `bitnami/cert-manager` |
+| `controller.image.tag`                                   | Controller image tag (immutable tags are recommended)                                                      | `1.12.2-debian-11-r0`  |
+| `controller.image.digest`                                | Controller image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag | `""`                   |
+| `controller.image.pullPolicy`                            | Controller image pull policy                                                                               | `IfNotPresent`         |
+| `controller.image.pullSecrets`                           | Controller image pull secrets                                                                              | `[]`                   |
+| `controller.image.debug`                                 | Controller image debug mode                                                                                | `false`                |
+| `controller.acmesolver.image.registry`                   | Controller image registry                                                                                  | `docker.io`            |
+| `controller.acmesolver.image.repository`                 | Controller image repository                                                                                | `bitnami/acmesolver`   |
+| `controller.acmesolver.image.tag`                        | Controller image tag (immutable tags are recommended)                                                      | `1.12.1-debian-11-r3`  |
+| `controller.acmesolver.image.digest`                     | Controller image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag | `""`                   |
+| `controller.acmesolver.image.pullPolicy`                 | Controller image pull policy                                                                               | `IfNotPresent`         |
+| `controller.acmesolver.image.pullSecrets`                | Controller image pull secrets                                                                              | `[]`                   |
+| `controller.acmesolver.image.debug`                      | Controller image debug mode                                                                                | `false`                |
+| `controller.resources.limits`                            | The resources limits for the Controller container                                                          | `{}`                   |
+| `controller.resources.requests`                          | The requested resources for the Controller container                                                       | `{}`                   |
+| `controller.podSecurityContext.enabled`                  | Enabled Controller pods' Security Context                                                                  | `true`                 |
+| `controller.podSecurityContext.fsGroup`                  | Set Controller pod's Security Context fsGroup                                                              | `1001`                 |
+| `controller.containerSecurityContext.enabled`            | Enabled Controller containers' Security Context                                                            | `true`                 |
+| `controller.containerSecurityContext.runAsUser`          | Set Controller container's Security Context runAsUser                                                      | `1001`                 |
+| `controller.containerSecurityContext.runAsNonRoot`       | Set Controller container's Security Context runAsNonRoot                                                   | `true`                 |
+| `controller.podAffinityPreset`                           | Pod affinity preset. Ignored if `controller.affinity` is set. Allowed values: `soft` or `hard`             | `""`                   |
+| `controller.podAntiAffinityPreset`                       | Pod anti-affinity preset. Ignored if `controller.affinity` is set. Allowed values: `soft` or `hard`        | `soft`                 |
+| `controller.nodeAffinityPreset.type`                     | Node affinity preset type. Ignored if `controller.affinity` is set. Allowed values: `soft` or `hard`       | `""`                   |
+| `controller.nodeAffinityPreset.key`                      | Node label key to match. Ignored if `controller.affinity` is set                                           | `""`                   |
+| `controller.nodeAffinityPreset.values`                   | Node label values to match. Ignored if `controller.affinity` is set                                        | `[]`                   |
+| `controller.affinity`                                    | Affinity for cert-manager Controller                                                                       | `{}`                   |
+| `controller.nodeSelector`                                | Node labels for pod assignment                                                                             | `{}`                   |
+| `controller.containerPort`                               | Controller container port                                                                                  | `9402`                 |
+| `controller.command`                                     | Override Controller default command                                                                        | `[]`                   |
+| `controller.args`                                        | Override Controller default args                                                                           | `[]`                   |
+| `controller.priorityClassName`                           | Controller pod priority class name                                                                         | `""`                   |
+| `controller.runtimeClassName`                            | Name of the runtime class to be used by pod(s)                                                             | `""`                   |
+| `controller.schedulerName`                               | Name of the k8s scheduler (other than default)                                                             | `""`                   |
+| `controller.topologySpreadConstraints`                   | Topology Spread Constraints for pod assignment                                                             | `[]`                   |
+| `controller.hostAliases`                                 | Custom host aliases for Controller pods                                                                    | `[]`                   |
+| `controller.tolerations`                                 | Tolerations for pod assignment                                                                             | `[]`                   |
+| `controller.podLabels`                                   | Extra labels for Controller pods                                                                           | `{}`                   |
+| `controller.podAnnotations`                              | Annotations for Controller pods                                                                            | `{}`                   |
+| `controller.dnsPolicy`                                   | Controller pod DNS policy                                                                                  | `""`                   |
+| `controller.dnsConfig`                                   | Controller pod DNS config. Required if `controller.dnsPolicy` is set to `None`                             | `{}`                   |
+| `controller.lifecycleHooks`                              | Add lifecycle hooks to the Controller deployment                                                           | `{}`                   |
+| `controller.updateStrategy.type`                         | Controller deployment update strategy                                                                      | `RollingUpdate`        |
+| `controller.updateStrategy.rollingUpdate`                | Controller deployment rolling update configuration parameters                                              | `{}`                   |
+| `controller.extraArgs`                                   | Extra arguments to pass to the Controller container                                                        | `[]`                   |
+| `controller.extraEnvVars`                                | Add extra environment variables to the Controller container                                                | `[]`                   |
+| `controller.extraEnvVarsCM`                              | Name of existing ConfigMap containing extra env vars                                                       | `""`                   |
+| `controller.extraEnvVarsSecret`                          | Name of existing Secret containing extra env vars                                                          | `""`                   |
+| `controller.extraVolumes`                                | Optionally specify extra list of additional volumes for Controller pods                                    | `[]`                   |
+| `controller.extraVolumeMounts`                           | Optionally specify extra list of additional volumeMounts for Controller container(s)                       | `[]`                   |
+| `controller.initContainers`                              | Add additional init containers to the Controller pods                                                      | `[]`                   |
+| `controller.sidecars`                                    | Add additional sidecar containers to the Controller pod                                                    | `[]`                   |
+| `controller.serviceAccount.create`                       | Specifies whether a ServiceAccount should be created                                                       | `true`                 |
+| `controller.serviceAccount.name`                         | The name of the ServiceAccount to use.                                                                     | `""`                   |
+| `controller.serviceAccount.annotations`                  | Additional custom annotations for the ServiceAccount                                                       | `{}`                   |
+| `controller.serviceAccount.automountServiceAccountToken` | Automount service account token for the server service account                                             | `true`                 |
+
+### Webhook deployment parameters
+
+| Name                                                  | Description                                                                                             | Value                          |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `webhook.replicaCount`                                | Number of Webhook replicas                                                                              | `1`                            |
+| `webhook.image.registry`                              | Webhook image registry                                                                                  | `docker.io`                    |
+| `webhook.image.repository`                            | Webhook image repository                                                                                | `bitnami/cert-manager-webhook` |
+| `webhook.image.tag`                                   | Webhook image tag (immutable tags are recommended)                                                      | `1.12.1-debian-11-r3`          |
+| `webhook.image.digest`                                | Webhook image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag | `""`                           |
+| `webhook.image.pullPolicy`                            | Webhook image pull policy                                                                               | `IfNotPresent`                 |
+| `webhook.image.pullSecrets`                           | Webhook image pull secrets                                                                              | `[]`                           |
+| `webhook.image.debug`                                 | Webhook image debug mode                                                                                | `false`                        |
+| `webhook.resources.limits`                            | The resources limits for the Webhook container                                                          | `{}`                           |
+| `webhook.resources.requests`                          | The requested resources for the Webhook container                                                       | `{}`                           |
+| `webhook.podSecurityContext.enabled`                  | Enabled Webhook pods' Security Context                                                                  | `true`                         |
+| `webhook.podSecurityContext.fsGroup`                  | Set Webhook pod's Security Context fsGroup                                                              | `1001`                         |
+| `webhook.containerSecurityContext.enabled`            | Enabled Webhook containers' Security Context                                                            | `true`                         |
+| `webhook.containerSecurityContext.runAsUser`          | Set Webhook container's Security Context runAsUser                                                      | `1001`                         |
+| `webhook.containerSecurityContext.runAsNonRoot`       | Set Webhook container's Security Context runAsNonRoot                                                   | `true`                         |
+| `webhook.podAffinityPreset`                           | Pod affinity preset. Ignored if `webhook.affinity` is set. Allowed values: `soft` or `hard`             | `""`                           |
+| `webhook.podAntiAffinityPreset`                       | Pod anti-affinity preset. Ignored if `webhook.affinity` is set. Allowed values: `soft` or `hard`        | `soft`                         |
+| `webhook.nodeAffinityPreset.type`                     | Node affinity preset type. Ignored if `webhook.affinity` is set. Allowed values: `soft` or `hard`       | `""`                           |
+| `webhook.nodeAffinityPreset.key`                      | Node label key to match. Ignored if `webhook.affinity` is set                                           | `""`                           |
+| `webhook.nodeAffinityPreset.values`                   | Node label values to match. Ignored if `webhook.affinity` is set                                        | `[]`                           |
+| `webhook.affinity`                                    | Affinity for cert-manager Webhook                                                                       | `{}`                           |
+| `webhook.nodeSelector`                                | Node labels for pod assignment                                                                          | `{}`                           |
+| `webhook.containerPort`                               | Webhook container port                                                                                  | `10250`                        |
+| `webhook.httpsPort`                                   | Webhook container port                                                                                  | `443`                          |
+| `webhook.command`                                     | Override Webhook default command                                                                        | `[]`                           |
+| `webhook.args`                                        | Override Webhook default args                                                                           | `[]`                           |
+| `webhook.livenessProbe.enabled`                       | Enable livenessProbe                                                                                    | `true`                         |
+| `webhook.livenessProbe.path`                          | Path for livenessProbe                                                                                  | `/livez`                       |
+| `webhook.livenessProbe.initialDelaySeconds`           | Initial delay seconds for livenessProbe                                                                 | `60`                           |
+| `webhook.livenessProbe.periodSeconds`                 | Period seconds for livenessProbe                                                                        | `10`                           |
+| `webhook.livenessProbe.timeoutSeconds`                | Timeout seconds for livenessProbe                                                                       | `1`                            |
+| `webhook.livenessProbe.failureThreshold`              | Failure threshold for livenessProbe                                                                     | `3`                            |
+| `webhook.livenessProbe.successThreshold`              | Success threshold for livenessProbe                                                                     | `1`                            |
+| `webhook.readinessProbe.enabled`                      | Enable readinessProbe                                                                                   | `true`                         |
+| `webhook.readinessProbe.path`                         | Path for readinessProbe                                                                                 | `/healthz`                     |
+| `webhook.readinessProbe.initialDelaySeconds`          | Initial delay seconds for readinessProbe                                                                | `5`                            |
+| `webhook.readinessProbe.periodSeconds`                | Period seconds for readinessProbe                                                                       | `5`                            |
+| `webhook.readinessProbe.timeoutSeconds`               | Timeout seconds for readinessProbe                                                                      | `1`                            |
+| `webhook.readinessProbe.failureThreshold`             | Failure threshold for readinessProbe                                                                    | `3`                            |
+| `webhook.readinessProbe.successThreshold`             | Success threshold for readinessProbe                                                                    | `1`                            |
+| `webhook.customStartupProbe`                          | Override default startup probe                                                                          | `{}`                           |
+| `webhook.customLivenessProbe`                         | Override default liveness probe                                                                         | `{}`                           |
+| `webhook.customReadinessProbe`                        | Override default readiness probe                                                                        | `{}`                           |
+| `webhook.priorityClassName`                           | Webhook pod priority class name                                                                         | `""`                           |
+| `webhook.runtimeClassName`                            | Name of the runtime class to be used by pod(s)                                                          | `""`                           |
+| `webhook.schedulerName`                               | Name of the k8s scheduler (other than default)                                                          | `""`                           |
+| `webhook.topologySpreadConstraints`                   | Topology Spread Constraints for pod assignment                                                          | `[]`                           |
+| `webhook.hostAliases`                                 | Custom host aliases for Webhook pods                                                                    | `[]`                           |
+| `webhook.tolerations`                                 | Tolerations for pod assignment                                                                          | `[]`                           |
+| `webhook.podLabels`                                   | Extra labels for Webhook pods                                                                           | `{}`                           |
+| `webhook.podAnnotations`                              | Annotations for Webhook pods                                                                            | `{}`                           |
+| `webhook.lifecycleHooks`                              | Add lifecycle hooks to the Webhook deployment                                                           | `{}`                           |
+| `webhook.updateStrategy.type`                         | Webhook deployment update strategy                                                                      | `RollingUpdate`                |
+| `webhook.updateStrategy.rollingUpdate`                | Controller deployment rolling update configuration parameters                                           | `{}`                           |
+| `webhook.extraArgs`                                   | Extra arguments to pass to the Webhook container                                                        | `[]`                           |
+| `webhook.extraEnvVars`                                | Add extra environment variables to the Webhook container                                                | `[]`                           |
+| `webhook.extraEnvVarsCM`                              | Name of existing ConfigMap containing extra env vars                                                    | `""`                           |
+| `webhook.extraEnvVarsSecret`                          | Name of existing Secret containing extra env vars                                                       | `""`                           |
+| `webhook.extraVolumes`                                | Optionally specify extra list of additional volumes for Webhook pods                                    | `[]`                           |
+| `webhook.extraVolumeMounts`                           | Optionally specify extra list of additional volumeMounts for Webhook container                          | `[]`                           |
+| `webhook.initContainers`                              | Add additional init containers to the Webhook pods                                                      | `[]`                           |
+| `webhook.sidecars`                                    | Add additional sidecar containers to the Webhook pod                                                    | `[]`                           |
+| `webhook.serviceAccount.create`                       | Specifies whether a ServiceAccount should be created                                                    | `true`                         |
+| `webhook.serviceAccount.name`                         | The name of the ServiceAccount to use.                                                                  | `""`                           |
+| `webhook.serviceAccount.annotations`                  | Additional custom annotations for the ServiceAccount                                                    | `{}`                           |
+| `webhook.serviceAccount.automountServiceAccountToken` | Automount service account token for the server service account                                          | `true`                         |
+| `webhook.hostNetwork`                                 | Specifies hostNetwork value                                                                             | `false`                        |
+
+### CAInjector deployment parameters
+
+| Name                                                     | Description                                                                                                | Value                 |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------- |
+| `cainjector.replicaCount`                                | Number of CAInjector replicas                                                                              | `1`                   |
+| `cainjector.image.registry`                              | CAInjector image registry                                                                                  | `docker.io`           |
+| `cainjector.image.repository`                            | CAInjector image repository                                                                                | `bitnami/cainjector`  |
+| `cainjector.image.tag`                                   | CAInjector image tag (immutable tags are recommended)                                                      | `1.12.1-debian-11-r3` |
+| `cainjector.image.digest`                                | CAInjector image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag | `""`                  |
+| `cainjector.image.pullPolicy`                            | CAInjector image pull policy                                                                               | `IfNotPresent`        |
+| `cainjector.image.pullSecrets`                           | CAInjector image pull secrets                                                                              | `[]`                  |
+| `cainjector.image.debug`                                 | CAInjector image debug mode                                                                                | `false`               |
+| `cainjector.resources.limits`                            | The resources limits for the CAInjector container                                                          | `{}`                  |
+| `cainjector.resources.requests`                          | The requested resources for the CAInjector container                                                       | `{}`                  |
+| `cainjector.podSecurityContext.enabled`                  | Enabled CAInjector pods' Security Context                                                                  | `true`                |
+| `cainjector.podSecurityContext.fsGroup`                  | Set CAInjector pod's Security Context fsGroup                                                              | `1001`                |
+| `cainjector.containerSecurityContext.enabled`            | Enabled CAInjector containers' Security Context                                                            | `true`                |
+| `cainjector.containerSecurityContext.runAsUser`          | Set CAInjector container's Security Context runAsUser                                                      | `1001`                |
+| `cainjector.containerSecurityContext.runAsNonRoot`       | Set CAInjector container's Security Context runAsNonRoot                                                   | `true`                |
+| `cainjector.podAffinityPreset`                           | Pod affinity preset. Ignored if `cainjector.affinity` is set. Allowed values: `soft` or `hard`             | `""`                  |
+| `cainjector.podAntiAffinityPreset`                       | Pod anti-affinity preset. Ignored if `cainjector.affinity` is set. Allowed values: `soft` or `hard`        | `soft`                |
+| `cainjector.nodeAffinityPreset.type`                     | Node affinity preset type. Ignored if `cainjector.affinity` is set. Allowed values: `soft` or `hard`       | `""`                  |
+| `cainjector.nodeAffinityPreset.key`                      | Node label key to match. Ignored if `cainjector.affinity` is set                                           | `""`                  |
+| `cainjector.nodeAffinityPreset.values`                   | Node label values to match. Ignored if `cainjector.affinity` is set                                        | `[]`                  |
+| `cainjector.affinity`                                    | Affinity for cert-manager CAInjector                                                                       | `{}`                  |
+| `cainjector.nodeSelector`                                | Node labels for pod assignment                                                                             | `{}`                  |
+| `cainjector.command`                                     | Override CAInjector default command                                                                        | `[]`                  |
+| `cainjector.args`                                        | Override CAInjector default args                                                                           | `[]`                  |
+| `cainjector.priorityClassName`                           | CAInjector pod priority class name                                                                         | `""`                  |
+| `cainjector.runtimeClassName`                            | Name of the runtime class to be used by pod(s)                                                             | `""`                  |
+| `cainjector.schedulerName`                               | Name of the k8s scheduler (other than default)                                                             | `""`                  |
+| `cainjector.topologySpreadConstraints`                   | Topology Spread Constraints for pod assignment                                                             | `[]`                  |
+| `cainjector.hostAliases`                                 | Custom host aliases for CAInjector pods                                                                    | `[]`                  |
+| `cainjector.tolerations`                                 | Tolerations for pod assignment                                                                             | `[]`                  |
+| `cainjector.podLabels`                                   | Extra labels for CAInjector pods                                                                           | `{}`                  |
+| `cainjector.podAnnotations`                              | Annotations for CAInjector pods                                                                            | `{}`                  |
+| `cainjector.lifecycleHooks`                              | Add lifecycle hooks to the CAInjector deployment                                                           | `{}`                  |
+| `cainjector.updateStrategy.type`                         | Controller deployment update strategy                                                                      | `RollingUpdate`       |
+| `cainjector.updateStrategy.rollingUpdate`                | Controller deployment rolling update configuration parameters                                              | `{}`                  |
+| `cainjector.extraArgs`                                   | Extra arguments to pass to the CAInjector container                                                        | `[]`                  |
+| `cainjector.extraEnvVars`                                | Add extra environment variables to the CAInjector container                                                | `[]`                  |
+| `cainjector.extraEnvVarsCM`                              | Name of existing ConfigMap containing extra env vars                                                       | `""`                  |
+| `cainjector.extraEnvVarsSecret`                          | Name of existing Secret containing extra env vars                                                          | `""`                  |
+| `cainjector.extraVolumes`                                | Optionally specify extra list of additional volumes for CAInjector pods                                    | `[]`                  |
+| `cainjector.extraVolumeMounts`                           | Optionally specify extra list of additional volumeMounts for CAInjector container(s)                       | `[]`                  |
+| `cainjector.initContainers`                              | Add additional init containers to the CAInjector pods                                                      | `[]`                  |
+| `cainjector.sidecars`                                    | Add additional sidecar containers to the CAInjector pod                                                    | `[]`                  |
+| `cainjector.serviceAccount.create`                       | Specifies whether a ServiceAccount should be created                                                       | `true`                |
+| `cainjector.serviceAccount.name`                         | The name of the ServiceAccount to use.                                                                     | `""`                  |
+| `cainjector.serviceAccount.annotations`                  | Additional custom annotations for the ServiceAccount                                                       | `{}`                  |
+| `cainjector.serviceAccount.automountServiceAccountToken` | Automount service account token for the server service account                                             | `true`                |
+
+### Metrics Parameters
+
+| Name                                       | Description                                                                       | Value      |
+| ------------------------------------------ | --------------------------------------------------------------------------------- | ---------- |
+| `metrics.enabled`                          | Start metrics                                                                     | `true`     |
+| `metrics.podAnnotations`                   | Annotations for cert-manager exporter pods                                        | `{}`       |
+| `metrics.serviceMonitor.path`              | The path which the ServiceMonitor will monitor                                    | `/metrics` |
+| `metrics.serviceMonitor.targetPort`        | The port in which the ServiceMonitor will monitor                                 | `9402`     |
+| `metrics.serviceMonitor.enabled`           | Create ServiceMonitor Resource for scraping metrics using PrometheusOperator      | `false`    |
+| `metrics.serviceMonitor.namespace`         | Namespace which Prometheus is running in                                          | `""`       |
+| `metrics.serviceMonitor.jobLabel`          | The name of the label on the target service to use as the job name in prometheus. | `""`       |
+| `metrics.serviceMonitor.interval`          | Interval at which metrics should be scraped                                       | `60s`      |
+| `metrics.serviceMonitor.scrapeTimeout`     | Timeout after which the scrape is ended                                           | `30s`      |
+| `metrics.serviceMonitor.relabelings`       | RelabelConfigs to apply to samples before scraping                                | `[]`       |
+| `metrics.serviceMonitor.metricRelabelings` | MetricRelabelConfigs to apply to samples before ingestion                         | `[]`       |
+| `metrics.serviceMonitor.selector`          | ServiceMonitor selector labels                                                    | `{}`       |
+| `metrics.serviceMonitor.labels`            | Extra labels for the ServiceMonitor                                               | `{}`       |
+| `metrics.serviceMonitor.additionalLabels`  | DEPRECATED. Use metrics.serviceMonitor.labels instead.                            | `{}`       |
+| `metrics.serviceMonitor.honorLabels`       | honorLabels chooses the metric's labels on collisions with target labels          | `false`    |
+
+### Other Parameters
+
+| Name          | Description                                        | Value  |
+| ------------- | -------------------------------------------------- | ------ |
+| `rbac.create` | Specifies whether RBAC resources should be created | `true` |
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
 ```console
-$ kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.0/cert-manager.crds.yaml
+helm install my-release oci://registry-1.docker.io/bitnamicharts/cert-manager \
+  --set installCRDs=true
 ```
-
-## Configuration
-
-The following table lists the configurable parameters of the cert-manager chart and their default values.
-
-| Parameter | Description | Default |
-| --------- | ----------- | ------- |
-| `global.imagePullSecrets` | Reference to one or more secrets to be used when pulling images | `[]` |
-| `global.commonLabels` | Labels to apply to all resources | `{}` |
-| `global.rbac.create` | If `true`, create and use RBAC resources (includes sub-charts) | `true` |
-| `global.priorityClassName`| Priority class name for cert-manager and webhook pods | `""` |
-| `global.podSecurityPolicy.enabled` | If `true`, create and use PodSecurityPolicy (includes sub-charts) | `false` |
-| `global.podSecurityPolicy.useAppArmor` | If `true`, use Apparmor seccomp profile in PSP | `true` |
-| `global.leaderElection.namespace` | Override the namespace used to store the ConfigMap for leader election | `kube-system` |
-| `global.leaderElection.leaseDuration` | The duration that non-leader candidates will wait after observing a leadership renewal until attempting to acquire leadership of a led but unrenewed leader slot. This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate |  |
-| `global.leaderElection.renewDeadline` | The interval between attempts by the acting master to renew a leadership slot before it stops leading. This must be less than or equal to the lease duration |  |
-| `global.leaderElection.retryPeriod` | The duration the clients should wait between attempting acquisition and renewal of a leadership |  |
-| `installCRDs` | If true, CRD resources will be installed as part of the Helm chart. If enabled, when uninstalling CRD resources will be deleted causing all installed custom resources to be DELETED | `false` |
-| `image.repository` | Image repository | `quay.io/jetstack/cert-manager-controller` |
-| `image.tag` | Image tag | `v1.10.0` |
-| `image.pullPolicy` | Image pull policy | `IfNotPresent` |
-| `replicaCount`  | Number of cert-manager replicas  | `1` |
-| `clusterResourceNamespace` | Override the namespace used to store DNS provider credentials etc. for ClusterIssuer resources | Same namespace as cert-manager pod |
-| `featureGates` | Set of comma-separated key=value pairs that describe feature gates on the controller. Some feature gates may also have to be enabled on other components, and can be set supplying the `feature-gate` flag to `<component>.extraArgs` | `` |
-| `extraArgs` | Optional flags for cert-manager | `[]` |
-| `extraEnv` | Optional environment variables for cert-manager | `[]` |
-| `serviceAccount.create` | If `true`, create a new service account | `true` |
-| `serviceAccount.name` | Service account to be used. If not set and `serviceAccount.create` is `true`, a name is generated using the fullname template |  |
-| `serviceAccount.annotations` | Annotations to add to the service account |  |
-| `serviceAccount.automountServiceAccountToken` | Automount API credentials for the Service Account | `true` |
-| `volumes` | Optional volumes for cert-manager | `[]` |
-| `volumeMounts` | Optional volume mounts for cert-manager | `[]` |
-| `resources` | CPU/memory resource requests/limits | `{}` |
-| `securityContext` | Security context for the controller pod assignment | refer to [Default Security Contexts](#default-security-contexts) |
-| `containerSecurityContext` | Security context to be set on the controller component container | refer to [Default Security Contexts](#default-security-contexts) |
-| `nodeSelector` | Node labels for pod assignment | `{}` |
-| `affinity` | Node affinity for pod assignment | `{}` |
-| `tolerations` | Node tolerations for pod assignment | `[]` |
-| `topologySpreadConstraints` | Topology spread constraints for pod assignment | `[]` |
-| `ingressShim.defaultIssuerName` | Optional default issuer to use for ingress resources |  |
-| `ingressShim.defaultIssuerKind` | Optional default issuer kind to use for ingress resources |  |
-| `ingressShim.defaultIssuerGroup` | Optional default issuer group to use for ingress resources |  |
-| `prometheus.enabled` | Enable Prometheus monitoring | `true` |
-| `prometheus.servicemonitor.enabled` | Enable Prometheus Operator ServiceMonitor monitoring | `false` |
-| `prometheus.servicemonitor.namespace` | Define namespace where to deploy the ServiceMonitor resource | (namespace where you are deploying) |
-| `prometheus.servicemonitor.prometheusInstance` | Prometheus Instance definition | `default` |
-| `prometheus.servicemonitor.targetPort` | Prometheus scrape port | `9402` |
-| `prometheus.servicemonitor.path` | Prometheus scrape path | `/metrics` |
-| `prometheus.servicemonitor.interval` | Prometheus scrape interval | `60s` |
-| `prometheus.servicemonitor.labels` | Add custom labels to ServiceMonitor | |
-| `prometheus.servicemonitor.scrapeTimeout` | Prometheus scrape timeout | `30s` |
-| `prometheus.servicemonitor.honorLabels` | Enable label honoring for metrics scraped by Prometheus (see [Prometheus scrape config docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#scrape_config) for details). By setting `honorLabels` to `true`, Prometheus will prefer label contents given by cert-manager on conflicts. Can be used to remove the "exported_namespace" label for example.  | `false` |
-| `podAnnotations` | Annotations to add to the cert-manager pod | `{}` |
-| `deploymentAnnotations` | Annotations to add to the cert-manager deployment | `{}` |
-| `podDnsPolicy` | Optional cert-manager pod [DNS policy](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pods-dns-policy) |  |
-| `podDnsConfig` | Optional cert-manager pod [DNS configurations](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pods-dns-config) |  |
-| `podLabels` | Labels to add to the cert-manager pod | `{}` |
-| `serviceLabels` | Labels to add to the cert-manager controller service | `{}` |
-| `serviceAnnotations` | Annotations to add to the cert-manager service | `{}` |
-| `http_proxy` | Value of the `HTTP_PROXY` environment variable in the cert-manager pod | |
-| `https_proxy` | Value of the `HTTPS_PROXY` environment variable in the cert-manager pod | |
-| `no_proxy` | Value of the `NO_PROXY` environment variable in the cert-manager pod | |
-| `webhook.replicaCount` | Number of cert-manager webhook replicas | `1` |
-| `webhook.timeoutSeconds` | Seconds the API server should wait the webhook to respond before treating the call as a failure. | `10` |
-| `webhook.podAnnotations` | Annotations to add to the webhook pods | `{}` |
-| `webhook.podLabels` | Labels to add to the cert-manager webhook pod | `{}` |
-| `webhook.serviceLabels` | Labels to add to the cert-manager webhook service | `{}` |
-| `webhook.deploymentAnnotations` | Annotations to add to the webhook deployment | `{}` |
-| `webhook.mutatingWebhookConfigurationAnnotations` | Annotations to add to the mutating webhook configuration | `{}` |
-| `webhook.validatingWebhookConfigurationAnnotations` | Annotations to add to the validating webhook configuration | `{}` |
-| `webhook.serviceAnnotations` | Annotations to add to the webhook service | `{}` |
-| `webhook.config` | WebhookConfiguration YAML used to configure flags for the webhook. Generates a ConfigMap containing contents of the field. See `values.yaml` for example. | `{}` |
-| `webhook.extraArgs` | Optional flags for cert-manager webhook component | `[]` |
-| `webhook.serviceAccount.create` | If `true`, create a new service account for the webhook component | `true` |
-| `webhook.serviceAccount.name` | Service account for the webhook component to be used. If not set and `webhook.serviceAccount.create` is `true`, a name is generated using the fullname template |  |
-| `webhook.serviceAccount.annotations` | Annotations to add to the service account for the webhook component |  |
-| `webhook.serviceAccount.automountServiceAccountToken` | Automount API credentials for the webhook Service Account |  |
-| `webhook.resources` | CPU/memory resource requests/limits for the webhook pods | `{}` |
-| `webhook.nodeSelector` | Node labels for webhook pod assignment | `{}` |
-| `webhook.networkPolicy.enabled` | Enable default network policies for webhooks egress and ingress traffic | `false` |
-| `webhook.networkPolicy.ingress` | Sets ingress policy block. See NetworkPolicy documentation. See `values.yaml` for example. | `{}` |
-| `webhook.networkPolicy.egress` | Sets ingress policy block. See NetworkPolicy documentation. See `values.yaml` for example. | `{}` |
-| `webhook.affinity` | Node affinity for webhook pod assignment | `{}` |
-| `webhook.tolerations` | Node tolerations for webhook pod assignment | `[]` |
-| `webhook.topologySpreadConstraints` | Topology spread constraints for webhook pod assignment | `[]` |
-| `webhook.image.repository` | Webhook image repository | `quay.io/jetstack/cert-manager-webhook` |
-| `webhook.image.tag` | Webhook image tag | `v1.10.0` |
-| `webhook.image.pullPolicy` | Webhook image pull policy | `IfNotPresent` |
-| `webhook.securePort` | The port that the webhook should listen on for requests. | `10250` |
-| `webhook.securityContext` | Security context for webhook pod assignment | refer to [Default Security Contexts](#default-security-contexts) |
-| `webhook.containerSecurityContext` | Security context to be set on the webhook component container | refer to [Default Security Contexts](#default-security-contexts) |
-| `webhook.hostNetwork` | If `true`, run the Webhook on the host network. | `false` |
-| `webhook.serviceType` | The type of the `Service`. | `ClusterIP` |
-| `webhook.loadBalancerIP` | The specific load balancer IP to use (when `serviceType` is `LoadBalancer`). |  |
-| `webhook.url.host` | The host to use to reach the webhook, instead of using internal cluster DNS for the service. |  |
-| `webhook.livenessProbe.failureThreshold` | The liveness probe failure threshold | `3` |
-| `webhook.livenessProbe.initialDelaySeconds` | The liveness probe initial delay (in seconds) | `60` |
-| `webhook.livenessProbe.periodSeconds` | The liveness probe period (in seconds) | `10` |
-| `webhook.livenessProbe.successThreshold` | The liveness probe success threshold | `1` |
-| `webhook.livenessProbe.timeoutSeconds` | The liveness probe timeout (in seconds) | `1` |
-| `webhook.readinessProbe.failureThreshold` | The readiness probe failure threshold | `3` |
-| `webhook.readinessProbe.initialDelaySeconds` | The readiness probe initial delay (in seconds) | `5` |
-| `webhook.readinessProbe.periodSeconds` | The readiness probe period (in seconds) | `5` |
-| `webhook.readinessProbe.successThreshold` | The readiness probe success threshold | `1` |
-| `webhook.readinessProbe.timeoutSeconds` | The readiness probe timeout (in seconds) | `1` |
-| `cainjector.enabled` | Toggles whether the cainjector component should be installed (required for the webhook component to work) | `true` |
-| `cainjector.replicaCount` | Number of cert-manager cainjector replicas | `1` |
-| `cainjector.podAnnotations` | Annotations to add to the cainjector pods | `{}` |
-| `cainjector.podLabels` | Labels to add to the cert-manager cainjector pod | `{}` |
-| `cainjector.deploymentAnnotations` | Annotations to add to the cainjector deployment | `{}` |
-| `cainjector.extraArgs` | Optional flags for cert-manager cainjector component | `[]` |
-| `cainjector.serviceAccount.create` | If `true`, create a new service account for the cainjector component | `true` |
-| `cainjector.serviceAccount.name` | Service account for the cainjector component to be used. If not set and `cainjector.serviceAccount.create` is `true`, a name is generated using the fullname template |  |
-| `cainjector.serviceAccount.annotations` | Annotations to add to the service account for the cainjector component |  |
-| `cainjector.serviceAccount.automountServiceAccountToken` | Automount API credentials for the cainjector Service Account | `true` |
-| `cainjector.resources` | CPU/memory resource requests/limits for the cainjector pods | `{}` |
-| `cainjector.nodeSelector` | Node labels for cainjector pod assignment | `{}` |
-| `cainjector.affinity` | Node affinity for cainjector pod assignment | `{}` |
-| `cainjector.tolerations` | Node tolerations for cainjector pod assignment | `[]` |
-| `cainjector.topologySpreadConstraints` | Topology spread constraints for cainjector pod assignment | `[]` |
-| `cainjector.image.repository` | cainjector image repository | `quay.io/jetstack/cert-manager-cainjector` |
-| `cainjector.image.tag` | cainjector image tag | `v1.10.0` |
-| `cainjector.image.pullPolicy` | cainjector image pull policy | `IfNotPresent` |
-| `cainjector.securityContext` | Security context for cainjector pod assignment | refer to [Default Security Contexts](#default-security-contexts) |
-| `cainjector.containerSecurityContext` | Security context to be set on cainjector component container | refer to [Default Security Contexts](#default-security-contexts) |
-| `startupapicheck.enabled` | Toggles whether the startupapicheck Job should be installed | `true` |
-| `startupapicheck.securityContext` | Security context for startupapicheck pod assignment | refer to [Default Security Contexts](#default-security-contexts) |
-| `startupapicheck.containerSecurityContext` | Security context to be set on startupapicheck component container | refer to [Default Security Contexts](#default-security-contexts) |
-| `startupapicheck.timeout` | Timeout for 'kubectl check api' command | `1m` |
-| `startupapicheck.backoffLimit` | Job backoffLimit | `4` |
-| `startupapicheck.jobAnnotations` | Optional additional annotations to add to the startupapicheck Job | `{}` |
-| `startupapicheck.podAnnotations` | Optional additional annotations to add to the startupapicheck Pods | `{}` |
-| `startupapicheck.extraArgs` | Optional additional arguments for startupapicheck | `[]` |
-| `startupapicheck.resources` | CPU/memory resource requests/limits for the startupapicheck pod | `{}` |
-| `startupapicheck.nodeSelector` | Node labels for startupapicheck pod assignment | `{}` |
-| `startupapicheck.affinity` | Node affinity for startupapicheck pod assignment | `{}` |
-| `startupapicheck.tolerations` | Node tolerations for startupapicheck pod assignment | `[]` |
-| `startupapicheck.podLabels` | Optional additional labels to add to the startupapicheck Pods | `{}` |
-| `startupapicheck.image.repository` | startupapicheck image repository | `quay.io/jetstack/cert-manager-ctl` |
-| `startupapicheck.image.tag` | startupapicheck image tag | `v1.10.0` |
-| `startupapicheck.image.pullPolicy` | startupapicheck image pull policy | `IfNotPresent` |
-| `startupapicheck.serviceAccount.create` | If `true`, create a new service account for the startupapicheck component | `true` |
-| `startupapicheck.serviceAccount.name` | Service account for the startupapicheck component to be used. If not set and `startupapicheck.serviceAccount.create` is `true`, a name is generated using the fullname template |  |
-| `startupapicheck.serviceAccount.annotations` | Annotations to add to the service account for the startupapicheck component |  |
-| `startupapicheck.serviceAccount.automountServiceAccountToken` | Automount API credentials for the startupapicheck Service Account | `true` |
-
-### Default Security Contexts
-
-The default pod-level and container-level security contexts, below, adhere to the [restricted](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted) Pod Security Standards policies.
-
-Default pod-level securityContext:
-```yaml
-runAsNonRoot: true
-seccompProfile:
-  type: RuntimeDefault
-```
-
-Default containerSecurityContext:
-```yaml
-allowPrivilegeEscalation: false
-capabilities:
-  drop:
-  - ALL
-```
-
-### Assigning Values
-
-Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the above parameters can be provided while installing the chart. For example,
 
 ```console
-$ helm install my-release -f values.yaml .
+helm install my-release -f values.yaml oci://registry-1.docker.io/bitnamicharts/cert-manager
 ```
-> **Tip**: You can use the default [values.yaml](https://github.com/cert-manager/cert-manager/blob/master/deploy/charts/cert-manager/values.yaml)
 
-## Contributing
+> **Tip**: You can use the default [values.yaml](values.yaml)
 
-This chart is maintained at [github.com/cert-manager/cert-manager](https://github.com/cert-manager/cert-manager/tree/master/deploy/charts/cert-manager).
+## Configuration and installation details
+
+### [Rolling VS Immutable tags](https://docs.bitnami.com/containers/how-to/understand-rolling-tags-containers/)
+
+It is strongly recommended to use immutable tags in a production environment. This ensures your deployment does not change automatically if the same tag is updated with a different image.
+
+Bitnami will release a new chart updating its containers if a new version of the main container, significant changes, or critical vulnerabilities exist.
+
+### Adding extra environment variables
+
+In case you want to add extra environment variables (useful for advanced operations like custom init scripts), you can use the `extraEnvVars` property.
+
+```yaml
+extraEnvVars:
+  - name: LOG_LEVEL
+    value: DEBUG
+```
+
+Alternatively, you can use a ConfigMap or a Secret with the environment variables. To do so, use the `extraEnvVarsCM` or the `extraEnvVarsSecret` values.
+
+### Sidecars and Init Containers
+
+If you have a need for additional containers to run within the same pod as the cert-manager app (e.g. an additional metrics or logging exporter), you can do so via the `sidecars` config parameter. Simply define your container according to the Kubernetes container spec.
+
+```yaml
+sidecars:
+  - name: your-image-name
+    image: your-image
+    imagePullPolicy: Always
+    ports:
+      - name: portname
+       containerPort: 1234
+```
+
+Similarly, you can add extra init containers using the `initContainers` parameter.
+
+```yaml
+initContainers:
+  - name: your-image-name
+    image: your-image
+    imagePullPolicy: Always
+    ports:
+      - name: portname
+        containerPort: 1234
+```
+
+### Deploying extra resources
+
+There are cases where you may want to deploy extra objects, such a ConfigMap containing your app's configuration or some extra deployment with a micro service used by your app. For covering this case, the chart allows adding the full specification of other objects using the `extraDeploy` parameter.
+
+### Setting Pod's affinity
+
+This chart allows you to set your custom affinity using the `controller.affinity`, `cainjector.affinity` or `webhook.affinity` parameters. Find more information about Pod's affinity in the [kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity).
+
+As an alternative, you can make use of the preset configurations for pod affinity, pod anti-affinity, and node affinity available at the [bitnami/common](https://github.com/bitnami/charts/tree/main/bitnami/common#affinities) chart. To do so, set the `controller.podAffinityPreset`, `cainjector.podAffinityPreset`, `webhook.podAffinityPreset`, `controller.podAntiAffinityPreset`, `cainjector.podAntiAffinityPreset`, `webhook.podAntiAffinityPreset`, `controller.nodeAffinityPreset`, `cainjector.nodeAffinityPreset` or `webhook.nodeAffinityPreset` parameters.
+
+## Troubleshooting
+
+Find more information about how to deal with common errors related to Bitnami's Helm charts in [this troubleshooting guide](https://docs.bitnami.com/general/how-to/troubleshoot-helm-chart-issues).
+
+## Upgrading
+
+### To 0.5.0
+
+Exisiting CRDs have been syncronised with the official [cert-manager repository](https://github.com/cert-manager/cert-manager/tree/master/deploy/crds). Using the templates present in the 1.8.0 tag.
+
+## License
+
+Copyright &copy; 2023 VMware, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+<http://www.apache.org/licenses/LICENSE-2.0>
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
