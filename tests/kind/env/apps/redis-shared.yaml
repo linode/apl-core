@@ -1,5 +1,0 @@
-apps:
-    redis-shared:
-        enabled: false
-        sizes:
-            master: 1Gi

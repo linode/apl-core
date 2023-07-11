@@ -44,6 +44,10 @@ kubeVersion: ""
 ## @param watchReleaseNamespace Watch only namepsace used for the release
 ##
 watchReleaseNamespace: false
+## @param useDaemonset Use ExternalDNS in Daemonset mode
+## If set to false, Deployment will be used.
+##
+useDaemonset: false
 
 ## @section external-dns parameters
 ##
@@ -60,7 +64,7 @@ watchReleaseNamespace: false
 image:
   registry: docker.io
   repository: bitnami/external-dns
-  tag: 0.12.2-debian-11-r5
+  tag: 0.13.4-debian-11-r19
   digest: ""
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
@@ -102,7 +106,7 @@ sources:
   # - contour-httpproxy
 ## @param provider DNS provider where the DNS records will be created.
 ## Available providers are:
-## - alibabacloud, aws, azure, azure-private-dns, cloudflare, coredns, designate, digitalocean, google, hetzner, infoblox, linode, rfc2136, transip, oci
+## - akamai, alibabacloud, aws, azure, azure-private-dns, cloudflare, coredns, designate, digitalocean, google, hetzner, infoblox, linode, rfc2136, transip, oci
 ##
 provider: aws
 ## @param initContainers Attach additional init containers to the pod (evaluated as a template)
@@ -138,6 +142,25 @@ publishHostIP: false
 ## @param serviceTypeFilter The service types to take care about (default: all, options: ClusterIP, NodePort, LoadBalancer, ExternalName)
 ##
 serviceTypeFilter: []
+## Akamai configuration to be set via arguments/env. variables
+##
+akamai:
+  ## @param akamai.host Hostname to use for EdgeGrid auth
+  ##
+  host: ""
+  ## @param akamai.accessToken Access Token to use for EdgeGrid auth
+  ##
+  accessToken: ""
+  ## @param akamai.clientToken Client Token to use for EdgeGrid auth
+  ##
+  clientToken: ""
+  ## @param akamai.clientSecret When using the Akamai provider, `AKAMAI_CLIENT_SECRET` to set (optional)
+  ##
+  clientSecret: ""
+  ## @param akamai.secretName Use an existing secret with key "akamai_api_seret" defined.
+  ## This ignores akamai.clientSecret
+  ##
+  secretName: ""
 ## Alibaba cloud configuration to be set via arguments/env. variables
 ## These will be added to /etc/kubernetes/alibaba-cloud.json via secret
 ##
@@ -179,6 +202,21 @@ aws:
     ## This ignores aws.credentials.secretKey, and aws.credentials.accessKey
     ##
     secretName: ""
+    ## AWS access key id stored in key-value secret.
+    ## If aws.credentials.accessKeyIDSecretRef and aws.credentials.secretAccessKeySecretRef defined aws.credentials.secretKey, aws.credentials.accessKey and aws.credentials.secretName are ignored
+    ## @param aws.credentials.accessKeyIDSecretRef.name Define the name of the secret that stores aws_access_key_id.
+    ## @param aws.credentials.accessKeyIDSecretRef.key Define the key of the secret that stores aws_access_key_id.
+    ##
+    accessKeyIDSecretRef:
+      name: ""
+      key: ""
+    ## AWS secret access key stored in key-value secret
+    ## @param aws.credentials.secretAccessKeySecretRef.name Define the name of the secret that stores aws_secret_access_key
+    ## @param aws.credentials.secretAccessKeySecretRef.key Define the key of the secret that stores aws_secret_access_key
+    ##
+    secretAccessKeySecretRef:
+      name: ""
+      key: ""
   ## @param aws.region When using the AWS provider, `AWS_DEFAULT_REGION` to set in the environment (optional)
   ##
   region: "us-east-1"
@@ -281,7 +319,7 @@ coredns:
     ## @param coredns.etcdTLS.secretName When using the CoreDNS provider, specify a name of existing Secret with etcd certs and keys
     ## ref: https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/security.md
     ## ref (secret creation):
-    ##  https://github.com/bitnami/charts/tree/master/bitnami/etcd#configure-certificates-for-client-communication
+    ##  https://github.com/bitnami/charts/tree/main/bitnami/etcd#configure-certificates-for-client-communication
     ##
     secretName: "etcd-client-certs"
     ## @param coredns.etcdTLS.mountPath When using the CoreDNS provider, set destination dir to mount data from `coredns.etcdTLS.secretName` to
@@ -305,11 +343,13 @@ designate:
   ## The alternative to this is to export the necessary Openstack environment variables in the extraEnv argument
   ## @param designate.username When using the Designate provider, specify the OpenStack authentication username. (optional)
   ## @param designate.password When using the Designate provider, specify the OpenStack authentication password. (optional)
+  ## @param designate.applicationCredentialId When using the Designate provider, specify the OpenStack authentication application credential ID. This conflicts with `designate.username`. (optional)
+  ## @param designate.applicationCredentialSecret When using the Designate provider, specify the OpenStack authentication application credential ID. This conflicts with `designate.password`. (optional)
   ## @param designate.authUrl When using the Designate provider, specify the OpenStack authentication Url. (optional)
   ## @param designate.regionName When using the Designate provider, specify the OpenStack region name. (optional)
   ## @param designate.userDomainName When using the Designate provider, specify the OpenStack user domain name. (optional)
   ## @param designate.projectName When using the Designate provider, specify the OpenStack project name. (optional)
-  ## @param designate.username When using the Designate provider, specify the OpenStack authentication username. (optional)
+  ## @param designate.authType When using the Designate provider, specify the OpenStack auth type. (optional)
   ## e.g:
   ##   username: "someuser"
   ##   password: "p@55w0rd"
@@ -320,10 +360,13 @@ designate:
   ##
   username: ""
   password: ""
+  applicationCredentialId: ""
+  applicationCredentialSecret: ""
   authUrl: ""
   regionName: ""
   userDomainName: ""
   projectName: ""
+  authType: ""
   ## @param designate.customCAHostPath When using the Designate provider, use a CA file already on the host to validate Openstack APIs.  This conflicts with `designate.customCA.enabled`
   ## This conflicts setting the above customCA to true and chart rendering will fail if you set customCA to true and specify customCAHostPath
   ##
@@ -339,6 +382,21 @@ designate:
     content: ""
     mountPath: "/config/designate"
     filename: "designate-ca.pem"
+## Exoscale configuration to be set via arguments/env. variables
+##
+exoscale:
+  ## @param exoscale.apiKey When using the Exoscale provider, `EXTERNAL_DNS_EXOSCALE_APIKEY` to set (optional)
+  ##
+  apiKey: ""
+  ## @param exoscale.apiToken When using the Exoscale provider, `EXTERNAL_DNS_EXOSCALE_APISECRET` to set (optional)
+  ##
+  apiToken: ""
+  ## @param exoscale.secretName Use an existing secret with keys "exoscale_api_key" and "exoscale_api_token" defined.
+  ## This ignores exoscale.apiKey and exoscale.apiToken
+  ##
+  secretName: ""
+## Google configuration to be set via arguments/env. variables
+##
 ## DigitalOcean configuration to be set via arguments/env. variables
 ##
 digitalocean:
@@ -355,6 +413,9 @@ google:
   ## @param google.project When using the Google provider, specify the Google project (required when provider=google)
   ##
   project: ""
+  ## @param google.batchChangeSize When using the google provider, set the maximum number of changes that will be applied in each batch
+  ##
+  batchChangeSize: 1000
   ## @param google.serviceAccountSecret When using the Google provider, specify the existing secret which contains credentials.json (optional)
   ##
   serviceAccountSecret: ""
@@ -404,6 +465,10 @@ infoblox:
   ## @param infoblox.domainFilter When using the Infoblox provider, specify the domain (optional)
   ##
   domainFilter: ""
+  ##
+  ## @param infoblox.nameRegex When using the Infoblox provider, specify the name regex filter (optional)
+  ##
+  nameRegex: ""
   ## @param infoblox.noSslVerify When using the Infoblox provider, disable SSL verification (optional)
   ##
   noSslVerify: false
@@ -506,9 +571,6 @@ scaleway:
   ## @param scaleway.scwSecretKey When using the Scaleway provider, specify an existing secret key. (required when provider=scaleway)
   ##
   scwSecretKey: ""
-  ## @param scaleway.scwDefaultOrganizationId When using the Scaleway provider, specify the existing organization id. (required when provider=scaleway)
-  ##
-  scwDefaultOrganizationId: ""
 ## RFC 2136 configuration to be set via arguments/env. variables
 ##
 rfc2136:
@@ -536,7 +598,7 @@ rfc2136:
   ## @param rfc2136.tsigAxfr When using the rfc2136 provider, enable AFXR to enable security (optional)
   ##
   tsigAxfr: true
-  ## @param rfc2136.minTTL When using the rfc2136 provider, specify minimal TTL (in duration format) for records[ns, us, ms, s, m, h], see more https://golang.org/pkg/time/#ParseDuration
+  ## @param rfc2136.minTTL When using the rfc2136 provider, specify minimal TTL (in duration format) for records[ns, us, ms, s, m, h], see more <https://golang.org/pkg/time/#ParseDuration>
   ##
   minTTL: "0s"
   ## @param rfc2136.rfc3645Enabled When using the rfc2136 provider, extend using RFC3645 to support secure updates over Kerberos with GSS-TSIG
@@ -854,7 +916,7 @@ rbac:
 ## @param containerSecurityContext Security context for the container
 ## https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 ## Example:
-## securityContext:
+## containerSecurityContext:
 ##   allowPrivilegeEscalation: false
 ##   readOnlyRootFilesystem: true
 ##   capabilities:
@@ -986,7 +1048,7 @@ metrics:
     ##
     scrapeTimeout: ""
     ## @param metrics.serviceMonitor.selector Additional labels for ServiceMonitor object
-    ## ref: https://github.com/bitnami/charts/tree/master/bitnami/prometheus-operator#prometheus-configuration
+    ## ref: https://github.com/bitnami/charts/tree/main/bitnami/prometheus-operator#prometheus-configuration
     ## e.g:
     ## selector:
     ##   prometheus: my-prometheus
@@ -1010,3 +1072,18 @@ metrics:
     ## @param metrics.serviceMonitor.jobLabel The name of the label on the target service to use as the job name in prometheus.
     ##
     jobLabel: ""
+  ## Google Managed Prometheus PodMonitor configuration
+  ##
+  googlePodMonitor:
+    ## @param metrics.googlePodMonitor.enabled Create Google Managed Prometheus PodMonitoring object
+    ##
+    enabled: false
+    ## @param metrics.googlePodMonitor.namespace Namespace in which PodMonitoring created
+    ##
+    namespace: ""
+    ## @param metrics.googlePodMonitor.interval Interval at which metrics should be scraped by Google Managed Prometheus
+    ##
+    interval: "60s"
+    ## @param  metrics.googlePodMonitor.endpoint The endpoint for Google Managed Prometheus scraping the metrics
+    ##
+    endpoint: /metrics

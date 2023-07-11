@@ -10,3 +10,7 @@ apps:
                     bucket: otomi-harbor
                     rootdirectory: /google/demo
                 type: gcs
+        core: {}
+        jobservice: {}
+        registry:
+            credentials: {}
