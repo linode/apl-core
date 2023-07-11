@@ -99,8 +99,6 @@ environments:
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
             enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
-          knative:
-            enabled: {{ $a | get "knative.enabled" }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
