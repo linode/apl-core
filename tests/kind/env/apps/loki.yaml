@@ -1,7 +1,0 @@
-apps:
-    loki:
-        _rawValues:
-            resources:
-                requests:
-                    cpu: 10m
-                    memory: 10Mi

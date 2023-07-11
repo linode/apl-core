@@ -1,3 +1,0 @@
-apps:
-    alertmanager:
-        enabled: true
