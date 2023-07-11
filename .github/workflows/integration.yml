@@ -185,7 +185,7 @@ jobs:
 
   run-integration-test-scaleway:
     if: ${{ inputs.server_providers == 'scaleway' }}
-    name: Run integration test on cluster
+    name: Run integration test on scaleway cluster
     needs: preprocess-scaleway-input
     runs-on: ubuntu-latest
     # strategy:
@@ -221,10 +221,11 @@ jobs:
               pools.0.autoscaling=true \
               pools.0.name=default \
               version='1.24.14' \
+              region=nl-ams \
               --wait \
               -o=json)
-
-          clusterId=$(echo $out | jq -r '.id')
+              b8c95977-7016-4ba1-90a9-be9749d1acb2
+          clusterId=$(scw k8s cluster list -o json| jq -r '.[] | select(.name == ${{ env.SCALEWAY_CLUSTER_NAME }} | .id'))
           echo "CLUSTER_ID=$clusterId" >> $GITHUB_OUTPUT
 
       - name: Delete  k8s cluster at Scaleway
