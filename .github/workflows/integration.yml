@@ -224,7 +224,7 @@ jobs:
               region=nl-ams \
               --wait \
               -o=json)
-              b8c95977-7016-4ba1-90a9-be9749d1acb2
+
           clusterId=$(scw k8s cluster list -o json| jq -r '.[] | select(.name == ${{ env.SCALEWAY_CLUSTER_NAME }} | .id'))
           echo "CLUSTER_ID=$clusterId" >> $GITHUB_OUTPUT
 
