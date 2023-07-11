@@ -5,6 +5,8 @@ controller:
     digest: null
   service:
     type: ClusterIP
-
-podSecurityPolicy:
-  enabled: true
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+  extraModules:
+    - name: opentelemetry
+      image: busybox
