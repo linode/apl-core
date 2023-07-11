@@ -188,11 +188,11 @@ jobs:
     name: Run integration test on scaleway cluster
     needs: preprocess-scaleway-input
     runs-on: ubuntu-latest
-    # strategy:
-    #   fail-fast: false
-    #   matrix:
-    #     kubernetes_version: ${{ fromJSON(needs.preprocess-input.outputs.kubernetes_versions) }}
-    #   max-parallel: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        kubernetes_version: ${{ fromJSON(needs.preprocess-scaleway-input.outputs.kubernetes_versions) }}
+      max-parallel: 5
     steps:
       - name: Use Scaleway CLI
         uses: scaleway/action-scw@v0
@@ -208,6 +208,9 @@ jobs:
         run: |
           echo SCALEWAY_CLUSTER_NAME=i-${{ github.run_id }}-${{ strategy.job-index }} >> $GITHUB_ENV
           # Cluster name must be no longer than 63 characters
+      - name: Determine exact k8s version
+        run: |
+          echo SCALEWAY_K8s_VERSION=${scw k8s version list -o json | jq -re --arg k8s_version 'map(select(.name | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .slug') >> $GITHUB_ENV
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
         run: |
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
@@ -220,14 +223,15 @@ jobs:
               pools.0.autohealing=true \
               pools.0.autoscaling=true \
               pools.0.name=default \
-              version='1.24.14' \
+              version=${{ env.SCALEWAY_K8S_VERSION }} \
               region=nl-ams \
               --wait \
               -o=json)
 
-          clusterId=$(scw k8s cluster list -o json | jq -r '.[] | select(.name == \"${{ env.SCALEWAY_CLUSTER_NAME }}\") | .id')
-          echo "CLUSTER_ID=$clusterId" >> $GITHUB_ENV
-
+        # clusterId=$(scw k8s cluster list -o json | jq -r '.[] | select(.name == \"${{ env.SCALEWAY_CLUSTER_NAME }}\") | .id')
+        # echo "CLUSTER_ID=$clusterId" >> $GITHUB_ENV
+      - name: Retrieve cluster id
+        run: echo "$(scw k8s cluster list -o json | jq -r '.[] | select(.name == "${{ env.SCALEWAY_CLUSTER_NAME }}") | .id')" >> $GITHUB_ENV
       - name: Delete  k8s cluster at Scaleway
         if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
         run: |
