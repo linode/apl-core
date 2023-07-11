@@ -100,7 +100,7 @@ environments:
           host-mods:
             enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
           knative:
-            enabled: {{ and ($a | get "knative.enabled") (le $v.cluster.k8sVersion "1.24") }}
+            enabled: {{ $a | get "knative.enabled" }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
