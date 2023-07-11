@@ -47,8 +47,8 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.24.14']"
-        default: "['1.24.14']"
+          - "['1.24']"
+        default: "['1.24']"
       install_profile:
         description: Otomi installation profile
         default: minimal
@@ -191,7 +191,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kubernetes_version: '${{ fromJSON(needs.preprocess-scaleway-input.outputs.kubernetes_versions) }}'
+        kubernetes_version: ${{ fromJSON(needs.preprocess-scaleway-input.outputs.kubernetes_versions) }}
       max-parallel: 5
     steps:
       - name: Use Scaleway CLI
