@@ -191,7 +191,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kubernetes_version: ${{ fromJSON(needs.preprocess-scaleway-input.outputs.kubernetes_versions) }}
+        kubernetes_version: ${{ needs.preprocess-scaleway-input.outputs.kubernetes_versions }}
       max-parallel: 5
     steps:
       - name: Use Scaleway CLI
