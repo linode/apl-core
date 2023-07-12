@@ -217,7 +217,7 @@ jobs:
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
         run: |
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
-              project-id=${{ env.SCW_DEFAULT_PROJECT_ID }}
+              project-id=${{ env.SCW_DEFAULT_PROJECT_ID }} \
               auto-upgrade.enable=false \
               cni=calico \
               pools.0.node-type=PRO2-S \
