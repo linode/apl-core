@@ -244,7 +244,7 @@ jobs:
       - name: Delete k8s cluster at Scaleway
         if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
         run: |
-          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true
+          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
       # - name: Slack Notification
       #   if: always()
       #   uses: rtCamp/action-slack-notify@v2
