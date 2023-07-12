@@ -210,7 +210,7 @@ jobs:
           # Cluster name must be no longer than 63 characters
       - name: Determine exact k8s version
         run: |
-          echo SCALEWAY_K8s_VERSION=${scw k8s version list -o json | jq -re --arg k8s_version 'map(select(.name | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .slug'} >> $GITHUB_ENV
+          echo SCALEWAY_K8s_VERSION=$(scw k8s version list -o json | jq -re --arg k8s_version 'map(select(.name | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .slug') >> $GITHUB_ENV
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
         run: |
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
