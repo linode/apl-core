@@ -210,10 +210,14 @@ jobs:
           # Cluster name must be no longer than 63 characters
       - name: Determine exact k8s version
         run: |
-          echo SCALEWAY_K8s_VERSION=$(scw k8s version list -o json | jq -re --arg k8s_version 'map(select(.name | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .slug') >> $GITHUB_ENV
+          echo SCALEWAY_K8s_VERSION=$(scw k8s version list -o json | jq -re 'map(select(.name | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .slug') >> $GITHUB_ENV
+      # - name: Get default VPC for region
+      #   run: |
+      #     echo SCALEWAY_VPC_UUID=``
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
         run: |
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
+              project-id=${{ env.SCW_DEFAULT_PROJECT_ID }}
               auto-upgrade.enable=false \
               cni=calico \
               pools.0.node-type=PRO2-S \
@@ -223,7 +227,7 @@ jobs:
               pools.0.autohealing=true \
               pools.0.autoscaling=true \
               pools.0.name=default \
-              version=${{ env.SCALEWAY_K8S_VERSION }} \
+              version=${{ env.SCALEWAY_K8s_VERSION }} \
               region=nl-ams \
               --wait \
               -o=json)
@@ -232,7 +236,12 @@ jobs:
         # echo "CLUSTER_ID=$clusterId" >> $GITHUB_ENV
       - name: Retrieve cluster id
         run: echo "$(scw k8s cluster list -o json | jq -r '.[] | select(.name == "${{ env.SCALEWAY_CLUSTER_NAME }}") | .id')" >> $GITHUB_ENV
-      - name: Delete  k8s cluster at Scaleway
+      - name: Save kubectl config with auth token
+        #run: doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
+        run: scw k8s kubeconfig install ${{ env.CLUSTER_ID }}
+      - name: Get kubectl environment
+        run: echo SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+      - name: Delete k8s cluster at Scaleway
         if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
         run: |
           scw k8s cluster delete ${{ env.CLUSTER_ID }} with-additional-resources=true
