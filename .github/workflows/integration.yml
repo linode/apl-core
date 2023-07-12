@@ -235,7 +235,7 @@ jobs:
         # clusterId=$(scw k8s cluster list -o json | jq -r '.[] | select(.name == \"${{ env.SCALEWAY_CLUSTER_NAME }}\") | .id')
         # echo "CLUSTER_ID=$clusterId" >> $GITHUB_ENV
       - name: Retrieve cluster id
-        run: echo "$(scw k8s cluster list region=nl-ams -o json | jq -r 'select(.name == "${{ env.SCALEWAY_CLUSTER_NAME }}") | .[].id')" >> $GITHUB_ENV
+        run: echo "$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.name == "${{ env.SCALEWAY_CLUSTER_NAME }}") | .[].id')" >> $GITHUB_ENV
       - name: Save kubectl config with auth token
         #run: doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
         run: scw k8s kubeconfig install ${{ env.CLUSTER_ID }} region=nl-ams
