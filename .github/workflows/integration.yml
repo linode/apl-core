@@ -159,6 +159,19 @@ jobs:
           fi
           echo $versions
           echo "versions=$versions" >> $GITHUB_OUTPUT
+      - id: set-region-prefix
+        name: Set cluster region prefix
+        run: |
+          if [[ "${{ inputs.cluster_region }}" == "ams"* ]]; then
+            echo "::set-output name=prefixed_cluster_region::nl-ams"
+          elif [[ "${{ inputs.cluster_region }}" == "par"* ]]; then
+            echo "::set-output name=prefixed_cluster_region::fr-par"
+          elif [[ "${{ inputs.cluster_region }}" == "waw"* ]]; then
+            echo "::set-output name=prefixed_cluster_region::pl-waw"
+          else
+            echo "::set-output name=prefixed_cluster_region::"
+          fi
+
   preprocess-digitalocean-input:
     needs: preprocess-input
     if: ${{ inputs.server_providers == 'digital ocean' }}
@@ -216,6 +229,7 @@ jobs:
       #     echo SCALEWAY_VPC_UUID=``
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
         run: |
+          prefixed_cluster_region="${{ needs.preprocess-scaleway-input.outputs.set-region-prefix.prefixed_cluster_region }}"
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
               project-id=${{ env.SCW_DEFAULT_PROJECT_ID }} \
               auto-upgrade.enable=false \
@@ -228,7 +242,7 @@ jobs:
               pools.0.autoscaling=true \
               pools.0.name=default \
               version=${{ env.SCALEWAY_K8s_VERSION }} \
-              region=${{ inputs.cluster_region }} \
+              region=$prefixed_cluster_region \
               --wait \
               -o=json)
 
