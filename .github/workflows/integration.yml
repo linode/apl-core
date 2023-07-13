@@ -163,16 +163,14 @@ jobs:
         name: Set cluster region prefix
         run: |
           if [[ "${{ inputs.cluster_region }}" == "ams"* ]]; then
-            prefixed_cluster_region=nl-ams
+            echo "PREFIXED_CLUSTER_REGION=nl-ams"  >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster_region }}" == "par"* ]]; then
-            prefixed_cluster_region=fr-par
+            echo "PREFIXED_CLUSTER_REGION=fr-par"  >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster_region }}" == "waw"* ]]; then
-            prefixed_cluster_region=pl-waw
+            echo "PREFIXED_CLUSTER_REGION=pl-waw"  >> $GITHUB_ENV
           else
-            prefixed_cluster_region=nl-ams
+            echo "PREFIXED_CLUSTER_REGION=nl-ams"  >> $GITHUB_ENV
           fi
-            echo $prefixed_cluster_region
-            echo PREFIXED_CLUSTER_REGION=$prefixed_cluster_region >> $GITHUB_ENV
 
   preprocess-digitalocean-input:
     needs: preprocess-input
