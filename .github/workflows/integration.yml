@@ -159,18 +159,6 @@ jobs:
           fi
           echo $versions
           echo "versions=$versions" >> $GITHUB_OUTPUT
-      - id: set-region-prefix
-        name: Set cluster region prefix
-        run: |
-          if [[ "${{ inputs.cluster_region }}" == "ams"* ]]; then
-            echo PREFIXED_CLUSTER_REGION=nl-ams  >> $GITHUB_ENV
-          elif [[ "${{ inputs.cluster_region }}" == "par"* ]]; then
-            echo PREFIXED_CLUSTER_REGION=fr-par  >> $GITHUB_ENV
-          elif [[ "${{ inputs.cluster_region }}" == "waw"* ]]; then
-            echo "PREFIXED_CLUSTER_REGION=pl-waw"  >> $GITHUB_ENV
-          else
-            echo PREFIXED_CLUSTER_REGION=nl-ams  >> $GITHUB_ENV
-          fi
 
   preprocess-digitalocean-input:
     needs: preprocess-input
@@ -227,6 +215,18 @@ jobs:
       # - name: Get default VPC for region
       #   run: |
       #     echo SCALEWAY_VPC_UUID=``
+      - id: set-region-prefix
+        name: Set cluster region prefix
+        run: |
+          if [[ "${{ inputs.cluster_region }}" == "ams"* ]]; then
+            echo PREFIXED_CLUSTER_REGION=nl-ams  >> $GITHUB_ENV
+          elif [[ "${{ inputs.cluster_region }}" == "par"* ]]; then
+            echo PREFIXED_CLUSTER_REGION=fr-par  >> $GITHUB_ENV
+          elif [[ "${{ inputs.cluster_region }}" == "waw"* ]]; then
+            echo "PREFIXED_CLUSTER_REGION=pl-waw"  >> $GITHUB_ENV
+          else
+            echo PREFIXED_CLUSTER_REGION=nl-ams  >> $GITHUB_ENV
+          fi
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
         run: |
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
