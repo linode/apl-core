@@ -1,0 +1,19 @@
+bases:
+  - ../helmfile.d/snippets/defaults.yaml
+---
+bases:
+  - ../helmfile.d/snippets/env.gotmpl
+---
+bases:
+  - ../helmfile.d/snippets/derived.gotmpl
+---
+{{ readFile "../helmfile.d/snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $c := $v.charts }}
+
+releases:
+  - name: job-e2e
+    installed: {{ or (eq $v.otomi.hasExternalIDP false) (eq $c.gitea.enabled true) }}
+    <<: *jobs
+    labels:
+      group: jobs
