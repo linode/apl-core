@@ -163,14 +163,16 @@ jobs:
         name: Set cluster region prefix
         run: |
           if [[ "${{ inputs.cluster_region }}" == "ams"* ]]; then
-            echo "::set-output name=prefixed_cluster_region::nl-ams"
+            prefixed_cluster_region=nl-ams
           elif [[ "${{ inputs.cluster_region }}" == "par"* ]]; then
-            echo "::set-output name=prefixed_cluster_region::fr-par"
+            prefixed_cluster_region=fr-par
           elif [[ "${{ inputs.cluster_region }}" == "waw"* ]]; then
-            echo "::set-output name=prefixed_cluster_region::pl-waw"
+            prefixed_cluster_region=pl-waw
           else
-            echo "::set-output name=prefixed_cluster_region::"
+            prefixed_cluster_region=nl-ams
           fi
+            echo $prefixed_cluster_region
+            echo PREFIXED_CLUSTER_REGION=$prefixed_cluster_region >> $GITHUB_ENV
 
   preprocess-digitalocean-input:
     needs: preprocess-input
@@ -229,7 +231,6 @@ jobs:
       #     echo SCALEWAY_VPC_UUID=``
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
         run: |
-          prefixed_cluster_region="${{ needs.preprocess-scaleway-input.outputs.set-region-prefix.prefixed_cluster_region }}"
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
               project-id=${{ env.SCW_DEFAULT_PROJECT_ID }} \
               auto-upgrade.enable=false \
@@ -242,23 +243,23 @@ jobs:
               pools.0.autoscaling=true \
               pools.0.name=default \
               version=${{ env.SCALEWAY_K8s_VERSION }} \
-              region=$prefixed_cluster_region \
+              region=${{ env.PREFIXED_CLUSTER_REGION }} \
               --wait \
               -o=json)
 
         # clusterId=$(scw k8s cluster list -o json | jq -r '.[] | select(.name == \"${{ env.SCALEWAY_CLUSTER_NAME }}\") | .id')
         # echo "CLUSTER_ID=$clusterId" >> $GITHUB_ENV
       - name: Retrieve cluster id
-        run: echo SCALEWAY_CLUSTER_ID=$(scw k8s cluster list region=${{ inputs.cluster_region }} -o json | jq -r '.[] | select(.name == "${{ env.SCALEWAY_CLUSTER_NAME }}") | .id') >> $GITHUB_ENV
+        run: echo SCALEWAY_CLUSTER_ID=$(scw k8s cluster list region=${{ env.PREFIXED_CLUSTER_REGION }} -o json | jq -r '.[] | select(.name == "${{ env.SCALEWAY_CLUSTER_NAME }}") | .id') >> $GITHUB_ENV
       - name: Save kubectl config with auth token
         #run: doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
-        run: scw k8s kubeconfig install ${{ env.SCALEWAY_CLUSTER_ID }} region=${{ inputs.cluster_region }}
+        run: scw k8s kubeconfig install ${{ env.SCALEWAY_CLUSTER_ID }} region=${{ env.PREFIXED_CLUSTER_REGION }}
       - name: Get kubectl environment
         run: echo SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Delete k8s cluster at Scaleway
         if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
         run: |
-          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=${{ inputs.cluster_region }}
+          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=${{ env.PREFIXED_CLUSTER_REGION }}
       # - name: Slack Notification
       #   if: always()
       #   uses: rtCamp/action-slack-notify@v2
