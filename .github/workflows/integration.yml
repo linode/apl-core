@@ -163,13 +163,13 @@ jobs:
         name: Set cluster region prefix
         run: |
           if [[ "${{ inputs.cluster_region }}" == "ams"* ]]; then
-            echo "PREFIXED_CLUSTER_REGION=nl-ams"  >> $GITHUB_ENV
+            echo PREFIXED_CLUSTER_REGION=nl-ams  >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster_region }}" == "par"* ]]; then
-            echo "PREFIXED_CLUSTER_REGION=fr-par"  >> $GITHUB_ENV
+            echo PREFIXED_CLUSTER_REGION=fr-par  >> $GITHUB_ENV
           elif [[ "${{ inputs.cluster_region }}" == "waw"* ]]; then
             echo "PREFIXED_CLUSTER_REGION=pl-waw"  >> $GITHUB_ENV
           else
-            echo "PREFIXED_CLUSTER_REGION=nl-ams"  >> $GITHUB_ENV
+            echo PREFIXED_CLUSTER_REGION=nl-ams  >> $GITHUB_ENV
           fi
 
   preprocess-digitalocean-input:
@@ -254,6 +254,70 @@ jobs:
         run: scw k8s kubeconfig install ${{ env.SCALEWAY_CLUSTER_ID }} region=${{ env.PREFIXED_CLUSTER_REGION }}
       - name: Get kubectl environment
         run: echo SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+      - name: Create image pull secret on test cluster
+        run: |
+          kubectl create secret docker-registry reg-otomi-github \
+            --docker-server=${{ env.CACHE_REGISTRY }} \
+            --docker-username=${{ env.GIT_USER }} \
+            --docker-password='${{ secrets.NPM_TOKEN }}'
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Prepare Otomi chart
+        run: |
+          ref=${{ github.event.pull_request.head.ref || github.ref }}
+          tag=${ref##*/}
+          k8sVersion=${{ env.SCALEWAY_K8S_VERSION }}
+          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
+          sed --in-place "s/0-chart-patch-placeholder/0/g" chart/otomi/Chart.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.SCALEWAY_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion:0:4}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          touch values-container-registry.yaml
+
+          # If a pipeline installs Otomi from the semver tag then pull container image from DockerHub
+          [[ ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]] && exit 0
+
+          # Pull image from cache registry
+          cat << EOF > values-container-registry.yaml
+          imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
+          imagePullSecretNames:
+            - reg-otomi-github
+          EOF
+      - name: Otomi install
+        env:
+          AZ_DNS: ${{ secrets.AZ_DNS }}
+          AZ_KMS: ${{ secrets.AZ_KMS }}
+          AZ_OIDC: ${{ secrets.AZ_OIDC }}
+          LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
+        run: |
+          domainSuffix=''
+          touch values.yaml
+          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
+          [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
+          [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
+          [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
+
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+            --values tests/integration/${{ inputs.install_profile }}.yaml \
+            --values values-container-registry.yaml
+            --values values.yaml \
+            $domainSuffix"
+
+          [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
+
+          helm install $install_args
+      - name: Gather k8s events on failure
+        if: failure()
+        run: |
+          kubectl get events --sort-by='.lastTimestamp' -A
+      - name: Gather k8s pods on failure
+        if: failure()
+        run: |
+          kubectl get pods -A -o wide
+      - name: Gather otomi logs on failure
+        if: failure()
+        run: |
+          kubectl logs jobs/otomi --tail 150
       - name: Delete k8s cluster at Scaleway
         if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
         run: |
