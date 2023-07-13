@@ -241,10 +241,6 @@ jobs:
           [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
 
           helm install $install_args
-      - name: Run cypress
-        image: otomi/e2e
-        run: |
-          helm install $install_args kubectl get events --sort-by='.lastTimestamp'
       - name: Gather k8s events on failure
         if: failure()
         run: |
