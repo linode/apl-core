@@ -1,157 +1,335 @@
-# oauth2-proxy
+<!--- app-name: OAuth2 Proxy -->
 
-[oauth2-proxy](https://github.com/pusher/oauth2_proxy) is a reverse proxy and static file server that provides authentication using Providers (Google, GitHub, and others) to validate accounts by email, domain or group.
+# OAuth2 Proxy packaged by Bitnami
 
-## TL;DR;
+A reverse proxy and static file server that provides authentication using Providers (Google, GitHub, and others) to validate accounts by email, domain or group.
+
+[Overview of OAuth2 Proxy](https://github.com/oauth2-proxy/oauth2-proxy)
+
+Trademarks: This software listing is packaged by Bitnami. The respective trademarks mentioned in the offering are owned by the respective companies, and use of them does not imply any affiliation or endorsement.
+
+## TL;DR
 
 ```console
-$ helm install stable/oauth2-proxy
+helm install my-release oci://registry-1.docker.io/bitnamicharts/oauth2-proxy
 ```
 
 ## Introduction
 
-This chart bootstraps an oauth2-proxy deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+Bitnami charts for Helm are carefully engineered, actively maintained and are the quickest and easiest way to deploy containers on a Kubernetes cluster that are ready to handle production workloads.
+
+This chart bootstraps a [OAuth2 Proxy](https://github.com/oauth2-proxy/oauth2-proxy) Deployment in a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+
+Bitnami charts can be used with [Kubeapps](https://kubeapps.dev/) for deployment and management of Helm Charts in clusters.
+
+Looking to use OAuth2 Proxy in production? Try [VMware Application Catalog](https://bitnami.com/enterprise), the enterprise edition of Bitnami Application Catalog.
+
+## Prerequisites
+
+- Kubernetes 1.19+
+- Helm 3.2.0+
+- PV provisioner support in the underlying infrastructure
+- ReadWriteMany volumes for deployment scaling
 
 ## Installing the Chart
 
 To install the chart with the release name `my-release`:
 
 ```console
-$ helm install stable/oauth2-proxy --name my-release
+helm install my-release oci://registry-1.docker.io/bitnamicharts/oauth2-proxy
 ```
 
-The command deploys oauth2-proxy on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
+The command deploys OAuth2 Proxy on the Kubernetes cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
+
+> **Tip**: List all releases using `helm list`
 
 ## Uninstalling the Chart
 
 To uninstall/delete the `my-release` deployment:
 
 ```console
-$ helm delete my-release
+helm delete my-release
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
 
-## Upgrading an existing Release to a new major version
+## Parameters
 
-A major chart version change (like v1.2.3 -> v2.0.0) indicates that there is an
-incompatible breaking change needing manual actions.
+### Global parameters
 
-### To 1.0.0
+| Name                      | Description                                     | Value |
+| ------------------------- | ----------------------------------------------- | ----- |
+| `global.imageRegistry`    | Global Docker image registry                    | `""`  |
+| `global.imagePullSecrets` | Global Docker registry secret names as an array | `[]`  |
+| `global.storageClass`     | Global StorageClass for Persistent Volume(s)    | `""`  |
 
-This version upgrade oauth2-proxy to v4.0.0. Please see the [changelog](https://github.com/pusher/oauth2_proxy/blob/v4.0.0/CHANGELOG.md#v400) in order to upgrade.
+### Common parameters
 
-### To 2.0.0
+| Name                     | Description                                                                             | Value           |
+| ------------------------ | --------------------------------------------------------------------------------------- | --------------- |
+| `kubeVersion`            | Override Kubernetes version                                                             | `""`            |
+| `nameOverride`           | String to partially override common.names.fullname                                      | `""`            |
+| `fullnameOverride`       | String to fully override common.names.fullname                                          | `""`            |
+| `commonLabels`           | Labels to add to all deployed objects                                                   | `{}`            |
+| `commonAnnotations`      | Annotations to add to all deployed objects                                              | `{}`            |
+| `clusterDomain`          | Kubernetes cluster domain name                                                          | `cluster.local` |
+| `extraDeploy`            | Array of extra objects to deploy with the release                                       | `[]`            |
+| `diagnosticMode.enabled` | Enable diagnostic mode (all probes will be disabled and the command will be overridden) | `false`         |
+| `diagnosticMode.command` | Command to override all containers in the deployment                                    | `["sleep"]`     |
+| `diagnosticMode.args`    | Args to override all containers in the deployment                                       | `["infinity"]`  |
 
-Version 2.0.0 of this chart introduces support for Kubernetes v1.16.x by way of addressing the deprecation of the Deployment object apiVersion `apps/v1`.  See [the v1.16 API deprecations page](https://kubernetes.io/blog/2019/07/18/api-deprecations-in-1-16/) for more information.
+### Traffic Exposure Parameters
 
-Due to [this issue](https://github.com/helm/helm/issues/6583) there may be errors performing a `helm upgrade`of this chart from versions earlier than 2.0.0.
+| Name                               | Description                                                                                                                      | Value                    |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
+| `service.type`                     | OAuth2 Proxy service type                                                                                                        | `ClusterIP`              |
+| `service.port`                     | OAuth2 Proxy service HTTP port                                                                                                   | `80`                     |
+| `service.nodePorts.http`           | Node port for HTTP                                                                                                               | `""`                     |
+| `service.clusterIP`                | OAuth2 Proxy service Cluster IP                                                                                                  | `""`                     |
+| `service.loadBalancerIP`           | OAuth2 Proxy service Load Balancer IP                                                                                            | `""`                     |
+| `service.loadBalancerSourceRanges` | OAuth2 Proxy service Load Balancer sources                                                                                       | `[]`                     |
+| `service.externalTrafficPolicy`    | OAuth2 Proxy service external traffic policy                                                                                     | `Cluster`                |
+| `service.extraPorts`               | Extra ports to expose (normally used with the `sidecar` value)                                                                   | `[]`                     |
+| `service.annotations`              | Additional custom annotations for OAuth2 Proxy service                                                                           | `{}`                     |
+| `service.sessionAffinity`          | Session Affinity for Kubernetes service, can be "None" or "ClientIP"                                                             | `None`                   |
+| `service.sessionAffinityConfig`    | Additional settings for the sessionAffinity                                                                                      | `{}`                     |
+| `ingress.enabled`                  | Enable ingress record generation for OAuth2 Proxy                                                                                | `false`                  |
+| `ingress.pathType`                 | Ingress path type                                                                                                                | `ImplementationSpecific` |
+| `ingress.apiVersion`               | Force Ingress API version (automatically detected if not set)                                                                    | `""`                     |
+| `ingress.ingressClassName`         | IngressClass that will be be used to implement the Ingress (Kubernetes 1.18+)                                                    | `""`                     |
+| `ingress.hostname`                 | Default host for the ingress record                                                                                              | `oaut2-proxy.local`      |
+| `ingress.path`                     | Default path for the ingress record                                                                                              | `/`                      |
+| `ingress.annotations`              | Additional annotations for the Ingress resource. To enable certificate autogeneration, place here your cert-manager annotations. | `{}`                     |
+| `ingress.tls`                      | Enable TLS configuration for the host defined at `ingress.hostname` parameter                                                    | `false`                  |
+| `ingress.extraHosts`               | An array with additional hostname(s) to be covered with the ingress record                                                       | `[]`                     |
+| `ingress.extraPaths`               | An array with additional arbitrary paths that may need to be added to the ingress under the main host                            | `[]`                     |
+| `ingress.extraTls`                 | TLS configuration for additional hostname(s) to be covered with this ingress record                                              | `[]`                     |
+| `ingress.certManager`              | Add the corresponding annotations for cert-manager integration                                                                   | `false`                  |
+| `ingress.selfSigned`               | Create a TLS secret for this ingress record using self-signed certificates generated by Helm                                     | `false`                  |
+| `ingress.secrets`                  | Custom TLS certificates as secrets                                                                                               | `[]`                     |
+| `ingress.existingSecretName`       | If you're providing your own certificate and want to manage the secret yourself                                                  | `""`                     |
+| `ingress.extraRules`               | Additional rules to be covered with this ingress record                                                                          | `[]`                     |
 
-## Configuration
+### OAuth2 Proxy Image parameters
 
-The following table lists the configurable parameters of the oauth2-proxy chart and their default values.
+| Name                | Description                                                                                                  | Value                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------- |
+| `image.registry`    | OAuth2 Proxy image registry                                                                                  | `docker.io`            |
+| `image.repository`  | OAuth2 Proxy image repository                                                                                | `bitnami/oauth2-proxy` |
+| `image.tag`         | OAuth2 Proxy image tag (immutable tags are recommended)                                                      | `7.4.0-debian-11-r81`  |
+| `image.digest`      | OAuth2 Proxy image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag | `""`                   |
+| `image.pullPolicy`  | OAuth2 Proxy image pull policy                                                                               | `IfNotPresent`         |
+| `image.pullSecrets` | OAuth2 Proxy image pull secrets                                                                              | `[]`                   |
 
-Parameter | Description | Default
---- | --- | ---
-`affinity` | node/pod affinities | None
-`authenticatedEmailsFile.enabled` | Enables authorize individual email addresses | `false`
-`authenticatedEmailsFile.template` | Name of the configmap that is handled outside of that chart | `""`
-`authenticatedEmailsFile.restricted_access` | [email addresses](https://github.com/pusher/oauth2_proxy#email-authentication) list config | `""`
-`config.clientID` | oauth client ID | `""`
-`config.clientSecret` | oauth client secret | `""`
-`config.cookieSecret` | server specific cookie for the secret; create a new one with `openssl rand -base64 32 | head -c 32 | base64` | `""`
-`config.existingSecret` | existing Kubernetes secret to use for OAuth2 credentials. See [secret template](https://github.com/helm/charts/blob/master/stable/oauth2-proxy/templates/secret.yaml) for the required values | `nil`
-`config.configFile` | custom [oauth2_proxy.cfg](https://github.com/pusher/oauth2_proxy/blob/master/contrib/oauth2_proxy.cfg.example) contents for settings not overridable via environment nor command line | `""`
-`config.existingConfig` | existing Kubernetes configmap to use for the configuration file. See [config template](https://github.com/helm/charts/blob/master/stable/oauth2-proxy/templates/configmap.yaml) for the required values | `nil`
-`config.google.adminEmail` | user impersonated by the google service account | `""`
-`config.google.serviceAccountJson` | google service account json contents | `""`
-`config.google.existingConfig` | existing Kubernetes configmap to use for the service account file. See [google secret template](https://github.com/helm/charts/blob/master/stable/oauth2-proxy/templates/google-secret.yaml) for the required values | `nil`
-`extraArgs` | key:value list of extra arguments to give the binary | `{}`
-`extraEnv` | key:value list of extra environment variables to give the binary | `[]`
-`extraVolumes` | list of extra volumes | `[]`
-`extraVolumeMounts` | list of extra volumeMounts | `[]`
-`htpasswdFile.enabled` | enable htpasswd-file option | `false`
-`htpasswdFile.entries` | list of [SHA encrypted user:passwords](https://pusher.github.io/oauth2_proxy/configuration#command-line-options) | `{}`
-`htpasswdFile.existingSecret` | existing Kubernetes secret to use for OAuth2 htpasswd file | `""`
-`httpScheme` | `http` or `https`. `name` used for port on the deployment. `httpGet` port `name` and `scheme` used for `liveness`- and `readinessProbes`. `name` and `targetPort` used for the service. | `http`
-`image.pullPolicy` | Image pull policy | `IfNotPresent`
-`image.repository` | Image repository | `quay.io/pusher/oauth2_proxy`
-`image.tag` | Image tag | `v5.1.0`
-`imagePullSecrets` | Specify image pull secrets | `nil` (does not add image pull secrets to deployed pods)
-`ingress.enabled` | Enable Ingress | `false`
-`ingress.path` | Ingress accepted path | `/`
-`ingress.annotations` | Ingress annotations | `nil`
-`ingress.hosts` | Ingress accepted hostnames | `nil`
-`ingress.tls` | Ingress TLS configuration | `nil`
-`livenessProbe.enabled`  | enable Kubernetes livenessProbe. Disable to use oauth2-proxy with Istio mTLS. See [Istio FAQ](https://istio.io/help/faq/security/#k8s-health-checks) | `true`
-`livenessProbe.initialDelaySeconds` | number of seconds | 0
-`livenessProbe.timeoutSeconds` | number of seconds | 1
-`nodeSelector` | node labels for pod assignment | `{}`
-`podAnnotations` | annotations to add to each pod | `{}`
-`podLabels` | additional labesl to add to each pod | `{}`
-`podDisruptionBudget.enabled`| Enabled creation of PodDisruptionBudget (only if replicaCount > 1) | true
-`podDisruptionBudget.minAvailable`| minAvailable parameter for PodDisruptionBudget | 1
-`priorityClassName` | priorityClassName | `nil`
-`readinessProbe.enabled` | enable Kubernetes readinessProbe. Disable to use oauth2-proxy with Istio mTLS. See [Istio FAQ](https://istio.io/help/faq/security/#k8s-health-checks) | `true`
-`readinessProbe.initialDelaySeconds` | number of seconds | 0
-`readinessProbe.timeoutSeconds` | number of seconds | 1
-`readinessProbe.periodSeconds` | number of seconds | 10
-`readinessProbe.successThreshold` | number of successes | 1
-`replicaCount` | desired number of pods | `1`
-`resources` | pod resource requests & limits | `{}`
-`service.port` | port for the service | `80`
-`service.type` | type of service | `ClusterIP`
-`service.clusterIP` | cluster ip address | `nil`
-`service.loadBalancerIP` | ip of load balancer | `nil`
-`service.loadBalancerSourceRanges` | allowed source ranges in load balancer | `nil`
-`tolerations` | list of node taints to tolerate | `[]`
-`securityContext.enabled` | enable Kubernetes security context | `false`
-`securityContext.runAsNonRoot` | make sure that the container runs as a non-root user | `true`
-`proxyVarsAsSecrets` | choose between environment values or secrets for setting up OAUTH2_PROXY variables. When set to false, remember to add the variables OAUTH2_PROXY_CLIENT_ID, OAUTH2_PROXY_CLIENT_SECRET, OAUTH2_PROXY_COOKIE_SECRET in extraEnv | `true`
+### OAuth2 Proxy configuration parameters
 
+| Name                                                   | Description                                                                                              | Value              |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ------------------ |
+| `configuration.clientID`                               | OAuth client ID                                                                                          | `XXXXXXX`          |
+| `configuration.clientSecret`                           | OAuth client secret                                                                                      | `XXXXXXXX`         |
+| `configuration.cookieSecret`                           | OAuth cookie secret                                                                                      | `XXXXXXXXXXXXXXXX` |
+| `configuration.existingSecret`                         | Secret with the client ID, secret and cookie secret                                                      | `""`               |
+| `configuration.google.enabled`                         | Enable Google service account                                                                            | `false`            |
+| `configuration.google.adminEmail`                      | Google admin email                                                                                       | `""`               |
+| `configuration.google.googleGroup`                     | Restrict logins to members of this google group                                                          | `""`               |
+| `configuration.google.serviceAccountJson`              | Google Service account JSON                                                                              | `""`               |
+| `configuration.google.existingSecret`                  | Existing secret containing Google Service Account                                                        | `""`               |
+| `configuration.content`                                | Default configuration                                                                                    | `""`               |
+| `configuration.existingConfigmap`                      | Configmap with the OAuth2 Proxy configuration                                                            | `""`               |
+| `configuration.authenticatedEmailsFile.enabled`        | Enable authenticated emails file                                                                         | `false`            |
+| `configuration.authenticatedEmailsFile.content`        | Restricted access list (one email per line)                                                              | `""`               |
+| `configuration.authenticatedEmailsFile.existingSecret` | Secret with the authenticated emails file                                                                | `""`               |
+| `configuration.htpasswdFile.enabled`                   | Enable htpasswd file                                                                                     | `false`            |
+| `configuration.htpasswdFile.existingSecret`            | Existing secret for htpasswd file                                                                        | `""`               |
+| `configuration.htpasswdFile.content`                   | htpasswd file entries (one row per user)                                                                 | `""`               |
+| `configuration.oidcIssuerUrl`                          | OpenID Connect issuer URL                                                                                | `""`               |
+| `configuration.redirectUrl`                            | OAuth Redirect URL                                                                                       | `""`               |
+| `configuration.whiteList`                              | Allowed domains for redirection after authentication. Prefix domain with a . or a *. to allow subdomains | `""`               |
+
+### OAuth2 Proxy deployment parameters
+
+| Name                                          | Description                                                                                      | Value           |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------- |
+| `containerPort`                               | OAuth2 Proxy port number                                                                         | `4180`          |
+| `extraContainerPorts`                         | Array of additional container ports for the OAuth2 Proxy container                               | `[]`            |
+| `replicaCount`                                | Number of OAuth2 Proxy replicas to deploy                                                        | `1`             |
+| `extraArgs`                                   | add extra args to the default command                                                            | `[]`            |
+| `startupProbe.enabled`                        | Enable startupProbe on OAuth2 Proxy nodes                                                        | `false`         |
+| `startupProbe.initialDelaySeconds`            | Initial delay seconds for startupProbe                                                           | `0`             |
+| `startupProbe.periodSeconds`                  | Period seconds for startupProbe                                                                  | `10`            |
+| `startupProbe.timeoutSeconds`                 | Timeout seconds for startupProbe                                                                 | `1`             |
+| `startupProbe.failureThreshold`               | Failure threshold for startupProbe                                                               | `5`             |
+| `startupProbe.successThreshold`               | Success threshold for startupProbe                                                               | `1`             |
+| `livenessProbe.enabled`                       | Enable livenessProbe on OAuth2 Proxy nodes                                                       | `true`          |
+| `livenessProbe.initialDelaySeconds`           | Initial delay seconds for livenessProbe                                                          | `0`             |
+| `livenessProbe.periodSeconds`                 | Period seconds for livenessProbe                                                                 | `10`            |
+| `livenessProbe.timeoutSeconds`                | Timeout seconds for livenessProbe                                                                | `1`             |
+| `livenessProbe.failureThreshold`              | Failure threshold for livenessProbe                                                              | `5`             |
+| `livenessProbe.successThreshold`              | Success threshold for livenessProbe                                                              | `1`             |
+| `readinessProbe.enabled`                      | Enable readinessProbe on OAuth2 Proxy nodes                                                      | `true`          |
+| `readinessProbe.initialDelaySeconds`          | Initial delay seconds for readinessProbe                                                         | `0`             |
+| `readinessProbe.periodSeconds`                | Period seconds for readinessProbe                                                                | `10`            |
+| `readinessProbe.timeoutSeconds`               | Timeout seconds for readinessProbe                                                               | `1`             |
+| `readinessProbe.failureThreshold`             | Failure threshold for readinessProbe                                                             | `5`             |
+| `readinessProbe.successThreshold`             | Success threshold for readinessProbe                                                             | `1`             |
+| `customStartupProbe`                          | Custom startupProbe that overrides the default one                                               | `{}`            |
+| `customLivenessProbe`                         | Custom livenessProbe that overrides the default one                                              | `{}`            |
+| `customReadinessProbe`                        | Custom readinessProbe that overrides the default one                                             | `{}`            |
+| `resources.limits`                            | The resources limits for the OAuth2 Proxy containers                                             | `{}`            |
+| `resources.requests`                          | The requested resources for the OAuth2 Proxy containers                                          | `{}`            |
+| `pdb.create`                                  | Enable a Pod Disruption Budget creation                                                          | `false`         |
+| `pdb.minAvailable`                            | Minimum number/percentage of pods that should remain scheduled                                   | `1`             |
+| `pdb.maxUnavailable`                          | Maximum number/percentage of pods that may be made unavailable                                   | `""`            |
+| `podSecurityContext.enabled`                  | Enabled OAuth2 Proxy pods' Security Context                                                      | `true`          |
+| `podSecurityContext.fsGroup`                  | Set OAuth2 Proxy pod's Security Context fsGroup                                                  | `1001`          |
+| `containerSecurityContext.enabled`            | Enabled OAuth2 Proxy containers' Security Context                                                | `true`          |
+| `containerSecurityContext.runAsUser`          | Set OAuth2 Proxy containers' Security Context runAsUser                                          | `1001`          |
+| `command`                                     | Override default container command (useful when using custom images)                             | `[]`            |
+| `args`                                        | Override default container args (useful when using custom images)                                | `[]`            |
+| `hostAliases`                                 | OAuth2 Proxy pods host aliases                                                                   | `[]`            |
+| `podLabels`                                   | Extra labels for OAuth2 Proxy pods                                                               | `{}`            |
+| `podAnnotations`                              | Annotations for OAuth2 Proxy pods                                                                | `{}`            |
+| `podAffinityPreset`                           | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`              | `""`            |
+| `podAntiAffinityPreset`                       | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`         | `soft`          |
+| `nodeAffinityPreset.type`                     | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`        | `""`            |
+| `nodeAffinityPreset.key`                      | Node label key to match. Ignored if `affinity` is set                                            | `""`            |
+| `nodeAffinityPreset.values`                   | Node label values to match. Ignored if `affinity` is set                                         | `[]`            |
+| `affinity`                                    | Affinity for OAuth2 Proxy pods assignment                                                        | `{}`            |
+| `nodeSelector`                                | Node labels for OAuth2 Proxy pods assignment                                                     | `{}`            |
+| `tolerations`                                 | Tolerations for OAuth2 Proxy pods assignment                                                     | `[]`            |
+| `updateStrategy.type`                         | OAuth2 Proxy statefulset strategy type                                                           | `RollingUpdate` |
+| `priorityClassName`                           | OAuth2 Proxy pods' priorityClassName                                                             | `""`            |
+| `schedulerName`                               | Name of the k8s scheduler (other than default)                                                   | `""`            |
+| `topologySpreadConstraints`                   | Topology Spread Constraints for pod assignment                                                   | `[]`            |
+| `lifecycleHooks`                              | for the OAuth2 Proxy container(s) to automate configuration before or after startup              | `{}`            |
+| `extraEnvVars`                                | Array with extra environment variables to add to OAuth2 Proxy nodes                              | `[]`            |
+| `extraEnvVarsCM`                              | Name of existing ConfigMap containing extra env vars for OAuth2 Proxy nodes                      | `""`            |
+| `extraEnvVarsSecret`                          | Name of existing Secret containing extra env vars for OAuth2 Proxy nodes                         | `""`            |
+| `extraVolumes`                                | Optionally specify extra list of additional volumes for the OAuth2 Proxy pod(s)                  | `[]`            |
+| `extraVolumeMounts`                           | Optionally specify extra list of additional volumeMounts for the OAuth2 Proxy container(s)       | `[]`            |
+| `sidecars`                                    | Add additional sidecar containers to the OAuth2 Proxy pod(s)                                     | `[]`            |
+| `initContainers`                              | Add additional init containers to the OAuth2 Proxy pod(s)                                        | `[]`            |
+| `dnsPolicy`                                   | Pod DNS policy. Valid values are 'ClusterFirstWithHostNet', 'ClusterFirst', 'Default' or 'None'. | `""`            |
+| `dnsConfig`                                   | Pod DNS configuration.                                                                           | `{}`            |
+| `serviceAccount.create`                       | Specifies whether a ServiceAccount should be created                                             | `true`          |
+| `serviceAccount.name`                         | The name of the ServiceAccount to use                                                            | `""`            |
+| `serviceAccount.automountServiceAccountToken` | Automount service account token for the server service account                                   | `true`          |
+| `serviceAccount.annotations`                  | Annotations for service account. Evaluated as a template. Only used if `create` is `true`.       | `{}`            |
+
+### External Redis&reg; parameters
+
+| Name                           | Description                                                | Value  |
+| ------------------------------ | ---------------------------------------------------------- | ------ |
+| `externalRedis.host`           | External Redis&reg; server host                            | `""`   |
+| `externalRedis.password`       | External Redis&reg; user password                          | `""`   |
+| `externalRedis.port`           | External Redis&reg; server port                            | `6379` |
+| `externalRedis.existingSecret` | The name of an existing secret with Redis&reg; credentials | `""`   |
+
+### Redis&reg; sub-chart parameters
+
+| Name                                   | Description                                                | Value        |
+| -------------------------------------- | ---------------------------------------------------------- | ------------ |
+| `redis.enabled`                        | Deploy Redis&reg; sub-chart                                | `true`       |
+| `redis.architecture`                   | Redis&reg; architecture                                    | `standalone` |
+| `redis.master.service.port`            | Redis&reg; (without Sentinel) service port                 | `6379`       |
+| `redis.replica.replicaCount`           | Number of Redis&reg; replicas                              | `3`          |
+| `redis.auth.enabled`                   | Enable Redis&reg; authentication                           | `true`       |
+| `redis.auth.existingSecret`            | Secret with Redis&reg; credentials                         | `""`         |
+| `redis.auth.existingSecretPasswordKey` | Key inside the existing secret with Redis&reg; credentials | `""`         |
+| `redis.auth.sentinel`                  | Enable authentication in the Sentinel nodes                | `true`       |
+| `redis.sentinel.enabled`               | Enable Redis&reg; sentinel in the deployment               | `false`      |
+| `redis.sentinel.masterSet`             | Name of the Redis&reg; Sentinel master set                 | `mymaster`   |
+| `redis.sentinel.service.port`          | Redis&reg; (with Sentinel) service port                    | `6379`       |
+| `redis.sentinel.service.sentinelPort`  | Redis&reg; (with Sentinel) sentinel service port           | `26379`      |
+
+See <https://github.com/bitnami-labs/readmenator> to create the table
+
+The above parameters map to the env variables defined in [bitnami/oauth2-proxy](https://github.com/bitnami/containers/tree/main/bitnami/oauth2-proxy). For more information please refer to the [bitnami/oauth2-proxy](https://github.com/bitnami/containers/tree/main/bitnami/oauth2-proxy) image documentation.
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example,
 
 ```console
-$ helm install stable/oauth2-proxy --name my-release \
-  --set=image.tag=v0.0.2,resources.limits.cpu=200m
+helm install my-release \
+  --set replicaCount=2 \
+    oci://registry-1.docker.io/bitnamicharts/oauth2-proxy
 ```
+
+The above command increase the default number of replicas.
+
+> NOTE: Once this chart is deployed, it is not possible to change the application's access credentials, such as usernames or passwords, using Helm. To change these application credentials after deployment, delete any persistent volumes (PVs) used by the chart and re-deploy it, or use the application's built-in administrative tools if available.
 
 Alternatively, a YAML file that specifies the values for the above parameters can be provided while installing the chart. For example,
 
 ```console
-$ helm install stable/oauth2-proxy --name my-release -f values.yaml
+helm install my-release -f values.yaml oci://registry-1.docker.io/bitnamicharts/oauth2-proxy
 ```
 
 > **Tip**: You can use the default [values.yaml](values.yaml)
 
-## SSL Configuration
+## Configuration and installation details
 
-See: [SSL Configuration](https://pusher.github.io/oauth2_proxy/tls-configuration).
-Use ```values.yaml``` like:
+### [Rolling VS Immutable tags](https://docs.bitnami.com/containers/how-to/understand-rolling-tags-containers/)
+
+It is strongly recommended to use immutable tags in a production environment. This ensures your deployment does not change automatically if the same tag is updated with a different image.
+
+Bitnami will release a new chart updating its containers if a new version of the main container, significant changes, or critical vulnerabilities exist.
+
+### Ingress
+
+This chart provides support for Ingress resources. If an Ingress controller, such as nginx-ingress or traefik, that Ingress controller can be used to serve OAuth2 Proxy.
+
+To enable Ingress integration, set `ingress.enabled` to `true`. The `ingress.hostname` property can be used to set the host name. The `ingress.tls` parameter can be used to add the TLS configuration for this host. It is also possible to have more than one host, with a separate TLS configuration for each host.
+
+### TLS secrets
+
+The chart also facilitates the creation of TLS secrets for use with the Ingress controller, with different options for certificate management.
+
+## Persistence
+
+The [Bitnami OAuth2 Proxy](https://github.com/bitnami/containers/tree/main/bitnami/oauth2-proxy) image stores the OAuth2 Proxy data and configurations at the `/bitnami` path of the container. Persistent Volume Claims are used to keep the data across deployments.
+
+### Additional environment variables
+
+In case you want to add extra environment variables (useful for advanced operations like custom init scripts), you can use the `extraEnvVars` property.
 
 ```yaml
-...
-extraArgs:
-  tls-cert: /path/to/cert.pem
-  tls-key: /path/to/cert.key
-
-extraVolumes:
-  - name: ssl-cert
-    secret:
-      secretName: my-ssl-secret
-
-extraVolumeMounts:
-  - mountPath: /path/to/
-    name: ssl-cert
-...
+extraEnvVars:
+  - name: LOG_LEVEL
+    value: error
 ```
 
-With a secret called `my-ssl-secret`:
+Alternatively, you can use a ConfigMap or a Secret with the environment variables. To do so, use the `extraEnvVarsCM` or the `extraEnvVarsSecret` values.
 
-```yaml
-...
-data:
-  cert.pem: AB..==
-  cert.key: CD..==
-```
+### Sidecars
+
+If additional containers are needed in the same pod as OAuth2 Proxy (such as additional metrics or logging exporters), they can be defined using the `sidecars` parameter. If these sidecars export extra ports, extra port definitions can be added using the `service.extraPorts` parameter. [Learn more about configuring and using sidecar containers](https://docs.bitnami.com/kubernetes/infrastructure/oauth2-proxy/configuration/configure-sidecar-init-containers/).
+
+### Pod affinity
+
+This chart allows you to set your custom affinity using the `affinity` parameter. Find more information about Pod affinity in the [kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity).
+
+As an alternative, use one of the preset configurations for pod affinity, pod anti-affinity, and node affinity available at the [bitnami/common](https://github.com/bitnami/charts/tree/main/bitnami/common#affinities) chart. To do so, set the `podAffinityPreset`, `podAntiAffinityPreset`, or `nodeAffinityPreset` parameters.
+
+## Troubleshooting
+
+Find more information about how to deal with common errors related to Bitnami's Helm charts in [this troubleshooting guide](https://docs.bitnami.com/general/how-to/troubleshoot-helm-chart-issues).
+
+## Upgrading
+
+Refer to the [chart documentation for more information about how to upgrade from previous releases](https://docs.bitnami.com/kubernetes/infrastructure/oauth2-proxy/administration/upgrade/).
+
+## License
+
+Copyright &copy; 2023 VMware, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+<http://www.apache.org/licenses/LICENSE-2.0>
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

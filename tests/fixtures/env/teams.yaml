@@ -3,11 +3,15 @@ teamConfig:
         id: admin
     demo:
         alerts:
+            email: {}
             receivers:
                 - email
+        billingAlertQuotas:
+            teamCpuMonthQuotaReached:
+                quota: 150
+            teamMemMonthQuotaReached:
+                quota: 200
         id: demo
-        # monitoringStack:
-        #     enabled: false
         networkPolicy:
             egressPublic: true
             ingressPrivate: true
@@ -15,11 +19,6 @@ teamConfig:
             groupMapping: somesecretvalue
         resourceQuota:
             services.loadbalancers: '1'
-        billingAlertQuotas:
-            teamCpuMonthQuotaReached:
-                quota: 150
-            teamMemMonthQuotaReached:
-                quota: 200
         selfService:
             apps: []
             service:

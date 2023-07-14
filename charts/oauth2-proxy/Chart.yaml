@@ -1,9 +1,23 @@
-apiVersion: v1
-appVersion: 5.1.0
-description: A reverse proxy that provides authentication with Google, Github or other
-  providers
-engine: gotpl
-home: https://pusher.github.io/oauth2_proxy/
+annotations:
+  category: Infrastructure
+  licenses: Apache-2.0
+apiVersion: v2
+appVersion: 7.4.0
+dependencies:
+- condition: redis.enabled
+  name: redis
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 17.x.x
+- name: common
+  repository: oci://registry-1.docker.io/bitnamicharts
+  tags:
+  - bitnami-common
+  version: 2.x.x
+description: A reverse proxy and static file server that provides authentication using
+  Providers (Google, GitHub, and others) to validate accounts by email, domain or
+  group.
+home: https://bitnami.com
+icon: https://bitnami.com/assets/stacks/oauth2-proxy/img/oauth2-proxy-stack-220x234.png
 keywords:
 - kubernetes
 - oauth
@@ -11,13 +25,10 @@ keywords:
 - authentication
 - google
 - github
-kubeVersion: '>=1.9.0-0'
 maintainers:
-- email: cedric.dsm@gmail.com
-  name: desaintmartin
-- email: maxime@root314.com
-  name: miouge1
+- name: VMware, Inc.
+  url: https://github.com/bitnami/charts
 name: oauth2-proxy
 sources:
-- https://github.com/pusher/oauth2_proxy
-version: 2.4.1
+- https://github.com/bitnami/charts/tree/main/bitnami/oauth2-proxy
+version: 3.7.4
