@@ -62,7 +62,7 @@ on:
         type: choice
         options:
           - scaleway
-          - digital ocean
+          - digitalocean
       cluster_region:
         description: Scaleway cluster region
         default: ams1
@@ -301,19 +301,10 @@ jobs:
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml
             --values values.yaml \
+            --set cluster.provider=${{ inputs.server_providers }}
             $domainSuffix"
 
           [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
-
-          kubectl delete service/metrics-server -n  kube-system
-          kubectl delete deployment.apps/metrics-server  -n  kube-system
-          kubectl delete apiservices.apiregistration.k8s.io v1beta1.metrics.k8s.io
-          kubectl delete clusterroles.rbac.authorization.k8s.io system:aggregated-metrics-reader
-          kubectl delete clusterroles.rbac.authorization.k8s.io system:metrics-server 
-          kubectl delete clusterrolebinding metrics-server:system:auth-delegator
-          kubectl delete clusterrolebinding system:metrics-server          
-          kubectl delete rolebinding metrics-server-auth-reader -n kube-system 
-          kubectl delete serviceaccount metrics-server -n kube-system
 
           helm upgrade --install $install_args
       - name: Gather k8s events on failure

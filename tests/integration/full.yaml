@@ -2,7 +2,6 @@
 cluster:
   k8sVersion: 'K8S_VERSION_PLACEHOLDER'
   name: 'dev'
-  provider: digitalocean
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
   isMultitenant: true
