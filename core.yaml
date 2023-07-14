@@ -376,7 +376,7 @@ adminApps:
       - svc: thanos-receive
         port: 19291
         namespace: monitoring
-        paths: [/api/v1/receive/]
+        paths: [/api]
         forwardPath: true
         type: public
   - name: trivy
