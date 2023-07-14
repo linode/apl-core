@@ -4,12 +4,13 @@ type: Job
 name: autoconfig
 
 image:
-  repository: docker.io/otomi/otomi-e2e:otomi-upgrade
-  tag: autoconfig
+  repository: docker.io/otomi/otomi-e2e
+  tag: otomi-upgrade
   pullPolicy: Always
 
 script: | 
-    yarn cypress run --record false --env BASE_URL={{$v.cluster.domainSuffix}}   
+    yarn cypress run --spec 'cypress/integration/otomi-applications/90-otomi-upgrade.feature --record false --env BASE_URL={{$v.cluster.domainSuffix}}   
+
 
 nativeSecrets:
   CYPRESS_ROOT_USERNAME: {{$k.adminUsername}}
