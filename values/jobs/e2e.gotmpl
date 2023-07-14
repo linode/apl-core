@@ -9,7 +9,7 @@ image:
   pullPolicy: Always
 
 script: | 
-    yarn cypress run --spec 'cypress/integration/otomi-applications/90-otomi-upgrade.feature --record false --env BASE_URL={{$v.cluster.domainSuffix}}   
+    yarn cypress run --spec 'cypress/integration/otomi-applications/90-otomi-upgrade.feature' --record false --env BASE_URL={{$v.cluster.domainSuffix}}   
 
 
 nativeSecrets:
