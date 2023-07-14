@@ -6,5 +6,5 @@ cluster:
     k8sVersion: '1.25'
     name: demo
     owner: redkubes
-    provider: custom
+    provider: scaleway
     region: eu-central-1
