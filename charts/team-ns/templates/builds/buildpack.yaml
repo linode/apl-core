@@ -12,6 +12,9 @@ metadata:
 spec:
   workspaces:
     - name: shared-data
+    {{- if .repoAccess.otomiGit }}
+    - name: git-credentials
+    {{- end }}
   tasks:
   - name: fetch-source
     taskRef:
@@ -19,6 +22,10 @@ spec:
     workspaces:
     - name: output
       workspace: shared-data
+    {{- if .repoAccess.otomiGit }}
+    - name: ssh-directory
+      workspace: git-credentials
+    {{- end }}
     params:
     - name: url
       value: {{ .mode.buildpacks.repoUrl }}
@@ -43,7 +50,7 @@ spec:
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
-  name: buildpacks-build-{{ .name }}
+  name: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
   annotations:
     sidecar.istio.io/inject: "false"
 spec:
@@ -62,6 +69,11 @@ spec:
           resources:
             requests:
               storage: 1Gi
+    {{- if .repoAccess.otomiGit }}
+    - name: git-credentials
+      secret:
+        secretName: gitea-credentials
+    {{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

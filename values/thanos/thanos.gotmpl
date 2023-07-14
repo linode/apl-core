@@ -7,13 +7,14 @@
 query:
   enabled: true
   replicaCount: {{ $vl.query.replicaCount }}
+  service:
+    additionalHeadless: true
   dnsDiscovery:
     enabled: false
   stores:
     - "thanos-storegateway:10901"
-    {{- range $i := until $vl.receiver.replicaCount }}
-    - "thanos-receive-{{ $i }}.thanos-receive-headless.monitoring.svc.cluster.local:10901"
-    {{- end }}
+    - "dnssrv+_grpc._tcp.thanos-storegateway.monitoring.svc"
+    - "dnssrv+_grpc._tcp.thanos-receive-headless.monitoring.svc"
   resources: {{- $vl.resources.query | toYaml | nindent 4 }}
   extraFlags:
     - "--query.auto-downsampling"
@@ -61,25 +62,29 @@ receive:
   service:
     additionalHeadless: true
 
-## @section Thanos Ruler parameters
+## @section Thanos receive distributor parameters
 receiveDistributor:
   enabled: {{ $vl.receiverDistributor.enabled }}
   resources: {{- $vl.resources.receiverDistributor | toYaml | nindent 4 }}
 
 ## @section Thanos Ruler parameters
-ruler:
-  enabled: {{ $vl.ruler.enabled }}
-  persistence:
-    size: {{ $vl.persistence.ruler.size }}
-  resources: {{- $vl.resources.ruler | toYaml | nindent 4 }}
-  alertmanagers:
-    - http://prometheus-operator-alertmanager.monitoring.svc.cluster.local:9093
-  config: |-
-    groups:
-      - name: "metamonitoring"
-        rules:
-          - alert: "PrometheusDown"
-            expr: absent(up{prometheus="monitoring/prometheus-operator"}) 
+## Ruler has conceptual tradeoffs that might not be favorable for most use cases. 
+## The main tradeoff is its dependence on query reliability. 
+## For Prometheus it is unlikely to have alert/recording rule evaluation failure as evaluation is local.
+# ruler:
+#   enabled: {{ $vl.ruler.enabled }}
+#   persistence:
+#     size: {{ $vl.persistence.ruler.size }}
+#   resources: {{- $vl.resources.ruler | toYaml | nindent 4 }}
+#   alertmanagers:
+#     - "dnssrv+http://_http-web._tcp.alertmanager-operated.monitoring.svc"
+#   service:
+#     additionalHeadless: true
+#   queries:
+#     - dnssrv+_http._tcp.thanos-query-headless.monitoring.svc
+#   clusterName: {{ $v.cluster.domainSuffix }}
+#   extraFlags:
+#     - --rule-file=/conf/rules/*.yaml
 
 ## @param objstoreConfig The [objstore configuration](https://thanos.io/tip/thanos/storage.md/)
 ## Specify content for objstore.yml
@@ -102,6 +107,14 @@ objstoreConfig: |-
     access_key: {{ $sp.s3.accessKeyId }}
     secret_key: {{ $sp.s3.secretAccessKey }}
     insecure: true
+{{- end }}
+{{- if eq $sp.type "azureBlob" }}
+objstoreConfig: |-
+  type: azure
+    config:
+      account_name: {{ $sp.azureBlob.accountName }}
+      account_key: {{ $sp.azureBlob.accountKey }}
+      container_name: {{ $sp.azureBlob.containerName }}
 {{- end }}
 
 metrics:

@@ -1,0 +1,29 @@
+{{- if and (.Values.webhooks.validatingWebhook.create) (.Values.webhooks.service.create) }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: {{ default .Release.Namespace .Values.certs.certificate.namespace }}/{{ default "jaeger-operator-service-cert" .Values.certs.certificate.secretName }}
+  name: jaeger-operator-validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: {{ default "jaeger-operator-webhook-service" .Values.webhooks.service.name }}
+      namespace: {{ .Release.Namespace }}
+      path: /validate-jaegertracing-io-v1-jaeger
+  failurePolicy: Fail
+  name: vjaeger.kb.io
+  rules:
+  - apiGroups:
+    - jaegertracing.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - jaegers
+  sideEffects: None
+{{- end }}

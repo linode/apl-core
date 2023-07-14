@@ -1,12 +1,16 @@
 apps:
     harbor:
         enabled: true
-        backup:
-            enabled: true
-            schedule: '0/3 * * * *'
+        database:
+            type: internal
+            importHarborDb: true
         persistence:
             imageChartStorage:
                 gcs:
                     bucket: otomi-harbor
                     rootdirectory: /google/demo
                 type: gcs
+        core: {}
+        jobservice: {}
+        registry:
+            credentials: {}

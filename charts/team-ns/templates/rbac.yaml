@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $ns := .Release.Namespace }}
 {{- $h := $v.apps.harbor }}
+{{- $b := $v.apps.tekton }}
 ---
 apiVersion: v1
 imagePullSecrets:
@@ -18,13 +19,9 @@ secrets:
 {{- if $h.enabled }}
 - name: harbor-pushsecret
 {{- end }}
-{{- range $v.builds }}
-{{- if .privateGit }}
-- name: git-user-credentials-{{ .name }}
-{{- end }}
-{{- if .otomiGit }}
-- name: gitea-user-credentials-{{ .name }}
-{{- end }}
+{{- if $b.enabled }}
+- name: harbor-pushsecret-builds
+- name: gitea-credentials
 {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -98,3 +95,31 @@ subjects:
 - kind: ServiceAccount
   name: kubectl
   namespace: {{ $ns }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tty-admin
+  namespace: team-{{ $v.teamId }}
+  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - '*'
+    verbs:
+      - '*'
+---
+# This secret needs refactoring! When ssh in Gitea is enabled: https://tekton.dev/docs/pipelines/auth/#configuring-ssh-auth-authentication-for-git
+# This is only temporary to support a specif use case
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitea-credentials
+  annotations:
+    tekton.dev/git-0: https://gitea.{{ $v.cluster.domainSuffix }}
+type: kubernetes.io/basic-auth
+stringData:
+  username: otomi-admin
+  password: {{ $v.otomi.adminPassword }}
+---

@@ -55,6 +55,8 @@ apps:
     enabled: true
   tigera-operator:
     enabled: true
+  thanos:
+    enabled: true
   vault:
     enabled: true
 teamConfig:

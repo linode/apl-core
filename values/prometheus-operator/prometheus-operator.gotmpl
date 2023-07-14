@@ -159,6 +159,10 @@ additionalPrometheusRules:
   - name: cluster-autoscaler
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
   {{- end }}
+  {{- if $c.thanos.enabled }}
+  - name: thanos
+    {{- readFile "rules/thanos.yaml" | nindent 4 }}
+  {{- end }}
   {{- if and ($v.apps.opencost.alerts.enabled) }}
   - name: opencost
     groups:
@@ -270,9 +274,15 @@ grafana:
     {{- end }}
     {{- if $t.enabled }}
     - name: Thanos Query
+      access: proxy
+      basicAuth: false
       editable: false
+      orgId: 1
       type: prometheus
-      url: http://thanos-query-frontend.monitoring.svc.cluster.local:9090/thanos/query  
+      url: http://thanos-query-frontend.monitoring:9090
+      jsonData:
+        prometheusType: Thanos
+        timeInterval: "30s"
     {{- end }}
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
   grafana.ini: {{- $grafanaIni | nindent 4 }}
