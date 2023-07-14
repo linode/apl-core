@@ -1,6 +1,5 @@
 {{- $v := .Values }}
-{{- $c := $v.charts }}
-{{- $k := $c.keycloak }}
+{{- $k := $v.apps.keycloak }}
 type: Job
 name: autoconfig
 
