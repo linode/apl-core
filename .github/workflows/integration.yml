@@ -306,7 +306,7 @@ jobs:
 
           [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
 
-          helm upgrade --install $install_args
+           helm install $install_args
       - name: Gather k8s events on failure
         if: failure()
         run: |
