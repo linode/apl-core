@@ -1,29 +1,50 @@
+{{/* vim: set filetype=mustache: */}}
 {{/*
-Return the proper certmanager.image name
+Expand the name of the chart.
 */}}
-{{- define "certmanager.image" -}}
-{{ include "common.images.image" (dict "imageRoot" .Values.controller.image "global" .Values.global) }}
+{{- define "cert-manager.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
-Return the proper certmanager.image name
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
-{{- define "certmanager.acmesolver.image" -}}
-{{ include "common.images.image" (dict "imageRoot" .Values.controller.acmesolver.image "global" .Values.global) }}
+{{- define "cert-manager.fullname" -}}
+{{- if .Values.fullnameOverride -}}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- if contains $name .Release.Name -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
-Return the proper image name (for the init container volume-permissions image)
+Create the name of the service account to use
 */}}
-{{- define "certmanager.volumePermissions.image" -}}
-{{- include "common.images.image" ( dict "imageRoot" .Values.volumePermissions.image "global" .Values.global ) -}}
+{{- define "cert-manager.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "cert-manager.fullname" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
 {{- end -}}
 
 {{/*
-Return the proper Docker Image Registry Secret Names
+Webhook templates
 */}}
-{{- define "certmanager.imagePullSecrets" -}}
-{{ include "common.images.pullSecrets" (dict "images" (list .Values.controller.image) "global" .Values.global) }}
+
+{{/*
+Expand the name of the chart.
+Manually fix the 'app' and 'name' labels to 'webhook' to maintain
+compatibility with the v0.9 deployment selector.
+*/}}
+{{- define "webhook.name" -}}
+{{- printf "webhook" -}}
 {{- end -}}
 
 {{/*
@@ -31,39 +52,37 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "certmanager.controller.fullname" -}}
-{{- printf "%s-controller" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- define "webhook.fullname" -}}
+{{- $trimmedName := printf "%s" (include "cert-manager.fullname" .) | trunc 55 | trimSuffix "-" -}}
+{{- printf "%s-webhook" $trimmedName | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{- define "webhook.caRef" -}}
+{{- template "cert-manager.namespace" }}/{{ template "webhook.fullname" . }}-ca
 {{- end -}}
 
 {{/*
-Returns the proper service account name depending if an explicit service account name is set
-in the values file. If the name is not set it will default to either common.names.fullname if controller.serviceAccount.create
-is true or default otherwise.
+Create the name of the service account to use
 */}}
-{{- define "certmanager.controller.serviceAccountName" -}}
-    {{- if .Values.controller.serviceAccount.create -}}
-        {{- if (empty .Values.controller.serviceAccount.name) -}}
-          {{- printf "%s-controller" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" -}}
-        {{- else -}}
-          {{ default "default" .Values.controller.serviceAccount.name }}
-        {{- end -}}
-    {{- else -}}
-        {{ default "default" .Values.controller.serviceAccount.name }}
-    {{- end -}}
+{{- define "webhook.serviceAccountName" -}}
+{{- if .Values.webhook.serviceAccount.create -}}
+    {{ default (include "webhook.fullname" .) .Values.webhook.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.webhook.serviceAccount.name }}
+{{- end -}}
 {{- end -}}
 
 {{/*
-Return the proper certmanager.webhook image name
+cainjector templates
 */}}
-{{- define "certmanager.webhook.image" -}}
-{{ include "common.images.image" (dict "imageRoot" .Values.webhook.image "global" .Values.global) }}
-{{- end -}}
 
 {{/*
-Return the proper Docker Image Registry Secret Names
+Expand the name of the chart.
+Manually fix the 'app' and 'name' labels to 'cainjector' to maintain
+compatibility with the v0.9 deployment selector.
 */}}
-{{- define "certmanager.webhook.imagePullSecrets" -}}
-{{ include "common.images.pullSecrets" (dict "images" (list .Values.webhook.image) "global" .Values.global) }}
+{{- define "cainjector.name" -}}
+{{- printf "cainjector" -}}
 {{- end -}}
 
 {{/*
@@ -71,39 +90,33 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "certmanager.webhook.fullname" -}}
-{{- printf "%s-webhook" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- define "cainjector.fullname" -}}
+{{- $trimmedName := printf "%s" (include "cert-manager.fullname" .) | trunc 52 | trimSuffix "-" -}}
+{{- printf "%s-cainjector" $trimmedName | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
-Returns the proper service account name depending if an explicit service account name is set
-in the values file. If the name is not set it will default to either common.names.fullname if webhook.serviceAccount.create
-is true or default otherwise.
+Create the name of the service account to use
 */}}
-{{- define "certmanager.webhook.serviceAccountName" -}}
-    {{- if .Values.webhook.serviceAccount.create -}}
-        {{- if (empty .Values.webhook.serviceAccount.name) -}}
-          {{- printf "%s-webhook" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" -}}
-        {{- else -}}
-          {{ default "default" .Values.webhook.serviceAccount.name }}
-        {{- end -}}
-    {{- else -}}
-        {{ default "default" .Values.webhook.serviceAccount.name }}
-    {{- end -}}
+{{- define "cainjector.serviceAccountName" -}}
+{{- if .Values.cainjector.serviceAccount.create -}}
+    {{ default (include "cainjector.fullname" .) .Values.cainjector.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.cainjector.serviceAccount.name }}
+{{- end -}}
 {{- end -}}
 
 {{/*
-Return the proper cainjector image name
+startupapicheck templates
 */}}
-{{- define "certmanager.cainjector.image" -}}
-{{ include "common.images.image" (dict "imageRoot" .Values.cainjector.image "global" .Values.global) }}
-{{- end -}}
 
 {{/*
-Return the proper Docker Image Registry Secret Names
+Expand the name of the chart.
+Manually fix the 'app' and 'name' labels to 'startupapicheck' to maintain
+compatibility with the v0.9 deployment selector.
 */}}
-{{- define "certmanager.cainjector.imagePullSecrets" -}}
-{{ include "common.images.pullSecrets" (dict "images" (list .Values.cainjector.image) "global" .Values.global) }}
+{{- define "startupapicheck.name" -}}
+{{- printf "startupapicheck" -}}
 {{- end -}}
 
 {{/*
@@ -111,51 +124,51 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "certmanager.cainjector.fullname" -}}
-{{- printf "%s-cainjector" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" -}}
+{{- define "startupapicheck.fullname" -}}
+{{- $trimmedName := printf "%s" (include "cert-manager.fullname" .) | trunc 52 | trimSuffix "-" -}}
+{{- printf "%s-startupapicheck" $trimmedName | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
-Returns the proper service account name depending if an explicit service account name is set
-in the values file. If the name is not set it will default to either common.names.fullname if webhook.serviceAccount.create
-is true or default otherwise.
+Create the name of the service account to use
 */}}
-{{- define "certmanager.cainjector.serviceAccountName" -}}
-    {{- if .Values.cainjector.serviceAccount.create -}}
-        {{- if (empty .Values.cainjector.serviceAccount.name) -}}
-          {{- printf "%s-cainjector" (include "common.names.fullname" .) | trunc 63 | trimSuffix "-" -}}
-        {{- else -}}
-          {{ default "default" .Values.cainjector.serviceAccount.name }}
-        {{- end -}}
-    {{- else -}}
-        {{ default "default" .Values.cainjector.serviceAccount.name }}
-    {{- end -}}
+{{- define "startupapicheck.serviceAccountName" -}}
+{{- if .Values.startupapicheck.serviceAccount.create -}}
+    {{ default (include "startupapicheck.fullname" .) .Values.startupapicheck.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.startupapicheck.serviceAccount.name }}
 {{- end -}}
-
-{{- define "certmanager.webhook.caRef" -}}
-{{ .Release.Namespace }}/{{ template "certmanager.webhook.fullname" . }}-ca
 {{- end -}}
 
 {{/*
-Compile all warnings into a single message.
+Create chart name and version as used by the chart label.
 */}}
-{{- define "certmanager.validateValues" -}}
-{{- $messages := list -}}
-{{- $messages := append $messages (include "certmanager.validateValues.setCRD" .) -}}
-{{- $messages := without $messages "" -}}
-{{- $message := join "\n" $messages -}}
-
-{{- if $message -}}
-{{-   printf "\nVALUES VALIDATION:\n%s" $message -}}
-{{- end -}}
+{{- define "chartName" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{/* Validate values of cert-manager - CRD */}}
-{{- define "certmanager.validateValues.setCRD" -}}
-{{- if not .Values.installCRDs -}}
-cert-manager: CRDs
-    You will use cert-manager without installing CRDs.
-    If you want to include our CRD resources, please install the cert-manager using the crd flags (--set .Values.installCRDs=true).
+{{/*
+Labels that should be added on each resource
+*/}}
+{{- define "labels" -}}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- if eq (default "helm" .Values.creator) "helm" }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+helm.sh/chart: {{ include "chartName" . }}
 {{- end -}}
+{{- if .Values.global.commonLabels}}
+{{ toYaml .Values.global.commonLabels }}
+{{- end }}
 {{- end -}}
 
+{{/*
+Namespace for all resources to be installed into
+If not defined in values file then the helm release namespace is used
+By default this is not set so the helm release namespace will be used
+
+This gets around an problem within helm discussed here
+https://github.com/helm/helm/issues/5358
+*/}}
+{{- define "cert-manager.namespace" -}}
+    {{ .Values.namespace | default .Release.Namespace }}
+{{- end -}}

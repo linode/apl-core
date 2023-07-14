@@ -1,13 +1,15 @@
-CHART NAME: {{ .Chart.Name }}
-CHART VERSION: {{ .Chart.Version }}
-APP VERSION: {{ .Chart.AppVersion }}
+cert-manager {{ .Chart.AppVersion }} has been deployed successfully!
 
-** Please be patient while the chart is being deployed **
+In order to begin issuing certificates, you will need to set up a ClusterIssuer
+or Issuer resource (for example, by creating a 'letsencrypt-staging' issuer).
 
-In other to begin using certificates, you will need to set up Issuer or ClustersIssuer resources.
+More information on the different types of issuers and how to configure them
+can be found in our documentation:
 
 https://cert-manager.io/docs/configuration/
 
-To configure a new ingress to automatically provision certificates, you will find some information in the following link:
+For information on how to configure cert-manager to automatically provision
+Certificates for Ingress resources, take a look at the `ingress-shim`
+documentation:
 
 https://cert-manager.io/docs/usage/ingress/
