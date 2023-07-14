@@ -34,15 +34,6 @@ installCRDs: true
 
 resources: {{- toYaml $cm.resources | nindent 2 }}
 
-controller:
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 200m
-      memory: 384Mi
-
 cainjector:
   resources:
     requests:
