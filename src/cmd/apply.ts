@@ -90,15 +90,15 @@ const applyAll = async () => {
       await commit(true) // will set deployment state after
     else await setDeploymentState({ status: 'deployed' })
 
-  await hf(
-    {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
-      fileOpts: 'helmfile.tpl/helmfile-e2e.yaml',
-      logLevel: logLevelString(),
-      args: ['apply'],
-    },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-  )
+  // await hf(
+  //   {
+  //     // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
+  //     fileOpts: 'helmfile.tpl/helmfile-e2e.yaml',
+  //     logLevel: logLevelString(),
+  //     args: ['apply'],
+  //   },
+  //   { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  // )
 }
 
 const apply = async (): Promise<void> => {
