@@ -14,7 +14,7 @@ else
   echo "The old oauth2-proxy-redis release does not exists. Skipping"
 fi
 
-if [[ $(kubectl get deployment -n cert-manager cert-manager -o jsonpath='{.metadata.labels.app\.kubernetes\.io/version}') == "v1.10.0" ]]; then
+if [[ $(helm status -n cert-manager cert-manager 2>/dev/null) ]]; then
   kubectl delete -n cert-manager deployment cert-manager-cainjector cert-manager-webhook cert-manager
 else
   echo "The old cert-manager release does not exists. Skipping"
