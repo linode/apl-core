@@ -1,7 +1,7 @@
 import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
 import { unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick } from 'lodash'
+import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
 import { stringify } from 'yaml'
 import { $ } from 'zx'
 import { decrypt, encrypt } from './crypt'
@@ -252,22 +252,17 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
 
 export const deriveSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
   // Some secrets needs to be drived from the generated secrets
-  const htpasswd = (
-    await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
-  ).stdout.trim()
-  const derivedSecrets = {
-    apps: {
-      harbor: {
-        registry: {
-          credentials: {
-            htpasswd,
-          },
-        },
-      },
-    },
+
+  const secrets = {}
+  if (values.apps.harbor.enabled) {
+    const htpasswd = (
+      await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
+    ).stdout.trim()
+
+    set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
   }
 
-  return derivedSecrets
+  return secrets
 }
 /**
  * Takes values as input and generates secrets that don't exist yet.

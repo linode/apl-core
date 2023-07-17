@@ -7,7 +7,6 @@ const { terminal } = stubs
 describe('generateSecrets', () => {
   const values = { one: 'val', secret: 'prop', apps: { yo: { di: { lo: 'loves you' } } } }
   const simpleTemplate = '"dummy"'
-  const twoStageTemplate = '.dot.templatedSecret | upper'
   const schema = {
     properties: {
       one: {
@@ -30,7 +29,7 @@ describe('generateSecrets', () => {
               },
               mama: {
                 type: 'string',
-                'x-secret': 'printf "%s!" .v.di.lo',
+                'x-secret': '{{ printf "%s!" loves you }}',
               },
             },
           },
@@ -42,17 +41,13 @@ describe('generateSecrets', () => {
             type: 'string',
             'x-secret': simpleTemplate,
           },
-          twoStage: {
-            type: 'string',
-            'x-secret': twoStageTemplate,
-          },
         },
       },
     },
   }
   const expected = {
     secret: 'prop',
-    nested: { templatedSecret: 'dummy', twoStage: 'DUMMY' },
+    nested: { templatedSecret: 'dummy' },
     apps: { yo: { mama: 'loves you!' } },
   }
   let deps

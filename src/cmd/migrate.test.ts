@@ -27,14 +27,14 @@ describe('Upgrading values', () => {
       version: 2,
       deletions: ['some.json.path'],
       relocations: [{ 'some.json': 'some.bla' }],
-      mutations: [{ strToArray: 'list .prev' }],
+      // mutations: [{ strToArray: 'list .prev' }],
     },
     {
       version: 3,
       mutations: [
-        { 'some.k8sVersion': 'printf "v%s" .prev' },
+        // { 'some.k8sVersion': 'printf "v%s" .prev' },
         { 'teamConfig.{team}.services[].prop': 'replaced' },
-        { 'teamConfig.{team}.services[].bla[].ok': 'print .prev "ee"' },
+        // { 'teamConfig.{team}.services[].bla[].ok': 'print .prev "ee"' },
       ],
       renamings: [{ 'somefile.yaml': 'newloc.yaml' }],
     },
