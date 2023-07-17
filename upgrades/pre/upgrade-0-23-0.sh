@@ -16,7 +16,6 @@ fi
 
 if [[ $(helm status -n cert-manager cert-manager 2>/dev/null) ]]; then
   kubectl delete -n cert-manager deployment cert-manager-cainjector cert-manager-webhook cert-manager
-  #kubectl replace -f charts/cert-manager/templates/crds.yaml
 else
   echo "The old cert-manager release does not exists. Skipping"
 fi
