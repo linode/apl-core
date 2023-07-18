@@ -13,6 +13,11 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
 # Installing k9s
 RUN curl -LO https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz && tar zxf k9s_Linux_amd64.tar.gz -C /usr/local/bin/ k9s && rm k9s_Linux_amd64.tar.gz
 
+# Installing helm
+RUN curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+RUN chmod 700 get_helm.sh
+RUN ./get_helm.sh --no-sudo
+
 # Installing velero cli
 RUN wget "https://github.com/vmware-tanzu/velero/releases/download/v1.11.0/velero-v1.11.0-linux-amd64.tar.gz" && tar zxvf velero-v1.11.0-linux-amd64.tar.gz && mv velero-v1.11.0-linux-amd64/velero /usr/local/bin/ && rm -rf velero-v1.11.0-linux-amd64*
 
