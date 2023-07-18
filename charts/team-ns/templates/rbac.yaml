@@ -104,7 +104,7 @@ metadata:
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
 rules:
   - apiGroups:
-      - ''
+      - '*'
     resources:
       - '*'
     verbs:
