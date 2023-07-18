@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.22.2](https://github.com/redkubes/otomi-core/compare/v0.22.1...v0.22.2) (2023-07-18)
+
+
+### Bug Fixes
+
+* do not parse values as parameters for shell command ([#1192](https://github.com/redkubes/otomi-core/issues/1192)) ([6051ca3](https://github.com/redkubes/otomi-core/commit/6051ca3233ca9ed988e8dd30b2a4ecc02d83df05))
+
 ### [0.22.1](https://github.com/redkubes/otomi-core/compare/v0.22.0...v0.22.1) (2023-07-10)
 
 
