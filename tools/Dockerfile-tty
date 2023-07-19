@@ -20,11 +20,11 @@ RUN tar zxf /tmp/k9s_Linux_amd64.tar.gz -C /usr/local/bin/ k9s && rm /tmp/k9s_Li
 
 # Installing helm
 ADD --checksum=sha256:2b6efaa009891d3703869f4be80ab86faa33fa83d9d5ff2f6492a8aebe97b219 https://get.helm.sh/helm-v3.12.2-linux-amd64.tar.gz /tmp/
-RUN tar zxvf /tmp/helm-v3.12.2-linux-amd64.tar.gz -C /usr/local/bin/ linux-amd64/helm && rm /tmp/helm-v3.12.2-linux-amd64.tar.gz
+RUN tar zxvf /tmp/helm-v3.12.2-linux-amd64.tar.gz linux-amd64/helm -O > /usr/local/bin/helm && chmod +x /usr/local/bin/helm && rm /tmp/helm-v3.12.2-linux-amd64.tar.gz
 
 # Installing velero cli
 ADD --checksum=sha256:0d4db0d5081d8c3926d14fbdae28bc5ace9b9d07a2229d5f3077e32fcc52e579 https://github.com/vmware-tanzu/velero/releases/download/v1.11.0/velero-v1.11.0-linux-amd64.tar.gz /tmp/
-RUN tar zxvf /tmp/velero-v1.11.0-linux-amd64.tar.gz -C /usr/local/bin/ velero-v1.11.0-linux-amd64/velero && rm /tmp/velero-v1.11.0-linux-amd64.tar.gz
+RUN tar zxvf /tmp/velero-v1.11.0-linux-amd64.tar.gz velero-v1.11.0-linux-amd64/velero -O > /usr/local/bin/velero && chmod +x /usr/local/bin/velero && rm /tmp/velero-v1.11.0-linux-amd64.tar.gz
 
 # Installing tekton cli
 ADD --checksum=sha256:dc1a15443133ebc669dbebfab548f1d1abe401ce9034a3e61b0cd0364c34e75c https://github.com/tektoncd/cli/releases/download/v0.31.1/tkn_0.31.1_Linux_x86_64.tar.gz /tmp/
