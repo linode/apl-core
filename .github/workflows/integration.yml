@@ -332,7 +332,7 @@ jobs:
 
   run-integration-test-digitalocean:
     if: ${{ inputs.server_providers == 'digitalocean' }}
-    name: Run integration test on cluster
+    name: Run integration test on digitalocean cluster
     needs: preprocess-digitalocean-input
     runs-on: ubuntu-latest
     strategy:
