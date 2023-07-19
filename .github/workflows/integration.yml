@@ -231,10 +231,10 @@ jobs:
               project-id=${{ env.SCW_DEFAULT_PROJECT_ID }} \
               auto-upgrade.enable=false \
               cni=calico \
-              pools.0.node-type=PRO2-M \
+              pools.0.node-type=PRO2-S \
               pools.0.min-size=1 \
               pools.0.size=2 \
-              pools.0.max-size=3 \
+              pools.0.max-size=10 \
               pools.0.autohealing=true \
               pools.0.autoscaling=true \
               pools.0.name=default \
