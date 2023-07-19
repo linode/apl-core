@@ -136,6 +136,7 @@ jobs:
           echo 'generate_password: ${{ inputs.generate_password }}'
           echo 'oidc: ${{ inputs.oidc }}'
           echo 'certificate: ${{ inputs.certificate }}'
+
   preprocess-scaleway-input:
     needs: preprocess-input
     if: ${{ inputs.server_providers == 'scaleway' }}
@@ -162,7 +163,7 @@ jobs:
 
   preprocess-digitalocean-input:
     needs: preprocess-input
-    if: ${{ inputs.server_providers == 'digital ocean' }}
+    if: ${{ inputs.server_providers == 'digitalocean' }}
     name: Preprocess input variables for digital ocean
     runs-on: ubuntu-latest
     outputs:
@@ -212,9 +213,6 @@ jobs:
       - name: Determine exact k8s version
         run: |
           echo SCALEWAY_K8s_VERSION=$(scw k8s version list -o json | jq -re 'map(select(.name | startswith("${{ matrix.kubernetes_version }}"))) | .[].name') >> $GITHUB_ENV
-      # - name: Get default VPC for region
-      #   run: |
-      #     echo SCALEWAY_VPC_UUID=``
       - id: set-region-prefix
         name: Set cluster region prefix
         run: |
@@ -244,13 +242,9 @@ jobs:
               region=${{ env.PREFIXED_CLUSTER_REGION }} \
               --wait \
               -o=json)
-
-        # clusterId=$(scw k8s cluster list -o json | jq -r '.[] | select(.name == \"${{ env.SCALEWAY_CLUSTER_NAME }}\") | .id')
-        # echo "CLUSTER_ID=$clusterId" >> $GITHUB_ENV
       - name: Retrieve cluster id
         run: echo SCALEWAY_CLUSTER_ID=$(scw k8s cluster list region=${{ env.PREFIXED_CLUSTER_REGION }} -o json | jq -r '.[] | select(.name == "${{ env.SCALEWAY_CLUSTER_NAME }}") | .id') >> $GITHUB_ENV
       - name: Save kubectl config with auth token
-        #run: doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
         run: scw k8s kubeconfig install ${{ env.SCALEWAY_CLUSTER_ID }} region=${{ env.PREFIXED_CLUSTER_REGION }}
       - name: Get kubectl environment
         run: echo SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
@@ -323,13 +317,138 @@ jobs:
         if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
         run: |
           scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=${{ env.PREFIXED_CLUSTER_REGION }}
-      # - name: Slack Notification
-      #   if: always()
-      #   uses: rtCamp/action-slack-notify@v2
-      #   env:
-      #     SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-      #     SLACK_CHANNEL: github-ci
-      #     SLACK_COLOR: ${{ job.status }}
-      #     SLACK_ICON: https://github.com/redkubes.png?size=48
-      #     SLACK_TITLE: Scheduled integration tests
-      #     SLACK_USERNAME: RedKubesBot
+      - name: Slack Notification
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: github-ci
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/redkubes.png?size=48
+          SLACK_TITLE: Scheduled integration tests
+          SLACK_USERNAME: RedKubesBot
+
+  run-integration-test-digitalocean:
+    if: ${{ inputs.server_providers == 'digitalocean' }}
+    name: Run integration test on cluster
+    needs: preprocess-digitalocean-input
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kubernetes_version: ${{ fromJSON(needs.preprocess-digitalocean-input.outputs.kubernetes_versions) }}
+      max-parallel: 5
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Set k8s cluster name
+        run: |
+          echo DIGITALOCEAN_CLUSTER_NAME=i-${{ github.run_id }}-${{ strategy.job-index }} >> $GITHUB_ENV
+          # Cluster name must be no longer than 63 characters
+      - name: Determine exact k8s version
+        run: |
+          echo DIGITALOCEAN_K8S_VERSION=`doctl kubernetes options versions -o json | jq -re 'map(select(.kubernetes_version | startswith("${{ matrix.kubernetes_version }}"))) | .[0] | .slug'` >> $GITHUB_ENV
+      - name: Get default VPC for region
+        run: |
+          echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list -o json | jq -re 'map(select((.region == "${{ inputs.cluster_region }}") and .default)) | .[0] | .id'` >> $GITHUB_ENV
+      - name: Create k8s cluster for testing
+        run: |
+          doctl kubernetes cluster create ${{ env.DIGITALOCEAN_CLUSTER_NAME }} \
+            --tag source:github \
+            --ha \
+            --maintenance-window any=03:00 \
+            --region ${{ inputs.cluster_region }} \
+            --vpc-uuid ${{ env.DIGITALOCEAN_VPC_UUID }} \
+            --node-pool "name=int-test-${{ strategy.job-index }}-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
+            --version ${{ env.DIGITALOCEAN_K8S_VERSION }} \
+            --wait
+      - name: Retrieve cluster id
+        run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get ${{ env.DIGITALOCEAN_CLUSTER_NAME }} --format ID --no-header` >> $GITHUB_ENV
+      - name: Assign the cluster to the project
+        run: doctl projects resources assign ${{ secrets.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
+      - name: Save kubectl config with auth token
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
+      - name: Get kubectl environment
+        run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+      - name: Create image pull secret on test cluster
+        run: |
+          kubectl create secret docker-registry reg-otomi-github \
+            --docker-server=${{ env.CACHE_REGISTRY }} \
+            --docker-username=${{ env.GIT_USER }} \
+            --docker-password='${{ secrets.NPM_TOKEN }}'
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Prepare Otomi chart
+        run: |
+          ref=${{ github.event.pull_request.head.ref || github.ref }}
+          tag=${ref##*/}
+          k8sVersion=${{ env.DIGITALOCEAN_K8S_VERSION }}
+          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
+          sed --in-place "s/0-chart-patch-placeholder/0/g" chart/otomi/Chart.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion:0:4}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          touch values-container-registry.yaml
+
+          # If a pipeline installs Otomi from the semver tag then pull container image from DockerHub
+          [[ ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]] && exit 0
+
+          # Pull image from cache registry
+          cat << EOF > values-container-registry.yaml
+          imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
+          imagePullSecretNames:
+            - reg-otomi-github
+          EOF
+      - name: Otomi install
+        env:
+          AZ_DNS: ${{ secrets.AZ_DNS }}
+          AZ_KMS: ${{ secrets.AZ_KMS }}
+          AZ_OIDC: ${{ secrets.AZ_OIDC }}
+          LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
+        run: |
+          domainSuffix=''
+          touch values.yaml
+          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
+          [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
+          [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
+          [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
+
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+            --values tests/integration/${{ inputs.install_profile }}.yaml \
+            --values values-container-registry.yaml
+            --values values.yaml \
+            --set cluster.provider=${{ inputs.server_providers }}
+            $domainSuffix"
+
+          [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
+
+          helm install $install_args
+      - name: Gather k8s events on failure
+        if: failure()
+        run: |
+          kubectl get events --sort-by='.lastTimestamp' -A
+      - name: Gather k8s pods on failure
+        if: failure()
+        run: |
+          kubectl get pods -A -o wide
+      - name: Gather otomi logs on failure
+        if: failure()
+        run: |
+          kubectl logs jobs/otomi --tail 150
+      - name: Remove the test cluster
+        if: always()
+        run: |
+          [[ "${{ inputs.cluster_persistence }}" == "preserve" ]] && echo "The cluster ${{ env.DIGITALOCEAN_CLUSTER_NAME }} will NOT be destroyed!!" && exit 0
+          doctl kubernetes cluster delete ${{ env.DIGITALOCEAN_CLUSTER_NAME }} -f --dangerous
+      - name: Slack Notification
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: github-ci
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/redkubes.png?size=48
+          SLACK_TITLE: Scheduled integration tests
+          SLACK_USERNAME: RedKubesBot
