@@ -28,7 +28,7 @@ FROM ci as clean
 RUN npm prune --production
 
 #-----------------------------
-FROM otomi/tools:v1.4.27 as prod
+FROM otomi/tools:v1.4.28 as prod
 
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
