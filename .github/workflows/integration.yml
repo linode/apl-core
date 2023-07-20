@@ -55,6 +55,7 @@ on:
           - minimal
           - minimal-with-team
           - full
+          - upgrade
       cluster_region:
         description: DigitalOcean cluster region
         default: ams3
