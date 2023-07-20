@@ -4,7 +4,7 @@ apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
 metadata:
   name: otomi-tty
-  namespace: team-admin
+  namespace: {{ $v.namespace }}
 spec:
   selector:
     matchLabels:
