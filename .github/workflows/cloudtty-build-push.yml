@@ -3,7 +3,7 @@ name: CloudTTY Build and Versioning
 on:
   push:
     branches:
-      - 'main'
+      - 'tty-helm'
 
 env:
   NAMESPACE: otomi
@@ -61,6 +61,7 @@ jobs:
       - name: Build and tag Docker image
         if: ${{ env.NEW_VERSION != null }}
         run: |
+          docker version
           docker build -t ${{ env.NAMESPACE }}/${{ env.REPO }} -f tools/Dockerfile-tty .
           docker tag ${{ env.NAMESPACE }}/${{ env.REPO }} ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
 
