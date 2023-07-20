@@ -61,8 +61,7 @@ jobs:
       - name: Build and tag Docker image
         if: ${{ env.NEW_VERSION != null }}
         run: |
-          cd tools
-          docker build -t ${{ env.NAMESPACE }}/${{ env.REPO }} -f Dockerfile-tty .
+          docker buildx build -t ${{ env.NAMESPACE }}/${{ env.REPO }} -f tools/Dockerfile-tty .
           docker tag ${{ env.NAMESPACE }}/${{ env.REPO }} ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
 
       - name: Login to GitHub Container Registry
