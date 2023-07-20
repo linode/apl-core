@@ -69,7 +69,7 @@ jobs:
         if: ${{ env.NEW_VERSION != null }}
         run: |
           pip3 install docker-squash
-          docker-squash otomi/tty -t ${{ env.NAMESPACE }}/${{ env.REPO }}
+          docker-squash otomi/tty -t ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
 
       - name: Login to GitHub Container Registry
         if: ${{ env.NEW_VERSION != null }}
