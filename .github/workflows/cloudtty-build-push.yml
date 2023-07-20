@@ -3,7 +3,7 @@ name: CloudTTY Build and Versioning
 on:
   push:
     branches:
-      - 'ani/feat/tty-helm'
+      - 'main'
 
 env:
   NAMESPACE: otomi
