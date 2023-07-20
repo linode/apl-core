@@ -38,13 +38,13 @@ jobs:
           echo "OLD_VERSION=${OLD_VERSION}" >> $GITHUB_ENV
 
           if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[TTY\]\[MAJOR\]"; then
-            # If a "[MAJOR]" commit is found, increment the major version by one and reset the minor and patch version to '0'.
+            # If a "[TTY][MAJOR]" commit is found, increment the major version by one and reset the minor and patch version to '0'.
             NEW_VERSION="$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$1 = $1 + 1; $2 = 0; $3 = 0} {print $0}')"
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
             echo OLD_VERSION = ${OLD_VERSION}
             echo NEW_VERSION = ${NEW_VERSION}
           elif git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[TTY\]\[MINOR\]"; then
-            # If a "[MINOR]" commit is found, increment the minor version by one and reset the patch version to '0'.
+            # If a "[TTY][MINOR]" commit is found, increment the minor version by one and reset the patch version to '0'.
             NEW_VERSION="$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$2 = $2 + 1; $3 = 0} {print $0}')"
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
             echo OLD_VERSION = ${OLD_VERSION}
