@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.5-labs
+# syntax=docker/dockerfile:1-labs
 # The above is needed for the "--checksum" aurgument to work in the ADD instruction
 
 # Using ubuntu:latest base image
