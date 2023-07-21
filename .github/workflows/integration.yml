@@ -37,6 +37,10 @@ on:
         type: string
         description: Select certificate issuer
         default: gen_custom_ca
+      license:
+        type: string
+        description: Should a unique password be generated?
+        default: 'yes'
   workflow_dispatch:
     inputs:
       cloud_provider:
@@ -52,7 +56,7 @@ on:
           - "['1.24']"
           - "['1.25']"
           - "['1.26']"
-        default: "['1.24']"
+        default: "['1.25']"
       install_profile:
         description: Otomi installation profile
         default: minimal
@@ -103,6 +107,13 @@ on:
           - gen_custom_ca
           - letsencrypt_staging
         default: gen_custom_ca
+      license:
+        type: choice
+        description: Should a predefined Otomi license be injected?
+        options:
+          - 'yes'
+          - 'no'
+        default: 'yes'
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: redkubes/otomi-core
@@ -266,9 +277,11 @@ jobs:
           AZ_KMS: ${{ secrets.AZ_KMS }}
           AZ_OIDC: ${{ secrets.AZ_OIDC }}
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
+          OTOMI_LICENSE: ${{ secrets.OTOMI_LICENSE }}
         run: |
           domainSuffix=''
           touch values.yaml
+          [[ '${{ inputs.license }}' == 'yes' ]] && echo "$OTOMI_LICENSE" >> values.yaml
           [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
@@ -390,9 +403,11 @@ jobs:
           AZ_KMS: ${{ secrets.AZ_KMS }}
           AZ_OIDC: ${{ secrets.AZ_OIDC }}
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
+          OTOMI_LICENSE: ${{ secrets.OTOMI_LICENSE }}
         run: |
           domainSuffix=''
           touch values.yaml
+          [[ '${{ inputs.license }}' == 'yes' ]] && echo "$OTOMI_LICENSE" >> values.yaml
           [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
