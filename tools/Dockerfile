@@ -34,6 +34,7 @@ WORKDIR /
 RUN apt-get update -qq \
   && apt install --reinstall coreutils \
   && apt install -qqy --no-install-recommends \
+  apache2-utils \
   apt-transport-https \
   awscli \
   ca-certificates \
