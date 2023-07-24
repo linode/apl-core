@@ -49,7 +49,7 @@ on:
         options:
           - scaleway
           - digitalocean
-        default: digitalocean
+        default: scaleway
       kubernetes_version:
         description: 'Kubernetes version'
         type: choice
