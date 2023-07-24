@@ -182,6 +182,9 @@ spec:
         {{- range $domain, $paths := $routes }}
     - hosts:
         - {{ $domain }}
+        {{- if eq ($v | get 'apps.cert-manager.issuer' "no-issuer" }}
+      secretName: otomi-byo-wildcard-cert
+        {{- else }}
           {{- if hasKey $secrets $domain }}
             {{- if ne (index $secrets $domain) "" }}
       secretName: copy-{{ $v.teamId }}-{{ index $secrets $domain }}
@@ -189,6 +192,7 @@ spec:
           {{- else }}
       secretName: {{ $domain | replace "." "-" }}
           {{- end }}
+        {{- end /* if eq ($v | get 'apps.cert-manager.issuer' "no-issuer" */}} 
         {{- end }}
       {{- end }}
     {{- end }}

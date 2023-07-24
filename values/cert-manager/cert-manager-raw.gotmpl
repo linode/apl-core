@@ -122,6 +122,17 @@ resources:
               {{- toYaml . | get "cert-manager" nindent 14 }}
               {{- end }}
 {{- end }}
+{{- if eq $cm.issuer "no-issuer" }}
+  - kind: Secret
+    metadata:
+      name: otomi-byo-wildcard-cert
+    type: kubernetes.io/tls
+    data:
+      tls.crt: |
+           
+      tls.key: |
+        MIIEpgIBAAKCAQEA7yn3bRHQ5FHMQ ...
+{{- end }}
 # generate all da certs
 {{- range $domain, $domInfo := $doms }}
   {{- if not $domInfo.hasCert }}
@@ -129,3 +140,24 @@ resources:
   - {{ tpl $certTpl (dict "otomi" $v.otomi "domain" $domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
   {{- end }}
 {{- end }}
+- apiVersion: cert-manager.io/v1
+  kind: Certificate
+  metadata:
+    name: otomi-wildcard
+    namespace: {{ if $v.otomi.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
+  spec:
+    secretName: otomi-wildcard-cert
+    commonName: '*.{{ $v.cluster.domainSuffix }}'
+    dnsNames:
+    - '*.{{ $v.cluster.domainSuffix }}'
+    issuerRef:
+      kind: ClusterIssuer
+      name: {{ $issuerName }}
+    usages:
+      {{- if eq $issuerName "custom-ca" }}
+      - server auth
+      {{- else }}
+      - digital signature
+      - key encipherment
+      - ocsp signing
+      {{- end }}

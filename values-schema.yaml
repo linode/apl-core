@@ -1582,6 +1582,13 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
+          wildCardCert:
+            type: boolean
+            description: Use wildcard certificate for all apps
+          byoWildcardCert:
+            x-secret: ''
+            type: string
+            description: 'Only applicable for the issuer=no-issuer'
           customRootCA:
             x-secret: ''
             type: string
@@ -1597,6 +1604,7 @@ properties:
             enum:
               - custom-ca
               - letsencrypt
+              - no-issuer
             default: custom-ca
           stage:
             type: string
