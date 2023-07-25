@@ -16,6 +16,7 @@ environments:
               targetCPUUtilizationPercentage: 50
           cert-manager:
             issuer: custom-ca
+            useWildcardCert: true
             resources:
               requests:
                 cpu: 50m

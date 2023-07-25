@@ -125,21 +125,12 @@ resources:
 {{- if eq $cm.issuer "no-issuer" }}
   - kind: Secret
     metadata:
-      name: otomi-byo-wildcard-cert
+      name: otomi-wildcard-cert
     type: kubernetes.io/tls
     data:
-      tls.crt: |
-           
-      tls.key: |
-        MIIEpgIBAAKCAQEA7yn3bRHQ5FHMQ ...
-{{- end }}
-# generate all da certs
-{{- range $domain, $domInfo := $doms }}
-  {{- if not $domInfo.hasCert }}
-    {{- $certName := ($domain | replace "." "-") }}
-  - {{ tpl $certTpl (dict "otomi" $v.otomi "domain" $domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
-  {{- end }}
-{{- end }}
+      tls.crt: {{ $cm.customWildcardCert | b64enc }}
+      tls.key: {{ $cm.customWildcardKey | b64enc }}
+{{- else if $cm.useWildCardCert }}
 - apiVersion: cert-manager.io/v1
   kind: Certificate
   metadata:
@@ -161,3 +152,13 @@ resources:
       - key encipherment
       - ocsp signing
       {{- end }}
+{{- else }}
+# generate all da certs
+{{- range $domain, $domInfo := $doms }}
+  {{- if not $domInfo.hasCert }}
+    {{- $certName := ($domain | replace "." "-") }}
+  - {{ tpl $certTpl (dict "otomi" $v.otomi "domain" $domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+

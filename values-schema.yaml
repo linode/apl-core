@@ -1582,13 +1582,15 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-          wildCardCert:
+          useWildCardCert:
+            description: will levereage either customWildcardCert or automaticallyt generated wildcard certificate
             type: boolean
-            description: Use wildcard certificate for all apps
-          byoWildcardCert:
-            x-secret: ''
-            type: string
+          customWildcardCert:
             description: 'Only applicable for the issuer=no-issuer'
+            type: string
+          customWildcardKey:
+            type: string
+            x-secret: ''
           customRootCA:
             x-secret: ''
             type: string
