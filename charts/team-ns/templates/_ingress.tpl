@@ -186,7 +186,7 @@ spec:
             {{- if ne (index $secrets $domain) "" }}
       secretName: copy-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
-          {{- else if ($v | get 'apps.cert-manager.useWildCardCert) }}
+          {{- else if (index $v "apps" "cert-manager" "useWildcardCert") }}
       secretName: otomi-wildcard-cert
           {{- else }}
       secretName: {{ $domain | replace "." "-" }}

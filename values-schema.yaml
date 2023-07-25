@@ -1582,7 +1582,7 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-          useWildCardCert:
+          useWildcardCert:
             description: will levereage either customWildcardCert or automaticallyt generated wildcard certificate
             type: boolean
           customWildcardCert:
