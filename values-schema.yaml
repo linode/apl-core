@@ -605,9 +605,9 @@ definitions:
   k8sVersion:
     description: The cluster k8s version. Must match one of the list.
     enum:
-      - '1.23'
       - '1.24'
       - '1.25'
+      - '1.26'
     type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'

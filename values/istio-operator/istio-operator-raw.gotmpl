@@ -153,7 +153,15 @@ resources:
           #   zipkin:
           #     address: jaeger-operator-jaeger-collector.jaeger:9411 
           useMCP: false
-        meshConfig: {{- $i.meshConfig | toYaml | nindent 10 }}
+        meshConfig:
+          accessLogFile: "/dev/stdout"
+          enableAutoMtls: true
+          enableTracing: true
+          defaultConfig:
+            tracing:
+              sampling: 1
+            zipkin:
+              address: otel.monitoring.svc.cluster.local:8443
         {{- if $v._derived.untrustedCA }}
         pilot:
           jwksResolverExtraRootCA: |
