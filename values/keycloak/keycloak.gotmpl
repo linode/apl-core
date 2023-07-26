@@ -90,7 +90,7 @@ extraVolumes: |
     emptyDir: {}
 
 {{- if $v.databases.keycloak.useOtomiDB }}
-extraEnvFrom: |
+extraEnv: |
   - name: DB_PASSWORD
     valueFrom:
       secretKeyRef:
