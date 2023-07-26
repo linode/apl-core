@@ -207,6 +207,7 @@ alertmanager:
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
 grafana:
   enabled: {{ $g.enabled }}
+  defaultDashboardsEnabled: false
   nameOverride: po-grafana
   fullnameOverride: po-grafana
   namespaceOverride: grafana
@@ -245,6 +246,9 @@ grafana:
         memory: 50Mi
     {{- if $t.enabled }}
     dashboards:
+      enabled: true
+      label: release
+      labelValue: grafana-dashboards
       multicluster:
         global:
           enabled: true
