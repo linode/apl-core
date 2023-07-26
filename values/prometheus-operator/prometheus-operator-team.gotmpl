@@ -75,3 +75,9 @@ additionalPrometheusRules: null
 grafana:
   defaultDashboardsEnabled: false
   plugins: []
+  dashboards:
+    k8s-teams:
+      enabled: true
+      user_visible: true
+      datasource: Prometheus-platform
+      # file: tmp/dashboards/deployment.json
