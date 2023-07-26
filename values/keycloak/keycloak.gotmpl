@@ -2,6 +2,10 @@
 {{- $k := $v.apps.keycloak }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 {{- $pinnedConsoleVersion := "0.5.4" }}
+
+{{- $databaseExistingSecret := "keycloak-otomi-db-app" }}
+{{- $databaseHost := "keycloak-otomi-db-rw.keycloak.svc.cluster.local" }}
+
 image:
   tag: 15.1.1
 contextPath: ""
@@ -87,6 +91,39 @@ extraVolumes: |
   - name: theme
     emptyDir: {}
 
+{{- if $v.databases.keycloak.useOtomiDB }}
+extraEnvFrom:
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: "keycloak-otomi-db-app"
+        key: password
+  - name: DB_USER
+    valueFrom:
+      secretKeyRef:
+        name: "keycloak-otomi-db-app"
+        key: user
+  - name: DB_VENDOR
+    value: postgres
+  - name: DB_ADDR
+    value: {{- $databaseHost }}
+  - name: DB_PORT
+    value: "5432"
+  - name: DB_DATABASE
+    value: keycloak
+{{- else }}
+extraEnv: |
+  - name: KEYCLOAK_USER
+    value: {{ $k.adminUsername }}
+  - name: KEYCLOAK_PASSWORD
+    value: {{ $k.adminPassword }}
+{{- end }}
+
+{{- if $v.databases.keycloak.useOtomiDB }}
+postgresql:
+  enabled: false
+{{- else }}
+
 postgresql:
   # @TODO:
   image:
@@ -136,6 +173,8 @@ postgresql:
   slave:
     priorityClassName: otomi-critical
 
+{{- end }}
+
 prometheus:
   operator:
     enabled: true
@@ -147,3 +186,4 @@ prometheus:
       
 test:
   enabled: false
+

@@ -623,6 +623,12 @@ environments:
               limits:
                 cpu: 1000m
                 memory: 512Mi
+        databases:
+          keycloak:
+            useOtomiDB: true
+            imported: true
+            size: "1Gi"
+            replicas: 2
         platformBackups:
           database:
             harbor:
