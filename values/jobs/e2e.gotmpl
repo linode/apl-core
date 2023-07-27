@@ -5,8 +5,7 @@ name: autoconfig
 
 image:
   repository: docker.io/otomi/otomi-e2e
-  tag: otomi-upgrade
-  pullPolicy: Always
+  tag: '0.3.0'
 
 script: | 
     yarn cypress run --spec 'cypress/integration/otomi-applications/90-otomi-upgrade.feature' --record false --env BASE_URL={{$v.cluster.domainSuffix}}   
