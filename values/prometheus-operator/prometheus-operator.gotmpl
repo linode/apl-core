@@ -244,11 +244,11 @@ grafana:
       requests:
         cpu: 50m
         memory: 50Mi
-    {{- if $t.enabled }}
     dashboards:
       enabled: true
       label: release
       labelValue: grafana-dashboards
+    {{- if $t.enabled }}
       multicluster:
         global:
           enabled: true
