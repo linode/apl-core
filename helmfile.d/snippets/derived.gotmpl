@@ -69,9 +69,6 @@ environments:
             {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
             stage: production
             {{- end }}
-            {{- if (eq $issuer "no-issuer") }}
-            useWildcardCert: true
-            {{- end }}
           cluster-autoscaler:
             enabled: {{ $a | get "cluster-autoscaler.enabled" (has $provider (list "aws")) }}
           {{- if eq $droneProvider "gitea" }}

@@ -1582,8 +1582,11 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-          useWildcardCert:
-            description: will levereage either customWildcardCert or automaticallyt generated wildcard certificate
+          useCustomWildcardCert:
+            description: Use certificate and Key provided by a user instead leveraging the one generated cert-manager
+            type: boolean
+          useWildcardCertForTeams:
+            description: Use wildcard cert for team core services and team services
             type: boolean
           customWildcardCert:
             description: 'Only applicable for the issuer=no-issuer'

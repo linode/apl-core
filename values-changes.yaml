@@ -80,4 +80,4 @@ changes:
       - 'apps.loki.resources.requests'
   - version: 11
     additions:
-      - app.cert-manager.useWildcardCert: true
+      - app.cert-manager.useWildcardCertForTeams: false
