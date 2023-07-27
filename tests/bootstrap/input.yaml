@@ -10,3 +10,4 @@ otomi:
 apps:
   harbor:
     enabled: true
+license: testLicense
