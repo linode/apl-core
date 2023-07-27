@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 folders:
   - k8s-admin
-  - istio-admin
   {{- if $v.apps.falco.enabled }}
   - falco
   {{- end }}
