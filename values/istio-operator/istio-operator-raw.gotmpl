@@ -157,7 +157,7 @@ resources:
         {{- if $v.otomi.hasCloudLB }}
             gatewayTopology:
               numTrustedProxies: 2
-        {{- else}}
+        {{- else }}
             gatewayTopology:
               numTrustedProxies: 1
         {{- end }}
