@@ -438,10 +438,6 @@ jobs:
         if: failure()
         run: |
           kubectl logs jobs/otomi --tail 150
-      - name: Gather otomi-e2e logs on failure
-        if: failure()
-        run: |
-          kubectl logs -n maintenance -l app.kubernetes.io/instance=job-e2e --tail 15000
       - name: Remove the test cluster
         if: always()
         run: |
