@@ -42,6 +42,7 @@ spec:
     istio: ingressgateway-{{ $type }}
   servers:
   - hosts:
+      - '{{ $ns }}/*.{{ $v.domain }}'
     {{- range $domain := $tlsDomains }}
       - {{ $ns }}/{{ $domain }}
     {{- end }}

@@ -1582,16 +1582,17 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-          useCustomWildcardCert:
-            description: Use certificate and Key provided by a user instead leveraging the one generated cert-manager
-            type: boolean
           useWildcardCertForTeams:
             description: Use wildcard cert for team core services and team services
             type: boolean
+          useCustomWildcardCert:
+            description: Use certificate and Key provided by a user instead leveraging the one generated cert-manager
+            type: boolean
           customWildcardCert:
-            description: 'Only applicable for the issuer=no-issuer'
+            description: 'Only applicable if useCustomWildcardCert'
             type: string
           customWildcardKey:
+            description: 'Only applicable if useCustomWildcardCert'
             type: string
             x-secret: ''
           customRootCA:
@@ -1609,7 +1610,6 @@ properties:
             enum:
               - custom-ca
               - letsencrypt
-              - no-issuer
             default: custom-ca
           stage:
             type: string
