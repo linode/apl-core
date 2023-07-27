@@ -58,9 +58,9 @@
       "internalConsoleOptions": "neverOpen"
     },
     {
-      "name": "Bootstrap",
+      "name": "Bootstrap-dev",
       "request": "launch",
-      "runtimeArgs": ["run", "bootstrap"],
+      "runtimeArgs": ["run", "bootstrap-dev"],
       "runtimeExecutable": "npm",
       "type": "node",
       "envFile": ".env",

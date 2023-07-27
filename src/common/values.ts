@@ -3,20 +3,13 @@ import { pathExists } from 'fs-extra'
 import { unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
 import { stringify } from 'yaml'
+import { $ } from 'zx'
 import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import {
-  extract,
-  flattenObject,
-  getValuesSchema,
-  gucci,
-  loadYaml,
-  pkg,
-  removeBlankAttributes,
-  stringContainsSome,
-} from './utils'
+import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
+
 import { HelmArguments } from './yargs'
 
 const objectToYaml = (obj: Record<string, any>): string => {
@@ -184,12 +177,14 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
   const plainValues = omit(values, cleanSecretPaths) as any
-  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', '_derived']
+  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', '_derived', 'license']
   const secretSettings = omit(secrets, fieldsToOmit)
+  const license = { license: values?.license }
   const settings = omit(plainValues, fieldsToOmit)
   // and write to their files
   const promises: Promise<void>[] = []
   if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
+  if (license) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.license.yaml`, license, overwrite))
   if (secretSettings || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   if (plainValues.cluster || overwrite)
@@ -257,6 +252,20 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.info('All values were written to ENV_DIR')
 }
 
+export const deriveSecrets = async (values: Record<string, any> = {}): Promise<Record<string, any>> => {
+  // Some secrets needs to be drived from the generated secrets
+
+  const secrets = {}
+  if (values?.apps?.harbor?.enabled) {
+    const htpasswd = (
+      await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
+    ).stdout.trim()
+
+    set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
+  }
+
+  return secrets
+}
 /**
  * Takes values as input and generates secrets that don't exist yet.
  * Returns all generated secrets.
@@ -270,65 +279,25 @@ export const generateSecrets = async (
 ): Promise<Record<string, any>> => {
   const d = deps.terminal('common:values:generateSecrets')
   const leaf = 'x-secret'
-  const localRefs = ['.dot.', '.v.', '.root.', '.o.']
-
   const schema = await deps.getValuesSchema()
 
   d.info('Extracting secrets')
-  const secrets = extract(schema, leaf, (val: any) => {
-    if (val.length > 0) {
-      if (stringContainsSome(val as string, ...localRefs)) return val
-      return `{{ ${val} }}`
-    }
-    return undefined
-  })
-  d.debug('secrets: ', secrets)
-  d.info('First round of templating')
-  const firstTemplateRound = (await gucci(secrets, {})) as Record<string, any>
-  const firstTemplateFlattend = flattenObject(firstTemplateRound)
+  const schemaSecrets = extract(schema, leaf)
+  // Remove properties with blank `x-secret`
+  const template = removeBlankAttributes(schemaSecrets)
 
-  d.info('Parsing values for second round of templating')
-  const expandedTemplates = Object.entries(firstTemplateFlattend)
-    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    .filter(([_, v]) => stringContainsSome(v, ...localRefs))
-    .map(([path, v]: string[]) => {
-      /*
-       * dotDot:
-       *  Get full path, except last item, this allows to parse for siblings
-       * dotV:
-       *  Get .v by getting the second . after apps
-       *  apps.hello.world
-       *  ^----------^ Get this content (apps.hello)
-       */
-      const dotDot = path.slice(0, path.lastIndexOf('.'))
-      const dotV = path.slice(0, path.indexOf('.', path.indexOf('apps.') + 'apps.'.length))
+  d.debug('Secrets template: ', template)
+  d.info('Generating secrets from the secrets template')
+  const generatedSecrets = (await gucci(template, {})) as Record<string, any>
+  const mergedGeneratedSecrets = merge(generatedSecrets, cloneDeep(values))
 
-      const sDot = v.replaceAll('.dot.', `.${dotDot}.`)
-      const vDot = sDot.replaceAll('.v.', `.${dotV}.`)
-      const oDot = vDot.replaceAll('.o.', '.otomi.')
-      const rootDot = oDot.replaceAll('.root.', '.')
-      return [path, rootDot]
-    })
-
-  expandedTemplates.map(([k, v]) => {
-    // Activate these templates and put them back into the object
-    set(firstTemplateRound, k, `{{ ${v} }}`)
-    return [k, v]
-  })
-  d.debug('firstTemplateRound: ', firstTemplateRound)
-
-  d.info('Gather all values for the second round of templating')
-  const gucciOutputAsTemplate = merge(cloneDeep(firstTemplateRound), cloneDeep(values))
-  d.debug('gucciOutputAsTemplate: ', gucciOutputAsTemplate)
-
-  d.info('Second round of templating')
-  const secondTemplateRound = (await gucci(firstTemplateRound, gucciOutputAsTemplate)) as Record<string, any>
-  d.debug('secondTemplateRound: ', secondTemplateRound)
+  const derivedSecrets = await deriveSecrets(mergedGeneratedSecrets)
+  const allSecrets = merge(cloneDeep(derivedSecrets), cloneDeep(mergedGeneratedSecrets))
 
   d.info('Generated all secrets')
   // Only return values that have x-secrets prop and are now fully templated:
-  const allSecrets = extract(schema, leaf)
-  const res = pick(merge(secondTemplateRound, cloneDeep(values)), Object.keys(flattenObject(allSecrets)))
+  const templatePaths = Object.keys(flattenObject(schemaSecrets))
+  const res = pick(allSecrets, templatePaths)
   d.debug('generateSecrets result: ', res)
   return res
 }
