@@ -4,7 +4,7 @@ metadata:
   name: {{ .name }}
   namespace: {{ if .otomi.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
   annotations:
-    helm.sh/resource-policy": keep
+    helm.sh/resource-policy: keep
 spec:
   secretName: {{ .name }}
   commonName: '{{ .domain }}'
