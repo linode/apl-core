@@ -133,6 +133,9 @@ controller:
       {{- if $privateNetwork }}
       service.beta.kubernetes.io/aws-load-balancer-internal: true
       {{- end }}
+      {{- if eq $v.cluster.provider "digitalocean" }}
+      service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: true
+      {{- end }}
       {{- end }} {{/* if eq $v.cluster.provider "aws" */}}
       {{- if eq $v.cluster.provider "google" }}
       {{- if $privateNetwork }}
