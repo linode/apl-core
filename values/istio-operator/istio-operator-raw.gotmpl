@@ -154,10 +154,10 @@ resources:
               address: jaeger-operator-jaeger-collector.jaeger:9411 
           useMCP: false
         meshConfig: {{- $i.meshConfig | toYaml | nindent 10 }}
-        {{- if $v.otomi.hasCloudLB }}
+            {{- if $v.otomi.hasCloudLB }}
             gatewayTopology:
               numTrustedProxies: 2
-        {{- else }}
+            {{- else }}
             gatewayTopology:
               numTrustedProxies: 1
         {{- end }}
