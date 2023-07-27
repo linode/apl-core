@@ -155,6 +155,10 @@ jobs:
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
+  execute-aws-marketplace:
+    uses: redkubes/aws-marketplace/.github/workflows/deploy_release.yaml@dev
+    secrets: inherit
+
   notification:
     needs: [build-test-cache, push-to-docker, release, chart-release]
     if: always()
