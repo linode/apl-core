@@ -12,7 +12,7 @@ bases:
 
 releases:
   - name: job-drone-activation
-    installed: true
+    installed: {{ $v.apps.drone.enabled }}
     <<: *jobs
     labels:
       group: jobs
