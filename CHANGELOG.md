@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.22.3](https://github.com/redkubes/otomi-core/compare/v0.22.2...v0.22.3) (2023-07-27)
+
+
+### Bug Fixes
+
+* grafana dashboards ([#1203](https://github.com/redkubes/otomi-core/issues/1203)) ([88d8618](https://github.com/redkubes/otomi-core/commit/88d861896f3af9054ca03bc8ccd628e29f788131))
+
 ### [0.22.2](https://github.com/redkubes/otomi-core/compare/v0.22.1...v0.22.2) (2023-07-18)
 
 
