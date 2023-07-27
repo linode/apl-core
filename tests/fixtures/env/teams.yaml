@@ -6,6 +6,8 @@ teamConfig:
             email: {}
             receivers:
                 - email
+        monitoringStack:
+            enabled: true
         billingAlertQuotas:
             teamCpuMonthQuotaReached:
                 quota: 150
