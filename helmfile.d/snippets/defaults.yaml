@@ -245,6 +245,8 @@ environments:
               accessLogFile: "/dev/stdout"
               enableAutoMtls: true
               defaultConfig:
+                gatewayTopology:
+                  numTrustedProxies: 1
                 tracing:
                   sampling: 0.1
           jaeger:
