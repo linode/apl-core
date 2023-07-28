@@ -1,11 +1,11 @@
 import { pathExists } from 'fs-extra'
-import { parse } from 'yaml'
 import { omit } from 'lodash'
+import { parse } from 'yaml'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { asArray, extract, flattenObject, getValuesSchema, rootDir } from './utils'
-import { getParsedArgs, HelmArguments } from './yargs'
+import { asArray, extract, flattenObject, getValuesSchema, isCore, rootDir } from './utils'
+import { HelmArguments, getParsedArgs } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
@@ -119,7 +119,7 @@ export const hfTemplate = async (
   // const args = ['template', '--validate']
   const args = ['template', '--include-needs']
   if (outDir) args.push(`--output-dir=${outDir}`)
-  if (argv.skipCleanup) args.push('--skip-cleanup')
+  if (argv.skipCleanup || isCore) args.push('--skip-cleanup')
   const helmArgs = getHelmArgs(argv, ['--skip-tests'])
   args.push(...helmArgs)
   let template = ''
