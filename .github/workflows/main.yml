@@ -155,11 +155,6 @@ jobs:
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
-  execute-aws-marketplace:
-    # needs: chart-release
-    uses: redkubes/aws-marketplace/.github/workflows/deploy_release.yaml@auto-deploy
-    secrets: inherit
-
   notification:
     needs: [build-test-cache, push-to-docker, release, chart-release]
     if: always()
@@ -174,3 +169,12 @@ jobs:
           SLACK_ICON: https://github.com/redkubes.png?size=48
           SLACK_TITLE: CI run
           SLACK_USERNAME: RedKubesBot
+
+  execute-aws-marketplace:
+    name: AWS Dispatch
+    # needs: chart-release
+    uses: peter-evans/repository-dispatch@v2
+    with:
+      token: ${{ secrets.GITHUB_TOKEN }}
+      repository: redkubes/aws-marketplace@auto-deploy
+      event-type: auto-deploy-aws
