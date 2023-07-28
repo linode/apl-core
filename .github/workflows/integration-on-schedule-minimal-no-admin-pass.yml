@@ -11,6 +11,5 @@ jobs:
     secrets: inherit
     with:
       install_profile: minimal
-      cluster_region: ams3
       kubernetes_versions: "['1.24']"
       generate_password: 'no'
