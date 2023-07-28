@@ -156,7 +156,8 @@ jobs:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
   execute-aws-marketplace:
-    uses: redkubes/aws-marketplace/.github/workflows/deploy_release.yaml@dev
+    # needs: chart-release
+    uses: redkubes/aws-marketplace/.github/workflows/deploy_release.yaml@auto-deploy
     secrets: inherit
 
   notification:
