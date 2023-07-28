@@ -94,13 +94,13 @@ extraEnv: |
   - name: DB_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: "keycloak-otomi-db-app"
+        name: "keycloak-db-app"
         key: password
   - name: DB_USER
     valueFrom:
       secretKeyRef:
-        name: "keycloak-otomi-db-app"
-        key: user
+        name: "keycloak-db-app"
+        key: username
   - name: DB_VENDOR
     value: postgres
   - name: DB_ADDR
