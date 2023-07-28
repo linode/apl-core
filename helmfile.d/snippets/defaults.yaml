@@ -628,7 +628,7 @@ environments:
         databases:
           keycloak:
             useOtomiDB: true
-            imported: true
+            imported: false
             size: "1Gi"
             replicas: 2
         platformBackups:
