@@ -81,3 +81,4 @@ changes:
   - version: 12
     additions:
       - databases.keycloak.useOtomiDB: false
+      - databases.keycloak.imported: false
