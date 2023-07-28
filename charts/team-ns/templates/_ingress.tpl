@@ -184,11 +184,11 @@ spec:
         - {{ $domain }}
           {{- if hasKey $secrets $domain }}
             {{- if ne (index $secrets $domain) "" }}
-            {{/*If a team provides its own certificate in the team namespace then Otomi cornjob makes a copy of it*/}} 
+{{/*If a team provides its own certificate in the team namespace then Otomi cornjob makes a copy of it*/}} 
       secretName: copy-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else if (or (eq $v.teamId "admin") (index $v "apps" "cert-manager" "useWildcardCertForTeams")) }}
-            {{/* All otomi core services are using wildcard certificate by default, wheras team services may use them or stick with dedicated certificate*/}}
+{{/* All otomi core services are using wildcard certificate by default, wheras team services may use them or stick with dedicated certificate*/}}
             {{- if (index $v "apps" "cert-manager" "useCustomWildcardCert") }}
       secretName: otomi-custom-wildcard-cert
             {{- else }}
