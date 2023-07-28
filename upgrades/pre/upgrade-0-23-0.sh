@@ -19,3 +19,5 @@ if [[ $(helm status -n cert-manager cert-manager 2>/dev/null) ]]; then
 else
   echo "The old cert-manager release does not exists. Skipping"
 fi
+
+kubectl annotate -n istio-system certificate helm.sh/resource-policy='keep' deprecated=true

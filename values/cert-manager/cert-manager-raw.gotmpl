@@ -3,7 +3,6 @@
 {{- $dns := $v | get "dns" dict }}
 {{- $p := $dns | get "provider" dict }}
 {{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
-{{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $issuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
@@ -152,13 +151,3 @@ resources:
         - key encipherment
         - ocsp signing
         {{- end }}
-
-# generate all da certs
-{{- range $domain, $domInfo := $doms }}
-  {{- if not $domInfo.hasCert }}
-    {{- $certName := ($domain | replace "." "-") }}
-  - {{ tpl $certTpl (dict "otomi" $v.otomi "domain" $domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
-  {{- end }}
-{{- end }}
-
-
