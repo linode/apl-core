@@ -5,10 +5,11 @@ on:
       cloud_provider:
         description: Provider where Otomi will be installed
         type: string
-        default: digitalocean
+        default: scaleway
       kubernetes_versions:
         description: "Kubernetes versions (JSON formatted list e.g.: ['1.24'])"
         type: string
+        default: "['1.25']"
       install_profile:
         description: Otomi installation profile
         default: full
