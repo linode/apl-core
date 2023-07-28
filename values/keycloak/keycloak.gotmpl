@@ -2,7 +2,6 @@
 {{- $k := $v.apps.keycloak }}
 {{- $dbVendor := ($k | get "persistence.dbVendor" "postgres") }}
 {{- $pinnedConsoleVersion := "0.5.4" }}
-{{- $databaseHost := "keycloak-otomi-db-rw.keycloak.svc.cluster.local" }}
 
 image:
   tag: 15.1.1
@@ -104,7 +103,7 @@ extraEnv: |
   - name: DB_VENDOR
     value: postgres
   - name: DB_ADDR
-    value: {{ $databaseHost }}
+    value: "keycloak-db-rw.keycloak.svc.cluster.local"
   - name: DB_PORT
     value: "5432"
   - name: DB_DATABASE
