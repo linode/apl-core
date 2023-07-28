@@ -199,6 +199,7 @@ adminApps:
   - name: grafana
     tags: [tracing, telemetry, observability]
     deps: [prometheus]
+    path: /dashboards
     ownHost: true
     ingress:
       - svc: po-grafana
@@ -416,6 +417,7 @@ teamApps:
         auth: true
   - name: grafana
     ownHost: true
+    path: /dashboards
     ingress:
       - svc: po-grafana
         hasPrefix: true

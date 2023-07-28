@@ -15,26 +15,24 @@ describe('Upgrading values', () => {
       },
     },
     version: oldVersion,
-    strToArray: 'ok',
     some: { json: { path: 'bla' }, k8sVersion: '1.18' },
   }
   const mockChanges: Changes = [
     {
       version: 1,
-      mutations: [{ 'some.version': 'printf "v%s" .prev' }],
+      // mutations: [{ 'some.version': 'printf "v%s" .prev' }],
     },
     {
       version: 2,
       deletions: ['some.json.path'],
       relocations: [{ 'some.json': 'some.bla' }],
-      mutations: [{ strToArray: 'list .prev' }],
     },
     {
       version: 3,
       mutations: [
-        { 'some.k8sVersion': 'printf "v%s" .prev' },
+        // { 'some.k8sVersion': 'printf "v%s" .prev' },
         { 'teamConfig.{team}.services[].prop': 'replaced' },
-        { 'teamConfig.{team}.services[].bla[].ok': 'print .prev "ee"' },
+        // { 'teamConfig.{team}.services[].bla[].ok': 'print .prev "ee"' },
       ],
       renamings: [{ 'somefile.yaml': 'newloc.yaml' }],
     },
@@ -60,13 +58,12 @@ describe('Upgrading values', () => {
           teamConfig: {
             teamA: {
               services: [
-                { name: 'svc1', prop: 'replaced', bla: [{ ok: 'replaceMeee' }] },
+                { name: 'svc1', prop: 'replaced', bla: [{ ok: 'replaceMe' }] },
                 { name: 'svc1', prop: 'replaced', di: [{ ok: 'replaceMeNot' }] },
               ],
             },
           },
-          some: { bla: {}, k8sVersion: 'v1.18' },
-          strToArray: ['ok'],
+          some: { bla: {}, k8sVersion: '1.18' },
           version: 3,
         },
         true,

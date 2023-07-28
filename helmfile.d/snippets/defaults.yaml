@@ -244,6 +244,8 @@ environments:
               enableAutoMtls: true
               enableTracing: true
               defaultConfig:
+                gatewayTopology:
+                  numTrustedProxies: 1
                 tracing:
                   sampling: 1
                 zipkin:
