@@ -190,9 +190,9 @@ spec:
           {{- else if (or (eq $v.teamId "admin") (index $v "apps" "cert-manager" "useWildcardCertForTeams")) }}
             {{/* All otomi core services are using wildcard certificate by default, wheras team services may use them or stick with dedicated certificate*/}}
             {{- if (index $v "apps" "cert-manager" "useCustomWildcardCert") }}
-      secretName: otomi-cert-manager-wildcard-cert
-            {{- else }}
       secretName: otomi-custom-wildcard-cert
+            {{- else }}
+      secretName: otomi-cert-manager-wildcard-cert
             {{- end}}
           {{- else }}
       secretName: {{ $domain | replace "." "-" }}
