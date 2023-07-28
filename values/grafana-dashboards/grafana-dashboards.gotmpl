@@ -2,8 +2,12 @@
 folders:
   - k8s-admin
   - istio-admin
+  - cloudnative-pg
   {{- if $v.apps.falco.enabled }}
   - falco
+  {{- end }}
+  {{- if $v.apps.loki.enabled }}
+  - loki
   {{- end }}
   {{- if and (eq $v.cluster.provider "azure") ($v | get "azure.monitor" nil) }}
   - azure
@@ -11,11 +15,10 @@ folders:
   {{- if $v.apps.argocd.enabled }}
   - argo
   {{- end }}
-  - shared
   {{- if $v.apps.velero.enabled }}
   - velero
   {{- end }}
-    {{- if $v.apps.minio.enabled }}
+  {{- if $v.apps.minio.enabled }}
   - minio
   {{- end }}
   {{- if $v.apps.thanos.enabled }}
@@ -30,4 +33,3 @@ folders:
   {{- if $v.apps.opencost.enabled }}
   - opencost
   {{- end }}
-  - cloudnative-pg
