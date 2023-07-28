@@ -3,7 +3,7 @@ cluster:
     apiServer: https://1.1.1.1:8443
     domainSuffix: demo.eks.otomi.cloud
     k8sContext: otomi-eks-demo
-    k8sVersion: '1.26'
+    k8sVersion: '1.25'
     name: demo
     owner: redkubes
     provider: scaleway
