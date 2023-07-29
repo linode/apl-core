@@ -1,0 +1,57 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+{{- $h := $a.harbor }}
+
+releases:
+  - name: cluster-autoscaler
+    installed: {{ $a | get "cluster-autoscaler.enabled" }}
+    namespace: kube-system
+    <<: *default
+  - name: knative-serving
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: knative-serving
+    chart: ../charts/raw-cr
+    labels:
+      pkg: knative
+    values:
+      - ../values/knative/knative-serving-cr.gotmpl
+      - {{- $v.apps.knative | get "_rawValues" dict | toYaml | nindent 8 }}
+    <<: *upgrade
+  - name: oauth2-proxy-redis
+    installed: false
+    namespace: istio-system
+    chart: ../charts/redis
+    labels:
+      pkg: oauth2-proxy
+    values:
+      - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
+      - snippets/common.gotmpl
+    <<: *upgrade
+  - name: minio
+    installed: {{ $a.minio.enabled }}
+    namespace: minio
+    labels:
+      pkg: minio
+    <<: *default
+  - name: harbor-artifacts
+    installed: {{ $h | get "enabled" }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *raw
+  - name: harbor-otomi-db
+    installed: {{ and ($h | get "enabled")  (or (eq $h.database.type "external")  $h.database.importHarborDb) }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *otomiDb

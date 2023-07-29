@@ -1,0 +1,21 @@
+"auth.generic_oauth":
+  tls_skip_verify_insecure: {{ .untrustedCA }}
+  enabled: true
+  name: OAuth
+  org_role: Admin
+  allow_sign_up: true
+  oauth_auto_login: true # false = so we can login with admin / bladibla
+  client_id: {{ .keycloak.clientID }}
+  client_secret: {{ .keycloak.clientSecret }}
+  scopes: openid
+  auth_url: {{ printf "%s/protocol/openid-connect/auth" .keycloakBase }}
+  token_url: {{ printf "%s/protocol/openid-connect/token" .keycloakBase }}
+  api_url: {{ printf "%s/protocol/openid-connect/userinfo" .keycloakBase }}
+  role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
+log:
+  level: error
+users:
+  allow_sign_up: true
+  auto_assign_org: true
+  # fall back to admin for anonymous when no auth is available
+  auto_assign_org_role: Viewer

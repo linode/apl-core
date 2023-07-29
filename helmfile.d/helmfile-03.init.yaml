@@ -1,0 +1,90 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: argocd-operator
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    labels:
+      pkg: argocd
+    <<: *default
+  - name: external-secrets
+    installed: {{ $a | get "external-secrets.enabled" }}
+    namespace: external-secrets
+    labels:
+      pkg: external-secrets
+      group: secrets
+    <<: *default
+  - name: gitea-artifacts
+    installed: {{ $a | get "gitea.enabled" }}
+    namespace: gitea
+    labels:
+      pkg: gitea
+    <<: *raw
+  - name: kiali-operator-artifacts
+    installed: {{ $a | get "kiali.enabled" }}
+    namespace: kiali
+    labels:
+      pkg: kiali
+    <<: *raw
+  - name: knative-serving-artifacts
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: knative-serving
+    needs: [default/knative-operator]
+    # we have to disable validation as helmfile has a bug (it aggregates all manifests for all deps):
+    # https://github.com/helmfile/helmfile/issues/208 (TODO: check for updates)
+    disableValidationOnInstall: true
+    chart: ../charts/raw
+    labels:
+      init: true
+      pkg: knative
+    values:
+      - ../values/knative/knative-serving-raw.gotmpl
+    <<: *upgrade
+  - name: knative-operator
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: default
+    labels:
+      init: true
+      pkg: knative
+    <<: *skeleton
+  - name: loki-artifacts
+    installed: {{ $a | get "loki.enabled" }}
+    namespace: monitoring
+    labels:
+      pkg: loki
+    <<: *raw
+  - name: otel-artifacts
+    installed: {{ $a | get "otel.enabled" }}
+    namespace: monitoring
+    labels:
+      pkg: otel
+    <<: *raw
+  - name: vault-operator
+    installed: {{ $a | get "vault.enabled" }}
+    namespace: vault
+    chart: ../charts/vault-operator
+    labels:
+      pkg: vault
+      group: secrets
+    values:
+      - ../values/vault-operator/vault-operator.gotmpl
+      - {{- $v.apps.vault | get "_rawValues" dict | toYaml | nindent 8 }}
+    <<: *upgrade
+  - name: tekton-pipelines
+    installed: {{ $a | get "tekton.enabled" }}
+    namespace: tekton-pipelines
+    chart: ../charts/tekton-pipelines
+    labels:
+      pkg: tekton-pipelines
+    <<: *default

@@ -1,0 +1,24 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: istio-artifacts
+    installed: true
+    namespace: istio-system
+    labels:
+      pkg: istio
+    chart: ../charts/raw
+    values:
+      - ../values/raw/istio-raw.gotmpl
+      - snippets/common.gotmpl
+      

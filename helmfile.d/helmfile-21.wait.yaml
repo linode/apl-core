@@ -1,0 +1,31 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: wait-for-otomi-realm
+    installed: true
+    <<: *wait
+    namespace: maintenance
+    labels:
+      pkg: wait
+    values:
+      # - url: {{ $v._derived.oidcBaseUrlBackchannel }}
+      - url: {{ $v._derived.oidcBaseUrl }}
+        host: keycloak.{{ $v.cluster | get "domainSuffix" nil }}
+        tasksVersion: {{ $v.versions.tasks }}
+        {{- if $v._derived.untrustedCA }}
+        customCa: |
+          {{- $v._derived.caCert | nindent 10 }}
+        {{- end }}
+        runPolicy: OnSpecChange
+

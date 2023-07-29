@@ -1,0 +1,44 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: argocd-operator-cr
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    labels:
+      pkg: argocd
+    <<: *rawCR
+  - name: cert-manager
+    installed: true
+    namespace: cert-manager
+    labels:
+      pkg: cert-manager
+    <<: *default
+  - name: istio-operator-artifacts
+    installed: true
+    namespace: istio-operator
+    labels:
+      pkg: istio
+    chart: ../charts/raw
+    values:
+      - ../values/istio-operator/istio-operator-raw.gotmpl
+      - snippets/common.gotmpl
+  - name: external-secrets-artifacts
+    installed: {{ $a | get "external-secrets.enabled" }}
+    disableValidationOnInstall: true
+    namespace: external-secrets
+    labels:
+      pkg: external-secrets
+      group: secrets
+    <<: *raw
+

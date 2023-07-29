@@ -1,0 +1,1 @@
+{"auths":{"{{ . | get "server" "docker.io" }}":{"username":"{{ .username }}","password":"{{ .password | replace "\"" "\\\"" }}","email":"{{ . | get "email" "not@val.id" }}","auth":"{{ print .username ":" .password | b64enc}}"}}}

@@ -1,0 +1,3 @@
+{{- $toolsVersion := .tools }}
+{{- $toolsTag := printf "%s%s" (regexMatch "^[0-9.]+" $toolsVersion | ternary "v" "") $toolsVersion }}
+toolsTag: {{ $toolsTag }}

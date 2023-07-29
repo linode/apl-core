@@ -1,0 +1,133 @@
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+{{- $k := $a | get "keycloak" dict }}
+{{- $o := $v | get "oidc" dict }}
+
+{{- $cm := index $v.apps "cert-manager" }}
+{{- $versions := (readFile "../versions.yaml" | fromYaml) }}
+{{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
+{{- $otomiVersion := $v.otomi | get "version" nil }}
+{{- $otomiTag := $otomiVersion }}
+{{- if $otomiVersion }}
+  {{- if regexMatch "^v\\d" $otomiVersion }}
+    {{- $otomiVersion = $otomiVersion | substr 0 -1 }}
+  {{- end }}
+{{- else }}
+  {{- $otomiVersion = $pkgVersion }}
+  {{- $otomiTag = print "v" $otomiVersion }}
+{{- end }}
+{{- $versions = $versions | merge (dict "core" $otomiVersion) }}
+# Domain suffix may not be present during initial deployment stage
+{{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
+{{- $provider := $v.cluster.provider }}
+{{- $droneProvider := $a.drone.sourceControl.provider }}
+{{- $hasSops := hasKey $v "kms.sops.provider" }}
+{{- $isManaged := has $provider (list "aws" "azure" "google") }}
+{{- $issuer := $cm | get "issuer" "" }}
+{{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
+{{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
+{{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
+{{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
+{{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
+{{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
+
+{{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
+helmDefaults:
+  kubeContext: {{ $v.cluster.k8sContext }}
+{{- end }}
+environments:
+  default:
+    values:
+      - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
+          caCert: |
+            {{- if eq $issuer "letsencrypt" }}
+              {{- $v.letsencryptRootCA | nindent 12 }}
+              {{- $v.letsencryptCA | nindent 12 }}
+            {{- else }}
+              {{- $cm.customRootCA | nindent 12 }}
+            {{- end }}
+          caCertRoot: |
+            {{- if eq $issuer "letsencrypt" }}
+              {{- $v.letsencryptRootCA | nindent 12 }}
+            {{- else }}
+              {{- $cm.customRootCA | nindent 12 }}
+            {{- end }}
+          supportedCloud: {{ has $provider (list "aws" "azure" "google") }}
+          untrustedCA: {{ $untrustedCA }}
+          oidcBaseUrl: {{ $oidcBaseUrl }}
+          oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
+          oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
+          oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
+        apps:
+          aws-alb-ingress-controller:
+            enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}
+          aws-ebs-csi-driver:
+            enabled: false
+          {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
+          cert-manager:
+            enabled: true
+            stage: production
+          {{- end }}
+          cluster-autoscaler:
+            enabled: {{ $a | get "cluster-autoscaler.enabled" (has $provider (list "aws")) }}
+          {{- if eq $droneProvider "gitea" }}
+          drone:
+            sourceControl:
+              gitea:
+                server: {{ $a | get "drone.sourceControl.gitea.server" $giteaUrl }}
+              {{- if or ($a | get "drone.sourceControl.secret" nil) (and (eq $droneProvider "gitea") (not ($a | get "drone.sourceControl.gitea.server" nil))) }}
+              secret: {{ $a | get "drone.sourceControl.secret" "drone-source-control" }}
+              {{- end }}
+          {{- end }}
+          drone-admit-members:
+            enabled: {{ eq $droneProvider "github" }}
+          external-dns:
+            enabled: {{ $v.otomi.hasExternalDNS }}
+          external-secrets:
+            # may be enabled without local vault, so be sure to check for true and not just if it is set
+            enabled: {{ or (eq ($a | get "external-secrets.enabled") true) ($a | get "vault.enabled" false) }}
+          harbor:
+            adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
+            registry:
+              credentials:
+                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
+          gatekeeper:
+            enabled: {{ or ($a | get "gatekeeper.enabled" false) (not (empty ($v.otomi.nodeSelector))) }}
+          gitea:
+            enabled: {{ and (eq $droneProvider "gitea") (eq ($a | get "drone.sourceControl.gitea.server" $giteaUrl) $giteaUrl) }}
+            adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
+          host-mods:
+            enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
+          ingress-azure:
+            enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
+          keycloak:
+            enabled: true
+            address: {{ $keycloakBaseUrl }}
+            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+          metrics-server:
+            enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean")) }}
+          prometheus-msteams:
+            enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
+          snapshot-controller:
+            # TODO: upgrade snapshot-controller from piraeus-charts/snapshot-controller and toggle below:
+            enabled: false # {{ $a | get "snapshot-controller.enabled" (and (eq $provider "aws") (gt ($v.cluster.k8sVersion | float64) 1.22)) }}
+          tigera-operator:
+            enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
+          {{- if $v.otomi.hasCloudLB }}
+          istio: 
+            meshConfig:
+              defaultConfig:
+                gatewayTopology:
+                  numTrustedProxies: 2
+          {{- end }}
+        ingress:
+          classes:
+          - {{- $v.ingress.platformClass | toYaml | nindent 12 }}
+          {{- with $v.ingress.classes }}
+          {{- . | toYaml | nindent 10 }}
+          {{- end }}
+        otomi:
+          version: {{ $otomiTag }}
+        versions: {{- $versions | toYaml | nindent 10 }}
+      - ../core.yaml
