@@ -33,6 +33,8 @@ distributor:
   config:
     log_received_spans:
       enabled: true
+      include_all_attributes: true
+      filter_by_status_error: true
 
 compactor:
   resources: {{- $t.resources.compactor | toYaml | nindent 4 }}
@@ -108,3 +110,12 @@ traces:
       enabled: true
       # -- GRPC receiver advanced config
       receiverConfig: {}
+
+metaMonitoring:
+  # ServiceMonitor configuration
+  serviceMonitor:
+    # -- If enabled, ServiceMonitor resources for Prometheus Operator are created
+    enabled: true
+    # -- Additional ServiceMonitor labels
+    labels:
+      prometheus: system
