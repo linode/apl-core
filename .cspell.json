@@ -73,6 +73,7 @@
     "minio",
     "vultr",
     "ovh",
+    "otel",
     "thanos",
     "Paketo",
     "tekton",
