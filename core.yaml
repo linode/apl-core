@@ -88,6 +88,9 @@ k8s:
     - name: olm
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: otel
+      app: otel
+      disableIstioInjection: true
     - name: opa-exporter
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -372,6 +375,9 @@ adminApps:
   - name: tempo
     tags: [tracing]
     deps: [prometheus, grafana]
+  - name: otel
+    tags: [tracing]
+    deps: [prometheus, grafana, tempo, loki]
   - name: thanos
     tags: [metrics, observability]
     ownHost: true

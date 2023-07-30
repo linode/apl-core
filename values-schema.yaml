@@ -3023,6 +3023,12 @@ properties:
                 $ref: '#/definitions/resources'
               trivy:
                 $ref: '#/definitions/resources'
+      otel:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
       vault:
         additionalProperties: false
         properties:

@@ -9,7 +9,7 @@ resources:
       config: |
         receivers:
           zipkin:
-            endpoint: otel.monitoring.svc.cluster.local:8443
+            endpoint: otel.otel.svc.cluster.local:8443
         processors:
           memory_limiter:
             check_interval: 1s
@@ -20,7 +20,7 @@ resources:
             timeout: 10s
         exporters:
           otlp:
-            endpoint: tempo-distributor.monitoring.svc.cluster.local:4318
+            endpoint: tempo-distributor.tempo.svc.cluster.local:4318
             insecure: true
         service:
           pipelines:

@@ -42,11 +42,11 @@ releases:
     <<: *default
   - name: otel
     installed: {{ $a | get "otel.enabled" }}
-    namespace: monitoring
+    namespace: otel
     <<: *default
   - name: tempo
     installed: {{ $a | get "tempo.enabled" }}
-    namespace: monitoring
+    namespace: tempo
     <<: *default
   - name: prometheus-blackbox-exporter
     installed: {{ $a | get "prometheus.enabled" }} 

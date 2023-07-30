@@ -64,12 +64,6 @@ releases:
     labels:
       pkg: loki
     <<: *raw
-  - name: otel-artifacts
-    installed: {{ $a | get "otel.enabled" }}
-    namespace: monitoring
-    labels:
-      pkg: otel
-    <<: *raw
   - name: vault-operator
     installed: {{ $a | get "vault.enabled" }}
     namespace: vault
@@ -88,3 +82,9 @@ releases:
     labels:
       pkg: tekton-pipelines
     <<: *default
+  - name: otel-artifacts
+    installed: {{ $a | get "otel.enabled" }}
+    namespace: otel
+    labels:
+      pkg: otel
+    <<: *raw
