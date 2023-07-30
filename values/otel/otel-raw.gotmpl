@@ -9,7 +9,7 @@ resources:
       config: |
         receivers:
           zipkin:
-            endpoint: otel.otel.svc.cluster.local:8443
+            endpoint: 0.0.0.0:8443
         processors:
           memory_limiter:
             check_interval: 1s
@@ -19,11 +19,12 @@ resources:
             send_batch_size: 10000
             timeout: 10s
         exporters:
-          otlp:
+          otlphttp:
             endpoint: tempo-distributor.tempo.svc.cluster.local:4318
-            insecure: true
+            tls:
+              insecure: true
         service:
           pipelines:
             traces:
               receivers: [zipkin]
-              exporters: [otlp]
+              exporters: [otlphttp]

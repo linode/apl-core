@@ -122,7 +122,7 @@ releases:
             - name: Tempo
               type: tempo
               uid: tempo
-              url: http://tempo-query-frontend.monitoring:3100
+              url: http://tempo-query-frontend.tempo:3100
     {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
     {{- end }}

@@ -159,9 +159,10 @@ resources:
           enableTracing: true
           defaultConfig:
             tracing:
-              sampling: 1
-            zipkin:
-              address: otel.monitoring.svc.cluster.local:8443
+              sampling: 100
+              max_path_tag_length: 99999
+              zipkin:
+                address: otel-collector-collector.otel-operator.svc.cluster.local:8443
         {{- if $v._derived.untrustedCA }}
         pilot:
           jwksResolverExtraRootCA: |
