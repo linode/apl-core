@@ -42,7 +42,7 @@ releases:
     <<: *default
   - name: otel
     installed: {{ $a | get "otel.enabled" }}
-    namespace: otel
+    namespace: otel-operator
     <<: *default
   - name: tempo
     installed: {{ $a | get "tempo.enabled" }}

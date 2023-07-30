@@ -82,9 +82,3 @@ releases:
     labels:
       pkg: tekton-pipelines
     <<: *default
-  - name: otel-artifacts
-    installed: {{ $a | get "otel.enabled" }}
-    namespace: otel
-    labels:
-      pkg: otel
-    <<: *raw
