@@ -30,6 +30,9 @@ distributor:
     maxReplicas: {{ $t.autoscaling.distributor.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $t.autoscaling.distributor.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $t.autoscaling.distributor.targetMemoryUtilizationPercentage }}
+  config:
+    log_received_spans:
+      enabled: true
 
 compactor:
   resources: {{- $t.resources.compactor | toYaml | nindent 4 }}
