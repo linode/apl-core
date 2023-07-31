@@ -71,7 +71,7 @@ k8s:
       app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
-    - name: otel-operator
+    - name: otel-collector
       app: otel
       disableIstioInjection: true
     - name: tempo
@@ -88,9 +88,6 @@ k8s:
     - name: olm
       disableIstioInjection: true
       disablePolicyChecks: true
-    - name: otel
-      app: otel
-      disableIstioInjection: true
     - name: opa-exporter
       disableIstioInjection: true
       disablePolicyChecks: true
