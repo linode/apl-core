@@ -172,9 +172,16 @@ jobs:
 
   execute-aws-marketplace:
     name: AWS Dispatch
+    runs-on: ubuntu-latest
     # needs: chart-release
-    uses: peter-evans/repository-dispatch@v2
-    with:
-      token: ${{ secrets.GITHUB_TOKEN }}
-      repository: redkubes/aws-marketplace@auto-deploy
-      event-type: auto-deploy-aws
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'redkubes',
+              repo: 'aws-marketplace',
+              workflow_id: 'deploy-release.yaml',
+              ref: 'auto-deploy'
+            })
