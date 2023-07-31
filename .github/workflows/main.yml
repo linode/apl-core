@@ -182,6 +182,6 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: 'redkubes',
               repo: 'aws-marketplace',
-              workflow_id: 'deploy-release.yaml',
+              workflow_id: 'deploy_release.yaml',
               ref: 'feat/auto-deploy'
             })
