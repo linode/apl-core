@@ -172,8 +172,9 @@ jobs:
 
   execute-aws-marketplace:
     name: AWS Dispatch
+    needs: chart-release
+    if: always() && contains(needs.release.result, 'success') && !github.event.act
     runs-on: ubuntu-latest
-    # needs: chart-release
     steps:
       - uses: actions/github-script@v6
         with:
