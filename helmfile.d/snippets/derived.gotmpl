@@ -99,8 +99,6 @@ environments:
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           host-mods:
             enabled: {{ $a | get "host-mods.enabled" $untrustedCA }}
-          knative:
-            enabled: {{ and ($a | get "knative.enabled") (le $v.cluster.k8sVersion "1.24") }}
           ingress-azure:
             enabled: {{ and (eq $provider "azure") $v.otomi.hasCloudLB (not $v.azure.appgw.isManaged) }}
           keycloak:
@@ -116,6 +114,13 @@ environments:
             enabled: false # {{ $a | get "snapshot-controller.enabled" (and (eq $provider "aws") (gt ($v.cluster.k8sVersion | float64) 1.22)) }}
           tigera-operator:
             enabled: {{ $a | get "tigera-operator.enabled" (eq $provider "aws") }}
+          {{- if $v.otomi.hasCloudLB }}
+          istio: 
+            meshConfig:
+              defaultConfig:
+                gatewayTopology:
+                  numTrustedProxies: 2
+          {{- end }}
         ingress:
           classes:
           - {{- $v.ingress.platformClass | toYaml | nindent 12 }}

@@ -1,0 +1,14 @@
+{{- $v := .Values }}
+
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: otomi-tty
+  namespace: {{ $v.namespace }}
+spec:
+  selector:
+    matchLabels:
+      otomi: tty
+  jwtRules:
+  - issuer: "https://keycloak.{{ $v.cluster.domainSuffix }}/realms/otomi"
+    jwksUri: "https://keycloak.{{ $v.cluster.domainSuffix }}/realms/otomi/protocol/openid-connect/certs"

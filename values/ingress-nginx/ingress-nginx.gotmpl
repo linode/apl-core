@@ -16,8 +16,7 @@ controller:
     enabled: false
     controllerValue: k8s.io/{{ $ingress.className }}
   image:
-    tag: v1.0.5
-    tag: {{ $n | get "image.tag" "v1.1.2" }}
+    tag: {{ $n | get "image.tag" "v1.7.1" }}
     pullPolicy:  {{ $n | get "image.pullPolicy" "IfNotPresent" }}
   scope:
     enabled: true
@@ -97,9 +96,7 @@ controller:
     # log-format-upstream: '{"time":"$time_iso8601","remote_addr":"$proxy_protocol_addr","x_forward_for":"$proxy_add_x_forwarded_for","request_id":"$req_id","remote_user":"$remote_user","bytes_sent":$bytes_sent,"request_time":$request_time,"status":$status,"vhost":"$host","request_proto":"$server_protocol","path":"$uri","request_query":"$args","request_length":$request_length,"duration":$request_time,"method":"$request_method","http_referrer":"$http_referer","http_user_agent":"$http_user_agent"}'
     ssl-redirect: {{ not $v.otomi.hasCloudLB }}
     use-forwarded-headers: {{ $v.otomi.hasCloudLB }}
-    {{- if eq $v.cluster.provider "aws" }}
     use-proxy-protocol: true
-    {{- end }}
   stats:
     enabled: true
   metrics:
@@ -135,6 +132,9 @@ controller:
       service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
       {{- if $privateNetwork }}
       service.beta.kubernetes.io/aws-load-balancer-internal: true
+      {{- end }}
+      {{- if eq $v.cluster.provider "digitalocean" }}
+      service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: true
       {{- end }}
       {{- end }} {{/* if eq $v.cluster.provider "aws" */}}
       {{- if eq $v.cluster.provider "google" }}

@@ -92,6 +92,10 @@ releases:
             datasources:
               defaultDatasourceEnabled: true
               uid: Prometheus-team
+            dashboards:
+              enabled: true
+              label: release
+              labelValue: grafana-dashboards-{{ $teamId }}
           additionalDataSources:
             - name: Prometheus-platform
               editable: false

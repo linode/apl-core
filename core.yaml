@@ -67,7 +67,7 @@ k8s:
     - name: kubeclarity
       app: kubeclarity
       disableIstioInjection: true
-    - name: tekton
+    - name: tekton-pipelines
       app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -193,6 +193,7 @@ adminApps:
   - name: grafana
     tags: [tracing, telemetry, observability]
     deps: [prometheus]
+    path: /dashboards
     ownHost: true
     ingress:
       - svc: po-grafana
@@ -376,7 +377,7 @@ adminApps:
       - svc: thanos-receive
         port: 19291
         namespace: monitoring
-        paths: [/api/v1/receive/]
+        paths: [/api]
         forwardPath: true
         type: public
   - name: trivy
@@ -407,6 +408,7 @@ teamApps:
         auth: true
   - name: grafana
     ownHost: true
+    path: /dashboards
     ingress:
       - svc: po-grafana
         hasPrefix: true

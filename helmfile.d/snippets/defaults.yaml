@@ -243,6 +243,8 @@ environments:
               accessLogFile: "/dev/stdout"
               enableAutoMtls: true
               defaultConfig:
+                gatewayTopology:
+                  numTrustedProxies: 1
                 tracing:
                   sampling: 0.1
           jaeger:
@@ -362,11 +364,11 @@ environments:
                       memory: 256Mi                
               ingester:
                   requests:
-                      cpu: 50m
-                      memory: 128Mi
+                      cpu: 250m
+                      memory: 512Mi
                   limits:
-                      cpu: 200m
-                      memory: 256Mi
+                      cpu: 500m
+                      memory: 1Gi
               gateway:
                   requests:
                       cpu: 50m
@@ -383,11 +385,11 @@ environments:
                       memory: 256Mi
               distributor:
                   requests:
-                      cpu: 50m
-                      memory: 64Mi
+                      cpu: 150m
+                      memory: 128Mi
                   limits:
-                      cpu: 200m
-                      memory: 256Mi
+                      cpu: 500m
+                      memory: 512Mi
               queryFrontend:
                   requests:
                       cpu: 50m
@@ -404,31 +406,31 @@ environments:
               ingester:
                 enabled: false
                 minReplicas: 1
-                maxReplicas: 5
+                maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               gateway:
                 enabled: false
                 minReplicas: 1
-                maxReplicas: 5
+                maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               querier:
                 enabled: false
                 minReplicas: 1
-                maxReplicas: 5
+                maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               distributor:
                 enabled: false
                 minReplicas: 1
-                maxReplicas: 5
+                maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               queryFrontend:
                 enabled: false
                 minReplicas: 1
-                maxReplicas: 5
+                maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
           metrics-server:
