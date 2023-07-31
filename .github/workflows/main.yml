@@ -177,7 +177,7 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.ACTIONS_KEY }}
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: 'redkubes',
