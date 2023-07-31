@@ -1,0 +1,69 @@
+fullnameOverride: otel-collector
+
+# Valid values are "daemonset", "deployment", and "statefulset".
+mode: deployment
+
+# Base collector configuration.
+config:
+  exporters:
+    logging: {}
+    otlphttp:
+      endpoint: tempo-distributor.tempo.svc.cluster.local:4318
+      tls:
+        insecure: true
+  extensions:
+    # The health_check extension is mandatory for this chart.
+    # Without the health_check extension the collector will fail the readiness and liveliness probes.
+    # The health_check extension can be modified, but should never be removed.
+    health_check: {}
+    memory_ballast: {}
+  processors:
+    batch: {}
+    # If set to null, will be overridden with values based on k8s resource limits
+    memory_limiter: null
+  receivers:
+    ## zipkin port 9411
+    zipkin:
+  service:
+    telemetry:
+      metrics:
+        address: ${env:MY_POD_IP}:8888
+    extensions:
+      - health_check
+      - memory_ballast
+    pipelines:
+      logs:
+        exporters:
+          - logging
+        processors:
+          - memory_limiter
+          - batch
+        receivers:
+          - otlp
+      metrics:
+        exporters:
+          - logging
+        processors:
+          - memory_limiter
+          - batch
+        receivers:
+          - otlp
+          - prometheus
+      traces:
+        exporters:
+          - logging
+        processors:
+          - memory_limiter
+          - batch
+        receivers:
+          - otlp
+          - jaeger
+          - zipkin
+
+serviceMonitor:
+  enabled: true
+  metricsEndpoints:
+    - port: metrics
+      # interval: 15s
+  extraLabels:
+    prometheus: system

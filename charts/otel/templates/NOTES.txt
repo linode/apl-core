@@ -1,4 +1,0 @@
-{{ $.Chart.Name }} has been installed. Check its status by running:
-  kubectl --namespace {{ .Release.Namespace }} get pods -l "release={{ $.Release.Name }}"
-
-Visit https://github.com/open-telemetry/opentelemetry-operator for instructions on how to create & configure OpenTelemetryCollector and Instrumentation custom resources by using the Operator.

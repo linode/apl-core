@@ -149,9 +149,14 @@ resources:
                 memory: 80Mi
             {{- end }}
             autoInject: enabled
-          # tracer:
-          #   zipkin:
-          #     address: jaeger-operator-jaeger-collector.jaeger:9411 
+          tracer:
+            zipkin:
+              {{- if $v.apps.jaeger.enabled }}
+              address: jaeger-operator-jaeger-collector.jaeger:9411 
+              {{- end }}
+              {{- if $v.apps.otel.enabled }}
+              address: otel-collector.otel-collector.svc.cluster.local:9411 
+              {{- end }}
           useMCP: false
         meshConfig:
           accessLogFile: "/dev/stdout"
@@ -163,8 +168,6 @@ resources:
             tracing:
               sampling: 100
               max_path_tag_length: 99999
-              zipkin:
-                address: otel-collector-collector.otel-operator.svc.cluster.local:8443
         {{- if $v._derived.untrustedCA }}
         pilot:
           jwksResolverExtraRootCA: |

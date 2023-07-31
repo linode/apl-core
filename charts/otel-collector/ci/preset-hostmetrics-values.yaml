@@ -1,0 +1,10 @@
+mode: daemonset
+
+presets:
+  hostMetrics:
+    enabled: true
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M

@@ -1,0 +1,11 @@
+mode: daemonset
+
+presets:
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: true
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200M
