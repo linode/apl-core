@@ -17,17 +17,12 @@ podAnnotations:
 # Base collector configuration.
 config:
   exporters:
-    logging: {}
+    logging:
+      loglevel: info
     otlphttp:
       endpoint: tempo-distributor.tempo.svc.cluster.local:4318
       tls:
         insecure: true
-  extensions:
-    # The health_check extension is mandatory for this chart.
-    # Without the health_check extension the collector will fail the readiness and liveliness probes.
-    # The health_check extension can be modified, but should never be removed.
-    health_check: {}
-    memory_ballast: {}
   processors:
     batch: {}
     # If set to null, will be overridden with values based on k8s resource limits
@@ -38,37 +33,18 @@ config:
   service:
     telemetry:
       metrics:
-        address: ${env:MY_POD_IP}:8888
     extensions:
       - health_check
       - memory_ballast
     pipelines:
-      logs:
-        exporters:
-          - logging
-        processors:
-          - memory_limiter
-          - batch
-        receivers:
-          - otlp
-      metrics:
-        exporters:
-          - logging
-        processors:
-          - memory_limiter
-          - batch
-        receivers:
-          - otlp
-          - prometheus
       traces:
         exporters:
           - logging
+          - otlphttp
         processors:
           - memory_limiter
           - batch
         receivers:
-          - otlp
-          - jaeger
           - zipkin
 
 serviceMonitor:
