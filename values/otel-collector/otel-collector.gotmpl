@@ -3,6 +3,17 @@ fullnameOverride: otel-collector
 # Valid values are "daemonset", "deployment", and "statefulset".
 mode: deployment
 
+resources:
+  limits:
+    cpu: 200m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 16Mi
+
+podAnnotations:
+  policy.otomi.io/ignore: psp-allowed-users
+
 # Base collector configuration.
 config:
   exporters:

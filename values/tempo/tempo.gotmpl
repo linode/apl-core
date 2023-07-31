@@ -94,28 +94,12 @@ storage:
 
 
 traces:
-  zipkin:
-    # -- Enable Tempo to ingest Zipkin traces
-    enabled: true
-    # -- Zipkin receiver config
-    receiverConfig: {}
   otlp:
     http:
-      # -- Enable Tempo to ingest Open Telemetry HTTP traces
       enabled: true
-      # -- HTTP receiver advanced config
-      receiverConfig: {}
-    grpc:
-      # -- Enable Tempo to ingest Open Telemetry GRPC traces
-      enabled: true
-      # -- GRPC receiver advanced config
-      receiverConfig: {}
 
 metaMonitoring:
-  # ServiceMonitor configuration
   serviceMonitor:
-    # -- If enabled, ServiceMonitor resources for Prometheus Operator are created
     enabled: true
-    # -- Additional ServiceMonitor labels
     labels:
       prometheus: system
