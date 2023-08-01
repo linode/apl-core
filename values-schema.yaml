@@ -1582,9 +1582,6 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-          useWildcardCertForTeams:
-            description: Use wildcard cert for team core services and team services
-            type: boolean
           useCustomWildcardCert:
             description: Use certificate and Key provided by a user instead leveraging the one generated cert-manager
             type: boolean

@@ -78,6 +78,3 @@ changes:
       - 'apps.harbor.backup'
       - 'apps.loki.resources.limits'
       - 'apps.loki.resources.requests'
-  - version: 11
-    additions:
-      - app.cert-manager.useWildcardCertForTeams: false

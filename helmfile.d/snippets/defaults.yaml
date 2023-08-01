@@ -17,7 +17,6 @@ environments:
           cert-manager:
             issuer: custom-ca
             useCustomWildcardCert: false
-            useWildcardCertForTeams: true
             resources:
               requests:
                 cpu: 50m
