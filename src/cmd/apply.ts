@@ -101,6 +101,7 @@ const applyAll = async () => {
     }
   }
   await setDeploymentState({ status: 'deployed', version })
+  d.info('Deployment completed')
 }
 
 const apply = async (): Promise<void> => {
