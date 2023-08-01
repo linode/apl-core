@@ -40,7 +40,7 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   d.log('Successfully pushed the updated values')
 }
 
-export const commit = async (): Promise<void> => {
+export const commit = async (firstTime = false): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues()
   d.info('Preparing values')
@@ -62,18 +62,9 @@ export const commit = async (): Promise<void> => {
   await encrypt()
   await commitAndPush(values, branch)
   await setDeploymentState({ status: 'deployed' })
-  const message = `
-  ########################################################################################################################################
-  # COMMIT END
-  ########################################################################################################################################`
-  d.info(message)
-}
-
-export const firstCommitMessage = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:commit`)
-  const values = (await hfValues()) as Record<string, any>
-  const credentials = values.apps.keycloak
-  const message = `
+  if (firstTime) {
+    const credentials = values.apps.keycloak
+    const message = `
     ########################################################################################################################################
     #
     #  To start using Otomi, go to https://otomi.${values.cluster.domainSuffix} and sign in to the web console
@@ -81,7 +72,8 @@ export const firstCommitMessage = async (): Promise<void> => {
     #  Then activate Drone. For more information see: https://otomi.io/docs/get-started/activation
     #
     ########################################################################################################################################`
-  d.info(message)
+    d.info(message)
+  }
 }
 
 export const module = {
