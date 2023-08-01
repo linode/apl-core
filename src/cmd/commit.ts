@@ -4,7 +4,7 @@ import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { setDeploymentState, waitTillAvailable } from 'src/common/k8s'
+import { waitTillAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -61,10 +61,9 @@ export const commit = async (): Promise<void> => {
   await genDrone()
   await encrypt()
   await commitAndPush(values, branch)
-  await setDeploymentState({ status: 'deployed' })
 }
 
-export const firstCommitMessage = async (): Promise<void> => {
+export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak

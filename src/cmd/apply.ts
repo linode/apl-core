@@ -3,7 +3,7 @@ import { isEmpty } from 'lodash'
 import { prepareDomainSuffix } from 'src/common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
-import { env, isCli } from 'src/common/envalid'
+import { env } from 'src/common/envalid'
 import { hf } from 'src/common/hf'
 import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
@@ -12,7 +12,7 @@ import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/co
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import { commit, firstCommitMessage } from './commit'
+import { commit, printWelcomeMessage } from './commit'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -82,12 +82,12 @@ const applyAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
+
+  const intitalInstall = isEmpty(prevState.version)
   await upgrade({ when: 'post' })
-  await setDeploymentState({ version })
-  if (!(env.isDev && env.DISABLE_SYNC))
-    if (!isCli || isEmpty(prevState.status)) {
-      // commit first time when not deployed only, always commit in chart (might have previous failure)
-      await commit() // will set deployment state after
+  if (!(env.isDev && env.DISABLE_SYNC)) {
+    await commit()
+    if (intitalInstall) {
       await hf(
         {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
@@ -97,8 +97,10 @@ const applyAll = async () => {
         },
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
-      await firstCommitMessage()
-    } else await setDeploymentState({ status: 'deployed' })
+      await printWelcomeMessage()
+    }
+  }
+  await setDeploymentState({ status: 'deployed', version })
 }
 
 const apply = async (): Promise<void> => {
