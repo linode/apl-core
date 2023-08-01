@@ -94,32 +94,9 @@ storage:
 
 
 traces:
-  jaeger:
-    grpc:
-      # -- Enable Tempo to ingest Jaeger GRPC traces
-      enabled: false
-      # -- Jaeger GRPC receiver config
-      receiverConfig: {}
-    thriftBinary:
-      # -- Enable Tempo to ingest Jaeger Thrift Binary traces
-      enabled: false
-      # -- Jaeger Thrift Binary receiver config
-      receiverConfig: {}
-    thriftCompact:
-      # -- Enable Tempo to ingest Jaeger Thrift Compact traces
-      enabled: false
-      # -- Jaeger Thrift Compact receiver config
-      receiverConfig: {}
-    thriftHttp:
-      # -- Enable Tempo to ingest Jaeger Thrift HTTP traces
-      enabled: false
-      # -- Jaeger Thrift HTTP receiver config
-      receiverConfig: {}
   zipkin:
     # -- Enable Tempo to ingest Zipkin traces
     enabled: true
-    # -- Zipkin receiver config
-    receiverConfig: {}
   otlp:
     http:
       # -- Enable Tempo to ingest Open Telemetry HTTP traces
@@ -131,13 +108,6 @@ traces:
       enabled: true
       # -- GRPC receiver advanced config
       receiverConfig: {}
-  opencensus:
-    # -- Enable Tempo to ingest Open Census traces
-    enabled: false
-    # -- Open Census receiver config
-    receiverConfig: {}
-  # -- Enable Tempo to ingest traces from Kafka. Reference: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kafkareceiver
-  kafka: {}
 
 metaMonitoring:
   serviceMonitor:

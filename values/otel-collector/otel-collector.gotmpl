@@ -19,10 +19,14 @@ config:
   exporters:
     logging:
       loglevel: info
-    otlphttp:
-      endpoint: tempo-distributor.tempo.svc.cluster.local:4318
+    otlp:
+      endpoint: tempo-distributor.tempo.svc.cluster.local:55680
       tls:
         insecure: true
+      sending_queue:
+        enabled: true
+        num_consumers: 100
+        queue_size: 10000
   processors:
     batch: {}
     # If set to null, will be overridden with values based on k8s resource limits
@@ -31,6 +35,12 @@ config:
     ## zipkin port 9411
     zipkin:
       endpoint: ${env:MY_POD_IP}:9411
+    otlp:
+      protocols:
+        grpc:
+          endpoint: ${env:MY_POD_IP}:4317
+        http:
+          endpoint: ${env:MY_POD_IP}:4318
   service:
     telemetry:
       metrics:
@@ -41,12 +51,13 @@ config:
       traces:
         exporters:
           - logging
-          - otlphttp
+          - otlp
         processors:
           - memory_limiter
           - batch
         receivers:
           - zipkin
+          - otlp
 
 serviceMonitor:
   enabled: true
