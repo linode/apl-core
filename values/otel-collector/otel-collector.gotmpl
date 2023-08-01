@@ -30,6 +30,7 @@ config:
   receivers:
     ## zipkin port 9411
     zipkin:
+      endpoint: ${env:MY_POD_IP}:9411
   service:
     telemetry:
       metrics:
