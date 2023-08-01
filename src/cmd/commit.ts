@@ -62,6 +62,11 @@ export const commit = async (): Promise<void> => {
   await encrypt()
   await commitAndPush(values, branch)
   await setDeploymentState({ status: 'deployed' })
+  const message = `
+  ########################################################################################################################################
+  # COMMIT END
+  ########################################################################################################################################`
+  d.info(message)
 }
 
 export const firstCommitMessage = async (): Promise<void> => {

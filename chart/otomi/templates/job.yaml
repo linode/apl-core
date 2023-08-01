@@ -36,7 +36,6 @@ spec:
             - |
               kubectl create ns otomi &> /dev/null
               binzx/otomi bootstrap && binzx/otomi apply
-              binzx/otomi apply-e2e
           env:
             - name: VERBOSITY
               value: '1'
