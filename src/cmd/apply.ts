@@ -12,7 +12,7 @@ import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/co
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
-import { commit } from './commit'
+import { commit, firstCommitMessage } from './commit'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -87,7 +87,7 @@ const applyAll = async () => {
   if (!(env.isDev && env.DISABLE_SYNC))
     if (!isCli || isEmpty(prevState.status)) {
       // commit first time when not deployed only, always commit in chart (might have previous failure)
-      await commit(true) // will set deployment state after
+      await commit() // will set deployment state after
       await hf(
         {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
@@ -97,6 +97,7 @@ const applyAll = async () => {
         },
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
+      await firstCommitMessage()
     } else await setDeploymentState({ status: 'deployed' })
 }
 
