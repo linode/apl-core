@@ -9,6 +9,7 @@ ingester:
   resources: {{- $t.resources.ingester | toYaml | nindent 4 }}
 #   podAnnotations:
 #     policy.otomi.io/ignore: psp-host-filesystem
+  replicas: {{ $t.autoscaling.ingester.minReplicas }}
   autoscaling:
     enabled: {{ $t.autoscaling.ingester.enabled }}
     minReplicas: {{ $t.autoscaling.ingester.minReplicas }}
