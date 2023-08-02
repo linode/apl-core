@@ -498,6 +498,8 @@ environments:
             storageSize: 5Gi
           redis-shared:
             enabled: false
+          otel:
+            enabled: false
           tempo:
             enabled: false
             storage:
@@ -677,7 +679,7 @@ environments:
                   memory: 64M
                 limits:
                   cpu: 500m
-                  memory: 512Mi
+                  memory: 512Mi       
           vault:
             enabled: false
             resources:
