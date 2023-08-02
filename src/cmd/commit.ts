@@ -61,10 +61,12 @@ export const commit = async (): Promise<void> => {
   await genDrone()
   await encrypt()
   await commitAndPush(values, branch)
+  d.info('COMMIT END!')
 }
 
 export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
+  d.info('printWelcomeMessage START!')
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak
   const message = `
@@ -76,6 +78,7 @@ export const printWelcomeMessage = async (): Promise<void> => {
     #
     ########################################################################################################################################`
   d.info(message)
+  d.info('printWelcomeMessage END!')
 }
 
 export const module = {
