@@ -25,7 +25,7 @@ const applyE2e = async (): Promise<void> => {
 
   await hf(
     {
-      fileOpts: 'helmfile.tpl/helmfile-e2e.yaml',
+      fileOpts: 'helmfile.d/helmfile-999.e2e.yaml',
       logLevel: logLevelString(),
       args: ['apply'],
     },
