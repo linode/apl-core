@@ -60,6 +60,10 @@ queryFrontend:
 memcached:
   resources: {{- $t.resources.memcached | toYaml | nindent 4 }}
 
+metricsGenerator:
+  enabled: true
+  resources: {}
+
 storage:
   trace:
     {{- if eq $st.type "minioLocal" "s3" }}
@@ -89,7 +93,6 @@ storage:
       storage_account_key: {{ $st.azure.accountKey }}
       container_name: {{ $st.azure.containerName }}
     {{- end }}
-
 
 traces:
   otlp:
