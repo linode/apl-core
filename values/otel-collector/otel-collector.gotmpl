@@ -1,7 +1,7 @@
 fullnameOverride: otel-collector
 
 # Valid values are "daemonset", "deployment", and "statefulset".
-mode: daemonset
+mode: deployment
 
 resources:
   limits:
@@ -19,7 +19,7 @@ config:
   exporters:
     logging:
       loglevel: info
-    otlp/team-test:
+    otlp:
       endpoint: tempo-distributor.tempo.svc.cluster.local:4317
       tls:
         insecure: true
@@ -27,36 +27,13 @@ config:
         enabled: true
         num_consumers: 100
         queue_size: 10000
-      headers:
-        X-Scope-OrgID: test
-    otlp/team-hello:
-      endpoint: tempo-distributor.tempo.svc.cluster.local:4317
-      tls:
-        insecure: true
-      sending_queue:
-        enabled: true
-        num_consumers: 100
-        queue_size: 10000
-      headers:
-        X-Scope-OrgID: hello
+  extensions:
+    health_check: {}
+    memory_ballast: {}
   processors:
     batch: {}
     # If set to null, will be overridden with values based on k8s resource limits
     memory_limiter: null
-    k8sattributes/default:
-      extract:
-        labels:
-        - tag_name: team
-          key: "name"
-          from: namespace
-    routing:
-      from_attribute: team
-      attribute_source: resource
-      table:
-      - value: team-test
-        exporters: [logging, otlp/team-test]
-      - value: team-hello
-        exporters: [logging, otlp/team-hello]
   receivers:
     zipkin:
       endpoint: ${env:MY_POD_IP}:9411
@@ -67,8 +44,6 @@ config:
         http:
           endpoint: ${env:MY_POD_IP}:4318
   service:
-    telemetry:
-      metrics:
     extensions:
       - health_check
       - memory_ballast
@@ -76,8 +51,7 @@ config:
       traces:
         exporters:
           - logging
-          - otlp/team-hello
-          - otlp/team-hello
+          - otlp
         processors:
           - memory_limiter
           - batch
@@ -89,7 +63,6 @@ serviceMonitor:
   enabled: true
   metricsEndpoints:
     - port: metrics
-      # interval: 15s
   extraLabels:
     prometheus: system
 
@@ -99,4 +72,4 @@ presets:
   # and adds the necessary rules to ClusteRole.
   # Best used with mode = daemonset.
   kubernetesAttributes:
-    enabled: true
+    enabled: false
