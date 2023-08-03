@@ -239,17 +239,6 @@ environments:
                 maxReplicas: 10
             egressGateway:
               enabled: false
-            meshConfig:
-              accessLogFile: "/dev/stdout"
-              enableAutoMtls: true
-              enableTracing: true
-              defaultConfig:
-                gatewayTopology:
-                  numTrustedProxies: 1
-                tracing:
-                  sampling: 1
-                zipkin:
-                  address: jaeger-operator-jaeger-collector.jaeger:9411
           jaeger:
             enabled: false
           keycloak:
@@ -507,18 +496,18 @@ environments:
             resources:
               compactor:
                   requests:
-                      cpu: 50m
-                      memory: 128Mi
+                      cpu: 100m
+                      memory: 256Mi
                   limits:
-                      cpu: 200m
-                      memory: 256Mi                
+                      cpu: 500m
+                      memory: 1Gi               
               ingester:
                   requests:
-                      cpu: 50m
-                      memory: 128Mi
-                  limits:
-                      cpu: 200m
+                      cpu: 100m
                       memory: 256Mi
+                  limits:
+                      cpu: 500m
+                      memory: 1Gi
               memcached:
                   requests:
                       cpu: 50m
@@ -553,24 +542,20 @@ environments:
             autoscaling:
               ingester:
                 enabled: false
-                minReplicas: 1
-                maxReplicas: 5
-                targetCPUUtilizationPercentage: 80
-                targetMemoryUtilizationPercentage: 80
               querier:
-                enabled: false
+                enabled: true
                 minReplicas: 1
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               distributor:
-                enabled: false
+                enabled: true
                 minReplicas: 1
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               queryFrontend:
-                enabled: false
+                enabled: true
                 minReplicas: 1
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 80

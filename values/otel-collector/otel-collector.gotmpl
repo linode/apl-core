@@ -1,7 +1,7 @@
 fullnameOverride: otel-collector
 
 # Valid values are "daemonset", "deployment", and "statefulset".
-mode: deployment
+mode: daemonset
 
 resources:
   limits:
@@ -19,20 +19,45 @@ config:
   exporters:
     logging:
       loglevel: info
-    otlp:
-      endpoint: tempo-distributor.tempo.svc.cluster.local:55680
+    otlp/team-test:
+      endpoint: tempo-distributor.tempo.svc.cluster.local:4317
       tls:
         insecure: true
       sending_queue:
         enabled: true
         num_consumers: 100
         queue_size: 10000
+      headers:
+        X-Scope-OrgID: test
+    otlp/team-hello:
+      endpoint: tempo-distributor.tempo.svc.cluster.local:4317
+      tls:
+        insecure: true
+      sending_queue:
+        enabled: true
+        num_consumers: 100
+        queue_size: 10000
+      headers:
+        X-Scope-OrgID: hello
   processors:
     batch: {}
     # If set to null, will be overridden with values based on k8s resource limits
     memory_limiter: null
+    k8sattributes/default:
+      extract:
+        labels:
+        - tag_name: team
+          key: "name"
+          from: namespace
+    routing:
+      from_attribute: team
+      attribute_source: resource
+      table:
+      - value: team-test
+        exporters: [logging, otlp/team-test]
+      - value: team-hello
+        exporters: [logging, otlp/team-hello]
   receivers:
-    ## zipkin port 9411
     zipkin:
       endpoint: ${env:MY_POD_IP}:9411
     otlp:
@@ -51,7 +76,8 @@ config:
       traces:
         exporters:
           - logging
-          - otlp
+          - otlp/team-hello
+          - otlp/team-hello
         processors:
           - memory_limiter
           - batch
@@ -66,3 +92,11 @@ serviceMonitor:
       # interval: 15s
   extraLabels:
     prometheus: system
+
+presets:
+  # Configures the Kubernetes Processor to add Kubernetes metadata.
+  # Adds the k8sattributes processor to all the pipelines
+  # and adds the necessary rules to ClusteRole.
+  # Best used with mode = daemonset.
+  kubernetesAttributes:
+    enabled: true

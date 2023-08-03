@@ -339,16 +339,16 @@ appsInfo:
     about: Trivy Operator continuously scans your Kubernetes cluster for security issues, and generates security reports as Kubernetes Custom Resources. It does it by watching Kubernetes for state changes and automatically triggering scans in response to changes.
     integration: Otomi installs and configures Trivy Operator to scan all resources deployed by a team and makes results visible in a Grafana dashboard.
   otel:
-    title: Open Telemetry
-    appVersion: 2.1.1
-    repo: https://github.com/grafana/tempo
+    title: Open Telemetry Collector
+    appVersion: 0.81.0
+    repo: https://github.com/open-telemetry/opentelemetry-collector
     maintainers: Grafana labs
     relatedLinks:
-      - https://grafana.com/docs/tempo/latest/
+      - https://opentelemetry.io/docs/collector/
     license: AGPL-3.0
-    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
-    about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
-    integration: Otomi installs and configures Tempo based
+    dependencies: Prometheus, Grafana, Loki, Tempo
+    about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
+    integration: OpenTelemetry Collector is used to receive telementry data from Istio Envoy access logs and export this data to Tempo.
   vault:
     title: Vault
     appVersion: 1.11.5

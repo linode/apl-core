@@ -7,10 +7,7 @@ fullnameOverride: tempo
 
 ingester:
   resources: {{- $t.resources.ingester | toYaml | nindent 4 }}
-#   podAnnotations:
-#     policy.otomi.io/ignore: psp-host-filesystem
-  replicas: {{ $t.autoscaling.ingester.minReplicas }}
-  autoscaling:
+  autoscaling: # disabled by default. Chart set to use 3 replica's
     enabled: {{ $t.autoscaling.ingester.enabled }}
     minReplicas: {{ $t.autoscaling.ingester.minReplicas }}
     maxReplicas: {{ $t.autoscaling.ingester.maxReplicas }}
@@ -95,20 +92,11 @@ storage:
 
 
 traces:
-  zipkin:
-    # -- Enable Tempo to ingest Zipkin traces
-    enabled: true
   otlp:
     http:
-      # -- Enable Tempo to ingest Open Telemetry HTTP traces
       enabled: true
-      # -- HTTP receiver advanced config
-      receiverConfig: {}
     grpc:
-      # -- Enable Tempo to ingest Open Telemetry GRPC traces
       enabled: true
-      # -- GRPC receiver advanced config
-      receiverConfig: {}
 
 metaMonitoring:
   serviceMonitor:

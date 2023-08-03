@@ -157,20 +157,32 @@ resources:
           enableAutoMtls: true
           enableTracing: true
           defaultConfig:
+            gatewayTopology:
+              numTrustedProxies: 1
             tracing:
               max_path_tag_length: 99999
               sampling: 100
-              # zipkin:
-              #   address: otel-collector.otel-collector.svc.cluster.local:9411
           defaultProviders:
             accessLogging:
             - envoy
+            {{- if $v.apps.otel.enabled }}
             - otel
+            {{- end }}
+            {{- if $v.apps.jaeger.enabled }}
+            - zipkin
+            {{- end }}
           extensionProviders:
+          {{- if $v.apps.otel.enabled }}
           - envoyOtelAls:
               port: 4317
               service: otel-collector.otel-collector.svc.cluster.local
             name: otel
+          {{- end }}
+          {{- if $v.apps.jaeger.enabled }}
+          - zipkin:
+              port: 9411
+              service: jaeger-operator-jaeger-collector.jaeger.svc.cluster.local
+          {{- end }}
         {{- if $v._derived.untrustedCA }}
         pilot:
           jwksResolverExtraRootCA: |
