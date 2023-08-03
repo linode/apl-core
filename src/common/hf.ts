@@ -1,5 +1,5 @@
 import { pathExists } from 'fs-extra'
-import { omit } from 'lodash'
+import { set } from 'lodash'
 import { parse } from 'yaml'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
@@ -96,7 +96,10 @@ export const hfValues = async (
     // strip secrets
     const schema = await getValuesSchema()
     const allSecrets = extract(schema, 'x-secret')
-    return omit(res, Object.keys(flattenObject(allSecrets)))
+    Object.keys(flattenObject(allSecrets)).forEach((path) => {
+      set(res, path, '<redacted>')
+    })
+    return res
   }
   return res
 }
