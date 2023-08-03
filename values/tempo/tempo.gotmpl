@@ -62,7 +62,7 @@ memcached:
 
 metricsGenerator:
   enabled: true
-  resources: {}
+  resources: {{- $t.resources.metricsGenerator | toYaml | nindent 4 }}
 
 storage:
   trace:
