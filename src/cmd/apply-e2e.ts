@@ -5,7 +5,6 @@ import { hf } from 'src/common/hf'
 import { getFilename, rootDir } from 'src/common/utils'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
-import { printWelcomeMessage } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -32,7 +31,6 @@ const applyE2e = async (): Promise<void> => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
-  await printWelcomeMessage()
 }
 
 export const module: CommandModule = {
