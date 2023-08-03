@@ -1,20 +1,11 @@
+{{- $v := .Values }}
+{{- $o:= $v.apps.otel }}
+
 fullnameOverride: otel-collector
-
-# Valid values are "daemonset", "deployment", and "statefulset".
-mode: deployment
-
-resources:
-  limits:
-    cpu: 200m
-    memory: 512Mi
-  requests:
-    cpu: 50m
-    memory: 16Mi
-
+mode: {{ $o.mode }}
+resources: {{- $o.resources.collector | toYaml | nindent 2 }}
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
-
-# Base collector configuration.
 config:
   exporters:
     logging:
@@ -32,7 +23,6 @@ config:
     memory_ballast: {}
   processors:
     batch: {}
-    # If set to null, will be overridden with values based on k8s resource limits
     memory_limiter: null
   receivers:
     zipkin:
@@ -72,4 +62,4 @@ presets:
   # and adds the necessary rules to ClusteRole.
   # Best used with mode = daemonset.
   kubernetesAttributes:
-    enabled: false
+    enabled: {{ $o.presets.kubernetesAttributes }}

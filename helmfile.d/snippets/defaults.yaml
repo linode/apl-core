@@ -489,6 +489,17 @@ environments:
             enabled: false
           otel:
             enabled: false
+            mode: deployment
+            resources:
+              collector:
+                  requests:
+                      cpu: 50m
+                      memory: 16Mi
+                  limits:
+                      cpu: 200m
+                      memory: 512Mi
+            presets:
+              kubernetesAttributes: false      
           tempo:
             enabled: false
             storage:
