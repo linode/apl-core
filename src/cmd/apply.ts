@@ -86,11 +86,8 @@ const applyAll = async () => {
   const intitalInstall = isEmpty(prevState.version)
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
-    d.info('Committing values')
     await commit()
-    d.info('Pushing values')
     if (intitalInstall) {
-      d.info('Initial install, skipping push')
       await hf(
         {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
@@ -100,11 +97,9 @@ const applyAll = async () => {
         },
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
-      d.info('printWelcomeMessage')
       await printWelcomeMessage()
     }
   }
-  d.info('Setting deployment state to deployed')
   await setDeploymentState({ status: 'deployed', version })
   d.info('Deployment completed')
 }
