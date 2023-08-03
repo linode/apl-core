@@ -99,9 +99,12 @@ releases:
           additionalDataSources:
             - name: Prometheus-platform
               editable: false
+              uid: prometheus-platform
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
+              jsonData:
+                httpMethod: GET
             - name: Loki
               editable: false
               type: loki
@@ -125,6 +128,12 @@ releases:
               uid: tempo
               access: proxy
               url: http://tempo-query-frontend.tempo:3100
+              search:
+                hide: true
+              jsonData:
+                httpMethod: GET
+                serviceMap:
+                  datasourceUid: 'Prometheus-platform'
             {{- end }}
     {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
