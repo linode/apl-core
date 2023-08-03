@@ -93,7 +93,7 @@ const applyAll = async () => {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
           fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml`,
           logLevel: logLevelString(),
-          args: ['apply'],
+          args: ['apply-e2e'],
         },
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
