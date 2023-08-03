@@ -6,7 +6,7 @@ import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf } from 'src/common/hf'
 import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
-import { getFilename } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
@@ -94,7 +94,7 @@ const applyAll = async () => {
       await hf(
         {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
-          fileOpts: 'helmfile.tpl/helmfile-999.e2e.yaml',
+          fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml`,
           logLevel: logLevelString(),
           args: ['apply'],
         },

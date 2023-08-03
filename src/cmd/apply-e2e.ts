@@ -2,7 +2,7 @@ import { mkdirSync, rmdirSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { getFilename } from 'src/common/utils'
+import { getFilename, rootDir } from 'src/common/utils'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 
@@ -25,7 +25,7 @@ const applyE2e = async (): Promise<void> => {
 
   await hf(
     {
-      fileOpts: 'helmfile.tpl/helmfile-999.e2e.yaml',
+      fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml`,
       logLevel: logLevelString(),
       args: ['apply'],
     },
