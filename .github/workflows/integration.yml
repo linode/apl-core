@@ -9,6 +9,7 @@ on:
       kubernetes_versions:
         description: "Kubernetes versions (JSON formatted list e.g.: ['1.24'])"
         type: string
+        default: "['1.25']"
       install_profile:
         description: Otomi installation profile
         default: full
@@ -65,6 +66,7 @@ on:
           - minimal
           - minimal-with-team
           - full
+          - upgrade
       cluster_persistence:
         type: choice
         description: Should a cluster be destroyed on pipeline finish?
@@ -423,6 +425,7 @@ jobs:
           [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
 
           helm install $install_args
+
       - name: Gather k8s events on failure
         if: failure()
         run: |
@@ -435,6 +438,10 @@ jobs:
         if: failure()
         run: |
           kubectl logs jobs/otomi --tail 150
+      - name: Gather otomi-e2e logs on failure
+        if: failure()
+        run: |
+          kubectl logs -n maintenance -l app.kubernetes.io/instance=job-e2e --tail 15000
       - name: Remove the test cluster
         if: always()
         run: |

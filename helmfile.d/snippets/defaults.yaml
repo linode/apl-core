@@ -749,8 +749,10 @@ environments:
           isHomeMonitored: false
           isMultitenant: true
           nodeSelector: {}
+        e2e:
+          enabled: false
         # TODO: update this when schema version changes: (and think more?)
-        version: 8
+        version: 11
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm
