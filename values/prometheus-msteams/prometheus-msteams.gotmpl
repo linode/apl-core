@@ -7,6 +7,9 @@ connectors:
 - high_priority_channel: {{ $v.alerts.msteams.highPrio }}
 - low_priority_channel: {{ $v.alerts.msteams.lowPrio }}
 
+annotations:
+  policy.otomi.io/ignore: psp-allowed-users
+
 # container:
 #   additionalArgs:
 #     - -debug
