@@ -561,19 +561,19 @@ environments:
               ingester:
                 enabled: false
               querier:
-                enabled: true
+                enabled: false
                 minReplicas: 1
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               distributor:
-                enabled: true
+                enabled: false
                 minReplicas: 1
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               queryFrontend:
-                enabled: true
+                enabled: false
                 minReplicas: 1
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 80
