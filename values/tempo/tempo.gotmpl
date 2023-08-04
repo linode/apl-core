@@ -7,12 +7,6 @@ fullnameOverride: tempo
 
 ingester:
   resources: {{- $t.resources.ingester | toYaml | nindent 4 }}
-  autoscaling: # disabled by default. Chart set to use 3 replica's
-    enabled: {{ $t.autoscaling.ingester.enabled }}
-    minReplicas: {{ $t.autoscaling.ingester.minReplicas }}
-    maxReplicas: {{ $t.autoscaling.ingester.maxReplicas }}
-    targetCPUUtilizationPercentage: {{ $t.autoscaling.ingester.targetCPUUtilizationPercentage }}
-    targetMemoryUtilizationPercentage: {{ $t.autoscaling.ingester.targetMemoryUtilizationPercentage }}
   {{- if eq $st.type "filesystem" }}
   persistence:
     enabled: true
