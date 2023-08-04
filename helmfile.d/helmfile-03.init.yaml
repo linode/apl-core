@@ -64,12 +64,6 @@ releases:
     labels:
       pkg: loki
     <<: *raw
-  - name: otel-collector-artifacts
-    installed: {{ $a | get "otel.enabled" }}
-    namespace: otel-collector
-    labels:
-      pkg: otel-collector
-    <<: *raw
   - name: vault-operator
     installed: {{ $a | get "vault.enabled" }}
     namespace: vault
