@@ -669,6 +669,8 @@ environments:
           nodeSelector: {}
         e2e:
           enabled: false
+          upgrade:
+            version: main
         # TODO: update this when schema version changes: (and think more?)
         version: 11
         letsencryptRootCA: |
