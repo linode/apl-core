@@ -175,13 +175,13 @@ resources:
           {{- if $v.apps.otel.enabled }}
           - envoyOtelAls:
               port: 4317
-              service: otel-collector.otel-collector.svc.cluster.local
+              service: otel-collector.otel-collector.svc
             name: otel
           {{- end }}
           {{- if $v.apps.jaeger.enabled }}
           - zipkin:
               port: 9411
-              service: jaeger-operator-jaeger-collector.jaeger.svc.cluster.local
+              service: jaeger-operator-jaeger-collector.jaeger.svc
           {{- end }}
         {{- if $v._derived.untrustedCA }}
         pilot:

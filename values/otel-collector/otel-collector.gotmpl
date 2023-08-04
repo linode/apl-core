@@ -6,56 +6,15 @@ mode: {{ $o.mode }}
 resources: {{- $o.resources.collector | toYaml | nindent 2 }}
 podAnnotations:
   policy.otomi.io/ignore: psp-allowed-users
-config:
-  exporters:
-    logging:
-      loglevel: info
-    otlp:
-      endpoint: tempo-distributor.tempo.svc.cluster.local:4317
-      tls:
-        insecure: true
-      sending_queue:
-        enabled: true
-        num_consumers: 100
-        queue_size: 10000
-  extensions:
-    health_check: {}
-    memory_ballast: {}
-  processors:
-    batch: {}
-    memory_limiter: null
-  receivers:
-    zipkin:
-      endpoint: ${env:MY_POD_IP}:9411
-    otlp:
-      protocols:
-        grpc:
-          endpoint: ${env:MY_POD_IP}:4317
-        http:
-          endpoint: ${env:MY_POD_IP}:4318
-  service:
-    extensions:
-      - health_check
-      - memory_ballast
-    pipelines:
-      traces:
-        exporters:
-          - logging
-          - otlp
-        processors:
-          - memory_limiter
-          - batch
-        receivers:
-          - zipkin
-          - otlp
-
+configMap:
+  # configmap is created using raw
+  create: false
 serviceMonitor:
   enabled: false
   metricsEndpoints:
     - port: metrics
   extraLabels:
     prometheus: system
-
 presets:
   # Configures the Kubernetes Processor to add Kubernetes metadata.
   # Adds the k8sattributes processor to all the pipelines
