@@ -3029,26 +3029,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          mode:
-            title: Deployment mode
-            description: Mode to run Otel Collector in.
-            type: string
-            default: deployment
-            enum:
-              - deployment
-              - daemonset
-              - statefulset
-          presets:
-            properties:
-              kubernetesAttributes:
-                type: boolean
-                description: Configures the Kubernetes Processor to add Kubernetes metadata.
-                default: false
-          resources:
-            additionalProperties: false
-            properties:
-              collector:
-                $ref: '#/definitions/resources'
       vault:
         additionalProperties: false
         properties:

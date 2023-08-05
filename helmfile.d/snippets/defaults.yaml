@@ -469,7 +469,6 @@ environments:
                 limits:
                   cpu: 1
                   memory: 1Gi
-
           promtail:
             enabled: false
           prometheus-blackbox-exporter: {}
@@ -488,18 +487,7 @@ environments:
           redis-shared:
             enabled: false
           otel:
-            enabled: false
-            mode: deployment
-            resources:
-              collector:
-                  requests:
-                      cpu: 50m
-                      memory: 16Mi
-                  limits:
-                      cpu: 200m
-                      memory: 512Mi
-            presets:
-              kubernetesAttributes: false      
+            enabled: false      
           tempo:
             enabled: false
             storage:

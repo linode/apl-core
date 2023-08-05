@@ -9,7 +9,6 @@ resources:
           otlp:
             protocols:
               grpc:
-          zipkin:
         processors:
           memory_limiter:
             check_interval: 1s
@@ -32,12 +31,6 @@ resources:
         service:
           pipelines:
             traces:
-              receivers:
-              - otlp
-              - zipkin
-              processors:
-              - memory_limiter
-              - batch
-              exporters:
-              - logging
-              - otlp
+              receivers: [otlp, zipkin]
+              processors: [memory_limiter, batch]
+              exporters: [logging, otlp]
