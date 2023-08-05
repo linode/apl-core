@@ -161,7 +161,6 @@ resources:
           defaultConfig:
             gatewayTopology:
               numTrustedProxies: 1
-          defaultConfig:
             tracing:
               max_path_tag_length: 99999
               sampling: 100
@@ -170,6 +169,10 @@ resources:
             - envoy
             {{- if $v.apps.otel.enabled }}
             - otel
+            {{- end }}
+            {{- if $v.apps.jaeger.enabled }}
+            tracing:
+            - zipkin
             {{- end }}
           extensionProviders:
           {{- if $v.apps.otel.enabled }}
