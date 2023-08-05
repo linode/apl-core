@@ -171,10 +171,6 @@ resources:
             {{- if $v.apps.otel.enabled }}
             - otel
             {{- end }}
-            {{- if $v.apps.jaeger.enabled }}
-            tracing:
-            - zipkin
-            {{- end }}
           extensionProviders:
           {{- if $v.apps.otel.enabled }}
           - envoyOtelAls:
