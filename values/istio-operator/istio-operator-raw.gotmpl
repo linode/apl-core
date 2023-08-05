@@ -150,12 +150,17 @@ resources:
             {{- end }}
             autoInject: enabled
           useMCP: false
+        meshConfig: {{- $i.meshConfig | toYaml | nindent 10 }}
+        {{- if $v._derived.untrustedCA }}
         meshConfig:
           accessLogFile: "/dev/stdout"
           accessLogFormat: |
             [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME% traceID=%REQ(x-b3-traceid)%
           enableAutoMtls: true
           enableTracing: true
+          defaultConfig:
+            gatewayTopology:
+              numTrustedProxies: 1
           defaultConfig:
             tracing:
               max_path_tag_length: 99999
@@ -167,6 +172,7 @@ resources:
             - otel
             {{- end }}
             {{- if $v.apps.jaeger.enabled }}
+            tracing:
             - zipkin
             {{- end }}
           extensionProviders:
@@ -180,6 +186,7 @@ resources:
           - zipkin:
               port: 9411
               service: jaeger-operator-jaeger-collector.jaeger.svc
+            name: zipkin
           {{- end }}
         {{- if $v._derived.untrustedCA }}
         pilot:

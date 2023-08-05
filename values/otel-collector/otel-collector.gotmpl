@@ -28,6 +28,7 @@ config:
     otlp:
       protocols:
         grpc:
+    zipkin:
   service:
     extensions:
       - health_check
@@ -35,13 +36,14 @@ config:
     pipelines:
       traces:
         exporters:
-          - logging
           - otlp
+          - logging
         processors:
           - memory_limiter
           - batch
         receivers:
           - otlp
+          - zipkin
 
 serviceMonitor:
   enabled: false

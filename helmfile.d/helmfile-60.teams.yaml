@@ -140,7 +140,7 @@ releases:
                   customQuery: true
                   query: 'method="${__span.tags.method}"'
                 tracesToMetrics:
-                  datasourceUid: 'prom'
+                  datasourceUid: 'prometheus-platform'
                   spanStartTimeShift: '1h'
                   spanEndTimeShift: '-1h'
                   tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]

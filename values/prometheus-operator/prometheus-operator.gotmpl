@@ -107,6 +107,9 @@ prometheus:
               storage: {{ $p | get "storageSize" }}
     enableAdminAPI: true
     externalUrl: https://{{ $appsDomain }}/prometheus
+    {{- if $c.tempo.enabled }}
+    enableRemoteWriteReceiver: true
+    {{- end }}
 {{- if and (not $v.otomi.isMultitenant) $hasServices }}
     additionalScrapeConfigs:
   {{- range $teamId, $team := $v.teamConfig }}
