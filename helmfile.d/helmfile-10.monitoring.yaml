@@ -40,9 +40,9 @@ releases:
     installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
     <<: *default
-  - name: otel-collector
+  - name: otel-operator
     installed: {{ $a | get "otel.enabled" }}
-    namespace: otel-collector
+    namespace: otel
     <<: *default
   - name: tempo
     installed: {{ $a | get "tempo.enabled" }}

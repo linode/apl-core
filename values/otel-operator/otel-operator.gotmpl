@@ -1,0 +1,27 @@
+{{- $v := .Values }}
+{{- $o:= $v.apps.otel }}
+
+replicaCount: 1
+nameOverride: otel-operator
+imagePullSecrets: []
+manager:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+  serviceMonitor:
+    enabled: true
+    extraLabels:
+      prometheus: system
+  podAnnotations: {}
+kubeRBACProxy:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 5m
+      memory: 64Mi

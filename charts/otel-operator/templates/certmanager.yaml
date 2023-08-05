@@ -1,0 +1,46 @@
+{{- if and .Values.admissionWebhooks.create .Values.admissionWebhooks.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  {{- if .Values.admissionWebhooks.certManager.certificateAnnotations }}
+  annotations:
+  {{- toYaml .Values.admissionWebhooks.certManager.certificateAnnotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
+  name: {{ template "opentelemetry-operator.fullname" . }}-serving-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  dnsNames:
+    - {{ template "opentelemetry-operator.fullname" . }}-webhook.{{ .Release.Namespace }}.svc
+    - {{ template "opentelemetry-operator.fullname" . }}-webhook.{{ .Release.Namespace }}.svc.cluster.local
+  issuerRef:
+    {{- if .Values.admissionWebhooks.certManager.issuerRef }}
+    {{- toYaml .Values.admissionWebhooks.certManager.issuerRef | nindent 4 }}
+    {{- else }}
+    kind: Issuer
+    name: {{ template "opentelemetry-operator.fullname" . }}-selfsigned-issuer
+    {{- end }}
+  secretName: {{ default (printf "%s-controller-manager-service-cert" (include "opentelemetry-operator.fullname" .)) .Values.admissionWebhooks.secretName }}
+  subject:
+    organizationalUnits:
+      - {{ template "opentelemetry-operator.fullname" . }}
+{{- if not .Values.admissionWebhooks.certManager.issuerRef }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  {{- if .Values.admissionWebhooks.certManager.issuerAnnotations }}
+  annotations:
+  {{- toYaml .Values.admissionWebhooks.certManager.issuerAnnotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: webhook
+  name: {{ template "opentelemetry-operator.fullname" . }}-selfsigned-issuer
+  namespace: {{ .Release.Namespace }}
+spec:
+  selfSigned: {}
+{{- end }}
+{{- end }}
