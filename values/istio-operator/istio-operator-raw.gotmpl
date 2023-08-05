@@ -150,8 +150,6 @@ resources:
             {{- end }}
             autoInject: enabled
           useMCP: false
-        meshConfig: {{- $i.meshConfig | toYaml | nindent 10 }}
-        {{- if $v._derived.untrustedCA }}
         meshConfig:
           accessLogFile: "/dev/stdout"
           accessLogFormat: |
