@@ -227,6 +227,8 @@ environments:
                 maxReplicas: 10
           istio:
             enabled: true
+            tracing:
+                type: disabled
             autoscaling:
               egressgateway:
                 minReplicas: 2

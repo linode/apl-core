@@ -1,5 +1,9 @@
 apps:
     istio:
+        tracing:
+            defaultEnvoy:
+                randomSamplingPercentage: '100'
+            type: defaultEnvoy
         autoscaling:
             ingressgateway:
                 maxReplicas: 5

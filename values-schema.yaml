@@ -2190,6 +2190,28 @@ properties:
           enabled:
             default: true
             type: boolean
+          tracing:
+            description: Configure Istio for tracing. Requires Tempo, Grafana, Loki, Prometheus and Otel to be enabled.
+            properties:
+              defaultEnvoy:
+                additionalProperties: false
+                description: Default Envoy Access Logging
+                properties:
+                  randomSamplingPercentage:
+                    type: string
+              openTelemetry:
+                additionalProperties: false
+                description: Use OpenTelemetry
+                properties:
+                  randomSamplingPercentage:
+                    type: string
+              type:
+                type: string
+                enum:
+                  - disabled
+                  - defaultEnvoy
+                  - openTelemetry
+                default: disabled
           autoscaling:
             properties:
               egressgateway:
@@ -3029,6 +3051,20 @@ properties:
           enabled:
             type: boolean
             default: false
+          collectorMode:
+            title: Collector mode
+            description: Mode to run collector in.
+            type: string
+            default: deployment
+            enum:
+              - deployment
+              - daemonset
+              - statefulset
+          resources:
+            additionalProperties: false
+            properties:
+              collector:
+                $ref: '#/definitions/resources'
       vault:
         additionalProperties: false
         properties:

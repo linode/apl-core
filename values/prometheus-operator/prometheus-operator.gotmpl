@@ -256,6 +256,11 @@ grafana:
         global:
           enabled: true
     {{- end }}
+    {{- if $c.tempo.enabled }}
+    datasources:
+      jsonData:
+        httpMethod: GET
+    {{- end }}
   serviceMonitor:
     # namespace: grafana
     labels:
@@ -287,7 +292,42 @@ grafana:
     - name: Tempo
       type: tempo
       uid: tempo
+      access: proxy
+      editable: false
       url: http://tempo-query-frontend.tempo:3100
+      jsonData:
+        tracesToLogsV2:
+          datasourceUid: 'loki'
+          spanStartTimeShift: '1h'
+          spanEndTimeShift: '-1h'
+          tags: ['job', 'instance', 'pod', 'namespace']
+          filterByTraceID: false
+          filterBySpanID: false
+          customQuery: true
+          query: 'method="${__span.tags.method}"'
+        tracesToMetrics:
+          datasourceUid: 'prometheus'
+          spanStartTimeShift: '1h'
+          spanEndTimeShift: '-1h'
+          tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
+          queries:
+            - name: 'Sample query'
+              query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
+        serviceMap:
+          datasourceUid: 'prometheus'
+        nodeGraph:
+          enabled: true
+        search:
+          hide: false
+        lokiSearch:
+          datasourceUid: 'loki'
+        traceQuery:
+          timeShiftEnabled: true
+          spanStartTimeShift: '1h'
+          spanEndTimeShift: '-1h'
+        spanBar:
+          type: 'Tag'
+          tag: 'http.path'
     {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
