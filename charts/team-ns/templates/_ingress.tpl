@@ -187,13 +187,12 @@ spec:
 {{/*If a team provides its own certificate in the team namespace then Otomi cornjob makes a copy of it*/}} 
       secretName: copy-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
+          {{- else }}
             {{- if (index $v "apps" "cert-manager" "useCustomWildcardCert") }}
       secretName: otomi-custom-wildcard-cert
             {{- else }}
       secretName: otomi-cert-manager-wildcard-cert
             {{- end}}
-          {{- else }}
-      secretName: {{ $domain | replace "." "-" }}
           {{- end }}
         {{- end }}
       {{- end }}

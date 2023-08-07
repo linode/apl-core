@@ -2,9 +2,7 @@
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $dns := $v | get "dns" dict }}
 {{- $p := $dns | get "provider" dict }}
-{{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
 {{- $issuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
-{{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
 
 {{- if and $v.otomi.hasExternalDNS (or (not (hasKey $p "aws")) ($p | get "aws.credentials.secretKey" nil)) }}
@@ -140,6 +138,7 @@ resources:
       commonName: '*.{{ $v.cluster.domainSuffix }}'
       dnsNames:
       - '*.{{ $v.cluster.domainSuffix }}'
+      - '*.otomi.{{ $v.cluster.domainSuffix }}'
       issuerRef:
         kind: ClusterIssuer
         name: {{ $issuerName }}
