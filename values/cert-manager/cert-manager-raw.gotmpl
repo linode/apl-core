@@ -124,6 +124,7 @@ resources:
     kind: Secret
     metadata:
       name: otomi-custom-wildcard-cert
+      namespace: {{ if $v.otomi.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
     type: kubernetes.io/tls
     data:
       tls.crt: {{ $cm.customWildcardCert | b64enc }}
