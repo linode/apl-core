@@ -1,12 +1,14 @@
 {{- $v := .Values }}
-{{- $ms := $v | get "apps.prometheus-operator.alertmanager.msteams" }}
 replicaCount: 1
 image:
   repository: quay.io/prometheusmsteams/prometheus-msteams
   tag: v1.3.3
 connectors:
-- high_priority_channel: {{ $ms.highPrio }}
-- low_priority_channel: {{ $ms.lowPrio }}
+- high_priority_channel: {{ $v.alerts.msteams.highPrio }}
+- low_priority_channel: {{ $v.alerts.msteams.lowPrio }}
+
+annotations:
+  policy.otomi.io/ignore: psp-allowed-users
 
 # container:
 #   additionalArgs:
