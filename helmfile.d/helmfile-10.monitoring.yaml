@@ -49,7 +49,7 @@ releases:
     namespace: monitoring
     <<: *default
   - name: prometheus-msteams
-    installed: {{ $a | get "prometheus-msteams.enabled" }}
+    installed: {{ has "msteams" ($v | get "alerts.receivers") }}
     namespace: monitoring
     <<: *default
   - name: thanos
