@@ -1,0 +1,24 @@
+bases:
+  - ../helmfile.d/snippets/defaults.yaml
+---
+bases:
+  - ../helmfile.d/snippets/env.gotmpl
+---
+bases:
+  - ../helmfile.d/snippets/derived.gotmpl
+---
+{{ readFile "../helmfile.d/snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+
+releases:
+  - name: job-drone-activation
+    installed: {{ $v.apps.drone.enabled }}
+    <<: *jobs
+    labels:
+      group: jobs
+  - name: job-e2e
+    installed: {{ $v.e2e.enabled }}
+    <<: *jobs
+    labels:
+      group: jobs
+    needs: [job-drone-activation]
