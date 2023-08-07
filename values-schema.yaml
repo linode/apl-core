@@ -3046,12 +3046,11 @@ properties:
               trivy:
                 $ref: '#/definitions/resources'
       otel:
-        additionalProperties: false
         properties:
           enabled:
             type: boolean
             default: false
-          collectorMode:
+          mode:
             title: Collector mode
             description: Mode to run collector in.
             type: string

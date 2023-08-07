@@ -168,6 +168,7 @@ appsInfo:
     integration: Otomi has security best practices built in, and is designed for intrusion. Istio is used by Otomi as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of Otomi and can not be disabled.
   jaeger:
     title: Jaeger
+    dependencies: Open Telemetry (otel)
     appVersion: 1.25.0
     repo: https://github.com/jaegertracing/jaeger
     maintainers: CNCF
@@ -311,7 +312,7 @@ appsInfo:
     relatedLinks:
       - https://grafana.com/docs/tempo/latest/
     license: AGPL-3.0
-    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
+    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used), Otel
     about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
     integration: Otomi installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
   thanos:
