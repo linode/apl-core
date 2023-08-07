@@ -4,10 +4,10 @@ import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { setDeploymentState, waitTillAvailable } from 'src/common/k8s'
+import { waitTillAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
-import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
+import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs, genDrone } from './gen-drone'
@@ -40,7 +40,7 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   d.log('Successfully pushed the updated values')
 }
 
-export const commit = async (firstTime = false): Promise<void> => {
+export const commit = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues()
   d.info('Preparing values')
@@ -61,19 +61,20 @@ export const commit = async (firstTime = false): Promise<void> => {
   await genDrone()
   await encrypt()
   await commitAndPush(values, branch)
-  await setDeploymentState({ status: 'deployed' })
-  if (firstTime) {
-    const credentials = values.apps.keycloak
-    const message = `
+}
+
+export const printWelcomeMessage = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:commit`)
+  const values = (await hfValues()) as Record<string, any>
+  const credentials = values.apps.keycloak
+  const message = `
     ########################################################################################################################################
     #
     #  To start using Otomi, go to https://otomi.${values.cluster.domainSuffix} and sign in to the web console
     #  with username "${credentials.adminUsername}" and password "${credentials.adminPassword}".
-    #  Then activate Drone. For more information see: https://otomi.io/docs/get-started/activation
     #
     ########################################################################################################################################`
-    d.info(message)
-  }
+  d.info(message)
 }
 
 export const module = {

@@ -11,5 +11,4 @@ jobs:
     secrets: inherit
     with:
       install_profile: minimal-with-team
-      kubernetes_versions: "['1.24']"
       generate_password: 'yes'
