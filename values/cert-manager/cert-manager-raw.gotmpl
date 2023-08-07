@@ -120,7 +120,8 @@ resources:
               {{- end }}
 {{- end }}
 {{- if $cm.useCustomWildcardCert }}
-  - kind: Secret
+  - apiVersion: v1
+    kind: Secret
     metadata:
       name: otomi-custom-wildcard-cert
     type: kubernetes.io/tls
