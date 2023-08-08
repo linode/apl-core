@@ -24,7 +24,7 @@ resources:
         exporters:
           logging:
             loglevel: info
-          {{- if $v.apps.tempo.enabled }}
+          {{- if $v.apps.jaeger.enabled }}
           otlp:
             endpoint: tempo-distributor.tempo.svc.cluster.local:4317
             sending_queue:
@@ -38,13 +38,9 @@ resources:
           {{- end }}
           {{- if $v.apps.jaeger.enabled }}
           jaeger:
-            endpoint: jaeger-operator-jaeger-collector.jaeger.svc.cluster.local:9411
+            endpoint: jaeger-operator-jaeger-collector.jaeger.svc:14250
             tls:
               insecure: true
-            sending_queue:
-              enabled: true
-            retry_on_failure:
-              enabled: true
           {{- end }}
         service:
           pipelines:

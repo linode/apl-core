@@ -21,3 +21,9 @@ releases:
     values:
       - ../values/raw/istio-raw.gotmpl
       - snippets/common.gotmpl
+  - name: otel-operator-artifacts
+    installed: {{ $a | get "otel.enabled" }}
+    namespace: otel
+    labels:
+      pkg: otel-operator
+    <<: *raw

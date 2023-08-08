@@ -119,8 +119,8 @@ releases:
               jsonData:
                 derivedFields:
                   - datasourceName: Tempo
-                    matcherRegex: "TraceId=(\\w+)"
-                    name: TraceId
+                    matcherRegex: "traceID=(\\w+)"
+                    name: traceID
                     url: "$${__value.raw}"
                     datasourceUid: tempo
             - name: Tempo
@@ -130,16 +130,6 @@ releases:
               editable: false
               url: http://tempo-query-frontend.tempo:3100
               jsonData:
-                tracesToMetrics:
-                  datasourceUid: 'prometheus-platform'
-                  spanStartTimeShift: '1h'
-                  spanEndTimeShift: '-1h'
-                  tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
-                  queries:
-                    - name: 'Sample query'
-                      query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
-                serviceMap:
-                  datasourceUid: 'prometheus-platform'
                 nodeGraph:
                   enabled: true
                 search:
@@ -148,9 +138,6 @@ releases:
                   timeShiftEnabled: true
                   spanStartTimeShift: '1h'
                   spanEndTimeShift: '-1h'
-                spanBar:
-                  type: 'Tag'
-                  tag: 'http.path'
             {{- end }}
     {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
