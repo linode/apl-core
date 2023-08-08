@@ -2,6 +2,69 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.24.1](https://github.com/redkubes/otomi-core/compare/v0.22.0-0...v0.24.1) (2023-08-08)
+
+
+### Features
+
+* add  the skip-cleanup argument while working in the development mode ([#1204](https://github.com/redkubes/otomi-core/issues/1204)) ([1a8c2da](https://github.com/redkubes/otomi-core/commit/1a8c2da7587c40dbc50cf293ed884b3b7d3bb55e))
+* add authorization to the tty console ([#1202](https://github.com/redkubes/otomi-core/issues/1202)) ([a8c6930](https://github.com/redkubes/otomi-core/commit/a8c69307593b34ea71b711f864bf3ac3e62e3590))
+* added helm to the tty console [MINOR] ([#1193](https://github.com/redkubes/otomi-core/issues/1193)) ([6466bbb](https://github.com/redkubes/otomi-core/commit/6466bbb23044cc3de7f7ee6a3a16a86862deea00))
+* adjust loki defaults ([#1183](https://github.com/redkubes/otomi-core/issues/1183)) ([08fcdc4](https://github.com/redkubes/otomi-core/commit/08fcdc4fb73f38abae62ce2d99635331d66ccdda))
+* drone activation and otomi version upgrade with cypress ([#1200](https://github.com/redkubes/otomi-core/issues/1200)) ([a2a622a](https://github.com/redkubes/otomi-core/commit/a2a622aa3c3ed83a133dec5c7815b5c93b969cac))
+* enable use-proxy-protocol ([#1201](https://github.com/redkubes/otomi-core/issues/1201)) ([233a254](https://github.com/redkubes/otomi-core/commit/233a254ffe679a85edb297301975633600029e8f))
+* external-dns upgrade ([#1178](https://github.com/redkubes/otomi-core/issues/1178)) ([c8d82e6](https://github.com/redkubes/otomi-core/commit/c8d82e62c147ea4b5e747df97c99bb3d7fce87dc))
+* generate values with redacted secrets ([#1210](https://github.com/redkubes/otomi-core/issues/1210)) ([a2f39bc](https://github.com/redkubes/otomi-core/commit/a2f39bc87de03537fdbef9bef295e11eaf20c64d))
+* nginx-ingress update ([#1176](https://github.com/redkubes/otomi-core/issues/1176)) ([8d5b922](https://github.com/redkubes/otomi-core/commit/8d5b922009aba3e173977e1b9b905760743ce6ca))
+* update oauth2-proxy ([#1184](https://github.com/redkubes/otomi-core/issues/1184)) ([d0dea3e](https://github.com/redkubes/otomi-core/commit/d0dea3e9769c9efbffdca4713233c3b0ec49cc15))
+* updated tty image [MAJOR] ([#1175](https://github.com/redkubes/otomi-core/issues/1175)) ([4cc4b8f](https://github.com/redkubes/otomi-core/commit/4cc4b8ff0d236a04afbe72108bcecf80f19f54ba))
+* updating cluster name ([#1207](https://github.com/redkubes/otomi-core/issues/1207)) ([9ad9069](https://github.com/redkubes/otomi-core/commit/9ad906957ffa3567d52dd2e6cbffa2c91bd56680))
+* upgrade cert-manager to 11.4 ([#1189](https://github.com/redkubes/otomi-core/issues/1189)) ([722bcbe](https://github.com/redkubes/otomi-core/commit/722bcbe5c911f22b29caf116b4480835483ee90e))
+* upgrading istio-operator to 1.17.4 ([#1190](https://github.com/redkubes/otomi-core/issues/1190)) ([76107e6](https://github.com/redkubes/otomi-core/commit/76107e6895254d8e1a585cbf6f2ffe7f9588162a))
+
+
+### Bug Fixes
+
+* add missing k8s to knative mapping ([#1182](https://github.com/redkubes/otomi-core/issues/1182)) ([1351f43](https://github.com/redkubes/otomi-core/commit/1351f43edea6f7f30ebf2c2b23f35a339b8e8283))
+* add missing migrations ([#1179](https://github.com/redkubes/otomi-core/issues/1179)) ([97f02ca](https://github.com/redkubes/otomi-core/commit/97f02cae93c9847cbd128fc4b3e812396629393d))
+* added all apiGroups instead of only core ([#1191](https://github.com/redkubes/otomi-core/issues/1191)) ([6c21007](https://github.com/redkubes/otomi-core/commit/6c21007bc3d03cf2aca468b5b702b4b4839cf935))
+* change back scheduled job time ([#1215](https://github.com/redkubes/otomi-core/issues/1215)) ([103450d](https://github.com/redkubes/otomi-core/commit/103450d787cc20f9574ca8cd4e3a5c875291c18a))
+* changes spelling ([#1205](https://github.com/redkubes/otomi-core/issues/1205)) ([ab4221e](https://github.com/redkubes/otomi-core/commit/ab4221e67a69e6464cf40a79fb14ae3b1f3f5f6b))
+* cron times changed for testing purposes ([#1211](https://github.com/redkubes/otomi-core/issues/1211)) ([c6ab05e](https://github.com/redkubes/otomi-core/commit/c6ab05e30b886d4ded3270a684377edb411077c0))
+* cron times test 2 ([#1212](https://github.com/redkubes/otomi-core/issues/1212)) ([c0f1f5d](https://github.com/redkubes/otomi-core/commit/c0f1f5dc6d7f101f40ccffbcf4f788fd93dc768d))
+* do not parse values as parameters for shell command ([#1192](https://github.com/redkubes/otomi-core/issues/1192)) ([7c586d3](https://github.com/redkubes/otomi-core/commit/7c586d36b31ebbae1039325dcf85f8b200cdba75))
+* grafana dashboards ([#1203](https://github.com/redkubes/otomi-core/issues/1203)) ([2254b6d](https://github.com/redkubes/otomi-core/commit/2254b6dcea3a013ea4849ed98bdf2ed369372e90))
+* improved tty pipeline  ([#1197](https://github.com/redkubes/otomi-core/issues/1197)) ([81a9d08](https://github.com/redkubes/otomi-core/commit/81a9d08d0f78a23958af9cb55fbf872349f93d60))
+* msteams receivers ([#1223](https://github.com/redkubes/otomi-core/issues/1223)) ([f23d9e7](https://github.com/redkubes/otomi-core/commit/f23d9e7d29fe9ec3f47d2257742992fc80b10fef))
+* readme [ci skip] ([1f72aef](https://github.com/redkubes/otomi-core/commit/1f72aefe11bc26f130b671d654b2d22a9566cc88))
+* readme [ci skip] ([8ff1f26](https://github.com/redkubes/otomi-core/commit/8ff1f2691486f7253ab43d47fe0fc59c185ec7a3))
+* scaleway default cloud provider ([#1209](https://github.com/redkubes/otomi-core/issues/1209)) ([7aa750d](https://github.com/redkubes/otomi-core/commit/7aa750d4d9ad284fc238d673d04f5942b03ad5bb))
+* support Scaleway cloud provider ([#1188](https://github.com/redkubes/otomi-core/issues/1188)) ([f31d31e](https://github.com/redkubes/otomi-core/commit/f31d31e2295a39e2159c0d0dd413af942340e06a))
+* thanos receive ingress path ([#1186](https://github.com/redkubes/otomi-core/issues/1186)) ([07f4b2c](https://github.com/redkubes/otomi-core/commit/07f4b2c9599e1ef6475ad5fb5fae9712e83111da))
+* upgrade script for kube-prom stack ([#1173](https://github.com/redkubes/otomi-core/issues/1173)) ([32eee80](https://github.com/redkubes/otomi-core/commit/32eee806a66304b569093fbd1f0d06087860c89a))
+* workflow remove cluster regions ([#1206](https://github.com/redkubes/otomi-core/issues/1206)) ([396eec3](https://github.com/redkubes/otomi-core/commit/396eec36ee4d84fa7915de46b3ff60092fa224d3))
+
+
+### Tests
+
+* do not set metrics-server ([#1219](https://github.com/redkubes/otomi-core/issues/1219)) ([18ea38a](https://github.com/redkubes/otomi-core/commit/18ea38a9f80edb1998db97a808d1fac3d73984e7))
+* Github Actions to create Kubernetes cluster in Scaleway cloud provider ([#1196](https://github.com/redkubes/otomi-core/issues/1196)) ([e9eb4e5](https://github.com/redkubes/otomi-core/commit/e9eb4e50ff02e12ab7e3047efcced64edd2195ad))
+* hourly run for only one ([#1213](https://github.com/redkubes/otomi-core/issues/1213)) ([5733c61](https://github.com/redkubes/otomi-core/commit/5733c61ca5538a802405a2adc9b50936148482c4))
+* inject license ([#1199](https://github.com/redkubes/otomi-core/issues/1199)) ([ec5d257](https://github.com/redkubes/otomi-core/commit/ec5d2572ded54fd39e0154f9168c86df189bf513))
+* scaleway setting ([#1198](https://github.com/redkubes/otomi-core/issues/1198)) ([16fe144](https://github.com/redkubes/otomi-core/commit/16fe1441b354304df7c6f37c11fe50a87d1ef623))
+
+
+### Others
+
+* add github issue template ([f561d87](https://github.com/redkubes/otomi-core/commit/f561d8715beb15f4a23c0b65f976282eb0f10903))
+* allow to release from main ([7cd47d0](https://github.com/redkubes/otomi-core/commit/7cd47d033344383528b83060f5fe3ab07487c297))
+* console version update ([18ea808](https://github.com/redkubes/otomi-core/commit/18ea8085f74b806645c65ba843a904bfd197e252))
+* prepare for v0.23.0 ([#1187](https://github.com/redkubes/otomi-core/issues/1187)) ([2fcb0b6](https://github.com/redkubes/otomi-core/commit/2fcb0b61d47873f598ed306b0d9e627ccfc3c90a))
+* release branch [ci skip] ([0e8d753](https://github.com/redkubes/otomi-core/commit/0e8d75326cfa30edb2fd7b0853ea2a805f3ca263))
+* update GitHub template ([8dc21d1](https://github.com/redkubes/otomi-core/commit/8dc21d17cd4bf53ce1cba7d8c050a02a004d6d4a))
+* user story ([e1558d4](https://github.com/redkubes/otomi-core/commit/e1558d471a085a11ac9f7cf20b5a7deb993a58cc))
+* version update ([e1428cd](https://github.com/redkubes/otomi-core/commit/e1428cd3a5f1e9775f68d25fb5205db83a9dda7b))
+
 ## [0.24.0](https://github.com/redkubes/otomi-core/compare/v0.22.0-0...v0.24.0) (2023-08-03)
 
 
