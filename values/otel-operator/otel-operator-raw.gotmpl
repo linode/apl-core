@@ -11,6 +11,7 @@ resources:
           otlp:
             protocols:
               grpc:
+              http:
           zipkin:
         processors:
           memory_limiter:
@@ -48,8 +49,12 @@ resources:
         service:
           pipelines:
             traces:
-              receivers: [otlp, zipkin]
-              processors: [memory_limiter, batch]
+              receivers:
+              - otlp
+              - zipkin
+              processors:
+              - memory_limiter
+              - batch
               exporters:
               - logging
               {{- if $v.apps.tempo.enabled }}

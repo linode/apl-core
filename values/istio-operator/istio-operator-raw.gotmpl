@@ -152,34 +152,16 @@ resources:
           useMCP: false
         meshConfig:
           accessLogFile: "/dev/stdout"
-          {{- if and (eq $i.tracing.type "defaultEnvoy") (eq $i.tracing.type "openTelemetry") }}
-          # Only add trace-id to logs if tracing is enabled
-          accessLogFormat: |
-            [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME% traceID=%REQ(x-b3-traceid)%
-          {{- end }}
           enableAutoMtls: true
           defaultConfig:
             gatewayTopology:
               numTrustedProxies: 1
           enableTracing: true
           defaultProviders:
-            accessLogging:
-            - envoy
-            {{- if eq $i.tracing.type "defaultEnvoy" }}
-            - otel
-            {{- end }}
-            {{- if eq $i.tracing.type "openTelemetry" }}
             tracing:
             - otel-tracing
-            {{- end }}
           extensionProviders:
-          {{- if eq $i.tracing.type "defaultEnvoy" }}
-          - envoyOtelAls:
-              port: 4317
-              service: otel-collector-collector.otel.svc.cluster.local
-            name: envoy-otel
-          {{- end }}
-          {{- if eq $i.tracing.type "openTelemetry" }}
+          {{- if $i.tracing.enabled }}
           - opentelemetry:
               port: 4317
               service: otel-collector-collector.otel.svc.cluster.local
@@ -194,26 +176,15 @@ resources:
           enableNamespacesByDefault: false
           injectedAnnotations: 
             policy.otomi.io/ignore.istio-init: psp-allowed-users,psp-capabilities
-
-{{- if eq $i.tracing.type "defaultEnvoy" }}
-  - apiVersion: telemetry.istio.io/v1alpha1
-    kind: Telemetry
-    metadata:
-      name: envoy-otel
-    spec:
-      accessLogging:
-      - providers:
-        - name: envoy-otel
-      randomSamplingPercentage: {{ $i.tracing.defaultEnvoy.randomSamplingPercentage }}
-{{- end }}
-{{- if eq $i.tracing.type "openTelemetry" }}
+{{- if $i.tracing.enabled }}
   - apiVersion: telemetry.istio.io/v1alpha1
     kind: Telemetry
     metadata:
       name: otel-tracing
+      namespace: istio-system
     spec:
       tracing:
       - providers:
         - name: otel-tracing
-        randomSamplingPercentage: {{ $i.tracing.defaultEnvoy.randomSamplingPercentage }}
+        randomSamplingPercentage: {{ $i.tracing.randomSamplingPercentage }}
 {{- end }}

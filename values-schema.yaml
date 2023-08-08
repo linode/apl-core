@@ -2191,27 +2191,14 @@ properties:
             default: true
             type: boolean
           tracing:
-            description: Configure Istio for tracing. Requires Tempo, Grafana, Loki, Prometheus and Otel to be enabled.
-            properties:
-              defaultEnvoy:
-                additionalProperties: false
-                description: Default Envoy Access Logging
-                properties:
-                  randomSamplingPercentage:
-                    type: string
-              openTelemetry:
-                additionalProperties: false
-                description: Use OpenTelemetry
-                properties:
-                  randomSamplingPercentage:
-                    type: string
-              type:
-                type: string
-                enum:
-                  - disabled
-                  - defaultEnvoy
-                  - openTelemetry
-                default: disabled
+            description: Configure Istio for tracing. Requires Otel Collector to be enabled.
+            propterties:
+            enabled:
+              default: false
+              type: boolean
+            randomSamplingPercentage:
+              type: string
+              default: '100'
           autoscaling:
             properties:
               egressgateway:

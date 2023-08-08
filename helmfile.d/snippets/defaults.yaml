@@ -228,7 +228,7 @@ environments:
           istio:
             enabled: true
             tracing:
-                type: disabled
+              enabled: false
             autoscaling:
               egressgateway:
                 minReplicas: 2
@@ -553,19 +553,19 @@ environments:
               querier:
                 enabled: false
                 minReplicas: 1
-                maxReplicas: 5
+                maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               distributor:
                 enabled: false
                 minReplicas: 1
-                maxReplicas: 5
+                maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
               queryFrontend:
                 enabled: false
                 minReplicas: 1
-                maxReplicas: 5
+                maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
           thanos:
