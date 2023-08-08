@@ -167,6 +167,8 @@ resources:
               service: otel-collector-collector.otel.svc.cluster.local
             name: otel-tracing
           {{- end }}
+          rootNamespace: istio-system
+          trustDomain: cluster.local
         {{- if $v._derived.untrustedCA }}
         pilot:
           jwksResolverExtraRootCA: |

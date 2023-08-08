@@ -498,7 +498,7 @@ environments:
                     memory: 16Mi
                 limits:
                     cpu: 200m
-                    memory: 512i   
+                    memory: 512Mi 
           tempo:
             enabled: false
             storage:
