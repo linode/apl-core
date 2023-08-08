@@ -18,3 +18,9 @@ releases:
     labels:
       pkg: istio
     <<: *raw
+  - name: otel-operator-artifacts
+    installed: {{ $a | get "otel.enabled" }}
+    namespace: otel
+    labels:
+      pkg: otel-operator
+    <<: *raw

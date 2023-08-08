@@ -489,7 +489,16 @@ environments:
           redis-shared:
             enabled: false
           otel:
-            enabled: false      
+            enabled: false
+            mode: deployment
+            resources:
+              collector:
+                requests:
+                    cpu: 50m
+                    memory: 16Mi
+                limits:
+                    cpu: 200m
+                    memory: 512i   
           tempo:
             enabled: false
             storage:
