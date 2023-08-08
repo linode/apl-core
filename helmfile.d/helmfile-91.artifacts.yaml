@@ -12,18 +12,9 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: istio-artifacts
+  - name: istio-resource-artifacts
     installed: true
     namespace: istio-system
     labels:
       pkg: istio
-    chart: ../charts/raw
-    values:
-      - ../values/raw/istio-raw.gotmpl
-      - snippets/common.gotmpl
-  - name: otel-operator-artifacts
-    installed: {{ $a | get "otel.enabled" }}
-    namespace: otel
-    labels:
-      pkg: otel-operator
     <<: *raw

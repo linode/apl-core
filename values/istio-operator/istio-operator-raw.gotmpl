@@ -176,15 +176,3 @@ resources:
           enableNamespacesByDefault: false
           injectedAnnotations: 
             policy.otomi.io/ignore.istio-init: psp-allowed-users,psp-capabilities
-{{- if $i.tracing.enabled }}
-  - apiVersion: telemetry.istio.io/v1alpha1
-    kind: Telemetry
-    metadata:
-      name: otel-tracing
-      namespace: istio-system
-    spec:
-      tracing:
-      - providers:
-        - name: otel-tracing
-        randomSamplingPercentage: {{ $i.tracing.randomSamplingPercentage }}
-{{- end }}
