@@ -2193,12 +2193,12 @@ properties:
           tracing:
             description: Configure Istio for tracing. Requires Otel Collector to be enabled.
             propterties:
-            enabled:
-              default: false
-              type: boolean
-            randomSamplingPercentage:
-              type: string
-              default: '100'
+              enabled:
+                default: false
+                type: boolean
+              randomSamplingPercentage:
+                type: string
+                default: '100'
           autoscaling:
             properties:
               egressgateway:

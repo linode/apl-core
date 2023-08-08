@@ -119,7 +119,7 @@ releases:
               jsonData:
                 derivedFields:
                   - datasourceName: Tempo
-                    matcherRegex: "traceId=(\\w+)"
+                    matcherRegex: "TraceId=(\\w+)"
                     name: TraceId
                     url: "$${__value.raw}"
                     datasourceUid: tempo
@@ -130,15 +130,6 @@ releases:
               editable: false
               url: http://tempo-query-frontend.tempo:3100
               jsonData:
-                tracesToLogsV2:
-                  datasourceUid: 'loki'
-                  spanStartTimeShift: '1h'
-                  spanEndTimeShift: '-1h'
-                  tags: ['job', 'instance', 'pod', 'namespace']
-                  filterByTraceID: false
-                  filterBySpanID: false
-                  customQuery: true
-                  query: 'method="${__span.tags.method}"'
                 tracesToMetrics:
                   datasourceUid: 'prometheus-platform'
                   spanStartTimeShift: '1h'
@@ -153,8 +144,6 @@ releases:
                   enabled: true
                 search:
                   hide: true
-                lokiSearch:
-                  datasourceUid: 'loki'
                 traceQuery:
                   timeShiftEnabled: true
                   spanStartTimeShift: '1h'
