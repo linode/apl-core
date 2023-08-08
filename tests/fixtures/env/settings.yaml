@@ -1,7 +1,10 @@
 alerts:
     email: {}
     receivers:
-        - none
+        - msteams
+    msteams:
+        highPrio: https://xxxxxxx.com
+        lowPrio: https://xxxxxxxx.com
     slack: {}
 azure:
     appgw:

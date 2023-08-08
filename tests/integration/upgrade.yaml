@@ -2,10 +2,9 @@
 cluster:
   k8sVersion: 'K8S_VERSION_PLACEHOLDER'
   name: 'dev'
-  provider: digitalocean
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
-  version: v0.22.3
+  version: v0.24.0
 e2e:
   enabled: true
   upgrade:
