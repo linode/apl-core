@@ -119,17 +119,18 @@ resources:
               {{- toYaml . | get "cert-manager" nindent 14 }}
               {{- end }}
 {{- end }}
-{{- if $cm.useCustomWildcardCert }}
+{{- if eq $cm.issuer "byo-wildcard-cert" }}
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: otomi-custom-wildcard-cert
+      name: otomi-byo-wildcard-cert
       namespace: {{ if $v.otomi.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
     type: kubernetes.io/tls
     data:
-      tls.crt: {{ $cm.customWildcardCert | b64enc }}
-      tls.key: {{ $cm.customWildcardKey | b64enc }}
+      tls.crt: {{ $cm.byoWildcardCert | b64enc }}
+      tls.key: {{ $cm.byoWildcardCertKey | b64enc }}
 {{- end }}
+{{- if or (eq $cm.issuer "letsencrypt" ) (eq $cm.issuer "custom-ca" ) }}
   - apiVersion: cert-manager.io/v1
     kind: Certificate
     metadata:
@@ -152,3 +153,4 @@ resources:
         - key encipherment
         - ocsp signing
         {{- end }}
+{{- end }}

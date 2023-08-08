@@ -32,6 +32,7 @@ extensions/v1
 {{- $v := .dot.Values }}
 {{- $appsDomain := printf "apps-%s.%s" $v.teamId $v.domain }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
+{{- $cm := index $v.apps "cert-manager" }}
 {{- range $ingress := $v.ingress.classes }}
   {{- $routes := dict }}
   {{- $names := list }}
@@ -188,8 +189,8 @@ spec:
       secretName: copy-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}
-            {{- if (index $v "apps" "cert-manager" "useCustomWildcardCert") }}
-      secretName: otomi-custom-wildcard-cert
+            {{- if eq $cm.issuer "byo-wildcard-cert" }}
+      secretName: otomi-byo-wildcard-cert
             {{- else }}
       secretName: otomi-cert-manager-wildcard-cert
             {{- end}}
