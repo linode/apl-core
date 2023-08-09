@@ -1,0 +1,25 @@
+{{- $v := .Values }}
+{{- $i := $v.apps.istio }}
+
+{{- if $i.tracing.enabled }}
+resources:
+  - apiVersion: telemetry.istio.io/v1alpha1
+    kind: Telemetry
+    metadata:
+      name: otel-tracing
+      namespace: istio-system
+    spec:
+      tracing:
+      - providers:
+        - name: otel-tracing
+        randomSamplingPercentage: {{ $i.tracing.randomSamplingPercentage }}
+  - apiVersion: telemetry.istio.io/v1alpha1
+    kind: Telemetry
+    metadata:
+      name: trace-logs
+      namespace: istio-system
+    spec:
+      accessLogging:
+      - providers:
+        - name: trace-logs
+{{- end }}
