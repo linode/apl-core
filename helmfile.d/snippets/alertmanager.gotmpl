@@ -80,7 +80,7 @@ receivers:
     {{- end }}
     {{- if has "msteams" $receivers }}
     webhook_configs:
-      - url: "http://prometheus-msteams{{ $suffix }}:800/low_priority_channel"
+      - url: "http://prometheus-msteams{{ $suffix }}:2000/low_priority_channel"
         send_resolved: true
     {{- end }}
   {{- if has "email" $receivers }}

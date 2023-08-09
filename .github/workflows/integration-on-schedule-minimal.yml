@@ -2,7 +2,7 @@ name: Scheduled - minimal with nip.io
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 1 * * *'
 
 jobs:
   start-integration-test-minimal:
@@ -11,5 +11,4 @@ jobs:
     secrets: inherit
     with:
       install_profile: minimal
-      kubernetes_versions: "['1.24']"
       generate_password: 'yes'

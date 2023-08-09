@@ -41,8 +41,6 @@ apps:
     enabled: true
   loki:
     enabled: true
-  metrics-server:
-    enabled: true
   minio:
     enabled: true
   prometheus:

@@ -2,7 +2,7 @@ name: Scheduled - full with nip.io
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '30 0 * * *'
 
 jobs:
   start-integration-test-full:
@@ -11,5 +11,4 @@ jobs:
     secrets: inherit
     with:
       install_profile: full
-      kubernetes_versions: "['1.24']"
       generate_password: 'yes'
