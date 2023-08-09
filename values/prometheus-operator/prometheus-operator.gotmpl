@@ -285,7 +285,7 @@ grafana:
       jsonData:
         derivedFields:
           - datasourceName: Tempo
-            matcherRegex: "traceID=(\\w+)"
+            matcherRegex: "traceID=00-([^\\-]+)-"
             name: TraceID
             url: "$${__value.raw}"
             datasourceUid: tempo

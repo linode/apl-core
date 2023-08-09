@@ -3037,19 +3037,31 @@ properties:
           enabled:
             type: boolean
             default: false
-          mode:
-            title: Collector mode
-            description: Mode to run collector in.
-            type: string
-            default: deployment
-            enum:
-              - deployment
-              - daemonset
-              - statefulset
+          collector:
+            properties:
+              mode:
+                title: Collector mode
+                description: Mode to run collector in.
+                type: string
+                default: deployment
+                enum:
+                  - deployment
+                  - daemonset
+                  - statefulset
+          operator:
+            properties:
+              replicaCount:
+                description: Number of Thanos Query replicas.
+                type: integer
+                default: 1
           resources:
             additionalProperties: false
             properties:
               collector:
+                $ref: '#/definitions/resources'
+              manager:
+                $ref: '#/definitions/resources'
+              kubeRBACProxy:
                 $ref: '#/definitions/resources'
       vault:
         additionalProperties: false
