@@ -78,3 +78,7 @@ changes:
       - 'apps.harbor.backup'
       - 'apps.loki.resources.limits'
       - 'apps.loki.resources.requests'
+  - version: 12
+    additions:
+      - databases.keycloak.useOtomiDB: false
+      - databases.keycloak.imported: false

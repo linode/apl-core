@@ -1,0 +1,45 @@
+{{- $v := .Values }}
+{{- $k := $v.apps.keycloak }}
+{{- $cnpg := $v.apps.cnpg }}
+{{- $kdb := $v.databases.keycloak }}
+
+name: keycloak-db
+storage:
+  size: {{ $kdb.size }}
+
+{{- if $kdb.imported }}
+clusterSpec:
+  bootstrap:
+    initdb:
+      database: keycloak
+      owner: keycloak
+      import:
+        type: microservice
+        databases:
+          - keycloak
+        source:
+          externalCluster: keycloak-postgresql
+  externalClusters:
+  - name: keycloak-postgresql
+    connectionParameters:
+      host: keycloak-postgresql.keycloak.svc.cluster.local
+      user: keycloak
+      dbname: keycloak
+      sslmode: disable
+    password:
+      name: keycloak-postgresql
+      key: postgresql-password
+
+{{- else }}
+clusterSpec:  
+  bootstrap:
+    initdb:
+      database: keycloak
+      owner: keycloak
+      localeCollate: 'en_US.UTF-8'
+      localeCType: 'en_US.UTF-8'
+{{- end }}
+
+instances: {{ $kdb.replicas }}
+
+resources: {{- toYaml $kdb.resources | nindent 6 }}
