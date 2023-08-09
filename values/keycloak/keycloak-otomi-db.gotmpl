@@ -42,14 +42,4 @@ clusterSpec:
 
 instances: {{ $kdb.replicas }}
 
-resources:
-  {{- with $kdb | get "resources" nil }}
-  {{- toYaml . | nindent 6 }}
-  {{- else }}
-  limits:
-    cpu: 100m
-    memory: 512Mi
-  requests:
-    cpu: 50m
-    memory: 256Mi
-  {{- end }}
+resources: {{- toYaml $kdb.resources | nindent 6 }}

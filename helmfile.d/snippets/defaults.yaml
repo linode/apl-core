@@ -630,7 +630,14 @@ environments:
             useOtomiDB: true
             imported: false
             size: "1Gi"
-            replicas: 2
+            replicas: 1
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 256Mi
         platformBackups:
           database:
             harbor:
