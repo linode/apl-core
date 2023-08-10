@@ -1583,7 +1583,7 @@ properties:
           resources:
             $ref: '#/definitions/resources'
           byoWildcardCert:
-            description: 'Bring your own trusted wildcard certificate. Only applicable for custom-wildcard-cert issuer'
+            description: 'Bring your own trusted wildcard certificate. Only applicable for byo-wildcard-cert issuer'
             type: string
           byoWildcardCertKey:
             description: 'A certificate key corresponding to the byoWildcardCert.'
@@ -1600,6 +1600,11 @@ properties:
           email:
             $ref: '#/definitions/email'
           issuer:
+            description: |
+              Indicates the origin of the wildcard certificate. 
+              The custom-ca - cert-manager uses the customRootCA to generate wildcard certificate.
+              The letsencrypt - cert-manager requests certificate from letsencrypt endpoint.
+              The byo-wildcard-cert allows users to bring their own trusted wildcard certificate (cert-manager not involved)
             type: string
             enum:
               - custom-ca
@@ -1612,22 +1617,22 @@ properties:
               - production
               - staging
             default: production
-        oneOf:
-          - properties:
-              issuer:
-                const: letsencrypt
-            required:
-              - email
-              - issuer
-          - properties:
-              issuer:
-                const: custom-ca
-            required:
-              - issuer
-          - not:
-              anyOf:
-                - required:
-                    - issuer
+        # oneOf:
+        #   - properties:
+        #       issuer:
+        #         const: letsencrypt
+        #     required:
+        #       - email
+        #       - issuer
+        #   - properties:
+        #       issuer:
+        #         const: custom-ca
+        #     required:
+        #       - issuer
+        #   - not:
+        #       anyOf:
+        #         - required:
+        #             - issuer
       cnpg:
         additionalProperties: false
         properties:

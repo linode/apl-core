@@ -141,7 +141,6 @@ resources:
       commonName: '*.{{ $v.cluster.domainSuffix }}'
       dnsNames:
       - '*.{{ $v.cluster.domainSuffix }}'
-      - '*.otomi.{{ $v.cluster.domainSuffix }}'
       issuerRef:
         kind: ClusterIssuer
         name: {{ $issuerName }}
