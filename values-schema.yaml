@@ -3903,6 +3903,24 @@ properties:
                 $ref: '#/definitions/backupTtl'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+  databases:
+    properties:
+      keycloak:
+        title: Keycloak
+        properties:
+          useOtomiDB:
+            type: boolean
+            default: false
+          size:
+            type: string
+          resources:
+            $ref: '#/definitions/resources'
+          replicas:
+            type: integer
+            default: 2
+          imported:
+            type: boolean
+            default: false
   teamConfig:
     additionalProperties: false
     patternProperties:

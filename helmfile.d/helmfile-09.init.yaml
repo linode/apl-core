@@ -11,6 +11,7 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $h := $a.harbor }}
+{{- $k := $a.keycloak }}
 
 releases:
   - name: cluster-autoscaler
@@ -54,4 +55,10 @@ releases:
     namespace: harbor
     labels:
       pkg: harbor
+    <<: *otomiDb
+  - name: keycloak-otomi-db
+    installed: {{ or $v.databases.keycloak.useOtomiDB  $v.databases.keycloak.imported }}
+    namespace: keycloak
+    labels:
+      pkg: keycloak
     <<: *otomiDb
