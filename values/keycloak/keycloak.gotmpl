@@ -76,11 +76,6 @@ extraInitContainers: |
       - name: theme
         mountPath: /themes
 
-extraEnv: |
-  - name: KEYCLOAK_USER
-    value: {{ $k.adminUsername }}
-  - name: KEYCLOAK_PASSWORD
-    value: {{ $k.adminPassword }}
 extraVolumeMounts: |
   - name: theme
     mountPath: /themes
@@ -88,8 +83,8 @@ extraVolumes: |
   - name: theme
     emptyDir: {}
 
-{{- if $v.databases.keycloak.useOtomiDB }}
 extraEnv: |
+{{- if $v.databases.keycloak.useOtomiDB }}
   - name: DB_PASSWORD
     valueFrom:
       secretKeyRef:
@@ -108,13 +103,12 @@ extraEnv: |
     value: "5432"
   - name: DB_DATABASE
     value: keycloak
-{{- else }}
-extraEnv: |
+{{- end }}
   - name: KEYCLOAK_USER
     value: {{ $k.adminUsername }}
   - name: KEYCLOAK_PASSWORD
     value: {{ $k.adminPassword }}
-{{- end }}
+
 
 {{- if $v.databases.keycloak.useOtomiDB }}
 postgresql:

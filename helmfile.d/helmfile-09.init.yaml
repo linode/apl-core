@@ -50,15 +50,3 @@ releases:
     labels:
       pkg: harbor
     <<: *raw
-  - name: harbor-otomi-db
-    installed: {{ and ($h | get "enabled")  (or (eq $h.database.type "external")  $h.database.importHarborDb) }}
-    namespace: harbor
-    labels:
-      pkg: harbor
-    <<: *otomiDb
-  - name: keycloak-otomi-db
-    installed: {{ or $v.databases.keycloak.useOtomiDB  $v.databases.keycloak.imported }}
-    namespace: keycloak
-    labels:
-      pkg: keycloak
-    <<: *otomiDb

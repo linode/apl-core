@@ -129,4 +129,4 @@ status:
         version: 0.21.0
 e2e:
     enabled: true
-version: 11
+version: 12
