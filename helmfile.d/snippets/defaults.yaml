@@ -225,6 +225,8 @@ environments:
                 enabled: true
                 minReplicas: 2
                 maxReplicas: 10
+            tracing:
+              enabled: false
           istio:
             enabled: true
             tracing:
