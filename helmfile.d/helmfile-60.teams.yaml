@@ -139,13 +139,16 @@ releases:
                   spanStartTimeShift: '1h'
                   spanEndTimeShift: '-1h'
                 tracesToMetrics:
-                    datasourceUid: 'prometheus'
+                    datasourceUid: 'prometheus-platform'
                     spanStartTimeShift: '1h'
                     spanEndTimeShift: '-1h'
                     tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
                     queries:
                       - name: 'Sample query'
                         query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
+                httpMethod: GET
+                serviceMap:
+                  datasourceUid: 'prometheus-platform'
                 spanBar:
                   type: 'Tag'
                   tag: 'http.path'
