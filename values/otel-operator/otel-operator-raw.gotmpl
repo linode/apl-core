@@ -12,7 +12,6 @@ resources:
             protocols:
               grpc:
               http:
-          zipkin:
         processors:
           memory_limiter:
             check_interval: 1s
@@ -47,7 +46,6 @@ resources:
             traces:
               receivers:
               - otlp
-              - zipkin
               processors:
               - memory_limiter
               - batch

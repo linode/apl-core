@@ -11,7 +11,7 @@ resources:
     spec:
       tracing:
       - providers:
-        - name: otel-tracing
+        - name: default-otel-tracing
         randomSamplingPercentage: {{ $i.tracing.randomSamplingPercentage }}
   - apiVersion: telemetry.istio.io/v1alpha1
     kind: Telemetry
@@ -23,16 +23,15 @@ resources:
       - providers:
         - name: envoy
   {{- range $id, $team := $v.teamConfig }}
-  # used to prevent envoy logging sidecar collector to stdout and fludding logs
+  # used to not log when the app is the source of the network traffic
+  # we need SERVER to get the traceID
   - apiVersion: telemetry.istio.io/v1alpha1
     kind: Telemetry
     metadata:
-      name: disable-otc-logs
+      name: disable-app-source-trafic
       namespace: team-{{ $id }}
-    selector:
-      matchLabels:
-        sidecar.opentelemetry.io/inject: otc-sidecar
     spec:
+    selector:
       accessLogging:
       - providers:
         - name: envoy
