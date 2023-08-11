@@ -1,0 +1,28 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+{{- $h := $a.harbor }}
+{{- $k := $a.keycloak }}
+
+releases:
+  - name: harbor-otomi-db
+    installed: {{ and ($h | get "enabled")  (or (eq $h.database.type "external")  $h.database.importHarborDb) }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *otomiDb
+  - name: keycloak-otomi-db
+    installed: {{ or $v.databases.keycloak.useOtomiDB  $v.databases.keycloak.imported }}
+    namespace: keycloak
+    labels:
+      pkg: keycloak
+    <<: *otomiDb
