@@ -31,12 +31,11 @@ resources:
       name: disable-app-source-trafic
       namespace: team-{{ $id }}
     spec:
-    selector:
       accessLogging:
-      - providers:
-        - name: envoy
+      - disabled: true
         match:
           mode: CLIENT
-        disabled: true
+        providers:
+        - name: envoy
   {{- end }}
 {{- end }}
