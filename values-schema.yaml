@@ -1617,22 +1617,6 @@ properties:
               - production
               - staging
             default: production
-        # oneOf:
-        #   - properties:
-        #       issuer:
-        #         const: letsencrypt
-        #     required:
-        #       - email
-        #       - issuer
-        #   - properties:
-        #       issuer:
-        #         const: custom-ca
-        #     required:
-        #       - issuer
-        #   - not:
-        #       anyOf:
-        #         - required:
-        #             - issuer
       cnpg:
         additionalProperties: false
         properties:
