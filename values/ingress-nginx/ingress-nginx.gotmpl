@@ -97,6 +97,17 @@ controller:
     ssl-redirect: {{ not $v.otomi.hasCloudLB }}
     use-forwarded-headers: {{ $v.otomi.hasCloudLB }}
     use-proxy-protocol: true
+    {{- if $n.tracing.enabled }}
+    enable-opentelemetry: true
+    otel-sampler: AlwaysOn
+    otel-sampler-ratio: {{ $n.tracing.samplingRatio }}
+    otlp-collector-host: otel-collector-collector.otel.svc
+    otlp-collector-port: 4317
+    otel-sampler-parent-based: true
+    otel-schedule-delay-millis: 5000
+    otel-max-export-batch-size: 512
+    otel-max-queuesize: 2048
+    {{- end }}
   stats:
     enabled: true
   metrics:

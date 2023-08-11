@@ -1,5 +1,8 @@
 apps:
     ingress-nginx-net-a:
+        tracing:
+            enabled: true
+            samplingRatio: '0.01'
         _rawValues:
             controller:
                 config:

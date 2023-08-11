@@ -16,10 +16,28 @@ resources:
   - apiVersion: telemetry.istio.io/v1alpha1
     kind: Telemetry
     metadata:
-      name: trace-logs
+      name: access-logs-mesh-default
       namespace: istio-system
     spec:
       accessLogging:
       - providers:
-        - name: trace-logs
+        - name: envoy
+  {{- range $id, $team := $v.teamConfig }}
+  # used to prevent envoy logging sidecar collector to stdout and fludding logs
+  - apiVersion: telemetry.istio.io/v1alpha1
+    kind: Telemetry
+    metadata:
+      name: disable-otc-logs
+      namespace: team-{{ $id }}
+    selector:
+      matchLabels:
+        sidecar.opentelemetry.io/inject: otc-sidecar
+    spec:
+      accessLogging:
+      - providers:
+        - name: envoy
+        match:
+          mode: CLIENT
+        disabled: true
+  {{- end }}
 {{- end }}

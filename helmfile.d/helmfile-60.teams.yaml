@@ -133,8 +133,7 @@ releases:
                 nodeGraph:
                   enabled: true
                 search:
-                # this needs to be set to true when traceID can be found in the logs
-                  hide: false
+                  hide: true
                 traceQuery:
                   timeShiftEnabled: true
                   spanStartTimeShift: '1h'

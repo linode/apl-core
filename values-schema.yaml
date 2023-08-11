@@ -463,6 +463,15 @@ definitions:
     properties:
       _rawValues:
         $ref: '#/definitions/rawValues'
+      tracing:
+        description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
+        propterties:
+          enabled:
+            default: false
+            type: boolean
+          samplingRatio:
+            type: string
+            default: '100'
       autoscaling:
         $ref: '#/definitions/autoscalingEnabled'
       maxBodySize:

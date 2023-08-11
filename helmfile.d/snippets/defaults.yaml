@@ -501,7 +501,7 @@ environments:
                     memory: 64Mi
                 limits:
                     cpu: 500m
-                    memory: 128Mi 
+                    memory: 512Mi 
               manager:
                 requests:
                     cpu: 50m
