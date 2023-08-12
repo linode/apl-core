@@ -227,6 +227,7 @@ environments:
                 maxReplicas: 10
             tracing:
               enabled: false
+              samplingRatio: "0.01"
           istio:
             enabled: true
             tracing:
