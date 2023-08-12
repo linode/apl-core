@@ -471,7 +471,7 @@ definitions:
             type: boolean
           samplingRatio:
             type: string
-            default: '100'
+            default: '0.01'
       autoscaling:
         $ref: '#/definitions/autoscalingEnabled'
       maxBodySize:
@@ -2207,7 +2207,7 @@ properties:
                 type: boolean
               randomSamplingPercentage:
                 type: string
-                default: '100'
+                default: '0.01'
           autoscaling:
             properties:
               egressgateway:

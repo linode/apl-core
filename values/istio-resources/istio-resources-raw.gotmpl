@@ -11,7 +11,7 @@ resources:
     spec:
       tracing:
       - providers:
-        - name: default-otel-tracing
+        - name: otel-tracing
         randomSamplingPercentage: {{ $i.tracing.randomSamplingPercentage }}
   - apiVersion: telemetry.istio.io/v1alpha1
     kind: Telemetry
