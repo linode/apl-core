@@ -191,6 +191,10 @@ spec:
       {{- if .Values.controller.opentelemetry.enabled}}
           {{ $otelContainerSecurityContext := $.Values.controller.opentelemetry.containerSecurityContext | default $.Values.controller.containerSecurityContext }}
           {{- include "extraModules" (dict "name" "opentelemetry" "image" .Values.controller.opentelemetry.image "containerSecurityContext" $otelContainerSecurityContext) | nindent 8}}
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
       {{- end}}
     {{- end }}
     {{- if .Values.controller.hostNetwork }}
