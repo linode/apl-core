@@ -103,6 +103,14 @@ controller:
     otel-sampler-ratio: {{ $n.tracing.samplingRatio }}
     otlp-collector-host: otel-collector-collector.otel.svc
     otlp-collector-port: 4317
+    opentelemetry-config: "/etc/nginx/opentelemetry.toml"
+    opentelemetry-operation-name: "HTTP $request_method $service_name $uri"
+    opentelemetry-trust-incoming-span: "true"
+    otel-max-queuesize: "2048"
+    otel-schedule-delay-millis: "5000"
+    otel-max-export-batch-size: "512"
+    otel-service-name: "nginx-{{ $ingress.className }}"
+    otel-sampler-parent-based: "true"
     {{- end }}
   stats:
     enabled: true
