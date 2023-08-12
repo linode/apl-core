@@ -6,36 +6,14 @@ resources:
   - apiVersion: telemetry.istio.io/v1alpha1
     kind: Telemetry
     metadata:
-      name: otel-tracing
+      name: istio-defaults
       namespace: istio-system
     spec:
       tracing:
       - providers:
         - name: otel-tracing
         randomSamplingPercentage: {{ $i.tracing.samplingRatio }}
-  - apiVersion: telemetry.istio.io/v1alpha1
-    kind: Telemetry
-    metadata:
-      name: access-logs-mesh-default
-      namespace: istio-system
-    spec:
       accessLogging:
       - providers:
         - name: envoy
-  {{- range $id, $team := $v.teamConfig }}
-  # used to not log when the app is the source of the network traffic
-  # we need SERVER to get the traceID
-  - apiVersion: telemetry.istio.io/v1alpha1
-    kind: Telemetry
-    metadata:
-      name: disable-app-source-trafic
-      namespace: team-{{ $id }}
-    spec:
-      accessLogging:
-      - disabled: true
-        match:
-          mode: CLIENT
-        providers:
-        - name: envoy
-  {{- end }}
 {{- end }}

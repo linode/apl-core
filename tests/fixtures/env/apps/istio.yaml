@@ -2,7 +2,7 @@ apps:
     istio:
         tracing:
             enabled: true
-            randomSamplingPercentage: '100'
+            samplingRatio: '0.01'
         autoscaling:
             ingressgateway:
                 maxReplicas: 5
