@@ -232,6 +232,7 @@ environments:
             enabled: true
             tracing:
               enabled: false
+              samplingRatio: "0.01"
             autoscaling:
               egressgateway:
                 minReplicas: 2

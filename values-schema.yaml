@@ -2205,7 +2205,7 @@ properties:
               enabled:
                 default: false
                 type: boolean
-              randomSamplingPercentage:
+              samplingRatio:
                 type: string
                 default: '0.01'
           autoscaling:

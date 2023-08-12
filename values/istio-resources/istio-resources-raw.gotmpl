@@ -12,7 +12,7 @@ resources:
       tracing:
       - providers:
         - name: otel-tracing
-        randomSamplingPercentage: {{ $i.tracing.randomSamplingPercentage }}
+        randomSamplingPercentage: {{ $i.tracing.samplingRatio }}
   - apiVersion: telemetry.istio.io/v1alpha1
     kind: Telemetry
     metadata:
