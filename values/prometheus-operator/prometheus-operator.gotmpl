@@ -256,11 +256,6 @@ grafana:
         global:
           enabled: true
     {{- end }}
-    {{- if $c.tempo.enabled }}
-    datasources:
-      jsonData:
-        httpMethod: GET
-    {{- end }}
   serviceMonitor:
     # namespace: grafana
     labels:
@@ -326,6 +321,7 @@ grafana:
         spanBar:
           type: 'Tag'
           tag: 'http.path'
+        httpMethod: GET
     {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}

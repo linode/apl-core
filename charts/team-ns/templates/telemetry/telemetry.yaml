@@ -4,13 +4,13 @@
 apiVersion: telemetry.istio.io/v1alpha1
 kind: Telemetry
 metadata:
-    name: disable-app-source-trafic
-    namespace: team-{{ $v.teamId }}
+  name: disable-app-source-trafic
+  namespace: team-{{ $v.teamId }}
 spec:
-    accessLogging:
-    - disabled: true
-    match:
-        mode: CLIENT
-    providers:
+  accessLogging:
+  - providers:
     - name: envoy
+    match:
+      mode: CLIENT
+    disabled: true
 {{- end }}
