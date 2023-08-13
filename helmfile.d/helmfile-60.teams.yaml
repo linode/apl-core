@@ -107,6 +107,7 @@ releases:
                 httpMethod: GET
             - name: Loki
               editable: false
+              uid: loki
               type: loki
               uid: loki
               access: proxy
@@ -126,10 +127,20 @@ releases:
             - name: Tempo
               type: tempo
               uid: tempo
+              editable: true
               access: proxy
               editable: false
               url: http://tempo-query-frontend.tempo:3100
               jsonData:
+                tracesToLogsV2:
+                  datasourceUid: 'loki'
+                  spanStartTimeShift: '1h'
+                  spanEndTimeShift: '-1h'
+                  tags: ['job', 'instance', 'pod', 'namespace']
+                  filterByTraceID: false
+                  filterBySpanID: false
+                  customQuery: true
+                  query: 'method="${__span.tags.method}"'
                 nodeGraph:
                   enabled: true
                 search:
@@ -147,11 +158,11 @@ releases:
                       - name: 'Sample query'
                         query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
                 httpMethod: GET
-                serviceMap:
-                  datasourceUid: 'prometheus-platform'
                 spanBar:
                   type: 'Tag'
                   tag: 'http.path'
+                lokiSearch:
+                  datasourceUid: 'loki'
             {{- end }}
     {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
