@@ -2235,7 +2235,9 @@ properties:
                     $ref: '#/definitions/resources'
           extensionProviders:
             description: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
-            type: object
+            type: array
+            items:
+              type: object
           image:
             $ref: '#/definitions/imageSimple'
           resources:

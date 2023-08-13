@@ -51,11 +51,3 @@ apps:
                 requests:
                     cpu: 20m
                     memory: 80Mi
-        meshConfig:
-            extensionProviders:
-                - name: 'ext-authz-chain-grpc'
-                  envoyExtAuthzGrpc:
-                  service: 's1.test.svc.cluster.local'
-                  port: '80'
-                  includeRequestBodyInCheck:
-                      maxRequestBytes: 1000000
