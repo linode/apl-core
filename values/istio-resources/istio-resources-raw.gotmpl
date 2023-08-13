@@ -1,19 +1,24 @@
 {{- $v := .Values }}
 {{- $i := $v.apps.istio }}
-
-{{- if $i.tracing.enabled }}
 resources:
   - apiVersion: telemetry.istio.io/v1alpha1
     kind: Telemetry
     metadata:
-      name: istio-defaults
+      name: envoy-access-logs-defaults
+      namespace: istio-system
+    spec:
+      accessLogging:
+      - providers:
+        - name: envoy-access-logs
+  {{- if $i.tracing.enabled }}
+  - apiVersion: telemetry.istio.io/v1alpha1
+    kind: Telemetry
+    metadata:
+      name: istio-tracing-defaults
       namespace: istio-system
     spec:
       tracing:
       - providers:
         - name: otel-tracing
         randomSamplingPercentage: {{ $i.tracing.samplingRatio }}
-      accessLogging:
-      - providers:
-        - name: envoy
-{{- end }}
+  {{- end }}

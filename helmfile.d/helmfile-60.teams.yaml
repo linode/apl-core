@@ -109,7 +109,6 @@ releases:
               editable: false
               uid: loki
               type: loki
-              uid: loki
               access: proxy
               url: http://loki-query-frontend-headless.monitoring:3101
               basicAuth: true
@@ -129,7 +128,6 @@ releases:
               uid: tempo
               editable: true
               access: proxy
-              editable: false
               url: http://tempo-query-frontend.tempo:3100
               jsonData:
                 tracesToLogsV2:
