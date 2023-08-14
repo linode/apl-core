@@ -9,7 +9,7 @@ metadata:
 spec:
   accessLogging:
   - providers:
-    - name: envoy-access-logs
+    - name: envoy
     match:
       mode: CLIENT
     disabled: true

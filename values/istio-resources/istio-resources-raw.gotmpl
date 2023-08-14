@@ -4,19 +4,14 @@ resources:
   - apiVersion: telemetry.istio.io/v1alpha1
     kind: Telemetry
     metadata:
-      name: envoy-access-logs-defaults
+      name: telemetry-defaults
       namespace: istio-system
     spec:
       accessLogging:
       - providers:
+        - name: envoy
+      {{- if $i.tracing.enabled }}
         - name: envoy-access-logs
-  {{- if $i.tracing.enabled }}
-  - apiVersion: telemetry.istio.io/v1alpha1
-    kind: Telemetry
-    metadata:
-      name: istio-tracing-defaults
-      namespace: istio-system
-    spec:
       tracing:
       - providers:
         - name: otel-tracing

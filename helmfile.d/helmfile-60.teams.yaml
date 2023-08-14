@@ -134,11 +134,11 @@ releases:
                   datasourceUid: 'loki'
                   spanStartTimeShift: '1h'
                   spanEndTimeShift: '-1h'
-                  tags: ['job', 'instance', 'pod', 'namespace']
+                  tags: [{ key: 'k8s.namespace.name', value: 'namespace' }]
                   filterByTraceID: false
                   filterBySpanID: false
                   customQuery: true
-                  query: 'method="${__span.tags.method}"'
+                  query: '{${__tags}} |= "${__span.traceId}"'
                 nodeGraph:
                   enabled: true
                 search:
@@ -153,7 +153,7 @@ releases:
                     spanEndTimeShift: '-1h'
                     tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
                     queries:
-                      - name: 'Sample query'
+                      - name: 'Span duration (example)'
                         query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
                 httpMethod: GET
                 spanBar:

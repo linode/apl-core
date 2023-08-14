@@ -296,18 +296,17 @@ grafana:
           datasourceUid: 'loki'
           spanStartTimeShift: '1h'
           spanEndTimeShift: '-1h'
-          tags: ['job', 'app', 'instance', 'pod', 'namespace']
+          tags: [{ key: 'k8s.pod.name', value: 'pod' }, { key: 'k8s.container.name', value: 'container' }, { key: 'k8s.namespace.name', value: 'namespace' }]
           filterByTraceID: false
           filterBySpanID: false
-          customQuery: true
-          query: 'method="${__span.tags.method}"'
+          customQuery: false
         tracesToMetrics:
           datasourceUid: 'prometheus'
           spanStartTimeShift: '1h'
           spanEndTimeShift: '-1h'
           tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
           queries:
-            - name: 'Sample query'
+            - name: 'Span duration (example)'
               query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
         serviceMap:
           datasourceUid: 'prometheus'
