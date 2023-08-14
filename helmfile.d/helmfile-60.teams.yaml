@@ -88,11 +88,8 @@ releases:
           grafana.ini:
             server:
               root_url: https://{{ $grafanaDomain }}
-            allow_embedding: true
-            auth.anonymous:
-              enabled: true
-              org_name: Main Org.
-              org_role: Viewer
+            security:
+              allow_embedding: true
           sidecar:
             datasources:
               defaultDatasourceEnabled: true
