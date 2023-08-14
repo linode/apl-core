@@ -296,10 +296,10 @@ grafana:
           datasourceUid: 'loki'
           spanStartTimeShift: '1h'
           spanEndTimeShift: '-1h'
-          tags: [{ key: 'k8s.pod.name', value: 'pod' }, { key: 'k8s.container.name', value: 'container' }, { key: 'k8s.namespace.name', value: 'namespace' }]
           filterByTraceID: false
           filterBySpanID: false
-          customQuery: false
+          customQuery: true
+          query: '{namespace=~".+"} |= "${__span.traceId}"'
         tracesToMetrics:
           datasourceUid: 'prometheus'
           spanStartTimeShift: '1h'
