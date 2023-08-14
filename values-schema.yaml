@@ -1389,6 +1389,12 @@ definitions:
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
+      autoUpdate:
+        type: boolean
+        default: false
+      buildName:
+        description: Build
+        $ref: '#/definitions/wordCharacterPattern'
 
     required:
       - name

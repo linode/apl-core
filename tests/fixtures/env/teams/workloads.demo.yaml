@@ -4,6 +4,9 @@ teamConfig:
             - name: wd1
               url: https://myrepo.local/mychart.git
               path: /
+              autoUpdate: true
+              buildName: hello
             - name: wd2
               url: https://myrepo.local/mychart.git
               path: /
+              autoUpdate: false
