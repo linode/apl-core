@@ -126,7 +126,7 @@ releases:
             - name: Tempo
               type: tempo
               uid: tempo
-              editable: true
+              editable: false
               access: proxy
               url: http://tempo-query-frontend.tempo:3100
               jsonData:
