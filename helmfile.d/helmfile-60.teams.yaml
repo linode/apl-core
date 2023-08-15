@@ -88,8 +88,6 @@ releases:
           grafana.ini:
             server:
               root_url: https://{{ $grafanaDomain }}
-            security:
-              allow_embedding: true
           sidecar:
             datasources:
               defaultDatasourceEnabled: true
