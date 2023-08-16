@@ -1,4 +1,4 @@
-api: test-grafana
+api: main
 console: test-grafana
 tasks: 1.0.0
 tools: 1.4.25
