@@ -1131,7 +1131,7 @@ definitions:
             description: CNAME of the service.
             type: string
           tlsSecretName:
-            description: Kubernets secret name of type TLS.
+            description: Kubernetes secret name of type TLS.
             type: string
       type:
         nullable: true
