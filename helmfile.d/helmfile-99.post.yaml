@@ -19,7 +19,7 @@ releases:
       group: jobs
       type: cronjob
   - name: job-copy-certs-argocd
-    installed:  {{ $a | get "argo.enabled" }}
+    installed:  {{ $a | get "argocd.enabled" }}
     <<: *jobs
     labels:
       group: jobs
