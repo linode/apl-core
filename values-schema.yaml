@@ -2048,7 +2048,7 @@ properties:
                 properties:
                   htpasswd:
                     type: string
-                    x-secret: ''
+                    x-secret: 'htpasswd .dot.username .dot.password'
                   username:
                     type: string
                     $ref: '#/definitions/secretTemplates/definitions/otomiAdminUsername'

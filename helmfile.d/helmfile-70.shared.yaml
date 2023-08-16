@@ -27,12 +27,6 @@ releases:
     values:
       - ../values/drone/drone-admit-members.gotmpl
       - snippets/common.gotmpl
-  - name: harbor
-    installed: {{ $a | get "harbor.enabled" }}
-    namespace: harbor
-    labels:
-      pkg: harbor
-    <<: *default
   - name: oauth2-proxy
     # TODO: remove oauth dependency
     installed: true
