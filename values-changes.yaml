@@ -82,3 +82,6 @@ changes:
     additions:
       - databases.keycloak.useOtomiDB: false
       - databases.keycloak.imported: false
+  - version: 13
+    additions:
+      - teamConfig.{team}.services[].useCname: false

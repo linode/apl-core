@@ -103,6 +103,97 @@ spec:
         {{- end }}
       {{- end }}
 ---
+        {{- if $s.useCname }}
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ $vsName }}-cname
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+      {{- if $hasAuth }}
+    auth: "true"
+      {{- end }}
+spec:
+  gateways:
+      {{- if $isKnativeService }}
+    - knative-serving/knative-ingress-gateway
+      {{- else }}
+    - {{ $.Release.Namespace }}/team-{{ $v.teamId }}-{{ $type }}-tls{{ if $hasTlsPass }}pass{{ else }}term{{ end }}
+      {{- end }}
+  hosts:
+    - {{ $s.cname.domain }}
+      {{- if $hasTlsPass }}
+    - {{ $domain }}
+  tls:
+    - match:
+        - port: 443
+          sniHosts:
+            - '*'
+      route:
+        - destination:
+            host: {{ $svc }}.{{ $ns }}.svc.cluster.local
+            port:
+              number: {{ $s.port | default 443 }}
+      {{- else }}
+  http:
+    - match:
+        - uri:
+            prefix: /logout-otomi
+      redirect:
+        authority: auth.{{ $v.cluster.domainSuffix }}
+        uri: /oauth2/sign_out?rd={{ $kkMaster }}/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.cluster.domainSuffix }}
+    -
+        {{- with $s.paths | default (list "/") }}
+      match:
+          {{- range $path := . }}
+        - uri:
+            prefix: '{{ $path }}'        
+          {{- end }}
+        {{- end }}
+        {{- if or ($isKnativeService) (not (hasKey $s "forwardPath")) }}
+      rewrite:
+          {{- if $isKnativeService }}
+        authority: {{ $s.cname.domain }}
+          {{- end }}
+          {{- if not (hasKey $s "forwardPath") }}
+        uri: /
+          {{- end }}
+        {{- end }}
+        {{- if $isKnativeService }}
+      route:
+        - destination:
+            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+        {{- else }}
+      route:
+        - destination:
+            host: {{ $svc }}.{{ $ns }}.svc.cluster.local
+        {{- end }}
+            port:
+              number: {{ $s.port | default 80 }}
+          headers:
+            request:
+              set:
+                # fix for istio (=envoy) incorrectly setting proto to http
+                # (@see https://github.com/istio/istio/issues/7964):
+                X-Forwarded-Proto: https
+            {{- with (dig "headers" "request" "set" nil $s) }}
+              {{- range . }}
+                {{ .name }}: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
+            {{- with (dig "headers" "response" "set" nil $s) }}
+            response:
+              set:
+              {{- range . }}
+                {{ .name }}: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
+
+        {{- if hasKey $s "removeRequestHeaders" }}
+              remove: {{- $s.removeRequestHeaders | toYaml | nindent 16 }}
+        {{- end }}
+      {{- end }}
+---
+        {{- end }}
       {{- if and ($hasAuth) (hasKey $s "authz") }}
         {{- $workload := ($s.authz.workload | toYaml | replace "__TEAM" $v.teamId) }}
 apiVersion: security.istio.io/v1beta1

@@ -10,20 +10,25 @@
   {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
   {{- $type := $s.type | default "public" }}
   {{- $tlsPass := $s.tlsPass | default false }}
+  {{- $cnameDomain := list }}
+  {{- if $s.useCname }}
+    {{- $cnameDomain = list $s.cname.domain }}
+  {{- end }}
   {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
   {{- if and (or (hasKey $s "domain") $shared ) (not ($isKnativeService)) }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $) }}
+    {{- $domain = list $domain }}
     {{- if eq $type "public" }}
       {{- if and $tlsPass (not (has $domain $publicDomainsPass)) }}
-        {{- $publicDomainsPass = (append $publicDomainsPass $domain) }}
+          {{- $publicDomainsPass = (concat $publicDomainsPass $domain $cnameDomain ) }}
       {{- else if not (has $domain $publicDomainsTerm) }}
-        {{- $publicDomainsTerm = (append $publicDomainsTerm $domain) }}
+        {{- $publicDomainsTerm = (concat $publicDomainsTerm $domain $cnameDomain) }}
       {{- end }}
     {{- else if eq $type "private" }}
       {{- if and $tlsPass (not (has $domain $privateDomainsPass)) }}
-        {{- $privateDomainsPass = (append $privateDomainsPass $domain) }}
+        {{- $privateDomainsPass = (concat $privateDomainsPass $domain $cnameDomain) }}
       {{- else if not (has $domain $privateDomainsTerm) }}
-        {{- $privateDomainsTerm = (append $privateDomainsTerm $domain) }}
+        {{- $privateDomainsTerm = (concat $privateDomainsTerm $domain $cnameDomain) }}
       {{- end }}
     {{- end }}
   {{- end }}
