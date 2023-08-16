@@ -4,9 +4,14 @@ teamConfig:
             - name: wd1
               url: https://myrepo.local/mychart.git
               path: /
-              autoUpdate: true
-              buildName: hello
+              revision: main
+              autoUpdate:
+                  enabled: true
+                  build: hello
+                  strategy: digest
+                  tag: latest
             - name: wd2
               url: https://myrepo.local/mychart.git
               path: /
-              autoUpdate: false
+              autoUpdate:
+                  enabled: false
