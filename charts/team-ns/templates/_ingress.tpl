@@ -30,8 +30,9 @@ extensions/v1
 {{- define "ingress" -}}
 {{- $ := . }}
 {{- $v := .dot.Values }}
-{{- $appsDomain := printf "apps.%s" $v.domain }}
+{{- $appsDomain := printf "apps-%s.%s" $v.teamId $v.domain }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
+{{- $cm := index $v.apps "cert-manager" }}
 {{- range $ingress := $v.ingress.classes }}
   {{- $routes := dict }}
   {{- $names := list }}
@@ -191,10 +192,15 @@ spec:
         - {{ $domain }}
           {{- if hasKey $secrets $domain }}
             {{- if ne (index $secrets $domain) "" }}
+{{/*If a team provides its own certificate in the team namespace then Otomi cornjob makes a copy of it*/}} 
       secretName: copy-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}
-      secretName: {{ $domain | replace "." "-" }}
+            {{- if eq $cm.issuer "byo-wildcard-cert" }}
+      secretName: otomi-byo-wildcard-cert
+            {{- else }}
+      secretName: otomi-cert-manager-wildcard-cert
+            {{- end}}
           {{- end }}
         {{- end }}
       {{- end }}

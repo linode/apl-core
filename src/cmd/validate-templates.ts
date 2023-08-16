@@ -6,7 +6,7 @@ import { terminal } from 'src/common/debug'
 import { hfTemplate } from 'src/common/hf'
 import { getFilename, readdirRecurse, rootDir } from 'src/common/utils'
 import { getK8sVersion } from 'src/common/values'
-import { BasicArguments, getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { BasicArguments, HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk, nothrow } from 'zx'
@@ -167,9 +167,11 @@ export const validateTemplates = async (): Promise<void> => {
       ',',
     )} -d ${k8sResourcesPath} --schema-location file://${schemaOutputPath} --kubernetes-version ${k8sVersion}`,
   )
+
   let passCount = 0
   let warnCount = 0
   let errCount = 0
+  let prev = ''
   ;`${kubevalOutput.stdout}\n${kubevalOutput.stderr}`.split('\n').forEach((x) => {
     if (x === '') return
     const [left, right] = x.split(' - ')
@@ -185,11 +187,13 @@ export const validateTemplates = async (): Promise<void> => {
         break
       case 'ERR':
         errCount += 1
+        d.error(`${chalk.redBright('INFO')}: %s`, prev)
         d.error(`${chalk.redBright('ERR')}: %s`, v)
         break
       default:
         break
     }
+    prev = x
   })
   d.info(`${chalk.greenBright('TOTAL PASS')}: %s`, `${passCount} files`)
   d.info(`${chalk.yellowBright('TOTAL WARN')}: %s`, `${warnCount} files`)
