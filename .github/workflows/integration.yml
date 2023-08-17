@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       cloud_provider:
-        description: Provider where Otomi will be installed
+        description: Provider where Otomi will be installed LINT TEST
         type: string
         default: scaleway
       kubernetes_versions:
