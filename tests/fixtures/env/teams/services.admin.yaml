@@ -13,5 +13,5 @@ teamConfig:
               type: public
               useCname: true
               cname:
-                  domain: hello.com
-                  tlsSecretName: mySecretCname
+                  domain: helloadmin.com
+                  tlsSecretName: mySecretCnameAdmin
