@@ -234,7 +234,7 @@ jobs:
               pools.0.autohealing=true \
               pools.0.autoscaling=true \
               pools.0.name=${{env.SCALEWAY_CLUSTER_NAME}} \
-              pools.0.root-volume-size=30GB
+              pools.0.root-volume-size=50GB
               version=${{ env.SCALEWAY_K8s_VERSION }} \
               region=nl-ams \
               --wait \
