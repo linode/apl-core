@@ -1405,12 +1405,28 @@ definitions:
           versionConstraint:
             $ref: '#/definitions/wordCharacterPattern'
           strategy:
-            default: semver
-            enum:
-              - latest
-              - semver
-              - digest
-            type: string
+            properties:
+              digest:
+                additionalProperties: false
+                properties:
+                  tag:
+                    $ref: '#/definitions/wordCharacterPattern'
+                required:
+                  - tag
+              semver:
+                additionalProperties: false
+                properties:
+                  versionConstraint:
+                    $ref: '#/definitions/wordCharacterPattern'
+                required:
+                  - versionConstraint
+              type:
+                type: string
+                enum:
+                  - semver
+                  - digest
+                  - latest
+                default: latest
 
     required:
       - name

@@ -6,12 +6,18 @@ teamConfig:
               path: /
               revision: main
               autoUpdate:
+                  digest:
+                      tag: latest
+                  type: digest
                   enabled: true
                   build: hello
                   strategy: semver
-                  versionConstraint: 1.0
             - name: wd2
               url: https://myrepo.local/mychart.git
               path: /
               autoUpdate:
-                  enabled: false
+                  semver:
+                      versionConstraint: '1.12'
+                  type: semver
+                  enabled: true
+                  build: hello
