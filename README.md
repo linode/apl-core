@@ -18,15 +18,13 @@
 
 <h4 align="center">
 Add developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud. 
-
-ONE install, ONE spec, and ONE console to build, deploy, expose, secure and monitor containerized applications.
 </h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
 ## Otomi helps
 
-**Developers** - With an Internal Developer Platform that helps them to focus on their apps only
+**Developers** - With easy self-service that helps them to focus on their apps only
 
 - Build OCI compliant images from application code
 - Deploy containerized workloads the GitOps way without writing any YAML

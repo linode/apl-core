@@ -26,9 +26,9 @@ bases:
 releases:
 {{- range $teamId, $team := omit $tc "admin" }} 
   {{- $teamServices := ($team | get "services" list) }}
-  {{- $domain := printf "team-%s.%s" $teamId ($v.cluster | get "domainSuffix" nil) }}
+  {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
   {{- $appsDomain := printf "apps.%s" $domain }}
-  {{- $grafanaDomain := printf "grafana.%s" $domain }}
+  {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $azure := $team | get "azure" dict }}
   {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
   - name: prometheus-{{ $teamId }}
