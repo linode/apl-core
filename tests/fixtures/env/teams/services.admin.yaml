@@ -11,7 +11,3 @@ teamConfig:
               ownHost: true
               port: 80
               type: public
-              useCname: true
-              cname:
-                  domain: helloadmin.com
-                  tlsSecretName: mySecretCnameAdmin
