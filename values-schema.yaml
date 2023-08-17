@@ -1398,11 +1398,12 @@ definitions:
             type: boolean
             default: false
           build:
-            type: string
             $ref: '#/definitions/wordCharacterPattern'
           tag:
             description: Tag of the build. Only if strategy is digest.
-            type: string
+            $ref: '#/definitions/wordCharacterPattern'
+          versionConstraint:
+            $ref: '#/definitions/wordCharacterPattern'
           strategy:
             default: semver
             enum:

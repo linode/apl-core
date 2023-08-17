@@ -8,8 +8,8 @@ teamConfig:
               autoUpdate:
                   enabled: true
                   build: hello
-                  strategy: digest
-                  tag: latest
+                  strategy: semver
+                  versionConstraint: 1.0
             - name: wd2
               url: https://myrepo.local/mychart.git
               path: /
