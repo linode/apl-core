@@ -17,12 +17,9 @@ metadata:
   name: sa-team-{{ $v.teamId }}
 secrets:
 {{- if $h.enabled }}
-- name: harbor-pushsecret
-{{- end }}
-{{- if $b.enabled }}
 - name: harbor-pushsecret-builds
-- name: gitea-credentials
 {{- end }}
+- name: gitea-credentials
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
