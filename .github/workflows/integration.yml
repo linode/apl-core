@@ -60,7 +60,7 @@ on:
         default: "['1.25']"
       install_profile:
         description: Otomi installation profile
-        default: minimal
+        default: minimal-with-team
         type: choice
         options:
           - minimal
@@ -108,6 +108,7 @@ on:
         options:
           - gen_custom_ca
           - letsencrypt_staging
+          - letsencrypt_production
         default: gen_custom_ca
       license:
         type: choice
@@ -280,6 +281,7 @@ jobs:
           AZ_KMS: ${{ secrets.AZ_KMS }}
           AZ_OIDC: ${{ secrets.AZ_OIDC }}
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
+          LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
           OTOMI_LICENSE: ${{ secrets.OTOMI_LICENSE }}
         run: |
           domainSuffix=''
@@ -289,6 +291,7 @@ jobs:
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
+          [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
           install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
@@ -406,6 +409,7 @@ jobs:
           AZ_KMS: ${{ secrets.AZ_KMS }}
           AZ_OIDC: ${{ secrets.AZ_OIDC }}
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
+          LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
           OTOMI_LICENSE: ${{ secrets.OTOMI_LICENSE }}
         run: |
           domainSuffix=''
@@ -415,6 +419,7 @@ jobs:
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
+          [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
           install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
