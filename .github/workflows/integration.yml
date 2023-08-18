@@ -156,8 +156,6 @@ jobs:
     steps:
       - name: Install scw-cli
         uses: scaleway/action-scw@v0
-        with:
-          token: ${{ secrets.SCW_ACCESS_KEY }}
       - id: k8s-versions
         name: Process k8s version input
         run: |
