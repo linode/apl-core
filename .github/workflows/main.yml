@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Set env
         run: |
+          echo GITHUB_REF_TYPE: ${GITHUB_REF_TYPE}
+          echo GITHUB_REF: ${GITHUB_REF}
+          export
           tag=${GITHUB_REF##*/}
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> $GITHUB_ENV
