@@ -5,8 +5,7 @@ name: autoconfig
 
 image:
   repository: docker.io/otomi/otomi-e2e
-  tag: otomi-upgrade
-  pullPolicy: Always
+  tag: v0.3.2
 
 script: | 
     yarn cypress run --spec 'cypress/integration/otomi-applications/20-drone.feature' --config video=false --env BASE_URL={{$v.cluster.domainSuffix}}   
