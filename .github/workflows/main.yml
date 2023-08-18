@@ -3,8 +3,8 @@ on:
   push:
     branches:
       - '**'
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+    tags-ignore:
+      - '*'
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: redkubes/otomi-core
@@ -13,7 +13,7 @@ env:
 
 jobs:
   build-test-cache:
-    if: (!contains(github.event.head_commit.message, 'ci skip') && !github.event.act)
+    if: (!contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/') && !github.event.act)
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
@@ -94,6 +94,9 @@ jobs:
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag
           docker push $REPO:$release_tag
+          docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
+          docker tag $REPO:$TAG $CACHE_REGISTRY/$CACHE_REPO:$TAG
+          docker push $CACHE_REGISTRY/$CACHE_REPO:$TAG
           echo "machine github.com login $GIT_USER password ${{ secrets.GIT_PASSWORD }}" > ~/.netrc
           git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags
           changelog=$(cat CHANGELOG.md | awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}')
