@@ -1241,6 +1241,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
+      sources:
+        type: array
+        items:
+          $ref: '#/definitions/source'
   teamSelfService:
     title: Team self service flags
     description: Grant team permissions to modify certain configuration parameters.
@@ -1312,6 +1316,64 @@ definitions:
         $ref: '#/definitions/wordCharacterPattern'
     required:
       - name
+  source:
+    type: object
+    properties:
+      name:
+        description: Name of the source
+        $ref: '#/definitions/wordCharacterPattern'
+      description:
+        description: A description for the source
+      sourceType:
+        properties:
+          git:
+            title: Git Repository
+            properties:
+              url:
+                description: The URL of the Git repo
+                $ref: '#/definitions/url'
+                title: Repo URL
+              path:
+                description: The path. Use ./Dockerfile to use this source for the Docker Build option.
+                type: string
+              revision:
+                description: This can be a commit, a tag, or a branch
+                $ref: '#/definitions/wordCharacterPattern'
+                default: HEAD
+            required:
+              - url
+          image:
+            additionalProperties: false
+            properties:
+              repository:
+                description: The URL of the Git repo that contains the application code
+                $ref: '#/definitions/url'
+                title: Repo URL
+              tag:
+                description: A subpath within the repo where the source to build is located (optional)
+                type: string
+                default: ''
+            required:
+              - repository
+          helm:
+            additionalProperties: false
+            properties:
+              url:
+                description: URL to the Helm repository
+                $ref: '#/definitions/url'
+                title: Repo URL
+              revision:
+                description: A semver tag for the Chart's version.
+                type: string
+                default: ''
+              chart:
+                description: A Helm chart name
+                type: string
+                default: ''
+            required:
+              - url
+              - revision
+              - chart
   build:
     type: object
     description: Define location of code to build

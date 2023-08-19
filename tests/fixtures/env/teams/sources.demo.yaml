@@ -1,0 +1,11 @@
+teamConfig:
+    demo:
+        sources:
+            - name: test
+              description: Use this repo for creating a workload using the default-app chart
+              sourceType:
+                  git:
+                      url: https://demo.com.git
+                      path: bla
+                      revision: main
+                  type: git
