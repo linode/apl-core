@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.26.0](https://github.com/redkubes/otomi-core/compare/v0.24.0...v0.26.0) (2023-08-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* Since wildcard certificates are compatible with a single nested wildcard domain, we had to unify domain names in Otomi. 
+
+The impact of this change is as follows: 
+1) only single wildcard domain is supported '*.<domainSuffix>' 
+2) all default public URLs for team services have been changed from <sname>.team-<team-name>.<domainSuffix> to <sname>-<team-name>.<domainSuffix>. 
+3) Services that are using custom domians names and do not match (1) must obtain their own certificates.
+
+### Features
+
+* decouple keycloak database from the community Helm chart ([#1214](https://github.com/redkubes/otomi-core/issues/1214)) ([0c923cc](https://github.com/redkubes/otomi-core/commit/0c923cc21a4f529f4f22741d4a4998804da39d37))
+* initialise databases at the very beginning ([#1224](https://github.com/redkubes/otomi-core/issues/1224)) ([76fda42](https://github.com/redkubes/otomi-core/commit/76fda422a70a8383f4a401ee858fc5385a168cea))
+* support wildcard certificate ([#1226](https://github.com/redkubes/otomi-core/issues/1226)) ([9cacd43](https://github.com/redkubes/otomi-core/commit/9cacd43940b54421d0b4c106c8f140bda5cec40b))
+* updated timezone for cluster-name generation ([#1208](https://github.com/redkubes/otomi-core/issues/1208)) ([792ee10](https://github.com/redkubes/otomi-core/commit/792ee102546adbf4dde630885bf5c799a05740f2))
+
+
+### Bug Fixes
+
+* drone-activation ([#1225](https://github.com/redkubes/otomi-core/issues/1225)) ([1bc9799](https://github.com/redkubes/otomi-core/commit/1bc97993539926eeab4d80c21af46afa4cd6c4f6))
+* load license during otomi bootstrap ([#1228](https://github.com/redkubes/otomi-core/issues/1228)) ([ca111bc](https://github.com/redkubes/otomi-core/commit/ca111bc076fa404643be273b3e7e6061a01ec142))
+* msteams receivers ([#1223](https://github.com/redkubes/otomi-core/issues/1223)) ([e0ea008](https://github.com/redkubes/otomi-core/commit/e0ea008e394cc0413af943e77e0a05a1fe40178e))
+
+
+### Others
+
+* AWS Marketplace release automation ([#1216](https://github.com/redkubes/otomi-core/issues/1216)) ([7b5385b](https://github.com/redkubes/otomi-core/commit/7b5385b0cb1072d33ca2b4672825060f67c00c9a))
+* update deprecated actions ([#1234](https://github.com/redkubes/otomi-core/issues/1234)) ([305894a](https://github.com/redkubes/otomi-core/commit/305894a83a1cde4074b3fd87c06b1c77d52595c4))
+
+
+### Tests
+
+* add option to select production letsencrypt certificate ([#1227](https://github.com/redkubes/otomi-core/issues/1227)) ([a50ac57](https://github.com/redkubes/otomi-core/commit/a50ac5729a4e8a029596809f748134391a3dafcb))
+* increase scw disk size ([#1232](https://github.com/redkubes/otomi-core/issues/1232)) ([71b07f4](https://github.com/redkubes/otomi-core/commit/71b07f46149f81b91b05e1627995cae618396ded))
+* otomi upgrade test scenario ([#1221](https://github.com/redkubes/otomi-core/issues/1221)) ([563ed17](https://github.com/redkubes/otomi-core/commit/563ed174e24900a3f3b8878b0a565b1db1dc02c2))
+* push release image to ghcr.io ([#1238](https://github.com/redkubes/otomi-core/issues/1238)) ([b65eca3](https://github.com/redkubes/otomi-core/commit/b65eca3d328ab2ba3461ac9f7d3dfbb79d3adec5))
+
 ## [0.24.0](https://github.com/redkubes/otomi-core/compare/v0.22.0-0...v0.24.0) (2023-08-03)
 
 
