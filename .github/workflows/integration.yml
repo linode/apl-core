@@ -156,8 +156,6 @@ jobs:
     steps:
       - name: Install scw-cli
         uses: scaleway/action-scw@v0
-        with:
-          token: ${{ secrets.SCW_ACCESS_KEY }}
       - id: k8s-versions
         name: Process k8s version input
         run: |
@@ -235,6 +233,7 @@ jobs:
               pools.0.autohealing=true \
               pools.0.autoscaling=true \
               pools.0.name=${{env.SCALEWAY_CLUSTER_NAME}} \
+              pools.0.root-volume-size=50GB \
               version=${{ env.SCALEWAY_K8s_VERSION }} \
               region=nl-ams \
               --wait \
