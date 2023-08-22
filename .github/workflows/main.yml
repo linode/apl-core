@@ -187,5 +187,5 @@ jobs:
               owner: 'redkubes',
               repo: 'aws-marketplace',
               workflow_id: 'deploy_release.yaml',
-              ref: 'feat/auto-deploy'
+              ref: 'main'
             })
