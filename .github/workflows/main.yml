@@ -175,7 +175,7 @@ jobs:
 
   execute-aws-marketplace:
     name: AWS Dispatch
-    needs: chart-release
+    needs: push-to-docker
     # if: always() && contains(needs.chart-release.result, 'success') && !github.event.act
     runs-on: ubuntu-latest
     steps:
