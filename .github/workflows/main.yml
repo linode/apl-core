@@ -176,7 +176,7 @@ jobs:
   execute-aws-marketplace:
     name: AWS Dispatch
     needs: chart-release
-    if: always() && contains(needs.chart-release.result, 'success') && !github.event.act
+    # if: always() && contains(needs.chart-release.result, 'success') && !github.event.act
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v6
@@ -187,5 +187,5 @@ jobs:
               owner: 'redkubes',
               repo: 'aws-marketplace',
               workflow_id: 'deploy_release.yaml',
-              ref: 'main'
+              ref: 'feat/auto-deploy'
             })
