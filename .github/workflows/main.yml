@@ -209,5 +209,5 @@ jobs:
       - name: List Clusters in dev
         run: |
           # Get the list of Cluster IDs
-          cluster_ids=$(scw k8s cluster list -o json | jq -r '.[] | .id')
+          cluster_ids=$(scw k8s cluster list project-id=${{ env.SCW_DEFAULT_PROJECT_ID }} -o json | jq -r '.[] | .id')
           echo "Cluster IDs: $cluster_ids"
