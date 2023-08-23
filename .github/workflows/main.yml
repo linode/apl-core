@@ -211,3 +211,9 @@ jobs:
           # Get the list of Cluster IDs
           cluster_ids=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id')
           echo "Cluster IDs: $cluster_ids"
+      - name: Delete clusters in dev
+        run: |
+          for cluster_id in $cluster_ids
+          do
+            echo "Deleted cluster ID: $cluster_id"
+          done
