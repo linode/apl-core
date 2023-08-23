@@ -209,12 +209,11 @@ jobs:
       - name: List Clusters in dev
         run: |
           # Get the list of Cluster IDs
-          cluster_ids=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id')
-          echo "Cluster IDs: $cluster_ids"
+          echo SCALEWAY_CLUSTER_IDS=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id') >> $GITHUB_ENV
       - name: Delete clusters in dev
         run: |
-          echo "Cluster IDs for deleting: $cluster_ids"
-          for cluster_id in $cluster_ids
+          echo "Cluster IDs for deleting: ${{ env.SCALEWAY_CLUSTER_IDS }}"
+          for cluster_id in ${{ env.SCALEWAY_CLUSTER_IDS }}
           do
             echo "Deleted cluster ID: $cluster_id"
           done
