@@ -1,8 +1,8 @@
 name: Scheduled - remove clusters from Scaleway in the dev project after 19:00
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
-  schedule:
-    - cron: '0 21 * * *'
+  schedule: # time is in UTC so 17:00 equals 19:00
+    - cron: '0 17 * * *'
 
 jobs:
   remove-scw-clusters-on-dev:
@@ -23,11 +23,11 @@ jobs:
           default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
       - name: List clusters in dev
         run: |
-          cluster_ids=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id')
-          echo "Cluster IDs: $cluster_ids"
+          echo SCALEWAY_CLUSTER_IDS=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id') >> $GITHUB_ENV
       - name: Delete clusters in dev
         run: |
-          for cluster_id in $cluster_ids
+          for cluster_id in ${{ env.SCALEWAY_CLUSTER_IDS }}
           do
+            scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_IDS }} with-additional-resources=true region=nl-ams
             echo "Deleted cluster ID: $cluster_id"
           done

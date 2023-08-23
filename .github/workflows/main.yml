@@ -189,31 +189,3 @@ jobs:
               workflow_id: 'deploy_release.yaml',
               ref: 'main'
             })
-  scaleway-get-clusters:
-    name: Scaleway get all clusters from dev project
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install scw-cli
-        uses: scaleway/action-scw@v0
-      - name: Use Scaleway CLI on dev
-        uses: scaleway/action-scw@v0
-        with:
-          save-config: true
-          export-config: true
-          version: v2.13.0
-          access-key: ${{ secrets.SCW_ACCESS_KEY }}
-          secret-key: ${{ secrets.SCW_SECRET_KEY }}
-          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
-          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-      - name: List Clusters in dev
-        run: |
-          # Get the list of Cluster IDs
-          echo SCALEWAY_CLUSTER_IDS=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id') >> $GITHUB_ENV
-      - name: Delete clusters in dev
-        run: |
-          echo "Cluster IDs for deleting: ${{ env.SCALEWAY_CLUSTER_IDS }}"
-          for cluster_id in ${{ env.SCALEWAY_CLUSTER_IDS }}
-          do
-            echo "Deleted cluster ID: $cluster_id"
-          done
