@@ -40,6 +40,9 @@ jobs:
         run: |
           changelog=$(cat CHANGELOG.md | awk -v n=2 '/^### \[[0-9]+/{ if (--n == 0) exit } {print}')
           # now do some escaping because github does not help us here:
+          echo "-------------CHANGELOG START-----------------"
+          echo $changelog
+          echo "-------------CHANGELOG END-----------------"
           changelog="${changelog//'%'/'%25'}"
           changelog="${changelog//$'\n'/'%0A'}"
           changelog="${changelog//$'\r'/'%0D'}"
