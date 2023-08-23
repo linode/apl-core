@@ -1,0 +1,28 @@
+name: Scheduled - remove clusters from Scaleway in the dev project after 19:00
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+on:
+  schedule:
+    - cron: '0 21 * * *'
+
+jobs:
+  remove-scw-clusters-on-dev:
+    name: 'Remove SCW clusters in dev project'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install scw-cli
+        uses: scaleway/action-scw@v0
+      - name: Use Scaleway CLI on dev
+        uses: scaleway/action-scw@v0
+        with:
+          save-config: true
+          export-config: true
+          version: v2.13.0
+          access-key: ${{ secrets.SCW_ACCESS_KEY }}
+          secret-key: ${{ secrets.SCW_SECRET_KEY }}
+          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+      - name: List Clusters in dev
+        run: |
+          # Get the list of Cluster IDs
+          cluster_ids=$(scw k8s cluster list -o json | jq -r '.[] | .id')
+          echo "Cluster IDs: $cluster_ids"
