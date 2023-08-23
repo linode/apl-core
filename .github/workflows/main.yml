@@ -38,7 +38,7 @@ jobs:
       #     pull_image_and_stages: true
       - name: cut changelog
         run: |
-          changelog=$(cat CHANGELOG.md | awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}')
+          changelog=$(cat CHANGELOG.md | awk -v n=2 '/^### \[[0-9]+/{ if (--n == 0) exit } {print}')
           # now do some escaping because github does not help us here:
           changelog="${changelog//'%'/'%25'}"
           changelog="${changelog//$'\n'/'%0A'}"
