@@ -1,5 +1,5 @@
 name: Scheduled - remove clusters from Scaleway in the dev project after 19:00
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+
 on:
   schedule: # time is in UTC so 17:00 equals 19:00
     - cron: '0 17 * * *'
