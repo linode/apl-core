@@ -213,6 +213,7 @@ jobs:
           echo "Cluster IDs: $cluster_ids"
       - name: Delete clusters in dev
         run: |
+          echo "Cluster IDs for deleting: $cluster_ids"
           for cluster_id in $cluster_ids
           do
             echo "Deleted cluster ID: $cluster_id"
