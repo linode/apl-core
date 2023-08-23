@@ -38,6 +38,9 @@ jobs:
       #     pull_image_and_stages: true
       - name: cut changelog
         run: |
+          echo "-------------ORIGINAL CHANGELOG START-----------------"
+          echo $(cat CHANGELOG.md)
+          echo "-------------ORIGINAL CHANGELOG END-----------------"          
           changelog=$(awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}' CHANGELOG.md)
           # now do some escaping because github does not help us here:
           echo "-------------CHANGELOG START-----------------"
