@@ -36,6 +36,14 @@ jobs:
       #     image_name: ${{ env.CACHE_REPO }}
       #     image_tag: ${{ env.TAG }}
       #     pull_image_and_stages: true
+      - name: cut changelog
+        run: |
+          changelog=$(cat CHANGELOG.md | awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}')
+          # now do some escaping because github does not help us here:
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'%0A'}"
+          changelog="${changelog//$'\r'/'%0D'}"
+          echo changes=$changelog >> $GITHUB_OUTPUT
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to Github Packages
