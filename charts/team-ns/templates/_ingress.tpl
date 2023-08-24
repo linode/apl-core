@@ -45,14 +45,21 @@ extensions/v1
     {{- if eq $ingressClassName $ingress.className }}
       {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
       {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
+      {{- if $s.useCname }}{{ $_ := set $secrets $s.cname.domain $s.cname.tlsSecretName }}{{ end }}
         {{- $svcPaths := (hasKey $s "paths" | ternary $s.paths (list "/" )) }}
         {{- if eq (len $svcPaths) 0 }}{{ $svcPaths = list "/" }}{{ end }}
           {{- $paths = concat $svcPaths $paths }}
           {{- if (not (hasKey $routes $domain)) }}
             {{- $routes = merge $routes (dict $domain $paths) }}
+            {{- if $s.useCname }}
+              {{- $routes = merge $routes (dict $s.cname.domain $paths) }}
+            {{- end }}
           {{- else }}
             {{- $paths = concat (index $routes $domain) $paths }}
             {{- $routes = (merge (dict $domain $paths) $routes) }}
+            {{- if $s.useCname }}
+              {{- $routes = merge $routes (dict $s.cname.domain $paths) }}
+            {{- end }}
           {{- end }}
           {{- if not (or (has $s.name $names) $s.ownHost $s.isShared) }}
             {{- $names = (append $names $s.name) }}
@@ -146,12 +153,12 @@ spec:
   rules:
       {{- if $hasTlsPass }}
         {{- range $domain, $paths := $routes }}
-  - host: {{ $domain }}
-    http:
-      paths:
-            {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc "port" 443) | nindent 8 }}
-        {{- end }}
-      {{- else if $.isApps }}
+    - host: {{ $domain }}
+      http:
+        paths:
+              {{- include "ingress.path" (dict "dot" $.dot "svc" $istioSvc "port" 443) | nindent 8 }}
+          {{- end }}
+        {{- else if $.isApps }}
     - host: {{ $appsDomain }}
       http:
         paths:
