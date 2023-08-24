@@ -1322,21 +1322,6 @@ definitions:
       tag:
         description: Image tag
         $ref: '#/definitions/imageTag'
-      repoAccess:
-        properties:
-          privateGit:
-            type: boolean
-            default: false
-          otomiGit:
-            type: boolean
-            default: false
-          repoUserName:
-            description: The username used for basic authentication to access a private github repo.
-            $ref: '#/definitions/wordCharacterPattern'
-          repoPassword:
-            x-secret: ''
-            $ref: '#/definitions/wordCharacterPattern'
-            description: The password used for basic authentication to access a private github repo.
       mode:
         properties:
           docker:
