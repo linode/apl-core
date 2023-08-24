@@ -282,8 +282,6 @@ definitions:
       k8sContext:
         $ref: '#/definitions/k8sContext'
         description: Optional. Must be set for development mode and must point to an existing context in KUBECONFIG.
-      k8sVersion:
-        $ref: '#/definitions/k8sVersion'
       name:
         $ref: '#/definitions/clusterName'
         description: Short name that will be used in construction of cluster domain and messaging.
@@ -298,7 +296,6 @@ definitions:
         examples:
           - eu-central-1
     required:
-      - k8sVersion
       - name
       - provider
     allOf:
@@ -602,13 +599,6 @@ definitions:
   k8sContext:
     description: The cluster k8s context as found in $KUBECONFIG.
     $ref: '#/definitions/wordCharacterPattern'
-  k8sVersion:
-    description: The cluster k8s version. Must match one of the list.
-    enum:
-      - '1.23'
-      - '1.24'
-      - '1.25'
-    type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of labels.
