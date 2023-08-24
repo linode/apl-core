@@ -43,6 +43,10 @@ jobs:
           echo "-------------CHANGELOG START-----------------"
           cat new_changelog.md
           echo "-------------CHANGELOG END-----------------"
+          chl=$(cat new_changelog.md)
+          echo "-------------ECHO CHANGELOG START-----------------"
+          echo $chl
+          echo "-------------ECHO CHANGELOG END-----------------"
 
   #     - name: Set up Docker Buildx
   #       uses: docker/setup-buildx-action@v2
