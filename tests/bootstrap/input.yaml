@@ -1,6 +1,5 @@
 # Minimal values file with defaults
 cluster:
-  k8sVersion: '1.24'
   name: 'dev'
   provider: digitalocean
   k8sContext: CONTEXT_PLACEHOLDER

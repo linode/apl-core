@@ -1,6 +1,5 @@
 # All apps enabled
 cluster:
-  k8sVersion: 'K8S_VERSION_PLACEHOLDER'
   name: 'dev'
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
