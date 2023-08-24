@@ -1121,6 +1121,18 @@ definitions:
         description: Will pass the request to the backing service without TLS termination.
         type: boolean
         default: false
+      useCname:
+        description: Will configure additional host(CNAME) for the service.
+        type: boolean
+        default: false
+      cname:
+        properties:
+          domain:
+            description: CNAME of the service.
+            type: string
+          tlsSecretName:
+            description: Kubernetes secret name of type TLS (not required if the tlsPass flag is set to true).
+            type: string
       type:
         nullable: true
         default: public
