@@ -88,7 +88,7 @@ steps:
     depends_on:
       - bootstrap
     commands:
-      - cd .. && binzx/otomi test
+      - cd .. && binzx/otomi validate-values
 
   - name: apply
     image: otomi/core:{{ .imageTag }}
