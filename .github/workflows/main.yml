@@ -38,17 +38,32 @@ jobs:
       #     pull_image_and_stages: true
       - name: cut changelog
         run: |
-
-          awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}' CHANGELOG.md > new_changelog.md
-          echo "-------------CHANGELOG START-----------------"
-          cat new_changelog.md
-          echo "-------------CHANGELOG END-----------------"
-          chl=$(cat new_changelog.md)
-          echo "$chl" > new_changelog.md
-          echo "-------------ECHO CHANGELOG START-----------------"
-          cat new_changelog.md
-          echo "-------------ECHO CHANGELOG END-----------------"
-
+          changelog=$(cat CHANGELOG.md | awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}')
+          # now do some escaping because github does not help us here:
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'%0A'}"
+          changelog="${changelog//$'\r'/'%0D'}"
+          echo changes="$changelog" >> $GITHUB_OUTPUT
+      - name: print changelog
+        run: |
+          echo "${{ steps.git_tag.outputs.changes }}"
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo " * * * * * * * "
+          echo ${{ steps.git_tag.outputs.changes }}
   #     - name: Set up Docker Buildx
   #       uses: docker/setup-buildx-action@v2
   #     - name: Login to Github Packages
