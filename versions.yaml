@@ -1,4 +1,4 @@
-api: main
-console: main
+api: remove-k8sVersion
+console: remove-k8sVersion
 tasks: 1.0.0
 tools: 1.4.25
