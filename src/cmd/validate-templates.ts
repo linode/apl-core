@@ -5,6 +5,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { hfTemplate } from 'src/common/hf'
 import { getFilename, readdirRecurse, rootDir } from 'src/common/utils'
+import { getK8sVersion } from 'src/common/values'
 import { BasicArguments, HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import tar from 'tar'
 import { Argv } from 'yargs'
@@ -26,11 +27,8 @@ const cleanup = (argv: BasicArguments): void => {
   rmSync(k8sResourcesPath, { recursive: true, force: true })
 }
 
-const setup = async (argv: HelmArguments, kubernetesVersion = '1.25'): Promise<void> => {
+const setup = async (argv: HelmArguments): Promise<void> => {
   cleanupHandler(() => cleanup(argv))
-
-  k8sVersion = kubernetesVersion
-  vk8sVersion = `v${k8sVersion}`
 
   let prep: Promise<any>[] = []
   prep.push(mkdir(`${schemaOutputPath}/${vk8sVersion}-standalone`, { recursive: true }))
@@ -130,10 +128,12 @@ const processCrdWrapper = async (argv: BasicArguments) => {
   await Promise.all(prep)
 }
 
-export const validateTemplates = async (kubernetesVersion: string): Promise<void> => {
+export const validateTemplates = async (kubernetesVersion?: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:validateTemplates`)
   const argv: HelmArguments = getParsedArgs()
-  await setup(argv, kubernetesVersion)
+  k8sVersion = (await getK8sVersion(argv)) ?? kubernetesVersion ?? '1.25'
+  vk8sVersion = `v${k8sVersion}`
+  await setup(argv)
   await processCrdWrapper(argv)
   const constraintKinds = [
     'PspAllowedRepos',
@@ -211,6 +211,6 @@ export const module = {
   handler: async (argv: BasicArguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await validateTemplates(k8sVersion)
+    await validateTemplates()
   },
 }
