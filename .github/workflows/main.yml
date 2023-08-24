@@ -44,7 +44,7 @@ jobs:
           cat new_changelog.md
           echo "-------------CHANGELOG END-----------------"
           chl=$(cat new_changelog.md)
-          echo $chl > new_changelog.md
+          echo "$chl" > new_changelog.md
           echo "-------------ECHO CHANGELOG START-----------------"
           cat new_changelog.md
           echo "-------------ECHO CHANGELOG END-----------------"
