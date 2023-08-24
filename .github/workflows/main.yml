@@ -39,7 +39,7 @@ jobs:
       - name: cut changelog
         run: |
 
-          awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}' > new_changelog.md
+          awk -v n=2 '/### \[[0-9]*/&&!--n{exit}{print}' CHANGELOG.md > new_changelog.md
           echo "-------------CHANGELOG START-----------------"
           cat new_changelog.md
           echo "-------------CHANGELOG END-----------------"
