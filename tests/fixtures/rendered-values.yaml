@@ -1885,9 +1885,6 @@ environments:
                     revision: HEAD
                   type: docker
                 name: demo-java1
-                repoAccess:
-                  otomiGit: true
-                  privateGit: false
                 tag: v.0.0.1
               - mode:
                   buildpacks:
@@ -1896,9 +1893,6 @@ environments:
                     revision: HEAD
                   type: buildpacks
                 name: demo-java2
-                repoAccess:
-                  otomiGit: true
-                  privateGit: true
                 tag: v.0.0.1
               - mode:
                   docker:
@@ -1907,11 +1901,6 @@ environments:
                     revision: HEAD
                   type: docker
                 name: demo-java3
-                repoAccess:
-                  otomiGit: false
-                  privateGit: true
-                  repoPassword: bla1111111
-                  repoUserName: bla
                 tag: v.0.0.1
             id: demo
             jobs:
