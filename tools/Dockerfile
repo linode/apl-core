@@ -3,7 +3,7 @@ FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.26.8
+ARG KUBECTL_VERSION=1.25.13
 # https://github.com/helm/helm/tags
 ARG HELM_VERSION=3.11.3
 # https://github.com/databus23/helm-diff/releases
