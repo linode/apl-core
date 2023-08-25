@@ -30,7 +30,7 @@ apps:
   kiali:
     enabled: true
   knative:
-    enabled: true
+    enabled: false
   kube-descheduler:
     enabled: true
   kubeapps:
