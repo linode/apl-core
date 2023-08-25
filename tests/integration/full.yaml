@@ -64,6 +64,10 @@ teamConfig:
     networkPolicy:
       egressPublic: true
       ingressPrivate: true
+    selfService:
+      service:
+        - ingress
+        - networkPolicy
     services:
       - id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
         ksvc:
