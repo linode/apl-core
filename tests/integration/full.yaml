@@ -43,6 +43,8 @@ apps:
     enabled: true
   minio:
     enabled: true
+  opencost:
+    enabled: true
   prometheus:
     enabled: true
   promtail:
@@ -53,7 +55,11 @@ apps:
     enabled: true
   tigera-operator:
     enabled: true
+  tekton:
+    enabled: true
   thanos:
+    enabled: true
+  trivy:
     enabled: true
   vault:
     enabled: true
