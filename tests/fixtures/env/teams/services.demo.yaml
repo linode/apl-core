@@ -20,6 +20,11 @@ teamConfig:
               ownHost: true
               port: 80
               type: public
+              tlsPass: true
+              useCname: true
+              cname:
+                  domain: 'hello-demo-cname.com'
+                  tslSecretName: ''
             - domain: tlspass.eks.dev.otomi.cloud
               id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
               ksvc:
