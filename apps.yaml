@@ -200,7 +200,7 @@ appsInfo:
     integration: Kiali can be activated to gain observability insights on its network traffic. Kiali runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
   knative:
     title: Knative
-    appVersion: 1.9.2
+    appVersion: dependent on k8s version
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
