@@ -19,6 +19,10 @@ teamConfig:
   demo:
     password: somesecretvalue
     id: demo
+    selfService:
+      service:
+        - ingress
+        - networkPolicy
     networkPolicy:
       egressPublic: true
       ingressPrivate: true
