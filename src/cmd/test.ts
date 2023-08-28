@@ -18,7 +18,6 @@ const test = async (): Promise<void> => {
   await validateValues()
   await lint()
   supportedK8sVersions.map(async (k8sVersion: string) => {
-    console.log('k8sVersion', k8sVersion)
     await validateTemplates(k8sVersion)
   })
   const values = await hfValues()
