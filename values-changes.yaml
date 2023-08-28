@@ -82,3 +82,9 @@ changes:
     additions:
       - databases.keycloak.useOtomiDB: false
       - databases.keycloak.imported: false
+  - version: 13
+    deletions:
+      - 'cluster.k8sVersion'
+      - 'apps.knative.appVersion'
+    additions:
+      - 'apps.knative.appVersion'
