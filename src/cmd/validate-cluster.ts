@@ -12,7 +12,8 @@ export const validateCluster = async (): Promise<void> => {
   d.log('Validate cluster STARTED')
   const result = await nothrow($`kubectl version -o json`)
   const data = JSON.parse(result.stdout)
-  const k8sVersion: string = data.clientVersion.gitVersion.slice(1, 5)
+  d.log('data', data)
+  const k8sVersion: string = data.serverVersion.gitVersion.slice(1, 5)
   d.log(`Cluster k8sVersion is ${k8sVersion}`)
   if (!supportedK8sVersions.includes(k8sVersion)) {
     d.error(`Cluster k8sVersion ${k8sVersion} is not supported!`)
