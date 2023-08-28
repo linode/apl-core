@@ -3,48 +3,40 @@
 {{- $ := . }}
 # collect unique domains for this GW
 {{- $publicDomainsTerm :=  list }}
-{{- $privateDomainsTerm := list }}
 {{- $publicDomainsPass :=  list }}
-{{- $privateDomainsPass := list }}
 {{- range $s := $v.services }}
   {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
-  {{- $type := $s.type | default "public" }}
   {{- $tlsPass := $s.tlsPass | default false }}
+  {{- $cnameDomain := list }}
+  {{- if $s.useCname }}
+    {{- $cnameDomain = list $s.cname.domain }}
+  {{- end }}
   {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
-  {{- if and (or (hasKey $s "domain") $shared ) (not ($isKnativeService)) }}
+  {{- if (not ($isKnativeService)) }}
     {{- $domain := include "service.domain" (dict "s" $s "dot" $) }}
-    {{- if eq $type "public" }}
+    {{- $domain = list $domain }}
       {{- if and $tlsPass (not (has $domain $publicDomainsPass)) }}
-        {{- $publicDomainsPass = (append $publicDomainsPass $domain) }}
+          {{- $publicDomainsPass = (concat $publicDomainsPass $domain $cnameDomain) }}
       {{- else if not (has $domain $publicDomainsTerm) }}
-        {{- $publicDomainsTerm = (append $publicDomainsTerm $domain) }}
+        {{- $publicDomainsTerm = (concat $publicDomainsTerm $domain $cnameDomain) }}
       {{- end }}
-    {{- else if eq $type "private" }}
-      {{- if and $tlsPass (not (has $domain $privateDomainsPass)) }}
-        {{- $privateDomainsPass = (append $privateDomainsPass $domain) }}
-      {{- else if not (has $domain $privateDomainsTerm) }}
-        {{- $privateDomainsTerm = (append $privateDomainsTerm $domain) }}
-      {{- end }}
-    {{- end }}
   {{- end }}
 {{- end }}
 {{- $publicDomains := dict "term" $publicDomainsTerm "pass" $publicDomainsPass }}
-{{- $privateDomains := dict "term" $privateDomainsTerm "pass" $privateDomainsPass }}
-{{- range $type, $typeDomains := dict "public" $publicDomains "private" $privateDomains }}
-  {{- range $tls, $tlsDomains := $typeDomains }}
+{{- range $tls, $tlsDomains := $publicDomains }}
+{{- if not (empty $tlsDomains) }}
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: team-{{ $v.teamId }}-{{ $type }}-tls{{ $tls }}
+  name: team-{{ $v.teamId }}-public-tls{{ $tls }}
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   selector:
-    istio: ingressgateway-{{ $type }}
+    istio: ingressgateway-public
   servers:
   - hosts:
-      - '{{ $ns }}/*.{{ $v.domain }}'
     {{- range $domain := $tlsDomains }}
-      - {{ $ns }}/{{ $domain }}
+      - '{{ $ns }}/{{ $domain }}'
     {{- end }}
     {{- if eq $tls "pass" }}
     tls:
