@@ -3,7 +3,7 @@ import { terminal } from 'src/common/debug'
 import { hfValues } from 'src/common/hf'
 import { getFilename } from 'src/common/utils'
 import { HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
-import supportedK8sVersions from 'src/supportedK8sVersions.json'
+import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { Argv } from 'yargs'
 import { checkPolicies } from './check-policies'
 import { lint } from './lint'
@@ -17,7 +17,7 @@ const test = async (): Promise<void> => {
   d.log('Running tests against cluster state...')
   await validateValues()
   await lint()
-  supportedK8sVersions.map(async (k8sVersion) => {
+  supportedK8sVersions.map(async (k8sVersion: string) => {
     console.log('k8sVersion', k8sVersion)
     await validateTemplates(k8sVersion)
   })
