@@ -48,6 +48,7 @@ loki:
       max_transfer_retries: 0
       wal:
         dir: /var/loki/wal
+        replay_memory_ceiling: 512MB
     limits_config:
       enforce_metric_name: false
       reject_old_samples: true
@@ -178,6 +179,7 @@ ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-host-filesystem
+
   autoscaling:
     enabled: {{ $l.autoscaling.ingester.enabled }}
     minReplicas: {{ $l.autoscaling.ingester.minReplicas }}
