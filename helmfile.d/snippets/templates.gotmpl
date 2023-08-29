@@ -57,7 +57,7 @@ templates:
       - events: [prepare]
         showlogs: true
         command: ../bin/skeleton-chart.sh
-        args: ['{{ .Release.Name }}']
+        args: ['{{ .Release.Name }}', '1.25']
       - events: [presync]
         showlogs: true
         command: ../binzx/otomiw
