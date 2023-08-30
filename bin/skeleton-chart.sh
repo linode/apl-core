@@ -4,6 +4,8 @@
 root=..
 set -x
 app=${1}
+subFolder=''
+[ -n "$2" ] && subFolder="/$2"
 appDir="/tmp/charts/$app"
 rm -rf /tmp/charts/* /tmp/charts/.* >/dev/null
 tplDir="$appDir/templates"
