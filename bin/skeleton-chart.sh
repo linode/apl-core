@@ -4,8 +4,6 @@
 root=..
 set -x
 app=${1}
-subFolder=''
-[ -n "$2" ] && subFolder="/$2"
 appDir="/tmp/charts/$app"
 rm -rf /tmp/charts/* /tmp/charts/.* >/dev/null
 tplDir="$appDir/templates"
@@ -19,6 +17,6 @@ cp -r $root/charts/skeleton/* $appDir/
 sed -i -e "s/##CHART/$app/g" $appDir/Chart.yaml
 printf "" >$tpls
 set -x
-find $root/$SKEL_DIR/${app}${subFolder}/* -type f -name "*.yaml" -exec sh -c "cat {}; printf '\n---\n'" \; >>$tpls
+find $root/$SKEL_DIR/${app}/* -type f -name "*.yaml" -exec sh -c "cat {}; printf '\n---\n'" \; >>$tpls
 sed -i -e 's/{{/{{ \`{{/g' $tpls
 sed -i -e "s/}}/\` }}/g" $tpls

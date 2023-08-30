@@ -51,6 +51,31 @@ templates:
           - OnSpecChange
     values:
       - ../values/jobs/{{ .Release.Name | replace "job-" "" }}.gotmpl
+  skeleton: &skeleton
+    chart: /tmp/charts/{{ .Release.Name }}
+    hooks:
+      - events: [prepare]
+        showlogs: true
+        command: ../bin/skeleton-chart.sh
+        args: ['{{ .Release.Name }}']
+      - events: [presync]
+        showlogs: true
+        command: ../binzx/otomiw
+        args:
+          - upgrade
+          - -r
+          - '{{ .Release.Name }}'
+          - -w
+          - pre
+      - events: [postsync]
+        showlogs: true
+        command: ../binzx/otomiw
+        args:
+          - upgrade
+          - -r
+          - '{{ .Release.Name }}'
+          - -w
+          - post
   wait: &wait
     chart: ../charts/wait-for
     hooks:
