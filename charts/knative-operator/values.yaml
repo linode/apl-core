@@ -1,2 +1,4 @@
 ingress:
   enabled: false
+service:
+  type: ''
