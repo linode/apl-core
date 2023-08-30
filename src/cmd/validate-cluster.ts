@@ -9,15 +9,17 @@ const cmdName = getFilename(__filename)
 
 export const validateCluster = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:validateCluster`)
-  d.log('Validate cluster STARTED')
+  d.log('Cluster validation STARTED')
   const result = await nothrow($`kubectl version -o json`)
   const data = JSON.parse(result.stdout)
   const k8sVersion: string = data.serverVersion.gitVersion.slice(1, 5)
-  d.log(`Cluster k8sVersion is ${k8sVersion}`)
   if (!supportedK8sVersions.includes(k8sVersion)) {
-    d.error(`Cluster k8sVersion ${k8sVersion} is not supported!`)
+    const k8sVersions = supportedK8sVersions.join(', ')
+    d.error(
+      `The cluster with kubernetes version ${k8sVersion} is utilizing a less compatible version for otomi. For optimal performance and features, we recommend using one of our supported versions: [${k8sVersions}]. Make sure to align your cluster with these versions to take full advantage of our services.`,
+    )
     process.exit(1)
-  } else d.log('Validate cluster SUCCESS')
+  } else d.log('Cluster validation SUCCESS')
 }
 
 export const module = {

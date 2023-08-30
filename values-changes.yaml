@@ -85,6 +85,5 @@ changes:
   - version: 13
     deletions:
       - 'cluster.k8sVersion'
-      - 'apps.knative.appVersion'
-    additions:
+    updates:
       - 'apps.knative.appVersion'
