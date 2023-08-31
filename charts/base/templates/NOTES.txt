@@ -1,0 +1,3 @@
+Welcome to Base Operator!
+
+The Base Operator [{{ .Chart.AppVersion }}] has been installed in namespace [{{ .Release.Namespace }}]. It will be ready soon.
