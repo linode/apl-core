@@ -82,7 +82,7 @@ steps:
     commands:
       - cd .. && binzx/otomi bootstrap
 
-  - name: validate-values
+  - name: test
     image: otomi/core:{{ .imageTag }}
     pull: {{ .pullPolicy }}
     depends_on:
