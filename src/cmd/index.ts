@@ -23,6 +23,7 @@ import { module as syncModule } from './sync'
 import { module as templateModule } from './template'
 import { module as testModule } from './test'
 import { module as upgradeModule } from './upgrade'
+import { module as validateClusterModule } from './validate-cluster'
 import { module as validateTemplatesModule } from './validate-templates'
 import { module as validateValuesModule } from './validate-values'
 import { module as valuesModule } from './values'
@@ -81,6 +82,7 @@ export const commands: CommandModule[] = [
   syncModule,
   templateModule,
   testModule,
+  validateClusterModule,
   validateTemplatesModule,
   validateValuesModule,
   valuesModule,

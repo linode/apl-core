@@ -57,7 +57,7 @@ releases:
     labels:
       init: true
       pkg: knative
-    <<: *skeleton
+    <<: *default
   - name: loki-artifacts
     installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring

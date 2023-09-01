@@ -60,7 +60,6 @@ npm run compile:watch &
 |  🟨   | bin/aliases                     |
 |  ⬜   | bin/build-constraints.sh        |
 |  ⬜   | bin/job-presync.sh              |
-|  ⬜   | bin/skeleton-chart.sh           |
 |       |                                 |
 |  ⬜   | bin/hooks/pre-commit            |
 |  --   | ------------------------------- |

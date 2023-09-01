@@ -256,11 +256,9 @@ jobs:
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
-          k8sVersion=${{ env.SCALEWAY_K8s_VERSION }}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/0-chart-patch-placeholder/0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.SCALEWAY_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion:0:4}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
 
@@ -384,11 +382,9 @@ jobs:
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
-          k8sVersion=${{ env.DIGITALOCEAN_K8S_VERSION }}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/0-chart-patch-placeholder/0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          sed --in-place "s/K8S_VERSION_PLACEHOLDER/${k8sVersion:0:4}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
 

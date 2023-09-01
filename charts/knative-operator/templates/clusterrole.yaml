@@ -1,0 +1,777 @@
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-serving-operator-aggregated
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+aggregationRule:
+  clusterRoleSelectors:
+    # This (along with escalate below) allows the Operator to pick up any
+    # roles that are provided to the admin of the cluster by knative serving
+    # automatically.
+  - matchExpressions:
+    - {key: serving.knative.dev/release, operator: Exists}
+rules: [] # Rules are automatically filled in by the controller manager.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-serving-operator-aggregated-stable
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+aggregationRule:
+  clusterRoleSelectors:
+    # This (along with escalate below) allows the Operator to pick up any
+    # roles that are provided to the admin of the cluster by knative serving
+    # automatically.
+  - matchExpressions:
+    - {key: app.kubernetes.io/name, operator: In, values: [knative-serving]}
+rules: [] # Rules are automatically filled in by the controller manager.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-eventing-operator-aggregated
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+aggregationRule:
+  clusterRoleSelectors:
+    # This (along with escalate below) allows the Operator to pick up any
+    # roles that are provided to the admin of the cluster by knative eventing
+    # automatically.
+  - matchExpressions:
+    - {key: eventing.knative.dev/release, operator: Exists}
+rules: [] # Rules are automatically filled in by the controller manager.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-eventing-operator-aggregated-stable
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+aggregationRule:
+  clusterRoleSelectors:
+    # This (along with escalate below) allows the Operator to pick up any
+    # roles that are provided to the admin of the cluster by knative eventing
+    # automatically.
+  - matchExpressions:
+    - {key: app.kubernetes.io/name, operator: In, values: [knative-eventing]}
+rules: [] # Rules are automatically filled in by the controller manager.
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: knative-serving-operator
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+rules:
+- apiGroups:
+  - operator.knative.dev
+  resources:
+  - '*'
+  verbs:
+  - '*'
+  # Bootstrapping permissions.
+  # Roles that are explicitly bound buch which are specified by this Operator
+  # MUST be specified here with 'get' and 'bind'.
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterroles
+  resourceNames:
+  - system:auth-delegator
+  verbs:
+  - bind
+  - get
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  resourceNames:
+  - extension-apiserver-authentication-reader
+  verbs:
+  - bind
+  - get
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterroles
+  - roles
+  verbs:
+  - create
+  - delete
+      # Escalate is necessary in order to create a role using cluster role aggregation,
+      # and to allow the Operator to bootstrap itself into the necessary set of
+      # permissions, even as those continue to evolve upstream.
+  - escalate
+  - get
+  - list
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - list
+  - get
+  - update
+  # Permissions required for Knative controller
+  # infra.
+- apiGroups:
+  - apiregistration.k8s.io
+  resources:
+  - apiservices
+  verbs:
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - caching.internal.knative.dev
+  resources:
+  - images
+  verbs:
+  - '*'
+- apiGroups:
+  - ''
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - update
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - update
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - security.istio.io
+  - apps
+  - policy
+  resources:
+  - poddisruptionbudgets
+  - peerauthentications
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+  - update
+- apiGroups:
+  - apiregistration.k8s.io
+  resources:
+  - apiservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - '*'
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - '*'
+  # Old resources that need cleaning up that are not in the knative-serving
+  # namespace.
+- apiGroups:
+  - ''
+  resources:
+  - services
+  - deployments
+  - horizontalpodautoscalers
+  resourceNames:
+  - knative-ingressgateway
+  verbs:
+  - delete
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  resourceNames:
+  - config-controller
+  verbs:
+  - delete
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  resourceNames:
+  - knative-serving-operator
+  verbs:
+  - delete
+  # for contour TLS
+- apiGroups:
+  - projectcontour.io
+  resources:
+  - httpproxies
+  - tlscertificatedelegations
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
+  - delete
+  - deletecollection
+  - patch
+  # for security-guard
+- apiGroups:
+  - guard.security.knative.dev
+  resources:
+  - guardians
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  verbs:
+  - get
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: knative-eventing-operator
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+rules:
+- apiGroups:
+  - operator.knative.dev
+  resources:
+  - '*'
+  verbs:
+  - '*'
+  # Bootstrapping permissions.
+  # Roles that are explicitly bound buch which are specified by this Operator
+  # MUST be specified here with 'get' and 'bind'.
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterroles
+  - roles
+  verbs:
+  - create
+  - delete
+      # Escalate is necessary in order to create a role using cluster role aggregation,
+      # and to allow the Operator to bootstrap itself into the necessary set of
+      # permissions, even as those continue to evolve upstream.
+  - escalate
+  - get
+  - list
+  - update
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - list
+  - get
+  - update
+  # Permissions required for Knative controller
+  # infra.
+- apiGroups:
+  - apiregistration.k8s.io
+  resources:
+  - apiservices
+  verbs:
+  - update
+- apiGroups:
+  - ''
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - caching.internal.knative.dev
+  resources:
+  - images
+  verbs:
+  - '*'
+- apiGroups:
+  - ''
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - update
+  - watch
+- apiGroups:
+  - ''
+  resources:
+  - events
+  verbs:
+  - create
+  - update
+  - patch
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - daemonsets
+  - replicasets
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apiregistration.k8s.io
+  resources:
+  - apiservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - create
+  - delete
+  - update
+  - get
+  - list
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - '*'
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - '*'
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - create
+  - delete
+  - update
+  - get
+  - list
+  - watch
+      # Old resources that need cleaning up that are not in the knative-eventing
+      # namespace.
+- apiGroups:
+  - ''
+  resources:
+  - serviceaccounts
+  resourceNames:
+  - knative-eventing-operator
+  verbs:
+  - delete
+  # for RabbitMQ messaging topology objects
+- apiGroups:
+  - rabbitmq.com
+  resources:
+  - rabbitmqclusters
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - rabbitmq.com
+  resources:
+  - bindings
+  - queues
+  - exchanges
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rabbitmq.com
+  resources:
+  - bindings/status
+  - queues/status
+  - exchanges/status
+  verbs:
+  - get
+  # for Kafka eventing source
+- apiGroups:
+  - keda.sh
+  resources:
+  - scaledobjects
+  - scaledobjects/finalizers
+  - scaledobjects/status
+  - triggerauthentications
+  - triggerauthentications/status
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
+  - delete
+  # Internal APIs
+- apiGroups:
+  - internal.kafka.eventing.knative.dev
+  resources:
+  - consumers
+  - consumers/status
+  - consumergroups
+  - consumergroups/status
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+  - patch
+  - update
+  - delete
+- apiGroups:
+  - internal.kafka.eventing.knative.dev
+  resources:
+  - consumers/finalizers
+  - consumergroups/finalizers
+  verbs:
+  - update
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets/scale
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  verbs:
+  - watch
+- apiGroups:
+  - '*'
+  resources:
+  - configmaps
+  verbs:
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - configmaps
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - pods
+  verbs:
+  - list
+  - update
+  - get
+  - watch
+- apiGroups:
+  - '*'
+  resources:
+  - pods/finalizers
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - events
+  verbs:
+  - patch
+  - create
+- apiGroups:
+  - '*'
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - '*'
+  resources:
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - configmaps
+  resourceNames:
+  - kafka-channel-config
+  verbs:
+  - patch
+- apiGroups:
+  - '*'
+  resources:
+  - horizontalpodautoscalers
+  resourceNames:
+  - kafka-webhook
+  verbs:
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - leases
+  verbs:
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - poddisruptionbudgets
+  resourceNames:
+  - kafka-webhook
+  verbs:
+  - delete
+- apiGroups:
+  - '*'
+  resources:
+  - services
+  verbs:
+  - patch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - deletecollection
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: knative-operator-webhook
+  labels:
+    eventing.knative.dev/release: devel
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+rules:
+  # For watching logging configuration and getting certs.
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  # For manipulating certs into secrets.
+- apiGroups:
+  - ''
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - create
+  - update
+  - list
+  - watch
+  - patch
+  # finalizers are needed for the owner reference of the webhook
+- apiGroups:
+  - ''
+  resources:
+  - namespaces/finalizers
+  verbs:
+  - update
+  # For getting our Deployment so we can decorate with ownerref.
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+- apiGroups:
+  - apps
+  resources:
+  - deployments/finalizers
+  verbs:
+  - update
+  # For actually registering our webhook.
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - mutatingwebhookconfigurations
+  - validatingwebhookconfigurations
+  verbs: &everything
+  - get
+  - list
+  - create
+  - update
+  - delete
+  - patch
+  - watch
+  # For leader election
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs: *everything
+  # Necessary for conversion webhook. These are copied from the serving
+  # TODO: Do we really need all these permissions?
+- apiGroups: [apiextensions.k8s.io]
+  resources: [customresourcedefinitions]
+  verbs: [get, list, create, update, delete, patch, watch]
+---
