@@ -83,10 +83,5 @@ changes:
       - databases.keycloak.useOtomiDB: false
       - databases.keycloak.imported: false
   - version: 13
-    additions:
-      - charts.base
-      - charts.knative-operator
     deletions:
       - 'cluster.k8sVersion'
-    updates:
-      - 'apps.knative.appVersion'
