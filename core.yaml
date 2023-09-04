@@ -161,7 +161,8 @@ adminApps:
     ownHost: true
     ingress:
       - svc: tty
-        namespace: ingress # virtual service is not going to be used.
+        # virtual service is not going to be used.
+        namespace: ingress
         type: public
         auth: true
   - name: external-dns
