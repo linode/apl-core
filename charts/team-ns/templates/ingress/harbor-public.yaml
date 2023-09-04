@@ -28,7 +28,7 @@ metadata:
 spec:
   ingressClassName: platform
   rules:
-    - host: $domain
+    - host: {{ $domain }}
       http:
         paths:
         - backend:
@@ -61,7 +61,7 @@ spec:
           pathType: Prefix
   tls:
     - hosts:
-        - $domain
+        - {{ $domain }}
       {{- if eq $cm.issuer "byo-wildcard-cert" }}
       secretName: otomi-byo-wildcard-cert
       {{- else }}
