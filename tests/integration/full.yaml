@@ -1,6 +1,5 @@
 # All apps enabled
 cluster:
-  k8sVersion: 'K8S_VERSION_PLACEHOLDER'
   name: 'dev'
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
@@ -30,7 +29,7 @@ apps:
   kiali:
     enabled: true
   knative:
-    enabled: true
+    enabled: false
   kube-descheduler:
     enabled: true
   kubeapps:
@@ -43,6 +42,8 @@ apps:
     enabled: true
   minio:
     enabled: true
+  opencost:
+    enabled: true
   prometheus:
     enabled: true
   promtail:
@@ -53,7 +54,11 @@ apps:
     enabled: true
   tigera-operator:
     enabled: true
+  tekton:
+    enabled: true
   thanos:
+    enabled: true
+  trivy:
     enabled: true
   vault:
     enabled: true
@@ -64,6 +69,10 @@ teamConfig:
     networkPolicy:
       egressPublic: true
       ingressPrivate: true
+    selfService:
+      service:
+        - ingress
+        - networkPolicy
     services:
       - id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
         ksvc:

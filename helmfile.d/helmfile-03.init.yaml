@@ -57,7 +57,7 @@ releases:
     labels:
       init: true
       pkg: knative
-    <<: *skeleton
+    <<: *default
   - name: loki-artifacts
     installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
@@ -78,7 +78,6 @@ releases:
   - name: tekton-pipelines
     installed: {{ $a | get "tekton.enabled" }}
     namespace: tekton-pipelines
-    chart: ../charts/tekton-pipelines
     labels:
       pkg: tekton-pipelines
     <<: *default

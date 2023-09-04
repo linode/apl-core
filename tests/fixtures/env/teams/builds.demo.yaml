@@ -3,9 +3,6 @@ teamConfig:
         builds:
             - name: demo-java1
               tag: v.0.0.1
-              repoAccess:
-                  otomiGit: true
-                  #   privateGit: false
               mode:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples
@@ -14,8 +11,6 @@ teamConfig:
                   type: docker
             - name: demo-java2
               tag: v.0.0.1
-              repoAccess:
-                  otomiGit: true
               mode:
                   buildpacks:
                       repoUrl: https://github.com/buildpacks/samples
@@ -24,8 +19,6 @@ teamConfig:
                   type: buildpacks
             - name: demo-java3
               tag: v_0_0_1
-              repoAccess:
-                  otomiGit: false
               mode:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples

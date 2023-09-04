@@ -1,0 +1,195 @@
+---
+# Copyright 2022 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operator-webhook
+  namespace: default
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/component: operator-webhook
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/name: knative-operator
+spec:
+  selector:
+    matchLabels:
+      app: operator-webhook
+      role: operator-webhook
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: 'false'
+        sidecar.istio.io/inject: 'false'
+      labels:
+        app: operator-webhook
+        role: operator-webhook
+        operator.knative.dev/release: v1.9.4
+        app.kubernetes.io/component: operator-webhook
+        app.kubernetes.io/version: 1.9.4
+        app.kubernetes.io/name: knative-operator
+    spec:
+      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: webhook
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+      serviceAccountName: operator-webhook
+      containers:
+      - name: operator-webhook
+          # This is the Go import path for the binary that is containerized
+          # and substituted here.
+        image: 
+          gcr.io/knative-releases/knative.dev/operator/cmd/webhook@sha256:3d827626e563b24b8c001424d48bf8f07725223a07d0478148f3c021b4e9e647
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 500m
+            memory: 500Mi
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        - name: WEBHOOK_NAME
+          value: operator-webhook
+        - name: WEBHOOK_PORT
+          value: '8443'
+        - name: METRICS_DOMAIN
+          value: knative.dev/operator
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          capabilities:
+            drop:
+            - all
+        ports:
+        - name: metrics
+          containerPort: 9090
+        - name: profiling
+          containerPort: 8008
+        - name: https-webhook
+          containerPort: 8443
+        readinessProbe:
+          periodSeconds: 1
+          httpGet:
+            scheme: HTTPS
+            port: 8443
+            httpHeaders:
+            - name: k-kubelet-probe
+              value: webhook
+        livenessProbe:
+          periodSeconds: 1
+          httpGet:
+            scheme: HTTPS
+            port: 8443
+            httpHeaders:
+            - name: k-kubelet-probe
+              value: webhook
+          failureThreshold: 6
+          initialDelaySeconds: 120
+      # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
+      # high value that we respect whatever value it has configured for the lame duck grace period.
+      terminationGracePeriodSeconds: 300
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-operator
+  namespace: default
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/name: knative-operator
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: knative-operator
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: 'false'
+      labels:
+        name: knative-operator
+        app.kubernetes.io/name: knative-operator
+        app.kubernetes.io/version: 1.9.4
+        app.kubernetes.io/part-of: knative-operator
+    spec:
+      serviceAccountName: knative-operator
+      containers:
+      - name: knative-operator
+        image: 
+          gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:2e73ab904a74aa6c6ed1b8fe6f46d14444918bf486ab5bb0febdb2fbc77aa033
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: SYSTEM_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: METRICS_DOMAIN
+          value: knative.dev/operator
+        - name: CONFIG_LOGGING_NAME
+          value: config-logging
+        - name: CONFIG_OBSERVABILITY_NAME
+          value: config-observability
+        ports:
+        - name: metrics
+          containerPort: 9090
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 32Mi
+        securityContext:
+          runAsNonRoot: true
+---

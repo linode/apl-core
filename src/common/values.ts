@@ -2,6 +2,7 @@ import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
 import { unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
+import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
 import { $ } from 'zx'
 import { decrypt, encrypt } from './crypt'
@@ -21,12 +22,12 @@ let otomiK8sVersion: string
  * Find the cluster kubernetes version in the values
  * @returns String of the kubernetes version on the cluster
  */
-export const getK8sVersion = async (argv?: HelmArguments): Promise<string> => {
+export const getK8sVersion = (argv?: HelmArguments): string => {
   if (argv?.kubeVersion) return argv?.kubeVersion
   if (process.env.KUBE_VERSION_OVERRIDE) return process.env.KUBE_VERSION_OVERRIDE
   if (otomiK8sVersion) return otomiK8sVersion
-  const clusterFile: any = await loadYaml(`${env.ENV_DIR}/env/cluster.yaml`)
-  otomiK8sVersion = clusterFile.cluster!.k8sVersion!
+  const k8sVersion = supportedK8sVersions[supportedK8sVersions.length - 1]
+  otomiK8sVersion = k8sVersion
   return otomiK8sVersion
 }
 

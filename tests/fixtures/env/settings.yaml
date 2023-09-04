@@ -1,10 +1,8 @@
 alerts:
     email: {}
+    msteams: {}
     receivers:
         - msteams
-    msteams:
-        highPrio: https://xxxxxxx.com
-        lowPrio: https://xxxxxxxx.com
     slack: {}
 azure:
     appgw:
@@ -29,6 +27,8 @@ dns:
             region: eu-central-1
     zoneIdFilters:
         - otomi
+e2e:
+    enabled: true
 home:
     email: {}
     receivers:
@@ -127,6 +127,4 @@ status:
         deployingVersion: 0.21.0
         status: deployed
         version: 0.21.0
-e2e:
-    enabled: true
-version: 12
+version: 13
