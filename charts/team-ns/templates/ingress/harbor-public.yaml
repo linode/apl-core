@@ -14,7 +14,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
     nginx.ingress.kubernetes.io/enable-modsecurity: "false"
     nginx.ingress.kubernetes.io/enable-owasp-core-rules: "false"
-    ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
     {{- with $ingress.sourceIpAddressFiltering }}
     nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
     {{- end}}
@@ -22,7 +23,7 @@ metadata:
     external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }} 
     {{- end }}
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
-  name: {{ $.provider }}-team-{{ $v.teamId }}-{{ $ingress.className }}-{{ $.type }}-{{ $.name }}-harbor
+  name: nginx-team-{{ $v.teamId }}-platform-public-open-forward-harbor
   namespace: {{ if ne $.provider "nginx" }}ingress{{ else }}istio-system{{ end }}
 spec:
   ingressClassName: platform
