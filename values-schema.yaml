@@ -282,8 +282,6 @@ definitions:
       k8sContext:
         $ref: '#/definitions/k8sContext'
         description: Optional. Must be set for development mode and must point to an existing context in KUBECONFIG.
-      k8sVersion:
-        $ref: '#/definitions/k8sVersion'
       name:
         $ref: '#/definitions/clusterName'
         description: Short name that will be used in construction of cluster domain and messaging.
@@ -298,7 +296,6 @@ definitions:
         examples:
           - eu-central-1
     required:
-      - k8sVersion
       - name
       - provider
     allOf:
@@ -611,13 +608,6 @@ definitions:
   k8sContext:
     description: The cluster k8s context as found in $KUBECONFIG.
     $ref: '#/definitions/wordCharacterPattern'
-  k8sVersion:
-    description: The cluster k8s version. Must match one of the list.
-    enum:
-      - '1.24'
-      - '1.25'
-      - '1.26'
-    type: string
   labels:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of labels.
@@ -1130,6 +1120,18 @@ definitions:
         description: Will pass the request to the backing service without TLS termination.
         type: boolean
         default: false
+      useCname:
+        description: Will configure additional host(CNAME) for the service.
+        type: boolean
+        default: false
+      cname:
+        properties:
+          domain:
+            description: CNAME of the service.
+            type: string
+          tlsSecretName:
+            description: Kubernetes secret name of type TLS (not required if the tlsPass flag is set to true).
+            type: string
       type:
         nullable: true
         default: public
@@ -1331,21 +1333,6 @@ definitions:
       tag:
         description: Image tag
         $ref: '#/definitions/imageTag'
-      repoAccess:
-        properties:
-          privateGit:
-            type: boolean
-            default: false
-          otomiGit:
-            type: boolean
-            default: false
-          repoUserName:
-            description: The username used for basic authentication to access a private github repo.
-            $ref: '#/definitions/wordCharacterPattern'
-          repoPassword:
-            x-secret: ''
-            $ref: '#/definitions/wordCharacterPattern'
-            description: The password used for basic authentication to access a private github repo.
       mode:
         properties:
           docker:

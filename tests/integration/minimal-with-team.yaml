@@ -1,6 +1,5 @@
 # Minimal values file with defaults
 cluster:
-  k8sVersion: 'K8S_VERSION_PLACEHOLDER'
   name: 'dev'
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
@@ -19,15 +18,16 @@ teamConfig:
   demo:
     password: somesecretvalue
     id: demo
+    selfService:
+      service:
+        - ingress
+        - networkPolicy
     networkPolicy:
       egressPublic: true
       ingressPrivate: true
     builds:
       - name: nodejs-hello-world
         tag: v0.0.1
-        repoAccess:
-          otomiGit: false
-          privateGit: false
         mode:
           docker:
             repoUrl: https://github.com/redkubes/nodejs-helloworld
@@ -36,9 +36,6 @@ teamConfig:
           type: docker
       - name: demo-java-maven
         tag: v0.0.1
-        repoAccess:
-          otomiGit: false
-          privateGit: false
         mode:
           buildpacks:
             repoUrl: https://github.com/buildpacks/samples

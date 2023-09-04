@@ -30,7 +30,7 @@ const cleanup = (argv: BasicArguments): void => {
 const setup = async (argv: HelmArguments): Promise<void> => {
   cleanupHandler(() => cleanup(argv))
 
-  k8sVersion = await getK8sVersion(argv)
+  k8sVersion = getK8sVersion(argv)
   vk8sVersion = `v${k8sVersion}`
 
   let prep: Promise<any>[] = []

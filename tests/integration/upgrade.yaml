@@ -1,10 +1,9 @@
 # Minimal values file with defaults
 cluster:
-  k8sVersion: 'K8S_VERSION_PLACEHOLDER'
   name: 'dev'
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
-  version: v0.24.0
+  version: v0.25.0
 e2e:
   enabled: true
   upgrade:
@@ -69,9 +68,6 @@ teamConfig:
     builds:
       - name: nodejs-hello-world
         tag: v0.0.1
-        repoAccess:
-          otomiGit: false
-          privateGit: false
         mode:
           docker:
             repoUrl: https://github.com/redkubes/nodejs-helloworld
@@ -80,9 +76,6 @@ teamConfig:
           type: docker
       - name: demo-java-maven
         tag: v0.0.1
-        repoAccess:
-          otomiGit: false
-          privateGit: false
         mode:
           buildpacks:
             repoUrl: https://github.com/buildpacks/samples

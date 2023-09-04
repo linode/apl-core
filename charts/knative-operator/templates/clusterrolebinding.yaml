@@ -1,0 +1,150 @@
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# TODO: Consider restriction of non-aggregated role to knativeservings namespaces.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-serving-operator
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-serving-operator
+subjects:
+- kind: ServiceAccount
+  name: knative-operator
+  namespace: default
+---
+# TODO: Consider restriction of non-aggregated role to knativeeventing namespaces.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator
+subjects:
+- kind: ServiceAccount
+  name: knative-operator
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: operator-webhook
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-operator-webhook
+subjects:
+- kind: ServiceAccount
+  name: operator-webhook
+  namespace: default
+---
+# Copyright 2020 The Knative Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-serving-operator-aggregated
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-serving-operator-aggregated
+subjects:
+- kind: ServiceAccount
+  name: knative-operator
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-serving-operator-aggregated-stable
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-serving-operator-aggregated-stable
+subjects:
+- kind: ServiceAccount
+  name: knative-operator
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator-aggregated
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator-aggregated
+subjects:
+- kind: ServiceAccount
+  name: knative-operator
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator-aggregated-stable
+  labels:
+    operator.knative.dev/release: v1.9.4
+    app.kubernetes.io/version: 1.9.4
+    app.kubernetes.io/part-of: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator-aggregated-stable
+subjects:
+- kind: ServiceAccount
+  name: knative-operator
+  namespace: default
+---
