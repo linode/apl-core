@@ -1,0 +1,9 @@
+configDefaults:
+  affinity: |
+    default-timeout-minutes: "60"  # 60 minutes
+    default-service-account: "default"
+    default-managed-by-label-value: "tekton-pipelines"
+    default-affinity-assistant-pod-template:
+        securityContext:
+            runAsNonRoot: false
+            runAsUser: 1001

@@ -55,6 +55,8 @@ spec:
     name: buildpacks-build-{{ .name }}
   podTemplate:
     securityContext:
+      runAsNonRoot: false
+      runAsUser: 1001
       fsGroup: 65532
   workspaces:
     - name: shared-data
