@@ -50,6 +50,7 @@ metadata:
   name: docker-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
   annotations:
     sidecar.istio.io/inject: "false"
+    policy.otomi.io/ignore: psp-allowed-users
 spec:
   serviceAccountName: sa-team-{{ $v.teamId }}
   pipelineRef:
