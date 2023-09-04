@@ -226,6 +226,7 @@ adminApps:
         paths: [/chartrepo/, /service/, /v1/, /v2/]
         forwardPath: true
         type: public
+        hasOwnIngress: true
   - name: hello
     hide: true
     tags: [demo]
