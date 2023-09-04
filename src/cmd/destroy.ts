@@ -3,7 +3,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
 import { getFilename } from 'src/common/utils'
-import { BasicArguments, getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { BasicArguments, HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed, stream } from 'src/common/zx-enhance'
 import { Argv } from 'yargs'
 import { $, nothrow } from 'zx'
@@ -47,6 +47,13 @@ const destroyAll = async () => {
   if (output.exitCode > 0 || output.stderr.length > 0) {
     d.error(output.stderr)
   }
+
+  d.info('Uninstalling webhook mutatingwebhookconfiguration ...')
+  await stream(nothrow($`kubectl delete mutatingwebhookconfiguration istio-sidecar-injector`), debugStream)
+
+  d.info('Uninstalling webhook validatingwebhookconfiguration ...')
+  await stream(nothrow($`kubectl delete validatingwebhookconfiguration istio-validator-istio-system`), debugStream)
+
   const templateOutput: string = output.stdout
   writeFileSync(templateFile, templateOutput)
   await stream(nothrow($`kubectl delete -f ${templateFile}`), debugStream)
@@ -86,6 +93,7 @@ const destroyAll = async () => {
     nothrow($`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`),
     debugStream,
   )
+
   d.log('Uninstalled otomi!')
 }
 
