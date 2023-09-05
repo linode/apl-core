@@ -52,7 +52,44 @@ const destroyAll = async () => {
   await stream(nothrow($`kubectl delete mutatingwebhookconfiguration istio-sidecar-injector`), debugStream)
 
   d.info('Uninstalling webhook validatingwebhookconfiguration ...')
-  await stream(nothrow($`kubectl delete validatingwebhookconfiguration istio-validator-istio-system`), debugStream)
+
+  const validationAdmissionControllers = [
+    'cert-manager-webhook',
+    'cnpg-validating-webhook-configuration',
+    'config.webhook.istio.networking.internal.knative.dev',
+    'config.webhook.pipeline.tekton.dev',
+    'config.webhook.serving.knative.dev',
+    'istio-validator-istio-system',
+    'validation-webhook.snapshot.storage.k8s.io',
+    'validation.webhook.domainmapping.serving.knative.dev',
+    'validation.webhook.pipeline.tekton.dev',
+    'validation.webhook.serving.knative.dev',
+  ]
+
+  await Promise.allSettled(
+    validationAdmissionControllers.map(async (val) =>
+      stream(
+        nothrow($`kubectl delete validatingwebhookconfiguration.admissionregistration.k8s.io ${val}`),
+        debugStream,
+      ),
+    ),
+  )
+
+  const mutatingAdminionControllers = [
+    'cert-manager-webhook',
+    'cnpg-mutating-webhook-configuration',
+    'istio-sidecar-injector',
+    'webhook.domainmapping.serving.knative.dev',
+    'webhook.istio.networking.internal.knative.dev',
+    'webhook.pipeline.tekton.dev',
+    'webhook.serving.knative.dev',
+  ]
+
+  await Promise.allSettled(
+    mutatingAdminionControllers.map(async (val) =>
+      stream(nothrow($`kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io ${val}`), debugStream),
+    ),
+  )
 
   const templateOutput: string = output.stdout
   writeFileSync(templateFile, templateOutput)
