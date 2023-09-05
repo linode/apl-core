@@ -1,9 +1,12 @@
 {{- $v := .Values }}
+{{- if eq $v.teamId "admin" }}
 {{- if $v.apps.harbor.enabled }}
 {{- $domain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $ingress :=  $v.ingress.platformClass }}
-
+{{- $namespace :=  ternary "ingress" "istio-system" $v.otomi.hasCloudLB }}
+{{- $name :=  printf "nginx-team-%s-platform-public-open-forward-harbor" $v.teamId }}
+{{- $secretName := ternary "otomi-byo-wildcard-cert" "otomi-cert-manager-wildcard-cert" (eq $cm.issuer "byo-wildcard-cert") }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -18,13 +21,13 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
     {{- with $ingress.sourceIpAddressFiltering }}
     nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
-    {{- end}}
-    {{- if and (hasKey $ingress "entrypoint") (ne $ingress.entrypoint "")}}
+    {{- end }}
+    {{- if and (hasKey $ingress "entrypoint") (ne $ingress.entrypoint "") }}
     external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }} 
     {{- end }}
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
-  name: nginx-team-{{ $v.teamId }}-platform-public-open-forward-harbor
-  namespace: {{ if ne $.provider "nginx" }}ingress{{ else }}istio-system{{ end }}
+  name: {{ $name }}
+  namespace: {{ $namespace }}
 spec:
   ingressClassName: platform
   rules:
@@ -62,9 +65,6 @@ spec:
   tls:
     - hosts:
         - {{ $domain }}
-      {{- if eq $cm.issuer "byo-wildcard-cert" }}
-      secretName: otomi-byo-wildcard-cert
-      {{- else }}
-      secretName: otomi-cert-manager-wildcard-cert
-      {{- end}}
+      secretName: {{ $secretName }}
+{{- end }}
 {{- end }}
