@@ -1,4 +1,4 @@
 api: 1.0.0
-console: 1.0.0
+console: deprecate-kubecfg-download
 tasks: 1.0.0
 tools: 1.4.25
