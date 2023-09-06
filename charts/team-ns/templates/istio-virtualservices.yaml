@@ -56,7 +56,7 @@ spec:
       match:
           {{- range $path := . }}
         - uri:
-            prefix: '{{ $path }}'        
+            prefix: '{{ $path }}'
           {{- end }}
         {{- end }}
         {{- if or ($isKnativeService) (not (hasKey $s "forwardPath")) }}
@@ -146,7 +146,7 @@ spec:
       match:
           {{- range $path := . }}
         - uri:
-            prefix: '{{ $path }}'        
+            prefix: '{{ $path }}'
           {{- end }}
         {{- end }}
         {{- if or ($isKnativeService) (not (hasKey $s "forwardPath")) }}
