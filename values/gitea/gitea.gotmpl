@@ -111,6 +111,11 @@ gitea:
       autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
       adminGroup: team-admin
       groupClaimName: groups
+      groupTeamMap: { 
+        "/team-demo": {
+          "otomi": ["otomi-viewer"]
+        }
+      }
 
 init:
   resources:
