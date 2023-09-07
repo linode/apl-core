@@ -161,7 +161,8 @@ adminApps:
     ownHost: true
     ingress:
       - svc: tty
-        namespace: ingress # virtual service is not going to be used.
+        # virtual service is not going to be used.
+        namespace: ingress
         type: public
         auth: true
   - name: external-dns
@@ -226,6 +227,7 @@ adminApps:
         paths: [/chartrepo/, /service/, /v1/, /v2/]
         forwardPath: true
         type: public
+        hasOwnIngress: true
   - name: hello
     hide: true
     tags: [demo]
