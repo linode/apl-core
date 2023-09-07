@@ -11,8 +11,9 @@ metadata:
     sidecar.istio.io/inject: "false"
 spec:
   workspaces:
-    - name: shared-data
-    - name: git-credentials
+  - name: shared-data
+  - name: docker-credentials
+  - name: git-credentials
   tasks:
   - name: fetch-source
     taskRef:
@@ -33,15 +34,17 @@ spec:
     runAfter:
       - fetch-source
     workspaces:
-      - name: source
-        workspace: shared-data
+    - name: source
+      workspace: shared-data
+    - name: dockerconfig
+      workspace: docker-credentials
     params:
-      - name: APP_IMAGE
-        value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
-      - name: SOURCE_SUBPATH
-        value: {{ .mode.buildpacks.path }}
-      - name: BUILDER_IMAGE
-        value: paketobuildpacks/builder:full
+    - name: APP_IMAGE
+      value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+    - name: SOURCE_SUBPATH
+      value: {{ .mode.buildpacks.path }}
+    - name: BUILDER_IMAGE
+      value: paketobuildpacks/builder:full
 ---
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
@@ -57,17 +60,20 @@ spec:
     securityContext:
       fsGroup: 65532
   workspaces:
-    - name: shared-data
-      volumeClaimTemplate:
-        spec:
-          accessModes:
-          - ReadWriteOnce
-          resources:
-            requests:
-              storage: 1Gi
-    - name: git-credentials
-      secret:
-        secretName: gitea-credentials
+  - name: shared-data
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  - name: git-credentials
+    secret:
+      secretName: gitea-credentials
+  - name: docker-credentials
+    secret:
+      secretName: harbor-pushsecret-builds
 {{- end }}
 {{- end }}
 {{- end }}
