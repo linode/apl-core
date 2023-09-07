@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.26.1](https://github.com/redkubes/otomi-core/compare/v0.26.0...v0.26.1) (2023-09-07)
+
+
+### Features
+
+* add customised ingress for harbor ([#1265](https://github.com/redkubes/otomi-core/issues/1265)) ([d7c9087](https://github.com/redkubes/otomi-core/commit/d7c90877d604da1d91c190cf1ac976c6aa9971e0))
+
+
+### Bug Fixes
+
+* add pull secret to Tekton build ([#1267](https://github.com/redkubes/otomi-core/issues/1267)) ([8c1e605](https://github.com/redkubes/otomi-core/commit/8c1e605e654ad4d0e4e04b399d06ad33b650acd4))
+
+
+### Others
+
+* release branch [ci skip] ([3a42e6d](https://github.com/redkubes/otomi-core/commit/3a42e6dbbe3bf21fdceeb0e99d4c341be07af270))
+* versions ([46c845b](https://github.com/redkubes/otomi-core/commit/46c845b34c240179be60682a91c5ba2da656fdef))
+
 ## [0.26.0](https://github.com/redkubes/otomi-core/compare/v0.25.0...v0.26.0) (2023-09-05)
 
 
