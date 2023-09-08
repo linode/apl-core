@@ -36,10 +36,14 @@ spec:
   unsupported:
     podTemplate:
       metadata:
-        annotations: 
-          policy.otomi.io/ignore: psp-allowed-users,psp-privileged
+        # annotations: 
+        #   policy.otomi.io/ignore: psp-allowed-users,psp-privileged
       spec:
         priorityClassName: otomi-critical
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
         containers: #
         - volumeMounts:
             - name: theme-volume
