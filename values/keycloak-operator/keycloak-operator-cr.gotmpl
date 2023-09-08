@@ -35,12 +35,11 @@ spec:
     strictBackchannel: false
   unsupported:
     podTemplate:
+      metadata:
+        annotations: 
+          policy.otomi.io/ignore: psp-allowed-users,psp-privileged
       spec:
         priorityClassName: otomi-critical
-        # securityContext:
-        #   enabled: true
-        #   fsGroup: 1001
-        #   runAsUser: 1001
         containers: #
         - volumeMounts:
             - name: theme-volume
