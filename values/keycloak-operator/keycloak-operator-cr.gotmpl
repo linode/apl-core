@@ -26,7 +26,6 @@ spec:
     port: 5432
   http:
     httpEnabled: true
-    httpPort: 80
   ingress: 
     enabled: false
   hostname:
@@ -50,10 +49,6 @@ spec:
         initContainers:
         - name: init-container-theme-copy # Otomi branding init container
           image: docker.io/otomi/console:v{{ $pinnedConsoleVersion }}
-          # securityContext:
-          #   runAsNonRoot: true
-          #   runAsUser: 1000
-          #   runAsGroup: 1000
           command: 
           - sh 
           args:
