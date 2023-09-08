@@ -178,7 +178,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
   const plainValues = omit(values, cleanSecretPaths) as any
-  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', '_derived', 'license']
+  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', 'databases', '_derived', 'license']
   const secretSettings = omit(secrets, fieldsToOmit)
   const license = { license: values?.license }
   const settings = omit(plainValues, fieldsToOmit)
@@ -229,6 +229,16 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
     )
   }
   await Promise.all(promises)
+
+  const databasesValuesPromises = Object.keys((plainValues.databases || {}) as Record<string, any>).map((database) => {
+    const valueObject = {
+      databases: {
+        [database]: plainValues.databases[database],
+      },
+    }
+    return writeValuesToFile(`${env.ENV_DIR}/env/databases/${database}.yaml`, valueObject, overwrite)
+  })
+  await Promise.all(databasesValuesPromises)
 
   const plainValuesPromises = Object.keys((plainValues.apps || {}) as Record<string, any>).map((app) => {
     const valueObject = {
