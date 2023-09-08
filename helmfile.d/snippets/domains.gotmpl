@@ -23,8 +23,7 @@
   {{- $services := (eq $teamId "admin" | ternary (concat $coreAdminServices ($team | get "services" list)) (concat $coreTeamServices ($team | get "services" list))) }}
   {{- range $s := $services }}
     {{- $host := eq $teamId "admin" | ternary $s.name (printf "%s-%s" $s.name $teamId ) -}}
-    {{- $domain = printf "%s.%s" $host $baseDomain }}
-    {{- $domain := printf "apps.%s" $baseDomain }}
+    {{- $domain := printf "%s.%s" $host $baseDomain }}
     {{- if not (hasKey $domains $domain) }}
       {{- $_ := set $domains $domain (dict "hasCert" (hasKey $s "hasCert")) }}
     {{- end }}
