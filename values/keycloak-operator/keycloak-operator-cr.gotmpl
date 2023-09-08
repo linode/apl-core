@@ -1,0 +1,63 @@
+{{- $pinnedConsoleVersion := "0.5.4" }}
+
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: keycloak
+  namespace: keycloak
+spec:
+  additionalOptions: 
+  - name: proxy
+    value: "edge"
+  - name: hostname-strict-https
+    value: "false"
+  - name: spi-login-protocol-openid-connect-legacy-logout-redirect-uri # Needed for now otherwise will throw a "Invalid parameter: redirec_uri" error. 
+    value: "true"
+  db:
+    vendor: postgres
+    usernameSecret:
+      name: keycloak-db-app
+      key: username
+    passwordSecret:
+      name: keycloak-db-app
+      key: password
+    host: keycloak-db-rw.keycloak.svc.cluster.local
+    database: keycloak
+    port: 5432
+  http:
+    httpEnabled: true
+    httpPort: 80
+  ingress: 
+    enabled: false
+  hostname:
+    hostname: keycloak.{{ .Values.cluster.domainSuffix }}
+    strict: false
+    strictBackchannel: false
+  unsupported:
+    podTemplate:
+      spec:
+        priorityClassName: otomi-critical
+        securityContext:
+          enabled: true
+          fsGroup: 1001
+          runAsUser: 1001
+        containers: #
+        - volumeMounts:
+            - name: theme-volume
+              mountPath: /opt/keycloak/themes/otomi
+        volumes:
+        - name: theme-volume
+          emptyDir: {}
+        initContainers:
+        - name: init-container-theme-copy # Otomi branding init container
+          image: docker.io/otomi/console:v{{ $pinnedConsoleVersion }}
+          command: 
+          - sh 
+          args:
+          - -c
+          - |
+            echo "Copying theme..."
+            cp -Rv /app/keycloak/themes/otomi/* /theme/
+          volumeMounts: 
+            - name: theme-volume
+              mountPath: /theme

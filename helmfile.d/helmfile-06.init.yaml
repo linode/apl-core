@@ -12,6 +12,18 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: keycloak
+    installed: true
+    namespace: keycloak
+    labels:
+      pkg: keycloak 
+    <<: *raw
+  - name: keycloak-operator-cr
+    installed: true
+    namespace: keycloak
+    labels:
+      pkg: keycloak
+    <<: *rawCR
   - name: argocd-operator-cr
     installed: {{ $a | get "argocd.enabled" }}
     namespace: argocd
