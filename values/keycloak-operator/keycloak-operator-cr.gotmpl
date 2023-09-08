@@ -1,4 +1,6 @@
 {{- $pinnedConsoleVersion := "0.5.4" }}
+{{- $v := .Values }}
+{{- $k := $v | get "apps.keycloak" }}
 
 apiVersion: k8s.keycloak.org/v2alpha1
 kind: Keycloak
@@ -49,6 +51,7 @@ spec:
         initContainers:
         - name: init-container-theme-copy # Otomi branding init container
           image: docker.io/otomi/console:v{{ $pinnedConsoleVersion }}
+          resources: {{ $k.resources.pod | toYaml  | nindent 12 }}
           command: 
           - sh 
           args:

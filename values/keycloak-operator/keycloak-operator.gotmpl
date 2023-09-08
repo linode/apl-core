@@ -1,0 +1,4 @@
+{{- $v := .Values }}
+{{- $k := $v | get "apps.keycloak" }}
+
+resources: {{ $k.resources.operator | toYaml  | nindent 4 }}

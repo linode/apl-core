@@ -253,6 +253,21 @@ environments:
             enabled: true
             adminUsername: otomi-admin
             theme: otomi
+            resources:
+              pod:
+                  requests:
+                      cpu: 200m
+                      memory: 512Mi
+                  limits:
+                      cpu: 400m
+                      memory: 1Gi
+              operator:
+                  requests:
+                      cpu: 100m
+                      memory: 128Mi
+                  limits:
+                      cpu: 400m
+                      memory: 512Mi
             idp:
               alias: otomi-idp
               clientID: otomi
