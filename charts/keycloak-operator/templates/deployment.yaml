@@ -13,6 +13,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: keycloak-operator
+      policy.otomi.io/ignore: psp-allowed-users,psp-privileged
       app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion }}
   template:
     metadata:
@@ -23,6 +24,7 @@ spec:
       labels:
         app.kubernetes.io/managed-by: quarkus
         app.kubernetes.io/name: keycloak-operator
+        policy.otomi.io/ignore: psp-allowed-users,psp-privileged
         app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion }}
     spec:
       containers:
