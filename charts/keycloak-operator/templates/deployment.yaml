@@ -3,8 +3,6 @@ kind: Deployment
 metadata:
   labels:
     {{- include "keycloak-operator.labels" . | nindent 4 }}
-  # annotations:
-  #   policy.otomi.io/ignore: psp-allowed-users,psp-privileged
   name: {{ include "keycloak-operator.fullname" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
@@ -14,8 +12,6 @@ spec:
       app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion }}
   template:
     metadata:
-      # annotations:
-      #   policy.otomi.io/ignore: psp-allowed-users,psp-privileged
       labels:
         app.kubernetes.io/managed-by: quarkus
         app.kubernetes.io/name: keycloak-operator
