@@ -7,10 +7,9 @@
 {{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
 {{- $t := readFile (print $ENV_DIR "/env/teams.yaml") | fromYaml }}
 {{- $teams := keys $t.teamConfig}}
+{{- $teamData := dict }}
 {{- if hasKey $t.teamConfig "teams" }}{{ $teams = keys $t.teamConfig.teams }}
 {{- $teams := .Values.teams }}
-{{- $teamData := dict }}
-
 {{- range $team := $teams }}
 {{- $teamPath := printf "/%s" $team }}
 
