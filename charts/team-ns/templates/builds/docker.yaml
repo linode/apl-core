@@ -54,7 +54,7 @@ spec:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
       metadata:
-        name: docker-trigger-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
+        generateName: docker-trigger-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}-
         labels:
           tekton.dev/pipeline: docker-build-{{ .name }}
         annotations:
@@ -81,6 +81,7 @@ spec:
         - name: docker-credentials
           secret:
             secretName: harbor-pushsecret-builds
+---
 {{- else }}
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
@@ -111,6 +112,7 @@ spec:
     secret:
       secretName: harbor-pushsecret-builds
 {{- end }}
+---
 {{- if .trigger }}
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
@@ -135,6 +137,7 @@ spec:
         - ref: gitea-triggerbinding-{{ .name }}
       template:
         ref: trigger-template-{{ .name }}
+---
 {{- end }}
 
 {{- end }}
