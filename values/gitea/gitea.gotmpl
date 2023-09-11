@@ -6,7 +6,7 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $t := readFile (print $ENV_DIR "/env/teams.yaml") | fromYaml }}
 {{- $teams := keys $t.teamConfig}}
-{{- if hasKey $t.teamConfig "teams" }}{{ $teams = keys $t.teamConfig.teams }}{{ end }}
+{{- if hasKey $t.teamConfig "teams" }}{{ $teams = keys $t.teamConfig.teams }}
 {{- $teams := .Values.teams }}
 {{- $teamData := dict }}
 
@@ -15,7 +15,7 @@
 
 {{- $teamData = merge $teamData (dict $teamPath (dict "otomi" (list "otomi-viewer" $team))) }}
 {{- end }}
-
+{{ end }}
 nameOverride: gitea
 fullnameOverride: gitea
 
