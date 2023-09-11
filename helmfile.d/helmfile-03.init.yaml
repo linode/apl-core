@@ -83,7 +83,7 @@ releases:
     <<: *default
   - name: tekton-triggers
     installed: {{ $a | get "tekton.enabled" }}
-    namespace: tekton-pipelines
+    namespace: tekton-triggers
     labels:
       pkg: tekton-triggers
     <<: *default

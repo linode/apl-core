@@ -71,6 +71,10 @@ k8s:
       app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: tekton-triggers
+      app: tekton
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: maintenance
       disableIstioInjection: true
     - name: minio
