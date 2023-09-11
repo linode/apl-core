@@ -4,6 +4,7 @@
 {{- $k := $v.apps.keycloak }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
+{{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
 {{- $t := readFile (print $ENV_DIR "/env/teams.yaml") | fromYaml }}
 {{- $teams := keys $t.teamConfig}}
 {{- if hasKey $t.teamConfig "teams" }}{{ $teams = keys $t.teamConfig.teams }}
