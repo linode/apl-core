@@ -97,6 +97,7 @@ spec:
               value: tekton-triggers-core-interceptors
             - name: INTERCEPTOR_TLS_SECRET_NAME
               value: tekton-triggers-core-interceptors-certs
+          resources: {{- toYaml .Values.interceptors.resources | nindent 12 }}
           readinessProbe:
             httpGet:
               path: /ready

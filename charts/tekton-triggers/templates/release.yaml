@@ -1498,6 +1498,7 @@ spec:
               value: "9000"
             - name: CONFIG_LEADERELECTION_NAME
               value: config-leader-election-triggers-controllers
+          resources: {{- toYaml .Values.controller.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -1627,6 +1628,7 @@ spec:
               containerPort: 8008
             - name: https-webhook
               containerPort: 8443
+          resources: {{- toYaml .Values.webhook.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
             # User 65532 is the distroless nonroot user ID
