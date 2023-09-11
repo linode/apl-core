@@ -4,6 +4,17 @@
 {{- $k := $v.apps.keycloak }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
+{{- $t := readFile (print $ENV_DIR "/env/teams.yaml") | fromYaml }}
+{{- $teams := keys $t.teamConfig}}
+{{- if hasKey $t.teamConfig "teams" }}{{ $teams = keys $t.teamConfig.teams }}{{ end }}
+{{- $teams := .Values.teams }}
+{{- $teamData := dict }}
+
+{{- range $team := $teams }}
+{{- $teamPath := printf "/%s" $team }}
+
+{{- $teamData = merge $teamData (dict $teamPath (dict "otomi" (list "otomi-viewer" $team))) }}
+{{- end }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -111,11 +122,7 @@ gitea:
       autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
       adminGroup: team-admin
       groupClaimName: groups
-      groupTeamMap: { 
-        "/team-demo": {
-          "otomi": ["otomi-viewer"]
-        }
-      }
+      groupTeamMap: {{- toYaml $teamData | nindent 2 }}
 
 init:
   resources:
