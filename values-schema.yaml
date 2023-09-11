@@ -1324,6 +1324,9 @@ definitions:
       tag:
         description: Image tag
         $ref: '#/definitions/imageTag'
+      trigger:
+        type: boolean
+        default: false
       mode:
         properties:
           docker:
