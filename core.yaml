@@ -404,6 +404,7 @@ adminApps:
 
 teamApps:
   - name: alertmanager
+    ownHost: true
     ingress:
       - svc: po-alertmanager
         hasPrefix: true

@@ -30,7 +30,6 @@ extensions/v1
 {{- define "ingress" -}}
 {{- $ := . }}
 {{- $v := .dot.Values }}
-{{- $appsDomain := printf "apps-%s.%s" $v.teamId $v.domain }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- range $ingress := $v.ingress.classes }}
