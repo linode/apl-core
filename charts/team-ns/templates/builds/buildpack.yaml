@@ -132,7 +132,7 @@ kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
 spec:
-  serviceAccountName: tekton-triggers-createwebhook-team-{{ $v.teamId }}
+  serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
   triggers:
     - name: tekton-webhook-{{ .name }}
       bindings:

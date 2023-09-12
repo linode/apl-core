@@ -60,7 +60,7 @@ spec:
         annotations:
           sidecar.istio.io/inject: "false"
       spec:
-        serviceAccountName: sa-team-demo
+        serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
         pipelineRef:
           name: docker-build-{{ .name }}
         podTemplate:
@@ -130,7 +130,7 @@ kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
 spec:
-  serviceAccountName: tekton-triggers-createwebhook-team-{{ $v.teamId }}
+  serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
   triggers:
     - name: tekton-webhook-{{ .name }}
       bindings:
