@@ -8,7 +8,6 @@
 {{- $t := readFile (print $ENV_DIR "/env/teams.yaml") | fromYaml }}
 {{- $teamData := dict }}
 {{- $teamConfigKeys := keys $t.teamConfig }}
-{{- $jsonTeamData := "" }}
 {{- if gt (len $teamConfigKeys) 0 }}
   {{- range $team := $teamConfigKeys }}
   {{- if ne $team "admin" }}
@@ -18,7 +17,7 @@
     {{- $teamData = merge $teamData (dict $teamPath (dict "otomi" (list "otomi-viewer" $teamName))) }}
   {{- end }}
   {{- end }}
-  {{- $jsonTeamData = toJson $teamData }}
+  {{- $teamData = toJson $teamData }}
 {{ end }}
 nameOverride: gitea
 fullnameOverride: gitea
@@ -126,7 +125,7 @@ gitea:
       autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
       adminGroup: team-admin
       groupClaimName: groups
-      groupTeamMap: {{ $jsonTeamData | quote }}
+      groupTeamMap: {{ $teamData | quote }}
 
 init:
   resources:
