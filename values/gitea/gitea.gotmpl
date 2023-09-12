@@ -10,10 +10,12 @@
 {{- $teamConfigKeys := keys $t.teamConfig }}
 {{- $jsonTeamData := "" }}
 {{- if gt (len $teamConfigKeys) 0 }}
-  {{- range $team := $t.teamConfig }}
-  {{- $teamPath := printf "/%s" $team }}
+  {{- range $team := $teamConfigKeys }}
+  {{- if ne $team "admin" }}
+    {{- $teamPath := printf "/%s" $team }}
 
-  {{- $teamData = merge $teamData (dict $teamPath (dict "otomi" (list "otomi-viewer" $team))) }}
+    {{- $teamData = merge $teamData (dict $teamPath (dict "otomi" (list "otomi-viewer" $team))) }}
+  {{- end }}
   {{- end }}
   {{- $jsonTeamData = toJson $teamData }}
 {{ end }}
