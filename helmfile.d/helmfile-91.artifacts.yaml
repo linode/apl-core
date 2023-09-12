@@ -12,12 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: otel-operator-artifacts
-    installed: {{ $a | get "otel.enabled" }}
-    namespace: otel
-    labels:
-      pkg: otel-operator
-    <<: *raw
   - name: istio-resources-artifacts
     installed: {{ $a | get "otel.enabled" }}
     namespace: istio-system

@@ -39,7 +39,7 @@ secrets:
   {{- $sopsEnv | nindent 2 }}
   
 env:
-  DEBUG: 'otomi:*'
+  DEBUG: 'otomi:*,-otomi:authz,-otomi:repo'
   VERBOSITY: '1'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_BRANCH: {{ $o | get "git.branch" "main" }}

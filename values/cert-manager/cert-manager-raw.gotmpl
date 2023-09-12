@@ -2,10 +2,7 @@
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $dns := $v | get "dns" dict }}
 {{- $p := $dns | get "provider" dict }}
-{{- $certTpl := readFile "../../helmfile.d/snippets/certificate.gotmpl" }}
-{{- $vars := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $issuerName := ternary (printf "%s-%s" $cm.issuer ($cm | get "stage" "")) $cm.issuer (eq $cm.issuer "letsencrypt") }}
-{{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 resources:
 
 {{- if and $v.otomi.hasExternalDNS (or (not (hasKey $p "aws")) ($p | get "aws.credentials.secretKey" nil)) }}
@@ -122,10 +119,37 @@ resources:
               {{- toYaml . | get "cert-manager" nindent 14 }}
               {{- end }}
 {{- end }}
-# generate all da certs
-{{- range $domain, $domInfo := $doms }}
-  {{- if not $domInfo.hasCert }}
-    {{- $certName := ($domain | replace "." "-") }}
-  - {{ tpl $certTpl (dict "otomi" $v.otomi "domain" $domain "name" $certName "issuer" $cm.issuer "issuerName" $issuerName) | nindent 4 }}
-  {{- end }}
+{{- if eq $cm.issuer "byo-wildcard-cert" }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: otomi-byo-wildcard-cert
+      namespace: {{ if $v.otomi.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
+    type: kubernetes.io/tls
+    data:
+      tls.crt: {{ $cm.byoWildcardCert | b64enc }}
+      tls.key: {{ $cm.byoWildcardCertKey | b64enc }}
+{{- end }}
+{{- if or (eq $cm.issuer "letsencrypt" ) (eq $cm.issuer "custom-ca" ) }}
+  - apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: otomi-wildcard
+      namespace: {{ if $v.otomi.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
+    spec:
+      secretName: otomi-cert-manager-wildcard-cert
+      commonName: '*.{{ $v.cluster.domainSuffix }}'
+      dnsNames:
+      - '*.{{ $v.cluster.domainSuffix }}'
+      issuerRef:
+        kind: ClusterIssuer
+        name: {{ $issuerName }}
+      usages:
+        {{- if eq $issuerName "custom-ca" }}
+        - server auth
+        {{- else }}
+        - digital signature
+        - key encipherment
+        - ocsp signing
+        {{- end }}
 {{- end }}

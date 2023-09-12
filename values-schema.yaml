@@ -1578,6 +1578,13 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
+          byoWildcardCert:
+            description: 'Bring your own trusted wildcard certificate. Only applicable for byo-wildcard-cert issuer'
+            type: string
+          byoWildcardCertKey:
+            description: 'A certificate key corresponding to the byoWildcardCert.'
+            type: string
+            x-secret: ''
           customRootCA:
             x-secret: ''
             type: string
@@ -1589,10 +1596,16 @@ properties:
           email:
             $ref: '#/definitions/email'
           issuer:
+            description: |
+              Indicates the origin of the wildcard certificate. 
+              The custom-ca - cert-manager uses the customRootCA to generate wildcard certificate.
+              The letsencrypt - cert-manager requests certificate from letsencrypt endpoint.
+              The byo-wildcard-cert allows users to bring their own trusted wildcard certificate (cert-manager not involved)
             type: string
             enum:
               - custom-ca
               - letsencrypt
+              - byo-wildcard-cert
             default: custom-ca
           stage:
             type: string
@@ -1600,22 +1613,6 @@ properties:
               - production
               - staging
             default: production
-        oneOf:
-          - properties:
-              issuer:
-                const: letsencrypt
-            required:
-              - email
-              - issuer
-          - properties:
-              issuer:
-                const: custom-ca
-            required:
-              - issuer
-          - not:
-              anyOf:
-                - required:
-                    - issuer
       cnpg:
         additionalProperties: false
         properties:
