@@ -12,8 +12,8 @@
 {{- if gt (len $teamConfigKeys) 0 }}
   {{- range $team := $teamConfigKeys }}
   {{- if ne $team "admin" }}
-    {{- $teamPath := printf "/%steam-" $team }}
-    {{- $teamName := printf "team-" $team }}
+    {{- $teamPath := printf "/team-%s" $team }}
+    {{- $teamName := printf "team-%s" $team }}
 
     {{- $teamData = merge $teamData (dict $teamPath (dict "otomi" (list "otomi-viewer" $teamName))) }}
   {{- end }}
