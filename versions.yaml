@@ -1,4 +1,4 @@
 api: 1.0.0
-console: prometheus-host
+console: main
 tasks: 1.0.0
 tools: 1.4.25
