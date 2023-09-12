@@ -133,6 +133,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: tekton-triggers-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
