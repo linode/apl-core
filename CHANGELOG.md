@@ -2,6 +2,71 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.26.0](https://github.com/redkubes/otomi-core/compare/v0.25.0...v0.26.0) (2023-09-05)
+
+
+### Features
+
+* added build and push pipeline for otomi-tools ([#1255](https://github.com/redkubes/otomi-core/issues/1255)) ([d430b82](https://github.com/redkubes/otomi-core/commit/d430b82cacac20a9a207fef9889a510e1234e4d6))
+* adding CNAME support ([#1235](https://github.com/redkubes/otomi-core/issues/1235)) ([da20036](https://github.com/redkubes/otomi-core/commit/da20036729e681fd2522cb2270f5721693243c08))
+* adjust loki wal backpressure ([#1240](https://github.com/redkubes/otomi-core/issues/1240)) ([e9ce3ae](https://github.com/redkubes/otomi-core/commit/e9ce3ae144cc091b3a65a771bf3ca9f264a1e937))
+* scw auto remove clusters on dev ([#1247](https://github.com/redkubes/otomi-core/issues/1247)) ([4b787a4](https://github.com/redkubes/otomi-core/commit/4b787a4a9c57b762ce86df59f3d3faa3bdbb21c4))
+* users do not have to provide k8sVersion anymore ([#1256](https://github.com/redkubes/otomi-core/issues/1256)) ([3eeae44](https://github.com/redkubes/otomi-core/commit/3eeae44fb8d191f8db8a7eecaa2403146c3eaa82))
+
+
+### Bug Fixes
+
+* fixed changelog generation ([#1250](https://github.com/redkubes/otomi-core/issues/1250)) ([b2644e6](https://github.com/redkubes/otomi-core/commit/b2644e6d5e0905568f5ed6e03dcae510fc94ee22))
+* k8s 1.26 compatibility ([#1251](https://github.com/redkubes/otomi-core/issues/1251)) ([a9cffdf](https://github.com/redkubes/otomi-core/commit/a9cffdf176c083fc85fc5a94e3fead5f4b2f00b0))
+* remove option for Gitea repo access for Builds ([#1239](https://github.com/redkubes/otomi-core/issues/1239)) ([4002208](https://github.com/redkubes/otomi-core/commit/4002208602dbcccd252abcf6d71f833343b78e38))
+* team status dashboard ([#1262](https://github.com/redkubes/otomi-core/issues/1262)) ([8dcb483](https://github.com/redkubes/otomi-core/commit/8dcb48372a7208498abaa8b0d561c5472dd7e449))
+* updated image tag for ghcr ([#1246](https://github.com/redkubes/otomi-core/issues/1246)) ([37ad1a1](https://github.com/redkubes/otomi-core/commit/37ad1a16704a9199c91f22f5d060a1f2a712d670))
+
+
+### Tests
+
+* add selfService flags to teams ([#1253](https://github.com/redkubes/otomi-core/issues/1253)) ([f37ed50](https://github.com/redkubes/otomi-core/commit/f37ed50e253c3e3920813bf999a3ec3111dc6c3c))
+* enable more apps ([#1254](https://github.com/redkubes/otomi-core/issues/1254)) ([377a27a](https://github.com/redkubes/otomi-core/commit/377a27a55aadbba4fc459ba875c0392d04817042))
+* upgrade test case ([#1242](https://github.com/redkubes/otomi-core/issues/1242)) ([4a297aa](https://github.com/redkubes/otomi-core/commit/4a297aa976155d819c2980d74315411a96744026))
+
+
+### Others
+
+* **release:** 0.26.0 ([6097aa6](https://github.com/redkubes/otomi-core/commit/6097aa602ac0d8bcf75679f77c11e86a1385d2bc))
+* set versions ([bba35a4](https://github.com/redkubes/otomi-core/commit/bba35a4ea51391f0d594c99143fbef470987a8a1))
+
+## [0.26.0](https://github.com/redkubes/otomi-core/compare/v0.25.0...v0.26.0) (2023-09-05)
+
+
+### Features
+
+* added build and push pipeline for otomi-tools ([#1255](https://github.com/redkubes/otomi-core/issues/1255)) ([d430b82](https://github.com/redkubes/otomi-core/commit/d430b82cacac20a9a207fef9889a510e1234e4d6))
+* adding CNAME support ([#1235](https://github.com/redkubes/otomi-core/issues/1235)) ([da20036](https://github.com/redkubes/otomi-core/commit/da20036729e681fd2522cb2270f5721693243c08))
+* adjust loki wal backpressure ([#1240](https://github.com/redkubes/otomi-core/issues/1240)) ([e9ce3ae](https://github.com/redkubes/otomi-core/commit/e9ce3ae144cc091b3a65a771bf3ca9f264a1e937))
+* scw auto remove clusters on dev ([#1247](https://github.com/redkubes/otomi-core/issues/1247)) ([4b787a4](https://github.com/redkubes/otomi-core/commit/4b787a4a9c57b762ce86df59f3d3faa3bdbb21c4))
+* users do not have to provide k8sVersion anymore ([#1256](https://github.com/redkubes/otomi-core/issues/1256)) ([3eeae44](https://github.com/redkubes/otomi-core/commit/3eeae44fb8d191f8db8a7eecaa2403146c3eaa82))
+
+
+### Bug Fixes
+
+* fixed changelog generation ([#1250](https://github.com/redkubes/otomi-core/issues/1250)) ([b2644e6](https://github.com/redkubes/otomi-core/commit/b2644e6d5e0905568f5ed6e03dcae510fc94ee22))
+* k8s 1.26 compatibility ([#1251](https://github.com/redkubes/otomi-core/issues/1251)) ([a9cffdf](https://github.com/redkubes/otomi-core/commit/a9cffdf176c083fc85fc5a94e3fead5f4b2f00b0))
+* remove option for Gitea repo access for Builds ([#1239](https://github.com/redkubes/otomi-core/issues/1239)) ([4002208](https://github.com/redkubes/otomi-core/commit/4002208602dbcccd252abcf6d71f833343b78e38))
+* team status dashboard ([#1262](https://github.com/redkubes/otomi-core/issues/1262)) ([8dcb483](https://github.com/redkubes/otomi-core/commit/8dcb48372a7208498abaa8b0d561c5472dd7e449))
+* updated image tag for ghcr ([#1246](https://github.com/redkubes/otomi-core/issues/1246)) ([37ad1a1](https://github.com/redkubes/otomi-core/commit/37ad1a16704a9199c91f22f5d060a1f2a712d670))
+
+
+### Tests
+
+* add selfService flags to teams ([#1253](https://github.com/redkubes/otomi-core/issues/1253)) ([f37ed50](https://github.com/redkubes/otomi-core/commit/f37ed50e253c3e3920813bf999a3ec3111dc6c3c))
+* enable more apps ([#1254](https://github.com/redkubes/otomi-core/issues/1254)) ([377a27a](https://github.com/redkubes/otomi-core/commit/377a27a55aadbba4fc459ba875c0392d04817042))
+* upgrade test case ([#1242](https://github.com/redkubes/otomi-core/issues/1242)) ([4a297aa](https://github.com/redkubes/otomi-core/commit/4a297aa976155d819c2980d74315411a96744026))
+
+
+### Others
+
+* set versions ([bba35a4](https://github.com/redkubes/otomi-core/commit/bba35a4ea51391f0d594c99143fbef470987a8a1))
+
 ## [0.25.0](https://github.com/redkubes/otomi-core/compare/v0.24.0...v0.25.0) (2023-08-21)
 
 

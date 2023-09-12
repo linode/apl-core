@@ -15,6 +15,7 @@
   {{- $openForward := list }}
   {{- $tlsPass := list }}
   {{- range $s := $v.services }}
+    {{- if not $s.hasOwnIngress }}
     {{- $ingType := $s.type | default "public" }}
     {{- if and (eq $ingType $type) }}
       {{- $isApps := and $s.isCore (not (or $s.ownHost $s.isShared)) }}
@@ -42,7 +43,9 @@
         {{- end }}
       {{- end }}
     {{- end }}
+    {{- end }}
   {{- end }}
+
 
   {{- if gt (len $tlsPass) 0 }}
 {{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "tlspass" "hasForward" false "hasAuth" false "services" $tlsPass "tlsPass" true) }}
