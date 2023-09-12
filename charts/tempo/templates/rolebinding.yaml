@@ -1,0 +1,16 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "tempo.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tempo.labels" (dict "ctx" .) | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "tempo.fullname" . }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "tempo.serviceAccountName" . }}
+{{- end }}

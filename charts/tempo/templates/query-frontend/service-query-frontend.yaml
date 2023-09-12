@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tempo.resourceName" (dict "ctx" . "component" "query-frontend") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tempo.labels" (dict "ctx" . "component" "query-frontend") | nindent 4 }}
+  {{- with .Values.queryFrontend.service.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.queryFrontend.service.type }}
+  ports:
+    - name: http-metrics
+      port: 3100
+      targetPort: 3100
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: 9095
+      {{- if .Values.queryFrontend.appProtocol.grpc }}
+      appProtocol: {{ .Values.queryFrontend.appProtocol.grpc }}
+      {{- end }}
+    {{- if .Values.queryFrontend.query.enabled }}
+    - name: tempo-query-jaeger-ui
+      port: {{ .Values.queryFrontend.service.port }}
+      targetPort: {{ .Values.queryFrontend.service.port }}
+    - name: tempo-query-metrics
+      port: 16687
+      targetPort: jaeger-metrics
+    {{- end }}
+  {{- if .Values.queryFrontend.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.queryFrontend.service.loadBalancerIP  }}
+  {{- end }}
+  {{- with .Values.queryFrontend.service.loadBalancerSourceRanges}}
+  loadBalancerSourceRanges:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- include "tempo.selectorLabels" (dict "ctx" . "component" "query-frontend") | nindent 4 }}
