@@ -7,8 +7,9 @@
 {{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
 {{- $t := readFile (print $ENV_DIR "/env/teams.yaml") | fromYaml }}
 {{- $teamData := dict }}
-{{- if hasKey $t.teamConfig }}{{ $teams := keys $t.teamConfig }}
-  {{- range $team := $teams }}
+{{- $teamConfigKeys := keys $t.teamConfig }}
+{{- if gt (1en $teamConfigKeys) 0 }}
+  {{- range $team := $t.teamConfig }}
   {{- $teamPath := printf "/%s" $team }}
 
   {{- $teamData = merge $teamData (dict $teamPath (dict "otomi" (list "otomi-viewer" $team))) }}
