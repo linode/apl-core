@@ -2,28 +2,10 @@
 # Declare variables to be passed into your templates.
 
 interceptors:
-  resources:
-    limits:
-      cpu: 500m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 64Mi
+  resources: {}
 
 controller:
-  resources:
-    limits:
-      cpu: 500m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 64Mi
+  resources: {}
 
 webhook:
-  resources:
-    limits:
-      cpu: 500m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 64Mi
+  resources: {}
