@@ -1,0 +1,30 @@
+{{- $dict := dict "ctx" . "component" "ingester" true }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "tempo.resourceName" $dict }}-discovery
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+    prometheus.io/service-monitor: "false"
+  {{- with .Values.ingester.service.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http-metrics
+      port: 3100
+      protocol: TCP
+      targetPort: 3100
+    - name: grpc
+      port: 9095
+      protocol: TCP
+      targetPort: 9095
+      {{- if .Values.ingester.appProtocol.grpc }}
+      appProtocol: {{ .Values.ingester.appProtocol.grpc }}
+      {{- end }}
+  selector:
+    {{- include "tempo.selectorLabels" $dict | nindent 4 }}
