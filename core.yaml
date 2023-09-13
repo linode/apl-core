@@ -308,6 +308,12 @@ adminApps:
     tags: [security]
   - name: tekton
     tags: [buildpacks]
+    ingress:
+      - svc: tekton-dashboard
+        namespace: tekton-pipelines
+        port: 9097
+        type: public
+        auth: true
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus, minio]
