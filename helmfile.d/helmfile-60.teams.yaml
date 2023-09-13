@@ -35,12 +35,12 @@ releases:
   - name: tekton-dashboard
     installed: {{ $a | get "tekton.enabled" }}
     namespace: team-{{ $teamId }}
-    chart: ../charts/tekton-dashboard
+    chart: ../charts/tekton-dashboard-teams
     labels:
       tag: teams
       team: {{ $teamId }}
     values:
-      - ../values/tekton-dashboard/tekton-dashboard-team.gotmpl
+      - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
   {{- end }}
   {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
   - name: prometheus-{{ $teamId }}

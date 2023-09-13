@@ -70,4 +70,6 @@ releases:
     namespace: tekton-pipelines
     labels:
       pkg: tekton-dashboard
-    <<: *default
+    chart: ../charts/tekton-dashboard
+    values:
+      - ../values/tekton-dashboard/tekton-dashboard.gotmpl
