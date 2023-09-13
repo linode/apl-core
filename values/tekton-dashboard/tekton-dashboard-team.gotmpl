@@ -1,3 +1,5 @@
+{{- $teamId := .Release.Labels.team }}
+
 resources:
     limits:
       cpu: 500m
@@ -6,16 +8,17 @@ resources:
       cpu: 100m
       memory: 64Mi
 
-namespace: tekton-pipelines
+namespace: team-{{ $teamId }}
 
 args:
   - --port=9097
   - --logout-url=
   - --pipelines-namespace=tekton-pipelines
   - --triggers-namespace=tekton-pipelines
-  - --read-only=false
+  - --read-only=true
   - --log-level=info
   - --log-format=json
-  - --namespace=tekton-pipelines
+  - --namespace=team-{{ $teamId }}
+  - --tenant-namespace=team-{{ $teamId }}
   - --stream-logs=true
   - --external-logs=

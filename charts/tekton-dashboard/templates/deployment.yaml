@@ -11,7 +11,6 @@ metadata:
     dashboard.tekton.dev/release: v0.39.0
     version: v0.39.0
   name: tekton-dashboard
-  namespace: tekton-pipelines
 spec:
   replicas: 1
   selector:
@@ -32,24 +31,15 @@ spec:
       name: tekton-dashboard
     spec:
       containers:
-        - args:
-            - --port=9097
-            - --logout-url=
-            - --pipelines-namespace=tekton-pipelines
-            - --triggers-namespace=tekton-pipelines
-            - --read-only=true
-            - --log-level=info
-            - --log-format=json
-            - --namespace=
-            - --namespaces=
-            - --stream-logs=true
-            - --external-logs=
-          env:
+        - env:
             - name: INSTALLED_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
           image: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard:v0.39.0@sha256:93dd10e7e49e7d409721b27e19ebbde21fd7ef263ea07e256580621428976eb4
+          {{- with .Values.args }}
+          args: {{ . | toYaml | nindent 12 }}
+          {{- end }}
           livenessProbe:
             httpGet:
               path: /health

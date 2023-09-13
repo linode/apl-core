@@ -307,7 +307,8 @@ adminApps:
   - name: kured
     tags: [security]
   - name: tekton
-    tags: [buildpacks]
+    tags: [buildpacks, ci, pipelines]
+    ownHost: true
     ingress:
       - svc: tekton-dashboard
         namespace: tekton-pipelines
@@ -437,5 +438,12 @@ teamApps:
       - svc: po-prometheus
         hasPrefix: true
         port: 9090
+        type: public
+        auth: true
+  - name: tekton
+    ownHost: true
+    ingress:
+      - svc: tekton-dashboard
+        port: 9097
         type: public
         auth: true

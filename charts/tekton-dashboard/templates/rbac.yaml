@@ -6,7 +6,6 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-dashboard
   name: tekton-dashboard
-  namespace: tekton-pipelines
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -15,7 +14,6 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-dashboard
   name: tekton-dashboard-info
-  namespace: tekton-pipelines
 rules:
   - apiGroups:
       - ""
@@ -126,7 +124,7 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-dashboard
   name: tekton-dashboard-info
-  namespace: tekton-pipelines
+  namespace: {{ .Values.namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -152,7 +150,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: tekton-dashboard
-    namespace: tekton-pipelines
+    namespace: {{ .Values.namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -170,4 +168,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: tekton-dashboard
-    namespace: tekton-pipelines
+    namespace: {{ .Values.namespace }}

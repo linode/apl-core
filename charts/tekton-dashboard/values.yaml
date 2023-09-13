@@ -13,3 +13,8 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
+
+
+args: []
+
+namespace: tekton-pipelines

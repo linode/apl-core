@@ -11,7 +11,6 @@ metadata:
     dashboard.tekton.dev/release: v0.39.0
     version: v0.39.0
   name: tekton-dashboard
-  namespace: tekton-pipelines
 spec:
   ports:
     - name: http
