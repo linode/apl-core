@@ -3,7 +3,7 @@ cluster:
   name: 'dev'
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
-  version: v0.25.0
+  version: v0.26.0
 e2e:
   enabled: true
   upgrade:

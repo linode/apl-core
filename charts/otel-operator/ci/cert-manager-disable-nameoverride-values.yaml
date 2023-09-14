@@ -1,0 +1,5 @@
+nameOverride: no-cert-manager
+
+admissionWebhooks:
+  certManager:
+    enabled: false
