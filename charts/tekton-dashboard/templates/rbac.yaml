@@ -124,7 +124,7 @@ metadata:
     app.kubernetes.io/instance: default
     app.kubernetes.io/part-of: tekton-dashboard
   name: tekton-dashboard-info
-  namespace: tekton-piplelines
+  namespace: tekton-pipelines
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -150,7 +150,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: tekton-dashboard
-    namespace: tekton-piplelines
+    namespace: tekton-pipelines
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -168,4 +168,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: tekton-dashboard
-    namespace: tekton-piplelines
+    namespace: tekton-pipelines
