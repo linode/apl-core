@@ -8,7 +8,7 @@
 {{- $teams := keys $v.teamConfig }}
 # string builder that creates the map claimed groups to organization teams 
 # example: {"/team-demo1":{"otomi":["otomi-viewer", "team-demo1"]}, "/team-demo2":{"otomi":["otomi-viewer", "team-demo2"]}}
-{{- $teamData = merge $teamData dict "admin" (dict "otomi" (list "otomi-viewer" "team-admin")))}}
+{{- $teamData = merge $teamData (dict "admin" (dict "otomi" (list "otomi-viewer" "team-admin"))) }}
 {{- if gt (len $teams) 0 }}
   {{- range $team := $teams }}
   {{- if ne $team "admin" }}
