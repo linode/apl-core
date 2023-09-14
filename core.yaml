@@ -312,6 +312,7 @@ adminApps:
     ingress:
       - svc: tekton-dashboard
         namespace: tekton-pipelines
+        paths: [/api/]
         port: 9097
         type: public
         auth: true
@@ -444,6 +445,7 @@ teamApps:
     ownHost: true
     ingress:
       - svc: tekton-dashboard
+        hasPrefix: true
         port: 9097
         type: public
         auth: true
