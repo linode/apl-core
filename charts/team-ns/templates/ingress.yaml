@@ -7,26 +7,18 @@
 # - auth/open?
 # - tlsPass?
 {{- range $type := list "public" "private" }}{{/* type "cluster" does not need ingress*/}}
-  {{- $apps := list }}
-  {{- $appsForward := list }}
   {{- $auth := list }}
   {{- $authForward := list }}
   {{- $open := list }}
   {{- $openForward := list }}
   {{- $tlsPass := list }}
   {{- range $s := $v.services }}
+    {{- if not $s.hasOwnIngress }}
     {{- $ingType := $s.type | default "public" }}
     {{- if and (eq $ingType $type) }}
-      {{- $isApps := and $s.isCore (not (or $s.ownHost $s.isShared)) }}
       {{- $hasAuth := $s.auth | default false }}
       {{- $isTlsPass := $s.tlsPass | default false }}
-      {{- if $isApps }}
-        {{- if $s.forwardPath }}
-          {{- $appsForward = append $appsForward $s }}
-        {{- else }}
-          {{- $apps = append $apps $s }}
-        {{- end }}
-      {{- else if $isTlsPass }}
+      {{- if $isTlsPass }}
         {{- $tlsPass = append $tlsPass $s }}
       {{- else if $hasAuth }}
         {{- if $s.forwardPath }}
@@ -42,18 +34,12 @@
         {{- end }}
       {{- end }}
     {{- end }}
+    {{- end }}
   {{- end }}
+
 
   {{- if gt (len $tlsPass) 0 }}
 {{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "tlspass" "hasForward" false "hasAuth" false "services" $tlsPass "tlsPass" true) }}
-  {{- end }}
-
-  {{- if gt (len $apps) 0 }}
-{{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "apps" "hasAuth" true "services" $apps "isApps" true) }}
-  {{- end }}
-
-  {{- if gt (len $appsForward) 0 }}
-{{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "apps-forward" "hasForward" true "hasAuth" true "services" $appsForward "isApps" true) }}
   {{- end }}
 
   {{- if gt (len $auth) 0 }}

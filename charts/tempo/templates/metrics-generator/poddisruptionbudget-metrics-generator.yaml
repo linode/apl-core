@@ -1,0 +1,16 @@
+{{- if .Values.metricsGenerator.enabled }}
+{{- if gt (int .Values.metricsGenerator.replicas) 1 }}
+{{ $dict := dict "ctx" . "component" "metrics-generator" "memberlist" true }}
+apiVersion: {{ include "tempo.pdb.apiVersion" . }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "tempo.resourceName" $dict }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+  maxUnavailable: 1
+{{- end }}
+{{- end }}

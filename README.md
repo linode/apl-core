@@ -52,10 +52,12 @@ Add developer- and operations-centric tools, automation and self-service on top 
 
 To install Otomi using Helm, make sure to have a K8s cluster running with at least:
 
-- Version `1.24` and `1.25`
-- A node pool with **6 vCPU** and **8GB+ RAM** (more is advised!)
+- Version `1.24`, `1.25` or `1.26`
+- A node pool with **9 vCPU** and **12GB+ RAM** (more is advised!)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
-- When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by `Otomi` can obtain an external accessible IP (using a cloud load balancer or MetalLB)
+- When installing using the `custom` provider, make sure the K8s LoadBalancer Service created by `Otomi` can obtain an external IP (using a cloud load balancer or MetalLB)
+
+> **_NOTE:_**  Install Otomi with DNS to unlock it's full potential. Check [otomi.io](https://otomi.io) for more info.
 
 Add the Helm repository:
 
@@ -68,7 +70,6 @@ and then install the Helm chart:
 
 ```bash
 helm install otomi otomi/otomi \
---set cluster.k8sVersion=$VERSION \ # 1.24 and 1.25 are supported
 --set cluster.name=$CLUSTERNAME \
 --set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', 'scaleway' or 'custom' for any other cloud or onprem K8s
 ```

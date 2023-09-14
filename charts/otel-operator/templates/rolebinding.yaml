@@ -1,0 +1,18 @@
+{{- if and .Values.role.create .Values.manager.leaderElection.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    {{- include "opentelemetry-operator.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller-manager
+  name: {{ template "opentelemetry-operator.fullname" . }}-leader-election
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ template "opentelemetry-operator.fullname" . }}-leader-election
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "opentelemetry-operator.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

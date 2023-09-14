@@ -1,4 +1,4 @@
-api: main
+api: 1.0.0
 console: main
 tasks: 1.0.0
 tools: 1.4.25

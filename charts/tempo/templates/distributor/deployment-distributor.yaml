@@ -1,0 +1,167 @@
+{{ $dict := dict "ctx" . "component" "distributor" "memberlist" true }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "tempo.labels" $dict | nindent 4 }}
+  {{- with .Values.distributor.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  minReadySeconds: 10
+{{- if not .Values.distributor.autoscaling.enabled }}
+  replicas: {{ .Values.distributor.replicas }}
+{{- end }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "tempo.podLabels" $dict | nindent 8 }}
+        {{- with .Values.tempo.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.distributor.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-tempo.yaml") . | sha256sum }}
+        {{- with .Values.tempo.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.distributor.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if or (.Values.distributor.priorityClassName) (.Values.global.priorityClassName) }}
+      priorityClassName: {{ default .Values.distributor.priorityClassName .Values.global.priorityClassName }}
+      {{- end }}
+      serviceAccountName: {{ include "tempo.serviceAccountName" . }}
+      {{- with .Values.tempo.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      enableServiceLinks: false
+      {{- include "tempo.distributorImagePullSecrets" . | nindent 6 -}}
+      containers:
+        - args:
+            - -target=distributor
+            - -config.file=/conf/tempo.yaml
+            - -mem-ballast-size-mbs=1024
+            {{- with .Values.distributor.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          image: {{ include "tempo.imageReference" $dict }}
+          imagePullPolicy: {{ .Values.tempo.image.pullPolicy }}
+          name: distributor
+          ports:
+            - containerPort: 7946
+              name: http-memberlist
+              protocol: TCP
+            - containerPort: 3100
+              name: http-metrics
+            {{- if .Values.traces.jaeger.thriftCompact.enabled }}
+            - containerPort: 6831
+              name: jaeger-compact
+              protocol: UDP
+            {{- end }}
+            {{- if .Values.traces.jaeger.thriftBinary.enabled }}
+            - containerPort: 6832
+              name: jaeger-binary
+              protocol: UDP
+            {{- end }}
+            {{- if .Values.traces.jaeger.thriftHttp.enabled }}
+            - containerPort: 14268
+              name: jaeger-http
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.traces.jaeger.grpc.enabled }}
+            - containerPort: 14250
+              name: grpc-jaeger
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.traces.zipkin.enabled }}
+            - containerPort: 9411
+              name: zipkin
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.traces.otlp.http }}
+            - containerPort: 4318
+              name: otlp-http
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.traces.otlp.grpc.enabled }}
+            - containerPort: 4317
+              name: grpc-otlp
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.traces.opencensus.enabled }}
+            - containerPort: 55678
+              name: opencensus
+              protocol: TCP
+            {{- end }}
+          {{- with .Values.distributor.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.distributor.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            {{- toYaml .Values.tempo.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.distributor.resources | nindent 12 }}
+          {{- with .Values.tempo.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /conf
+              name: config
+            - mountPath: /var/tempo
+              name: tempo-distributor-store
+            {{- if .Values.enterprise.enabled }}
+            - name: license
+              mountPath: /license
+            {{- end }}
+            {{- with .Values.distributor.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.distributor.terminationGracePeriodSeconds }}
+      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- with .Values.distributor.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.distributor.affinity }}
+      affinity:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.distributor.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.distributor.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          {{- include "tempo.configVolume" . | nindent 10 }}
+        - name: tempo-distributor-store
+          emptyDir: {}
+        {{- if .Values.enterprise.enabled }}
+        - name: license
+          secret:
+            secretName: {{ tpl .Values.license.secretName . }}
+        {{- end }}
+        {{- with .Values.distributor.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}

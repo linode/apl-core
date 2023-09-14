@@ -27,7 +27,8 @@ releases:
 {{- range $teamId, $team := omit $tc "admin" }} 
   {{- $teamServices := ($team | get "services" list) }}
   {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
-  {{- $appsDomain := printf "apps.%s" $domain }}
+  {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
+  {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $azure := $team | get "azure" dict }}
   {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
@@ -47,7 +48,7 @@ releases:
         alertmanager:
           namespaceOverride: team-{{ $teamId }}
           alertmanagerSpec:
-            externalUrl: https://{{ $appsDomain }}/alertmanager
+            externalUrl: "https://{{ $alertmanagerDomain }}"
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
@@ -63,7 +64,7 @@ releases:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
-            externalUrl: https://{{ $appsDomain }}/prometheus
+            externalUrl: "https://{{ $prometheusDomain }}"
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
             {{ $selType }}NamespaceSelector:
               matchLabels:
