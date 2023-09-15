@@ -1376,6 +1376,44 @@ definitions:
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
+      autoUpdate:
+        description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
+        title: Auto Image Updater
+        properties:
+          enabled:
+            description: Enable Auto Image Updater
+            type: boolean
+            default: false
+          build:
+            $ref: '#/definitions/wordCharacterPattern'
+          tag:
+            description: Tag of the build. Only if strategy is digest.
+            $ref: '#/definitions/wordCharacterPattern'
+          versionConstraint:
+            $ref: '#/definitions/wordCharacterPattern'
+          strategy:
+            properties:
+              digest:
+                additionalProperties: false
+                properties:
+                  tag:
+                    $ref: '#/definitions/wordCharacterPattern'
+                required:
+                  - tag
+              semver:
+                additionalProperties: false
+                properties:
+                  versionConstraint:
+                    $ref: '#/definitions/wordCharacterPattern'
+                required:
+                  - versionConstraint
+              type:
+                type: string
+                enum:
+                  - semver
+                  - digest
+                  - latest
+                default: latest
 
     required:
       - name

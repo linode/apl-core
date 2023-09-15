@@ -1,4 +1,4 @@
-api: 1.0.0
-console: main
-tasks: 1.0.0
+api: auto-image-update
+console: auto-image-update
+tasks: auto-image-update
 tools: 1.4.25
