@@ -18,15 +18,16 @@ apps:
     enabled: true
   kiali:
     enabled: true
-  tempo:
-    enabled: true
   loki:
     enabled: true
   minio:
     enabled: true
+  otel: true
   prometheus:
     enabled: true
   promtail:
+    enabled: true
+  tempo:
     enabled: true
   thanos:
     enabled: true
