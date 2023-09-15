@@ -1,4 +1,4 @@
 api: auto-image-update
-console: main
+console: auto-image-update
 tasks: auto-image-update
 tools: 1.4.25
