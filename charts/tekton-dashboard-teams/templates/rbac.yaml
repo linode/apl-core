@@ -4,16 +4,16 @@ metadata:
   labels:
     app.kubernetes.io/component: dashboard
     app.kubernetes.io/instance: default
-    app.kubernetes.io/part-of: tekton-dashboard
-  name: tekton-dashboard
+    app.kubernetes.io/part-of: tekton-dashboard-{{ .Values.teamId }}
+  name: tekton-dashboard-{{ .Values.teamId }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
     app.kubernetes.io/instance: default
-    app.kubernetes.io/part-of: tekton-dashboard
-  name: tekton-dashboard-info
+    app.kubernetes.io/part-of: tekton-dashboard-{{ .Values.teamId }}
+  name: tekton-dashboard-info-{{ .Values.teamId }}
 rules:
   - apiGroups:
       - ""
@@ -25,16 +25,109 @@ rules:
       - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: dashboard
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-dashboard-{{ .Values.teamId }}
+  name: tekton-dashboard-backend-{{ .Values.teamId }}
+rules:
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - security.openshift.io
+    resources:
+      - securitycontextconstraints
+    verbs:
+      - use
+  - apiGroups:
+      - tekton.dev
+    resources:
+      - clustertasks
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - clusterinterceptors
+      - clustertriggerbindings
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: dashboard
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-dashboard-{{ .Values.teamId }}
+  name: tekton-dashboard-tenant-{{ .Values.teamId }}
+rules:
+  - apiGroups:
+      - dashboard.tekton.dev
+    resources:
+      - extensions
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+      - namespaces
+      - pods
+      - pods/log
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - tekton.dev
+    resources:
+      - tasks
+      - taskruns
+      - pipelines
+      - pipelineruns
+      - customruns
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - eventlisteners
+      - interceptors
+      - triggerbindings
+      - triggers
+      - triggertemplates
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
     app.kubernetes.io/instance: default
-    app.kubernetes.io/part-of: tekton-dashboard
-  name: tekton-dashboard-info
+    app.kubernetes.io/part-of: tekton-dashboard-{{ .Values.teamId }}
+  name: tekton-dashboard-info-{{ .Values.teamId }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: tekton-dashboard-info
+  name: tekton-dashboard-info-{{ .Values.teamId }}
 subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: Group
@@ -46,17 +139,17 @@ metadata:
   labels:
     app.kubernetes.io/component: dashboard
     app.kubernetes.io/instance: default
-    app.kubernetes.io/part-of: tekton-dashboard
+    app.kubernetes.io/part-of: tekton-dashboard-{{ .Values.teamId }}
     rbac.dashboard.tekton.dev/subject: tekton-dashboard
-  name: tekton-dashboard-backend-{{ .Values.namespace }}
+  name: tekton-dashboard-backend-{{ .Values.teamId }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tekton-dashboard-backend
+  name: tekton-dashboard-backend-{{ .Values.teamId }}
 subjects:
   - kind: ServiceAccount
-    name: tekton-dashboard
-    namespace: {{ .Values.namespace }}
+    name: tekton-dashboard-{{ .Values.teamId }}
+    namespace: team-{{ .Values.teamId }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -64,14 +157,14 @@ metadata:
   labels:
     app.kubernetes.io/component: dashboard
     app.kubernetes.io/instance: default
-    app.kubernetes.io/part-of: tekton-dashboard
+    app.kubernetes.io/part-of: tekton-dashboard-{{ .Values.teamId }}
     rbac.dashboard.tekton.dev/subject: tekton-dashboard
-  name: tekton-dashboard-tenant-{{ .Values.namespace }}
+  name: tekton-dashboard-tenant-{{ .Values.teamId }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: tekton-dashboard-tenant
+  name: tekton-dashboard-tenant-{{ .Values.teamId }}
 subjects:
   - kind: ServiceAccount
-    name: tekton-dashboard
-    namespace: {{ .Values.namespace }}
+    name: tekton-dashboard-{{ .Values.teamId }}
+    namespace: team-{{ .Values.teamId }}

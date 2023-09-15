@@ -17,4 +17,4 @@ resources: {}
 
 args: []
 
-namespace: team-name
+teamId: demo

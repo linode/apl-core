@@ -5,5 +5,5 @@ kind: ConfigMap
 metadata:
   labels:
     app.kubernetes.io/instance: default
-    app.kubernetes.io/part-of: tekton-dashboard
+    app.kubernetes.io/part-of: tekton-dashboard-{{ .Values.teamId }}
   name: dashboard-info
