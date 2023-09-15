@@ -315,6 +315,8 @@ adminApps:
         port: 9097
         type: public
         auth: true
+        removeRequestHeaders:
+          - authorization
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus, minio]
@@ -448,3 +450,5 @@ teamApps:
         port: 9097
         type: public
         auth: true
+        removeRequestHeaders:
+          - authorization

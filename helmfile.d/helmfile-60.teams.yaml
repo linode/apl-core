@@ -32,10 +32,10 @@ releases:
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $azure := $team | get "azure" dict }}
   {{- if and $a.tekton.enabled }}
-  - name: tekton-dashboard
+  - name: tekton-dashboard-{{ $teamId }}
     installed: {{ $a | get "tekton.enabled" }}
     namespace: team-{{ $teamId }}
-    chart: ../charts/tekton-dashboard-teams
+    chart: ../charts/tekton-dashboard
     labels:
       tag: teams
       team: {{ $teamId }}

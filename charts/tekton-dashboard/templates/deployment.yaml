@@ -1,34 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: tekton-dashboard
-    app.kubernetes.io/component: dashboard
-    app.kubernetes.io/instance: default
-    app.kubernetes.io/name: dashboard
-    app.kubernetes.io/part-of: tekton-dashboard
-    app.kubernetes.io/version: v0.39.0
-    dashboard.tekton.dev/release: v0.39.0
-    version: v0.39.0
+  labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
   name: tekton-dashboard
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app.kubernetes.io/component: dashboard
-      app.kubernetes.io/instance: default
-      app.kubernetes.io/name: dashboard
-      app.kubernetes.io/part-of: tekton-dashboard
+    matchLabels: {{- include "tekton-dashboard.selector-labels" . | indent 6 }}
   template:
     metadata:
-      labels:
-        app: tekton-dashboard
-        app.kubernetes.io/component: dashboard
-        app.kubernetes.io/instance: default
-        app.kubernetes.io/name: dashboard
-        app.kubernetes.io/part-of: tekton-dashboard
-        app.kubernetes.io/version: v0.39.0
-      name: tekton-dashboard
+      labels: {{- include "tekton-dashboard.labels" . | indent 8 }}
+      name: {{ template "tekton-dashboard.fullname" . }}
     spec:
       containers:
         - env:

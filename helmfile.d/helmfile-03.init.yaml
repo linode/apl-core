@@ -81,3 +81,8 @@ releases:
     labels:
       pkg: tekton-pipelines
     <<: *default
+  - name: tekton-dashboard
+    installed: {{ $a | get "tekton.enabled" }}
+    labels:
+      pkg: tekton-pipelines
+    <<: *default
