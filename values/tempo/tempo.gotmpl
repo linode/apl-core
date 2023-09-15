@@ -33,8 +33,6 @@ compactor:
 
 querier:
   resources: {{- $t.resources.querier | toYaml | nindent 4 }}
-#   podAnnotations:
-#     policy.otomi.io/ignore: psp-host-filesystem
   autoscaling:
     enabled: {{ $t.autoscaling.querier.enabled }}
     minReplicas: {{ $t.autoscaling.querier.minReplicas }}
