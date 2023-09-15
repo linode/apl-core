@@ -22,7 +22,8 @@ apps:
     enabled: true
   minio:
     enabled: true
-  otel: true
+  otel:
+    enabled: true
   prometheus:
     enabled: true
   promtail:

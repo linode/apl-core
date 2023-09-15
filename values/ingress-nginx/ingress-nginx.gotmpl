@@ -42,10 +42,14 @@ controller:
         memory: 512Mi
     {{- end }}
   podAnnotations:
-    # sidecar.istio.io/inject: {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
-    policy.otomi.io/ignore: psp-privileged,psp-allowed-users
+    policy.otomi.io/ignore: psp-privileged
   opentelemetry:
     enabled: {{ $n.tracing.enabled }}
+    containerSecurityContext:
+      runAsUser: 65534
+      runAsGroup: 65534
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
   replicaCount: 2
   minAvailable: 1
   autoscaling:
