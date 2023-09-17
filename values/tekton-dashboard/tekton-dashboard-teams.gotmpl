@@ -1,12 +1,8 @@
 {{- $teamId := .Release.Labels.team }}
+{{- $v := .Values }}
+{{- $t := $v.apps.tekton }}
 
-resources:
-    limits:
-      cpu: 500m
-      memory: 128Mi
-    requests:
-      cpu: 100m
-      memory: 64Mi
+resources: {{- $t.resources.dashboard | toYaml | nindent 2 }}
 
 teamId: {{ $teamId }}
 
@@ -18,6 +14,7 @@ args:
   - --read-only=true
   - --log-level=info
   - --log-format=json
+  - --namespace=team-{{ $teamId }}
   - --namespaces=team-{{ $teamId }}
   - --stream-logs=true
   - --external-logs=

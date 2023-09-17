@@ -2424,6 +2424,11 @@ properties:
           enabled:
             type: boolean
             default: false
+          resources:
+            additionalProperties: false
+            properties:
+              dashboard:
+                $ref: '#/definitions/resources'
       loki:
         additionalProperties: false
         properties:

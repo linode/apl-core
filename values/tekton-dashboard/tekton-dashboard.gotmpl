@@ -1,10 +1,13 @@
-resources:
-    limits:
-      cpu: 500m
-      memory: 128Mi
-    requests:
-      cpu: 100m
-      memory: 64Mi
+{{- $v := .Values }}
+{{- $t := $v.apps.tekton }}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+
+{{ $targets := list }}
+  {{- range $id, $_ := $v.teamConfig }}
+    {{- $targets = append $targets (print "team-" $id) }}
+  {{- end }}
+
+resources: {{- $t.resources.dashboard | toYaml | nindent 2 }}
 
 args:
   - --port=9097
@@ -15,6 +18,6 @@ args:
   - --log-level=info
   - --log-format=json
   - --namespace=
-  - --namespaces=
+  - --namespaces="{{- tpl $joinTpl (dict "list" $targets "sep" ",") }}"
   - --stream-logs=true
   - --external-logs=
