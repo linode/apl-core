@@ -65,11 +65,3 @@ releases:
     installed: {{ $a | get "redis-shared.enabled" }}
     namespace: redis
     <<: *default
-  - name: tekton-dashboard
-    installed: {{ $a | get "tekton.enabled" }}
-    namespace: tekton-pipelines
-    labels:
-      pkg: tekton-dashboard
-    chart: ../charts/tekton-dashboard
-    values:
-      - ../values/tekton-dashboard/tekton-dashboard.gotmpl
