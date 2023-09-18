@@ -20,6 +20,7 @@ apps:
     enabled: true
   loki:
     enabled: true
+    adminPassword: blablabla
   minio:
     enabled: true
   otel:
@@ -30,6 +31,14 @@ apps:
     enabled: true
   tempo:
     enabled: true
+  istio:
+    tracing:
+      enabled: true
+      samplingRatio: '100'
+  ingress-nginx-platform:
+    tracing:
+      enabled: true
+      samplingRatio: '100'
 
 teamConfig:
   demo:

@@ -10,7 +10,6 @@ resources:
       accessLogging:
       - providers:
         - name: envoy
-        - name: envoy-access-logs
       {{- if $i.tracing.enabled }}
       tracing:
       - providers:
