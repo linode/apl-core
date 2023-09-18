@@ -156,7 +156,7 @@ resources:
               numTrustedProxies: 1
           enableAutoMtls: true
           extensionProviders:
-          - EnvoyFileAccessLogProvider:
+          - envoyFileAccessLog:
               path: /dev/stdout
               {{- if $i.tracing.enabled }}
               logFormat: |
