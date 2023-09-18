@@ -84,7 +84,14 @@ apps:
             duration: 24h
             period: 24h
         storage:
-            azure:
-                account_key: account_key
-            type: minioLocal
+            # azure:
+            #     account_key: account_key
+            #     account_name: blabla
+            #     container_name: test
+            # type: azure
+            s3:
+                useInstanceRole: true
+                region: west-eu
+                bucket: my-bucket
+            type: s3
         v11StartDate: 2021-05-13

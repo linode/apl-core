@@ -129,15 +129,15 @@ export const hfTemplate = async (
   const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {
     const file = 'helmfile.tpl/helmfile-init.yaml'
-    d.debug(`Templating ${file} started`)
+    d.debug(`# Templating ${file} started`)
     const outInit = await hf({ ...params, fileOpts: file }, { streams }, envDir)
-    d.debug(`Templating ${file} done`)
+    d.debug(`# Templating ${file} done`)
     template += outInit.stdout
     template += '\n'
   }
-  d.debug('Templating charts started')
+  d.debug('# Templating charts started')
   const outAll = await hf(params, { streams }, envDir)
-  d.debug('Templating charts done')
+  d.debug('# Templating charts done')
   template += outAll.stdout
   return template
 }
