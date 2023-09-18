@@ -18,6 +18,6 @@ args:
   - --log-level=info
   - --log-format=json
   - --namespace=
-  - --namespaces="{{- tpl $joinTpl (dict "list" $targets "sep" ",") }}"
+  - --namespaces={{- tpl $joinTpl (dict "list" $targets "sep" ",") }}
   - --stream-logs=true
   - --external-logs=

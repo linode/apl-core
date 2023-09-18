@@ -24,6 +24,14 @@ The longest name that gets created adds and extra 37 characters, so truncation s
 {{- end -}}
 {{- end -}}
 
+{{- define "tekton-dashboard.svcname" -}}
+{{- if .Values.teamId -}}
+{{- printf "%s-%s" .Values.teamId "tekton-dashboard" | trunc 26 | trimSuffix "-" -}}
+{{- else -}}
+{{- printf "tekton-dashboard" -}}
+{{- end -}}
+{{- end -}}
+
 {{/* Generate basic labels */}}
 {{- define "tekton-dashboard.labels" }}
 app: tekton-dashboard
