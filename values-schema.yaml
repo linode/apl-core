@@ -2537,6 +2537,9 @@ properties:
                     x-secret: ''
               s3:
                 properties:
+                  useInstanceRole:
+                    type: boolean
+                    default: false
                   bucket:
                     $ref: '#/definitions/wordCharacterPattern'
                   s3Url:
@@ -2546,6 +2549,8 @@ properties:
                   secretAccessKey:
                     $ref: '#/definitions/wordCharacterPattern'
                     x-secret: ''
+                  region:
+                    $ref: '#/definitions/wordCharacterPattern'
               gcs:
                 properties:
                   bucket:
