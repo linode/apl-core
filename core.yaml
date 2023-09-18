@@ -121,6 +121,7 @@ adminApps:
   - name: alertmanager
     tags: [alerting, observability]
     deps: [prometheus]
+    ownHost: true
     ingress:
       - svc: po-alertmanager
         namespace: monitoring
@@ -364,6 +365,7 @@ adminApps:
         auth: true
   - name: prometheus
     tags: [metrics, observability]
+    ownHost: true
     ingress:
       - svc: po-prometheus
         port: 9090
@@ -416,6 +418,7 @@ adminApps:
 
 teamApps:
   - name: alertmanager
+    ownHost: true
     ingress:
       - svc: po-alertmanager
         hasPrefix: true
@@ -440,6 +443,7 @@ teamApps:
     useHost: grafana
     path: /explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22tempo%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D
   - name: prometheus
+    ownHost: true
     ingress:
       - svc: po-prometheus
         hasPrefix: true

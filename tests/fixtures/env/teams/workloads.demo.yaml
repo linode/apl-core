@@ -4,6 +4,20 @@ teamConfig:
             - name: wd1
               url: https://myrepo.local/mychart.git
               path: /
+              revision: main
+              autoUpdate:
+                  digest:
+                      tag: latest
+                  type: digest
+                  enabled: true
+                  build: hello
+                  strategy: semver
             - name: wd2
               url: https://myrepo.local/mychart.git
               path: /
+              autoUpdate:
+                  semver:
+                      versionConstraint: '1.12'
+                  type: semver
+                  enabled: true
+                  build: hello

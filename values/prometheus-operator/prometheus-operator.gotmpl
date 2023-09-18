@@ -7,8 +7,10 @@
 {{- $g := $v.apps | get "grafana" }}
 {{- $p := $v.apps | get "prometheus" }}
 {{- $hasKeycloak := $k.enabled }}
-{{- $appsDomain := printf "apps.%s" $v.cluster.domainSuffix }}
-{{- $grafanaDomain := printf "grafana.%s" $v.cluster.domainSuffix }}
+{{- $domain := ($v.cluster | get "domainSuffix" nil) }}
+{{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
+{{- $prometheusDomain := printf "prometheus.%s" $domain }}
+{{- $grafanaDomain := printf "grafana.%s" $domain }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 # {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrlBackchannel "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
@@ -106,7 +108,7 @@ prometheus:
             requests:
               storage: {{ $p | get "storageSize" }}
     enableAdminAPI: true
-    externalUrl: https://{{ $appsDomain }}/prometheus
+    externalUrl: https://{{ $prometheusDomain }}
     {{- if $c.tempo.enabled }}
     enableRemoteWriteReceiver: true
     {{- end }}
@@ -206,7 +208,7 @@ alertmanager:
         cpu: 100m
         memory: 128Mi
       {{- end }}
-    externalUrl: https://{{ $appsDomain }}/alertmanager
+    externalUrl: https://{{ $alertmanagerDomain }}
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
 grafana:
   enabled: {{ $g.enabled }}
