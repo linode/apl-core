@@ -1,3 +1,4 @@
+
 {{- define "ingress.apiVersion" -}}
 {{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion -}}
 networking.k8s.io/v1

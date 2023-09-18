@@ -40,22 +40,27 @@ spec:
                 name: {{ include "otomi-api.fullname" . }}
             - configMapRef:
                 name: {{ include "otomi-api.fullname" . }}
-          ports:
-            - name: http
-              containerPort: 8080
-              protocol: TCP
           livenessProbe:
             failureThreshold: 3
             httpGet:
               path: /live
               port: 9000
             periodSeconds: 10
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
           readinessProbe:
-            initialDelaySeconds: 90
             httpGet:
               path: /ready
               port: 9000
           resources: {{- toYaml .Values.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+              path: /live
+              port: 9000
+            failureThreshold: 30
+            periodSeconds: 5
           volumeMounts:
             - name: repo
               mountPath: /tmp
