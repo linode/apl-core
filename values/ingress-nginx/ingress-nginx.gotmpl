@@ -50,6 +50,13 @@ controller:
       runAsGroup: 65534
       runAsNonRoot: true
       allowPrivilegeEscalation: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 65Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
   replicaCount: 2
   minAvailable: 1
   autoscaling:
