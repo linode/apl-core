@@ -49,8 +49,8 @@ teamConfig:
         - ingress
         - networkPolicy
     networkPolicy:
-      egressPublic: true
-      ingressPrivate: true
+      egressPublic: false
+      ingressPrivate: false
     services:
       - ingressClassName: platform
         ksvc:
