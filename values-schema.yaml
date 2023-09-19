@@ -2302,9 +2302,7 @@ properties:
             properties:
               keycloak:
                 $ref: '#/definitions/resources'
-              keycloak-operator:
-                $ref: '#/definitions/resources'
-              postgresql:
+              operator:
                 $ref: '#/definitions/resources'
         required:
           - postgresqlPassword

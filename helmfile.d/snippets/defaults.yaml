@@ -254,7 +254,7 @@ environments:
             adminUsername: otomi-admin
             theme: otomi
             resources:
-              pod:
+              keycloak:
                   requests:
                       cpu: 200m
                       memory: 512Mi
