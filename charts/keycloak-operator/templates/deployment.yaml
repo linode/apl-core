@@ -12,6 +12,10 @@ spec:
       app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         app.kubernetes.io/managed-by: quarkus
         app.kubernetes.io/name: keycloak-operator
