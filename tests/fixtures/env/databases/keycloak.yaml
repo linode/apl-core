@@ -1,4 +1,4 @@
 databases:
     keycloak:
-        size: '5Gi'
-        replicas: 1
+        useOtomiDB: false
+        imported: false

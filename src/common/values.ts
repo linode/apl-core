@@ -1,7 +1,8 @@
 import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
-import { unlink, writeFile } from 'fs/promises'
+import { mkdir, unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
+import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
 import { $ } from 'zx'
@@ -103,6 +104,9 @@ export const writeValuesToFile = async (
   overwrite = false,
 ): Promise<void> => {
   const d = terminal('common:values:writeValuesToFile')
+  const filePath = path.dirname(targetPath)
+  await mkdir(filePath, { recursive: true })
+
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
   const suffix = isSecretsFile ? '.dec' : ''
   const values = cloneDeep(inValues)
