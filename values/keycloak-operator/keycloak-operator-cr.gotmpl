@@ -45,6 +45,7 @@ spec:
         - volumeMounts:
             - name: theme-volume
               mountPath: /opt/keycloak/themes/otomi
+          resources: {{ $k.resources.keycloak | toYaml  | nindent 12 }}
         volumes:
         - name: theme-volume
           emptyDir: {}
