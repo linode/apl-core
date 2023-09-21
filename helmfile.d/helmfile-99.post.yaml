@@ -18,6 +18,12 @@ releases:
     labels:
       group: jobs
       type: cronjob
+  - name: job-copy-certs-argocd
+    installed:  {{ $a | get "argocd.enabled" }}
+    <<: *jobs
+    labels:
+      group: jobs
+      type: cronjob
   - name: job-copy-certs
     installed:  {{ not ($a | get "aws-alb-ingress-controller.enabled") }}
     <<: *jobs
