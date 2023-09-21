@@ -87,4 +87,6 @@ changes:
       - 'cluster.k8sVersion'
   - version: 14
     relocations:
-      - apps.keycloak.resources.postgresql: apps.keycloak.resources.operator
+      - apps.keycloak.resources.postgresql: databases.keycloak.resources
+    deletions:
+      - apps.keycloak.resources.postgresqlPassword

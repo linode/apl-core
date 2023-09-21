@@ -2280,11 +2280,6 @@ properties:
               clientSecret:
                 type: string
                 x-secret: '{{ randAlphaNum 32 }}'
-          postgresqlPassword:
-            type: string
-            description: This password was generated and cannot be changed without manual intervention.
-            x-secret: '{{ randAlphaNum 20 }}'
-            readOnly: true
           adminPassword:
             type: string
             x-secret: ''
@@ -2302,10 +2297,6 @@ properties:
             properties:
               keycloak:
                 $ref: '#/definitions/resources'
-              operator:
-                $ref: '#/definitions/resources'
-        required:
-          - postgresqlPassword
       kiali:
         additionalProperties: false
         properties:
