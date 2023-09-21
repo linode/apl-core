@@ -1,4 +1,4 @@
-api: auto-image-update
-console: auto-image-update
-tasks: auto-image-update
+api: kc_upgrade
+console: main
+tasks: main
 tools: 1.4.25
