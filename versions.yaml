@@ -1,4 +1,4 @@
 api: kc_upgrade
 console: main
-tasks: main
+tasks: kc_upgrade
 tools: 1.4.25
