@@ -5,3 +5,18 @@ apps:
             alias: redkubes-azure
             clientID: otomi
         theme: otomi
+        resources:
+            keycloak:
+                limits:
+                    cpu: '200m'
+                    memory: '512Mi'
+                requests:
+                    cpu: '100m'
+                    memory: '256Mi'
+            operator:
+                limits:
+                    cpu: '200m'
+                    memory: '512Mi'
+                requests:
+                    cpu: '100m'
+                    memory: '256Mi'

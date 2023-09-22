@@ -2317,6 +2317,8 @@ properties:
             properties:
               keycloak:
                 $ref: '#/definitions/resources'
+              operator:
+                $ref: '#/definitions/resources'
       kiali:
         additionalProperties: false
         properties:
