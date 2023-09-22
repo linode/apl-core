@@ -1,0 +1,15 @@
+{{- $v := .Values }}
+{{- $o:= $v.apps.otel }}
+
+replicaCount: {{ $o.operator.replicaCount }}
+nameOverride: otel-operator
+imagePullSecrets: []
+manager:
+  resources: {{- $o.resources.manager | toYaml | nindent 4 }}
+  serviceMonitor:
+    enabled: true
+    extraLabels:
+      prometheus: system
+  podAnnotations: {}
+kubeRBACProxy:
+  resources: {{- $o.resources.kubeRBACProxy | toYaml | nindent 4 }}

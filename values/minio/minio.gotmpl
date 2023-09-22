@@ -67,6 +67,7 @@ provisioning:
     - name: thanos
     - name: loki
     - name: harbor
+    - name: tempo
     - name: database
   policies:
     - name: otomi-apps
@@ -82,6 +83,8 @@ provisioning:
           - arn:aws:s3:::velero
           - arn:aws:s3:::thanos
           - arn:aws:s3:::loki
+          - arn:aws:s3:::harbor
+          - arn:aws:s3:::tempo
           - arn:aws:s3:::harbor 
           - arn:aws:s3:::database
         - effect: Allow
@@ -95,6 +98,7 @@ provisioning:
           - arn:aws:s3:::thanos
           - arn:aws:s3:::loki
           - arn:aws:s3:::harbor
+          - arn:aws:s3:::tempo
           - arn:aws:s3:::database
           condition:
             StringEquals:
@@ -115,4 +119,5 @@ provisioning:
           - arn:aws:s3:::thanos/**
           - arn:aws:s3:::loki/**
           - arn:aws:s3:::harbor/**
+          - arn:aws:s3:::tempo/**
           - arn:aws:s3:::database/**

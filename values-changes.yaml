@@ -86,6 +86,9 @@ changes:
     deletions:
       - 'cluster.k8sVersion'
   - version: 14
+    deletions:
+      - 'apps.istio.meshConfig'
+  - version: 15
     relocations:
       - apps.keycloak.resources.postgresql: databases.keycloak.resources
     deletions:

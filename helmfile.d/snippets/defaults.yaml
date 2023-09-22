@@ -225,8 +225,14 @@ environments:
                 enabled: true
                 minReplicas: 2
                 maxReplicas: 10
+            tracing:
+              enabled: false
+              samplingRatio: "0.01"
           istio:
             enabled: true
+            tracing:
+              enabled: false
+              samplingRatio: "0.01"
             autoscaling:
               egressgateway:
                 minReplicas: 2
@@ -239,14 +245,6 @@ environments:
                 maxReplicas: 10
             egressGateway:
               enabled: false
-            meshConfig:
-              accessLogFile: "/dev/stdout"
-              enableAutoMtls: true
-              defaultConfig:
-                gatewayTopology:
-                  numTrustedProxies: 1
-                tracing:
-                  sampling: 0.1
           jaeger:
             enabled: false
           keycloak:
@@ -492,7 +490,6 @@ environments:
                 limits:
                   cpu: 1
                   memory: 1Gi
-
           promtail:
             enabled: false
           prometheus-blackbox-exporter: {}
@@ -510,6 +507,112 @@ environments:
             storageSize: 5Gi
           redis-shared:
             enabled: false
+          otel:
+            enabled: false
+            collector:
+              mode: deployment
+            operator:
+              replicaCount: 1
+            resources:
+              collector:
+                requests:
+                    cpu: 100m
+                    memory: 64Mi
+                limits:
+                    cpu: 500m
+                    memory: 512Mi 
+              manager:
+                requests:
+                    cpu: 50m
+                    memory: 16Mi
+                limits:
+                    cpu: 200m
+                    memory: 512Mi
+              kubeRBACProxy:
+                requests:
+                    cpu: 50m
+                    memory: 64Mi
+                limits:
+                    cpu: 500m
+                    memory: 128Mi
+          tempo:
+            enabled: false
+            storage:
+              type: minioLocal
+            resources:
+              compactor:
+                  requests:
+                      cpu: 100m
+                      memory: 256Mi
+                  limits:
+                      cpu: 500m
+                      memory: 1Gi               
+              ingester:
+                  requests:
+                      cpu: 100m
+                      memory: 256Mi
+                  limits:
+                      cpu: 500m
+                      memory: 1Gi
+              memcached:
+                  requests:
+                      cpu: 50m
+                      memory: 64Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              querier:
+                  requests:
+                      cpu: 50m
+                      memory: 64Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              metricsGenerator:
+                  requests:
+                      cpu: 50m
+                      memory: 64Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              distributor:
+                  requests:
+                      cpu: 50m
+                      memory: 64Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+              queryFrontend:
+                  requests:
+                      cpu: 50m
+                      memory: 64Mi
+                  limits:
+                      cpu: 200m
+                      memory: 256Mi
+            persistence:
+              ingester:
+                size: 10Gi
+            autoscaling:
+              ingester:
+                enabled: false
+              querier:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              distributor:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              queryFrontend:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
           thanos:
             enabled: false
             query:
@@ -614,7 +717,7 @@ environments:
                   memory: 64M
                 limits:
                   cpu: 500m
-                  memory: 512Mi
+                  memory: 512Mi       
           vault:
             enabled: false
             resources:
@@ -699,7 +802,7 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes: (and think more?)
-        version: 14
+        version: 15
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm
