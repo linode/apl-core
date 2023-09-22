@@ -1,7 +1,8 @@
 import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
-import { unlink, writeFile } from 'fs/promises'
+import { mkdir, unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
+import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
 import { $ } from 'zx'
@@ -103,6 +104,9 @@ export const writeValuesToFile = async (
   overwrite = false,
 ): Promise<void> => {
   const d = terminal('common:values:writeValuesToFile')
+  const filePath = path.dirname(targetPath)
+  await mkdir(filePath, { recursive: true })
+
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
   const suffix = isSecretsFile ? '.dec' : ''
   const values = cloneDeep(inValues)
@@ -178,7 +182,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
   const plainValues = omit(values, cleanSecretPaths) as any
-  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', '_derived', 'license']
+  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', '_derived', 'license', 'databases', 'files']
   const secretSettings = omit(secrets, fieldsToOmit)
   const license = { license: values?.license }
   const settings = omit(plainValues, fieldsToOmit)
@@ -229,6 +233,16 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
     )
   }
   await Promise.all(promises)
+
+  const databasesValuesPromises = Object.keys((plainValues.databases || {}) as Record<string, any>).map((database) => {
+    const valueObject = {
+      databases: {
+        [database]: plainValues.databases[database],
+      },
+    }
+    return writeValuesToFile(`${env.ENV_DIR}/env/databases/${database}.yaml`, valueObject, overwrite)
+  })
+  await Promise.all(databasesValuesPromises)
 
   const plainValuesPromises = Object.keys((plainValues.apps || {}) as Record<string, any>).map((app) => {
     const valueObject = {
