@@ -1,0 +1,80 @@
+apps:
+    tempo:
+        enabled: true
+        storage:
+            type: minioLocal
+            # azure:
+            #     accountName: account_name
+            #     containerName: container_name
+            #     accountKey: shshsheyeywywiqwioqw
+        autoscaling:
+            ingester:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            querier:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            distributor:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            queryFrontend:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+        resources:
+            compactor:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            ingester:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            querier:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            distributor:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            queryFrontend:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+            memcached:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+        persistence:
+            ingester:
+                size: 10Gi

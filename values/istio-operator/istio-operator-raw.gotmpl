@@ -149,11 +149,27 @@ resources:
                 memory: 80Mi
             {{- end }}
             autoInject: enabled
-          tracer:
-            zipkin:
-              address: jaeger-operator-jaeger-collector.jaeger:9411 
           useMCP: false
-        meshConfig: {{- $i.meshConfig | toYaml | nindent 10 }}
+        meshConfig:
+          defaultConfig:
+            gatewayTopology:
+              numTrustedProxies: 1
+          accessLogFile: /dev/stdout
+          {{- if $i.tracing.enabled }}
+          accessLogFormat: |
+            [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME% traceID=%REQ(TRACEPARENT)%
+          {{- end }}
+          enableAutoMtls: true
+          extensionProviders:
+          {{- if $i.tracing.enabled }}
+          - opentelemetry:
+              port: 4317
+              service: otel-collector-collector.otel.svc.cluster.local
+            name: otel-tracing
+          {{- end }}
+          {{- with $i | get "extensionProviders" nil }}
+          {{- toYaml .| nindent 10 }}
+          {{- end }}
         {{- if $v._derived.untrustedCA }}
         pilot:
           jwksResolverExtraRootCA: |
