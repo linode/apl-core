@@ -24,6 +24,12 @@ releases:
     labels:
       pkg: istio
     <<: *default
+  - name: keycloak
+    installed: true
+    namespace: keycloak
+    labels:
+      pkg: keycloak 
+    <<: *raw
   - name: keycloak-operator
     installed: true
     namespace: keycloak

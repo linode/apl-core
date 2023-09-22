@@ -12,12 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: keycloak
-    installed: true
-    namespace: keycloak
-    labels:
-      pkg: keycloak 
-    <<: *raw
   - name: keycloak-operator-cr
     installed: true
     namespace: keycloak
