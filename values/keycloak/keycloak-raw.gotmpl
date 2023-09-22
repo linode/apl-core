@@ -12,4 +12,4 @@ resources:
       namespace: keycloak
     data:
       password: {{ .Values.otomi.adminPassword | b64enc }}
-      username: b3RvbWktYWRtaW4=
+      username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
