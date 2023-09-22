@@ -27,7 +27,7 @@ env:
   # DEBUG: '*'
   KEYCLOAK_ADMIN: otomi-admin
   FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
-  KEYCLOAK_ADDRESS: https://keycloak.{{ $v.cluster.domainSuffix }}
+  KC_HOSTNAME: https://keycloak.{{ $v.cluster.domainSuffix }}
   KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
