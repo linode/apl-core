@@ -168,6 +168,7 @@ appsInfo:
     integration: Otomi has security best practices built in, and is designed for intrusion. Istio is used by Otomi as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of Otomi and can not be disabled.
   jaeger:
     title: Jaeger
+    dependencies: Open Telemetry (otel)
     appVersion: 1.25.0
     repo: https://github.com/jaegertracing/jaeger
     maintainers: CNCF
@@ -303,6 +304,17 @@ appsInfo:
     license: Apache 2.0
     about: Prometheus is a systems and service monitoring system. It collects metrics from configured targets at given intervals, evaluates rule expressions, displays the results, and can trigger alerts when specified conditions are observed.
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
+  tempo:
+    title: Tempo
+    appVersion: 2.1.1
+    repo: https://github.com/grafana/tempo
+    maintainers: Grafana labs
+    relatedLinks:
+      - https://grafana.com/docs/tempo/latest/
+    license: AGPL-3.0
+    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used), Otel
+    about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
+    integration: Otomi installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
   thanos:
     title: Thanos
     appVersion: 0.28.1
@@ -327,6 +339,17 @@ appsInfo:
     dependencies: Prometheus, Grafana
     about: Trivy Operator continuously scans your Kubernetes cluster for security issues, and generates security reports as Kubernetes Custom Resources. It does it by watching Kubernetes for state changes and automatically triggering scans in response to changes.
     integration: Otomi installs and configures Trivy Operator to scan all resources deployed by a team and makes results visible in a Grafana dashboard.
+  otel:
+    title: Open Telemetry Collector
+    appVersion: 0.81.0
+    repo: https://github.com/open-telemetry/opentelemetry-collector
+    maintainers: Grafana labs
+    relatedLinks:
+      - https://opentelemetry.io/docs/collector/
+    license: AGPL-3.0
+    dependencies: Prometheus, Grafana, Loki, Tempo
+    about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
+    integration: OpenTelemetry Collector is used to receive telementry data from Istio Envoy access logs and export this data to Tempo.
   vault:
     title: Vault
     appVersion: 1.11.5

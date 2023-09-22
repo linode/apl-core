@@ -85,3 +85,6 @@ changes:
   - version: 13
     deletions:
       - 'cluster.k8sVersion'
+  - version: 14
+    deletions:
+      - 'apps.istio.meshConfig'
