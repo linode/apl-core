@@ -41,10 +41,10 @@ spec:
           podSelector:
             matchLabels:
               app: prometheus
-    # - from:
-    #     - namespaceSelector:
-    #         matchLabels:
-    #           name: shared
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: tekton-pipelines
 ---
 # Allow traffic from team's prometheus to team's alertmanager
 apiVersion: networking.k8s.io/v1

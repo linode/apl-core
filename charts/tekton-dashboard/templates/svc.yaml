@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
+  name: {{ template "tekton-dashboard.svcname" . }}
+spec:
+  ports:
+    - name: http
+      port: 9097
+      protocol: TCP
+      targetPort: 9097
+  selector: {{- include "tekton-dashboard.selector-labels" . | indent 4 }}

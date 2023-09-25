@@ -317,7 +317,16 @@ adminApps:
   - name: kured
     tags: [security]
   - name: tekton
-    tags: [buildpacks]
+    tags: [buildpacks, ci, pipelines]
+    ownHost: true
+    ingress:
+      - svc: tekton-dashboard
+        namespace: tekton-pipelines
+        port: 9097
+        type: public
+        auth: true
+        removeRequestHeaders:
+          - authorization
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus, minio]
@@ -454,3 +463,13 @@ teamApps:
         port: 9090
         type: public
         auth: true
+  - name: tekton
+    ownHost: true
+    ingress:
+      - svc: tekton-dashboard
+        hasPrefix: true
+        port: 9097
+        type: public
+        auth: true
+        removeRequestHeaders:
+          - authorization
