@@ -3,6 +3,7 @@ teamConfig:
         builds:
             - name: demo-java1
               tag: v.0.0.1
+              trigger: false
               mode:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples
@@ -11,6 +12,7 @@ teamConfig:
                   type: docker
             - name: demo-java2
               tag: v.0.0.1
+              trigger: false
               mode:
                   buildpacks:
                       repoUrl: https://github.com/buildpacks/samples
@@ -19,6 +21,7 @@ teamConfig:
                   type: buildpacks
             - name: demo-java3
               tag: v_0_0_1
+              trigger: true
               mode:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples

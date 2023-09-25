@@ -71,6 +71,10 @@ k8s:
       app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: tekton-triggers
+      app: tekton
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: otel
       app: otel
       disableIstioInjection: true

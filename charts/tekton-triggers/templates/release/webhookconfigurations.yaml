@@ -1,0 +1,63 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validation.webhook.triggers.tekton.dev
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+    triggers.tekton.dev/release: "v0.25.0"
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: tekton-triggers-webhook
+        namespace: tekton-pipelines
+    failurePolicy: Fail
+    sideEffects: None
+    name: validation.webhook.triggers.tekton.dev
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: webhook.triggers.tekton.dev
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+    triggers.tekton.dev/release: "v0.25.0"
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: tekton-triggers-webhook
+        namespace: tekton-pipelines
+    failurePolicy: Fail
+    sideEffects: None
+    name: webhook.triggers.tekton.dev
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: config.webhook.triggers.tekton.dev
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+    triggers.tekton.dev/release: "v0.25.0"
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: tekton-triggers-webhook
+        namespace: tekton-pipelines
+    failurePolicy: Fail
+    sideEffects: None
+    name: config.webhook.triggers.tekton.dev
+    namespaceSelector:
+      matchExpressions:
+        - key: triggers.tekton.dev/release
+          operator: Exists

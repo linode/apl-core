@@ -1,0 +1,163 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-triggers-admin
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "services", "events"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "deployments/finalizers"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["triggers.tekton.dev"]
+    resources: ["clustertriggerbindings", "clusterinterceptors", "interceptors", "eventlisteners", "triggerbindings", "triggertemplates", "triggers", "eventlisteners/finalizers"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["triggers.tekton.dev"]
+    resources: ["clustertriggerbindings/status", "clusterinterceptors/status", "interceptors/status", "eventlisteners/status", "triggerbindings/status", "triggertemplates/status", "triggers/status"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  # We uses leases for leaderelection
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "create", "update", "delete", "patch", "watch"]
+  - apiGroups: ["serving.knative.dev"]
+    resources: ["*", "*/status", "*/finalizers"]
+    verbs: ["get", "list", "create", "update", "delete", "deletecollection", "patch", "watch"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get"]
+    # The webhook configured the namespace as the OwnerRef on various cluster-scoped resources,
+    # which requires we can Get the system namespace.
+    resourceNames: ["tekton-pipelines"]
+  - apiGroups: [""]
+    resources: ["namespaces/finalizers"]
+    verbs: ["update"]
+    # The webhook configured the namespace as the OwnerRef on various cluster-scoped resources,
+    # which requires we can update the system namespace finalizers.
+    resourceNames: ["tekton-pipelines"]
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-triggers-core-interceptors
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-triggers-core-interceptors-secrets
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+rules:
+  - apiGroups: ["triggers.tekton.dev"]
+    resources: ["clusterinterceptors"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "update"]
+    resourceNames: ["tekton-triggers-core-interceptors-certs"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tekton-triggers-eventlistener-roles
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+rules:
+  - apiGroups: ["triggers.tekton.dev"]
+    resources: ["eventlisteners", "triggerbindings", "interceptors", "triggertemplates", "triggers"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["tekton.dev"]
+    resources: ["pipelineruns", "pipelineresources", "taskruns"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["impersonate"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-triggers-eventlistener-clusterroles
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+rules:
+  - apiGroups: ["triggers.tekton.dev"]
+    resources: ["clustertriggerbindings", "clusterinterceptors"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tekton-triggers-aggregate-edit
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+    rbac.authorization.k8s.io/aggregate-to-edit: "true"
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+  - apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - clustertriggerbindings
+      - clusterinterceptors
+      - eventlisteners
+      - interceptors
+      - triggers
+      - triggerbindings
+      - triggertemplates
+    verbs:
+      - create
+      - delete
+      - deletecollection
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tekton-triggers-aggregate-view
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+rules:
+  - apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - clustertriggerbindings
+      - clusterinterceptors
+      - eventlisteners
+      - interceptors
+      - triggers
+      - triggerbindings
+      - triggertemplates
+    verbs:
+      - get
+      - list
+      - watch
