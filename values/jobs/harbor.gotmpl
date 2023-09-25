@@ -12,7 +12,7 @@ description: Configure OIDC as a primary authentication method and populate team
 name: harbor
 runPolicy: OnSpecChange
 nativeSecrets:
-  HARBOR_PASSWORD:  {{ $h | get "adminPassword" $v.otomi.adminPassword  }}
+  HARBOR_PASSWORD:  {{ $h.adminPassword }}
   HARBOR_USER: admin
   OIDC_ENDPOINT: {{ $v._derived.oidcBaseUrl }}
   # OIDC_ENDPOINT: {{ $v._derived.oidcBaseUrlBackchannel }}
