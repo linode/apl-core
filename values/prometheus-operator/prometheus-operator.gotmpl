@@ -109,6 +109,9 @@ prometheus:
               storage: {{ $p | get "storageSize" }}
     enableAdminAPI: true
     externalUrl: https://{{ $prometheusDomain }}
+    {{- if $c.tempo.enabled }}
+    enableRemoteWriteReceiver: true
+    {{- end }}
 {{- if and (not $v.otomi.isMultitenant) $hasServices }}
     additionalScrapeConfigs:
   {{- range $teamId, $team := $v.teamConfig }}
@@ -268,6 +271,7 @@ grafana:
   additionalDataSources:
     - name: Loki
       editable: false
+      uid: loki
       type: loki
       access: proxy
       url: http://loki-query-frontend-headless.monitoring:3101
@@ -275,6 +279,54 @@ grafana:
       basicAuthUser: otomi-admin
       secureJsonData:
         basicAuthPassword: {{ $v.apps.loki.adminPassword }}
+    {{- if $c.tempo.enabled }}
+      jsonData:
+        derivedFields:
+          - datasourceName: Tempo
+            matcherRegex: "traceID=00-([^\\-]+)-"
+            name: TraceID
+            url: "$${__value.raw}"
+            datasourceUid: tempo
+    - name: Tempo
+      type: tempo
+      uid: tempo
+      access: proxy
+      editable: true
+      url: http://tempo-query-frontend.tempo:3100
+      jsonData:
+        tracesToLogsV2:
+          datasourceUid: 'loki'
+          spanStartTimeShift: '1h'
+          spanEndTimeShift: '-1h'
+          filterByTraceID: false
+          filterBySpanID: false
+          customQuery: true
+          query: '{namespace=~".+"} |= "${__span.traceId}"'
+        tracesToMetrics:
+          datasourceUid: 'prometheus'
+          spanStartTimeShift: '1h'
+          spanEndTimeShift: '-1h'
+          tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
+          queries:
+            - name: 'Span duration (example)'
+              query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
+        serviceMap:
+          datasourceUid: 'prometheus'
+        nodeGraph:
+          enabled: true
+        search:
+          hide: false
+        traceQuery:
+          timeShiftEnabled: true
+          spanStartTimeShift: '1h'
+          spanEndTimeShift: '-1h'
+        spanBar:
+          type: 'Tag'
+          tag: 'http.path'
+        httpMethod: GET
+        lokiSearch:
+          datasourceUid: 'loki'
+    {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
     {{- end }}

@@ -1,0 +1,16 @@
+{{- $v := .Values }}
+{{- $i := $v.apps.istio }}
+{{- if $i.tracing.enabled }}
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: disable-app-source-trafic-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+spec:
+  accessLogging:
+  - providers:
+    - name: envoy
+    match:
+      mode: CLIENT
+    disabled: true
+{{- end }}

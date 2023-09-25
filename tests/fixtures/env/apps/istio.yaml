@@ -1,5 +1,15 @@
 apps:
     istio:
+        tracing:
+            enabled: true
+            samplingRatio: '0.01'
+        extensionProviders:
+            - name: ext-authz-chain-grpc
+              envoyExtAuthzGrpc:
+                  service: external-authorization-chain.team-demo.svc.cluster.local
+                  port: 80
+                  includeRequestBodyInCheck:
+                      maxRequestBytes: 1000000
         autoscaling:
             ingressgateway:
                 maxReplicas: 5
@@ -41,11 +51,3 @@ apps:
                 requests:
                     cpu: 20m
                     memory: 80Mi
-        meshConfig:
-            extensionProviders:
-                - name: 'ext-authz-chain-grpc'
-                  envoyExtAuthzGrpc:
-                  service: 's1.test.svc.cluster.local'
-                  port: '80'
-                  includeRequestBodyInCheck:
-                      maxRequestBytes: 1000000
