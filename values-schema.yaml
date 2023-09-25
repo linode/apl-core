@@ -460,6 +460,15 @@ definitions:
     properties:
       _rawValues:
         $ref: '#/definitions/rawValues'
+      tracing:
+        description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
+        propterties:
+          enabled:
+            default: false
+            type: boolean
+          samplingRatio:
+            type: string
+            default: '0.01'
       autoscaling:
         $ref: '#/definitions/autoscalingEnabled'
       maxBodySize:
@@ -1324,6 +1333,9 @@ definitions:
       tag:
         description: Image tag
         $ref: '#/definitions/imageTag'
+      trigger:
+        type: boolean
+        default: false
       mode:
         properties:
           docker:
@@ -1376,6 +1388,44 @@ definitions:
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
+      autoUpdate:
+        description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
+        title: Auto Image Updater
+        properties:
+          enabled:
+            description: Enable Auto Image Updater
+            type: boolean
+            default: false
+          build:
+            $ref: '#/definitions/wordCharacterPattern'
+          tag:
+            description: Tag of the build. Only if strategy is digest.
+            $ref: '#/definitions/wordCharacterPattern'
+          versionConstraint:
+            $ref: '#/definitions/wordCharacterPattern'
+          strategy:
+            properties:
+              digest:
+                additionalProperties: false
+                properties:
+                  tag:
+                    $ref: '#/definitions/wordCharacterPattern'
+                required:
+                  - tag
+              semver:
+                additionalProperties: false
+                properties:
+                  versionConstraint:
+                    $ref: '#/definitions/wordCharacterPattern'
+                required:
+                  - versionConstraint
+              type:
+                type: string
+                enum:
+                  - semver
+                  - digest
+                  - latest
+                default: latest
 
     required:
       - name
@@ -2174,6 +2224,15 @@ properties:
           enabled:
             default: true
             type: boolean
+          tracing:
+            description: Configure Istio for tracing. Requires Otel Collector to be enabled.
+            propterties:
+              enabled:
+                default: false
+                type: boolean
+              samplingRatio:
+                type: string
+                default: '0.01'
           autoscaling:
             properties:
               egressgateway:
@@ -2199,9 +2258,11 @@ properties:
                 properties:
                   resources:
                     $ref: '#/definitions/resources'
-          meshConfig:
+          extensionProviders:
             description: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
-            type: object
+            type: array
+            items:
+              type: object
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -2504,6 +2565,9 @@ properties:
                     x-secret: ''
               s3:
                 properties:
+                  useInstanceRole:
+                    type: boolean
+                    default: false
                   bucket:
                     $ref: '#/definitions/wordCharacterPattern'
                   s3Url:
@@ -2513,6 +2577,8 @@ properties:
                   secretAccessKey:
                     $ref: '#/definitions/wordCharacterPattern'
                     x-secret: ''
+                  region:
+                    $ref: '#/definitions/wordCharacterPattern'
               gcs:
                 properties:
                   bucket:
@@ -2686,6 +2752,14 @@ properties:
                       - username
                       - password
         type: object
+      oltp:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
       prometheus:
         additionalProperties: false
         properties:
@@ -2764,6 +2838,75 @@ properties:
               enabled:
                 type: boolean
                 default: false
+      tempo:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          resources:
+            additionalProperties: false
+            properties:
+              compactor:
+                $ref: '#/definitions/resources'
+              ingester:
+                $ref: '#/definitions/resources'
+              querier:
+                $ref: '#/definitions/resources'
+              distributor:
+                $ref: '#/definitions/resources'
+              queryFrontend:
+                $ref: '#/definitions/resources'
+              memcached:
+                $ref: '#/definitions/resources'
+          autoscaling:
+            properties:
+              ingester:
+                $ref: '#/definitions/autoscalingEnabled'
+              querier:
+                $ref: '#/definitions/autoscalingEnabled'
+              distributor:
+                $ref: '#/definitions/autoscalingEnabled'
+              queryFrontend:
+                $ref: '#/definitions/autoscalingEnabled'
+          persistence:
+            properties:
+              ingester:
+                properties:
+                  size:
+                    default: 10Gi
+                    $ref: '#/definitions/size'
+          storage:
+            properties:
+              azure:
+                properties:
+                  accountName:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  containerName:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  accountKey:
+                    $ref: '#/definitions/wordCharacterPattern'
+                    x-secret: ''
+              s3:
+                properties:
+                  bucket:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  s3Url:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  accessKeyId:
+                    $ref: '#/definitions/wordCharacterPattern'
+                  secretAccessKey:
+                    $ref: '#/definitions/wordCharacterPattern'
+                    x-secret: ''
+              type:
+                type: string
+                enum:
+                  - azure
+                  - s3
+                  - minioLocal
+                default: minioLocal
       tigera-operator:
         properties:
           _rawValues:
@@ -2934,6 +3077,37 @@ properties:
               operator:
                 $ref: '#/definitions/resources'
               trivy:
+                $ref: '#/definitions/resources'
+      otel:
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          collector:
+            properties:
+              mode:
+                title: Collector mode
+                description: Mode to run collector in.
+                type: string
+                default: deployment
+                enum:
+                  - deployment
+                  - daemonset
+                  - statefulset
+          operator:
+            properties:
+              replicaCount:
+                description: Number of Thanos Query replicas.
+                type: integer
+                default: 1
+          resources:
+            additionalProperties: false
+            properties:
+              collector:
+                $ref: '#/definitions/resources'
+              manager:
+                $ref: '#/definitions/resources'
+              kubeRBACProxy:
                 $ref: '#/definitions/resources'
       vault:
         additionalProperties: false

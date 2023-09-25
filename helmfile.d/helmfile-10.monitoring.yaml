@@ -40,6 +40,14 @@ releases:
     installed: {{ $a | get "loki.enabled" }}
     namespace: monitoring
     <<: *default
+  - name: otel-operator
+    installed: {{ $a | get "otel.enabled" }}
+    namespace: otel
+    <<: *default
+  - name: tempo
+    installed: {{ $a | get "tempo.enabled" }}
+    namespace: tempo
+    <<: *default
   - name: prometheus-blackbox-exporter
     installed: {{ $a | get "prometheus.enabled" }} 
     namespace: monitoring

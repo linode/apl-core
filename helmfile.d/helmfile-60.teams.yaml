@@ -111,11 +111,15 @@ releases:
           additionalDataSources:
             - name: Prometheus-platform
               editable: false
+              uid: prometheus-platform
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
+              jsonData:
+                httpMethod: GET
             - name: Loki
               editable: false
+              uid: loki
               type: loki
               access: proxy
               url: http://loki-query-frontend-headless.monitoring:3101
@@ -123,6 +127,53 @@ releases:
               basicAuthUser: {{ $teamId }}
               secureJsonData: 
                 basicAuthPassword: {{ $team.password }}
+            {{- if $v.apps.tempo.enabled }}
+              jsonData:
+                derivedFields:
+                  - datasourceName: Tempo
+                    matcherRegex: "traceID=00-([^\\-]+)-"
+                    name: traceID
+                    url: "$${__value.raw}"
+                    datasourceUid: tempo
+            - name: Tempo
+              type: tempo
+              uid: tempo
+              editable: false
+              access: proxy
+              url: http://tempo-query-frontend.tempo:3100
+              jsonData:
+                tracesToLogsV2:
+                  datasourceUid: 'loki'
+                  spanStartTimeShift: '1h'
+                  spanEndTimeShift: '-1h'
+                  tags: [{ key: 'k8s.namespace.name', value: 'namespace' }]
+                  filterByTraceID: false
+                  filterBySpanID: false
+                  customQuery: true
+                  query: '{${__tags}} |= "${__span.traceId}"'
+                nodeGraph:
+                  enabled: true
+                search:
+                  hide: true
+                traceQuery:
+                  timeShiftEnabled: true
+                  spanStartTimeShift: '1h'
+                  spanEndTimeShift: '-1h'
+                tracesToMetrics:
+                    datasourceUid: 'prometheus-platform'
+                    spanStartTimeShift: '1h'
+                    spanEndTimeShift: '-1h'
+                    tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
+                    queries:
+                      - name: 'Span duration (example)'
+                        query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
+                httpMethod: GET
+                spanBar:
+                  type: 'Tag'
+                  tag: 'http.path'
+                lokiSearch:
+                  datasourceUid: 'loki'
+            {{- end }}
     {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
             - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
     {{- end }}

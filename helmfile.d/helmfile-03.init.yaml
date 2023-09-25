@@ -89,3 +89,9 @@ releases:
     chart: ../charts/tekton-dashboard
     values:
       - ../values/tekton-dashboard/tekton-dashboard.gotmpl
+  - name: tekton-triggers
+    installed: {{ $a | get "tekton.enabled" }}
+    namespace: tekton-pipelines
+    labels:
+      pkg: tekton-triggers
+    <<: *default

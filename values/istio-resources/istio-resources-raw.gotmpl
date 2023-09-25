@@ -1,0 +1,18 @@
+{{- $v := .Values }}
+{{- $i := $v.apps.istio }}
+resources:
+  - apiVersion: telemetry.istio.io/v1alpha1
+    kind: Telemetry
+    metadata:
+      name: telemetry-defaults
+      namespace: istio-system
+    spec:
+      accessLogging:
+      - providers:
+        - name: envoy
+      {{- if $i.tracing.enabled }}
+      tracing:
+      - providers:
+        - name: otel-tracing
+        randomSamplingPercentage: {{ $i.tracing.samplingRatio }}
+      {{- end }}

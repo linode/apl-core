@@ -1,64 +1,12 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS-1",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__elements": [],
-  "__requires": [
-    {
-      "type": "panel",
-      "id": "gauge",
-      "name": "Gauge",
-      "version": ""
-    },
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "8.4.4"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph (old)",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "heatmap",
-      "name": "Heatmap",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "table-old",
-      "name": "Table (old)",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -78,13 +26,16 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 16829,
   "graphTooltip": 1,
-  "id": null,
-  "iteration": 1662031720102,
+  "id": 15,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -93,13 +44,22 @@
       },
       "id": 15,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Backup",
       "type": "row"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-1}"
+        "uid": "Prometheus"
       },
       "description": "The sum of one-off backup and schedule backup success total ",
       "fieldConfig": {
@@ -164,12 +124,12 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "velero_backup_total",
@@ -249,12 +209,12 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "sum(velero_backup_success_total{schedule=~\"$schedule\"}) / sum(velero_backup_attempt_total{schedule=~\"$schedule\"})",
@@ -334,12 +294,12 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "sum(velero_backup_deletion_success_total{schedule=~\"$schedule\"}) / sum(velero_backup_deletion_attempt_total{schedule=~\"$schedule\"})",
@@ -419,12 +379,12 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "sum(velero_volume_snapshot_success_total{schedule=~\"$schedule\"}) / sum(velero_volume_snapshot_attempt_total{schedule=~\"$schedule\"})\n",
@@ -496,7 +456,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "(time() - velero_backup_last_successful_timestamp{schedule!=\"\"}) / 60 / 60",
@@ -507,7 +467,7 @@
         }
       ],
       "title": "Hours since last Backup",
-      "transform": "timeseries_aggregations",
+      "transform": "table",
       "type": "table-old"
     },
     {
@@ -557,7 +517,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -569,7 +529,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(velero_backup_success_total{schedule=~\"$schedule\"}[1h])))",
@@ -582,7 +542,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(velero_backup_failure_total{schedule=~\"$schedule\"}[1h])))",
@@ -595,7 +555,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(velero_backup_partial_failure_total{schedule=~\"$schedule\"}[1h])))",
@@ -607,7 +567,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(velero_backup_deletion_success_total{schedule=~\"$schedule\"}[1h])))",
@@ -619,7 +579,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(velero_backup_deletion_failure_total{schedule=~\"$schedule\"}[1h])))",
@@ -728,65 +688,6 @@
       }
     },
     {
-      "cards": {},
-      "color": {
-        "cardColor": "#1F60C4",
-        "colorScale": "linear",
-        "colorScheme": "interpolateSpectral",
-        "exponent": 0.5,
-        "mode": "spectrum"
-      },
-      "dataFormat": "tsbuckets",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-1}"
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 19
-      },
-      "heatmap": {},
-      "hideZeroBuckets": false,
-      "highlightCards": true,
-      "id": 34,
-      "legend": {
-        "show": true
-      },
-      "reverseYBuckets": false,
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
-          },
-          "exemplar": false,
-          "expr": "sum(increase(velero_backup_duration_seconds_bucket{schedule=~\"$schedule\",le!=\"+Inf\"}[1h])) by (le)",
-          "format": "heatmap",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "{{le}}",
-          "refId": "B"
-        }
-      ],
-      "title": "Backup time heatmap",
-      "tooltip": {
-        "show": true,
-        "showHistogram": true
-      },
-      "type": "heatmap",
-      "xAxis": {
-        "show": true
-      },
-      "yAxis": {
-        "format": "s",
-        "logBase": 1,
-        "show": true
-      },
-      "yBucketBound": "auto"
-    },
-    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
@@ -807,7 +708,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 19
       },
       "hiddenSeries": false,
       "id": 18,
@@ -829,7 +730,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -841,7 +742,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "sum(avg_over_time(velero_backup_tarball_size_bytes{schedule=~\"$schedule\"}[15m]))",
@@ -886,21 +787,34 @@
     },
     {
       "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 25
       },
       "id": 17,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Restore",
       "type": "row"
     },
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS-1}"
+        "uid": "Prometheus"
       },
       "description": "",
       "fieldConfig": {
@@ -946,7 +860,7 @@
         "h": 9,
         "w": 4,
         "x": 0,
-        "y": 34
+        "y": 26
       },
       "id": 27,
       "links": [],
@@ -965,12 +879,12 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "velero_restore_total",
@@ -1033,7 +947,7 @@
         "h": 9,
         "w": 4,
         "x": 4,
-        "y": 34
+        "y": 26
       },
       "id": 24,
       "links": [],
@@ -1050,12 +964,12 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "sum(velero_restore_success_total{schedule=~\"$schedule\"}) / sum(velero_restore_attempt_total{schedule=~\"$schedule\"})",
@@ -1092,7 +1006,7 @@
         "h": 9,
         "w": 16,
         "x": 8,
-        "y": 34
+        "y": 26
       },
       "hiddenSeries": false,
       "id": 28,
@@ -1117,7 +1031,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1129,7 +1043,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(velero_restore_success_total{schedule=~\"$schedule\"}[1h])))",
@@ -1142,7 +1056,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(velero_restore_failed_total{schedule=~\"$schedule\"}[1h])))",
@@ -1211,14 +1125,27 @@
     },
     {
       "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 43
+        "y": 35
       },
       "id": 30,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "CSI",
       "type": "row"
     },
@@ -1244,7 +1171,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 44
+        "y": 36
       },
       "hiddenSeries": false,
       "id": 32,
@@ -1269,7 +1196,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1281,7 +1208,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(velero_csi_snapshot_attempt_total{schedule=~\"$schedule\", backupName=~\"$csi_backup_name\"}[1h])))",
@@ -1294,7 +1221,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(velero_csi_snapshot_success_total{schedule=~\"$schedule\", backupName=~\"$csi_backup_name\"}[1h])))",
@@ -1351,14 +1278,27 @@
     },
     {
       "collapsed": true,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 53
+        "y": 45
       },
       "id": 36,
       "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A"
+        }
+      ],
       "title": "Restic",
       "type": "row"
     },
@@ -1410,7 +1350,7 @@
         "h": 9,
         "w": 4,
         "x": 0,
-        "y": 54
+        "y": 46
       },
       "id": 37,
       "links": [],
@@ -1427,12 +1367,12 @@
         "showThresholdLabels": false,
         "showThresholdMarkers": true
       },
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "sum(restic_pod_volume_backup_dequeue_count{node=~\"$restic_node\"}) / sum(restic_pod_volume_backup_enqueue_count{node=~\"$restic_node\"})",
@@ -1469,7 +1409,7 @@
         "h": 9,
         "w": 20,
         "x": 4,
-        "y": 54
+        "y": 46
       },
       "hiddenSeries": false,
       "id": 38,
@@ -1494,7 +1434,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1506,7 +1446,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(restic_pod_volume_backup_enqueue_count{node=~\"$restic_node\"}[1h])))",
@@ -1519,7 +1459,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "round(sum(increase(restic_pod_volume_backup_dequeue_count{node=~\"$restic_node\"}[1h])))",
@@ -1584,7 +1524,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 63
+        "y": 55
       },
       "hiddenSeries": false,
       "id": 39,
@@ -1606,7 +1546,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.4.4",
+      "pluginVersion": "9.5.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1618,7 +1558,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS-1}"
+            "uid": "Prometheus"
           },
           "exemplar": false,
           "expr": "sum(avg_over_time(restic_restic_operation_latency_seconds_gauge{backupName=~\"$restic_backup_name\", node=~\"$restic_node\", operation=~\"$restic_option\", pod_volume_backup=~\"$restic_pod_volume\"}[15m]))",
@@ -1662,8 +1602,8 @@
       }
     }
   ],
-  "refresh": false,
-  "schemaVersion": 35,
+  "refresh": "",
+  "schemaVersion": 38,
   "style": "dark",
   "tags": [
     "velero"
@@ -1673,8 +1613,8 @@
       {
         "current": {
           "selected": false,
-          "text": "Prometheus-1",
-          "value": "Prometheus-1"
+          "text": "Prometheus",
+          "value": "Prometheus"
         },
         "hide": 0,
         "includeAll": false,
@@ -1690,7 +1630,11 @@
         "type": "datasource"
       },
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": {
           "type": "prometheus",
           "uid": "$datasource"
@@ -1715,10 +1659,14 @@
         "useTags": false
       },
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS-1}"
+          "uid": "Prometheus"
         },
         "definition": "label_values(velero_csi_snapshot_attempt_total, backupName)",
         "hide": 0,
@@ -1737,10 +1685,14 @@
         "type": "query"
       },
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS-1}"
+          "uid": "Prometheus"
         },
         "definition": "label_values(restic_pod_volume_backup_enqueue_count, node)",
         "hide": 0,
@@ -1759,10 +1711,14 @@
         "type": "query"
       },
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS-1}"
+          "uid": "Prometheus"
         },
         "definition": "label_values(restic_restic_operation_latency_seconds_gauge, backupName)",
         "hide": 0,
@@ -1781,10 +1737,14 @@
         "type": "query"
       },
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS-1}"
+          "uid": "Prometheus"
         },
         "definition": "label_values(restic_restic_operation_latency_seconds_gauge, operation)",
         "hide": 0,
@@ -1803,10 +1763,14 @@
         "type": "query"
       },
       {
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS-1}"
+          "uid": "Prometheus"
         },
         "definition": "label_values(restic_restic_operation_latency_seconds_gauge, pod_volume_backup)",
         "hide": 0,
@@ -1846,8 +1810,8 @@
     ]
   },
   "timezone": "",
-  "title": "Kubernetes / Tanzu/Velero",
-  "uid": "aaaaaa",
-  "version": 24,
+  "title": "Velero Backups",
+  "uid": "aaaaaaii",
+  "version": 3,
   "weekStart": ""
 }

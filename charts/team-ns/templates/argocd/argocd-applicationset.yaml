@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- if $v.apps.argocd.enabled }}
 {{- range $v.workloads }}
+{{- $a := .autoUpdate }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
@@ -17,6 +18,23 @@ spec:
   template:
     metadata:
       name: 'team-{{ $v.teamId }}-{{ .name }}'
+      {{- if $a.enabled }}
+      annotations:
+        argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.force-update: 'true'
+        argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.pull-secret: 'pullsecret:argocd/copy-team-{{ $v.teamId }}-harbor-pullsecret'
+        argocd-image-updater.argoproj.io/team-{{ $v.teamId }}{{ .name }}.update-strategy: '{{ $a.strategy }}'
+        argocd-image-updater.argoproj.io/git-branch: '{{ .revision }}'
+        argocd-image-updater.argoproj.io/write-back-method: 'git:secret:argocd/team-{{ $v.teamId }}-gitea-repo-creds'
+        {{- if eq $a.type "semver" }}
+        argocd-image-updater.argoproj.io/image-list: 'team-{{ $v.teamId }}-{{ .name }}=harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ $a.build }}:~{{ $a.semver.versionConstraint }}'
+        {{- end }}
+        {{- if eq $a.type "digest" }}
+        argocd-image-updater.argoproj.io/image-list: 'team-{{ $v.teamId }}-{{ .name }}=harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ $a.build }}:{{ $a.digest.tag }}'
+        {{- end }}
+        {{- if eq $a.type "latest" }}
+        argocd-image-updater.argoproj.io/image-list: 'team-{{ $v.teamId }}-{{ .name }}=harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ $a.build }}'
+        {{- end }}
+      {{- end }}
     spec:
       {{- if and ( eq $v.teamId "admin" ) .namespace }} 
       project: 'default' # project is not restricted

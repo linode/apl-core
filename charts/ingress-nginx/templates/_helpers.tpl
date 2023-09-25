@@ -208,5 +208,8 @@ Extra modules.
   volumeMounts:
     - name: {{ toYaml "modules"}}
       mountPath: {{ toYaml "/modules_mount"}}
+  {{- if (.resources) }}
+  resources: {{ .resources | toYaml | nindent 4 }}
+  {{- end }}
 
 {{- end -}}

@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-triggers-core-interceptors
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/name: core-interceptors
+    app.kubernetes.io/component: interceptors
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/version: "v0.25.0"
+    app.kubernetes.io/part-of: tekton-triggers
+    # tekton.dev/release value replaced with inputs.params.versionTag in triggers/tekton/publish.yaml
+    triggers.tekton.dev/release: "v0.25.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: core-interceptors
+      app.kubernetes.io/component: interceptors
+      app.kubernetes.io/instance: default
+      app.kubernetes.io/part-of: tekton-triggers
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: core-interceptors
+        app.kubernetes.io/component: interceptors
+        app.kubernetes.io/instance: default
+        app.kubernetes.io/version: "v0.25.0"
+        app.kubernetes.io/part-of: tekton-triggers
+        app: tekton-triggers-core-interceptors
+        triggers.tekton.dev/release: "v0.25.0"
+        # version value replaced with inputs.params.versionTag in triggers/tekton/publish.yaml
+        version: "v0.25.0"
+    spec:
+      serviceAccountName: tekton-triggers-core-interceptors
+      containers:
+        - name: tekton-triggers-core-interceptors
+          image: "gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/interceptors:v0.25.0@sha256:62cd1b675e87dfbb66d1428c582e1be2f3f3ba4c073c132c700bfe3f92e8eb8f"
+          ports:
+            - containerPort: 8443
+          args: ["-logtostderr", "-stderrthreshold", "INFO"]
+          env:
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging-triggers
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability-triggers
+            - name: METRICS_DOMAIN
+              value: tekton.dev/triggers
+            # assuming service and deployment names are same always for consistency
+            - name: INTERCEPTOR_TLS_SVC_NAME
+              value: tekton-triggers-core-interceptors
+            - name: INTERCEPTOR_TLS_SECRET_NAME
+              value: tekton-triggers-core-interceptors-certs
+          resources: {{- toYaml .Values.interceptors.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            # User 65532 is the distroless nonroot user ID
+            runAsUser: 65532
+            runAsGroup: 65532
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - "ALL"
+            seccompProfile:
+              type: RuntimeDefault
