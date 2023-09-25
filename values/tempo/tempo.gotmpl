@@ -1,0 +1,109 @@
+{{- $v := .Values -}}
+{{- $t:= $v.apps.tempo }}
+{{- $st := $t.storage }}
+
+
+fullnameOverride: tempo
+
+ingester:
+  resources: {{- $t.resources.ingester | toYaml | nindent 4 }}
+  {{- if eq $st.type "filesystem" }}
+  persistence:
+    enabled: true
+    size: {{ $t.persistence.ingester.size }} # default to 10Gi
+    storageClass: null
+  {{- end }}
+
+distributor:
+  resources: {{- $t.resources.distributor | toYaml | nindent 4 }}
+  autoscaling:
+    enabled: {{ $t.autoscaling.distributor.enabled }}
+    minReplicas: {{ $t.autoscaling.distributor.minReplicas }}
+    maxReplicas: {{ $t.autoscaling.distributor.maxReplicas }}
+    targetCPUUtilizationPercentage: {{ $t.autoscaling.distributor.targetCPUUtilizationPercentage }}
+    targetMemoryUtilizationPercentage: {{ $t.autoscaling.distributor.targetMemoryUtilizationPercentage }}
+  config:
+    log_received_spans:
+      enabled: true
+      include_all_attributes: true
+      filter_by_status_error: true
+
+compactor:
+  resources: {{- $t.resources.compactor | toYaml | nindent 4 }}
+
+querier:
+  resources: {{- $t.resources.querier | toYaml | nindent 4 }}
+  autoscaling:
+    enabled: {{ $t.autoscaling.querier.enabled }}
+    minReplicas: {{ $t.autoscaling.querier.minReplicas }}
+    maxReplicas: {{ $t.autoscaling.querier.maxReplicas }}
+    targetCPUUtilizationPercentage: {{ $t.autoscaling.querier.targetCPUUtilizationPercentage }}
+    targetMemoryUtilizationPercentage: {{ $t.autoscaling.querier.targetMemoryUtilizationPercentage }}
+
+queryFrontend:
+  resources: {{- $t.resources.queryFrontend | toYaml | nindent 4 }}
+  autoscaling:
+    enabled: {{ $t.autoscaling.queryFrontend.enabled }}
+    minReplicas: {{ $t.autoscaling.queryFrontend.minReplicas }}
+    maxReplicas: {{ $t.autoscaling.queryFrontend.maxReplicas }}
+    targetCPUUtilizationPercentage: {{ $t.autoscaling.queryFrontend.targetCPUUtilizationPercentage }}
+    targetMemoryUtilizationPercentage: {{ $t.autoscaling.queryFrontend.targetMemoryUtilizationPercentage }}
+
+memcached:
+  resources: {{- $t.resources.memcached | toYaml | nindent 4 }}
+
+metricsGenerator:
+  enabled: true
+  resources: {{- $t.resources.metricsGenerator | toYaml | nindent 4 }}
+  config:
+    storage:
+      path: /var/tempo/wal
+      wal:
+      remote_write_flush_deadline: 1m
+      # -- A list of remote write endpoints.
+      # -- https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
+      remote_write:
+       - url: http://po-prometheus.monitoring:9090/api/v1/write
+
+storage:
+  trace:
+    {{- if eq $st.type "minioLocal" "s3" }}
+    backend: s3
+    {{- end }}
+    {{- if eq $st.type "azure" }}
+    backend: azure
+    {{- end }}    
+    {{- if eq $st.type "minioLocal" }}
+    s3:
+      bucket: tempo
+      endpoint: minio.minio.svc.cluster.local:9000
+      access_key: otomi-admin                          
+      secret_key: {{ $v.otomi.adminPassword }}                            
+      insecure: true  
+    {{- end }}
+    {{- if eq $st.type "s3" }}
+    s3:
+      bucket: {{ $st.s3.bucket }}
+      endpoint: {{ $st.s3.s3Url }} 
+      access_key: {{ $st.s3.accessKeyId }}                         
+      secret_key: {{ $st.s3.secretAccessKey }}                           
+    {{- end }}
+    {{- if eq $st.type "azure" }}
+    azure:
+      storage_account_name: {{ $st.azure.accountName }}
+      storage_account_key: {{ $st.azure.accountKey }}
+      container_name: {{ $st.azure.containerName }}
+    {{- end }}
+
+traces:
+  otlp:
+    http:
+      enabled: true
+    grpc:
+      enabled: true
+
+metaMonitoring:
+  serviceMonitor:
+    enabled: true
+    labels:
+      prometheus: system

@@ -42,9 +42,21 @@ controller:
         memory: 512Mi
     {{- end }}
   podAnnotations:
-    # sidecar.istio.io/inject: {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
     policy.otomi.io/ignore: psp-privileged
-
+  opentelemetry:
+    enabled: {{ $n.tracing.enabled }}
+    containerSecurityContext:
+      runAsUser: 65534
+      runAsGroup: 65534
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 65Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
   replicaCount: 2
   minAvailable: 1
   autoscaling:
@@ -97,6 +109,19 @@ controller:
     ssl-redirect: {{ not $v.otomi.hasCloudLB }}
     use-forwarded-headers: {{ $v.otomi.hasCloudLB }}
     use-proxy-protocol: true
+    enable-opentelemetry: {{ $n.tracing.enabled }}
+    otel-sampler: AlwaysOn
+    otel-sampler-ratio: {{ $n.tracing.samplingRatio }}
+    otlp-collector-host: otel-collector-collector.otel.svc
+    otlp-collector-port: 4317
+    opentelemetry-config: "/etc/nginx/opentelemetry.toml"
+    opentelemetry-operation-name: "HTTP $request_method $service_name $uri"
+    opentelemetry-trust-incoming-span: "true"
+    otel-max-queuesize: "2048"
+    otel-schedule-delay-millis: "5000"
+    otel-max-export-batch-size: "512"
+    otel-service-name: "nginx-{{ $ingress.className }}"
+    otel-sampler-parent-based: "true"
   stats:
     enabled: true
   metrics:
