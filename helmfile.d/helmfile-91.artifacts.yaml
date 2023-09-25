@@ -1,0 +1,20 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: istio-resources-artifacts
+    installed: {{ $a | get "otel.enabled" }}
+    namespace: istio-system
+    labels:
+      pkg: istio
+    <<: *raw

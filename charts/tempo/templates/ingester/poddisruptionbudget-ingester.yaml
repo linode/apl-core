@@ -1,0 +1,14 @@
+{{- if gt (int .Values.ingester.replicas) 1 }}
+{{ $dict := dict "ctx" . "component" "ingester" "memberlist" true }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "tempo.resourceName" $dict }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+  maxUnavailable: {{ sub (.Values.ingester.replicas) (add (div .Values.ingester.config.replication_factor 2) 1) }}
+{{- end }}

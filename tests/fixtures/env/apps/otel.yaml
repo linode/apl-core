@@ -1,0 +1,29 @@
+apps:
+    otel:
+        enabled: true
+        collector:
+            mode: deployment
+        operator:
+            replicaCount: 1
+        resources:
+            collector:
+                requests:
+                    cpu: 100m
+                    memory: 64Mi
+                limits:
+                    cpu: 500m
+                    memory: 128Mi
+            manager:
+                requests:
+                    cpu: 50m
+                    memory: 16Mi
+                limits:
+                    cpu: 200m
+                    memory: 512Mi
+            kubeRBACProxy:
+                requests:
+                    cpu: 5m
+                    memory: 64Mi
+                limits:
+                    cpu: 500m
+                    memory: 128Mi

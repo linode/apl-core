@@ -75,6 +75,12 @@ k8s:
       app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: otel
+      app: otel
+      disableIstioInjection: true
+    - name: tempo
+      app: tempo
+      disableIstioInjection: true
     - name: maintenance
       disableIstioInjection: true
     - name: minio
@@ -119,6 +125,7 @@ adminApps:
   - name: alertmanager
     tags: [alerting, observability]
     deps: [prometheus]
+    ownHost: true
     ingress:
       - svc: po-alertmanager
         namespace: monitoring
@@ -362,6 +369,7 @@ adminApps:
         auth: true
   - name: prometheus
     tags: [metrics, observability]
+    ownHost: true
     ingress:
       - svc: po-prometheus
         port: 9090
@@ -369,6 +377,14 @@ adminApps:
         # namespace: prometheus
         type: public
         auth: true
+  - name: tempo
+    tags: [tracing]
+    deps: [prometheus, grafana]
+    useHost: grafana
+    path: /explore?orgId=1&left=%7B"datasource":"tempo","queries":%5B%7B"refId":"A","datasource":%7B"type":"tempo","uid":"tempo"%7D,"queryType":"clear","limit":20%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
+  - name: otel
+    tags: [tracing]
+    deps: [prometheus, grafana, tempo, loki]
   - name: thanos
     tags: [metrics, observability]
     ownHost: true
@@ -406,6 +422,7 @@ adminApps:
 
 teamApps:
   - name: alertmanager
+    ownHost: true
     ingress:
       - svc: po-alertmanager
         hasPrefix: true
@@ -425,8 +442,12 @@ teamApps:
         auth: true
   - name: loki
     useHost: grafana
-    path: /explore?orgId=1&left=%5B%22now-1h%22,%22now%22,%22Loki%22,%7B%22expr%22:%22%7Bnamespace%3D%5C%22#NS#%5C%22%7D%22%7D,%7B%22mode%22:%22Logs%22%7D,%7B%22ui%22:%5Btrue,true,true,%22none%22%5D%7D%5D
+    path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A","expr":"","queryType":"range","datasource":%7B"type":"loki","uid":"loki"%7D%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
+  - name: tempo
+    useHost: grafana
+    path: /explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22tempo%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D
   - name: prometheus
+    ownHost: true
     ingress:
       - svc: po-prometheus
         hasPrefix: true

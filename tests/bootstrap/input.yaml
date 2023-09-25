@@ -10,3 +10,8 @@ apps:
   harbor:
     enabled: true
 license: testLicense
+
+databases:
+  keycloak:
+    size: '5Gi'
+    replicas: 1

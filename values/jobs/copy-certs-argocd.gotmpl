@@ -1,0 +1,9 @@
+{{- $v := .Values }}
+{{- $teams := keys $v.teamConfig }}
+
+type: CronJob
+env:
+  TEAM_IDS: '{{ $teams | sortAlpha | toJson }}'
+name: copy-pull-secrets
+schedule: "0/3 * * * *" # every 3 minutes
+{{ tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "copy-certs-argo" "type" "cronjob") }}

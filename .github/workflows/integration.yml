@@ -65,6 +65,7 @@ on:
         options:
           - minimal
           - minimal-with-team
+          - monitoring-with-team
           - full
           - upgrade
       cluster_persistence:
