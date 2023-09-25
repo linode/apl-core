@@ -32,4 +32,5 @@ assignees: ''
 
 - [ ] Relevant PRs are merged
 - [ ] Tested by peer
-- [ ] Updated documentation reviewed by peer
+- [ ] The `npm run validate-templates` is passing
+- [ ] The `npm run lint` is passing
