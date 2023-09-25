@@ -35,7 +35,7 @@ The following files needs to be either updated or generated:
 
 - [ ] The `npm run validate-templates` is passing
 - [ ] The `npm run lint` is passing
-- [ ] The `full` testcase scanerio is passing with a new k8s version
+- [ ] The deployment of the `full` test case scenerio with a new k8s version is successful
 
 # Definition of done
 
