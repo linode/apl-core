@@ -9,6 +9,7 @@ metadata:
   name: buildpacks-build-{{ .name }}
   annotations:
     sidecar.istio.io/inject: "false"
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   workspaces:
   - name: shared-data
@@ -51,6 +52,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: trigger-template-{{ .name }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
@@ -59,6 +61,7 @@ spec:
         generateName: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}-
         labels:
           tekton.dev/pipeline: buildpacks-build-{{ .name }}
+          {{- include "team-ns.chart-labels" $ | nindent 10 }}
         annotations:
           sidecar.istio.io/inject: "false"
       spec:
@@ -91,6 +94,7 @@ metadata:
   name: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
   annotations:
     sidecar.istio.io/inject: "false"
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: sa-team-{{ $v.teamId }}
   pipelineRef:
@@ -120,6 +124,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
   name: gitea-triggerbinding-{{ .name }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   params:
     - name: gitrevision
@@ -131,6 +136,7 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
   triggers:
