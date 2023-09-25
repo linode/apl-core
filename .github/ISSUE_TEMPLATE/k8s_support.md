@@ -1,7 +1,7 @@
 ---
 name: Kubernetes version support
 about: Kubernetes new version support
-title: ''
+title: 'Support kubernetes v1.XX'
 labels: 'k8s'
 assignees: ''
 ---
