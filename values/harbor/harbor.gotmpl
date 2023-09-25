@@ -15,7 +15,8 @@ externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
 # logLevel - debug, info, warning, error or fatal
 logLevel: warning
-harborAdminPassword: {{ $v.otomi.adminPassword }}
+
+harborAdminPassword: {{ $h.adminPassword }}
 nameOverride: harbor
 secretKey: {{ $h | get "secretKey" nil }}
 
