@@ -393,7 +393,6 @@ adminApps:
     path: /explore?orgId=1&left=%7B"datasource":"tempo","queries":%5B%7B"refId":"A","datasource":%7B"type":"tempo","uid":"tempo"%7D,"queryType":"clear","limit":20%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
   - name: otel
     tags: [tracing]
-    deps: [prometheus, grafana, tempo, loki]
   - name: thanos
     tags: [metrics, observability]
     ownHost: true
