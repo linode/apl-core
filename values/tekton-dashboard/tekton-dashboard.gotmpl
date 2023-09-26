@@ -1,0 +1,23 @@
+{{- $v := .Values }}
+{{- $t := $v.apps.tekton }}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+
+{{ $targets := list }}
+  {{- range $id, $_ := $v.teamConfig }}
+    {{- $targets = append $targets (print "team-" $id) }}
+  {{- end }}
+
+resources: {{- $t.resources.dashboard | toYaml | nindent 2 }}
+
+args:
+  - --port=9097
+  - --logout-url=
+  - --pipelines-namespace=tekton-pipelines
+  - --triggers-namespace=tekton-pipelines
+  - --read-only=false
+  - --log-level=info
+  - --log-format=json
+  - --namespace=
+  - --namespaces={{- tpl $joinTpl (dict "list" $targets "sep" ",") }}
+  - --stream-logs=true
+  - --external-logs=
