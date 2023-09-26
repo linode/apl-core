@@ -5,7 +5,6 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $d := $v.apps.drone }}
 {{- $sops := $v | get "kms.sops" dict }}
-{{- $hasGitea := $g.enabled }}
 {{- $giteaValuesUrl := printf "gitea.%s/otomi/values" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
 
@@ -27,15 +26,9 @@ resources:
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipScript" true) }}
 
 secrets:
-  {{- if $hasGitea }}
   GIT_USER: otomi-admin
   GIT_EMAIL: not@us.ed
-  GIT_PASSWORD: {{ $g | get "admin.password" $v.otomi.adminPassword }}
-  {{- else }}
-  GIT_USER: {{ $o.git.user }}
-  GIT_EMAIL: {{ $o.git.email }}
-  GIT_PASSWORD: {{ $o.git.password }}
-  {{- end }}
+  GIT_PASSWORD: {{ $g.adminPassword }}
   {{- $sopsEnv | nindent 2 }}
   
 env:
