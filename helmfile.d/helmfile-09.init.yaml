@@ -50,3 +50,9 @@ releases:
     labels:
       pkg: harbor
     <<: *raw
+  - name: tekton-triggers
+    installed: {{ $a | get "tekton.enabled" }}
+    namespace: tekton-pipelines
+    labels:
+      pkg: tekton-triggers
+    <<: *default
