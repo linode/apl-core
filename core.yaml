@@ -71,6 +71,10 @@ k8s:
       app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: tekton-triggers
+      app: tekton
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: otel
       app: otel
       disableIstioInjection: true
@@ -314,7 +318,16 @@ adminApps:
   - name: kured
     tags: [security]
   - name: tekton
-    tags: [buildpacks]
+    tags: [buildpacks, ci, pipelines]
+    ownHost: true
+    ingress:
+      - svc: tekton-dashboard
+        namespace: tekton-pipelines
+        port: 9097
+        type: public
+        auth: true
+        removeRequestHeaders:
+          - authorization
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus, minio]
@@ -376,12 +389,11 @@ adminApps:
         auth: true
   - name: tempo
     tags: [tracing]
-    deps: [prometheus, grafana]
+    deps: [prometheus, grafana, minio]
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"tempo","queries":%5B%7B"refId":"A","datasource":%7B"type":"tempo","uid":"tempo"%7D,"queryType":"clear","limit":20%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
   - name: otel
     tags: [tracing]
-    deps: [prometheus, grafana, tempo, loki]
   - name: thanos
     tags: [metrics, observability]
     ownHost: true
@@ -451,3 +463,13 @@ teamApps:
         port: 9090
         type: public
         auth: true
+  - name: tekton
+    ownHost: true
+    ingress:
+      - svc: tekton-dashboard
+        hasPrefix: true
+        port: 9097
+        type: public
+        auth: true
+        removeRequestHeaders:
+          - authorization

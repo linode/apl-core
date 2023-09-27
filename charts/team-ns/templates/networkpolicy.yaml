@@ -41,10 +41,10 @@ spec:
           podSelector:
             matchLabels:
               app: prometheus
-    # - from:
-    #     - namespaceSelector:
-    #         matchLabels:
-    #           name: shared
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: tekton-pipelines
 ---
 # Allow traffic from team's prometheus to team's alertmanager
 apiVersion: networking.k8s.io/v1
@@ -112,6 +112,27 @@ spec:
   podSelector:
     matchLabels:
       app.kubernetes.io/name: kube-state-metrics
+  policyTypes:
+    - Ingress
+---
+# Allow webhook traffic from gitea to event listeners
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-from-gitea
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: gitea
+          podSelector:
+            matchLabels:
+              app: gitea
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: EventListener
   policyTypes:
     - Ingress
 

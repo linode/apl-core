@@ -1,0 +1,224 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-defaults-triggers
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # default-service-account contains the default service account name
+    # to use for TaskRun and PipelineRun, if none is specified.
+    default-service-account: "default"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: feature-flags-triggers
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-pipelines
+data:
+  # Setting this flag will determine which gated features are enabled.
+  # Acceptable values are "stable" or "alpha".
+  enable-api-fields: "stable"
+  # Setting this field with valid regex pattern matching the pattern will exclude labels from
+  # getting added to resources created by the EventListener such as the deployment
+  labels-exclusion-pattern: ""
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: triggers-info
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+data:
+  # Contains triggers version which can be queried by external
+  # tools such as CLI. Elevated permissions are already given to
+  # this ConfigMap such that even if we don't have access to
+  # other resources in the namespace we still can have access to
+  # this ConfigMap.
+  version: "v0.25.0"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-leader-election-triggers-controller
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+    # lease-duration is how long non-leaders will wait to try to acquire the
+    # lock; 15 seconds is the value used by core kubernetes controllers.
+    lease-duration: "60s"
+    # renew-deadline is how long a leader will try to renew the lease before
+    # giving up; 10 seconds is the value used by core kubernetes controllers.
+    renew-deadline: "40s"
+    # retry-period is how long the leader election client waits between tries of
+    # actions; 2 seconds is the value used by core kubernetes controllers.
+    retry-period: "10s"
+    # buckets is the number of buckets used to partition key space of each
+    # Reconciler. If this number is M and the replica number of the controller
+    # is N, the N replicas will compete for the M buckets. The owner of a
+    # bucket will take care of the reconciling for the keys partitioned into
+    # that bucket.
+    buckets: "1"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-leader-election-triggers-webhook
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+    # lease-duration is how long non-leaders will wait to try to acquire the
+    # lock; 15 seconds is the value used by core kubernetes controllers.
+    lease-duration: "60s"
+    # renew-deadline is how long a leader will try to renew the lease before
+    # giving up; 10 seconds is the value used by core kubernetes controllers.
+    renew-deadline: "40s"
+    # retry-period is how long the leader election client waits between tries of
+    # actions; 2 seconds is the value used by core kubernetes controllers.
+    retry-period: "10s"
+    # buckets is the number of buckets used to partition key space of each
+    # Reconciler. If this number is M and the replica number of the controller
+    # is N, the N replicas will compete for the M buckets. The owner of a
+    # bucket will take care of the reconciling for the keys partitioned into
+    # that bucket.
+    buckets: "1"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-logging-triggers
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+data:
+  # Common configuration for all knative codebase
+  zap-logger-config: |
+    {
+      "level": "info",
+      "development": false,
+      "disableStacktrace": true,
+      "sampling": {
+        "initial": 100,
+        "thereafter": 100
+      },
+      "outputPaths": ["stdout"],
+      "errorOutputPaths": ["stderr"],
+      "encoding": "json",
+      "encoderConfig": {
+        "timeKey": "timestamp",
+        "levelKey": "severity",
+        "nameKey": "logger",
+        "callerKey": "caller",
+        "messageKey": "message",
+        "stacktraceKey": "stacktrace",
+        "lineEnding": "",
+        "levelEncoder": "",
+        "timeEncoder": "iso8601",
+        "durationEncoder": "",
+        "callerEncoder": ""
+      }
+    }
+  # Log level overrides
+  loglevel.controller: "info"
+  loglevel.webhook: "info"
+  loglevel.eventlistener: "info"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-observability-triggers
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # metrics.backend-destination field specifies the system metrics destination.
+    # It supports either prometheus (the default) or stackdriver.
+    # Note: Using stackdriver will incur additional charges
+    metrics.backend-destination: prometheus
+
+    # metrics.stackdriver-project-id field specifies the stackdriver project ID. This
+    # field is optional. When running on GCE, application default credentials will be
+    # used if this field is not provided.
+    metrics.stackdriver-project-id: "<your stackdriver project id>"
+
+    # metrics.allow-stackdriver-custom-metrics indicates whether it is allowed to send metrics to
+    # Stackdriver using "global" resource type and custom metric type if the
+    # metrics are not supported by "knative_revision" resource type. Setting this
+    # flag to "true" could cause extra Stackdriver charge.
+    # If metrics.backend-destination is not Stackdriver, this is ignored.
+    metrics.allow-stackdriver-custom-metrics: "false"

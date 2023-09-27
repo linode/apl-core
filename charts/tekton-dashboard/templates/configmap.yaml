@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  version: "{{ replace "+" "_" .Chart.Version }}"
+kind: ConfigMap
+metadata:
+  labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
+  name: dashboard-info

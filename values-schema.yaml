@@ -1333,6 +1333,9 @@ definitions:
       tag:
         description: Image tag
         $ref: '#/definitions/imageTag'
+      trigger:
+        type: boolean
+        default: false
       mode:
         properties:
           docker:
@@ -2475,6 +2478,11 @@ properties:
           enabled:
             type: boolean
             default: false
+          resources:
+            additionalProperties: false
+            properties:
+              dashboard:
+                $ref: '#/definitions/resources'
       loki:
         additionalProperties: false
         properties:

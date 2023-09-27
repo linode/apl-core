@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: controller
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/version: "v0.25.0"
+    app.kubernetes.io/part-of: tekton-triggers
+    triggers.tekton.dev/release: "v0.25.0"
+    app: tekton-triggers-controller
+    version: "v0.25.0"
+  name: tekton-triggers-controller
+  namespace: tekton-pipelines
+spec:
+  ports:
+    - name: http-metrics
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app.kubernetes.io/name: controller
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tekton-triggers-webhook
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/version: "v0.25.0"
+    app.kubernetes.io/part-of: tekton-triggers
+    app: tekton-triggers-webhook
+    version: "v0.25.0"
+    triggers.tekton.dev/release: "v0.25.0"
+spec:
+  ports:
+    - name: https-webhook
+      port: 443
+      targetPort: 8443
+  selector:
+    app.kubernetes.io/name: webhook
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-triggers

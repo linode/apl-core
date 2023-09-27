@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $ns := .Release.Namespace }}
 {{- $h := $v.apps.harbor }}
-{{- $b := $v.apps.tekton }}
+{{- $t := $v.apps.tekton }}
 ---
 apiVersion: v1
 imagePullSecrets:
@@ -119,4 +119,108 @@ type: kubernetes.io/basic-auth
 stringData:
   username: otomi-admin
   password: {{ $v.otomi.adminPassword }}
+---
+{{- if $t.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tekton-triggers-team-{{ $v.teamId }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: triggers-eventlistener-binding-team-{{ $v.teamId }}
+subjects:
+- kind: ServiceAccount
+  name: tekton-triggers-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-eventlistener-roles
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: triggers-eventlistener-clusterbinding-team-{{ $v.teamId }}
+subjects:
+- kind: ServiceAccount
+  name: tekton-triggers-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-eventlistener-clusterroles
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tekton-triggers-clusterbinding-team-{{ $v.teamId }}
+subjects:
+- kind: ServiceAccount
+  name: tekton-triggers-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-aggregate-view
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-triggers-createwebhook-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - delete
+- apiGroups:
+  - triggers.tekton.dev
+  resources:
+  - eventlisteners
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - delete
+- apiGroups:
+  - extensions
+  - networking.k8s.io
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - get
+  - list
+  - delete
+  - update
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tekton-triggers-createwebhook-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tekton-triggers-createwebhook-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+subjects:
+  - kind: ServiceAccount
+    name: tekton-triggers-createwebhook-team-{{ $v.teamId }}
+    namespace: team-{{ $v.teamId }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: tekton-triggers-createwebhook-team-{{ $v.teamId }}
+{{- end }}
 ---
