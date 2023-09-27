@@ -2,6 +2,4 @@
 
 set -eu
 
-helm uninstall -n keycloak keycloak
-
-
+helm uninstall -n keycloak keycloak && sleep 30
