@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.26.2](https://github.com/redkubes/otomi-core/compare/v0.26.1...v0.26.2) (2023-09-28)
+
+
+### Features
+
+* prometheus with its own host ([#1273](https://github.com/redkubes/otomi-core/issues/1273)) ([9fb6a7c](https://github.com/redkubes/otomi-core/commit/9fb6a7c692ca9fea56e44c27f6177b5284380da2))
+
+
+### Bug Fixes
+
+* harbor admin password ([#1285](https://github.com/redkubes/otomi-core/issues/1285)) ([ccc76e8](https://github.com/redkubes/otomi-core/commit/ccc76e8cd1ba1a126c345c14262a1a49207749c6))
+* otomi-api credentials to access the values repo ([#1288](https://github.com/redkubes/otomi-core/issues/1288)) ([9c1ecbc](https://github.com/redkubes/otomi-core/commit/9c1ecbc996b181c75da63d31d61a00a1d574af8b))
+
 ### [0.26.1](https://github.com/redkubes/otomi-core/compare/v0.26.0...v0.26.1) (2023-09-07)
 
 
