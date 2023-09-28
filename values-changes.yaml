@@ -93,3 +93,4 @@ changes:
       - apps.keycloak.resources.postgresql: databases.keycloak.resources
     deletions:
       - apps.keycloak.postgresqlPassword
+      - apps.keycloak.postgresql
