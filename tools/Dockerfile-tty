@@ -8,7 +8,7 @@ FROM ubuntu:latest
 RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget less tmux bash-completion 
 
 # Installing yq
-ADD --chmod=755 --checksum=sha256:1952f93323e871700325a70610d2b33bafae5fe68e6eb4aec0621214f39a4c1e https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 /usr/local/bin/yq
+ADD --chmod=755 --checksum=sha256:1952f93323e871700325a70610d2b33bafae5fe68e6eb4aec0621214f39a4c1e https://github.com/mikefarah/yq/releases/download/v4.34.2/yq_linux_amd64 /usr/local/bin/yq
 
 # Installing kubectl
 ADD --checksum=sha256:fba6c062e754a120bc8105cde1344de200452fe014a8759e06e4eec7ed258a09 https://dl.k8s.io/release/v1.27.3/bin/linux/amd64/kubectl /tmp/kubectl
