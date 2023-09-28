@@ -28,6 +28,7 @@ teamConfig:
     builds:
       - name: nodejs-hello-world
         tag: v0.0.1
+        trigger: false
         mode:
           docker:
             repoUrl: https://github.com/redkubes/nodejs-helloworld
@@ -36,12 +37,22 @@ teamConfig:
           type: docker
       - name: demo-java-maven
         tag: v0.0.1
+        trigger: false
         mode:
           buildpacks:
             repoUrl: https://github.com/buildpacks/samples
             revision: HEAD
             path: apps/java-maven
           type: buildpacks
+      - name: demo-java-trigger
+        tag: v_0_0_1
+        trigger: true
+        mode:
+          docker:
+            repoUrl: https://github.com/buildpacks/samples
+            revision: HEAD
+            path: ./Docker
+          type: docker
     services:
       - headers:
           response:

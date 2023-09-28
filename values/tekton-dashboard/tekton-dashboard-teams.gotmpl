@@ -1,0 +1,20 @@
+{{- $teamId := .Release.Labels.team }}
+{{- $v := .Values }}
+{{- $t := $v.apps.tekton }}
+
+resources: {{- $t.resources.dashboard | toYaml | nindent 2 }}
+
+teamId: {{ $teamId }}
+
+args:
+  - --port=9097
+  - --logout-url=
+  - --pipelines-namespace=tekton-pipelines
+  - --triggers-namespace=tekton-pipelines
+  - --read-only=true
+  - --log-level=info
+  - --log-format=json
+  - --namespace=team-{{ $teamId }}
+  - --namespaces=team-{{ $teamId }}
+  - --stream-logs=true
+  - --external-logs=

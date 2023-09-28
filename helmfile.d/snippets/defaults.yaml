@@ -251,6 +251,21 @@ environments:
             enabled: true
             adminUsername: otomi-admin
             theme: otomi
+            resources:
+              keycloak:
+                  requests:
+                      cpu: 200m
+                      memory: 512Mi
+                  limits:
+                      cpu: 400m
+                      memory: 1Gi
+              operator:
+                  requests:
+                      cpu: 100m
+                      memory: 128Mi
+                  limits:
+                      cpu: 400m
+                      memory: 512Mi
             idp:
               alias: otomi-idp
               clientID: otomi
@@ -348,6 +363,14 @@ environments:
                       memory: 32Mi
           tekton:
             enabled: false
+            resources:
+              dashboard:
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
           loki:
             enabled: false
             storage:
@@ -787,7 +810,7 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes: (and think more?)
-        version: 14
+        version: 15
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

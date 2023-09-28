@@ -9,6 +9,7 @@ metadata:
   name: buildpacks-build-{{ .name }}
   annotations:
     sidecar.istio.io/inject: "false"
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   workspaces:
   - name: shared-data
@@ -46,12 +47,54 @@ spec:
     - name: BUILDER_IMAGE
       value: paketobuildpacks/builder:full
 ---
+{{- if .trigger }}
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: trigger-template-{{ .name }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}-
+        labels:
+          tekton.dev/pipeline: buildpacks-build-{{ .name }}
+          {{- include "team-ns.chart-labels" $ | nindent 10 }}
+        annotations:
+          sidecar.istio.io/inject: "false"
+      spec:
+        serviceAccountName: sa-team-{{ $v.teamId }}
+        pipelineRef:
+          name: buildpacks-build-{{ .name }}
+        podTemplate:
+          securityContext:
+            fsGroup: 65532
+        workspaces:
+        - name: shared-data
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+              - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 1Gi
+        - name: git-credentials
+          secret:
+            secretName: gitea-credentials
+        - name: docker-credentials
+          secret:
+            secretName: harbor-pushsecret-builds
+---
+{{- else }}
 apiVersion: tekton.dev/v1beta1
 kind: PipelineRun
 metadata:
   name: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
   annotations:
     sidecar.istio.io/inject: "false"
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: sa-team-{{ $v.teamId }}
   pipelineRef:
@@ -74,6 +117,36 @@ spec:
   - name: docker-credentials
     secret:
       secretName: harbor-pushsecret-builds
+---
+{{- end }}
+{{- if .trigger }}
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: gitea-triggerbinding-{{ .name }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  params:
+    - name: gitrevision
+      value: $(body.after)
+    - name: gitrepositoryurl
+      value: $(body.repository.clone_url)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: gitea-webhook-{{ .name }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
+  triggers:
+    - name: tekton-webhook-{{ .name }}
+      bindings:
+        - ref: gitea-triggerbinding-{{ .name }}
+      template:
+        ref: trigger-template-{{ .name }}
+---
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
