@@ -5,3 +5,11 @@ resources:
       name: custom-ca
     data:
       custom-ca.pem: {{ .Values._derived.caCert | b64enc }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: keycloak-initial-admin
+      namespace: keycloak
+    data:
+      password: {{ .Values.otomi.adminPassword | b64enc }}
+      username: {{ .Values.apps.keycloak.adminUsername | b64enc }}

@@ -1,0 +1,9 @@
+{{- $v := .Values }}
+{{- $k := $v | get "apps.keycloak" }}
+
+resources: {{ $k.resources.operator | toYaml  | nindent 4 }}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000

@@ -272,8 +272,9 @@ adminApps:
     ownHost: true
     ingress:
       - namespace: keycloak
-        svc: keycloak-http
+        svc: keycloak-service
         type: public
+        port: 8080
     shortcuts:
       - title: Account
         description: Edit your account settings.
