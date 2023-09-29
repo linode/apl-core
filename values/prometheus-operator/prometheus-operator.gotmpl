@@ -301,7 +301,7 @@ grafana:
           filterByTraceID: false
           filterBySpanID: false
           customQuery: true
-          query: '{namespace=~".+"} |= "${__span.traceId}"'
+          query: '{namespace=~".+"} |= "$${__span.traceId}"'
         tracesToMetrics:
           datasourceUid: 'prometheus'
           spanStartTimeShift: '1h'
@@ -309,7 +309,7 @@ grafana:
           tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
           queries:
             - name: 'Span duration (example)'
-              query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
+              query: 'sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m]))'
         serviceMap:
           datasourceUid: 'prometheus'
         nodeGraph:
