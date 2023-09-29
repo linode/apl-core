@@ -150,7 +150,7 @@ releases:
                   filterByTraceID: false
                   filterBySpanID: false
                   customQuery: true
-                  query: '{namespace="team-{{ $teamId }}"} |= "${__span.traceId}"'
+                  query: '{namespace="team-{{ $teamId }}"} |= "$${__span.traceId}"'
                 nodeGraph:
                   enabled: true
                 search:
@@ -166,7 +166,7 @@ releases:
                     tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
                     queries:
                       - name: 'Span duration (example)'
-                        query: 'sum(rate(traces_spanmetrics_latency_bucket{$__tags}[5m]))'
+                        query: 'sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m]))'
                 httpMethod: GET
                 spanBar:
                   type: 'Tag'
