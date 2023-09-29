@@ -21,3 +21,10 @@ teamConfig:
                   type: semver
                   enabled: true
                   build: hello
+            - name: wd3
+              url: https://myrepo.local/mychart.git
+              path: /
+              autoUpdate:
+                  type: latest
+                  enabled: true
+                  build: hello
