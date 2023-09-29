@@ -150,7 +150,7 @@ releases:
                   filterByTraceID: false
                   filterBySpanID: false
                   customQuery: true
-                  query: '{${__tags}} |= "${__span.traceId}"'
+                  query: '{namespace="team-{{ $teamId }}"} |= "${__span.traceId}"'
                 nodeGraph:
                   enabled: true
                 search:
