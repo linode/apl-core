@@ -1264,7 +1264,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "P686CB814F81609FC"
+          "uid": "$datasource"
         },
         "definition": "label_values(kube_node_info, cluster)",
         "hide": 2,
@@ -1298,7 +1298,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "P686CB814F81609FC"
+          "uid": "$datasource"
         },
         "definition": "label_values(kube_pod_info{cluster=~\"$cluster\"}, node)",
         "hide": 2,
