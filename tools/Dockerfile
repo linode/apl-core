@@ -1,7 +1,7 @@
-FROM ubuntu:20.04
-
 # syntax=docker/dockerfile:1.6
 # The above is needed for the "--checksum" aurgument to work in the ADD instruction
+FROM ubuntu:20.04
+
 ARG DEBIAN_FRONTEND=noninteractive
 
 # https://github.com/kubernetes/kubernetes/releases
