@@ -183,7 +183,6 @@ adminApps:
   - name: falco
     tags: [security]
     deps: [prometheus]
-    isShared: true
     ownHost: true
     ingress:
       - namespace: falco
@@ -258,7 +257,6 @@ adminApps:
   - name: jaeger
     tags: [ingress, telemetry, observability]
     deps: [istio]
-    isShared: true
     ingress:
       - svc: jaeger-operator-jaeger-query
         port: 16686
@@ -308,7 +306,6 @@ adminApps:
   - name: kubeclarity
     tags: [security]
     ownHost: true
-    isShared: true
     ingress:
       - svc: kubeclarity
         namespace: kubeclarity
