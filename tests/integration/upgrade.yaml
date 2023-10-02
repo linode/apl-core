@@ -44,6 +44,8 @@ apps:
     enabled: true
   minio:
     enabled: true
+  otel:
+    enabled: true
   prometheus:
     enabled: true
   promtail:
@@ -51,6 +53,8 @@ apps:
   redis-shared:
     enabled: false
   snapshot-controller:
+    enabled: true
+  tempo:
     enabled: true
   tigera-operator:
     enabled: true

@@ -10,6 +10,7 @@ assignees: ''
 
 The following files needs to be either updated or generated:
 
+Get familiar with the `schemas/Readme.md` file
 **src/**
 
 - [ ] the `supportedK8sVersions.json` file is updated with new version and the oldest one is removed
@@ -30,6 +31,10 @@ The following files needs to be either updated or generated:
 **.github/workflows**
 
 - [ ] The .github/workflows/integration.yml file is updated to use the new k8s version (see workflow_call, workflow_dispatch)
+
+**package.json**
+
+- [ ] update the `validate-templates:all` script
 
 # Validation
 
