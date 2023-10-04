@@ -1378,7 +1378,7 @@ definitions:
     chartProvider:
       type: object
       title: Chart provider
-      description: Choose your prefered chart provider
+      description: Choose your preferred chart provider
       oneOf:
         - title: helm chart
           type: object
