@@ -34,7 +34,15 @@ spec:
       g, team-admin, role:admin
     defaultPolicy: role:readonly
 {{- end }}
-  applicationSet: {}
+  applicationSet:
+    logLevel: info
+    resources:
+      limits:
+        cpu: '500m'
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256M
   server:
     host: argocd.{{ $v.cluster.domainSuffix }}
     insecure: true # nginx terminates tls
