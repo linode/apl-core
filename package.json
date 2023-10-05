@@ -150,7 +150,7 @@
     "test:ts": "NODE_ENV=test jest",
     "test:ts-cov": "jest --coverage",
     "validate-templates": "NODE_ENV=test binzx/otomi validate-templates",
-    "validate-templates:all": "set -e; i=19; while [ $i -le 23 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
+    "validate-templates:all": "set -e; i=25; while [ $i -le 27 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
     "validate-values": "NODE_ENV=test binzx/otomi validate-values",
     "bootstrap-dev": "rm -rf /tmp/otomi-bootstrap-dev; CI=1 VALUES_INPUT=$PWD/tests/bootstrap/input.yaml ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi bootstrap",
     "bootstrap-dev-with-repo": "CI=1 ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi bootstrap"
@@ -161,5 +161,5 @@
     }
   },
   "type": "commonjs",
-  "version": "0.27.0"
+  "version": "1.0.0"
 }
