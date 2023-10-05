@@ -18,7 +18,7 @@ cluster: {}
   # name: 'dev'
 
   ## Set provider
-  ## Can be one of aws|azure|google|digitalocean|ovh|vultr|scaleway|custom
+  ## Can be one of aws|azure|google|digitalocean|ovh|vultr|scaleway|civo|custom
   ## Choose 'custom' for Minikube and any other K8s cluster.
   ##
   # provider: 'custom'

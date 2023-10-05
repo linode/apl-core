@@ -71,7 +71,7 @@ and then install the Helm chart:
 ```bash
 helm install otomi otomi/otomi \
 --set cluster.name=$CLUSTERNAME \
---set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', 'scaleway' or 'custom' for any other cloud or onprem K8s
+--set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', 'scaleway', 'civo', or 'custom' for any other cloud or onprem K8s
 ```
 
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/get-started/activation).
