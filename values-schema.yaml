@@ -1376,48 +1376,16 @@ definitions:
         description: URL to either Helm or Git repository
         $ref: '#/definitions/url'
       chartProvider:
-        type: object
+        type: string
         title: Chart provider
-        description: Choose your preferred chart provider
-        oneOf:
-          - title: helm chart
-            type: object
-            x-hideTitle: true
-            properties:
-              chart:
-                title: Use a helm chart name
-                additionalProperties: false
-                type: object
-                properties:
-                  chart:
-                    type: string
-                    description: 'Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.'
-                required:
-                  - chart
-              type:
-                type: string
-                enum:
-                  - chart
-                default: chart
-          - title: gitea
-            type: object
-            x-hideTitle: true
-            properties:
-              gitea:
-                title: Use a gitea repository
-                additionalProperties: false
-                type: object
-                properties:
-                  path:
-                    type: string
-                    description: 'A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)'
-                required:
-                  - path
-              type:
-                type: string
-                enum:
-                  - gitea
-                default: gitea
+        enum: ['helm', 'git']
+        default: helm
+      path:
+        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
+        $ref: 'definitions.yaml#/wordCharacterPattern'
+      chart:
+        description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
+        $ref: 'definitions.yaml#/wordCharacterPattern'
       revision:
         description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
         $ref: '#/definitions/wordCharacterPattern'
