@@ -770,6 +770,7 @@ definitions:
       - ovh
       - vultr
       - scaleway
+      - civo
   redisChart:
     properties:
       _rawValues:
