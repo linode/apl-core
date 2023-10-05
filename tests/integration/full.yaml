@@ -44,6 +44,8 @@ apps:
     enabled: true
   opencost:
     enabled: true
+  otel:
+    enabled: true
   prometheus:
     enabled: true
   promtail:
@@ -55,6 +57,8 @@ apps:
   tigera-operator:
     enabled: true
   tekton:
+    enabled: true
+  tempo:
     enabled: true
   thanos:
     enabled: true
