@@ -27,25 +27,26 @@ Otomi adds developer- and operations-centric tools, automation and self-service 
 **Developers** - With easy self-service to let them focus on their apps only
 
 - Build OCI compliant images from application code
-- Deploy containerized workloads using golden path templates
+- Deploy containerized workloads the GitOps way using build-in or custom golden path templates
+- Automatically update container images of workloads
+- Publicly expose applications
 - Get instant access to logs, metrics and traces
 - Store charts and images in a private registry
-- Expose applications with a public URL
 - Configure network policies, response headers and CNAMEs
-- Manage your own secrets
+- Manage secrets
+- Create private Git repositories and custom pipelines
 
-**Platform engineers** - To setup and manage secure and production-ready Kubernetes-based platforms
+**Platform engineers** - To setup a Kubernetes-based platform and provide a paved road to production
 
-- Onboard development teams in a comprehensive multi-tenant setup
-- Get all the required K8s tools in an integrated and automated way
 - Create your platform profile and deploy to any K8s
-- One configuration schema to manage the platform
+- Onboard development teams in a comprehensive multi-tenant setup and make them self-serving
+- Get all the required capabilities in an integrated and automated way
 - Ensure governance with security policies
 - Implement zero-trust networking
-- Make development teams self-serving
 - Change the desired state of the platform based on Configuration-as-Code
 - Support multi- and hybrid cloud scenarios
-- Prevent cloud provider lock-in 
+- Prevent cloud provider lock-in
+- Implement full observability
 
 ## Getting started
 
@@ -54,8 +55,9 @@ Otomi adds developer- and operations-centric tools, automation and self-service 
 To install Otomi, make sure to have a K8s cluster running with at least:
 
 - Version `1.25`, `1.26` or `1.27`
-- A node pool with **8 vCPU** and **16GB+ RAM** (more resources are needed based on the activated capabilities)
+- A node pool with at least **8 vCPU** and **16GB+ RAM** (more resources might be required based on the activated capabilities)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
+- A default storage class configured
 - When using the `custom` provider, make sure the K8s LoadBalancer Service created by `Otomi` can obtain an external IP (using a cloud load balancer or MetalLB)
 
 > **_NOTE:_**  Install Otomi with DNS to unlock it's full potential. Check [otomi.io](https://otomi.io) for more info.
