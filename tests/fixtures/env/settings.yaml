@@ -19,9 +19,6 @@ cloud:
         - std
         - std-immediate
 dns:
-    provider:
-        civo:
-            apiToken: xvxvxvxvxvxvxvxvxvxvxvxvx
     domainFilters:
         - otomi.cloud
     # provider:
