@@ -3456,6 +3456,18 @@ properties:
                   - apiToken
             required:
               - digitalocean
+          - title: Civo Cloud
+            additionalProperties: false
+            properties:
+              civo:
+                properties:
+                  apiToken:
+                    type: string
+                    x-secret: ''
+                required:
+                  - apiToken
+            required:
+              - digitalocean
           - title: CloudFlare
             additionalProperties: false
             properties:
