@@ -17,7 +17,7 @@
 </p>
 
 <h4 align="center">
-Otomi adds developer- and operations-centric tools, automation and self-service on top of Kubernetes in any infrastructure or cloud, to code, build, and run containerized applications
+Otomi adds developer- and operations-centric tools, automation, and self-service on top of Kubernetes in any infrastructure or cloud, to code, build, and run containerized applications
 </h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
@@ -81,21 +81,19 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 ## Integrated K8s applications
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/tech-stack.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
-
-Otomi installs, configures, integrates and automates all of your favorite K8s apps:
+Otomi installs, configures, integrates, and automates all of your favorite K8s apps:
 
 **Core Applications (that are always installed):**
 
 - [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
 - [Keycloak](https://github.com/keycloak/keycloak): Identity and access management for modern applications and services
-- [Let's Encrypt](https://letsencrypt.org/): A nonprofit Certificate Authority providing industry-recognized TLS certificates
+- [Cert Manager](https://github.com/cert-manager/cert-manager) - Bring your own wildcard certificate or request one from Let's Encrypt
 - [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
 - [External DNS](https://github.com/kubernetes-sigs/external-dns): Synchronize exposed ingresses with DNS providers
 - [Drone](https://github.com/harness/drone): Continuous integration platform built on Docker
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
 
-**Optional Applications (that you can use to compose your ideal platform):**
+**Optional Applications (that you can activate to compose your ideal platform):**
 
 - [Velero](https://github.com/vmware-tanzu/velero): Back up and restore your Kubernetes cluster resources and persistent volumes
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
@@ -126,7 +124,8 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 ## Otomi Features
 
 - Activate capabilities to compose your ideal platform
-- Generate resources based on golden templates
+- Generate resources for ArgoCD, Tekton, Istio and Ingress based on build-in golden templates
+- BYO golden templates and deploy them the GitOps way using ArgoCD
 - Scan container images for vulnerabilities (at the gate and at runtime)
 - Apply security policies (at the gate and at runtime)
 - Advanced ingress architecture using Istio, Nginx and Oauth2
@@ -137,11 +136,11 @@ Otomi installs, configures, integrates and automates all of your favorite K8s ap
 - Comprehensive multi-tenant setup
 - Automation tasks for Harbor, Keycloak, ArgoCD, Vault, Velero, Gitea and Drone
 - Expose services on multiple (public/private) networks
-- Automated Istio resource creation and configuration
+- Automated Istio resource configuration
 - SOPS/KMS for encryption of sensitive configuration values
 - BYO IdP, DNS and/or CA
-
-And much more...
+- Full observability (logs, metrics, traces, rules, alerts)
+- Cloud shell with integrated cli tools like velero and k9s
 
 ## Otomi Projects
 
