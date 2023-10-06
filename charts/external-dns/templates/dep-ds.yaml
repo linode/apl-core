@@ -302,6 +302,9 @@ spec:
             {{- end }}
           {{- end }}
           env:
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
             {{- if eq .Values.provider "akamai" }}
             # Akamai environment variables
             {{- if .Values.akamai.host }}

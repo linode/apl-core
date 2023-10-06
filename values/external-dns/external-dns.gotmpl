@@ -20,6 +20,11 @@ provider: {{ $provider }}
 {{ $providerConfigKey }}: {{- $config | toYaml | nindent 2 }}
 {{- end }}
 {{- end }}
+{{- if hasKey $dns.provider "civo" }}
+env:
+  - name: CIVO_TOKEN
+    value: {{ $dns.provider.civo.apiToken }}
+{{- end }}
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
