@@ -19,14 +19,17 @@ cloud:
         - std
         - std-immediate
 dns:
+    provider:
+        civo:
+            apiToken: xvxvxvxvxvxvxvxvxvxvxvxvx
     domainFilters:
         - otomi.cloud
-    provider:
-        aws:
-            credentials: {}
-            region: eu-central-1
-    zoneIdFilters:
-        - otomi
+    # provider:
+    #     aws:
+    #         credentials: {}
+    #         region: eu-central-1
+    # zoneIdFilters:
+    #     - otomi
 e2e:
     enabled: true
 home:

@@ -111,10 +111,12 @@ resources:
                   name: external-dns
               {{- end }}
               {{- with $p | get "civo" nil }}
-              civo:
-                tokenSecretRef:
-                  key: secret
-                  name: external-dns
+              webhook:
+                solverName: "civo"
+                groupName: civo.webhook.okteto.com
+                config:
+                  secretKey: secret
+                  secretName: external-dns
               {{- end }}
               {{- with $p | get "google" nil }}
               cloudDNS:
