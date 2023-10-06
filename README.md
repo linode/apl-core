@@ -79,9 +79,33 @@ helm install otomi otomi/otomi \
 
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/get-started/activation).
 
-## Integrated K8s applications
+## Platform architecture
 
-Otomi installs, configures, integrates, and automates all of your favorite K8s apps:
+<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-platform.png/?raw=true" width="100%" align="center" alt="Otomi platform"></p>
+
+### Self-service portal and CLI
+
+The self-service portal (Otomi Console) offers seamless user experience for developers and platform administrators. Platform administrators can use Otomi Console to enable and configure platform capabilities and onboard development teams. Developers can use Otomi Console to build images, deploy applications, expose services, configure CNAMEs, configure network policies and manage secrets. Otomi Console also provided direct and context aware access to platform capabilities like code repositories, registries, logs, metrics, traces, dashboards, etc. Next to the web based self-service, both developers and admins can start a Cloud Shell and run cli commands.
+
+### Desired state store
+
+When Otomi is installed, the desired state of the platform is stored in the Desired State Store (the `otomi/values` repo in the local Git repository). Changes made through the Console will be reflected in the repo.
+
+### Golden templates catalog
+
+The `otomi/charts` Git repo includes a set of build-in Helm charts that are used to create workloads in the Console. You can also add your own charts and offer them to the users of the platform.
+
+### Control plane
+
+All changes made through the Console are validated by the control plane (`otomi-api`) and then committed in the state store. This will automatically trigger the platform to synchronize the desired state to the actual state of the platform.
+
+### Automation
+
+The automation is used to synchronize desired state with the state of applications like Keycloak, Harbor and Gitea.
+
+### Capabilities
+
+The platform offers a set of Kubernetes applications for all the required capabilities. Core applications are always installed, optional applications can be activated. When an application is activated, the application will be installed based on default configuration. Default configuration can be adjusted using the Console.
 
 **Core Applications (that are always installed):**
 
@@ -120,6 +144,20 @@ Otomi installs, configures, integrates, and automates all of your favorite K8s a
 - [Cloudnative-pg](https://github.com/cloudnative-pg/cloudnative-pg): Open source operator designed to manage PostgreSQL workloads
 - [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-operator): Instrument, generate, collect, and export telemetry data to help you analyze your software’s performance and behavior
+
+### Supported providers
+
+Otomi can be installed on any Kubernetes cluster. At this time, the following providers are supported:
+
+- [AWS Elastic Kubernetes Service](https://aws.amazon.com/eks/)
+- [Azure Kubernetes Service](https://azure.microsoft.com/en-us/products/kubernetes-service)
+- [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine?hl=en)
+- [Linode Kubernetes Engine](https://www.linode.com/products/kubernetes/)
+- [OVH Cloud](https://www.ovhcloud.com/en/public-cloud/kubernetes/)
+- [Vultr Kubernetes Engine](https://www.vultr.com/kubernetes/)
+- Vmware Tanzu
+- [Scaleway Kapsule](https://www.scaleway.com/en/kubernetes-kapsule/)
+- [Civo Cloud](https://www.civo.com/) (comming soon!)
 
 ## Otomi Features
 
