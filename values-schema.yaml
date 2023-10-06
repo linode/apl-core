@@ -3467,7 +3467,7 @@ properties:
                 required:
                   - apiToken
             required:
-              - digitalocean
+              - civo
           - title: CloudFlare
             additionalProperties: false
             properties:

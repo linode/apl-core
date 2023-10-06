@@ -110,6 +110,12 @@ resources:
                   key: secret
                   name: external-dns
               {{- end }}
+              {{- with $p | get "civo" nil }}
+              civo:
+                tokenSecretRef:
+                  key: secret
+                  name: external-dns
+              {{- end }}
               {{- with $p | get "google" nil }}
               cloudDNS:
                 project: {{ .project }}
