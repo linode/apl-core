@@ -3445,6 +3445,7 @@ properties:
             required:
               - google
           - title: Digital Ocean
+            additionalProperties: false
             properties:
               digitalocean:
                 properties:
@@ -3456,6 +3457,7 @@ properties:
             required:
               - digitalocean
           - title: Civo Cloud
+            additionalProperties: false
             properties:
               civo:
                 properties:
