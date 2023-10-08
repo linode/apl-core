@@ -23,7 +23,6 @@ dns:
         - otomi.cloud
     # provider:
     #     aws:
-    #         credentials: {}
     #         region: eu-central-1
     # zoneIdFilters:
     #     - otomi

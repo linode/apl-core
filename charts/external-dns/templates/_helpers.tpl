@@ -140,6 +140,8 @@ Return true if a secret object should be created
     {{- true -}}
 {{- else if and (eq .Values.provider "ns1") .Values.ns1.apiKey (not .Values.ns1.secretName) -}}
     {{- true -}}
+{{- else if and (eq .Values.provider "civo") .Values.civo.apiToken -}}
+    {{- true -}}
 {{- else -}}
 {{- end -}}
 {{- end -}}
@@ -196,6 +198,11 @@ Return the name of the Secret used to store the passwords
 {{- template "external-dns.fullname" . }}
 {{- end -}}
 {{- end -}}
+
+{{- define "external-dns.civo-credentials" }}
+[default]
+apiKey = {{ .Values.civo.apiKey }}
+{{ end }}
 
 {{- define "external-dns.alibabacloud-credentials" -}}
 {

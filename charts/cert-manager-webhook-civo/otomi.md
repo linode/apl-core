@@ -1,6 +1,6 @@
 Chart customizations for Otomi:
 
-added policy ignore to the `deployment.yaml` template line 18/19:
+- Add policy ignore to the `deployment.yaml` template line 18/19:
 
 ```
       annotations: 

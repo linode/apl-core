@@ -371,6 +371,13 @@ spec:
             - name: CF_API_EMAIL
               value: {{ .Values.cloudflare.email | quote }}
             {{- end }}
+            {{- if eq .Values.provider "civo" }}
+            - name: CIVO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "external-dns.secretName" . }}
+                  key: apiKey
+            {{- end }}
             {{- if eq .Values.provider "coredns" }}
             # CoreDNS environment variables
             - name: ETCD_URLS
