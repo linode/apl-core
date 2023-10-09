@@ -8,11 +8,6 @@ cluster: {}
   ##
   # domainSuffix: ''
 
-  ## Set the Kubernetes version
-  ## Currently 1.24 and 1.25 are supported
-  ##
-  # k8sVersion: '1.25'
-
   ## Set the name of your cluster
   ## 
   # name: 'dev'
