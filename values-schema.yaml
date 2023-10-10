@@ -3465,7 +3465,7 @@ properties:
                     type: string
                     x-secret: ''
                 required:
-                  - apiKey
+                  - apiToken
             required:
               - civo
           - title: CloudFlare

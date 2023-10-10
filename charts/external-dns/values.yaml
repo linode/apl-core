@@ -282,7 +282,7 @@ azure:
 ## Civo configuration to be set via arguments/env. variables
 ##
 civo:
-  apiKey: ""
+  apiToken: ""
 ## Cloudflare configuration to be set via arguments/env. variables
 ##
 cloudflare:

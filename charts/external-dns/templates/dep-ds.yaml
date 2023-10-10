@@ -376,7 +376,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ template "external-dns.secretName" . }}
-                  key: apiKey
+                  key: apiToken
             {{- end }}
             {{- if eq .Values.provider "coredns" }}
             # CoreDNS environment variables
