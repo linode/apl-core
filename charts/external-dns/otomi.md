@@ -38,6 +38,7 @@ apiKey = {{ .Values.civo.apiKey }}
             {{- end }}
 ```
 
+
 - Add to `data:` in `secret.yaml`:
 
 ```

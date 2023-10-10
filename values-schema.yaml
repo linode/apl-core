@@ -3461,11 +3461,11 @@ properties:
             properties:
               civo:
                 properties:
-                  apiToken:
+                  apiKey:
                     type: string
                     x-secret: ''
                 required:
-                  - apiToken
+                  - apiKey
             required:
               - civo
           - title: CloudFlare
