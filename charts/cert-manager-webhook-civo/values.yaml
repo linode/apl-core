@@ -6,8 +6,8 @@ region: NYC1
 
 image:
   # -- Image repository
-  repository: okteto/civo-webhook
-  tag: 0.4.0
+  repository: otomi/civo-webhook
+  tag: 0.5.0 
 
   # -- Image pull policy
   pullPolicy: IfNotPresent
@@ -42,10 +42,21 @@ service:
   port: 443
 
 # -- Optional pod context. The yaml block should adhere to the [PodSecurityContext spec](https://v1-18.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.18/#securitycontext-v1-core)
-podSecurityContext: {}
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 2000
+  fsGroup: 3000
+  seccompProfile:
+    type: RuntimeDefault
 
-# -- Optional security context. The yaml block should adhere to the [SecurityContext spec](https://v1-18.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.18/#podsecuritycontext-v1-core)
-securityContext: {}
+# Container Security Context
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  runAsNonRoot: true
 
 # -- CPU/memory resource requests/limits
 resources: {}
