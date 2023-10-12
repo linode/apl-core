@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.26.4](https://github.com/redkubes/otomi-core/compare/v0.26.3...v0.26.4) (2023-10-12)
+
+
+### Features
+
+* set holdApplicationUntilProxyStarts flag in Istio ([4528cf8](https://github.com/redkubes/otomi-core/commit/4528cf8cc7979d1eaaa766158c2ba15ed7a89b78))
+
+
+### Bug Fixes
+
+* incorrect defaults in backup schedule ([#1318](https://github.com/redkubes/otomi-core/issues/1318)) ([5522b9a](https://github.com/redkubes/otomi-core/commit/5522b9ad530f38099b467b246c91fed64003740a))
+
 ### [0.26.3](https://github.com/redkubes/otomi-core/compare/v0.26.2...v0.26.3) (2023-10-12)
 
 ### [0.26.2](https://github.com/redkubes/otomi-core/compare/v0.26.1...v0.26.2) (2023-09-28)
