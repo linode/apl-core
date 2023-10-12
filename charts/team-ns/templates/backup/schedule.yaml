@@ -13,11 +13,10 @@ spec:
   template:
     includedNamespaces:
     - team-{{ $v.teamId }}
-    includeClusterResources: true
     includedResources:
-    - pvc
     - pv
     ttl: {{ .ttl }}
+    includeClusterResources: false
     {{- if hasKey . "labelSelector" }}
     labelSelector:
       matchLabels:
