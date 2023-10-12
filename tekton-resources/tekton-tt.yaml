@@ -1,0 +1,24 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: tekton-template
+  namespace: team-admin
+spec:
+  params:
+    - name: repoUrl
+      description: Repository Url
+      default: No Repo found!
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: TaskRun
+      metadata:
+        generateName: otomi-task-run-
+      spec:
+        taskRef:
+          name: otomi-task
+        workspaces:
+          - name: shared # this workspace name must be declared in the Task
+            emptyDir: {}
+        params:
+          - name: repoUrl
+            value: $(tt.params.repoUrl)

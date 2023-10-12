@@ -1,0 +1,26 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: tekton-listener
+  namespace: team-admin
+spec:
+  triggers:
+    - name: tekton-listener
+      bindings:
+        - ref: tekton-binding
+      template:
+        ref: tekton-template
+  resources:
+    kubernetesResource:
+      spec:
+        template:
+          spec:
+            serviceAccountName: tekton-triggers-example-sa
+            containers:
+              - resources:
+                  requests:
+                    memory: '64Mi'
+                    cpu: '250m'
+                  limits:
+                    memory: '128Mi'
+                    cpu: '500m'
