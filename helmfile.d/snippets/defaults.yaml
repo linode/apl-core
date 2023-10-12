@@ -243,6 +243,7 @@ environments:
               accessLogFile: "/dev/stdout"
               enableAutoMtls: true
               defaultConfig:
+                holdApplicationUntilProxyStarts: true
                 gatewayTopology:
                   numTrustedProxies: 1
                 tracing:
