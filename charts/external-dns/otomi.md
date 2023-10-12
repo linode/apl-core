@@ -13,8 +13,7 @@ civo:
 
 ```
 {{- define "external-dns.civo-credentials" }}
-[default]
-apiKey = {{ .Values.civo.apiKey }}
+{{ .Values.civo.apiToken }}
 {{ end }}
 ```
 
@@ -32,9 +31,9 @@ apiKey = {{ .Values.civo.apiKey }}
             {{- if eq .Values.provider "civo" }}
             - name: CIVO_TOKEN
               valueFrom:
-                secretKeyRef:
+                secretTokenRef:
                   name: {{ template "external-dns.secretName" . }}
-                  key: apiKey
+                  key: apiToken
             {{- end }}
 ```
 
@@ -43,7 +42,7 @@ apiKey = {{ .Values.civo.apiKey }}
 
 ```
   {{- if eq .Values.provider "civo" }}
-  apiKey: {{ include "external-dns.civo-credentials" . | b64enc | quote }}
+  apiToken: {{ include "external-dns.civo-credentials" . | b64enc | quote }}
   {{- end }}
 ```
 
