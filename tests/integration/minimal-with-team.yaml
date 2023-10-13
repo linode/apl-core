@@ -91,7 +91,7 @@ teamConfig:
     workloads:
       - name: nodejs-helloworld
         url: https://github.com/redkubes/nodejs-helloworld.git
-        path: /
+        path: ./
         revision: HEAD
       - name: httpbin
         path: charts/httpbin
@@ -112,7 +112,7 @@ teamConfig:
     workloads:
       - name: nodejs-helloworld
         url: https://github.com/redkubes/nodejs-helloworld.git
-        path: /
+        path: ./
         revision: HEAD
 files:
   env/teams/workloads/demo/nodejs-helloworld.yaml: |

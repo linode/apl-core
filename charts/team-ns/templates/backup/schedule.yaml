@@ -15,8 +15,9 @@ spec:
     - team-{{ $v.teamId }}
     includedResources:
     - pv
+    - pvc
     ttl: {{ .ttl }}
-    includeClusterResources: false
+    includeClusterResources: true
     {{- if hasKey . "labelSelector" }}
     labelSelector:
       matchLabels:
