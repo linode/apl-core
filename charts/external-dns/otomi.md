@@ -46,4 +46,4 @@ civo:
   {{- end }}
 ```
 
-PR submitted to external-dns: NO
+PR submitted to bitnami/charts/external-dns: Yes
