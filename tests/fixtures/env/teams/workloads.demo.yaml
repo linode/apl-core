@@ -32,3 +32,9 @@ teamConfig:
                       type: latest
                   enabled: true
                   build: hello
+            - name: wd
+              url: https://myrepo.local/mychart.git
+              path: ./
+              revision: main
+              autoUpdate:
+                  enabled: false

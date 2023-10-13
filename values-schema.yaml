@@ -1404,6 +1404,7 @@ definitions:
           versionConstraint:
             $ref: '#/definitions/wordCharacterPattern'
           strategy:
+            additionalProperties: false
             properties:
               digest:
                 additionalProperties: false
@@ -1426,7 +1427,8 @@ definitions:
                   - digest
                   - latest
                 default: latest
-
+            required:
+              - type
     required:
       - name
       - url
