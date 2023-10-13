@@ -1396,6 +1396,7 @@ definitions:
       autoUpdate:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
+        additionalProperties: false
         properties:
           enabled:
             description: Enable Auto Image Updater
@@ -1409,6 +1410,7 @@ definitions:
           versionConstraint:
             $ref: '#/definitions/wordCharacterPattern'
           strategy:
+            additionalProperties: false
             properties:
               digest:
                 additionalProperties: false
@@ -1431,7 +1433,8 @@ definitions:
                   - digest
                   - latest
                 default: latest
-
+            required:
+              - type
     required:
       - name
       - url
