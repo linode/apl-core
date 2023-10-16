@@ -77,6 +77,20 @@ export const printWelcomeMessage = async (): Promise<void> => {
   d.info(message)
 }
 
+export const cloneOtomiChartsInGitea = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:gitea-otomi-charts`)
+  const values = (await hfValues()) as Record<string, any>
+  const workDir = '/tmp/otomi-charts'
+  const otomiChartsUrl = 'https://github.com/redkubes/otomi-charts.git'
+  const giteaChartsUrl = `https://gitea.${values.cluster.domainSuffix}/otomi/otomi-charts.git`
+  await $`mkdir ${workDir}`
+  await $`git clone ${otomiChartsUrl} ${workDir}`
+  cd(workDir)
+  await $`git remote set-url origin ${giteaChartsUrl}`
+  await $`git push -u origin main`
+  d.info('Cloning otomi-charts in Gitea')
+}
+
 export const module = {
   command: cmdName,
   describe: 'Wrapper that validates values, generates the Drone pipeline and then commits and pushes changed files',
