@@ -31,3 +31,6 @@ spec:
                     storage: 1Gi
                 accessModes:
                   - ReadWriteOnce
+        podTemplate:
+          securityContext:
+            fsGroup: 999

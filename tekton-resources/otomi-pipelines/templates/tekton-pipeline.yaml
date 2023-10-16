@@ -22,6 +22,9 @@ spec:
         - name: source
           workspace: source
     - name: otomi-bootstrap
+      params:
+        - name: OTOMI_VERSION
+          value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
       taskRef:
         name: otomi-task-bootstrap
       workspaces:
@@ -29,17 +32,35 @@ spec:
           workspace: source
       runAfter:
         - otomi-git-clone
+      when:
+        - input: $(tasks.otomi-git-clone.results.CI_SKIP)
+          operator: in
+          values: ['0']
     - name: otomi-test
+      params:
+        - name: OTOMI_VERSION
+          value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
       taskRef:
         name: otomi-task-test
       workspaces:
         - name: source
       runAfter:
         - otomi-bootstrap
+      when:
+        - input: $(tasks.otomi-git-clone.results.CI_SKIP)
+          operator: in
+          values: ['0']
     - name: otomi-apply
+      params:
+        - name: OTOMI_VERSION
+          value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
       taskRef:
         name: otomi-task-apply
       workspaces:
         - name: source
       runAfter:
         - otomi-test
+      when:
+        - input: $(tasks.otomi-git-clone.results.CI_SKIP)
+          operator: in
+          values: ['0']

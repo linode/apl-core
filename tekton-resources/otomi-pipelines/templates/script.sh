@@ -1,14 +1,28 @@
-#!/bin/bash
-set -e
+        #!/bin/bash
+        set -e
 
-export fullRepoUrl=$(params["repoUrl"])
+        # Cleaning up the workdir(if lost+found is present)
+        rm -rf *
 
-echo $fullRepoUrl
+        GITEA_USERNAME=$1
+        GITEA_PASSWORD=$2
+        COMMIT_MESSAGE=$3
 
-#Removing the proto part ('https://')
-export url=${fullRepoUrl/"https://"/}
+        # Getting the full repository url
+        export fullRepoUrl=$(params["repoUrl"])
+        echo $fullRepoUrl
 
-echo $url
+        # Removing the proto part ('https://')
+        export url=${fullRepoUrl/"https://"/}
 
-#Cloning the values
-git clone -c http.sslVerify=false https://$(params["gitea_user"]):$(params["gitea_password"])@$url .' #TODO: replace with ssh git cloning.
+        echo GIT_URL = $url
+        echo COMMIT_MESSAGE = $COMMIT_MESSAGE
+
+        # Cloning the values
+        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url . # TODO: replace with ssh git cloning.
+
+        if [[ $COMMIT_MESSAGE == *skip_ci* ]]; then
+            echo -n "1" > $(results.CI_SKIP)
+        fi
+
+        echo -n "$(yq r env/settings.yaml otomi.version)" > $(results.OTOMI_VERSION)

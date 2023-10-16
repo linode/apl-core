@@ -120,7 +120,7 @@ k8s:
       app: vault
     - name: velero
       app: velero
-    - name: otomi-pipeline
+    - name: otomi-pipelines
       disableIstioInjection: true
 
 adminApps:

@@ -13,18 +13,51 @@ spec:
     - name: gitea_password
       type: string
       default: 'welcomeotomi'
-    - name: otomi-version
-      type: string
-      default: 'v1.0.0'
+  results:
+    - name: CI_SKIP
+      description: Determine if pipeline should run based on the commit message
+    - name: OTOMI_VERSION
+      description: Otomi version as in values/env/settings.yaml
   workspaces:
     - name: source
       mountPath: /home/app/stack/env/
   steps:
     - name: git-clone
-      image: otomi/core:$(params["otomi-version"])
+      image: otomi/core:v1.0.0 #TODO check if it should be dynamicly generated or other image can be used
       workingDir: $(workspaces.source.path)
-      command:
-        - '/bin/bash'
+      script: |
+        #!/bin/sh
+        set -e
+
+        # Cleaning up the workdir(if lost+found is present)
+        rm -rf *
+
+        GITEA_USERNAME=$1
+        GITEA_PASSWORD=$2
+        COMMIT_MESSAGE=$3
+
+        # Getting the full repository url
+        export fullRepoUrl=$(params["repoUrl"])
+        echo $fullRepoUrl
+
+        # Removing the proto part ('https://')
+        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+
+        echo GIT_URL = $url
+        echo COMMIT_MESSAGE = $COMMIT_MESSAGE
+
+        # Cloning the values
+        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url . # TODO: replace with ssh git cloning.
+
+        #if [[ $COMMIT_MESSAGE == *skip_ci* ]]; then
+        #    echo -n "1" > $(results.CI_SKIP.path)
+        #  else
+        #    echo -n "0" > $(results.CI_SKIP.path)
+        #fi
+        echo -n "0" > $(results.CI_SKIP.path)
+        echo -n "$(yq r env/settings.yaml otomi.version)" > $(results.OTOMI_VERSION.path)
+
       args:
-        - '-c'
-        - 'sleep 300 && repoUrl=$(params["repoUrl"]) && url=${repoUrl/"https://"/} && git clone -c http.sslVerify=false https://$(params["gitea_user"]):$(params["gitea_password"])@$url . && sleep 60' #TODO: replace with ssh git cloning.
+        - $(params["gitea_user"])
+        - $(params["gitea_password"])
+        - $(params["commitMessage"])

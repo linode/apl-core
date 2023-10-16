@@ -5,15 +5,14 @@ metadata:
   namespace: otomi-pipelines
 spec:
   params:
-    - name: otomi-version
+    - name: OTOMI_VERSION
       type: string
-      default: 'v1.0.0'
   workspaces:
     - name: source
       mountPath: /home/app/stack/env
   steps:
     - name: apply
-      image: otomi/core:v1.0.0
+      image: otomi/core:$(params["OTOMI_VERSION"])
       workingDir: $(workspaces.source.path)
       env:
         - name: AZURE_CLIENT_ID
