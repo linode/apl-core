@@ -1,9 +1,6 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  annotations:
-    "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "-2"
   name: otomi-tekton-binding
   namespace: otomi-pipelines
 spec:

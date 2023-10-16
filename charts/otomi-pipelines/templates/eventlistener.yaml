@@ -3,7 +3,7 @@ kind: EventListener
 metadata:
   annotations:
     "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "-1"
+    "helm.sh/hook-weight": "0"
   name: otomi-tekton-listener
   namespace: otomi-pipelines
 spec:

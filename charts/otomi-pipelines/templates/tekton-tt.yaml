@@ -3,9 +3,6 @@ kind: TriggerTemplate
 metadata:
   name: otomi-tekton-template
   namespace: otomi-pipelines
-  annotations:
-    "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "-3"
 spec:
   params:
     - name: repoUrl
