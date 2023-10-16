@@ -1375,6 +1375,11 @@ definitions:
       url:
         description: URL to either Helm or Git repository
         $ref: '#/definitions/url'
+      chartProvider:
+        type: string
+        title: Chart provider
+        enum: ['helm', 'git']
+        default: helm
       path:
         description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
         $ref: '#/definitions/wordCharacterPattern'
@@ -1391,6 +1396,7 @@ definitions:
       autoUpdate:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
+        additionalProperties: false
         properties:
           enabled:
             description: Enable Auto Image Updater
@@ -1404,6 +1410,7 @@ definitions:
           versionConstraint:
             $ref: '#/definitions/wordCharacterPattern'
           strategy:
+            additionalProperties: false
             properties:
               digest:
                 additionalProperties: false
@@ -1426,7 +1433,8 @@ definitions:
                   - digest
                   - latest
                 default: latest
-
+            required:
+              - type
     required:
       - name
       - url
