@@ -149,15 +149,15 @@ The platform offers a set of Kubernetes applications for all the required capabi
 
 Otomi can be installed on any Kubernetes cluster. At this time, the following providers are supported:
 
-- [AWS Elastic Kubernetes Service](https://aws.amazon.com/eks/)
-- [Azure Kubernetes Service](https://azure.microsoft.com/en-us/products/kubernetes-service)
-- [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine?hl=en)
-- [Linode Kubernetes Engine](https://www.linode.com/products/kubernetes/)
-- [OVH Cloud](https://www.ovhcloud.com/en/public-cloud/kubernetes/)
-- [Vultr Kubernetes Engine](https://www.vultr.com/kubernetes/)
-- Vmware Tanzu
-- [Scaleway Kapsule](https://www.scaleway.com/en/kubernetes-kapsule/)
-- [Civo Cloud](https://www.civo.com/) (comming soon!)
+- `aws` for [AWS Elastic Kubernetes Service](https://aws.amazon.com/eks/)
+- `azure` for [Azure Kubernetes Service](https://azure.microsoft.com/en-us/products/kubernetes-service)
+- `google` for [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine?hl=en)
+- `linode` for [Linode Kubernetes Engine](https://www.linode.com/products/kubernetes/)
+- `ovh` for [OVH Cloud](https://www.ovhcloud.com/en/public-cloud/kubernetes/)
+- `vultr` for [Vultr Kubernetes Engine](https://www.vultr.com/kubernetes/)
+- `scaleway` for [Scaleway Kapsule](https://www.scaleway.com/en/kubernetes-kapsule/)
+- `civo` for [Civo Cloud K3S](https://www.civo.com/)
+- `custom` for any other cloud/infrastructure
 
 ## Otomi Features
 
