@@ -152,7 +152,7 @@ export const validateTemplates = async (): Promise<void> => {
     'PspSelinux',
   ]
   // TODO: revisit these excluded resources and see it they exist now (from original sh script)
-  const skipKinds = ['CustomResourceDefinition', 'Pipeline', 'PipelineRun', ...constraintKinds]
+  const skipKinds = ['CustomResourceDefinition', ...constraintKinds]
   const skipFilenames = ['crd', 'constraint', 'knative-operator', 'buildpack', 'docker', 'git-clone', 'kaniko']
 
   d.log('Validating resources')

@@ -1,0 +1,4 @@
+{{- $v := .Values }}
+{{- $kms := $v | get "kms" dict }}
+
+kms: {{- $kms | toYaml | nindent 2 }}
