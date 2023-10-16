@@ -92,10 +92,10 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     d.info('Line 3')
     await $`git remote set-url origin ${giteaChartsUrl}`
     d.info('Line 4')
-    const { username, password, email } = getRepo(values)
+    const username = 'otomi-admin'
+    const password = 'welcomeotomi'
     await $`git config --local user.name ${username}`
     await $`git config --local user.password ${password}`
-    await $`git config --local user.email ${email}`
     await $`git push -u origin main`
     d.info('Line 5')
   } catch (error) {
