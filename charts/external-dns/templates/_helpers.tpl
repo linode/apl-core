@@ -200,7 +200,7 @@ Return the name of the Secret used to store the passwords
 {{- end -}}
 
 {{- define "external-dns.civo-credentials" }}
-{{ .Values.civo.apiToken }}
+{{- .Values.civo.apiToken }}
 {{ end }}
 
 {{- define "external-dns.alibabacloud-credentials" -}}

@@ -44,14 +44,14 @@ spec:
         containers: #
         - volumeMounts:
             - name: theme-volume
-              mountPath: /opt/keycloak/providers
+              mountPath: /opt/keycloak/themes/otomi
           resources: {{ $k.resources.keycloak | toYaml  | nindent 12 }}
         volumes:
         - name: theme-volume
           emptyDir: {}
         initContainers:
         - name: init-container-theme-copy # Otomi branding init container
-          image: docker.io/otomi/console:theme
+          image: docker.io/otomi/console:v{{ $pinnedConsoleVersion }}
           resources: {{ $k.resources.keycloak | toYaml  | nindent 12 }}
           command: 
           - sh 
@@ -59,7 +59,7 @@ spec:
           - -c
           - |
             echo "Copying theme..."
-            cp -Rv /app/otomi.jar /opt/keycloak/providers/
+            cp -Rv /app/keycloak/themes/otomi/* /theme/
           volumeMounts: 
             - name: theme-volume
-              mountPath: /opt/keycloak/providers
+              mountPath: /theme
