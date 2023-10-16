@@ -1,0 +1,33 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: otomi-tekton-template
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: repoUrl
+      description: Repository Url
+    - name: commitMessage
+      description: Commit message for the last commit
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: otomi-pipeline-run-
+      spec:
+        pipelineRef:
+          name: otomi-pipeline
+        params:
+          - name: repoUrl
+            value: $(tt.params.repoUrl)
+          - name: commitMessage
+            value: $(tt.params.commitMessage)
+        workspaces:
+          - name: source
+            volumeClaimTemplate:
+              spec:
+                resources:
+                  requests:
+                    storage: 1Gi
+                accessModes:
+                  - ReadWriteOnce

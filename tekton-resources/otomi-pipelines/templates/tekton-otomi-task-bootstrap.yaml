@@ -1,0 +1,42 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: otomi-task-bootstrap
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: otomi-version
+      type: string
+      default: 'v1.0.0'
+  workspaces:
+    - name: source
+      mountPath: /home/app/stack/env
+  steps:
+    - name: bootstrap
+      image: otomi/core:$(params["otomi-version"])
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: AZURE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: otomi-sops-secrets
+              key: AZURE_CLIENT_ID
+        - name: AZURE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: otomi-sops-secrets
+              key: AZURE_CLIENT_SECRET
+        - name: AZURE_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              name: otomi-sops-secrets
+              key: AZURE_TENANT_ID
+        - name: CI
+          value: '1'
+        - name: IN_DOCKER
+          value: '1'
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'cd ../ && binzx/otomi bootstrap'

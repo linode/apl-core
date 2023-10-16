@@ -1,0 +1,45 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: otomi-pipeline
+  namespace: otomi-pipelines
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: repoUrl
+    - name: commitMessage
+  tasks:
+    - name: otomi-git-clone
+      params:
+        - name: repoUrl
+          value: '$(params.repoUrl)'
+        - name: commitMessage
+          value: '$(params.commitMessage)'
+      taskRef:
+        name: otomi-task-git-clone
+      workspaces:
+        - name: source
+          workspace: source
+    - name: otomi-bootstrap
+      taskRef:
+        name: otomi-task-bootstrap
+      workspaces:
+        - name: source
+          workspace: source
+      runAfter:
+        - otomi-git-clone
+    - name: otomi-test
+      taskRef:
+        name: otomi-task-test
+      workspaces:
+        - name: source
+      runAfter:
+        - otomi-bootstrap
+    - name: otomi-apply
+      taskRef:
+        name: otomi-task-apply
+      workspaces:
+        - name: source
+      runAfter:
+        - otomi-test

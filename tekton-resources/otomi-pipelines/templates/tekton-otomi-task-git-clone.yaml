@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: otomi-task-git-clone
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: repoUrl
+    - name: commitMessage
+    - name: gitea_user
+      type: string
+      default: 'otomi-admin'
+    - name: gitea_password
+      type: string
+      default: 'welcomeotomi'
+    - name: otomi-version
+      type: string
+      default: 'v1.0.0'
+  workspaces:
+    - name: source
+      mountPath: /home/app/stack/env/
+  steps:
+    - name: git-clone
+      image: otomi/core:$(params["otomi-version"])
+      workingDir: $(workspaces.source.path)
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'sleep 300 && repoUrl=$(params["repoUrl"]) && url=${repoUrl/"https://"/} && git clone -c http.sslVerify=false https://$(params["gitea_user"]):$(params["gitea_password"])@$url . && sleep 60' #TODO: replace with ssh git cloning.

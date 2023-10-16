@@ -1,23 +1,23 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
-  name: tekton-listener
-  namespace: team-admin
+  name: otomi-tekton-listener
+  namespace: otomi-pipelines
 spec:
   triggers:
-    - name: tekton-listener
+    - name: otomi-tekton-listener
       bindings:
-        - ref: tekton-binding
+        - ref: otomi-tekton-binding
       template:
-        ref: tekton-template
+        ref: otomi-tekton-template
   resources:
     kubernetesResource:
       spec:
         template:
           spec:
-            serviceAccountName: tekton-triggers-example-sa
+            serviceAccountName: otomi-tekton-triggers-sa
             containers:
-              - resources:
+              - resources: #{ { - toYaml .Values.elResources | nindent 18 } } To be used by helm
                   requests:
                     memory: '64Mi'
                     cpu: '250m'

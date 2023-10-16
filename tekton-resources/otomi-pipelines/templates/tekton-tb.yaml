@@ -1,9 +1,11 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  name: tekton-binding
-  namespace: team-admin
+  name: otomi-tekton-binding
+  namespace: otomi-pipelines
 spec:
   params:
     - name: repoUrl
       value: $(body.repository.clone_url)
+    - name: commitMessage
+      value: $(body.head_commit.message)
