@@ -83,7 +83,9 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   try {
     const workDir = '/tmp/otomi-charts'
     const otomiChartsUrl = 'https://github.com/redkubes/otomi-charts.git'
-    const giteaChartsUrl = `https://gitea.${values.cluster.domainSuffix}/otomi/otomi-charts.git`
+    const username = 'otomi-admin'
+    const password = 'welcomeotomi'
+    const giteaChartsUrl = `https://${username}:${password}@gitea.${values.cluster.domainSuffix}/otomi/otomi-charts.git`
     await $`mkdir ${workDir}`
     d.info('Line 1')
     await $`git clone ${otomiChartsUrl} ${workDir}`
@@ -92,11 +94,9 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     d.info('Line 3')
     await $`git remote set-url origin ${giteaChartsUrl}`
     d.info('Line 4')
-    const username = 'otomi-admin'
-    const password = 'welcomeotomi'
-    await $`git config --local user.name ${username}`
-    await $`git config --local user.password ${password}`
-    await $`git push -u origin main`
+
+    await $`git config http.sslVerify false`
+    await $`git push ${giteaChartsUrl} --all`
     d.info('Line 5')
   } catch (error) {
     console.log('cloneOtomiChartsInGitea error:', error)
