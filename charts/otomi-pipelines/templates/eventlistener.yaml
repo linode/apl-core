@@ -1,6 +1,9 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-1"
   name: otomi-tekton-listener
   namespace: otomi-pipelines
 spec:
