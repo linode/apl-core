@@ -85,10 +85,15 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     const otomiChartsUrl = 'https://github.com/redkubes/otomi-charts.git'
     const giteaChartsUrl = `https://gitea.${values.cluster.domainSuffix}/otomi/otomi-charts.git`
     await $`mkdir ${workDir}`
+    d.info('Line 1')
     await $`git clone ${otomiChartsUrl} ${workDir}`
+    d.info('Line 2')
     cd(workDir)
+    d.info('Line 3')
     await $`git remote set-url origin ${giteaChartsUrl}`
+    d.info('Line 4')
     await $`git push -u origin main`
+    d.info('Line 5')
   } catch (error) {
     console.log('cloneOtomiChartsInGitea error:', error)
   }
