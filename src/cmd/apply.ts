@@ -85,6 +85,7 @@ const applyAll = async () => {
 
   const intitalInstall = isEmpty(prevState.version)
   await upgrade({ when: 'post' })
+  await cloneOtomiChartsInGitea()
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit()
     if (intitalInstall) {
@@ -100,7 +101,6 @@ const applyAll = async () => {
       await printWelcomeMessage()
     }
   }
-  await cloneOtomiChartsInGitea()
   await setDeploymentState({ status: 'deployed', version })
   d.info('Deployment completed')
 }
