@@ -1,4 +1,4 @@
-import { bootstrapGit } from 'src/common/bootstrap'
+import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
@@ -69,19 +69,19 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   try {
     const workDir = '/tmp/otomi-charts'
     const otomiChartsUrl = 'https://github.com/redkubes/otomi-charts.git'
-    const username = 'otomi-admin'
-    const password = 'welcomeotomi'
+    const { email, username, password } = getRepo(values)
     const giteaChartsUrl = `https://${username}:${password}@gitea.${values.cluster.domainSuffix}/otomi/otomi-charts.git`
     await $`mkdir ${workDir}`
     await $`git clone --depth 1 ${otomiChartsUrl} ${workDir}`
     cd(workDir)
     await $`rm -rf .git`
     await $`git init`
+    await setIdentity(username, password, email)
     await $`git add -A`
     await $`git commit -m "Initial commit"`
     await $`git remote add origin ${giteaChartsUrl}`
     await $`git config http.sslVerify false`
-    await $`git push ${giteaChartsUrl} --all`
+    await $`git push -u origin main`
   } catch (error) {
     console.log('cloneOtomiChartsInGitea error:', error)
   }
