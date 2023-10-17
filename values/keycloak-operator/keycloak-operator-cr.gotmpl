@@ -51,7 +51,7 @@ spec:
           emptyDir: {}
         initContainers:
         - name: init-container-theme-copy # Otomi branding init container
-          image: docker.io/otomi/console:v{{ $pinnedConsoleVersion }}
+          image: docker.io/otomi/console:{{ $pinnedConsoleVersion }}
           resources: {{ $k.resources.keycloak | toYaml  | nindent 12 }}
           command: 
           - sh 
