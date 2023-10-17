@@ -87,6 +87,7 @@ const applyAll = async () => {
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit()
+    await cloneOtomiChartsInGitea()
     if (intitalInstall) {
       await hf(
         {
@@ -97,7 +98,6 @@ const applyAll = async () => {
         },
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
-      await cloneOtomiChartsInGitea()
       await printWelcomeMessage()
     }
   }

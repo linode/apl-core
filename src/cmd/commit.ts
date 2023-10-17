@@ -70,7 +70,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     const workDir = '/tmp/otomi-charts'
     const otomiChartsUrl = 'https://github.com/redkubes/otomi-charts.git'
     const { email, username, password } = getRepo(values)
-    const giteaChartsUrl = `https://${username}:${password}@gitea.${values.cluster.domainSuffix}/otomi/otomi-charts.git`
+    const giteaChartsUrl = `https://gitea.${values.cluster.domainSuffix}/otomi/otomi-charts.git`
     await $`mkdir ${workDir}`
     await $`git clone --depth 1 ${otomiChartsUrl} ${workDir}`
     cd(workDir)
