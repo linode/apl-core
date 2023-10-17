@@ -75,8 +75,11 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`mkdir ${workDir}`
     await $`git clone --depth 1 ${otomiChartsUrl} ${workDir}`
     cd(workDir)
+    await $`rm -rf .git`
     await $`git init`
-    await $`git remote set-url origin ${giteaChartsUrl}`
+    await $`git add -A`
+    await $`git commit -m "Initial commit"`
+    await $`git remote add origin ${giteaChartsUrl}`
     await $`git config http.sslVerify false`
     await $`git push ${giteaChartsUrl} --all`
   } catch (error) {
