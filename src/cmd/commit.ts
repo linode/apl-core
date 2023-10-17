@@ -63,6 +63,27 @@ export const commit = async (): Promise<void> => {
   await commitAndPush(values, branch)
 }
 
+export const cloneOtomiChartsInGitea = async (): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:gitea-otomi-charts`)
+  const values = (await hfValues()) as Record<string, any>
+  try {
+    const workDir = '/tmp/otomi-charts'
+    const otomiChartsUrl = 'https://github.com/redkubes/otomi-charts.git'
+    const username = 'otomi-admin'
+    const password = 'welcomeotomi'
+    const giteaChartsUrl = `https://${username}:${password}@gitea.${values.cluster.domainSuffix}/otomi/otomi-charts.git`
+    await $`mkdir ${workDir}`
+    await $`git clone --depth 1 ${otomiChartsUrl} ${workDir}`
+    cd(workDir)
+    await $`git remote set-url origin ${giteaChartsUrl}`
+    await $`git config http.sslVerify false`
+    await $`git push ${giteaChartsUrl} --all`
+  } catch (error) {
+    console.log('cloneOtomiChartsInGitea error:', error)
+  }
+  d.info('Cloning otomi-charts in Gitea')
+}
+
 export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
@@ -75,33 +96,6 @@ export const printWelcomeMessage = async (): Promise<void> => {
     #
     ########################################################################################################################################`
   d.info(message)
-}
-
-export const cloneOtomiChartsInGitea = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:gitea-otomi-charts`)
-  const values = (await hfValues()) as Record<string, any>
-  try {
-    const workDir = '/tmp/otomi-charts'
-    const otomiChartsUrl = 'https://github.com/redkubes/otomi-charts.git'
-    const username = 'otomi-admin'
-    const password = 'welcomeotomi'
-    const giteaChartsUrl = `https://${username}:${password}@gitea.${values.cluster.domainSuffix}/otomi/otomi-charts.git`
-    await $`mkdir ${workDir}`
-    d.info('Line 1')
-    await $`git clone ${otomiChartsUrl} ${workDir}`
-    d.info('Line 2')
-    cd(workDir)
-    d.info('Line 3')
-    await $`git remote set-url origin ${giteaChartsUrl}`
-    d.info('Line 4')
-
-    await $`git config http.sslVerify false`
-    await $`git push ${giteaChartsUrl} --all`
-    d.info('Line 5')
-  } catch (error) {
-    console.log('cloneOtomiChartsInGitea error:', error)
-  }
-  d.info('Cloning otomi-charts in Gitea')
 }
 
 export const module = {

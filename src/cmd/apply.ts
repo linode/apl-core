@@ -97,10 +97,10 @@ const applyAll = async () => {
         },
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
+      await cloneOtomiChartsInGitea()
       await printWelcomeMessage()
     }
   }
-  await cloneOtomiChartsInGitea()
   await setDeploymentState({ status: 'deployed', version })
   d.info('Deployment completed')
 }
