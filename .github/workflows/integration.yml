@@ -226,6 +226,7 @@ jobs:
         run: |
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
               project-id=${{ env.SCW_DEFAULT_PROJECT_ID }} \
+              private-network-id=1d635538-eb52-43a6-84c1-0c4072df9ec8 \
               auto-upgrade.enable=false \
               cni=calico \
               pools.0.node-type=${{ env.SCALEWAY_NODE_TYPE }} \
