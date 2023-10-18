@@ -222,10 +222,19 @@ jobs:
       - name: Determine exact k8s version
         run: |
           echo SCALEWAY_K8s_VERSION=$(scw k8s version list -o json | jq -re 'map(select(.name | startswith("${{ matrix.kubernetes_versions }}"))) | .[].name') >> $GITHUB_ENV
+      - name: Create Private Network
+        run: |
+          out=$(scw vpc private-network create \
+          name=VPC_${{env.SCALEWAY_CLUSTER_NAME}} \
+          --wait \
+          -o=json)
+      - name: Retrieve VPC id
+        run: echo SCALEWAY_VPC_ID=$(scw k8s private-network list region=nl-ams -o json | jq -r '.[] | select(.name == "VPC_${{ env.SCALEWAY_CLUSTER_NAME }}") | .id') >> $GITHUB_ENV
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
         run: |
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
               project-id=${{ env.SCW_DEFAULT_PROJECT_ID }} \
+              private_network_id=${{ env.SCALEWAY_VPC_ID }}
               auto-upgrade.enable=false \
               cni=calico \
               pools.0.node-type=${{ env.SCALEWAY_NODE_TYPE }} \
