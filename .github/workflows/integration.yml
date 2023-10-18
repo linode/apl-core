@@ -225,9 +225,7 @@ jobs:
       - name: Create Private Network
         run: |
           out=$(scw vpc private-network create \
-          name=VPC_${{env.SCALEWAY_CLUSTER_NAME}} \
-          --wait \
-          -o=json)
+          name=VPC_${{env.SCALEWAY_CLUSTER_NAME}})
       - name: Retrieve VPC id
         run: echo SCALEWAY_VPC_ID=$(scw k8s private-network list region=nl-ams -o json | jq -r '.[] | select(.name == "VPC_${{ env.SCALEWAY_CLUSTER_NAME }}") | .id') >> $GITHUB_ENV
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
