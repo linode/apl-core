@@ -77,9 +77,6 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     cd(workDir)
     await $`rm -rf .git`
     await $`git init`
-    // await $`git config --local user.name ${username}`
-    // await $`git config --local user.password ${password}`
-    // await $`git config --local user.email ${email}`
     await setIdentity(username, password, email)
     await $`git checkout -b main`
     await $`git add .`
@@ -88,7 +85,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`git config http.sslVerify false`
     await $`git push -u origin main`
   } catch (error) {
-    d.info('cloneOtomiChartsInGitea error:', error)
+    d.info('CloneOtomiChartsInGitea Error:', error)
   }
   d.info('Cloned otomi-charts in Gitea')
 }

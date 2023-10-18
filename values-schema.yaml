@@ -770,6 +770,7 @@ definitions:
       - ovh
       - vultr
       - scaleway
+      - civo
   redisChart:
     properties:
       _rawValues:
@@ -3463,6 +3464,18 @@ properties:
                   - apiToken
             required:
               - digitalocean
+          - title: Civo Cloud
+            additionalProperties: false
+            properties:
+              civo:
+                properties:
+                  apiKey:
+                    type: string
+                    x-secret: ''
+                required:
+                  - apiToken
+            required:
+              - civo
           - title: CloudFlare
             additionalProperties: false
             properties:
