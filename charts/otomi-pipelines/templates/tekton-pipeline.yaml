@@ -25,6 +25,8 @@ spec:
       params:
         - name: OTOMI_VERSION
           value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
+        - name: CI
+          value: $(tasks.otomi-git-clone.results.CI)
       taskRef:
         name: otomi-task-bootstrap
       workspaces:
@@ -33,13 +35,15 @@ spec:
       runAfter:
         - otomi-git-clone
       when:
-        - input: $(tasks.otomi-git-clone.results.CI_SKIP)
+        - input: $(tasks.otomi-git-clone.results.CI)
           operator: in
-          values: ['0']
+          values: ['1']
     - name: otomi-test
       params:
         - name: OTOMI_VERSION
           value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
+        - name: CI
+          value: $(tasks.otomi-git-clone.results.CI)
       taskRef:
         name: otomi-task-test
       workspaces:
@@ -47,13 +51,15 @@ spec:
       runAfter:
         - otomi-bootstrap
       when:
-        - input: $(tasks.otomi-git-clone.results.CI_SKIP)
+        - input: $(tasks.otomi-git-clone.results.CI)
           operator: in
-          values: ['0']
+          values: ['1']
     - name: otomi-apply
       params:
         - name: OTOMI_VERSION
           value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
+        - name: CI
+          value: $(tasks.otomi-git-clone.results.CI)
       taskRef:
         name: otomi-task-apply
       workspaces:
@@ -61,6 +67,6 @@ spec:
       runAfter:
         - otomi-test
       when:
-        - input: $(tasks.otomi-git-clone.results.CI_SKIP)
+        - input: $(tasks.otomi-git-clone.results.CI)
           operator: in
-          values: ['0']
+          values: ['1']

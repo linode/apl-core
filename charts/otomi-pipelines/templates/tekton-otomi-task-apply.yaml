@@ -7,6 +7,8 @@ spec:
   params:
     - name: OTOMI_VERSION
       type: string
+    - name: CI
+      type: string
   workspaces:
     - name: source
       mountPath: /home/app/stack/env
@@ -31,11 +33,11 @@ spec:
               name: otomi-sops-secrets
               key: AZURE_TENANT_ID
         - name: CI
-          value: '1'
+          value: $(params["CI"])
         - name: IN_DOCKER
           value: '1'
       command:
         - '/bin/bash'
       args:
         - '-c'
-        - 'cd .. && binzx/otomi apply'
+        - 'git config --global --add safe.directory $(pwd) && ../binzx/otomi apply'  #TODO: Fix mounted directory permissions

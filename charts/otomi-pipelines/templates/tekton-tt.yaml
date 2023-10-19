@@ -15,6 +15,7 @@ spec:
       metadata:
         generateName: otomi-pipeline-run-
       spec:
+        serviceAccountName: otomi-tekton-tasks-sa
         pipelineRef:
           name: otomi-pipeline
         params:
@@ -34,3 +35,5 @@ spec:
         podTemplate:
           securityContext:
             fsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 999

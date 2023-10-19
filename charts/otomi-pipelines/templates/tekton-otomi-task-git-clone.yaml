@@ -14,7 +14,7 @@ spec:
       type: string
       default: 'welcomeotomi'
   results:
-    - name: CI_SKIP
+    - name: CI
       description: Determine if pipeline should run based on the commit message
     - name: OTOMI_VERSION
       description: Otomi version as in values/env/settings.yaml
@@ -26,7 +26,7 @@ spec:
       image: otomi/core:v1.0.0 #TODO check if it should be dynamicly generated or other image can be used
       workingDir: $(workspaces.source.path)
       script: |
-        #!/bin/sh
+        #!/bin/bash
         set -e
 
         # Cleaning up the workdir(if lost+found is present)
@@ -43,20 +43,18 @@ spec:
         # Removing the proto part ('https://')
         export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
 
-        echo GIT_URL = $url
-        echo COMMIT_MESSAGE = $COMMIT_MESSAGE
-
         # Cloning the values
         git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url . # TODO: replace with ssh git cloning.
 
-        #if [[ $COMMIT_MESSAGE == *skip_ci* ]]; then
-        #    echo -n "1" > $(results.CI_SKIP.path)
-        #  else
-        #    echo -n "0" > $(results.CI_SKIP.path)
-        #fi
-        echo -n "0" > $(results.CI_SKIP.path)
+        # Checking if the next steps should run or skipped 
+        if [[ ! $COMMIT_MESSAGE == *ci\ skip* ]]; then
+            echo -n "1" > $(results.CI.path) && export CI="1" && echo "Running next task"
+          else
+            echo -n "0" > $(results.CI.path) && export CI="0" && echo "Finished"
+        fi
+        
         echo -n "$(yq r env/settings.yaml otomi.version)" > $(results.OTOMI_VERSION.path)
-
+        
       args:
         - $(params["gitea_user"])
         - $(params["gitea_password"])
