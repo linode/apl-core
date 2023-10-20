@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: otomi-task-git-clone
+  name: otomi-git-clone
   namespace: otomi-pipelines
 spec:
   params:
@@ -34,8 +34,6 @@ spec:
       script: |
         #!/bin/bash
         set -e
-
-        echo Started 1st Git clone
 
         # Cleaning up the workdir(if lost+found is present)
         rm -rf *

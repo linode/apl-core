@@ -70,3 +70,5 @@ eventListener:
       cpu: '500m'
 
 kms: {}
+
+giteaPassword: ""

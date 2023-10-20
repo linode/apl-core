@@ -51,8 +51,6 @@ spec:
         #!/bin/bash
         set -e
 
-        echo Started 2nd Git clone
-
         # Cleaning up the workdir. If any folder is there (like lost+found) it will cause the git clone to fail
         rm -rf *
 
@@ -62,9 +60,7 @@ spec:
 
         # Cloning the values
         git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url # TODO: replace with ssh git cloning.
-        echo PWD: $(pwd)
-        echo ls -lha 
-        ls 
+
     - name: bootstrap
       image: otomi/core:$(params["OTOMI_VERSION"])
       workingDir: $(workspaces.source.path)

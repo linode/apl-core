@@ -20,7 +20,7 @@ spec:
         - name: giteaCredentialsSecretName
           value: $(params.giteaCredentialsSecretName)
       taskRef:
-        name: otomi-task-git-clone
+        name: otomi-git-clone
       workspaces:
         - name: source
           workspace: source
