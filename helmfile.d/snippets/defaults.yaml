@@ -47,7 +47,7 @@ environments:
           external-dns:
             logLevel: info
           external-secrets:
-            enabled: false
+            enabled: true
             logLevel: info
             pollingInterval: 60000
           falco:
