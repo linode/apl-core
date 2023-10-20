@@ -49,6 +49,7 @@ teamConfig:
               port: 80
               type: cluster
             - hasCert: true
+              certName: my-cert
               name: has-cert-svc
               paths:
                   - /jeho
