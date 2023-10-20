@@ -9,6 +9,9 @@ spec:
       description: Repository Url
     - name: commitMessage
       description: Commit message for the last commit
+    - name: giteaCredentialsSecretName
+      description: Gitea Credentials Secret Name
+      default: "gitea-credentials"
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -23,15 +26,11 @@ spec:
             value: $(tt.params.repoUrl)
           - name: commitMessage
             value: $(tt.params.commitMessage)
+          - name: giteaCredentialsSecretName
+            value: $(tt.params.giteaCredentialsSecretName)
         workspaces:
           - name: source
-            volumeClaimTemplate:
-              spec:
-                resources:
-                  requests:
-                    storage: 1Gi
-                accessModes:
-                  - ReadWriteOnce
+            emptyDir: {}
         podTemplate:
           securityContext:
             fsGroup: 999

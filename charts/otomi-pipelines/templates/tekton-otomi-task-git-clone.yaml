@@ -7,12 +7,7 @@ spec:
   params:
     - name: repoUrl
     - name: commitMessage
-    - name: gitea_user
-      type: string
-      default: 'otomi-admin'
-    - name: gitea_password
-      type: string
-      default: 'welcomeotomi'
+    - name: giteaCredentialsSecretName
   results:
     - name: CI
       description: Determine if pipeline should run based on the commit message
@@ -25,16 +20,27 @@ spec:
     - name: git-clone
       image: otomi/core:v1.0.0 #TODO check if it should be dynamicly generated or other image can be used
       workingDir: $(workspaces.source.path)
+      env:
+      - name: GITEA_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: '$(params.giteaCredentialsSecretName)'
+            key: username
+      - name: GITEA_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: '$(params.giteaCredentialsSecretName)'
+            key: password
       script: |
         #!/bin/bash
         set -e
 
+        echo Started 1st Git clone
+
         # Cleaning up the workdir(if lost+found is present)
         rm -rf *
 
-        GITEA_USERNAME=$1
-        GITEA_PASSWORD=$2
-        COMMIT_MESSAGE=$3
+        COMMIT_MESSAGE=$1
 
         # Getting the full repository url
         export fullRepoUrl=$(params["repoUrl"])
@@ -56,6 +62,4 @@ spec:
         echo -n "$(yq r values/env/settings.yaml otomi.version)" > $(results.OTOMI_VERSION.path)
         
       args:
-        - $(params["gitea_user"])
-        - $(params["gitea_password"])
-        - $(params["commitMessage"])
+        - '$(params["commitMessage"])'

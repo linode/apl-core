@@ -9,6 +9,7 @@ spec:
   params:
     - name: repoUrl
     - name: commitMessage
+    - name: giteaCredentialsSecretName
   tasks:
     - name: otomi-git-clone
       params:
@@ -16,56 +17,30 @@ spec:
           value: '$(params.repoUrl)'
         - name: commitMessage
           value: '$(params.commitMessage)'
+        - name: giteaCredentialsSecretName
+          value: $(params.giteaCredentialsSecretName)
       taskRef:
         name: otomi-task-git-clone
       workspaces:
         - name: source
           workspace: source
-    - name: otomi-bootstrap
+    - name: otomi-task
       params:
+        - name: repoUrl
+          value: '$(params.repoUrl)'
         - name: OTOMI_VERSION
           value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
         - name: CI
           value: $(tasks.otomi-git-clone.results.CI)
+        - name: giteaCredentialsSecretName
+          value: $(params.giteaCredentialsSecretName)
       taskRef:
-        name: otomi-task-bootstrap
+        name: otomi-task
       workspaces:
         - name: source
           workspace: source
       runAfter:
         - otomi-git-clone
-      when:
-        - input: $(tasks.otomi-git-clone.results.CI)
-          operator: in
-          values: ['1']
-    - name: otomi-test
-      params:
-        - name: OTOMI_VERSION
-          value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
-        - name: CI
-          value: $(tasks.otomi-git-clone.results.CI)
-      taskRef:
-        name: otomi-task-test
-      workspaces:
-        - name: source
-      runAfter:
-        - otomi-bootstrap
-      when:
-        - input: $(tasks.otomi-git-clone.results.CI)
-          operator: in
-          values: ['1']
-    - name: otomi-apply
-      params:
-        - name: OTOMI_VERSION
-          value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
-        - name: CI
-          value: $(tasks.otomi-git-clone.results.CI)
-      taskRef:
-        name: otomi-task-apply
-      workspaces:
-        - name: source
-      runAfter:
-        - otomi-test
       when:
         - input: $(tasks.otomi-git-clone.results.CI)
           operator: in

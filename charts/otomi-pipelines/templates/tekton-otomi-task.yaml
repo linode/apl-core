@@ -1,0 +1,91 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: otomi-task
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: OTOMI_VERSION
+    - name: CI
+    - name: repoUrl
+    - name: giteaCredentialsSecretName
+  workspaces:
+    - name: source
+      mountPath: /home/app/stack/env
+  stepTemplate:
+    env:
+    - name: GITEA_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: '$(params.giteaCredentialsSecretName)'
+          key: username
+    - name: GITEA_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: '$(params.giteaCredentialsSecretName)'
+          key: password
+    - name: AZURE_CLIENT_ID
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: AZURE_CLIENT_ID
+    - name: AZURE_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: AZURE_CLIENT_SECRET
+    - name: AZURE_TENANT_ID
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: AZURE_TENANT_ID
+    - name: CI
+      value: $(params["CI"])
+    - name: IN_DOCKER
+      value: '1'
+  steps:
+    - name: git-clone
+      image: otomi/core:v1.0.0 #TODO check if it should be dynamicly generated or other image can be used
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/bash
+        set -e
+
+        echo Started 2nd Git clone
+
+        # Cleaning up the workdir. If any folder is there (like lost+found) it will cause the git clone to fail
+        rm -rf *
+
+        # Parsing the repo url
+        export fullRepoUrl=$(params["repoUrl"])
+        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+
+        # Cloning the values
+        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url # TODO: replace with ssh git cloning.
+        echo PWD: $(pwd)
+        echo ls -lha 
+        ls 
+    - name: bootstrap
+      image: otomi/core:$(params["OTOMI_VERSION"])
+      workingDir: $(workspaces.source.path)
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'export ENV_DIR=$PWD/values && ../binzx/otomi bootstrap'
+    - name: test
+      image: otomi/core:$(params["OTOMI_VERSION"])
+      workingDir: $(workspaces.source.path)
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'export ENV_DIR=$PWD/values && ../binzx/otomi validate-values'
+    - name: apply
+      image: otomi/core:$(params["OTOMI_VERSION"])
+      workingDir: $(workspaces.source.path)
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'export ENV_DIR=$PWD/values && ../binzx/otomi apply'
