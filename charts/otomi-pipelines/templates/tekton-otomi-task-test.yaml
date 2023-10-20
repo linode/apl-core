@@ -15,7 +15,7 @@ spec:
   steps:
     - name: test
       image: otomi/core:$(params["OTOMI_VERSION"])
-      workingDir: $(workspaces.source.path)
+      workingDir: $(workspaces.source.path)/values
       env:
         - name: AZURE_CLIENT_ID
           valueFrom:
@@ -40,4 +40,4 @@ spec:
         - '/bin/bash'
       args:
         - '-c'
-        - 'cd .. && binzx/otomi validate-values'
+        - 'export ENV_DIR=$PWD && cd ../../ && binzx/otomi validate-values'

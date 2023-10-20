@@ -44,7 +44,7 @@ spec:
         export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
 
         # Cloning the values
-        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url . # TODO: replace with ssh git cloning.
+        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url # TODO: replace with ssh git cloning.
 
         # Checking if the next steps should run or skipped 
         if [[ ! $COMMIT_MESSAGE == *ci\ skip* ]]; then
@@ -53,7 +53,7 @@ spec:
             echo -n "0" > $(results.CI.path) && export CI="0" && echo "Finished"
         fi
         
-        echo -n "$(yq r env/settings.yaml otomi.version)" > $(results.OTOMI_VERSION.path)
+        echo -n "$(yq r values/env/settings.yaml otomi.version)" > $(results.OTOMI_VERSION.path)
         
       args:
         - $(params["gitea_user"])
