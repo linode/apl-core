@@ -27,7 +27,7 @@ dns:
     # zoneIdFilters:
     #     - otomi
 e2e:
-    enabled: true
+    enabled: false
 home:
     email: {}
     receivers:
