@@ -6,9 +6,8 @@ apps:
 cluster:
   domainSuffix: {{ $v.cluster.domainSuffix }}
 teamConfig:
-  teams:
-    {{- range $teamId, $team := $v.teamConfig }}
-      {{ $teamId }}: 
-        selfService:
-          apps: {{ $team | get "selfService.apps" list}}
-    {{- end }}
+  {{- range $teamId, $team := $v.teamConfig }}
+    {{ $teamId }}:
+      selfService:
+        apps: {{ $team | get "selfService.apps" list}}
+  {{- end }}

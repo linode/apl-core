@@ -257,14 +257,14 @@ environments:
                       cpu: 200m
                       memory: 512Mi
                   limits:
-                      cpu: 400m
+                      cpu: 2000m
                       memory: 1Gi
               operator:
                   requests:
                       cpu: 100m
                       memory: 128Mi
                   limits:
-                      cpu: 400m
+                      cpu: 1000m
                       memory: 512Mi
             idp:
               alias: otomi-idp
