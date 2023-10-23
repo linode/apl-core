@@ -69,7 +69,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   const values = (await hfValues()) as Record<string, any>
   const { email, username, password } = getRepo(values)
   const workDir = '/tmp/otomi-charts'
-  const otomiChartsUrl = process.env.OTOMI_CHARTS_URL || 'https://github.com/redkubes/otomi-charts.git'
+  const otomiChartsUrl = env.OTOMI_CHARTS_URL
   const giteaChartsUrl = `https://${username}:${password}@gitea.${values.cluster.domainSuffix}/otomi/charts.git`
   try {
     await $`mkdir ${workDir}`
