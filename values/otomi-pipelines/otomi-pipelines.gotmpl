@@ -1,7 +1,8 @@
 {{- $v := .Values }}
+{{- $g := $v.apps.gitea }}
 {{- $kms := $v | get "kms" dict }}
 
 
 kms: {{- $kms | toYaml | nindent 2 }}
 
-giteaPassword: {{ $v.otomi.adminPassword }}
+giteaPassword: {{ $g.adminPassword }}
