@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.26.6](https://github.com/redkubes/otomi-core/compare/v0.26.5...v0.26.6) (2023-10-23)
+
+
+### Bug Fixes
+
+* gitea job config ([#1341](https://github.com/redkubes/otomi-core/issues/1341)) ([3e21fed](https://github.com/redkubes/otomi-core/commit/3e21fed7442dfa31035e6dbbb4802795aa7e952d))
+
 ### [0.26.5](https://github.com/redkubes/otomi-core/compare/v0.26.4...v0.26.5) (2023-10-17)
 
 
