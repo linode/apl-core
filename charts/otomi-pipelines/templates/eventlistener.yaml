@@ -20,10 +20,5 @@ spec:
           spec:
             serviceAccountName: otomi-tekton-triggers-sa
             containers:
-              - resources: #{ { - toYaml .Values.elResources | nindent 18 } } To be used by helm
-                  requests:
-                    memory: '64Mi'
-                    cpu: '250m'
-                  limits:
-                    memory: '128Mi'
-                    cpu: '500m'
+              - resources: {{- toYaml .Values.eventListener.resources | nindent 18 }}
+                  

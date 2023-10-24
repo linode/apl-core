@@ -31,8 +31,4 @@ spec:
         workspaces:
           - name: source
             emptyDir: {}
-        podTemplate:
-          securityContext:
-            fsGroup: 999
-            runAsNonRoot: true
-            runAsUser: 999
+        podTemplate: {{- toYaml .Values.podSecurityContext | nindent 10 }}

@@ -1,0 +1,372 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-only-gitea
+  namespace: otomi-pipelines
+spec:
+  podSelector:
+    matchLabels:
+      eventlistener: otomi-tekton-listener
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: gitea
+          podSelector:
+            matchLabels:
+              app: gitea
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otomi-tekton-triggers-sa
+  namespace: otomi-pipelines
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otomi-tekton-tasks-sa
+  namespace: otomi-pipelines
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: otomi-sops-secrets
+  namespace: otomi-pipelines
+type: Opaque
+data:
+  AZURE_CLIENT_ID: c29tZXNlY3JldHZhbHVl
+  AZURE_CLIENT_SECRET: c29tZXNlY3JldHZhbHVl
+  AZURE_TENANT_ID: c29tZXNlY3JldHZhbHVl
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitea-credentials
+  namespace: otomi-pipelines
+type: kubernetes.io/basic-auth
+stringData:
+  username: otomi-admin
+  password: giteaAdminPassword
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otomi-triggers-eventlistener-clusterbinding
+subjects:
+  - kind: ServiceAccount
+    name: otomi-tekton-triggers-sa
+    namespace: otomi-pipelines
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-eventlistener-clusterroles
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otomi-tasks-eventlistener-clusterbinding
+subjects:
+  - kind: ServiceAccount
+    name: otomi-tekton-tasks-sa
+    namespace: otomi-pipelines
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: otomi-triggers-eventlistener-binding
+  namespace: otomi-pipelines
+subjects:
+  - kind: ServiceAccount
+    name: otomi-tekton-triggers-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-eventlistener-roles
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: otomi-pipeline
+  namespace: otomi-pipelines
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: repoUrl
+    - name: commitMessage
+    - name: giteaCredentialsSecretName
+  tasks:
+    - name: otomi-git-clone
+      params:
+        - name: repoUrl
+          value: '$(params.repoUrl)'
+        - name: commitMessage
+          value: '$(params.commitMessage)'
+        - name: giteaCredentialsSecretName
+          value: $(params.giteaCredentialsSecretName)
+      taskRef:
+        name: otomi-git-clone
+      workspaces:
+        - name: source
+          workspace: source
+    - name: otomi-task
+      params:
+        - name: repoUrl
+          value: '$(params.repoUrl)'
+        - name: OTOMI_VERSION
+          value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
+        - name: CI
+          value: $(tasks.otomi-git-clone.results.CI)
+        - name: giteaCredentialsSecretName
+          value: $(params.giteaCredentialsSecretName)
+      taskRef:
+        name: otomi-task
+      workspaces:
+        - name: source
+          workspace: source
+      runAfter:
+        - otomi-git-clone
+      when:
+        - input: $(tasks.otomi-git-clone.results.CI)
+          operator: in
+          values: ['1']
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: otomi-git-clone
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: repoUrl
+    - name: commitMessage
+    - name: giteaCredentialsSecretName
+  results:
+    - name: CI
+      description: Determine if pipeline should run based on the commit message
+    - name: OTOMI_VERSION
+      description: Otomi version as in values/env/settings.yaml
+  workspaces:
+    - name: source
+      mountPath: /home/app/stack/env/
+  steps:
+    - name: git-clone
+      image: otomi/core:v1.0.0
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: GITEA_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: '$(params.giteaCredentialsSecretName)'
+              key: username
+        - name: GITEA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: '$(params.giteaCredentialsSecretName)'
+              key: password
+      script: |
+        #!/bin/bash
+        set -e
+
+        # Cleaning up the workdir(if lost+found is present)
+        rm -rf *
+
+        COMMIT_MESSAGE=$1
+
+        # Getting the full repository url
+        export fullRepoUrl=$(params["repoUrl"])
+        echo $fullRepoUrl
+
+        # Removing the proto part ('https://')
+        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+
+        # Cloning the values
+        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+
+        # Checking if the next steps should run or skipped 
+        if [[ ! $COMMIT_MESSAGE == *ci\ skip* ]]; then
+            echo -n "1" > $(results.CI.path) && export CI="1" && echo "Running next task"
+          else
+            echo -n "0" > $(results.CI.path) && export CI="0" && echo "Finished"
+        fi
+
+        echo -n "$(yq r values/env/settings.yaml otomi.version)" > $(results.OTOMI_VERSION.path)
+
+      args:
+        - '$(params["commitMessage"])'
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: otomi-task
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: OTOMI_VERSION
+    - name: CI
+    - name: repoUrl
+    - name: giteaCredentialsSecretName
+  workspaces:
+    - name: source
+      mountPath: /home/app/stack/env
+  stepTemplate:
+    env:
+      - name: GITEA_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: '$(params.giteaCredentialsSecretName)'
+            key: username
+      - name: GITEA_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: '$(params.giteaCredentialsSecretName)'
+            key: password
+      - name: AZURE_CLIENT_ID
+        valueFrom:
+          secretKeyRef:
+            name: otomi-sops-secrets
+            key: AZURE_CLIENT_ID
+      - name: AZURE_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: otomi-sops-secrets
+            key: AZURE_CLIENT_SECRET
+      - name: AZURE_TENANT_ID
+        valueFrom:
+          secretKeyRef:
+            name: otomi-sops-secrets
+            key: AZURE_TENANT_ID
+      - name: CI
+        value: $(params["CI"])
+      - name: IN_DOCKER
+        value: '1'
+  steps:
+    - name: git-clone
+      image: otomi/core:v1.0.0
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/bash
+        set -e
+
+        # Cleaning up the workdir. If any folder is there (like lost+found) it will cause the git clone to fail
+        rm -rf *
+
+        # Parsing the repo url
+        export fullRepoUrl=$(params["repoUrl"])
+        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+
+        # Cloning the values
+        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+
+    - name: bootstrap
+      image: otomi/core:$(params["OTOMI_VERSION"])
+      workingDir: $(workspaces.source.path)
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'export ENV_DIR=$PWD/values && ../binzx/otomi bootstrap'
+    - name: test
+      image: otomi/core:$(params["OTOMI_VERSION"])
+      workingDir: $(workspaces.source.path)
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'export ENV_DIR=$PWD/values && ../binzx/otomi validate-values'
+    - name: apply
+      image: otomi/core:$(params["OTOMI_VERSION"])
+      workingDir: $(workspaces.source.path)
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'export ENV_DIR=$PWD/values && ../binzx/otomi apply'
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: otomi-tekton-binding
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: repoUrl
+      value: $(body.repository.clone_url)
+    - name: commitMessage
+      value: $(body.head_commit.message)
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: otomi-tekton-template
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: repoUrl
+      description: Repository Url
+    - name: commitMessage
+      description: Commit message for the last commit
+    - name: giteaCredentialsSecretName
+      description: Gitea Credentials Secret Name
+      default: 'gitea-credentials'
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: otomi-pipeline-run-
+      spec:
+        serviceAccountName: otomi-tekton-tasks-sa
+        pipelineRef:
+          name: otomi-pipeline
+        params:
+          - name: repoUrl
+            value: $(tt.params.repoUrl)
+          - name: commitMessage
+            value: $(tt.params.commitMessage)
+          - name: giteaCredentialsSecretName
+            value: $(tt.params.giteaCredentialsSecretName)
+        workspaces:
+          - name: source
+            emptyDir: {}
+        podTemplate:
+          securityContext:
+            fsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 999
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  annotations:
+    'helm.sh/hook': post-install
+    'helm.sh/hook-weight': '0'
+  name: otomi-tekton-listener
+  namespace: otomi-pipelines
+spec:
+  triggers:
+    - name: otomi-tekton-listener
+      bindings:
+        - ref: otomi-tekton-binding
+      template:
+        ref: otomi-tekton-template
+  resources:
+    kubernetesResource:
+      spec:
+        template:
+          spec:
+            serviceAccountName: otomi-tekton-triggers-sa
+            containers:
+              - resources:
+                  limits:
+                    cpu: 500m
+                    memory: 128Mi
+                  requests:
+                    cpu: 250m
+                    memory: 64Mi

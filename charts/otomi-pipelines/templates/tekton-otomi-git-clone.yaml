@@ -18,7 +18,7 @@ spec:
       mountPath: /home/app/stack/env/
   steps:
     - name: git-clone
-      image: otomi/core:v1.0.0 #TODO check if it should be dynamicly generated or other image can be used
+      image: otomi/core:v1.0.0
       workingDir: $(workspaces.source.path)
       env:
       - name: GITEA_USERNAME
@@ -48,7 +48,7 @@ spec:
         export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
 
         # Cloning the values
-        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url # TODO: replace with ssh git cloning.
+        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
 
         # Checking if the next steps should run or skipped 
         if [[ ! $COMMIT_MESSAGE == *ci\ skip* ]]; then
