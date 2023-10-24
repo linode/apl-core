@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "enable": true,
         "expr": "time() == BOOL timestamp(rate(kube_pod_container_status_restarts_total{job=\"kube-state-metrics\", cluster=\"$cluster\", namespace=\"$namespace\", pod=\"$pod\"}[2m]) > 0)",
         "hide": false,
@@ -441,8 +444,8 @@
     "list": [
       {
         "current": {
-          "text": "Prometheus-platform",
-          "value": "Prometheus-platform"
+          "text": "prometheus",
+          "value": "prometheus"
         },
         "hide": 0,
         "label": null,
