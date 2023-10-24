@@ -467,7 +467,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P686CB814F81609FC"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -545,7 +545,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P686CB814F81609FC"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "sum(trivy_vulnerability_id{namespace=\"$namespace\"}) by (image_repository, image_tag, vuln_id)",
@@ -620,7 +620,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P686CB814F81609FC"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -699,7 +699,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P686CB814F81609FC"
+            "uid": "$datasource"
           },
           "editorMode": "code",
           "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Critical\", namespace=\"$namespace\"})",
@@ -710,7 +710,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P686CB814F81609FC"
+            "uid": "$datasource"
           },
           "editorMode": "builder",
           "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"High\", namespace=\"$namespace\"})",
@@ -722,7 +722,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P686CB814F81609FC"
+            "uid": "$datasource"
           },
           "editorMode": "builder",
           "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Medium\", namespace=\"$namespace\"})",
@@ -734,7 +734,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P686CB814F81609FC"
+            "uid": "$datasource"
           },
           "editorMode": "builder",
           "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Low\", namespace=\"$namespace\"})",
@@ -746,7 +746,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P686CB814F81609FC"
+            "uid": "$datasource"
           },
           "editorMode": "builder",
           "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Unknown\", namespace=\"$namespace\"})",
@@ -810,7 +810,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P686CB814F81609FC"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -1270,7 +1270,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P686CB814F81609FC"
+        "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
@@ -1397,7 +1397,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "P686CB814F81609FC"
+          "uid": "$datasource"
         },
         "definition": "label_values(namespace)",
         "hide": 0,

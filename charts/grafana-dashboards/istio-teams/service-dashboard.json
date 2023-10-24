@@ -3,7 +3,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -63,7 +66,10 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(50, 172, 45, 0.97)"
           ],
-          "datasource": "Prometheus",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "Prometheus-platform"
+          },
           "fieldConfig": {
             "defaults": {
               "custom": {}
@@ -2823,7 +2829,10 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "Prometheus",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "Prometheus-platform"
+        },
         "definition": "",
         "hide": 0,
         "includeAll": false,
