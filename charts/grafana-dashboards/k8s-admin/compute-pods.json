@@ -35,7 +35,10 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "fill": 1,
           "gridPos": {},
           "id": 2,
@@ -148,7 +151,10 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "fill": 1,
           "gridPos": {},
           "id": 3,
@@ -254,7 +260,10 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "fill": 1,
           "gridPos": {},
           "id": 4,
@@ -353,7 +362,10 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "$datasource",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
           "fill": 1,
           "gridPos": {},
           "id": 5,
@@ -459,7 +471,10 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "$datasource",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "hide": 2,
         "includeAll": false,
         "label": "cluster",
@@ -479,7 +494,10 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "$datasource",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "hide": 0,
         "includeAll": false,
         "label": "Namespace",
@@ -499,7 +517,10 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "$datasource",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
         "hide": 0,
         "includeAll": false,
         "label": "Pod",
