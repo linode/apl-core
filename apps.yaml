@@ -210,17 +210,6 @@ appsInfo:
     license: Apache 2.0
     about: Knative Serving builds on Kubernetes to support deploying and serving of applications and functions as serverless containers. Serving is easy to get started with and scales to support advanced scenarios.
     integration: Knative serving can be activated to deliver Container-as-a-Service (CaaS) functionality with a scale-to-zero option. It can be compared to Functions-as-a-service (FaaS) but is container oriented, and takes only one manifest to configure an auto scaling service based on a container image of choice. Otomi offers an on-the-fly Knative service deployment, making it very easy to deploy containerized services without the hassle of providing all the supporting resources involved with Helm charts. Istio Virtual Services are used to route traffic coming in for a public domain to its backing Knative Service, allowing it to set a custom domain.
-  kubeapps:
-    title: KubeApps
-    appVersion: 2.4.3
-    repo: https://github.com/vmware-tanzu/kubeapps
-    maintainers: VMware Tanzu
-    relatedLinks:
-      - https://otomi.io/docs/apps/kubeapps
-      - https://kubeapps.dev/docs/latest/
-    license: Apache 2.0
-    about: Kubeapps is an in-cluster web-based application that enables users with a one-time installation to deploy, manage, and upgrade applications on a Kubernetes cluster.
-    integration: Kubeapps can be activated to deploy applications from multiple registries. Teams can login to Kubeapps using the generated token that is provided when downloading the KUBECFG.
   kubeclarity:
     title: KubeClarity
     appVersion: 2.3.0

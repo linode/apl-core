@@ -252,18 +252,6 @@ schedules:
       includedResources:
       - pv
 {{- end }}
-{{- if $b.kubeapps.enabled }}
-  kubeapps:
-    disabled: false
-    schedule: {{ $b.kubeapps.schedule }}
-    useOwnerReferencesInBackup: false
-    template:
-      ttl: {{ $b.kubeapps.ttl }}
-      includedNamespaces:
-      - kubeapps
-      includedResources:
-      - pv
-{{- end }}
 {{- if $b.minio.enabled }}
   kubeapps:
     disabled: false

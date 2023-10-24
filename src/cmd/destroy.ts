@@ -107,7 +107,6 @@ const destroyAll = async () => {
     'jaegers.jaegertracing.io',
     'kiali.io',
     'knative.dev',
-    'kubeapps.com',
     'monitoring.coreos.com',
     'operators.coreos.com',
     'vault.banzaicloud.com',

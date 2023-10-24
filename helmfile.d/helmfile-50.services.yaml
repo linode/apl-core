@@ -24,12 +24,6 @@ releases:
     installed: {{ $a | get "httpbin.enabled" }}
     namespace: httpbin
     <<: *default
-  - name: kubeapps
-    installed: {{ $a | get "kubeapps.enabled" }}
-    namespace: kubeapps
-    labels:
-      pkg: kubeapps
-    <<: *default
   - name: gitea
     installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea

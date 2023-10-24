@@ -290,19 +290,6 @@ environments:
             enabled: false
             serving:
               replicas: 1
-          kubeapps:
-            enabled: false
-            enableCommonGround: false
-            autoscaling:
-              dashboard:
-                minReplicas: 1
-                maxReplicas: 10
-              frontend:
-                minReplicas: 1
-                maxReplicas: 10
-              kubeops:
-                minReplicas: 1
-                maxReplicas: 10
           kubeclarity:
             enabled: false
             logLevel: warning
@@ -780,8 +767,6 @@ environments:
             vault:
               enabled: false
             argo:
-              enabled: false
-            kubeapps:
               enabled: false
             minio:
               enabled: false
