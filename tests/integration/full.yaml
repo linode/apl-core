@@ -34,8 +34,6 @@ apps:
     enabled: true
   kubeapps:
     enabled: true
-  kubeclarity:
-    enabled: true
   kured:
     enabled: true
   loki:
