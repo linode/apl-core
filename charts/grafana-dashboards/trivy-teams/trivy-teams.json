@@ -24,7 +24,6 @@
   "description": "Dashboard to view trivy published metrics\r\nhttps://aquasecurity.github.io/trivy-operator/v0.1.5/integrations/metrics/",
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "gnetId": 16652,
   "graphTooltip": 1,
   "id": 3,
   "iteration": 1679832973784,
