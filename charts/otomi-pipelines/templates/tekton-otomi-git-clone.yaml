@@ -1,0 +1,63 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: otomi-git-clone
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: repoUrl
+    - name: commitMessage
+    - name: giteaCredentialsSecretName
+  results:
+    - name: CI
+      description: Determine if pipeline should run based on the commit message
+    - name: OTOMI_VERSION
+      description: Otomi version as in values/env/settings.yaml
+  workspaces:
+    - name: source
+      mountPath: /home/app/stack/env/
+  steps:
+    - name: git-clone
+      image: otomi/core:v1.0.0
+      workingDir: $(workspaces.source.path)
+      env:
+      - name: GITEA_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: '$(params.giteaCredentialsSecretName)'
+            key: username
+      - name: GITEA_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: '$(params.giteaCredentialsSecretName)'
+            key: password
+      script: |
+        #!/bin/bash
+        set -e
+
+        # Cleaning up the workdir(if lost+found is present)
+        rm -rf *
+
+        COMMIT_MESSAGE=$1
+
+        # Getting the full repository url
+        export fullRepoUrl=$(params["repoUrl"])
+        echo $fullRepoUrl
+
+        # Removing the proto part ('https://')
+        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+
+        # Cloning the values
+        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+
+        # Checking if the next steps should run or skipped 
+        if [[ ! $COMMIT_MESSAGE == *ci\ skip* ]]; then
+            echo -n "1" > $(results.CI.path) && export CI="1" && echo "Running next task"
+          else
+            echo -n "0" > $(results.CI.path) && export CI="0" && echo "Finished"
+        fi
+        
+        echo -n "$(yq r values/env/settings.yaml otomi.version)" > $(results.OTOMI_VERSION.path)
+        
+      args:
+        - '$(params["commitMessage"])'

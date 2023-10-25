@@ -56,3 +56,7 @@ releases:
     labels:
       pkg: tekton-triggers
     <<: *default
+  - name: otomi-pipelines
+    installed: {{ $a | get "tekton.enabled" }}
+    namespace: otomi-pipelines
+    <<: *default
