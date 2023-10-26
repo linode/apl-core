@@ -226,7 +226,7 @@ jobs:
           echo SCALEWAY_K8s_VERSION=$(scw k8s version list -o json | jq -re 'map(select(.name | startswith("${{ matrix.kubernetes_versions }}"))) | .[].name') >> $GITHUB_ENV
       - name: Create private network
         run: |
-          echo SCALEWAY_PRIVATE_NETWORK_ID=$(scw vpc private-network create project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} name=$SCALEWAY_CLUSTER_NAME-pn -ojson | jq -r .id) >> $GITHUB_ENV
+          echo SCALEWAY_PRIVATE_NETWORK_ID=$(scw vpc private-network create project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} name=$SCALEWAY_CLUSTER_NAME-pn region=nl-ams -ojson | jq -r .id) >> $GITHUB_ENV
       - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
         run: |
           out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
