@@ -25,7 +25,7 @@ jobs:
         run: |
           SCALEWAY_CLUSTER_IDS=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id')
           echo Deleting Cluster with ID: $SCALEWAY_CLUSTER_IDS
-          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_IDS }} with-additional-resources=true region=nl-ams --wait
+          scw k8s cluster delete $SCALEWAY_CLUSTER_IDS with-additional-resources=true region=nl-ams --wait
 
           PRIVATE_NETWORK_IDS=$(scw vpc private-network list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id')
           echo Deleting Private Networks with ID:
