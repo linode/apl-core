@@ -209,7 +209,6 @@ releases:
         team: {{ $teamId }}
         folders:
           - k8s-teams
-          - istio-teams
           {{- if $v.apps.gatekeeper.enabled }}
           - gatekeeper-teams
           {{- end }}
