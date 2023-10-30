@@ -94,3 +94,14 @@ changes:
     deletions:
       - apps.keycloak.postgresqlPassword
       - apps.keycloak.postgresql
+  - version: 16
+    deletions:
+      - workload.url
+      - workload.chartProvider
+      - workload.path
+      - workload.revision
+      - workload.selectedChart
+    additions:
+      - workload.chart
+    renamings:
+      - workload.autoUpdate.build: workload.autoUpdate.imageRegistry

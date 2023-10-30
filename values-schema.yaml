@@ -1379,7 +1379,6 @@ definitions:
           helmChartCatalog:
             type: string
             title: Helm chart catalog
-            default: https://github.com/redkubes/otomi-charts.git
           helmChart:
             type: string
             title: Helm chart
@@ -1392,6 +1391,12 @@ definitions:
             type: string
             title: Helm chart description
             default: ''
+        required:
+          - helmChartCatalog
+          - helmChart
+      namespace:
+        description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
+        $ref: 'definitions.yaml#/domain'
       autoUpdate:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
