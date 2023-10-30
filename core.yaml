@@ -109,9 +109,6 @@ k8s:
       app: prometheus
       disableIstioInjection: true
     - name: team-admin
-    - name: tigera-operator
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: trivy-operator
       app: trivy
       disableIstioInjection: true

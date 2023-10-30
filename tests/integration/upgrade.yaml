@@ -56,8 +56,6 @@ apps:
     enabled: true
   tempo:
     enabled: true
-  tigera-operator:
-    enabled: true
   thanos:
     enabled: true
   vault:

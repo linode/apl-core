@@ -2882,13 +2882,6 @@ properties:
                   - s3
                   - minioLocal
                 default: minioLocal
-      tigera-operator:
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
       thanos:
         properties:
           _rawValues:

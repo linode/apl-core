@@ -54,8 +54,6 @@ apps:
     enabled: false
   snapshot-controller:
     enabled: true
-  tigera-operator:
-    enabled: true
   tekton:
     enabled: true
   tempo:
