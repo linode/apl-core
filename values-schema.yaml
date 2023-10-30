@@ -1690,16 +1690,6 @@ properties:
             $ref: '#/definitions/cpuQuantity'
           memory:
             $ref: '#/definitions/memoryQuantity'
-      demo-tlspass:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: false
-            type: boolean
-          tlsCert:
-            type: string
-          tlsKey:
-            type: string
       drone:
         additionalProperties: false
         properties:
