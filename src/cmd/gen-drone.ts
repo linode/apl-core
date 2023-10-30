@@ -1,11 +1,9 @@
 /* eslint-disable no-param-reassign */
-import { writeFile } from 'fs/promises'
 import { each } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
-import { env } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { getFilename, gucci, rootDir } from 'src/common/utils'
+import { getFilename } from 'src/common/utils'
 import { getImageTag } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -89,22 +87,22 @@ export const genDrone = async (envDir?: string): Promise<void> => {
     r,
   }
 
-  const output = (await gucci(`${rootDir}/tpl/.drone.yml.gotmpl`, obj, true)) as string
+  // const output = (await gucci(`${rootDir}/tpl/.drone.yml.gotmpl`, obj, true)) as string
 
   // TODO: Remove when validate-values can validate subpaths
-  if (!output) {
-    d.warn('Something went wrong trying to template using gucci')
-    return
-  }
+  // if (!output) {
+  //   d.warn('Something went wrong trying to template using gucci')
+  //   return
+  // }
 
-  if (argv.dryRun) {
-    d.log(output)
-  } else {
-    const file = `${envDir ?? env.ENV_DIR}/.drone.yml`
-    await writeFile(file, output)
-    d.debug('.drone.yml: ', output)
-    d.log(`gen-drone is finished and the pipeline configuration is written to: ${file}`)
-  }
+  // if (argv.dryRun) {
+  //   d.log(output)
+  // } else {
+  //   const file = `${envDir ?? env.ENV_DIR}/.drone.yml`
+  //   await writeFile(file, output)
+  //   d.debug('.drone.yml: ', output)
+  //   d.log(`gen-drone is finished and the pipeline configuration is written to: ${file}`)
+  // }
 }
 
 export const module = {
