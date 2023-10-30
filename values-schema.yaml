@@ -1690,16 +1690,6 @@ properties:
             $ref: '#/definitions/cpuQuantity'
           memory:
             $ref: '#/definitions/memoryQuantity'
-      demo-tlspass:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: false
-            type: boolean
-          tlsCert:
-            type: string
-          tlsKey:
-            type: string
       drone:
         additionalProperties: false
         properties:
@@ -2143,29 +2133,12 @@ properties:
             x-secret: '{{ randAlpha 16 }}'
         required:
           - databasePassword
-      hello:
-        description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
-        properties:
-          enabled:
-            type: boolean
-            default: false
       httpbin:
         description: The famous httpbin application.
         properties:
           enabled:
             type: boolean
             default: false
-      host-mods:
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          certDir:
-            type: string
-            description: The certificate directory to store the ca. Is dependent on distro/image, so check with provider!
-          updateCmd:
-            type: string
-            description: The update command to run after copying the certificates.
       ingress-azure:
         additionalProperties: false
         description: A chart for Azure Application Gateway.
