@@ -2143,12 +2143,6 @@ properties:
             x-secret: '{{ randAlpha 16 }}'
         required:
           - databasePassword
-      hello:
-        description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
-        properties:
-          enabled:
-            type: boolean
-            default: false
       httpbin:
         description: The famous httpbin application.
         properties:
