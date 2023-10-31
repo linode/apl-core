@@ -1,8 +1,10 @@
-import { mkdirSync, readFileSync, rmdirSync, writeFileSync } from 'fs'
+import { mkdirSync, rmdirSync } from 'fs'
+import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { getFilename } from 'src/common/utils'
+import { getFilename, loadYaml } from 'src/common/utils'
+import { objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 
@@ -84,17 +86,19 @@ const apply = async (): Promise<void> => {
 
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releses: [] = JSON.parse(res.stdout.toString())
-  releses.forEach((release: HelmRelese) => {
-    const appName = `${release.namespace}-${release.name}`
-    d.info(`Generating Argocd Application at ${appName}`)
-    const applicationPath = `${appsDir}/${appName}.yaml`
-    const valuesPath = `${valuesDir}/${appName}.yaml`
-    d.info(`Loading values file from ${valuesPath}`)
-    const values = readFileSync(valuesPath)
-    const manifest = getArgocdAppManifest(release, values)
-    d.info(`Saving Argocd Application at ${applicationPath}`)
-    writeFileSync(applicationPath, JSON.stringify(manifest))
-  })
+  await Promise.allSettled(
+    releses.map(async (release: HelmRelese) => {
+      const appName = `${release.namespace}-${release.name}`
+      d.info(`Generating Argocd Application at ${appName}`)
+      const applicationPath = `${appsDir}/${appName}.yaml`
+      const valuesPath = `${valuesDir}/${appName}.yaml`
+      d.info(`Loading values file from ${valuesPath}`)
+      const values = await loadYaml(valuesPath)
+      const manifest = getArgocdAppManifest(release, values)
+      d.info(`Saving Argocd Application at ${applicationPath}`)
+      await writeFile(applicationPath, objectToYaml(manifest))
+    }),
+  )
 }
 
 export const module: CommandModule = {
