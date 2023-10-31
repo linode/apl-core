@@ -64,9 +64,6 @@ k8s:
     - name: kured
       app: kured
       disableIstioInjection: true
-    - name: kubeclarity
-      app: kubeclarity
-      disableIstioInjection: true
     - name: tekton-pipelines
       app: tekton
       disableIstioInjection: true
@@ -300,15 +297,6 @@ adminApps:
         namespace: kubeapps
         type: public
         # auth: true
-  - name: kubeclarity
-    tags: [security]
-    ownHost: true
-    ingress:
-      - svc: kubeclarity
-        namespace: kubeclarity
-        port: 8080
-        type: public
-        auth: true
   - name: kured
     tags: [security]
   - name: tekton

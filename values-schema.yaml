@@ -2386,43 +2386,6 @@ properties:
             x-secret: '{{ randAlphaNum 20 }}'
         required:
           - postgresqlPassword
-      kubeclarity:
-        description: Kubeclarity security scanning Helm chart.
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          logLevel:
-            enum:
-              - debug
-              - info
-              - warning
-              - error
-              - fatal
-              - panic
-          databasePassword:
-            type: string
-            description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: '{{ randAlphaNum 20 }}'
-          resources:
-            additionalProperties: false
-            properties:
-              kubeclarity:
-                $ref: '#/definitions/resources'
-              cdbScanner:
-                $ref: '#/definitions/resources'
-              vulnerabilityScanner:
-                $ref: '#/definitions/resources'
-              trivyServer:
-                $ref: '#/definitions/resources'
-              sbomDb:
-                $ref: '#/definitions/resources'
-              postgresql:
-                $ref: '#/definitions/resources'
-        required:
-          - databasePassword
       external-secrets:
         additionalProperties: false
         properties:
