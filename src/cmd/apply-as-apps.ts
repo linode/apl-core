@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { mkdirSync, readFileSync, rmdirSync, writeFileSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
@@ -10,11 +10,10 @@ const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
 const appsDir = '/tmp/otomi/apps'
 const valuesDir = '/tmp/otomi/values'
-const templateFile = `${dir}deploy-template.yaml`
 
 const cleanup = (argv: HelmArguments): void => {
-  // if (argv.skipCleanup) return
-  // rmdirSync(dir, { recursive: true })
+  if (argv.skipCleanup) return
+  rmdirSync(dir, { recursive: true })
 }
 
 const setup = (): void => {
@@ -76,12 +75,11 @@ const apply = async (): Promise<void> => {
 
   d.info(`Writing values for helm releases defined in helmfile.d/`)
 
-  //  # helmfile write-values -l name=team-ns-admin --output-file-template='values/{{.Release.Namespace}}/{{.Release.Name}}.yaml'
   await hf({
     fileOpts: argv.file,
     labelOpts: argv.label,
     logLevel: logLevelString(),
-    args: ['write-values', `--output-file-template='${valuesDir}/{{.Release.Namespace}}-{{.Release.Name}}.yaml`],
+    args: ['write-values', `--output-file-template=${valuesDir}/{{.Release.Namespace}}-{{.Release.Name}}.yaml`],
   })
 
   // Generate JSON object with all helmfile releases defined in helmfile.d
