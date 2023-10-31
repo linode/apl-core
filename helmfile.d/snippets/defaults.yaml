@@ -8,7 +8,7 @@ environments:
           alertmanager:
             enabled: false
           argocd:
-            enabled: false
+            enabled: true
             autoscaling:
               enabled: false
               minReplicas: 1
