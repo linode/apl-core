@@ -4,7 +4,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
 import { getFilename, loadYaml } from 'src/common/utils'
-import { objectToYaml } from 'src/common/values'
+import { getImageTag, objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 
@@ -36,7 +36,7 @@ interface HelmRelese {
   version: string
 }
 
-const getArgocdAppManifest = (release: HelmRelese, values) => {
+const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, otomiVersion) => {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
@@ -47,12 +47,12 @@ const getArgocdAppManifest = (release: HelmRelese, values) => {
     spec: {
       project: 'default',
       source: {
-        path: release.chart,
+        path: release.chart.replace('../', './'),
         repoURL: 'https://github.com/redkubes/otomi-core.git',
-        targetRevision: release.version,
+        targetRevision: otomiVersion,
         helm: {
           releaseName: release.name,
-          values: JSON.stringify(values),
+          values: objectToYaml(values),
         },
       },
       destination: {
@@ -68,6 +68,7 @@ const apply = async (): Promise<void> => {
   const argv: HelmArguments = getParsedArgs()
   d.info(`Parsing helm releases defined in helmfile.d/`)
 
+  const otomiVersion = await getImageTag()
   const res = await hf({
     fileOpts: argv.file,
     labelOpts: argv.label,
@@ -89,12 +90,12 @@ const apply = async (): Promise<void> => {
   await Promise.allSettled(
     releses.map(async (release: HelmRelese) => {
       const appName = `${release.namespace}-${release.name}`
-      d.info(`Generating Argocd Application at ${appName}`)
+      // d.info(`Generating Argocd Application at ${appName}`)
       const applicationPath = `${appsDir}/${appName}.yaml`
       const valuesPath = `${valuesDir}/${appName}.yaml`
-      d.info(`Loading values file from ${valuesPath}`)
-      const values = await loadYaml(valuesPath)
-      const manifest = getArgocdAppManifest(release, values)
+      // d.info(`Loading values file from ${valuesPath}`)
+      const values = (await loadYaml(valuesPath)) || {}
+      const manifest = getArgocdAppManifest(release, values, otomiVersion)
       d.info(`Saving Argocd Application at ${applicationPath}`)
       await writeFile(applicationPath, objectToYaml(manifest))
     }),
