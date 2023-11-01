@@ -7,6 +7,7 @@ import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
+import { $ } from 'zx'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -42,6 +43,9 @@ const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, 
     kind: 'Application',
     metadata: {
       name: `${release.namespace}-${release.name}`,
+      labels: {
+        'otomi.io/kubectl-prune': 'allowed',
+      },
       namespace: 'argocd',
     },
     spec: {
@@ -100,6 +104,8 @@ const apply = async (): Promise<void> => {
       await writeFile(applicationPath, objectToYaml(manifest))
     }),
   )
+
+  await $`kubectl apply -f ${appsDir} --prune --selector 'otomi.io/kubectl-prune=allowed'`
 }
 
 export const module: CommandModule = {
