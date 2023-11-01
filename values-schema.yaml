@@ -1373,27 +1373,30 @@ definitions:
     properties:
       name:
         $ref: '#/definitions/wordCharacterPattern'
-      url:
-        description: URL to either Helm or Git repository
-        $ref: '#/definitions/url'
-      chartProvider:
-        type: string
-        title: Chart provider
-        enum: ['helm', 'git']
-        default: helm
-      path:
-        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
-        $ref: '#/definitions/wordCharacterPattern'
       chart:
-        description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
-        $ref: '#/definitions/wordCharacterPattern'
-      revision:
-        description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
-        $ref: '#/definitions/wordCharacterPattern'
-        default: HEAD
+        title: ''
+        properties:
+          helmChartCatalog:
+            type: string
+            title: Helm chart catalog
+          helmChart:
+            type: string
+            title: Helm chart
+            default: deployment
+          helmChartVersion:
+            type: string
+            title: Helm chart version
+            default: ''
+          helmChartDescription:
+            type: string
+            title: Helm chart description
+            default: ''
+        required:
+          - helmChartCatalog
+          - helmChart
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
-        $ref: '#/definitions/domain'
+        $ref: 'definitions.yaml#/domain'
       autoUpdate:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
@@ -1438,7 +1441,6 @@ definitions:
               - type
     required:
       - name
-      - url
   storageProvider:
     type: object
     title: Storage provider
