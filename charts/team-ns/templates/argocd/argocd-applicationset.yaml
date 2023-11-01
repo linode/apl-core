@@ -45,8 +45,8 @@ spec:
       {{- end }}
       source:
         repoURL: '{{ .chart.helmChartCatalog }}'
-        targetRevision: 'HEAD' 
-        path: '{{ .chart.helmChart }}' 
+        targetRevision: HEAD
+        path: '{{ .chart.helmChart }}'
         helm:
           # The argocd template the values parameter is taken from the git generator path
           values: '{{ "{{values}}" }}'
