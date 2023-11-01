@@ -44,9 +44,10 @@ spec:
       project: 'team-{{ $v.teamId }}' # project is restricted
       {{- end }}
       source:
-        repoURL: '{{ .chart.helmChartCatalog }}'
-        targetRevision: HEAD
-        path: '{{ .chart.helmChart }}'
+        repoURL: '{{ .url }}'
+        targetRevision: '{{ .revision }}' 
+        path: '{{ .path }}' 
+        chart: '{{ .chart }}'  
         helm:
           # The argocd template the values parameter is taken from the git generator path
           values: '{{ "{{values}}" }}'
