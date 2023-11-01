@@ -48,7 +48,7 @@ spec:
         export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
 
         # Cloning the values
-        git clone -c http.sslVerify=false https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
 
         # Checking if the next steps should run or skipped 
         if [[ ! $COMMIT_MESSAGE == *ci\ skip* ]]; then
