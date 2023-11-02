@@ -1380,7 +1380,7 @@ definitions:
         type: string
         title: Chart provider
         enum: ['helm', 'git']
-        default: helm
+        default: git
       path:
         description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
         $ref: '#/definitions/wordCharacterPattern'
@@ -1391,6 +1391,17 @@ definitions:
         description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
         $ref: '#/definitions/wordCharacterPattern'
         default: HEAD
+      chartMetadata:
+        title: ''
+        properties:
+          helmChartVersion:
+            type: string
+            title: Helm chart version
+            default: ''
+          helmChartDescription:
+            type: string
+            title: Helm chart description
+            default: ''
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
@@ -1438,6 +1449,7 @@ definitions:
               - type
     required:
       - name
+      - url
   storageProvider:
     type: object
     title: Storage provider
