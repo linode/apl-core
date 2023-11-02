@@ -1,0 +1,86 @@
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include  "otomi-operator.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  {{- with .Values.serviceAccount.annotations }}
+{{- with .Values.imagePullSecrets }}
+imagePullSecrets:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "otomi-operator.fullname" . }}-read-secrets
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list", "delete". "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+  namespace: argocd
+subjects:
+- kind: serviceaccount
+  name: {{ include "otomi-operator.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+  namespace: argocd
+subjects:
+- kind: ServiceAccount
+  name: {{ include  "otomi-operator.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+  namespace: istio-system
+subjects:
+- kind: ServiceAccount
+  name: {{ include  "otomi-operator.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "otomi-operator.fullname" . }}-read-secrets
+subjects:
+- kind: ServiceAccount
+  name: {{ include  "otomi-operator.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "otomi-operator.fullname" . }}-read-secrets
+  apiGroup: rbac.authorization.k8s.io
