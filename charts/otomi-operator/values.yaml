@@ -18,7 +18,8 @@ service:
 
 # Service Account requires secret read and watch for all namespaces AND read, updated, create, delete for argocd and istio-system namespaces
 serviceAccount:
-  name: ""
+  create: true
+  name: "otomi-operator"
   annotations: {}
 
 podAnnotations: {}

@@ -1,3 +1,4 @@
+{{- if .Values.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -30,23 +31,8 @@ metadata:
   name: {{ include "otomi-operator.fullname" . }}-edit-secrets
   namespace: argocd
 subjects:
-- kind: serviceaccount
-  name: {{ include "otomi-operator.fullname" . }}
-  apiGroup: rbac.authorization.k8s.io
-roleRef:
-  kind: ClusterRole
-  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
-  namespace: argocd
-subjects:
 - kind: ServiceAccount
-  name: {{ include "otomi-operator.serviceAccountName" . }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "otomi-operator.fullname" . }}
 roleRef:
   kind: ClusterRole
   name: {{ include "otomi-operator.fullname" . }}-edit-secrets
@@ -78,3 +64,4 @@ roleRef:
   kind: ClusterRole
   name: {{ include "otomi-operator.fullname" . }}-read-secrets
   apiGroup: rbac.authorization.k8s.io
+{{- end }}
