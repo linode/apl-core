@@ -34,7 +34,7 @@ spec:
           command: [npm, run, operator:secrets]
           ports:
             - name: http
-            containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           # livenessProbe:
           #   httpGet:
