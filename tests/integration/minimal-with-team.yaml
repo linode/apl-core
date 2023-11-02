@@ -90,38 +90,30 @@ teamConfig:
         type: public
     workloads:
       - name: nodejs-helloworld
-        chart:
-          helmChartCatalog: https://github.com/redkubes/nodejs-helloworld.git
-          helmChart: nodejs-helloworld
-          helmChartVersion: ''
-          helmChartDescription: ''
+        url: https://github.com/redkubes/nodejs-helloworld.git
+        path: ./
+        revision: HEAD
       - name: httpbin
-        chart:
-          helmChartCatalog: https://github.com/redkubes/otomi-core.git
-          helmChart: charts/httpbin
-          helmChartVersion: ''
-          helmChartDescription: ''
+        path: charts/httpbin
+        revision: HEAD
+        url: https://github.com/redkubes/otomi-core.git
       - name: nginx-deployment
-        chart:
-          helmChartCatalog: https://github.com/redkubes/otomi-charts.git
-          helmChart: deployment
-          helmChartVersion: ''
-          helmChartDescription: ''
+        path: deployment
+        revision: main
+        selectedChart: deployment
+        url: https://github.com/redkubes/otomi-charts.git
       - name: nginx-ksvc
-        chart:
-          helmChartCatalog: https://github.com/redkubes/otomi-charts.git
-          helmChart: ksvc
-          helmChartVersion: ''
-          helmChartDescription: ''
+        path: ksvc
+        revision: main
+        selectedChart: ksvc
+        url: https://github.com/redkubes/otomi-charts.git
   admin:
     services: []
     workloads:
       - name: nodejs-helloworld
-        chart:
-          helmChartCatalog: https://github.com/redkubes/nodejs-helloworld.git
-          helmChart: nodejs-helloworld
-          helmChartVersion: ''
-          helmChartDescription: ''
+        url: https://github.com/redkubes/nodejs-helloworld.git
+        path: ./
+        revision: HEAD
 files:
   env/teams/workloads/demo/nodejs-helloworld.yaml: |
     values: |

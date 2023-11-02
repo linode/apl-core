@@ -64,11 +64,10 @@ teamConfig:
         type: public
     workloads:
       - name: petclinic
-        chart:
-          helmChartCatalog: https://github.com/redkubes/otomi-charts.git
-          helmChart: otomi-deployment
-          helmChartVersion: ''
-          helmChartDescription: ''
+        path: otomi-deployment
+        revision: b65583f614c800cb215b8418febbb42abbad5883
+        selectedChart: custom
+        url: https://github.com/redkubes/otomi-charts
   admin:
     services: []
     workloads: []
