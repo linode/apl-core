@@ -1173,6 +1173,24 @@ definitions:
             $ref: '#/definitions/shortcuts'
       azureMonitor:
         $ref: '#/definitions/azure/definitions/monitor'
+      repos:
+        type: array
+        items:
+          properties:
+            name:
+              type: string
+              description: Repository name in Gitea
+            org:
+              type: string
+              default: otomi
+              description: Organization name in Gitea
+            replicateFrom:
+              properties:
+                url:
+                  type: string
+                  description: Replicate a public git repo (https protocol only)
+          required:
+            - name
       backups:
         type: array
         items:

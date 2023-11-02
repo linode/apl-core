@@ -1,0 +1,7 @@
+teamConfig:
+    demo:
+        repos:
+            - name: sample-apps
+              org: otomi
+              replicateFrom:
+                  url: https://github.com/buildpacks/samples.git
