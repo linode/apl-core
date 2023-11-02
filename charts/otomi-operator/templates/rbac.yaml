@@ -1,14 +1,9 @@
-
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include  "otomi-operator.serviceAccountName" . }}
+  name: {{ include "otomi-operator.serviceAccountName" . }}
   namespace: {{ .Release.Namespace | quote }}
-  {{- with .Values.serviceAccount.annotations }}
-{{- with .Values.imagePullSecrets }}
-imagePullSecrets:
-  {{- toYaml . | nindent 2 }}
-{{- end }}
 automountServiceAccountToken: true
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -27,7 +22,7 @@ metadata:
   name: {{ include "otomi-operator.fullname" . }}-edit-secrets
 rules:
 - apiGroups: [""]
-  resources: ["secrets"]
+resources: ["secrets"]
   verbs: ["get", "watch", "list", "delete". "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -51,7 +46,7 @@ metadata:
   namespace: argocd
 subjects:
 - kind: ServiceAccount
-  name: {{ include  "otomi-operator.serviceAccountName" . }}
+  name: {{ include "otomi-operator.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
@@ -65,7 +60,7 @@ metadata:
   namespace: istio-system
 subjects:
 - kind: ServiceAccount
-  name: {{ include  "otomi-operator.serviceAccountName" . }}
+  name: {{ include "otomi-operator.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
@@ -78,7 +73,7 @@ metadata:
   name: {{ include "otomi-operator.fullname" . }}-read-secrets
 subjects:
 - kind: ServiceAccount
-  name: {{ include  "otomi-operator.serviceAccountName" . }}
+  name: {{ include "otomi-operator.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
