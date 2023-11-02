@@ -16,21 +16,23 @@ spec:
   workspaces:
     - name: source
       mountPath: /home/app/stack/env/
+  stepTemplate:
+    resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
+    env:
+    - name: GITEA_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: '$(params.giteaCredentialsSecretName)'
+          key: username
+    - name: GITEA_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: '$(params.giteaCredentialsSecretName)'
+          key: password
   steps:
     - name: git-clone
       image: otomi/core:v1.0.0
       workingDir: $(workspaces.source.path)
-      env:
-      - name: GITEA_USERNAME
-        valueFrom:
-          secretKeyRef:
-            name: '$(params.giteaCredentialsSecretName)'
-            key: username
-      - name: GITEA_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: '$(params.giteaCredentialsSecretName)'
-            key: password
       script: |
         #!/bin/bash
         set -e

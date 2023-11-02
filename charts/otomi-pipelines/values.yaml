@@ -8,18 +8,6 @@ podSecurityContext:
     runAsNonRoot: true
     runAsUser: 999
 
-
-securityContext:
-  {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-
-
 eventListener:
   resources:
     # Event Listener pod resouce limits and requests
@@ -29,6 +17,16 @@ eventListener:
     limits:
       memory: '128Mi'
       cpu: '500m'
+
+tektonTask:
+  resources:
+    # Tekton Task pod resouce limits and requests
+    requests:
+      memory: '256Mi'
+      cpu: '500m'
+    limits:
+      memory: '1Gi'
+      cpu: '2'
 
 kms: {}
 
