@@ -1,8 +1,12 @@
+{{- $v := .Values }}
+{{- $o := $v.apps | get "otomi-operator" }}
 image:
   tag: operator
   pullPolicy: Always
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
+
+resources: {{- toYaml $o.resources.operator | nindent 2 }}
