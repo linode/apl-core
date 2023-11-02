@@ -1396,7 +1396,7 @@ definitions:
           - helmChart
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
-        $ref: 'definitions.yaml#/domain'
+        $ref: '#/definitions/domain'
       autoUpdate:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
