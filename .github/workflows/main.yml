@@ -147,10 +147,10 @@ jobs:
           git config --global user.name $GIT_USER
       - name: Create and publish otomi chart release
         id: chart_release
-        uses: helm/chart-releaser-action@v1.5.0
+        uses: helm/chart-releaser-action@v1.6.0
         with:
           charts_dir: chart
-          charts_repo_url: https://otomi.io/charts/
+          skip_existing: true
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
