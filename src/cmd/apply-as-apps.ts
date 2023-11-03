@@ -44,14 +44,21 @@ const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, 
     metadata: {
       name: `${release.namespace}-${release.name}`,
       labels: {
-        'otomi.io/kubectl-prune': 'allowed',
+        'otomi.io/app': 'managed',
       },
       namespace: 'argocd',
     },
     spec: {
+      syncPolicy: {
+        automated: {
+          prune: true,
+          allowEmpty: false,
+          selfHeal: true,
+        },
+      },
       project: 'default',
       source: {
-        path: release.chart.replace('../', './'),
+        path: release.chart.replace('../', ''),
         repoURL: 'https://github.com/redkubes/otomi-core.git',
         targetRevision: otomiVersion,
         helm: {
@@ -88,24 +95,41 @@ const apply = async (): Promise<void> => {
     logLevel: logLevelString(),
     args: ['write-values', `--output-file-template=${valuesDir}/{{.Release.Namespace}}-{{.Release.Name}}.yaml`],
   })
-
+  const errors: Array<any> = []
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releses: [] = JSON.parse(res.stdout.toString())
   await Promise.allSettled(
     releses.map(async (release: HelmRelese) => {
-      const appName = `${release.namespace}-${release.name}`
-      // d.info(`Generating Argocd Application at ${appName}`)
-      const applicationPath = `${appsDir}/${appName}.yaml`
-      const valuesPath = `${valuesDir}/${appName}.yaml`
-      // d.info(`Loading values file from ${valuesPath}`)
-      const values = (await loadYaml(valuesPath)) || {}
-      const manifest = getArgocdAppManifest(release, values, otomiVersion)
-      d.info(`Saving Argocd Application at ${applicationPath}`)
-      await writeFile(applicationPath, objectToYaml(manifest))
+      try {
+        const appName = `${release.namespace}-${release.name}`
+        // d.info(`Generating Argocd Application at ${appName}`)
+        const applicationPath = `${appsDir}/${appName}.yaml`
+        const valuesPath = `${valuesDir}/${appName}.yaml`
+        // d.info(`Loading values file from ${valuesPath}`)
+        const values = (await loadYaml(valuesPath)) || {}
+        const manifest = getArgocdAppManifest(release, values, otomiVersion)
+        d.info(`Saving Argocd Application at ${applicationPath}`)
+        await writeFile(applicationPath, objectToYaml(manifest))
+      } catch (e) {
+        errors.push(e)
+      }
     }),
   )
 
-  await $`kubectl apply -f ${appsDir} --prune --selector 'otomi.io/kubectl-prune=allowed'`
+  d.info(`Applying Argocd Application from ${appsDir} directory`)
+  try {
+    const resApply = await $`kubectl apply --namespace argocd -f ${appsDir}`
+    // await $`kubectl apply --namespace argocd -f ${appsDir} --prune --selector 'otomi.io/kubectl-prune=allowed'`
+    d.info(resApply.stdout.toString())
+  } catch (e) {
+    d.error(e)
+    errors.push(e)
+  }
+  if (errors.length === 0) d.info(`All applications has been deployed succesfully`)
+  else {
+    errors.map((e) => d.error(e))
+    d.error(`Not applications has been deployed succesfully`)
+  }
 }
 
 export const module: CommandModule = {
