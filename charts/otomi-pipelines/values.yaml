@@ -22,10 +22,10 @@ tektonTask:
   resources:
     # Tekton Task pod resouce limits and requests
     requests:
-      memory: '256Mi'
+      memory: '512Mi'
       cpu: '500m'
     limits:
-      memory: '1Gi'
+      memory: '2Gi'
       cpu: '2'
 
 kms: {}
