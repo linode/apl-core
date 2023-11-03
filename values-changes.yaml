@@ -94,3 +94,10 @@ changes:
     deletions:
       - apps.keycloak.postgresqlPassword
       - apps.keycloak.postgresql
+  - version: 16
+    deletions:
+      - apps.demo-tlspass
+      - apps.hello
+      - apps.host-mods
+      - apps.kubeclarity
+      - apps.tigera-operator

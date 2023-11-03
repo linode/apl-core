@@ -6,5 +6,6 @@ apps:
         repoFilter: redkubes
         sourceControl:
             gitea:
-                server: 'https://gitea.demo.eks.otomi.cloud'
+                server: https://gitea.demo.eks.otomi.cloud
+            github: {}
             provider: gitea
