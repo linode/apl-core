@@ -6,6 +6,7 @@ kind: ArgoCD
 metadata:
   name: argocd
 spec:
+  applicationInstanceLabelKey: argocd.argoproj.io/instance
   usersAnonymousEnabled: false
   oidcConfig: |
     issuer: {{ $v._derived.oidcBaseUrl }}
@@ -77,10 +78,10 @@ spec:
       {{- else }}
       limits:
         cpu: 1
-        memory: 1Gi
+        memory: 3Gi
       requests:
         cpu: 100m
-        memory: 256M
+        memory: 1Gi
       {{- end }}
   repo:
     logLevel: info
