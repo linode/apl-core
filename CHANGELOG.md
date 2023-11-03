@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.24.2](https://github.com/redkubes/otomi-core/compare/v0.24.1...v0.24.2) (2023-11-03)
+
+
+### Others
+
+* AWS Marketplace release automation ([#1216](https://github.com/redkubes/otomi-core/issues/1216)) ([3e64adb](https://github.com/redkubes/otomi-core/commit/3e64adba790c0b0960333943efd93d85b7c322a6))
+* changelog ([de81ccd](https://github.com/redkubes/otomi-core/commit/de81ccda0f305173895a2c84d4005849af1c765d))
+
+
+### CI
+
+* avoid uploading helm chart if tag exists ([ae014f8](https://github.com/redkubes/otomi-core/commit/ae014f8036e767c2cb3d6d53fc452a6d133c45b8))
+
 ### [0.24.1](https://github.com/redkubes/otomi-core/compare/v0.24...v0.24.1) (2023-08-08)
 
 
