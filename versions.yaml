@@ -1,4 +1,4 @@
-api: template-catalog
-console: template-catalog
+api: main
+console: main
 tasks: main
 tools: 1.6.0
