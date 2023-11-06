@@ -1297,7 +1297,7 @@ definitions:
     title: Retention policy
     type: string
   url:
-    pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
+    pattern: '^https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/=]*)'
     type: string
   volumes:
     items:
