@@ -133,7 +133,7 @@ const apply = async (): Promise<void> => {
   if (errors.length === 0) d.info(`All applications has been deployed succesfully`)
   else {
     errors.map((e) => d.error(e))
-    d.error(`Not applications has been deployed succesfully`)
+    d.error(`Not all applications has been deployed succesfully`)
   }
 }
 
