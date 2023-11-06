@@ -101,3 +101,4 @@ changes:
       - apps.host-mods
       - apps.kubeclarity
       - apps.tigera-operator
+      - apps.kubeapps
