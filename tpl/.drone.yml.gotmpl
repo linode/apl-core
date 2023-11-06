@@ -94,7 +94,7 @@ steps:
     image: otomi/core:{{ .imageTag }}
     pull: {{ .pullPolicy }}
     commands:
-      - cd .. && binzx/otomi apply
+      - cd .. && && binzx/otomi apply-as-apps -f helmfile.tpl/helmfile-init.yaml && binzx/otomi apply-as-apps
     depends_on:
       - test
 {{ range $holder, $recs := .r }}

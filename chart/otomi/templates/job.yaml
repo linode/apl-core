@@ -44,8 +44,12 @@ spec:
           command: [bash, -c]
           args:
             - |
+              set -e
               kubectl create ns otomi &> /dev/null
-              binzx/otomi validate-cluster && binzx/otomi bootstrap && binzx/otomi apply
+              binzx/otomi validate-cluster 
+              binzx/otomi bootstrap
+              binzx/otomi apply-as-apps -f helmfile.tpl/helmfile-init.yaml
+              binzx/otomi apply-as-apps
           env:
             - name: VERBOSITY
               value: '1'
