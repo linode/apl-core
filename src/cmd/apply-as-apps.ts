@@ -1,4 +1,5 @@
 import { mkdirSync, rmdirSync } from 'fs'
+import { pathExists } from 'fs-extra'
 import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -55,6 +56,7 @@ const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, 
           allowEmpty: false,
           selfHeal: true,
         },
+        syncOptions: ['ServerSideApply=true'],
       },
       project: 'default',
       source: {
@@ -80,6 +82,7 @@ const apply = async (): Promise<void> => {
   d.info(`Parsing helm releases defined in helmfile.d/`)
 
   const otomiVersion = await getImageTag()
+
   const res = await hf({
     fileOpts: argv.file,
     labelOpts: argv.label,
@@ -100,13 +103,15 @@ const apply = async (): Promise<void> => {
   const releses: [] = JSON.parse(res.stdout.toString())
   await Promise.allSettled(
     releses.map(async (release: HelmRelese) => {
+      if (!release.enabled) return
       try {
         const appName = `${release.namespace}-${release.name}`
         // d.info(`Generating Argocd Application at ${appName}`)
         const applicationPath = `${appsDir}/${appName}.yaml`
         const valuesPath = `${valuesDir}/${appName}.yaml`
         // d.info(`Loading values file from ${valuesPath}`)
-        const values = (await loadYaml(valuesPath)) || {}
+        let values = {}
+        if (await pathExists(valuesPath)) values = (await loadYaml(valuesPath)) || {}
         const manifest = getArgocdAppManifest(release, values, otomiVersion)
         d.info(`Saving Argocd Application at ${applicationPath}`)
         await writeFile(applicationPath, objectToYaml(manifest))
