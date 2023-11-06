@@ -46,8 +46,9 @@ spec:
             - |
               set -e
               kubectl create ns otomi &> /dev/null
-              binzx/otomi validate-cluster 
+              binzx/otomi validate-cluster
               binzx/otomi bootstrap
+              kubectl -f charts/argocd/templates/crds
               binzx/otomi apply-as-apps -f helmfile.tpl/helmfile-init.yaml
               binzx/otomi apply-as-apps
           env:
