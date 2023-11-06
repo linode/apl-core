@@ -22,7 +22,7 @@ releases:
     chart: ../charts/cert-manager-webhook-civo
     values:
       - ../values/cert-manager-webhook-civo/cert-manager-webhook-civo.gotmpl
-  - name: cert-manager-webhook-civo
+  - name: cert-manager-webhook-linode
     installed: {{ hasKey $p "linode" }}
     namespace: cert-manager
     labels:

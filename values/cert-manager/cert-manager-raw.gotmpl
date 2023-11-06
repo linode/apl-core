@@ -25,7 +25,6 @@ resources:
       secret: "{{ $p.civo.apiToken | b64enc }}"
       {{- else if hasKey $p "cloudflare" }}
       secret: "{{ $p.cloudflare.apiToken | b64enc }}"
-      {{- end }}
       {{- else if hasKey $p "linode" }}
       secret: "{{ $p.linode.apiToken | b64enc }}"
       {{- end }}
