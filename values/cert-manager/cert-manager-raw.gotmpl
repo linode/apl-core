@@ -26,8 +26,8 @@ resources:
       {{- else if hasKey $p "cloudflare" }}
       secret: "{{ $p.cloudflare.apiToken | b64enc }}"
       {{- else if hasKey $p "scaleway" }}
-      SCW_ACCESS_KEY: "{{ $p.scaleway.scwSecretKey | b64enc }}"
-      SCW_SECRET_KEY: "{{ $p.scaleway.scwAccessKey| b64enc }}"
+      SCW_ACCESS_KEY: "{{ $p.scaleway.scwAccessKey | b64enc }}"
+      SCW_SECRET_KEY: "{{ $p.scaleway.scwSecretKey | b64enc }}"
       {{- end }}
 {{- end }}
   - apiVersion: cert-manager.io/v1
