@@ -79,7 +79,8 @@ const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, 
 const apply = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:apply`)
   const argv: HelmArguments = getParsedArgs()
-  d.info(`Parsing helm releases defined in helmfile.d/`)
+  const helmfileSource = argv.file?.length === 0 ? 'helmfile.d/' : argv.file?.toString()
+  d.info(`Parsing helm releases defined in ${helmfileSource}`)
 
   const otomiVersion = await getImageTag()
 
@@ -90,7 +91,7 @@ const apply = async (): Promise<void> => {
     args: ['--output=json', 'list'],
   })
 
-  d.info(`Writing values for helm releases defined in helmfile.d/`)
+  d.info(`Writing values for helm releases defined in ${helmfileSource}`)
 
   await hf({
     fileOpts: argv.file,
@@ -124,7 +125,6 @@ const apply = async (): Promise<void> => {
   d.info(`Applying Argocd Application from ${appsDir} directory`)
   try {
     const resApply = await $`kubectl apply --namespace argocd -f ${appsDir}`
-    // await $`kubectl apply --namespace argocd -f ${appsDir} --prune --selector 'otomi.io/kubectl-prune=allowed'`
     d.info(resApply.stdout.toString())
   } catch (e) {
     d.error(e)
