@@ -102,3 +102,4 @@ changes:
       - apps.kubeclarity
       - apps.tigera-operator
       - apps.kubeapps
+      - platformBackups.persistentVolumes.kubeapps
