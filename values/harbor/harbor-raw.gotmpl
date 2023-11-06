@@ -14,12 +14,11 @@ resources:
   spec:
     # Secret names are always required.
     secretName: harbor-token-service-ca
-    duration: 8760h # 365d
-    renewBefore: 360h # 15d
+    duration: 8760h0m0s # 365d
+    renewBefore: 360h0m0s # 15d
     subject:
       organizations:
         - otomi
-    isCA: false
     privateKey:
       algorithm: RSA
       encoding: PKCS1
