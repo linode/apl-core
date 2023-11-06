@@ -3417,7 +3417,8 @@ properties:
                     type: string
                     x-secret: ''
                 required:
-                  - apiToken
+                  - scwAccessKey
+                  - scwSecretKey
             required:
               - scaleway
           - title: CloudFlare
