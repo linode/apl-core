@@ -25,6 +25,9 @@ resources:
       secret: "{{ $p.civo.apiToken | b64enc }}"
       {{- else if hasKey $p "cloudflare" }}
       secret: "{{ $p.cloudflare.apiToken | b64enc }}"
+      {{- else if hasKey $p "scaleway" }}
+      SCW_ACCESS_KEY: "{{ $p.scaleway.scwSecretKey | b64enc }}"
+      SCW_SECRET_KEY: "{{ $p.scaleway.scwAccessKey| b64enc }}"
       {{- end }}
 {{- end }}
   - apiVersion: cert-manager.io/v1
@@ -117,6 +120,18 @@ resources:
                 config:
                   secretKey: secret
                   secretName: external-dns
+              {{- end }}
+              {{- with $p | get "scaleway" nil }}
+              webhook:
+                groupName: acme.scaleway.com
+                solverName: scaleway
+                config:
+                  accessKeySecretRef:
+                    key: SCW_ACCESS_KEY
+                    name: external-dns
+                  secretKeySecretRef:
+                    key: SCW_SECRET_KEY
+                    name: external-dns
               {{- end }}
               {{- with $p | get "google" nil }}
               cloudDNS:

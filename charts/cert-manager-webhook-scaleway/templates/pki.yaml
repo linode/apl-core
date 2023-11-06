@@ -1,0 +1,76 @@
+---
+# Create a selfsigned Issuer, in order to create a root CA certificate for
+# signing webhook serving certificates
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "scaleway-webhook.selfSignedIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "scaleway-webhook.name" . }}
+    chart: {{ include "scaleway-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selfSigned: {}
+
+---
+
+# Generate a CA Certificate used to sign certificates for the webhook
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "scaleway-webhook.rootCACertificate" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "scaleway-webhook.name" . }}
+    chart: {{ include "scaleway-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "scaleway-webhook.rootCACertificate" . }}
+  duration: {{ .Values.pki.caDuration }}
+  issuerRef:
+    name: {{ include "scaleway-webhook.selfSignedIssuer" . }}
+  commonName: "ca.scaleway-webhook.cert-manager"
+  isCA: true
+
+---
+
+# Create an Issuer that uses the above generated CA certificate to issue certs
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "scaleway-webhook.rootCAIssuer" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "scaleway-webhook.name" . }}
+    chart: {{ include "scaleway-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ca:
+    secretName: {{ include "scaleway-webhook.rootCACertificate" . }}
+
+---
+
+# Finally, generate a serving certificate for the webhook to use
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "scaleway-webhook.servingCertificate" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "scaleway-webhook.name" . }}
+    chart: {{ include "scaleway-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "scaleway-webhook.servingCertificate" . }}
+  duration: {{ .Values.pki.servingCertificateDuration }}
+  issuerRef:
+    name: {{ include "scaleway-webhook.rootCAIssuer" . }}
+  dnsNames:
+  - {{ include "scaleway-webhook.fullname" . }}
+  - {{ include "scaleway-webhook.fullname" . }}.{{ .Release.Namespace }}
+  - {{ include "scaleway-webhook.fullname" . }}.{{ .Release.Namespace }}.svc

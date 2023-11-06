@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "scaleway-webhook.fullname" . }}
+  labels:
+    app: {{ include "scaleway-webhook.name" . }}
+    chart: {{ include "scaleway-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: https
+      protocol: TCP
+      name: https
+  selector:
+    app: {{ include "scaleway-webhook.name" . }}
+    release: {{ .Release.Name }}

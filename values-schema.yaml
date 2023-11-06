@@ -3405,6 +3405,21 @@ properties:
                   - apiToken
             required:
               - civo
+          - title: Scaleway
+            additionalProperties: false
+            properties:
+              scaleway:
+                properties:
+                  scwAccessKey:
+                    type: string
+                    x-secret: ''
+                  scwSecretKey:
+                    type: string
+                    x-secret: ''
+                required:
+                  - apiToken
+            required:
+              - scaleway
           - title: CloudFlare
             additionalProperties: false
             properties:
