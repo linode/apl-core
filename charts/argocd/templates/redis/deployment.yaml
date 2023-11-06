@@ -1,0 +1,125 @@
+{{- $redisHa := index .Values "redis-ha" -}}
+{{- if and .Values.redis.enabled (not $redisHa.enabled) -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "argo-cd.redis.fullname" . }}
+  labels:
+    {{- include "argo-cd.labels" (dict "context" . "component" .Values.redis.name "name" .Values.redis.name) | nindent 4 }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: {{ .Values.global.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "argo-cd.name" . }}-{{ .Values.redis.name }}
+  template:
+    metadata:
+      labels:
+        {{- include "argo-cd.labels" (dict "context" . "component" .Values.redis.name "name" .Values.redis.name) | nindent 8 }}
+        {{- with (mergeOverwrite (deepCopy .Values.global.podLabels) .Values.redis.podLabels) }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with (mergeOverwrite (deepCopy .Values.global.podAnnotations) .Values.redis.podAnnotations) }}
+      annotations:
+        {{- range $key, $value := . }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+      {{- end }}
+    spec:
+      {{- with .Values.redis.imagePullSecrets | default .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.redis.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "argo-cd.redisServiceAccountName" . }}
+      {{- with .Values.redis.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.redis.name }}
+        image: {{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}
+        imagePullPolicy: {{ default .Values.global.image.imagePullPolicy .Values.redis.image.imagePullPolicy }}
+        args:
+        - --save
+        - ""
+        - --appendonly
+        - "no"
+        {{- with .Values.redis.extraArgs }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.redis.env }}
+        env:
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.redis.envFrom }}
+        envFrom:
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        ports:
+        - name: redis
+          containerPort: {{ .Values.redis.containerPort }}
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.redis.resources | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.redis.containerSecurityContext | nindent 10 }}
+        {{- with .Values.redis.volumeMounts }}
+        volumeMounts:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      {{- if .Values.redis.metrics.enabled }}
+      - name: metrics
+        image: {{ .Values.redis.metrics.image.repository }}:{{ .Values.redis.metrics.image.tag }}
+        imagePullPolicy: {{ default .Values.global.image.imagePullPolicy .Values.redis.metrics.image.imagePullPolicy }}
+        env:
+        - name: REDIS_ADDR
+          value: {{ printf "redis://localhost:%v" .Values.redis.containerPort }}
+        - name: REDIS_EXPORTER_WEB_LISTEN_ADDRESS
+          value: {{ printf "0.0.0.0:%v" .Values.redis.metrics.containerPort }}
+        ports:
+        - name: metrics
+          containerPort: {{ .Values.redis.metrics.containerPort }}
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.redis.metrics.resources | nindent 10 }}
+        securityContext:
+          {{- toYaml .Values.redis.metrics.containerSecurityContext | nindent 10 }}
+      {{- end }}
+      {{- with .Values.redis.extraContainers }}
+        {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.redis.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.redis.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.redis.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.redis.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range $constraint := . }}
+      - {{ toYaml $constraint | nindent 8 | trim }}
+        {{- if not $constraint.labelSelector }}
+        labelSelector:
+          matchLabels:
+            app.kubernetes.io/name: {{ include "argo-cd.name" $ }}-{{ $.Values.redis.name }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- with .Values.redis.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.redis.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8}}
+      {{- end }}
+{{- end }}
