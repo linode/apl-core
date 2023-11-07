@@ -44,8 +44,9 @@ spec:
           command: [bash, -c]
           args:
             - |
-              set -e
+              # set -e
               kubectl create ns otomi &> /dev/null
+              kubectl create namespace argocd &> /dev/null
               binzx/otomi validate-cluster
               binzx/otomi bootstrap
               kubectl apply -f crds/argocd
