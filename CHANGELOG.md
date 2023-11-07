@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.4](https://github.com/redkubes/otomi-core/compare/v1.1.3...v1.1.4) (2023-11-07)
+
+
+### Features
+
+* default two replicas of keycloak db ([#1362](https://github.com/redkubes/otomi-core/issues/1362)) ([2d56eac](https://github.com/redkubes/otomi-core/commit/2d56eac91c5cb8b67bba97b4eb6af97e6ab86268))
+
+
+### Bug Fixes
+
+* dashboards ([#1346](https://github.com/redkubes/otomi-core/issues/1346)) ([f56bc89](https://github.com/redkubes/otomi-core/commit/f56bc897dfcc0c7b77ba6f60ab6fb7d37c5f8a21))
+* kc limits ([#1335](https://github.com/redkubes/otomi-core/issues/1335)) ([3bae64a](https://github.com/redkubes/otomi-core/commit/3bae64ad98f1dd05c0eef9e709cd0e201c3ba13f))
+* platform backup schedules ([#1348](https://github.com/redkubes/otomi-core/issues/1348)) ([9521a3f](https://github.com/redkubes/otomi-core/commit/9521a3faba6a881a77236366f193ee4b457e2195))
+
 ### [1.1.3](https://github.com/redkubes/otomi-core/compare/v1.1.2...v1.1.3) (2023-11-07)
 
 ### [1.1.2](https://github.com/redkubes/otomi-core/compare/v1.1.1...v1.1.2) (2023-10-23)
