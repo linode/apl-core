@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.26.9](https://github.com/redkubes/otomi-core/compare/v0.26.8...v0.26.9) (2023-11-07)
+
+
+### CI
+
+* avoid marking release as latest ([feb72d6](https://github.com/redkubes/otomi-core/commit/feb72d6862106ab6cbf08174ca7c623a8df08f47))
+* avoid uploading helm chart if tag exists ([1718f43](https://github.com/redkubes/otomi-core/commit/1718f43775e3bfffbf7d483e0b6461073bc17eef))
+* reworked chart-release job ([e783fd4](https://github.com/redkubes/otomi-core/commit/e783fd4e8005c1a875cbf50187fa7301f27ef354))
+* reworked chart-release job ([875910d](https://github.com/redkubes/otomi-core/commit/875910de9659e77a7d2b078a915cb3d7f5a839f1))
+
 ### [0.26.8](https://github.com/redkubes/otomi-core/compare/v0.26.7...v0.26.8) (2023-11-07)
 
 ### [0.26.7](https://github.com/redkubes/otomi-core/compare/v0.26.6...v0.26.7) (2023-11-07)
