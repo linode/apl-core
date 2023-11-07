@@ -121,43 +121,60 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Prepare chart
+        id: prepare_chart
         run: |
           # Install and update helm repo
           helm repo add otomi https://otomi.io/otomi-core
           helm repo update
 
-          # Determine new app SEMVER
-          new_app_version=$(cat package.json | jq -r '.version')
-          new_app_major=$(echo $new_app_version| cut -d '.' -f 1)
-          new_app_minor=$(echo $new_app_version| cut -d '.' -f 2)
-          new_app_patch=$(echo $new_app_version| cut -d '.' -f 3)
+          # Retrieve the app version from package.json
+          app_version=$(jq -r '.version' package.json)
+          if [ -z "$app_version" ]; then
+              echo "Error: Could not retrieve app version from package.json"
+              exit 1
+          fi
 
-          # Get existing helm chart SEMVER 
-          old_chart_version=$(helm search repo otomi -l | grep $new_app_major.$new_app_minor |head -n 1 | awk '{print $2}')
-          [ -z $old_chart_version ] && echo It seems there is no helm chart for this app version: $new_app_major.$new_app_minor.$new_app_patch && exit 1
-          old_chart_major=$(echo $old_chart_version| cut -d '.' -f 1)
-          old_chart_minor=$(echo $old_chart_version| cut -d '.' -f 2)
-          old_chart_patch=$(echo $old_chart_version| cut -d '.' -f 3)
+          # Extract major and minor from the app version
+          new_app_major=$(echo "$app_version" | cut -d '.' -f 1)
+          new_app_minor=$(echo "$app_version" | cut -d '.' -f 2)
 
-          # Determine new chart SEMVER
-          new_chart_version=$(cat chart/otomi/Chart.yaml | yq r - 'version'| cut -d '.' -f1,2)
-          new_chart_major=$(echo $new_chart_version| cut -d '.' -f 1)
-          new_chart_minor=$(echo $new_chart_version| cut -d '.' -f 2)
-          new_chart_patch=$(($old_chart_patch+1))
+          # Get existing helm charts in the registry
+          helm_output=$(helm search repo otomi -l -o json)
 
-          # if any of those changed then reset the patch version
-          [ "$new_chart_major.$new_chart_minor" != "$old_chart_major.$old_chart_minor" ] && new_chart_patch=1
-          release_tag=v$(cat package.json | jq -r '.version')
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
-          sed --in-place "s/0-chart-patch-placeholder/$new_chart_patch/g" chart/otomi/Chart.yaml
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/values.yaml
+          # Use jq to parse the output and find the latest version for the given $new_app_major.$new_app_minor app version
+          existing_version=$(echo "$helm_output" | jq -r --arg major "$new_app_major" --arg minor "$new_app_minor" '
+            map(select(.app_version | startswith("v\($major).\($minor)"))) | 
+            max_by(.version | split(".") | map(tonumber)) | 
+            .version'
+          )
 
-          # copy readme from repo into the charts and add tpl/chart-values.md
+          # Determine if a major/minor bump has occurred
+          MARK_AS_LATEST="false"
+          if [ "${existing_version}" == "null" ]; then
+              echo "No chart found matching v$new_app_major.$new_app_minor.* app version."
+              echo "It seems this is a major/minor bump."
+              echo "Will create a new helm chart and mark it as latest!"
+              # If there is no existing chart with the same major.minor, mark this as latest
+              MARK_AS_LATEST="true"
+          else
+            echo "The latest version for $new_app_major.$new_app_minor is $existing_version"
+          fi
+
+          # Update Chart.yaml and values.yaml with the new app version
+          sed -i "s/CHART_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/Chart.yaml
+          sed -i "s/APP_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/values.yaml
+          sed -i "s/APP_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/Chart.yaml
+
+          echo "Chart and values files updated successfully with version $app_version"
+          echo "MARK_AS_LATEST is set to $MARK_AS_LATEST"
+          echo "MARK_AS_LATEST=$MARK_AS_LATEST" >> "GITHUB_OUTPUT"
+
+          # Copy readme from repo into the charts and add tpl/chart-values.md
           cp README.md chart/otomi/
           printf "\n\n" >>chart/otomi/README.md
           cat tpl/chart-values.md >>chart/otomi/README.md
 
-          # generate schema
+          # Generate schema
           npx js-yaml values-schema.yaml > chart/otomi/values.schema.json
 
           # Set the global id for git as it seems needed by the next step when a custom image is used
@@ -169,7 +186,7 @@ jobs:
         with:
           charts_dir: chart
           skip_existing: true
-          mark_as_latest: false
+          mark_as_latest: ${{ steps.prepare_chart.outputs.MARK_AS_LATEST }}
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
