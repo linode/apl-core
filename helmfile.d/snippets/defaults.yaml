@@ -429,10 +429,19 @@ environments:
           otomi-api:
             editorInactivityTimeout: 1
           otomi-console: {}
+          otomi-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
           opencost:
             enabled: false
             alerts:
-              enabled: false          
+              enabled: false
             resources:
               exporter:
                 requests:
