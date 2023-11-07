@@ -706,7 +706,7 @@ environments:
             useOtomiDB: true
             imported: false
             size: "1Gi"
-            replicas: 1
+            replicas: 2
             resources:
               limits:
                 cpu: 100m
