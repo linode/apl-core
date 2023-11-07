@@ -126,7 +126,7 @@ jobs:
           helm repo add otomi https://otomi.io/otomi-core
           helm repo update
 
-          # Determine NEW app SEMVER
+          # Determine new app SEMVER
           new_app_version=$(cat package.json | jq -r '.version')
           new_app_major=$(echo $new_app_version| cut -d '.' -f 1)
           new_app_minor=$(echo $new_app_version| cut -d '.' -f 2)
@@ -134,35 +134,30 @@ jobs:
 
           # Get existing helm chart SEMVER 
           old_chart_version=$(helm search repo otomi -l | grep $new_app_major.$new_app_minor |head -n 1 | awk '{print $2}')
+          [ -z $old_chart_version ] && echo It seems there is no helm chart for this app version: $new_app_major.$new_app_minor.$new_app_patch && exit 1
           old_chart_major=$(echo $old_chart_version| cut -d '.' -f 1)
           old_chart_minor=$(echo $old_chart_version| cut -d '.' -f 2)
           old_chart_patch=$(echo $old_chart_version| cut -d '.' -f 3)
 
-          # Get existing app SEMVER 
-          old_app_version=$(helm search repo otomi -l | grep $new_app_major.$new_app_minor |head -n 1 | awk '{print $3}') #TODO: What if grep does not find anything?
-          old_app_major=$(echo $old_app_version| cut -d '.' -f 1)
-          old_app_minor=$(echo $old_app_version| cut -d '.' -f 2)
-          old_app_patch=$(echo $old_app_version| cut -d '.' -f 3)
-
-          # Determine NEW chart SEMVER
+          # Determine new chart SEMVER
           new_chart_version=$(cat chart/otomi/Chart.yaml | yq r - 'version'| cut -d '.' -f1,2)
           new_chart_major=$(echo $new_chart_version| cut -d '.' -f 1)
           new_chart_minor=$(echo $new_chart_version| cut -d '.' -f 2)
           new_chart_patch=$(($old_chart_patch+1))
 
-          # If major and/or minor has changed then reset patch to 1
+          # if any of those changed then reset the patch version
           [ "$new_chart_major.$new_chart_minor" != "$old_chart_major.$old_chart_minor" ] && new_chart_patch=1
           release_tag=v$(cat package.json | jq -r '.version')
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
           sed --in-place "s/0-chart-patch-placeholder/$new_chart_patch/g" chart/otomi/Chart.yaml
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/values.yaml
 
-          # Copy readme from repo into the charts and add tpl/chart-values.md
+          # copy readme from repo into the charts and add tpl/chart-values.md
           cp README.md chart/otomi/
           printf "\n\n" >>chart/otomi/README.md
           cat tpl/chart-values.md >>chart/otomi/README.md
 
-          # Generate schema
+          # generate schema
           npx js-yaml values-schema.yaml > chart/otomi/values.schema.json
 
           # Set the global id for git as it seems needed by the next step when a custom image is used
