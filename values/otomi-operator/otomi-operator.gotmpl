@@ -1,8 +1,10 @@
 {{- $v := .Values }}
 {{- $o := $v.apps | get "otomi-operator" }}
+{{- $version := $v.versions.tasks }}
+{{- $isSemver := regexMatch "^[0-9.]+" $version }}
 image:
-  tag: operator
-  pullPolicy: Always
+  tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
+  pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 
 {{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
