@@ -99,6 +99,8 @@ k8s:
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: otomi
+    - name: otomi-operator
+      disableIstioInjection: true
     - name: cluster-overprovisioner
       app: cluster-overprovisioner
       disableIstioInjection: true
