@@ -16,7 +16,7 @@ spec:
       mountPath: /home/app/stack/env
   stepTemplate:
     resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}    
-    env:
+    envFrom:
     - secretRef:
         name: otomi-sops-secrets
     - name: CI
