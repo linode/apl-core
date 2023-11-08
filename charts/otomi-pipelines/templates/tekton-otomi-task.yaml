@@ -15,10 +15,11 @@ spec:
     - name: source
       mountPath: /home/app/stack/env
   stepTemplate:
-    resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}    
+    resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     envFrom:
     - secretRef:
         name: otomi-sops-secrets
+    env:
     - name: CI
       value: $(params["CI"])
     - name: IN_DOCKER
