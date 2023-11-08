@@ -31,3 +31,5 @@ tektonTask:
 kms: {}
 
 giteaPassword: ""
+
+cloneUnsecure: false

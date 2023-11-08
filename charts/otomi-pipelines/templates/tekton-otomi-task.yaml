@@ -1,3 +1,5 @@
+{{- $kms := .Values.kms | default dict }}
+
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
@@ -25,6 +27,9 @@ spec:
         secretKeyRef:
           name: '$(params.giteaCredentialsSecretName)'
           key: password
+{{- if hasKey $kms "sops" }}
+{{- $v := $kms.sops }}
+{{- with $v.azure }}
     - name: AZURE_CLIENT_ID
       valueFrom:
         secretKeyRef:
@@ -35,11 +40,69 @@ spec:
         secretKeyRef:
           name: otomi-sops-secrets
           key: AZURE_CLIENT_SECRET
+  {{- if hasKey . "tenantId" }}
     - name: AZURE_TENANT_ID
       valueFrom:
         secretKeyRef:
           name: otomi-sops-secrets
           key: AZURE_TENANT_ID
+  {{- end }}     
+  {{- if hasKey . "environment" }}
+    - name: AZURE_ENVIRONMENT
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: AZURE_ENVIRONMENT
+  {{- end }}
+{{- end }}
+{{- with $v.aws }}
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: AWS_ACCESS_KEY_ID
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: AWS_SECRET_ACCESS_KEY
+  {{- if hasKey . "region" }}
+    - name: AWS_REGION
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: AWS_REGION
+  {{- end }}
+{{- end }}
+{{- with $v.google }}
+    - name: GCLOUD_SERVICE_KEY
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: GCLOUD_SERVICE_KEY
+  {{- if hasKey . "project" }}
+    - name: GOOGLE_PROJECT
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: GOOGLE_PROJECT
+  {{- end }}
+  {{- if hasKey . "region" }}
+    - name: GOOGLE_REGION
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: GOOGLE_REGION
+  {{- end }}
+{{- end }}
+{{- if hasKey $v "vault" }}
+    - name: VAULT_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: otomi-sops-secrets
+          key: VAULT_TOKEN
+{{- end }}
+{{- end }}
     - name: CI
       value: $(params["CI"])
     - name: IN_DOCKER
@@ -60,7 +123,11 @@ spec:
         export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
 
         # Cloning the values
-        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        {{- if .Values.cloneUnsecure }}
+          git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        {{- else}}
+          git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        {{- end }}
 
     - name: bootstrap
       image: otomi/core:$(params["OTOMI_VERSION"])
