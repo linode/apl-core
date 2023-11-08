@@ -7,7 +7,7 @@
     {{- $targets = append $targets (print "team-" $id) }}
   {{- end }}
 
-{{- $targets = append $targets "otomi-pipelines" }}
+{{- $targets = prepend $targets "otomi-pipelines" }}
 
 resources: {{- $t.resources.dashboard | toYaml | nindent 2 }}
 
