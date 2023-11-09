@@ -20,15 +20,15 @@ spec:
     - secretRef:
         name: otomi-sops-secrets
     env:
-    - name: GITEA_USERNAME	    - secretRef:
-      valueFrom:	        name: otomi-sops-secrets
-        secretKeyRef:	
-          name: '$(params.giteaCredentialsSecretName)'	
-          key: username	
-    - name: GITEA_PASSWORD	
-      valueFrom:	
-        secretKeyRef:	
-          name: '$(params.giteaCredentialsSecretName)'	
+    - name: GITEA_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: '$(params.giteaCredentialsSecretName)'
+          key: username
+    - name: GITEA_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: '$(params.giteaCredentialsSecretName)'
           key: password
     - name: CI
       value: $(params["CI"])
