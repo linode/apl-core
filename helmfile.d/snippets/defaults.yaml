@@ -35,8 +35,6 @@ environments:
                 memory: 512Mi
           cluster-overprovisioner:
             enabled: false
-          demo-tlspass:
-            enabled: false
           drone:
             enabled: true
             debug: false
@@ -205,8 +203,6 @@ environments:
                 limits:
                   cpu: 400m
                   memory: 512Mi
-          hello:
-            enabled: false
           httpbin:
             enabled: false
           ingress-nginx:
@@ -290,52 +286,6 @@ environments:
             enabled: false
             serving:
               replicas: 1
-          kubeclarity:
-            enabled: false
-            logLevel: warning
-            resources:
-              kubeclarity:
-                requests:
-                  memory: 200Mi
-                  cpu: 100m
-                limits:
-                  memory: 1Gi
-                  cpu: '1'
-              cdbScanner:
-                requests:
-                  memory: 50Mi
-                  cpu: 50m
-                limits:
-                  memory: 1Gi
-                  cpu: '1'
-              vulnerabilityScanner:
-                requests:
-                  memory: 256Mi
-                  cpu: 100m
-                limits:
-                  memory: 2Gi
-                  cpu: '1'
-              trivyServer:
-                requests:
-                  cpu: 200m
-                  memory: 200Mi
-                limits:
-                  cpu: '1'
-                  memory: 1Gi
-              sbomDb:
-                requests:
-                  memory: 20Mi
-                  cpu: 10m
-                limits:
-                  memory: 100Mi
-                  cpu: 100m
-              postgresql:              
-                requests:
-                  memory: 256Mi
-                  cpu: 250m
-                limits:
-                  memory: 1Gi
-                  cpu: '1'
           kube-descheduler:
             enabled: false
           kured:
@@ -466,10 +416,19 @@ environments:
           otomi-api:
             editorInactivityTimeout: 1
           otomi-console: {}
+          otomi-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
           opencost:
             enabled: false
             alerts:
-              enabled: false          
+              enabled: false
             resources:
               exporter:
                 requests:
@@ -743,7 +702,7 @@ environments:
             useOtomiDB: true
             imported: false
             size: "1Gi"
-            replicas: 1
+            replicas: 2
             resources:
               limits:
                 cpu: 100m

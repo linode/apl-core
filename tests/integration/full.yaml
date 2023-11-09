@@ -32,8 +32,6 @@ apps:
     enabled: false
   kube-descheduler:
     enabled: true
-  kubeclarity:
-    enabled: true
   kured:
     enabled: true
   loki:
@@ -51,8 +49,6 @@ apps:
   redis-shared:
     enabled: false
   snapshot-controller:
-    enabled: true
-  tigera-operator:
     enabled: true
   tekton:
     enabled: true

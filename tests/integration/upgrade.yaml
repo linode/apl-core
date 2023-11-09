@@ -34,8 +34,6 @@ apps:
     enabled: true
   kube-descheduler:
     enabled: true
-  kubeclarity:
-    enabled: true
   kured:
     enabled: true
   loki:
@@ -53,8 +51,6 @@ apps:
   snapshot-controller:
     enabled: true
   tempo:
-    enabled: true
-  tigera-operator:
     enabled: true
   thanos:
     enabled: true

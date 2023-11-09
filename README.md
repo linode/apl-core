@@ -17,26 +17,31 @@
 </p>
 
 <h4 align="center">
-Otomi adds developer- and operations-centric tools, automation, and self-service on top of Kubernetes in any infrastructure or cloud, to code, build, and run containerized applications
+🚀🚀🚀 Try Otomi and win a $50 Amazon Gift Card 🚀🚀🚀<br>
+Check out the <a href="https://otomi.io/docs/get-started/promotions">terms & conditions</a>
 </h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
-## Otomi helps
+<h4 align="center">
+Otomi turns any Kubernetes cluster into a PaaS for DevOps teams with paved roads from code to a running application
+</h4>
 
-**Developers** - With easy self-service to let them focus on their apps only
+## How Otomi helps
+
+**Devs** - With easy self-service to let them focus on their apps only
 
 - Build OCI compliant images from application code
-- Deploy containerized workloads the GitOps way using build-in or custom golden path templates
+- Deploy containerized workloads the GitOps way using build-in or BYO golden path templates
 - Automatically update container images of workloads
 - Publicly expose applications
 - Get instant access to logs, metrics and traces
 - Store charts and images in a private registry
 - Configure network policies, response headers and CNAMEs
 - Manage secrets
-- Create private Git repositories and custom pipelines
+- Create private Git repositories and custom CI/CD pipelines
 
-**Platform engineers** - To setup a Kubernetes-based platform and provide a paved road to production
+**Ops** - To setup a Kubernetes-based platform for developers and provide a paved road to production
 
 - Create your platform profile and deploy to any K8s
 - Onboard development teams in a comprehensive multi-tenant setup and make them self-serving

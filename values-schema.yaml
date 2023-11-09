@@ -1297,7 +1297,7 @@ definitions:
     title: Retention policy
     type: string
   url:
-    pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
+    pattern: '^https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/=]*)'
     type: string
   volumes:
     items:
@@ -1380,7 +1380,7 @@ definitions:
         type: string
         title: Chart provider
         enum: ['helm', 'git']
-        default: helm
+        default: git
       path:
         description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
         $ref: '#/definitions/wordCharacterPattern'
@@ -1391,6 +1391,17 @@ definitions:
         description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
         $ref: '#/definitions/wordCharacterPattern'
         default: HEAD
+      chartMetadata:
+        title: ''
+        properties:
+          helmChartVersion:
+            type: string
+            title: Helm chart version
+            default: ''
+          helmChartDescription:
+            type: string
+            title: Helm chart description
+            default: ''
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
@@ -1690,16 +1701,6 @@ properties:
             $ref: '#/definitions/cpuQuantity'
           memory:
             $ref: '#/definitions/memoryQuantity'
-      demo-tlspass:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: false
-            type: boolean
-          tlsCert:
-            type: string
-          tlsKey:
-            type: string
       drone:
         additionalProperties: false
         properties:
@@ -2143,29 +2144,12 @@ properties:
             x-secret: '{{ randAlpha 16 }}'
         required:
           - databasePassword
-      hello:
-        description: Hello world demo chart. When you turn this off you may also have to remove the ingress service.
-        properties:
-          enabled:
-            type: boolean
-            default: false
       httpbin:
         description: The famous httpbin application.
         properties:
           enabled:
             type: boolean
             default: false
-      host-mods:
-        properties:
-          enabled:
-            type: boolean
-            default: false
-          certDir:
-            type: string
-            description: The certificate directory to store the ca. Is dependent on distro/image, so check with provider!
-          updateCmd:
-            type: string
-            description: The update command to run after copying the certificates.
       ingress-azure:
         additionalProperties: false
         description: A chart for Azure Application Gateway.
@@ -2360,43 +2344,6 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
-      kubeclarity:
-        description: Kubeclarity security scanning Helm chart.
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          logLevel:
-            enum:
-              - debug
-              - info
-              - warning
-              - error
-              - fatal
-              - panic
-          databasePassword:
-            type: string
-            description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: '{{ randAlphaNum 20 }}'
-          resources:
-            additionalProperties: false
-            properties:
-              kubeclarity:
-                $ref: '#/definitions/resources'
-              cdbScanner:
-                $ref: '#/definitions/resources'
-              vulnerabilityScanner:
-                $ref: '#/definitions/resources'
-              trivyServer:
-                $ref: '#/definitions/resources'
-              sbomDb:
-                $ref: '#/definitions/resources'
-              postgresql:
-                $ref: '#/definitions/resources'
-        required:
-          - databasePassword
       external-secrets:
         additionalProperties: false
         properties:
@@ -2701,6 +2648,17 @@ properties:
                       - username
                       - password
         type: object
+      otomi-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+
       oltp:
         additionalProperties: false
         properties:
@@ -2856,13 +2814,6 @@ properties:
                   - s3
                   - minioLocal
                 default: minioLocal
-      tigera-operator:
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
       thanos:
         properties:
           _rawValues:
