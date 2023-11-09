@@ -56,6 +56,23 @@ appsInfo:
     license: Apache 2.0
     about: Drone is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
     integration: Otomi uses Drone to deploy changes to the configuration (values) repository. Drone is installed and configured by default. When no external source control is configured (default), Otomi will use Gitea as Drone's git hosting dependency. Teams can use Drone for other purposes if desired, with the limitation that it can't be configured for multiple git services.
+    isDeprecated: true
+    deprecationInfo:
+      replacement: tekton
+      message: Drone is deprecated for enhanced performance, maintainability, and integration.
+      reasons:
+        - To improve overall system performance.
+        - To enhance maintainability.
+        - To offer better integration with other Kubernetes components and Otomi.
+      replacementAdvantages:
+        - Superior performance.
+        - Scalability.
+        - Security.
+        - CNCF support.
+        - Easier pipeline configuration and management.
+      options:
+        - To see previous pipeline runs, click 'I understand' and view them in the Drone dashboard.
+        - To see new pipeline runs, navigate to the Tekton dashboard.
   external-dns:
     title: External DNS
     appVersion: 0.10.2
