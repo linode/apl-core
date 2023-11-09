@@ -1,0 +1,33 @@
+{{- if and (eq .Values.serviceMonitor.enabled true) (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "trivy-operator.fullname" . }}
+  namespace: {{ .Values.serviceMonitor.namespace | default (include "trivy-operator.namespace" . ) }}
+  {{- with .Values.serviceMonitor.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "trivy-operator.labels" . | nindent 4 }}
+    {{- with .Values.serviceMonitor.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.serviceMonitor.namespace }}
+  namespaceSelector:
+    matchNames:
+    - {{ include "trivy-operator.namespace" . }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "trivy-operator.selectorLabels" . | nindent 6 }}
+  endpoints:
+  - honorLabels: {{ .Values.serviceMonitor.honorLabels }}
+    port: metrics
+    {{- with .Values.serviceMonitor.interval }}
+    interval: {{ . }}
+    {{- end }}
+    scheme: http
+    {{- with .Values.serviceMonitor.endpointAdditionalProperties }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}

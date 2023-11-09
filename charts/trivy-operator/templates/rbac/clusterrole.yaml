@@ -1,0 +1,20 @@
+{{- if .Values.rbac.create }}
+{{ .Files.Get "generated/role.yaml" }}
+
+{{- if .Values.operator.accessGlobalSecretsAndServiceAccount -}}
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - get
+{{- end }}
+{{- end }}
