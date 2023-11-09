@@ -16,6 +16,9 @@ spec:
       mountPath: /home/app/stack/env
   stepTemplate:
     resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
+    imagePullPolicy: Always
+    image: otomi/core:$(params["OTOMI_VERSION"])
+    workingDir: $(workspaces.source.path)
     envFrom:
     - secretRef:
         name: otomi-sops-secrets
@@ -36,8 +39,6 @@ spec:
       value: '1'
   steps:
     - name: git-clone
-      image: otomi/core:$(params["OTOMI_VERSION"])
-      workingDir: $(workspaces.source.path)
       script: |
         #!/bin/bash
         set -e
@@ -55,26 +56,19 @@ spec:
         {{- else}}
         git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- end }}
-
     - name: bootstrap
-      image: otomi/core:$(params["OTOMI_VERSION"])
-      workingDir: $(workspaces.source.path)
       command:
         - '/bin/bash'
       args:
         - '-c'
         - 'export ENV_DIR=$PWD/values && ../binzx/otomi bootstrap'
     - name: test
-      image: otomi/core:$(params["OTOMI_VERSION"])
-      workingDir: $(workspaces.source.path)
       command:
         - '/bin/bash'
       args:
         - '-c'
         - 'export ENV_DIR=$PWD/values && ../binzx/otomi validate-values'
     - name: apply
-      image: otomi/core:$(params["OTOMI_VERSION"])
-      workingDir: $(workspaces.source.path)
       command:
         - '/bin/bash'
       args:
