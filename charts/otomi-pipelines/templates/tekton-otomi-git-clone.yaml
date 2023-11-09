@@ -16,23 +16,14 @@ spec:
   workspaces:
     - name: source
       mountPath: /home/app/stack/env/
+    - name: gitea-credentials
+      mountPath: /etc/gitea-credentials
   stepTemplate:
     resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
-    env:
-    - name: GITEA_USERNAME
-      valueFrom:
-        secretKeyRef:
-          name: '$(params.giteaCredentialsSecretName)'
-          key: username
-    - name: GITEA_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: '$(params.giteaCredentialsSecretName)'
-          key: password
+    workingDir: $(workspaces.source.path)
+    image: otomi/core:v1.0.0
   steps:
     - name: git-clone
-      image: otomi/core:v1.0.0
-      workingDir: $(workspaces.source.path)
       script: |
         #!/bin/bash
         set -e
@@ -40,7 +31,12 @@ spec:
         # Cleaning up the workdir(if lost+found is present)
         rm -rf *
 
+        # Reading the commit message
         COMMIT_MESSAGE=$1
+
+        # Reading gitea credentials
+        GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
+        GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
 
         # Getting the full repository url
         export fullRepoUrl=$(params["repoUrl"])

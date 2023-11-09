@@ -14,6 +14,8 @@ spec:
   workspaces:
     - name: source
       mountPath: /home/app/stack/env
+    - name: gitea-credentials
+      mountPath: /etc/gitea-credentials
   stepTemplate:
     resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     imagePullPolicy: Always
@@ -23,16 +25,6 @@ spec:
     - secretRef:
         name: otomi-sops-secrets
     env:
-    - name: GITEA_USERNAME
-      valueFrom:
-        secretKeyRef:
-          name: '$(params.giteaCredentialsSecretName)'
-          key: username
-    - name: GITEA_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: '$(params.giteaCredentialsSecretName)'
-          key: password
     - name: CI
       value: $(params["CI"])
     - name: IN_DOCKER
@@ -45,6 +37,10 @@ spec:
 
         # Cleaning up the workdir. If any folder is there (like lost+found) it will cause the git clone to fail
         rm -rf *
+
+        # Reading gitea credentials
+        GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
+        GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
 
         # Parsing the repo url
         export fullRepoUrl=$(params["repoUrl"])

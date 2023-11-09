@@ -26,9 +26,10 @@ spec:
             value: $(tt.params.repoUrl)
           - name: commitMessage
             value: $(tt.params.commitMessage)
-          - name: giteaCredentialsSecretName
-            value: $(tt.params.giteaCredentialsSecretName)
         workspaces:
           - name: source
             emptyDir: {}
+          - name: gitea-credentials
+            secret:
+              secretName: $(tt.params.giteaCredentialsSecretName)
         podTemplate: {{- toYaml .Values.podSecurityContext | nindent 10 }}
