@@ -64,10 +64,10 @@ k8s:
     - name: kured
       app: kured
       disableIstioInjection: true
-    # - name: tekton-pipelines
-    #   app: tekton
-    #   disableIstioInjection: true
-    #   disablePolicyChecks: true
+    - name: tekton-pipelines
+      app: tekton
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: tekton-triggers
       app: tekton
       disableIstioInjection: true
