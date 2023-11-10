@@ -13,12 +13,14 @@ spec:
       description: Gitea Credentials Secret Name
       default: "gitea-credentials"
   resourcetemplates:
-    - apiVersion: tekton.dev/v1beta1
+    - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
         generateName: otomi-pipeline-run-
       spec:
-        serviceAccountName: otomi-tekton-tasks-sa
+        taskRunTemplate:
+          serviceAccountName: otomi-tekton-tasks-sa
+          podTemplate: {{- toYaml .Values.podSecurityContext | nindent 12 }}
         pipelineRef:
           name: otomi-pipeline
         params:
@@ -34,4 +36,3 @@ spec:
           - name: gitea-credentials
             secret:
               secretName: $(tt.params.giteaCredentialsSecretName)
-        podTemplate: {{- toYaml .Values.podSecurityContext | nindent 10 }}

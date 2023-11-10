@@ -1,6 +1,6 @@
 {{- $kms := .Values.kms | default dict }}
 
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: otomi-task
@@ -17,7 +17,7 @@ spec:
     - name: gitea-credentials
       mountPath: /etc/gitea-credentials
   stepTemplate:
-    resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
+    computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     imagePullPolicy: Always
     image: otomi/core:$(params["OTOMI_VERSION"])
     workingDir: $(workspaces.source.path)

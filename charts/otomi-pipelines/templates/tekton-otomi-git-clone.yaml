@@ -1,4 +1,4 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: otomi-git-clone
@@ -19,7 +19,7 @@ spec:
     - name: gitea-credentials
       mountPath: /etc/gitea-credentials
   stepTemplate:
-    resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
+    computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     workingDir: $(workspaces.source.path)
     image: otomi/core:v1.0.0
   steps:
