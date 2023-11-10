@@ -18,6 +18,12 @@ releases:
     labels:
       pkg: argocd
     <<: *default
+  - name: otomi-operator
+    installed: true
+    namespace: otomi-operator
+    labels:
+      pkg: otomi-operator
+    <<: *default
   - name: external-secrets
     installed: {{ $a | get "external-secrets.enabled" }}
     namespace: external-secrets
