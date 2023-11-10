@@ -418,7 +418,6 @@ definitions:
   idName:
     description: A lowercase name that starts with a letter and may contain dashes.
     pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
-    maxLength: 12
     type: string
   image:
     additionalProperties: false
