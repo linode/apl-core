@@ -141,6 +141,8 @@ spec:
           name: verification-secrets
           readOnly: true
         image: {{ .Values.controller.deployment.image }}
+        resources: {{ toYaml .Values.controller.resources | nindent 10 }}
+
       nodeSelector:
           {{- with .Values.controller.nodeSelector }}
             {{- toYaml . |  nindent 8 }}
