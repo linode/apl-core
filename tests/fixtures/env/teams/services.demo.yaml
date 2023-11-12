@@ -104,3 +104,19 @@ teamConfig:
                       set:
                           - name: someheader
                             value: somevalue
+            - ingressClassName: platform
+              ksvc:
+                  predeployed: false
+              name: hello-blue-green
+              networkPolicy:
+                  ingressPrivate:
+                      mode: DenyAll
+              ownHost: true
+              useCname: false
+              paths: []
+              port: 80
+              type: public
+              trafficControl:
+                  enabled: true
+                  weightV1: 90
+                  weightV2: 10

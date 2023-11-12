@@ -1009,6 +1009,19 @@ definitions:
         example: arn:aws:acm:eu-central-1:xxx:certificate/xxx
         pattern: 'arn:aws(-cn|-us-gov)?:acm:\S+:\d+:\w+\/\S+'
         type: string
+      trafficControl:
+        title: Traffic Control
+        description: Split traffic between multiple services (blue/green, canary)
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          weightV1:
+            type: integer
+            default: 90
+          weightV2:
+            type: integer
+            default: 10
       certName:
         description: The name of a TLS secret known to exist in the team namespace.
         example: www-example-com
