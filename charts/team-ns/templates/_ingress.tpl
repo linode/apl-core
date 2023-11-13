@@ -170,7 +170,7 @@ spec:
           {{- if hasKey $secrets $domain }}
             {{- if ne (index $secrets $domain) "" }}
 {{/*If a team provides its own certificate in the team namespace then Otomi cornjob makes a copy of it*/}} 
-      secretName: copy-{{ $v.teamId }}-{{ index $secrets $domain }}
+      secretName: copy-team-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}
             {{- if eq $cm.issuer "byo-wildcard-cert" }}
