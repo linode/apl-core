@@ -1,0 +1,62 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tekton-pipelines-webhook-cluster-access
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-pipelines
+rules:
+  # The webhook needs to be able to get and update customresourcedefinitions,
+  # mainly to update the webhook certificates.
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions", "customresourcedefinitions/status"]
+    verbs: ["get", "update", "patch"]
+    resourceNames:
+      - pipelines.tekton.dev
+      - pipelineruns.tekton.dev
+      - tasks.tekton.dev
+      - clustertasks.tekton.dev
+      - taskruns.tekton.dev
+      - resolutionrequests.resolution.tekton.dev
+      - customruns.tekton.dev
+      - verificationpolicies.tekton.dev
+      - stepactions.tekton.dev
+  # knative.dev/pkg needs list/watch permissions to set up informers for the webhook.
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["list", "watch"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    # The webhook performs a reconciliation on these two resources and continuously
+    # updates configuration.
+    resources: ["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
+    # knative starts informers on these things, which is why we need get, list and watch.
+    verbs: ["list", "watch"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    # This mutating webhook is responsible for applying defaults to tekton objects
+    # as they are received.
+    resourceNames: ["webhook.pipeline.tekton.dev"]
+    # When there are changes to the configs or secrets, knative updates the mutatingwebhook config
+    # with the updated certificates or the refreshed set of rules.
+    verbs: ["get", "update", "delete"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["validatingwebhookconfigurations"]
+    # validation.webhook.pipeline.tekton.dev performs schema validation when you, for example, create TaskRuns.
+    # config.webhook.pipeline.tekton.dev validates the logging configuration against knative's logging structure
+    resourceNames: ["validation.webhook.pipeline.tekton.dev", "config.webhook.pipeline.tekton.dev"]
+    # When there are changes to the configs or secrets, knative updates the validatingwebhook config
+    # with the updated certificates or the refreshed set of rules.
+    verbs: ["get", "update", "delete"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get"]
+    # The webhook configured the namespace as the OwnerRef on various cluster-scoped resources,
+    # which requires we can Get the system namespace.
+    resourceNames: ["tekton-pipelines"]
+  - apiGroups: [""]
+    resources: ["namespaces/finalizers"]
+    verbs: ["update"]
+    # The webhook configured the namespace as the OwnerRef on various cluster-scoped resources,
+    # which requires we can update the system namespace finalizers.
+    resourceNames: ["tekton-pipelines"]

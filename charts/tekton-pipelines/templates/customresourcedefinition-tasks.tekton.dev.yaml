@@ -1,0 +1,80 @@
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tasks.tekton.dev
+  labels:
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/part-of: tekton-pipelines
+    pipeline.tekton.dev/release: "v0.53.0"
+    version: "v0.53.0"
+spec:
+  group: tekton.dev
+  preserveUnknownFields: false
+  versions:
+    - name: v1beta1
+      served: true
+      storage: false
+      schema:
+        openAPIV3Schema:
+          type: object
+          # One can use x-kubernetes-preserve-unknown-fields: true
+          # at the root of the schema (and inside any properties, additionalProperties)
+          # to get the traditional CRD behaviour that nothing is pruned, despite
+          # setting spec.preserveUnknownProperties: false.
+          #
+          # See https://kubernetes.io/blog/2019/06/20/crd-structural-schema/
+          # See issue: https://github.com/knative/serving/issues/912
+          x-kubernetes-preserve-unknown-fields: true
+      # Opt into the status subresource so metadata.generation
+      # starts to increment
+      subresources:
+        status: {}
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          # TODO(#1461): Add OpenAPIV3 schema
+          # OpenAPIV3 schema allows Kubernetes to perform validation on the schema fields
+          # and use the schema in tooling such as `kubectl explain`.
+          # Using "x-kubernetes-preserve-unknown-fields: true"
+          # at the root of the schema (or within it) allows arbitrary fields.
+          # We currently perform our own validation separately.
+          # See https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/#specifying-a-structural-schema
+          # for more info.
+          x-kubernetes-preserve-unknown-fields: true
+      # Opt into the status subresource so metadata.generation
+      # starts to increment
+      subresources:
+        status: {}
+  names:
+    kind: Task
+    plural: tasks
+    singular: task
+    categories:
+      - tekton
+      - tekton-pipelines
+  scope: Namespaced
+  conversion:
+    strategy: Webhook
+    webhook:
+      conversionReviewVersions: ["v1beta1", "v1"]
+      clientConfig:
+        service:
+          name: tekton-pipelines-webhook
+          namespace: tekton-pipelines
