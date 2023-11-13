@@ -2,4 +2,4 @@ apiVersion: v1
 appVersion: "v0.40.1"
 description: A Helm chart for Kubernetes
 name: tekton-dashboard
-version: "0.1.0"
+version: "v0.40.1"
