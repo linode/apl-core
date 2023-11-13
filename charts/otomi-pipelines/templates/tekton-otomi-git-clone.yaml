@@ -1,4 +1,4 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: otomi-git-clone
@@ -16,23 +16,14 @@ spec:
   workspaces:
     - name: source
       mountPath: /home/app/stack/env/
+    - name: gitea-credentials
+      mountPath: /etc/gitea-credentials
   stepTemplate:
-    resources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
-    env:
-    - name: GITEA_USERNAME
-      valueFrom:
-        secretKeyRef:
-          name: '$(params.giteaCredentialsSecretName)'
-          key: username
-    - name: GITEA_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: '$(params.giteaCredentialsSecretName)'
-          key: password
+    computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
+    workingDir: $(workspaces.source.path)
+    image: otomi/core:v1.0.0
   steps:
     - name: git-clone
-      image: otomi/core:v1.0.0
-      workingDir: $(workspaces.source.path)
       script: |
         #!/bin/bash
         set -e
@@ -40,7 +31,12 @@ spec:
         # Cleaning up the workdir(if lost+found is present)
         rm -rf *
 
+        # Reading the commit message
         COMMIT_MESSAGE=$1
+
+        # Reading gitea credentials
+        GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
+        GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
 
         # Getting the full repository url
         export fullRepoUrl=$(params["repoUrl"])
@@ -51,9 +47,9 @@ spec:
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
-          git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- else}}
-          git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- end }}
 
         # Checking if the next steps should run or skipped 

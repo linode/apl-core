@@ -1,4 +1,4 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: otomi-pipeline
@@ -6,6 +6,7 @@ metadata:
 spec:
   workspaces:
     - name: source
+    - name: gitea-credentials
   params:
     - name: repoUrl
     - name: commitMessage
@@ -24,6 +25,8 @@ spec:
       workspaces:
         - name: source
           workspace: source
+        - name: gitea-credentials
+          workspace: gitea-credentials
     - name: otomi-task
       params:
         - name: repoUrl
@@ -39,6 +42,8 @@ spec:
       workspaces:
         - name: source
           workspace: source
+        - name: gitea-credentials
+          workspace: gitea-credentials
       runAfter:
         - otomi-git-clone
       when:
