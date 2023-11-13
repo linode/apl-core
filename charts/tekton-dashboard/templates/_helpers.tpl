@@ -26,7 +26,7 @@ The longest name that gets created adds and extra 37 characters, so truncation s
 
 {{- define "tekton-dashboard.svcname" -}}
 {{- if .Values.teamId -}}
-{{- printf "%s-%s" .Values.teamId "tekton-dashboard" | trunc 26 | trimSuffix "-" -}}
+{{- printf "%s-%s" .Values.teamId "tekton-dashboard" | trunc 32 | trimSuffix "-" -}}
 {{- else -}}
 {{- printf "tekton-dashboard" -}}
 {{- end -}}
