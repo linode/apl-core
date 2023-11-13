@@ -1414,10 +1414,9 @@ definitions:
             description: Enable Auto Image Updater
             type: boolean
             default: false
-          build:
-            $ref: '#/definitions/wordCharacterPattern'
-          tag:
-            description: Tag of the build. Only if strategy is digest.
+          imageRepository:
+            type: string
+            description: The container image repository name
             $ref: '#/definitions/wordCharacterPattern'
           versionConstraint:
             $ref: '#/definitions/wordCharacterPattern'

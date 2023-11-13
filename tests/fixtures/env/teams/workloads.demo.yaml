@@ -11,7 +11,7 @@ teamConfig:
                           tag: latest
                       type: digest
                   enabled: true
-                  build: hello
+                  imageRepository: harbor.try-otomi.net/team-orange/blue
             - name: wd2
               url: https://myrepo.local/mychart.git
               path: ./
@@ -22,7 +22,7 @@ teamConfig:
                       semver:
                           versionConstraint: '1.12'
                   enabled: true
-                  build: hello
+                  imageRepository: harbor.try-otomi.net/team-orange/green
             - name: wd3
               url: https://myrepo.local/mychart.git
               path: ./
@@ -31,7 +31,7 @@ teamConfig:
                   strategy:
                       type: latest
                   enabled: true
-                  build: hello
+                  imageRepository: harbor.try-otomi.net/team-orange/blue
             - name: wd
               url: https://myrepo.local/mychart.git
               path: ./
