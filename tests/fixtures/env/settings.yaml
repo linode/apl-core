@@ -107,10 +107,10 @@ bootstrap:
     gitea:
         workloadCatalog:
             from: https://github.com/my-charts.git
-    repos:
-        - name: mycode
-          team: demo
-          from: https://github.com/mycode.git
+        repos:
+            - name: mycode
+              team: demo
+              from: https://github.com/mycode.git
 status:
     helm:
         drone/drone:

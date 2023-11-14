@@ -4001,10 +4001,13 @@ properties:
               schedule:
                 $ref: '#/definitions/backupSchedule'
   bootstrap:
+    additionalProperties: false
     properties:
       gitea:
+        additionalProperties: false
         properties:
           workloadCatalog:
+            additionalProperties: false
             properties:
               from:
                 description: Clone git repo from
@@ -4015,6 +4018,7 @@ properties:
           repos:
             type: array
             items:
+              additionalProperties: false
               properties:
                 name:
                   type: string
