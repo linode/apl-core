@@ -103,6 +103,14 @@ smtp:
     from: no-reply@doma.in
     hello: doma.in
     smarthost: smtp-relay.gmail.com:587
+bootstrap:
+    gitea:
+        workloadCatalog:
+            from: https://github.com/my-charts.git
+    repos:
+        - name: mycode
+          team: demo
+          from: https://github.com/mycode.git
 status:
     helm:
         drone/drone:
