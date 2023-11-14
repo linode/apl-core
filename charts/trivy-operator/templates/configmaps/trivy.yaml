@@ -1,0 +1,121 @@
+{{- if eq .Values.trivyOperator.vulnerabilityReportsPlugin "Trivy" }}
+{{- if .Values.trivy.createConfig }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trivy-operator-trivy-config
+  namespace: {{ include "trivy-operator.namespace" $ }}
+  labels: {{- include "trivy-operator.labels" $ | nindent 4 }}
+data:
+  trivy.repository: "{{ required ".Values.trivy.image.registry is required" ( include "global.imageRegistry" . | default .Values.trivy.image.registry ) }}/{{ required ".Values.trivy.image.repository is required" .Values.trivy.image.repository }}"
+  trivy.tag: {{ required ".Values.trivy.image.tag is required" .Values.trivy.image.tag | quote }}
+  {{- with .Values.trivy.image.imagePullSecret }}
+  trivy.imagePullSecret: {{ . | quote }}
+  {{- end }}
+   {{- with .Values.trivy.image.pullPolicy }}
+  trivy.imagePullPolicy: {{ . | quote }}
+  {{- end }}
+  trivy.additionalVulnerabilityReportFields: {{ .Values.trivy.additionalVulnerabilityReportFields | quote}}
+  {{- with .Values.trivy.httpProxy }}
+  trivy.httpProxy: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.httpsProxy }}
+  trivy.httpsProxy: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.serverInsecure }}
+  trivy.serverInsecure: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.sslCertDir }}
+  trivy.sslCertDir: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.noProxy }}
+  trivy.noProxy: {{ . | quote }}
+  {{- end }}
+  {{- range $key, $registry := .Values.trivy.nonSslRegistries }}
+  trivy.nonSslRegistry.{{ $key }}: {{ $registry | quote }}
+  {{- end }}
+  {{- range $key, $registry := .Values.trivy.insecureRegistries }}
+  trivy.insecureRegistry.{{ $key }}: {{ $registry | quote }}
+  {{- end }}
+  {{- range $key, $registry := .Values.trivy.registry.mirror }}
+  trivy.registry.mirror.{{ $key }}: {{ $registry | quote }}
+  {{- end }}
+  trivy.severity: {{ .Values.trivy.severity | quote }}
+  trivy.slow: {{ .Values.trivy.slow | quote }}
+  trivy.skipJavaDBUpdate: {{ .Values.trivy.skipJavaDBUpdate | quote }}
+  trivy.dbRepository: "{{ .Values.trivy.dbRegistry }}/{{ .Values.trivy.dbRepository }}"
+  trivy.javaDbRepository: "{{ .Values.trivy.javaDbRegistry }}/{{ .Values.trivy.javaDbRepository }}"
+  trivy.command: {{ .Values.trivy.command | quote }}
+  {{- with .Values.trivy.skipDirs }}
+  trivy.skipDirs: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.vulnType }}
+  trivy.vulnType: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.dbRepositoryInsecure }}
+  trivy.dbRepositoryInsecure: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.useBuiltinRegoPolicies }}
+  trivy.useBuiltinRegoPolicies: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.offlineScan }}
+  trivy.offlineScan: {{ . | quote }}
+  {{- end }}
+  trivy.supportedConfigAuditKinds: {{ .Values.trivy.supportedConfigAuditKinds | quote }}
+  {{- with .Values.trivy.ignoreUnfixed }}
+  trivy.ignoreUnfixed: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.timeout }}
+  trivy.timeout: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivy.ignoreFile }}
+  trivy.ignoreFile: |
+    {{- . | trim | nindent 4 }}
+  {{- end }}
+  {{- range $k, $v := .Values.trivy }}
+  {{- if hasPrefix "ignorePolicy" $k }}
+  trivy.{{- $k }}: |
+    {{- $v | trim | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.operator.builtInTrivyServer }}
+  trivy.serverURL: {{ printf "http://%s.%s:%s" .Values.trivy.serverServiceName (include "trivy-operator.namespace" .) "4954"  | quote }}
+  trivy.mode: "ClientServer"
+  {{- else }}
+  trivy.mode: {{ .Values.trivy.mode | quote }}
+  {{- if eq .Values.trivy.mode "ClientServer" }}
+  trivy.serverURL: {{ required ".Values.trivy.serverURL is required" .Values.trivy.serverURL | quote }}
+  {{- with .Values.trivy.clientServerSkipUpdate }}
+  trivy.clientServerSkipUpdate: {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- with dig "resources" "requests" "cpu" "" .Values.trivy }}
+  trivy.resources.requests.cpu: {{ . | quote }}
+  {{- end }}
+  {{- with dig "resources" "requests" "memory" "" .Values.trivy }}
+  trivy.resources.requests.memory: {{ . | quote }}
+  {{- end }}
+  {{- with dig "resources" "requests" "ephemeralStorage" "" .Values.trivy }}
+  trivy.resources.requests.ephemeral-storage: {{ . | quote }}
+  {{- end }}
+  {{- with dig "resources" "limits" "cpu" "" .Values.trivy }}
+  trivy.resources.limits.cpu: {{ . | quote }}
+  {{- end }}
+  {{- with dig "resources" "limits" "memory" "" .Values.trivy }}
+  trivy.resources.limits.memory: {{ . | quote }}
+  {{- end }}
+  {{- with dig "resources" "limits" "ephemeralStorage" "" .Values.trivy }}
+  trivy.resources.limits.ephemeral-storage: {{ . | quote }}
+  {{- end }}
+  {{- if .Values.operator.builtInTrivyServer }}
+  TRIVY_LISTEN: "0.0.0.0:4954"
+  TRIVY_CACHE_DIR: "/home/scanner/.cache/trivy"
+  TRIVY_DEBUG: {{ .Values.trivy.debug | quote }}
+  TRIVY_SKIP_DB_UPDATE: "false"
+  TRIVY_DB_REPOSITORY: "{{ .Values.trivy.dbRegistry }}/{{ .Values.trivy.dbRepository }}"
+  {{- end }}
+{{- end }}
+{{- end }}
