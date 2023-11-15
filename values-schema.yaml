@@ -1442,8 +1442,7 @@ definitions:
                 enum:
                   - semver
                   - digest
-                  - latest
-                default: latest
+                default: digest
             required:
               - type
     required:

@@ -27,11 +27,6 @@ teamConfig:
               url: https://myrepo.local/mychart.git
               path: ./
               revision: main
-              autoUpdate:
-                  strategy:
-                      type: latest
-                  enabled: true
-                  imageRepository: harbor.try-otomi.net/team-orange/blue
             - name: wd
               url: https://myrepo.local/mychart.git
               path: ./
