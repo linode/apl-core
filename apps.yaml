@@ -319,12 +319,12 @@ appsInfo:
     integration: Otomi installs and configures Thanos in a Remote Write setup. The Receiver is exposed for external Prometheus instances to upload metrics in real-time. By default Thanos Object Store is configured to use the thanos bucket of the local Minio instance. When Thanos is enabled, an extra data source is added to Grafana for Thanos Query.
   trivy:
     title: Trivy Operator
-    appVersion: 0.11.0
+    appVersion: 0.16.4
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:
       - https://otomi.io/docs/apps/trivy-operator
-      - https://aquasecurity.github.io/trivy-operator/v0.11.0/
+      - https://aquasecurity.github.io/trivy-operator/v0.16.4/
     license: Apache 2.0
     dependencies: Prometheus, Grafana
     about: Trivy Operator continuously scans your Kubernetes cluster for security issues, and generates security reports as Kubernetes Custom Resources. It does it by watching Kubernetes for state changes and automatically triggering scans in response to changes.
