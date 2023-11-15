@@ -1,9 +1,9 @@
 apiVersion: v2
-appVersion: v1.68.0
+appVersion: v1.76.0
 description: Kiali is an open source project for service mesh observability, refer
   to https://www.kiali.io for details.
 home: https://github.com/kiali/kiali-operator
-icon: https://raw.githubusercontent.com/kiali/kiali.io/master/themes/kiali/static/img/kiali_logo_masthead.png
+icon: https://raw.githubusercontent.com/kiali/kiali.io/current/assets/icons/logo.svg
 keywords:
 - istio
 - kiali
@@ -17,4 +17,4 @@ sources:
 - https://github.com/kiali/kiali
 - https://github.com/kiali/kiali-operator
 - https://github.com/kiali/helm-charts
-version: 1.68.0
+version: 1.76.0
