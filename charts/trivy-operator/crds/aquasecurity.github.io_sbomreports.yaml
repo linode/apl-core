@@ -1,0 +1,328 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: null
+  name: sbomreports.aquasecurity.github.io
+spec:
+  group: aquasecurity.github.io
+  names:
+    kind: SbomReport
+    listKind: SbomReportList
+    plural: sbomreports
+    shortNames:
+    - sbom
+    - sboms
+    singular: sbomreport
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: The name of image repository
+      jsonPath: .report.artifact.repository
+      name: Repository
+      type: string
+    - description: The name of image tag
+      jsonPath: .report.artifact.tag
+      name: Tag
+      type: string
+    - description: The name of the sbom generation scanner
+      jsonPath: .report.scanner.name
+      name: Scanner
+      type: string
+    - description: The age of the report
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: The number of dependencies in bom
+      jsonPath: .report.summary.componentsCount
+      name: Components
+      priority: 1
+      type: integer
+    - description: The the number of components in bom
+      jsonPath: .report.summary.dependenciesCount
+      name: Dependencies
+      priority: 1
+      type: integer
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: SbomReport summarizes components and dependencies found in container
+          image
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          report:
+            description: Report is the actual sbom report data.
+            properties:
+              artifact:
+                description: Artifact represents a standalone, executable package
+                  of software that includes everything needed to run an application.
+                properties:
+                  digest:
+                    description: Digest is a unique and immutable identifier of an
+                      Artifact.
+                    type: string
+                  mimeType:
+                    description: MimeType represents a type and format of an Artifact.
+                    type: string
+                  repository:
+                    description: Repository is the name of the repository in the Artifact
+                      registry.
+                    type: string
+                  tag:
+                    description: Tag is a mutable, human-readable string used to identify
+                      an Artifact.
+                    type: string
+                type: object
+              components:
+                description: Bom isartifact bill of materials.
+                properties:
+                  bomFormat:
+                    type: string
+                  components:
+                    items:
+                      properties:
+                        bom-ref:
+                          type: string
+                        group:
+                          type: string
+                        hashes:
+                          items:
+                            properties:
+                              alg:
+                                type: string
+                              content:
+                                type: string
+                            type: object
+                          type: array
+                        licenses:
+                          items:
+                            properties:
+                              expression:
+                                type: string
+                              license:
+                                properties:
+                                  id:
+                                    type: string
+                                  name:
+                                    type: string
+                                  url:
+                                    type: string
+                                type: object
+                            type: object
+                          type: array
+                        name:
+                          type: string
+                        properties:
+                          items:
+                            properties:
+                              name:
+                                type: string
+                              value:
+                                type: string
+                            type: object
+                          type: array
+                        purl:
+                          type: string
+                        supplier:
+                          properties:
+                            contact:
+                              items:
+                                properties:
+                                  email:
+                                    type: string
+                                  name:
+                                    type: string
+                                  phone:
+                                    type: string
+                                type: object
+                              type: array
+                            name:
+                              type: string
+                            url:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        type:
+                          type: string
+                        version:
+                          type: string
+                      type: object
+                    type: array
+                  dependencies:
+                    items:
+                      properties:
+                        dependsOn:
+                          items:
+                            type: string
+                          type: array
+                        ref:
+                          type: string
+                      type: object
+                    type: array
+                  metadata:
+                    properties:
+                      component:
+                        properties:
+                          bom-ref:
+                            type: string
+                          group:
+                            type: string
+                          hashes:
+                            items:
+                              properties:
+                                alg:
+                                  type: string
+                                content:
+                                  type: string
+                              type: object
+                            type: array
+                          licenses:
+                            items:
+                              properties:
+                                expression:
+                                  type: string
+                                license:
+                                  properties:
+                                    id:
+                                      type: string
+                                    name:
+                                      type: string
+                                    url:
+                                      type: string
+                                  type: object
+                              type: object
+                            type: array
+                          name:
+                            type: string
+                          properties:
+                            items:
+                              properties:
+                                name:
+                                  type: string
+                                value:
+                                  type: string
+                              type: object
+                            type: array
+                          purl:
+                            type: string
+                          supplier:
+                            properties:
+                              contact:
+                                items:
+                                  properties:
+                                    email:
+                                      type: string
+                                    name:
+                                      type: string
+                                    phone:
+                                      type: string
+                                  type: object
+                                type: array
+                              name:
+                                type: string
+                              url:
+                                items:
+                                  type: string
+                                type: array
+                            type: object
+                          type:
+                            type: string
+                          version:
+                            type: string
+                        type: object
+                      timestamp:
+                        type: string
+                      tools:
+                        items:
+                          properties:
+                            name:
+                              type: string
+                            vendor:
+                              type: string
+                            version:
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  serialNumber:
+                    type: string
+                  specVersion:
+                    type: string
+                  version:
+                    type: integer
+                required:
+                - bomFormat
+                - specVersion
+                type: object
+              registry:
+                description: Registry is the registry the Artifact was pulled from.
+                properties:
+                  server:
+                    description: Server the FQDN of registry server.
+                    type: string
+                type: object
+              scanner:
+                description: Scanner is the scanner that generated this report.
+                properties:
+                  name:
+                    description: Name the name of the scanner.
+                    type: string
+                  vendor:
+                    description: Vendor the name of the vendor providing the scanner.
+                    type: string
+                  version:
+                    description: Version the version of the scanner.
+                    type: string
+                required:
+                - name
+                - vendor
+                - version
+                type: object
+              summary:
+                description: Summary is a summary of sbom report.
+                properties:
+                  componentsCount:
+                    description: ComponentsCount is the number of components in bom.
+                    minimum: 0
+                    type: integer
+                  dependenciesCount:
+                    description: DependenciesCount is the number of dependencies in
+                      bom.
+                    minimum: 0
+                    type: integer
+                required:
+                - componentsCount
+                - dependenciesCount
+                type: object
+              updateTimestamp:
+                description: UpdateTimestamp is a timestamp representing the server
+                  time in UTC when this report was updated.
+                format: date-time
+                type: string
+            required:
+            - artifact
+            - components
+            - scanner
+            - summary
+            - updateTimestamp
+            type: object
+        required:
+        - report
+        type: object
+    served: true
+    storage: true
+    subresources: {}
