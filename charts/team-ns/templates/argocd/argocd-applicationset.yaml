@@ -22,7 +22,7 @@ spec:
       annotations:
         argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.force-update: 'true'
         argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.pull-secret: 'pullsecret:argocd/copy-team-{{ $v.teamId }}-harbor-pullsecret'
-        argocd-image-updater.argoproj.io/git-branch: '{{ .revision }}'
+        argocd-image-updater.argoproj.io/git-branch: main
         argocd-image-updater.argoproj.io/write-back-method: 'git:secret:argocd/team-{{ $v.teamId }}-gitea-repo-creds'
         {{- if eq $a.strategy.type "semver" }}
         argocd-image-updater.argoproj.io/image-list: 'team-{{ $v.teamId }}-{{ .name }}={{ $a.imageRepository }}:~{{ $a.strategy.semver.versionConstraint }}'
