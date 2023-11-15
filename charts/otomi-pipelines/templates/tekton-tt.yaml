@@ -12,11 +12,13 @@ spec:
     - name: giteaCredentialsSecretName
       description: Gitea Credentials Secret Name
       default: "gitea-credentials"
+    - name: commitId
+      description: "Commit ID"
   resourcetemplates:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
-        generateName: otomi-pipeline-run-
+        generateName: $(tt.params.commitId)-
       spec:
         taskRunTemplate:
           serviceAccountName: otomi-tekton-tasks-sa

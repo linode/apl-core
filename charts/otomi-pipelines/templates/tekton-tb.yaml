@@ -9,3 +9,5 @@ spec:
       value: $(body.repository.clone_url)
     - name: commitMessage
       value: $(body.head_commit.message)
+    - name: commitId
+      value: $(body.head_commit.id)
