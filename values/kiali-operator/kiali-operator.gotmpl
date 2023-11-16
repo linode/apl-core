@@ -32,33 +32,19 @@ cr:
       resources: {{- $k.resources.pod | toYaml  | nindent 8 }}
       verbose_mode: "4"
     external_services:
-      grafana:
-        auth:
-          insecure_skip_verify: {{ $v._derived.untrustedCA }}
-          type: bearer
-        dashboards:
-          - name: Istio Service Dashboard
-          - name: Istio Workload Dashboard
-          - name: Istio Mesh Dashboard
-          - name: Istio Control Plane Dashboard
-          - name: Istio Performance Dashboard
-          - name: Istio Wasm Extension Dashboard
-        enabled: true
-        in_cluster_url: http://po-grafana.grafana
-        is_core: false
-        url: https://grafana.{{ $v.cluster.domainSuffix }}/?orgId=1
       istio:
         component_status:
           enabled: true
           components:
           - app_label: istiod
             is_core: true
-          - app_label: istio-ingressgateway-public
+            namespace: istio-system
+          - app_label: ingressgateway
             is_core: true
-            is_proxy: true
+            is_proxy: false
             namespace: istio-system
           {{ if $v.apps.istio.egressGateway.enabled }}
-          - app_label: istio-egressgateway
+          - app_label: egressgateway
             is_core: false
             is_proxy: true
             namespace: istio-system
@@ -77,10 +63,9 @@ cr:
         in_cluster_url: "http://query-frontend.tempo:3100"
         provider: tempo
         use_grpc: false
-        url: "http://grafana.{{ $v.cluster.domainSuffix }}"
+        url: "http://grafana.{{ $v.cluster.domainSuffix }}/explore?orgId=1&left=%7B%22datasource%22:%22tempo%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22datasource%22:%7B%22type%22:%22tempo%22,%22uid%22:%22tempo%22%7D%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D"
     istio_component_namespaces:
       prometheus: monitoring
-      grafana: grafana
     istio_namespace: istio-system
     kiali_feature_flags:
       certificates_information_indicators:
@@ -89,7 +74,7 @@ cr:
         - cacerts
         - istio-ca-secret
     server:
-      web_root: /kiali
+      web_root: ""
       web_fqdn: kiali.{{ $v.cluster.domainSuffix }}
 
 resources: {{- $k.resources.operator | toYaml  | nindent 2 }}

@@ -270,17 +270,17 @@ environments:
             resources:
               pod:
                   requests:
-                      cpu: 50m
+                      cpu: 200m
                       memory: 128Mi
                   limits:
-                      cpu: 200m
+                      cpu: 500m
                       memory: 256Mi
               operator:
                   requests:
-                      cpu: 50m
-                      memory: 256Mi
+                      cpu: 1000m
+                      memory: 512Mi
                   limits:
-                      cpu: 200m
+                      cpu: 2000m
                       memory: 1Gi
           knative:
             enabled: false
