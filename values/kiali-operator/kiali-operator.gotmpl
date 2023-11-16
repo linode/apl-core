@@ -32,6 +32,8 @@ cr:
       resources: {{- $k.resources.pod | toYaml  | nindent 8 }}
       verbose_mode: "4"
     external_services:
+      grafana:
+        enabled: false
       istio:
         component_status:
           enabled: true
