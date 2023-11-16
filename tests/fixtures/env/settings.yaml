@@ -22,8 +22,7 @@ dns:
     domainFilters:
         - otomi.cloud
     provider:
-        civo:
-            apiToken: xvxvxvxvxvxvxvxvxvxvxvxvx
+        civo: {}
 e2e:
     enabled: false
 home:

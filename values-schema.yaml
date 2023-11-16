@@ -3362,7 +3362,7 @@ properties:
             properties:
               civo:
                 properties:
-                  apiKey:
+                  apiToken:
                     type: string
                     x-secret: ''
                 required:
