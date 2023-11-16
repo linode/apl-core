@@ -12,8 +12,6 @@ apps:
     enabled: true
   harbor:
     enabled: true
-  tekton:
-    enabled: true
 teamConfig:
   demo:
     password: somesecretvalue
