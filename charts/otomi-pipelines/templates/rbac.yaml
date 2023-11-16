@@ -1,0 +1,38 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: otomi-triggers-eventlistener-binding
+  namespace: otomi-pipelines
+subjects:
+  - kind: ServiceAccount
+    name: otomi-tekton-triggers-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-eventlistener-roles
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otomi-triggers-eventlistener-clusterbinding
+subjects:
+  - kind: ServiceAccount
+    name: otomi-tekton-triggers-sa
+    namespace: otomi-pipelines
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tekton-triggers-eventlistener-clusterroles
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otomi-tasks-eventlistener-clusterbinding
+subjects:
+  - kind: ServiceAccount
+    name: otomi-tekton-tasks-sa
+    namespace: otomi-pipelines
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin

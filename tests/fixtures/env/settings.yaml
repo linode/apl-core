@@ -24,7 +24,7 @@ dns:
     provider:
         civo: {}
 e2e:
-    enabled: true
+    enabled: false
 home:
     email: {}
     receivers:

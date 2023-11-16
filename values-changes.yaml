@@ -96,6 +96,7 @@ changes:
       - apps.keycloak.postgresql
   - version: 16
     deletions:
+      - apps.tekton.enabled
       - apps.demo-tlspass
       - apps.hello
       - apps.host-mods
@@ -103,3 +104,5 @@ changes:
       - apps.tigera-operator
       - apps.kubeapps
       - platformBackups.persistentVolumes.kubeapps
+    additions:
+      - apps.drone.enabled: true

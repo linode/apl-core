@@ -1,5 +1,6 @@
 apps:
     drone:
+        enabled: true
         adminUser: somesecretvalue
         debug: false
         orgsFilter: redkubes

@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-defaults
-  namespace: tekton-pipelines
-data:
-  helmTemplateRemoveMe: |
-    {{- toYaml .Values.configDefaults | nindent 2 }}

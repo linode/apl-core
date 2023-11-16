@@ -1,3 +1,2 @@
 apps:
-    tekton:
-        enabled: true
+    tekton: {}
