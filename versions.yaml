@@ -1,4 +1,4 @@
-api: dron-2-tekton
+api: main
 console: main
-tasks: tekton-hook
+tasks: main
 tools: 1.6.0
