@@ -59,6 +59,7 @@ appsInfo:
     isDeprecated: true
     deprecationInfo:
       replacement: tekton
+      path: '/#/namespaces/otomi-pipelines/pipelineruns'
       message: Drone is deprecated for enhanced performance, maintainability, and integration.
       reasons:
         - To improve overall system performance.
