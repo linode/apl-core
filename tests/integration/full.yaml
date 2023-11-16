@@ -50,8 +50,6 @@ apps:
     enabled: false
   snapshot-controller:
     enabled: true
-  tekton:
-    enabled: true
   tempo:
     enabled: true
   thanos:
