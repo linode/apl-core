@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $t := $v.apps.tekton }}
 {{- if $t.enabled }}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: buildpacks
