@@ -113,6 +113,7 @@ k8s:
     - name: velero
       app: velero
     - name: otomi-pipelines
+      app: tekton
       disableIstioInjection: true
 
 adminApps:
