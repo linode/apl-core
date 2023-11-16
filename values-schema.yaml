@@ -1706,7 +1706,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            description: Discarded as this is a core app.
+            default: false
           adminIsMachine:
             type: boolean
             default: false
@@ -2376,9 +2376,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
           resources:
             additionalProperties: false
             properties:

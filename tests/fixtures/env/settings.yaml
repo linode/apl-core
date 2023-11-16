@@ -21,13 +21,11 @@ cloud:
 dns:
     domainFilters:
         - otomi.cloud
-    # provider:
-    #     aws:
-    #         region: eu-central-1
-    # zoneIdFilters:
-    #     - otomi
+    provider:
+        civo:
+            apiToken: xvxvxvxvxvxvxvxvxvxvxvxvx
 e2e:
-    enabled: true
+    enabled: false
 home:
     email: {}
     receivers:
@@ -124,4 +122,4 @@ status:
         deployingVersion: 0.21.0
         status: deployed
         version: 0.21.0
-version: 15
+version: 16

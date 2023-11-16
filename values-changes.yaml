@@ -94,3 +94,8 @@ changes:
     deletions:
       - apps.keycloak.postgresqlPassword
       - apps.keycloak.postgresql
+  - version: 16
+    deletions:
+      - apps.tekton.enabled
+    additions:
+      - apps.drone.enabled: true
