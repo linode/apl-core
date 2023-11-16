@@ -36,7 +36,7 @@ environments:
           cluster-overprovisioner:
             enabled: false
           drone:
-            enabled: true
+            enabled: false
             debug: false
             trace: false
             sourceControl:
@@ -299,7 +299,6 @@ environments:
                       cpu: 50m
                       memory: 32Mi
           tekton:
-            enabled: true
             resources:
               dashboard:
                 limits:

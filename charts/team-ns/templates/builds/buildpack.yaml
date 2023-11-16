@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- if $v.apps.tekton.enabled }}
 {{- range $v.builds }}
 {{- if eq .mode.type "buildpacks" }}
 ---
@@ -149,7 +148,6 @@ spec:
       template:
         ref: trigger-template-{{ .name }}
 ---
-{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

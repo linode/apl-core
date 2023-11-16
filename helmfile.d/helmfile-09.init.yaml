@@ -51,12 +51,12 @@ releases:
       pkg: harbor
     <<: *raw
   - name: tekton-triggers
-    installed: {{ $a | get "tekton.enabled" }}
+    installed: true
     namespace: tekton-pipelines
     labels:
       pkg: tekton-triggers
     <<: *default
   - name: otomi-pipelines
-    installed: {{ $a | get "tekton.enabled" }}
+    installed: true
     namespace: otomi-pipelines
     <<: *default
