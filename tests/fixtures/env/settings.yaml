@@ -92,8 +92,6 @@ platformBackups:
             enabled: false
         keycloak:
             enabled: false
-        kubeapps:
-            enabled: false
         minio:
             enabled: false
         vault:
