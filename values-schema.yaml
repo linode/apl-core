@@ -1414,10 +1414,9 @@ definitions:
             description: Enable Auto Image Updater
             type: boolean
             default: false
-          build:
-            $ref: '#/definitions/wordCharacterPattern'
-          tag:
-            description: Tag of the build. Only if strategy is digest.
+          imageRepository:
+            type: string
+            description: The container image repository name
             $ref: '#/definitions/wordCharacterPattern'
           versionConstraint:
             $ref: '#/definitions/wordCharacterPattern'
@@ -1443,8 +1442,7 @@ definitions:
                 enum:
                   - semver
                   - digest
-                  - latest
-                default: latest
+                default: digest
             required:
               - type
     required:
@@ -2344,59 +2342,6 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
-      kubeapps:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: false
-            type: boolean
-          enableCommonGround:
-            default: false
-            type: boolean
-          initialRepos:
-            type: array
-            items:
-              type: object
-              required:
-                - type
-                - url
-              properties:
-                name:
-                  type: string
-                type:
-                  type: string
-                  enum: ['helm', 'oci']
-                url:
-                  type: string
-                description:
-                  type: string
-                authorizationHeader:
-                  type: string
-                basicAuth:
-                  type: string
-                caCert:
-                  type: string
-                tlsInsecureSkipVerify:
-                  type: boolean
-                filterRule:
-                  type: object
-                  properties:
-                    jq:
-                      type: string
-                    variables:
-                      type: object
-                      additionalProperties:
-                        type: string
-                ociRepositories:
-                  type: array
-                  items:
-                    type: string
-          postgresqlPassword:
-            type: string
-            description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: '{{ randAlphaNum 20 }}'
-        required:
-          - postgresqlPassword
       external-secrets:
         additionalProperties: false
         properties:
@@ -4011,16 +3956,6 @@ properties:
                 $ref: '#/definitions/backupSchedule'
           argo:
             title: ArgoCD
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          kubeapps:
-            title: Kubeapps
             properties:
               enabled:
                 type: boolean

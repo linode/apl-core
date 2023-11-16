@@ -109,6 +109,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - apps.openshift.io
+  resources:
+  - deploymentconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - aquasecurity.github.io
   resources:
   - clustercompliancedetailreports
@@ -216,6 +224,18 @@ rules:
   - aquasecurity.github.io
   resources:
   - rbacassessmentreports
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - aquasecurity.github.io
+  resources:
+  - sbomreports
   verbs:
   - create
   - delete
