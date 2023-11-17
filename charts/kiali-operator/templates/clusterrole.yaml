@@ -192,6 +192,29 @@ rules:
   - patch
   - update
   - watch
+{{- if .Capabilities.APIVersions.Has "route.openshift.io/v1" }}
+# The permissions below are for OSSMC operator capabilities
+- apiGroups: ["console.openshift.io"]
+  resources:
+  - consoleplugins
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups: ["operator.openshift.io"]
+  resources:
+  - consoles
+  verbs:
+  - get
+  - list
+  - patch
+  - update
+  - watch
+{{- end }}
 # The permissions below are for Kiali itself; operator needs these so it can escalate when creating Kiali's roles
 - apiGroups: [""]
   resources:
