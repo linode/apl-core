@@ -1,0 +1,21 @@
+{{- if .Values.operator.builtInTrivyServer }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.trivy.serverServiceName }}
+  namespace: {{ include "trivy-operator.namespace" . }}
+  labels:
+    app.kubernetes.io/name: trivy-server
+    app.kubernetes.io/instance: trivy-server
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: trivy-server
+    app.kubernetes.io/instance: trivy-server
+  ports:
+    - name: trivy-http
+      protocol: TCP
+      port: 4954
+      targetPort: 4954
+  sessionAffinity: ClientIP
+{{- end }}

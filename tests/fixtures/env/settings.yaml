@@ -21,13 +21,10 @@ cloud:
 dns:
     domainFilters:
         - otomi.cloud
-    # provider:
-    #     aws:
-    #         region: eu-central-1
-    # zoneIdFilters:
-    #     - otomi
+    provider:
+        civo: {}
 e2e:
-    enabled: true
+    enabled: false
 home:
     email: {}
     receivers:
@@ -92,8 +89,6 @@ platformBackups:
             enabled: false
         keycloak:
             enabled: false
-        kubeapps:
-            enabled: false
         minio:
             enabled: false
         vault:
@@ -126,4 +121,4 @@ status:
         deployingVersion: 0.21.0
         status: deployed
         version: 0.21.0
-version: 15
+version: 16

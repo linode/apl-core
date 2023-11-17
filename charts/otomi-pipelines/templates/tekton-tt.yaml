@@ -1,0 +1,40 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: otomi-tekton-template
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: repoUrl
+      description: Repository Url
+    - name: commitMessage
+      description: Commit message for the last commit
+    - name: giteaCredentialsSecretName
+      description: Gitea Credentials Secret Name
+      default: "gitea-credentials"
+    - name: commitId
+      description: "Commit ID"
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: $(tt.params.commitId)-
+      spec:
+        taskRunTemplate:
+          serviceAccountName: otomi-tekton-tasks-sa
+          podTemplate: {{- toYaml .Values.podSecurityContext | nindent 12 }}
+        pipelineRef:
+          name: otomi-pipeline
+        params:
+          - name: repoUrl
+            value: $(tt.params.repoUrl)
+          - name: commitMessage
+            value: $(tt.params.commitMessage)
+          - name: giteaCredentialsSecretName
+            value: $(tt.params.giteaCredentialsSecretName)
+        workspaces:
+          - name: source
+            emptyDir: {}
+          - name: gitea-credentials
+            secret:
+              secretName: $(tt.params.giteaCredentialsSecretName)

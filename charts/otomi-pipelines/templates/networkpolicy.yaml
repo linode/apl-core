@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-only-gitea
+  namespace: otomi-pipelines
+spec:
+  podSelector:
+    matchLabels: 
+      eventlistener: otomi-tekton-listener
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: gitea
+      podSelector:
+        matchLabels:
+          app: gitea
