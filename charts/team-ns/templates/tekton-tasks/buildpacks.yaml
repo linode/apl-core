@@ -1,6 +1,3 @@
-{{- $v := .Values }}
-{{- $t := $v.apps.tekton }}
-{{- if $t.enabled }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -184,4 +181,3 @@ spec:
       emptyDir: {}
     - name: layers-dir
       emptyDir: {}
-{{- end }}

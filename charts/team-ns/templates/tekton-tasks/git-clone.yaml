@@ -1,6 +1,3 @@
-{{- $v := .Values }}
-{{- $t := $v.apps.tekton }}
-{{- if $t.enabled }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -251,4 +248,3 @@ spec:
         printf "%s" "${RESULT_COMMITTER_DATE}" > "$(results.committer-date.path)"
         printf "%s" "${RESULT_SHA}" > "$(results.commit.path)"
         printf "%s" "${PARAM_URL}" > "$(results.url.path)"
-{{- end }}
