@@ -1,4 +1,3 @@
----
 apiVersion: aquasecurity.github.io/v1alpha1
 kind: ClusterComplianceReport
 metadata:
@@ -6,11 +5,11 @@ metadata:
   labels:
     app.kubernetes.io/name: trivy-operator
     app.kubernetes.io/instance: trivy-operator
-    app.kubernetes.io/version: "0.11.0"
+    app.kubernetes.io/version: "0.16.4"
     app.kubernetes.io/managed-by: kubectl
 spec:
-  cron: "0 */6 * * *"
-  reportType: "summary" # 'summary' or 'all'
+  cron: {{ .Values.compliance.cron | quote }}
+  reportType: {{ .Values.compliance.reportType | quote }}
   compliance:
     id: nsa
     title: National Security Agency - Kubernetes Hardening Guidance v1.0

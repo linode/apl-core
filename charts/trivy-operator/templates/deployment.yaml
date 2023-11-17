@@ -3,32 +3,32 @@ kind: Deployment
 metadata:
   name: {{ include "trivy-operator.fullname" . }}
   namespace: {{ include "trivy-operator.namespace" . }}
-  labels:
-    {{- include "trivy-operator.labels" . | nindent 4 }}
+  labels: {{- include "trivy-operator.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.operator.replicas }}
+  {{- with .Values.operator.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ . }}
+  {{- end }}
   strategy:
     type: Recreate
   selector:
-    matchLabels:
-      {{- include "trivy-operator.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "trivy-operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
-      annotations:
-        {{- . | toYaml | nindent 8 }}
+      annotations: {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
         {{- include "trivy-operator.selectorLabels" . | nindent 8 }}
-        {{- if .Values.operator.podLabels }}
-        {{- toYaml .Values.operator.podLabels | nindent 8 }}
+        {{- with .Values.operator.podLabels }}
+          {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
       serviceAccountName: {{ include "trivy-operator.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
       containers:
         - name: {{ .Chart.Name | quote }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ include "global.imageRegistry" . | default .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           {{- with .Values.image.pullPolicy }}
           imagePullPolicy: {{ . }}
           {{- end }}
@@ -45,10 +45,14 @@ spec:
               value: {{ include "trivy-operator.serviceAccountName" . | quote }}
             - name: OPERATOR_LOG_DEV_MODE
               value: {{ .Values.operator.logDevMode | quote }}
+            - name: OPERATOR_SCAN_JOB_TTL
+              value: {{ .Values.operator.scanJobTTL | quote }}
             - name: OPERATOR_SCAN_JOB_TIMEOUT
               value: {{ .Values.operator.scanJobTimeout | quote }}
             - name: OPERATOR_CONCURRENT_SCAN_JOBS_LIMIT
               value: {{ .Values.operator.scanJobsConcurrentLimit | quote }}
+            - name: OPERATOR_CONCURRENT_NODE_COLLECTOR_LIMIT
+              value: {{ .Values.operator.scanNodeCollectorLimit | quote }}
             - name: OPERATOR_SCAN_JOB_RETRY_AFTER
               value: {{ .Values.operator.scanJobsRetryDelay | quote }}
             - name: OPERATOR_BATCH_DELETE_LIMIT
@@ -65,10 +69,14 @@ spec:
               value: ":9090"
             - name: OPERATOR_VULNERABILITY_SCANNER_ENABLED
               value: {{ .Values.operator.vulnerabilityScannerEnabled | quote }}
+            - name: OPERATOR_SBOM_GENERATION_ENABLED
+              value: {{ .Values.operator.sbomGenerationEnabled | quote }}
             - name: OPERATOR_VULNERABILITY_SCANNER_SCAN_ONLY_CURRENT_REVISIONS
               value: {{ .Values.operator.vulnerabilityScannerScanOnlyCurrentRevisions | quote }}
             - name: OPERATOR_SCANNER_REPORT_TTL
               value: {{ .Values.operator.scannerReportTTL | quote }}
+            - name: CONTROLLER_CACHE_SYNC_TIMEOUT
+              value: {{ .Values.operator.controllerCacheSyncTimeout | quote }}
             - name: OPERATOR_CONFIG_AUDIT_SCANNER_ENABLED
               value: {{ .Values.operator.configAuditScannerEnabled | quote }}
             - name: OPERATOR_RBAC_ASSESSMENT_SCANNER_ENABLED
@@ -79,10 +87,20 @@ spec:
               value: {{ .Values.operator.configAuditScannerScanOnlyCurrentRevisions | quote }}
             - name: OPERATOR_EXPOSED_SECRET_SCANNER_ENABLED
               value: {{ .Values.operator.exposedSecretScannerEnabled | quote }}
+            - name: OPERATOR_METRICS_EXPOSED_SECRET_INFO_ENABLED
+              value: {{ .Values.operator.metricsExposedSecretInfo | quote }}
+            - name: OPERATOR_METRICS_CONFIG_AUDIT_INFO_ENABLED
+              value: {{ .Values.operator.metricsConfigAuditInfo | quote }}
+            - name: OPERATOR_METRICS_RBAC_ASSESSMENT_INFO_ENABLED
+              value: {{ .Values.operator.metricsRbacAssessmentInfo | quote }}
+            - name: OPERATOR_METRICS_INFRA_ASSESSMENT_INFO_ENABLED
+              value: {{ .Values.operator.metricsInfraAssessmentInfo | quote }}   
             - name: OPERATOR_WEBHOOK_BROADCAST_URL
               value: {{ .Values.operator.webhookBroadcastURL | quote }}
             - name: OPERATOR_WEBHOOK_BROADCAST_TIMEOUT
               value: {{ .Values.operator.webhookBroadcastTimeout | quote }}
+            - name: OPERATOR_SEND_DELETED_REPORTS
+              value: {{ .Values.operator.webhookSendDeletedReports | quote }}
             - name: OPERATOR_PRIVATE_REGISTRY_SCAN_SECRETS_NAMES
               value: {{ .Values.operator.privateRegistryScanSecretsNames | toJson | quote }}
             - name: OPERATOR_ACCESS_GLOBAL_SECRETS_SERVICE_ACCOUNTS
@@ -93,6 +111,8 @@ spec:
               value: {{ .Values.operator.trivyServerHealthCheckCacheExpiration | quote }}
             - name: OPERATOR_MERGE_RBAC_FINDING_WITH_CONFIG_AUDIT
               value: {{ .Values.operator.mergeRbacFindingWithConfigAudit | quote }}
+            - name: OPERATOR_CLUSTER_COMPLIANCE_ENABLED
+              value: {{ .Values.operator.clusterComplianceEnabled | quote }}
             {{- if gt (int .Values.operator.replicas) 1 }}
             - name: OPERATOR_LEADER_ELECTION_ENABLED
               value: "true"
@@ -120,38 +140,33 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             failureThreshold: 10
-          resources:
-            {{- .Values.resources | toYaml | nindent 12 }}
+          {{- with .Values.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- with .Values.securityContext }}
-          securityContext:
-            {{- . | toYaml | nindent 12 }}
+          securityContext: {{- toYaml . | nindent 12 }}
           {{- end }}
           {{- with .Values.volumeMounts }}
-          volumeMounts:
-            {{- . | toYaml | nindent 12 }}
+          volumeMounts: {{- toYaml . | nindent 12 }}
           {{- end }}
       {{- with .Values.image.pullSecrets }}
-      imagePullSecrets:
-        {{- . | toYaml | nindent 8 }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
       {{- end }}
-      securityContext:
-        {{- .Values.podSecurityContext | toYaml | nindent 8 }}
+      {{- with .Values.podSecurityContext }}
+      securityContext: {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.volumes }}
-      volumes:
-        {{- . | toYaml | nindent 8 }}
+      volumes: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- . | toYaml | nindent 8 }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.affinity }}
-      affinity:
-        {{- . | toYaml | nindent 8 }}
+      affinity: {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.tolerations }}
-      tolerations:
-        {{- . | toYaml | nindent 8 }}
+      tolerations: {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.priorityClassName }}
-      priorityClassName: {{ .Values.priorityClassName }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
       {{- end }}

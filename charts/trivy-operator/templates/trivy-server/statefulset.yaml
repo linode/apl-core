@@ -1,0 +1,128 @@
+{{- if .Values.operator.builtInTrivyServer }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: trivy-server
+  namespace: {{ include "trivy-operator.namespace" . }}
+  labels:
+    app.kubernetes.io/name: trivy-server
+    app.kubernetes.io/instance: trivy-server
+spec:
+  podManagementPolicy: "Parallel"
+  serviceName: {{ .Values.trivy.serverServiceName }}
+  replicas: {{ .Values.trivy.server.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: trivy-server
+      app.kubernetes.io/instance: trivy-server
+  {{- if .Values.trivy.storageClassEnabled }}
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+      spec:
+        resources:
+          requests:
+            storage: 5Gi
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: {{ .Values.trivy.storageClassName }}
+  {{- end }}        
+  template:
+    metadata:
+      annotations:
+        checksum/config: 7fcc66ace3f98462349856795765021e7bf7a0106f28439a9f6dc74257404370
+      labels:
+        {{- with .Values.trivy.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        app.kubernetes.io/name: trivy-server
+        app.kubernetes.io/instance: trivy-server
+    spec:
+      {{- with .Values.trivy.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      serviceAccountName: {{ include "trivy-operator.serviceAccountName" . }}
+      automountServiceAccountToken: false
+      {{- with .Values.trivy.server.podSecurityContext }}
+      securityContext: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.trivy.image.imagePullSecret }}
+      imagePullSecrets:
+      - name:  {{ . }}
+      {{- end }}
+      containers:
+        - name: trivy-server
+          image: "{{ include "global.imageRegistry" . | default .Values.trivy.image.registry }}/{{ .Values.trivy.image.repository }}:{{ .Values.trivy.image.tag }}"
+          imagePullPolicy: "IfNotPresent"
+          {{- with .Values.trivy.server.securityContext }}
+          securityContext: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+            - server
+          {{- if or (or .Values.trivy.httpProxy .Values.trivy.httpsProxy) .Values.trivy.noProxy }}
+          env:
+            {{- with .Values.trivy.httpProxy | quote }}
+            - name: HTTP_PROXY
+              value: {{ . }}
+            {{- end }}
+            {{- with .Values.trivy.httpsProxy | quote }}
+            - name: HTTPS_PROXY
+              value: {{ . }}
+            {{- end }}
+            {{- with .Values.trivy.noProxy | quote }}
+            - name: NO_PROXY
+              value: {{ . }}
+            {{- end }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: trivy-operator-trivy-config
+            - secretRef:
+                name: trivy-operator-trivy-config
+          ports:
+            - name: trivy-http
+              containerPort: 4954
+          livenessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: trivy-http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              scheme: HTTP
+              path: /healthz
+              port: trivy-http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp-data
+              readOnly: false
+            - mountPath: /home/scanner/.cache
+              name: data
+              readOnly: false
+          {{- with .Values.trivy.server.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: tmp-data
+          emptyDir: {}
+        {{- if not .Values.trivy.storageClassEnabled }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

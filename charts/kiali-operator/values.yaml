@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image: # see: https://quay.io/repository/kiali/kiali-operator?tab=tags
   repo: quay.io/kiali/kiali-operator # quay.io/kiali/kiali-operator
-  tag: v1.68.0 # version string like v1.39.0 or a digest hash
+  tag: v1.76.0 # version string like v1.39.0 or a digest hash
   digest: "" # use "sha256" if tag is a sha256 hash (do NOT prefix this value with a "@")
   pullPolicy: Always
   pullSecrets: []
@@ -70,6 +70,13 @@ allowAdHocKialiNamespace: true
 # You may want to disable this if you do not want users to install their own Kiali images.
 allowAdHocKialiImage: false
 
+# allowAdHocOSSMConsoleImage tells the operator to allow a user to be able to install a custom OSSMC image as opposed
+# to the image the operator will install by default. In other words, it will allow the
+# OSSMConsole CR spec.deployment.imageName and spec.deployment.imageVersion to be configured by the user.
+# You may want to disable this if you do not want users to install their own OSSMC images.
+# This is only applicable when running on OpenShift.
+allowAdHocOSSMConsoleImage: false
+
 # allowSecurityContextOverride tells the operator to allow a user to be able to fully override the Kiali
 # container securityContext. If this is false, certain securityContext settings must exist on the Kiali
 # container and any attempt to override them will be ignored.
@@ -107,3 +114,5 @@ cr:
 
   spec:
     deployment:
+      accessible_namespaces:
+      - '**'
