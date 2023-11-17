@@ -1,4 +1,4 @@
-import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { mkdirSync, rmdirSync } from 'fs'
 import { isEmpty } from 'lodash'
 import { prepareDomainSuffix } from 'src/common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
@@ -9,9 +9,7 @@ import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/com
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
-import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
-import { $ } from 'zx'
 import { applyAsApps } from './apply-as-apps'
 import { cloneOtomiChartsInGitea, commit, printWelcomeMessage } from './commit'
 import { upgrade } from './upgrade'
@@ -49,18 +47,12 @@ const applyAll = async () => {
   await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
   if (intitalInstall) {
-    const output: ProcessOutputTrimmed = await hf(
-      { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
-      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-    )
-    if (output.exitCode > 0) {
-      throw new Error(output.stderr)
-    } else if (output.stderr.length > 0) {
-      d.error(output.stderr)
-    }
-    const templateOutput = output.stdout
-    writeFileSync(templateFile, templateOutput)
-    await $`kubectl apply -f ${templateFile}`
+    await hf({
+      fileOpts: 'helmfile.tpl/helmfile-init.yaml',
+      labelOpts: [...(argv.label || []), 'stage=prep'],
+      logLevel: logLevelString(),
+      args: ['apply'],
+    })
 
     d.info('Deploying charts containing label stage=prep')
     await hf(
@@ -76,7 +68,6 @@ const applyAll = async () => {
     await prepareDomainSuffix()
     await hf(
       {
-        // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
         fileOpts: 'helmfile.d/helmfile-03.init.yaml',
         labelOpts: [...(argv.label || []), 'pkg=argocd'],
         logLevel: logLevelString(),
