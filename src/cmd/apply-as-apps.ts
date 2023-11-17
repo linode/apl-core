@@ -14,6 +14,7 @@ const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
 const appsDir = '/tmp/otomi/apps'
 const valuesDir = '/tmp/otomi/values'
+const d = terminal(`cmd:${cmdName}:apply`)
 
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
@@ -76,9 +77,19 @@ const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, 
   }
 }
 
-const apply = async (): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:apply`)
-  const argv: HelmArguments = getParsedArgs()
+const writeApplicationManifest = async (release: HelmRelese, otomiVersion: string): Promise<void> => {
+  const appName = `${release.namespace}-${release.name}`
+  // d.info(`Generating Argocd Application at ${appName}`)
+  const applicationPath = `${appsDir}/${appName}.yaml`
+  const valuesPath = `${valuesDir}/${appName}.yaml`
+  // d.info(`Loading values file from ${valuesPath}`)
+  let values = {}
+  if (await pathExists(valuesPath)) values = (await loadYaml(valuesPath)) || {}
+  const manifest = getArgocdAppManifest(release, values, otomiVersion)
+  // d.info(`Saving Argocd Application at ${applicationPath}`)
+  await writeFile(applicationPath, objectToYaml(manifest))
+}
+export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.length === 0 ? 'helmfile.d/' : argv.file?.toString()
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
 
@@ -106,16 +117,7 @@ const apply = async (): Promise<void> => {
     releses.map(async (release: HelmRelese) => {
       if (!release.enabled) return
       try {
-        const appName = `${release.namespace}-${release.name}`
-        // d.info(`Generating Argocd Application at ${appName}`)
-        const applicationPath = `${appsDir}/${appName}.yaml`
-        const valuesPath = `${valuesDir}/${appName}.yaml`
-        // d.info(`Loading values file from ${valuesPath}`)
-        let values = {}
-        if (await pathExists(valuesPath)) values = (await loadYaml(valuesPath)) || {}
-        const manifest = getArgocdAppManifest(release, values, otomiVersion)
-        d.info(`Saving Argocd Application at ${applicationPath}`)
-        await writeFile(applicationPath, objectToYaml(manifest))
+        await writeApplicationManifest(release, otomiVersion)
       } catch (e) {
         errors.push(e)
       }
@@ -146,6 +148,6 @@ export const module: CommandModule = {
     setParsedArgs(argv)
     setup()
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await apply()
+    await applyAsApps(argv)
   },
 }

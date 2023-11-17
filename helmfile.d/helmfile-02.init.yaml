@@ -55,12 +55,12 @@ releases:
       - ./snippets/common.gotmpl
     <<: *upgrade
 {{- end }}
-  - name: operator-lifecycle-manager
-    installed: true
-    namespace: olm
-    labels:
-      olm: true
-    <<: *default
+  # - name: operator-lifecycle-manager
+  #   installed: true
+  #   namespace: olm
+  #   labels:
+  #     olm: true
+  #   <<: *default
   - name: cloudnative-pg
     installed: true
     namespace: cnpg-system
