@@ -49,9 +49,6 @@ const applyAll = async () => {
   await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
   if (intitalInstall) {
-    await $`kubectl apply -f crds/argocd`
-    await $`kubectl apply -f charts/operator-lifecycle-manager/crds`
-
     const output: ProcessOutputTrimmed = await hf(
       { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
       { streams: { stdout: d.stream.log, stderr: d.stream.error } },
@@ -64,7 +61,6 @@ const applyAll = async () => {
     const templateOutput = output.stdout
     writeFileSync(templateFile, templateOutput)
     await $`kubectl apply -f ${templateFile}`
-    await $`kubectl apply -f manifests`
 
     d.info('Deploying charts containing label stage=prep')
     await hf(
@@ -78,6 +74,16 @@ const applyAll = async () => {
       { streams: { stdout: d.stream.log, stderr: d.stream.error } },
     )
     await prepareDomainSuffix()
+    await hf(
+      {
+        // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
+        fileOpts: 'helmfile.d/helmfile-03.init.yaml',
+        labelOpts: [...(argv.label || []), 'pkg=argocd'],
+        logLevel: logLevelString(),
+        args: ['apply'],
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
   }
   d.info('Deploying charts as apps')
   await applyAsApps(argv)

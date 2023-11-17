@@ -12,12 +12,18 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  # - name: argocd-operator
-  #   installed: {{ $a | get "argocd.enabled" }}
-  #   namespace: argocd
-  #   labels:
-  #     pkg: argocd
-  #   <<: *default
+  - name: argocd-operator-artifacts
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    labels:
+      pkg: argocd
+    <<: *raw
+  - name: argocd-operator-cr
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    labels:
+      pkg: argocd
+    <<: *rawCR
   - name: otomi-operator
     installed: true
     namespace: otomi-operator

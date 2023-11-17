@@ -55,12 +55,13 @@ releases:
       - ./snippets/common.gotmpl
     <<: *upgrade
 {{- end }}
-  # - name: operator-lifecycle-manager
-  #   installed: true
-  #   namespace: olm
-  #   labels:
-  #     olm: true
-  #   <<: *default
+  - name: argocd-operator
+    installed: {{ $a | get "argocd.enabled" }}
+    namespace: argocd
+    labels:
+      pkg: argocd
+      stage: prep
+    <<: *default
   - name: cloudnative-pg
     installed: true
     namespace: cnpg-system

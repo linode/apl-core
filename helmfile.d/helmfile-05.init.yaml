@@ -12,12 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  # - name: argocd-operator-artifacts
-  #   installed: {{ $a | get "argocd.enabled" }}
-  #   namespace: argocd
-  #   labels:
-  #     pkg: argocd
-  #   <<: *raw
   - name: istio-operator
     installed: true
     namespace: istio-operator
