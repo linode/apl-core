@@ -1,0 +1,76 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trivy-operator
+  namespace: {{ include "trivy-operator.namespace" . }}
+  labels: {{- include "trivy-operator.labels" . | nindent 4 }}
+data:
+  {{- with .Values.trivyOperator.scanJobTolerations }}
+  scanJob.tolerations: {{ . | toJson | quote }}
+  {{- end }}
+  {{- with .Values.nodeCollector.volumes }}
+  nodeCollector.volumes: {{ . | toJson | quote }}
+  {{- end }}
+  {{- with .Values.nodeCollector.volumeMounts }}
+  nodeCollector.volumeMounts: {{ . | toJson | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobAnnotations }}
+  scanJob.annotations: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobAutomountServiceAccountToken }}
+  scanJob.automountServiceAccountToken: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.skipInitContainers }}
+  scanJob.skipInitContainers: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.nodeCollector.excludeNodes }}
+  nodeCollector.excludeNodes: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobPodTemplateLabels }}
+  scanJob.podTemplateLabels: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.additionalReportLabels }}
+  report.additionalLabels: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobNodeSelector }}
+  scanJob.nodeSelector: {{ . | toJson | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobPodTemplatePodSecurityContext }}
+  scanJob.podTemplatePodSecurityContext: {{ . | toJson | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobPodTemplateContainerSecurityContext }}
+  scanJob.podTemplateContainerSecurityContext: {{ . | toJson | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobPodPriorityClassName }}
+  scanJob.podPriorityClassName: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobCompressLogs }}
+  scanJob.compressLogs: {{ . | toJson | quote }}
+  {{- end }}
+  {{- if or .Values.operator.vulnerabilityScannerEnabled .Values.operator.exposedSecretScannerEnabled .Values.operator.scannerReportTTL }}
+  vulnerabilityReports.scanner: {{ .Values.trivyOperator.vulnerabilityReportsPlugin | quote }}
+  {{- end }}
+  {{- if .Values.operator.configAuditScannerEnabled }}
+  configAuditReports.scanner: {{ .Values.trivyOperator.configAuditReportsPlugin | quote }}
+  {{- end }}
+  {{- if .Values.operator.clusterComplianceEnabled }}
+  compliance.failEntriesLimit: {{ required ".Values.compliance.failEntriesLimit is required" .Values.compliance.failEntriesLimit | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.reportResourceLabels }}
+  report.resourceLabels: {{ . | quote }}
+  metrics.resourceLabelsPrefix: {{ $.Values.trivyOperator.metricsResourceLabelsPrefix | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.reportRecordFailedChecksOnly }}
+  report.recordFailedChecksOnly: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.skipResourceByLabels }}
+  skipResourceByLabels: {{ . | quote }}
+  {{- end }}
+  {{- if .Values.operator.builtInTrivyServer }}
+  trivy.serverURL: {{ printf "http://%s.%s:%s" .Values.trivy.serverServiceName (include "trivy-operator.namespace" .) "4954"  | quote }}
+  {{- end }}
+  node.collector.imageRef: "{{ include "global.imageRegistry" . | default .Values.nodeCollector.registry }}/{{ .Values.nodeCollector.repository }}:{{ .Values.nodeCollector.tag }}"
+  {{- with .Values.nodeCollector.imagePullSecret }}
+  node.collector.imagePullSecret: "{{ . }}"
+  {{- end }}

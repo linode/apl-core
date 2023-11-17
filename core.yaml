@@ -57,10 +57,6 @@ k8s:
       app: knative
       disablePolicyChecks: true
       disableIstioInjection: true
-    - name: kubeapps
-      app: kubeapps
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: kured
       app: kured
       disableIstioInjection: true
@@ -117,6 +113,7 @@ k8s:
     - name: velero
       app: velero
     - name: otomi-pipelines
+      app: tekton
       disableIstioInjection: true
 
 adminApps:
@@ -291,16 +288,6 @@ adminApps:
   - name: knative
     tags: [serverless, functions]
     deps: [istio]
-  - name: kubeapps
-    tags: [dev, apps]
-    deps: [operator-lifecycle-manager]
-    isShared: true
-    ownHost: true
-    ingress:
-      - svc: kubeapps
-        namespace: kubeapps
-        type: public
-        # auth: true
   - name: kured
     tags: [security]
   - name: tekton

@@ -21,9 +21,11 @@ spec:
     imagePullPolicy: Always
     image: otomi/core:$(params["OTOMI_VERSION"])
     workingDir: $(workspaces.source.path)
+{{- if hasKey $kms "sops" }}
     envFrom:
     - secretRef:
         name: otomi-sops-secrets
+{{- end }}
     env:
     - name: CI
       value: $(params["CI"])
