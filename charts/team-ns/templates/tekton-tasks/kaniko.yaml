@@ -1,6 +1,3 @@
-{{- $v := .Values }}
-{{- $t := $v.apps.tekton }}
-{{- if $t.enabled }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -75,4 +72,3 @@ spec:
         set -e
         image="$(params.IMAGE)"
         echo -n "${image}" | tee "$(results.IMAGE_URL.path)"
-{{- end }}
