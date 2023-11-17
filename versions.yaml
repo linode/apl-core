@@ -1,4 +1,4 @@
 api: drone-2-tekton
 console: drone-2-tekton
-tasks: drone-2-tekton
+tasks: main
 tools: 1.6.0
