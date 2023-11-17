@@ -49,7 +49,6 @@ const applyAll = async () => {
   if (intitalInstall) {
     await hf({
       fileOpts: 'helmfile.tpl/helmfile-init.yaml',
-      labelOpts: [...(argv.label || []), 'stage=prep'],
       logLevel: logLevelString(),
       args: ['apply'],
     })
