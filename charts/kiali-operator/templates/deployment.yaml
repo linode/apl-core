@@ -49,17 +49,22 @@ spec:
         args:
         - "--zap-log-level=info"
         - "--leader-election-id={{ include "kiali-operator.fullname" . }}"
+{{- if .Capabilities.APIVersions.Has "route.openshift.io/v1" }}
+        - "--watches-file=./watches-os.yaml"
+{{- else }}
+        - "--watches-file=./watches-k8s.yaml"
+{{- end }}
         securityContext:
-      {{- if .Values.securityContext }}
-      {{- toYaml .Values.securityContext | nindent 10 }}
-      {{- else }}
+        {{- if .Values.securityContext }}
+        {{- toYaml .Values.securityContext | nindent 10 }}
+        {{- else }}
           allowPrivilegeEscalation: false
           privileged: false
           runAsNonRoot: true
           capabilities:
             drop:
-              - ALL
-      {{- end }}
+            - ALL
+        {{- end }}
         volumeMounts:
         - mountPath: /tmp/ansible-operator/runner
           name: runner
@@ -78,6 +83,10 @@ spec:
           value: {{ .Values.allowAdHocKialiNamespace | quote }}
         - name: ALLOW_AD_HOC_KIALI_IMAGE
           value: {{ .Values.allowAdHocKialiImage | quote }}
+{{- if .Capabilities.APIVersions.Has "route.openshift.io/v1" }}
+        - name: ALLOW_AD_HOC_OSSMCONSOLE_IMAGE
+          value: {{ .Values.allowAdHocOSSMConsoleImage | quote }}
+{{- end }}
         - name: ALLOW_SECURITY_CONTEXT_OVERRIDE
           value: {{ .Values.allowSecurityContextOverride | quote }}
         - name: ALLOW_ALL_ACCESSIBLE_NAMESPACES
@@ -90,6 +99,10 @@ spec:
           value: {{ .Values.debug.enabled | quote }}
         - name: ANSIBLE_VERBOSITY_KIALI_KIALI_IO
           value: {{ .Values.debug.verbosity | quote }}
+{{- if .Capabilities.APIVersions.Has "route.openshift.io/v1" }}
+        - name: ANSIBLE_VERBOSITY_OSSMCONSOLE_KIALI_IO
+          value: {{ .Values.debug.verbosity | quote }}
+{{- end }}
         - name: ANSIBLE_CONFIG
         {{- if .Values.debug.enableProfiler }}
           value: "/opt/ansible/ansible-profiler.cfg"
