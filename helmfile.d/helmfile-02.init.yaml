@@ -56,7 +56,7 @@ releases:
     <<: *upgrade
 {{- end }}
   - name: argocd-operator
-    installed: {{ $a | get "argocd.enabled" }}
+    installed: true
     namespace: argocd
     labels:
       pkg: argocd

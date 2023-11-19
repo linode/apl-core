@@ -13,13 +13,13 @@ bases:
 
 releases:
   - name: argocd-operator-artifacts
-    installed: {{ $a | get "argocd.enabled" }}
+    installed: true
     namespace: argocd
     labels:
       pkg: argocd
     <<: *raw
   - name: argocd-operator-cr
-    installed: {{ $a | get "argocd.enabled" }}
+    installed: true
     namespace: argocd
     labels:
       pkg: argocd
