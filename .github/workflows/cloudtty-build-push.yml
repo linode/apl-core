@@ -63,7 +63,6 @@ jobs:
         if: ${{ env.NEW_VERSION != null }}
         run: |
           docker buildx build --load -t ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }} -t ${{ env.NAMESPACE }}/${{ env.REPO }}:latest -f tools/Dockerfile-tty .
-          docker tag ${{ env.NAMESPACE }}/${{ env.REPO }} ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
 
       - name: Squash image
         if: ${{ env.NEW_VERSION != null }}
