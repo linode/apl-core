@@ -1432,6 +1432,14 @@ definitions:
                 $ref: '#/definitions/wordCharacterPattern'
               tag:
                 $ref: '#/definitions/wordCharacterPattern'
+              imageParameter:
+                type: string
+                default: image.name
+                description: The parameter for specifying the image name
+              tagParameter:
+                type: string
+                default: image.tag
+                description: The parameter for specifying the image tag
             required:
               - tag
           semver:
@@ -1443,6 +1451,14 @@ definitions:
                 $ref: '#/definitions/wordCharacterPattern'
               versionConstraint:
                 $ref: '#/definitions/wordCharacterPattern'
+              imageParameter:
+                type: string
+                default: image.name
+                description: The parameter for specifying the image name
+              tagParameter:
+                type: string
+                default: image.tag
+                description: The parameter for specifying the image tag
             required:
               - versionConstraint
           type:
