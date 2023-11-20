@@ -1,4 +1,4 @@
-api: auto-update-schema
-console: clipb
+api: main
+console: main
 tasks: main
 tools: 1.6.0
