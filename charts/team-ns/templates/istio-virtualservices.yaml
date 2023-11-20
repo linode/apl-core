@@ -43,6 +43,16 @@ spec:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
             port:
               number: {{ $s.port | default 443 }}
+          {{- with (dig "trafficControl" "enabled" nil $s) }}
+            subset: v1
+          weight: {{ $s.trafficControl.weightV1 }}
+        - destination:
+            host: {{ $svc }}.{{ $ns }}.svc.cluster.local
+            port:
+              number: {{ $s.port | default 443 }}
+            subset: v2
+          weight: {{ $s.trafficControl.weightV2 }}
+          {{- end }}
       {{- else }}
   http:
     - match:
