@@ -1418,46 +1418,42 @@ definitions:
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
-      autoUpdate:
+      imageUpdateStrategy:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
         additionalProperties: false
         properties:
-          enabled:
-            description: Enable Auto Image Updater
-            type: boolean
-            default: false
-          imageRepository:
-            type: string
-            description: The container image repository name
-            $ref: '#/definitions/wordCharacterPattern'
-          versionConstraint:
-            $ref: '#/definitions/wordCharacterPattern'
-          strategy:
+          digest:
             additionalProperties: false
             properties:
-              digest:
-                additionalProperties: false
-                properties:
-                  tag:
-                    $ref: '#/definitions/wordCharacterPattern'
-                required:
-                  - tag
-              semver:
-                additionalProperties: false
-                properties:
-                  versionConstraint:
-                    $ref: '#/definitions/wordCharacterPattern'
-                required:
-                  - versionConstraint
-              type:
+              imageRepository:
                 type: string
-                enum:
-                  - semver
-                  - digest
-                default: digest
+                description: The container image repository name
+                $ref: '#/definitions/wordCharacterPattern'
+              tag:
+                $ref: '#/definitions/wordCharacterPattern'
             required:
-              - type
+              - tag
+          semver:
+            additionalProperties: false
+            properties:
+              imageRepository:
+                type: string
+                description: The container image repository name
+                $ref: '#/definitions/wordCharacterPattern'
+              versionConstraint:
+                $ref: '#/definitions/wordCharacterPattern'
+            required:
+              - versionConstraint
+          type:
+            type: string
+            enum:
+              - semver
+              - digest
+              - disabled
+            default: disabled
+        required:
+          - type
     required:
       - name
       - url
