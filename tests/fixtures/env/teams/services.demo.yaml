@@ -23,7 +23,7 @@ teamConfig:
               tlsPass: true
               useCname: true
               cname:
-                  domain: 'hello-demo-cname.com'
+                  domain: 'hello-demo.cname.com'
                   tslSecretName: ''
             - domain: tlspass.eks.dev.otomi.cloud
               id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
@@ -104,6 +104,14 @@ teamConfig:
                       set:
                           - name: someheader
                             value: somevalue
+              useCname: true
+              cname:
+                  domain: 'net-a-demo.cname.com'
+                  tslSecretName: ''
+              trafficControl:
+                  enabled: true
+                  weightV1: 50
+                  weightV2: 50
             - ingressClassName: platform
               ksvc:
                   predeployed: false
