@@ -54,12 +54,6 @@ spec:
         {{- else}}
         git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- end }}
-    - name: bootstrap
-      command:
-        - '/bin/bash'
-      args:
-        - '-c'
-        - 'export ENV_DIR=$PWD/values && ../binzx/otomi bootstrap'
     - name: test
       command:
         - '/bin/bash'
