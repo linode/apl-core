@@ -13,6 +13,8 @@ spec:
       description: Determine if pipeline should run based on the commit message
     - name: OTOMI_VERSION
       description: Otomi version as in values/env/settings.yaml
+    - name: TRIGGER_TEAMS_PIPELINE
+      description: Determine if the otomi-task-teams is about to run
   workspaces:
     - name: source
       mountPath: /home/app/stack/env/
