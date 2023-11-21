@@ -65,4 +65,4 @@ spec:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=$PWD/values && ../binzx/otomi apply -f helmfile.d/helmfile-60.teams.yaml'
+        - 'export ENV_DIR=$PWD/values && ../binzx/otomi apply -f $ENV_DIR/helmfile.d/helmfile-60.teams.yaml'
