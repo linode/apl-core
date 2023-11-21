@@ -13,7 +13,7 @@ spec:
     - name: giteaCredentialsSecretName
   workspaces:
     - name: source
-      mountPath: /home/app/stack/env
+      mountPath: /home/app/stack
     - name: gitea-credentials
       mountPath: /etc/gitea-credentials
   stepTemplate:
@@ -59,10 +59,10 @@ spec:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=$PWD/values && ../binzx/otomi validate-values'
+        - 'export ENV_DIR=$PWD/values && binzx/otomi validate-values'
     - name: apply
       command:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=$PWD/values && ../binzx/otomi apply -f $ENV_DIR/helmfile.d/helmfile-60.teams.yaml'
+        - 'export ENV_DIR=$PWD/values && binzx/otomi apply -f helmfile.d/helmfile-60.teams.yaml'
