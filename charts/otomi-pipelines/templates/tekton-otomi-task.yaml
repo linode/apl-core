@@ -71,4 +71,4 @@ spec:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=$PWD/values && ../binzx/otomi apply'
+        - 'export ENV_DIR=$PWD/values && ../binzx/otomi apply -l tag=!teams'
