@@ -30,6 +30,10 @@ RUN tar zxvf /tmp/velero-v1.11.0-linux-amd64.tar.gz velero-v1.11.0-linux-amd64/v
 ADD --checksum=sha256:dc1a15443133ebc669dbebfab548f1d1abe401ce9034a3e61b0cd0364c34e75c https://github.com/tektoncd/cli/releases/download/v0.31.1/tkn_0.31.1_Linux_x86_64.tar.gz /tmp/
 RUN tar zxvf /tmp/tkn_0.31.1_Linux_x86_64.tar.gz -C /usr/local/bin/ tkn && rm /tmp/tkn_0.31.1_Linux_x86_64.tar.gz
 
+# Installing kubectl-cnpg
+ADD --checksum=sha256:584dc993fb216c2907616588de0822461701e6bdb8301eb034dd1a697b1f4015 https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v1.21.1/kubectl-cnpg_1.21.1_linux_x86_64.deb /tmp/
+RUN dpkg -i /tmp/kubectl-cnpg_1.21.1_linux_x86_64.deb && rm /tmp/kubectl-cnpg_1.21.1_linux_x86_64.deb
+
 # Creating user named user
 RUN addgroup --gid 1000 user && adduser --uid 1000 --gid 1000 --disabled-password --gecos "" user
 
