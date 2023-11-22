@@ -21,8 +21,6 @@ cloud:
 dns:
     domainFilters:
         - otomi.cloud
-    provider:
-        civo: {}
 e2e:
     enabled: false
 home:
