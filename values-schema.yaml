@@ -1009,6 +1009,19 @@ definitions:
         example: arn:aws:acm:eu-central-1:xxx:certificate/xxx
         pattern: 'arn:aws(-cn|-us-gov)?:acm:\S+:\d+:\w+\/\S+'
         type: string
+      trafficControl:
+        title: Traffic Control
+        description: Split traffic between multiple services (blue/green, canary)
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          weightV1:
+            type: integer
+            default: 90
+          weightV2:
+            type: integer
+            default: 10
       certName:
         description: The name of a TLS secret known to exist in the team namespace.
         example: www-example-com
@@ -1405,46 +1418,58 @@ definitions:
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
-      autoUpdate:
+      imageUpdateStrategy:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
         additionalProperties: false
         properties:
-          enabled:
-            description: Enable Auto Image Updater
-            type: boolean
-            default: false
-          imageRepository:
-            type: string
-            description: The container image repository name
-            $ref: '#/definitions/wordCharacterPattern'
-          versionConstraint:
-            $ref: '#/definitions/wordCharacterPattern'
-          strategy:
+          digest:
             additionalProperties: false
             properties:
-              digest:
-                additionalProperties: false
-                properties:
-                  tag:
-                    $ref: '#/definitions/wordCharacterPattern'
-                required:
-                  - tag
-              semver:
-                additionalProperties: false
-                properties:
-                  versionConstraint:
-                    $ref: '#/definitions/wordCharacterPattern'
-                required:
-                  - versionConstraint
-              type:
+              imageRepository:
                 type: string
-                enum:
-                  - semver
-                  - digest
-                default: digest
+                description: The container image repository name
+                $ref: '#/definitions/wordCharacterPattern'
+              tag:
+                $ref: '#/definitions/wordCharacterPattern'
+              imageParameter:
+                type: string
+                default: image.name
+                description: The parameter for specifying the image name
+              tagParameter:
+                type: string
+                default: image.tag
+                description: The parameter for specifying the image tag
             required:
-              - type
+              - tag
+          semver:
+            additionalProperties: false
+            properties:
+              imageRepository:
+                type: string
+                description: The container image repository name
+                $ref: '#/definitions/wordCharacterPattern'
+              versionConstraint:
+                $ref: '#/definitions/wordCharacterPattern'
+              imageParameter:
+                type: string
+                default: image.name
+                description: The parameter for specifying the image name
+              tagParameter:
+                type: string
+                default: image.tag
+                description: The parameter for specifying the image tag
+            required:
+              - versionConstraint
+          type:
+            type: string
+            enum:
+              - semver
+              - digest
+              - disabled
+            default: disabled
+        required:
+          - type
     required:
       - name
       - url
@@ -1706,7 +1731,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            description: Discarded as this is a core app.
+            default: false
           adminIsMachine:
             type: boolean
             default: false
@@ -2376,9 +2401,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
           resources:
             additionalProperties: false
             properties:
@@ -3365,7 +3387,7 @@ properties:
             properties:
               civo:
                 properties:
-                  apiKey:
+                  apiToken:
                     type: string
                     x-secret: ''
                 required:

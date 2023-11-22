@@ -1,7 +1,4 @@
-{{- $v := .Values }}
-{{- $t := $v.apps.tekton }}
-{{- if $t.enabled }}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: kaniko
@@ -15,6 +12,14 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/arm64,linux/ppc64le"
     policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
 spec:
+  stepTemplate:
+    computeResources:
+      limits:
+        cpu: "2"
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
   description: >-
     This Task builds a simple Dockerfile with kaniko and pushes to a registry.
     This Task stores the image name and digest as results, allowing Tekton Chains to pick up
@@ -67,4 +72,3 @@ spec:
         set -e
         image="$(params.IMAGE)"
         echo -n "${image}" | tee "$(results.IMAGE_URL.path)"
-{{- end }}

@@ -112,6 +112,9 @@ k8s:
       app: vault
     - name: velero
       app: velero
+    - name: otomi-pipelines
+      app: tekton
+      disableIstioInjection: true
 
 adminApps:
   - name: alertmanager
@@ -272,7 +275,6 @@ adminApps:
   - name: kiali
     tags: [tracing, telemetry, observability]
     deps: [istio, prometheus]
-    path: /api/auth/openid_redirect
     ingress:
       - svc: kiali
         forwardPath: true

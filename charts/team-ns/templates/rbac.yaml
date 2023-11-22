@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- $ns := .Release.Namespace }}
 {{- $h := $v.apps.harbor }}
-{{- $t := $v.apps.tekton }}
 ---
 apiVersion: v1
 imagePullSecrets:
@@ -120,7 +119,6 @@ stringData:
   username: otomi-admin
   password: {{ $v.otomi.adminPassword }}
 ---
-{{- if $t.enabled }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -222,5 +220,4 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: tekton-triggers-createwebhook-team-{{ $v.teamId }}
-{{- end }}
 ---
