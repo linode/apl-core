@@ -18,6 +18,11 @@ spec:
     storageClass: {{ . }}
     {{- end }}
     size: {{ .Values.storage.size }}
+  walStorage:
+    {{- with .Values.walStorage.storageClass }}
+    storageClass: {{ . }}
+    {{- end }}
+    size: {{ .Values.walStorage.size }}
 
   {{- with .Values.monitoring }}
   monitoring:
