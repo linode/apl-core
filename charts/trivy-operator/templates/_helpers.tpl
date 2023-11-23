@@ -2,7 +2,7 @@
 Expand the name of the chart.
 */}}
 {{- define "trivy-operator.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+  {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -12,23 +12,23 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this
 as a full name.
 */}}
 {{- define "trivy-operator.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
+  {{- if .Values.fullnameOverride }}
+    {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+  {{- else }}
+    {{- $name := default .Chart.Name .Values.nameOverride }}
+    {{- if contains $name .Release.Name }}
+      {{- .Release.Name | trunc 63 | trimSuffix "-" }}
+    {{- else }}
+      {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+    {{- end }}
+  {{- end }}
 {{- end }}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "trivy-operator.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+  {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -57,17 +57,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Create the name of the service account to use.
 */}}
 {{- define "trivy-operator.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "trivy-operator.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
+  {{- if .Values.serviceAccount.create }}
+    {{- default (include "trivy-operator.fullname" .) .Values.serviceAccount.name }}
+  {{- else }}
+    {{- default "default" .Values.serviceAccount.name }}
+  {{- end }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use.
 */}}
 {{- define "trivy-operator.namespace" -}}
-{{- default .Release.Namespace .Values.operator.namespace }}
+  {{- default .Release.Namespace .Values.operator.namespace }}
 {{- end }}
 
+{{/*
+Define the image registry to use if global values are set.
+*/}}
+{{- define "global.imageRegistry" -}}
+{{- if ((.Values.global).image).registry -}}
+  {{- .Values.global.image.registry }}
+{{- end }}
+{{- end }}

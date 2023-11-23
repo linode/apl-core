@@ -270,21 +270,6 @@ schedules:
       includeClusterResources: true
       storageLocation: otomi
 {{- end }}
-{{- if $b.kubeapps.enabled }}
-  kubeapps:
-    disabled: false
-    schedule: {{ $b.kubeapps.schedule }}
-    useOwnerReferencesInBackup: false
-    template:
-      ttl: {{ $b.kubeapps.ttl }}
-      includedNamespaces:
-      - kubeapps
-      includedResources:
-      - pv
-      - pvc
-      includeClusterResources: true
-      storageLocation: otomi
-{{- end }}
 {{- if $b.minio.enabled }}
   minio:
     disabled: false

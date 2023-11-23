@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "trivy-operator.fullname" . }}
+  namespace: {{ include "trivy-operator.namespace" . }}
+  labels: {{- include "trivy-operator.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{ if .Values.service.headless }}
+  clusterIP: None
+  {{ end }}
+  ports:
+    - name: metrics
+      port: {{ .Values.service.metricsPort }}
+      targetPort: metrics
+      protocol: TCP
+  selector: {{- include "trivy-operator.selectorLabels" . | nindent 4 }}

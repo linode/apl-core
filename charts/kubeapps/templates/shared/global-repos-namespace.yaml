@@ -1,7 +1,0 @@
-{{- if .Values.apprepository.globalReposNamespaceSuffix }}
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: "{{ .Release.Namespace }}{{ .Values.apprepository.globalReposNamespaceSuffix }}"
----
-{{- end }}

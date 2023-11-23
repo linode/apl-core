@@ -31,9 +31,8 @@ releases:
   {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $azure := $team | get "azure" dict }}
-  {{- if and $a.tekton.enabled }}
   - name: tekton-dashboard-{{ $teamId }}
-    installed: {{ $a | get "tekton.enabled" }}
+    installed: true
     namespace: team-{{ $teamId }}
     chart: ../charts/tekton-dashboard
     labels:
@@ -41,7 +40,6 @@ releases:
       team: {{ $teamId }}
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
-  {{- end }}
   {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
   - name: prometheus-{{ $teamId }}
     installed: {{ $team | get "monitoringStack.enabled" true }}

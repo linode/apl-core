@@ -1,0 +1,161 @@
+# Copyright 2019 The Tekton Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-pipelines-controller
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/name: controller
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/version: "v0.53.0"
+    app.kubernetes.io/part-of: tekton-pipelines
+    # tekton.dev/release value replaced with inputs.params.versionTag in pipeline/tekton/publish.yaml
+    pipeline.tekton.dev/release: "v0.53.0"
+    # labels below are related to istio and should not be used for resource lookup
+    version: "v0.53.0"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: controller
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: default
+      app.kubernetes.io/part-of: tekton-pipelines
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: controller
+        app.kubernetes.io/component: controller
+        app.kubernetes.io/instance: default
+        app.kubernetes.io/version: "v0.53.0"
+        app.kubernetes.io/part-of: tekton-pipelines
+        # tekton.dev/release value replaced with inputs.params.versionTag in pipeline/tekton/publish.yaml
+        pipeline.tekton.dev/release: "v0.53.0"
+        # labels below are related to istio and should not be used for resource lookup
+        app: tekton-pipelines-controller
+        version: "v0.53.0"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: NotIn
+                    values:
+                      - windows
+      serviceAccountName: tekton-pipelines-controller
+      containers:
+        - name: tekton-pipelines-controller
+          image: {{ .Values.controller.deployment.image }}
+          args: [
+            # These images are built on-demand by `ko resolve` and are replaced
+            # by image references by digest.
+            "-entrypoint-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint:v0.53.0@sha256:6d7c0d37c18857690579a96b04aef555c449aee86e485aa40d7873046bc645ea", "-nop-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/nop:v0.53.0@sha256:8a4c5986d2c661ff1d3a780b85abd78382c82b827a20f343ac2bcf8ad5f5aabe", "-sidecarlogresults-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/sidecarlogresults:v0.53.0@sha256:bde8db347d4559163ebde8a2d36357ba186991fcd1fcc46c17b50f288bdbbd6d", "-workingdirinit-image", "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit:v0.53.0@sha256:ea121f92a654a290f178d14b5ad5feb010bd622f11fabf0f9080d8bbf0efaf97",
+            # The shell image must allow root in order to create directories and copy files to PVCs.
+            # cgr.dev/chainguard/busybox as of April 14 2022
+            # image shall not contains tag, so it will be supported on a runtime like cri-o
+            "-shell-image", "cgr.dev/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791",
+            # for script mode to work with windows we need a powershell image
+            # pinning to nanoserver tag as of July 15 2021
+            "-shell-image-win", "mcr.microsoft.com/powershell:nanoserver@sha256:b6d5ff841b78bdf2dfed7550000fd4f3437385b8fa686ec0f010be24777654d6"]
+          volumeMounts:
+            - name: config-logging
+              mountPath: /etc/config-logging
+            - name: config-registry-cert
+              mountPath: /etc/config-registry-cert
+          env:
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            # If you are changing these names, you will also need to update
+            # the controller's Role in 200-role.yaml to include the new
+            # values in the "configmaps" "get" rule.
+            - name: CONFIG_DEFAULTS_NAME
+              value: config-defaults
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+            - name: CONFIG_FEATURE_FLAGS_NAME
+              value: feature-flags
+            - name: CONFIG_LEADERELECTION_NAME
+              value: config-leader-election-controller
+            - name: CONFIG_SPIRE
+              value: config-spire
+            - name: SSL_CERT_FILE
+              value: /etc/config-registry-cert/cert
+            - name: SSL_CERT_DIR
+              value: /etc/ssl/certs
+            - name: METRICS_DOMAIN
+              value: tekton.dev/pipeline
+              # The following variables can be uncommented with correct values to enable Jaeger tracing
+              #- name: OTEL_EXPORTER_JAEGER_ENDPOINT
+              #  value: http://jaeger-collector.jaeger:14268/api/traces
+              #- name: OTEL_EXPORTER_JAEGER_USER
+              #  value: username
+              #- name: OTEL_EXPORTER_JAEGER_PASSWORD
+              #  value: password
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - "ALL"
+            # User 65532 is the nonroot user ID
+            runAsUser: 65532
+            runAsGroup: 65532
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 1000m
+              memory: 1000Mi
+          ports:
+            - name: metrics
+              containerPort: 9090
+            - name: profiling
+              containerPort: 8008
+            - name: probes
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: probes
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: probes
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+      volumes:
+        - name: config-logging
+          configMap:
+            name: config-logging
+        - name: config-registry-cert
+          configMap:
+            name: config-registry-cert

@@ -69,3 +69,6 @@ operations:
   - version: 0.27.0
     pre:
       - upgrades/pre/upgrade-0-27.0.sh || true
+  - version: 1.2.0
+    pre:
+      - upgrades/pre/upgrade-1-2.0.sh || true

@@ -17,26 +17,30 @@
 </p>
 
 <h4 align="center">
-Otomi adds developer- and operations-centric tools, automation, and self-service on top of Kubernetes in any infrastructure or cloud, to code, build, and run containerized applications
+🚀🚀🚀 Try Otomi and win a $50 Amazon Gift Card 🚀🚀🚀<br>
+Check out the <a href="https://otomi.io/docs/get-started/promotions">terms & conditions</a>
 </h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
-## Otomi helps
+<h4 align="center">
+Otomi turns any Kubernetes cluster into a PaaS for DevOps teams with paved roads from code to a running application
+</h4>
+
+## How Otomi helps
 
 **Developers** - With easy self-service to let them focus on their apps only
 
-- Build OCI compliant images from application code
-- Deploy containerized workloads the GitOps way using build-in or custom golden path templates
+- Build OCI compliant images from application code and store them in a private registry
+- Deploy containerized workloads using a developer catalog with build-in or BYO golden path templates
 - Automatically update container images of workloads
 - Publicly expose applications
 - Get instant access to logs, metrics and traces
-- Store charts and images in a private registry
 - Configure network policies, response headers and CNAMEs
 - Manage secrets
-- Create private Git repositories and custom pipelines
+- Create private Git repositories and custom CI/CD pipelines
 
-**Platform engineers** - To setup a Kubernetes-based platform and provide a paved road to production
+**Operations** - To setup a Kubernetes-based platform for developers and provide a paved road to production
 
 - Create your platform profile and deploy to any K8s
 - Onboard development teams in a comprehensive multi-tenant setup and make them self-serving
@@ -47,6 +51,11 @@ Otomi adds developer- and operations-centric tools, automation, and self-service
 - Support multi- and hybrid cloud scenarios
 - Prevent cloud provider lock-in
 - Implement full observability
+- Create Golden path templates and offer them to development teams through a developer catalog
+
+Check the video below to see how Otomi can be used as a self service portal for developers 
+
+[![Use Otomi as a self service portal for developers](https://img.youtube.com/vi/RI4pIVxbhS0/maxresdefault.jpg)](https://www.youtube.com/watch?v=RI4pIVxbhS0)
 
 ## Getting started
 
@@ -114,7 +123,9 @@ The platform offers a set of Kubernetes applications for all the required capabi
 - [Cert Manager](https://github.com/cert-manager/cert-manager) - Bring your own wildcard certificate or request one from Let's Encrypt
 - [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
 - [External DNS](https://github.com/kubernetes-sigs/external-dns): Synchronize exposed ingresses with DNS providers
-- [Drone](https://github.com/harness/drone): Continuous integration platform built on Docker
+- [Tekton Pipeline](https://github.com/tektoncd/pipeline): K8s-style resources for declaring CI/CD pipelines
+- [Tekton Triggers](https://github.com/tektoncd/triggers): Trigger pipelines from event payloads
+- [Tekton dashboard](https://github.com/tektoncd/dashboard): Web-based UI for Tekton Pipelines and Tekton Triggers
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
 
 **Optional Applications (that you can activate to compose your ideal platform):**
@@ -123,6 +134,7 @@ The platform offers a set of Kubernetes applications for all the required capabi
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
 - [Kaniko](https://github.com/GoogleContainerTools/kaniko): Build container images from a Dockerfile
+- [Drone](https://github.com/harness/drone): Continuous integration platform built on Docker
 - [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics
 - [Grafana](https://github.com/grafana/grafana): Visualize metrics, logs, and traces from multiple sources
 - [Grafana Loki](https://github.com/grafana/loki): Collecting container application logs
@@ -136,11 +148,7 @@ The platform offers a set of Kubernetes applications for all the required capabi
 - [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
 - [Opencost](https://github.com/opencost/opencost): Cost monitoring for Kubernetes
-- [Tekton Pipeline](https://github.com/tektoncd/pipeline): K8s-style resources for declaring CI/CD pipelines
-- [Tekton Triggers](https://github.com/tektoncd/triggers): Trigger pipelines from event payloads
-- [Tekton dashboard](https://github.com/tektoncd/dashboard): Web-based UI for Tekton Pipelines and Tekton Triggers
 - [Paketo build packs](https://github.com/paketo-buildpacks): Cloud Native Buildpack implementations for popular programming language ecosystems
-- [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
 - [Cloudnative-pg](https://github.com/cloudnative-pg/cloudnative-pg): Open source operator designed to manage PostgreSQL workloads
 - [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-operator): Instrument, generate, collect, and export telemetry data to help you analyze your software’s performance and behavior
