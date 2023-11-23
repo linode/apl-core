@@ -2,6 +2,65 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/redkubes/otomi-core/compare/v1.1.0...v2.0.0) (2023-11-23)
+
+
+### Features
+
+* add values migration ([#1363](https://github.com/redkubes/otomi-core/issues/1363)) ([56fc9fe](https://github.com/redkubes/otomi-core/commit/56fc9fe4c320b739b1b179c535b0b034c8663afd))
+* adding kubectl-cpng to the tty console ([#1386](https://github.com/redkubes/otomi-core/issues/1386)) ([5f25846](https://github.com/redkubes/otomi-core/commit/5f258463e5018b99b82a21e6a347c76027b63ddf))
+* copy secrets operator ([#1358](https://github.com/redkubes/otomi-core/issues/1358)) ([814f6c0](https://github.com/redkubes/otomi-core/commit/814f6c00a66733c590e29e50941a1061ae751bc8))
+* default two replicas of keycloak db ([#1362](https://github.com/redkubes/otomi-core/issues/1362)) ([3d37b57](https://github.com/redkubes/otomi-core/commit/3d37b57a21c3449ed35a6fee48ba95f4a3ddb3fb))
+* drone 2 tekton ([#1377](https://github.com/redkubes/otomi-core/issues/1377)) ([20e13eb](https://github.com/redkubes/otomi-core/commit/20e13eb06073df21d53f61100f550c8339cacaac))
+* gitea otomi charts repo ([#1333](https://github.com/redkubes/otomi-core/issues/1333)) ([c16e682](https://github.com/redkubes/otomi-core/commit/c16e6825baf0895a7d3762fd053e7983c72a43ed))
+* istio traffic control to support canary ([#1371](https://github.com/redkubes/otomi-core/issues/1371)) ([047b8a3](https://github.com/redkubes/otomi-core/commit/047b8a37e223aee17dab00f592dabd2b09b9b170))
+* rm kubeclarity ([#1349](https://github.com/redkubes/otomi-core/issues/1349)) ([b9b3be7](https://github.com/redkubes/otomi-core/commit/b9b3be7ddb46dd09a673dfca15b9f354f4eb98e2))
+* switching from drone to tekton pipelines ([#1351](https://github.com/redkubes/otomi-core/issues/1351)) ([56d7363](https://github.com/redkubes/otomi-core/commit/56d7363c0776aafebe501bd6aa904f52d24f0778))
+* template catalog ([#1353](https://github.com/redkubes/otomi-core/issues/1353)) ([853e842](https://github.com/redkubes/otomi-core/commit/853e8427ef931cd4898e329dbc0ab9d84b10ba51))
+* template catalog ([#1360](https://github.com/redkubes/otomi-core/issues/1360)) ([dd427de](https://github.com/redkubes/otomi-core/commit/dd427de1ade0ef17b4a6d1c5125e25447b23ab4c))
+
+
+### Bug Fixes
+
+* add promo to readme ([#1364](https://github.com/redkubes/otomi-core/issues/1364)) ([4bc4040](https://github.com/redkubes/otomi-core/commit/4bc40405aef581d10e2d236fc64da46f15104c4a))
+* align auto image update ([#1372](https://github.com/redkubes/otomi-core/issues/1372)) ([e80d00a](https://github.com/redkubes/otomi-core/commit/e80d00ae3ebf61028a412cf48e3d654edfc10b36))
+* app versions in apps.yaml ([#1378](https://github.com/redkubes/otomi-core/issues/1378)) ([16fac2d](https://github.com/redkubes/otomi-core/commit/16fac2dc38942451203cbe960e6de70dbadd5134))
+* auto update schema ([#1375](https://github.com/redkubes/otomi-core/issues/1375)) ([3d260e0](https://github.com/redkubes/otomi-core/commit/3d260e01929d36fe0b0a1ed03e16ddb2e7787c3b))
+* dashboards ([#1346](https://github.com/redkubes/otomi-core/issues/1346)) ([b61a503](https://github.com/redkubes/otomi-core/commit/b61a503dc95a8d6d3c1006b8fe17efee8d23e2d4))
+* exclude alertmanager in trivy dashboard for teams ([#1387](https://github.com/redkubes/otomi-core/issues/1387)) ([4da87a6](https://github.com/redkubes/otomi-core/commit/4da87a693392a13595cd6b928fabb779529555e4))
+* gitea job config ([#1341](https://github.com/redkubes/otomi-core/issues/1341)) ([af7b5bc](https://github.com/redkubes/otomi-core/commit/af7b5bc080f9bea43e675a3204f7a54b8b8b65f7))
+* github actions scaleway fix ([#1352](https://github.com/redkubes/otomi-core/issues/1352)) ([42b60b6](https://github.com/redkubes/otomi-core/commit/42b60b605d665b843876f0c616586bd029d6f1db))
+* kc limits ([#1335](https://github.com/redkubes/otomi-core/issues/1335)) ([b3f4eb9](https://github.com/redkubes/otomi-core/commit/b3f4eb92e6b553f66afbe017e200ce604829720f))
+* platform backup schedules ([#1348](https://github.com/redkubes/otomi-core/issues/1348)) ([2253402](https://github.com/redkubes/otomi-core/commit/22534021c129f865a2aa56d4f05bc23a075a1f5d))
+* rm demo-tlspass ([#1339](https://github.com/redkubes/otomi-core/issues/1339)) ([569cd9d](https://github.com/redkubes/otomi-core/commit/569cd9d1fe8e12a04754e4a8a5f46bdb5d7e62d5))
+* rm hello ([#1340](https://github.com/redkubes/otomi-core/issues/1340)) ([5848da9](https://github.com/redkubes/otomi-core/commit/5848da99bdd9dc488614b7587b8198c06f062a8c))
+* rm host-mods ([#1350](https://github.com/redkubes/otomi-core/issues/1350)) ([d9b9666](https://github.com/redkubes/otomi-core/commit/d9b9666d8dbe6fdeb22434dd3ccf4177ccc20db9))
+* rm kubeapps ([#1347](https://github.com/redkubes/otomi-core/issues/1347)) ([3e2983a](https://github.com/redkubes/otomi-core/commit/3e2983a965d35748e468e8d322bdb72d13a383e6))
+* rm tekton enabled flags ([#1384](https://github.com/redkubes/otomi-core/issues/1384)) ([7df9f61](https://github.com/redkubes/otomi-core/commit/7df9f61ad57932ad7040b9d7d278c818617ce6a2))
+* rm tigera ([#1344](https://github.com/redkubes/otomi-core/issues/1344)) ([2b8b46b](https://github.com/redkubes/otomi-core/commit/2b8b46b99b22888293ad911b94ad90631ce9749f))
+* scaleway deploy ([#1334](https://github.com/redkubes/otomi-core/issues/1334)) ([f14ef2a](https://github.com/redkubes/otomi-core/commit/f14ef2aaac6932071c7199e5e23d771015c436c5))
+* scaleway private network id ([#1336](https://github.com/redkubes/otomi-core/issues/1336)) ([3854bf9](https://github.com/redkubes/otomi-core/commit/3854bf9bf339842e46b448757afedaaddfe1ef32))
+* scheduled scw private networks cleanup ([#1354](https://github.com/redkubes/otomi-core/issues/1354)) ([bd8c056](https://github.com/redkubes/otomi-core/commit/bd8c0568adcd50bbec08e212f3a76444c6a056cc))
+* svc name to max 14 ([#1370](https://github.com/redkubes/otomi-core/issues/1370)) ([85e0c8b](https://github.com/redkubes/otomi-core/commit/85e0c8b5fa437ea9796ac2508e8caad8c91297c9))
+* team tekton tasks ([#1376](https://github.com/redkubes/otomi-core/issues/1376)) ([68e829d](https://github.com/redkubes/otomi-core/commit/68e829dbb3971faeae657b715b1d4c8cd10a30e6))
+* upgrade Kiali operator and fix cd issues ([#1374](https://github.com/redkubes/otomi-core/issues/1374)) ([f93793b](https://github.com/redkubes/otomi-core/commit/f93793bce9162d0690b9212ceff0ed89cf5f64bb))
+* upgrade trivy and optimize team scan results dashboard ([#1368](https://github.com/redkubes/otomi-core/issues/1368)) ([0c9e639](https://github.com/redkubes/otomi-core/commit/0c9e63963f46d990945e1d144370fe4a5b4a6fd2))
+
+
+### CI
+
+* fix escaped characters ([#1355](https://github.com/redkubes/otomi-core/issues/1355)) ([9b09199](https://github.com/redkubes/otomi-core/commit/9b09199ade3a043341e474f61b36914cdee477ae))
+* fix tty console latest tag push [TTY][MINOR] ([#1383](https://github.com/redkubes/otomi-core/issues/1383)) ([78ddd85](https://github.com/redkubes/otomi-core/commit/78ddd85693fcd14d9ca9d5709397aca81d2a2b7c))
+* fixing integration workflow ([#1373](https://github.com/redkubes/otomi-core/issues/1373)) ([9393ef5](https://github.com/redkubes/otomi-core/commit/9393ef5a5fabcdf6054afff3f1c37b095f2064eb))
+* helm chart on patch release creation rework ([#1367](https://github.com/redkubes/otomi-core/issues/1367)) ([07e9993](https://github.com/redkubes/otomi-core/commit/07e9993b3c6922b5644e32e7772dfa977682c49e))
+
+
+### Others
+
+* versions ([bcadf5e](https://github.com/redkubes/otomi-core/commit/bcadf5e84c7d011f5e7b430f7bc98b3b27b8c66b))
+* versions ([b3f8984](https://github.com/redkubes/otomi-core/commit/b3f8984a64079a3131f1b20f0e6f06d8c470fa48))
+* versions ([f6b3994](https://github.com/redkubes/otomi-core/commit/f6b39942b6e086af9eed6d360ea38040d62cacb4))
+
 ## [1.1.0](https://github.com/redkubes/otomi-core/compare/v1.0.0...v1.1.0) (2023-10-17)
 
 
