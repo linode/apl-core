@@ -166,7 +166,7 @@ jobs:
 
           echo "Chart and values files updated successfully with version $app_version"
           echo "MARK_AS_LATEST is set to $MARK_AS_LATEST"
-          echo "MARK_AS_LATEST=$MARK_AS_LATEST" >> "GITHUB_OUTPUT"
+          echo "MARK_AS_LATEST=$MARK_AS_LATEST" >> "$GITHUB_OUTPUT"
 
           # Copy readme from repo into the charts and add tpl/chart-values.md
           cp README.md chart/otomi/
