@@ -26,7 +26,7 @@ entries:
     type: application
     urls:
     - https://github.com/redkubes/otomi-core/releases/download/otomi-v2.0.1/otomi-v2.0.1.tgz
-    version: v2.0.1
+    version: 2.0.1
   - apiVersion: v2
     appVersion: 2.0.0
     created: "2023-11-23T07:22:44.674467662Z"
