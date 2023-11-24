@@ -2,13 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [2.0.2](https://github.com/redkubes/otomi-core/compare/v2.0.1...v2.0.2) (2023-11-24)
-
-
-### CI
-
-* fix chart version on release ([19b2830](https://github.com/redkubes/otomi-core/commit/19b2830de1e309507dbe386b244543eeb24dbbf0))
-
 ### [2.0.1](https://github.com/redkubes/otomi-core/compare/v1.1.0...v2.0.1) (2023-11-24)
 
 
