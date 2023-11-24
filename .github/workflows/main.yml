@@ -141,8 +141,12 @@ jobs:
           # Get existing helm charts in the registry
           helm_output=$(helm search repo otomi -l -o json)
 
-          # Use jq to parse the output and find the latest chart version for the given $new_app_major.$new_app_minor app version
-          existing_version="2.0.1" #TODO: Revert if new patch/minor version is to be released for version 2
+          # Use jq to parse the output and find the latest version for the given $new_app_major.$new_app_minor app version
+          existing_version=$(echo "$helm_output" | jq -r --arg major "$new_app_major" --arg minor "$new_app_minor" '
+            map(select(.app_version | startswith("v\($major).\($minor)"))) | 
+            max_by(.version | split(".") | map(tonumber)) | 
+            .version'
+          )
 
           # Determine if a major/minor bump has occurred
           MARK_AS_LATEST="false"
