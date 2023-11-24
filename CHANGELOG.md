@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.3](https://github.com/redkubes/otomi-core/compare/v2.0.2...v2.0.3) (2023-11-24)
+
+
+### Bug Fixes
+
+* app versioning ([9bac2e2](https://github.com/redkubes/otomi-core/commit/9bac2e22c8d86eba1b3b225f022899ac8c4ef8d2))
+* tekton task path ([#1394](https://github.com/redkubes/otomi-core/issues/1394)) ([eade8ae](https://github.com/redkubes/otomi-core/commit/eade8ae6b58a82a10ce317118819a50457c84514))
+
+
+### Reverts
+
+* Revert "fix: app versioning" ([dc2eb1f](https://github.com/redkubes/otomi-core/commit/dc2eb1fb4a92eb3a33becd64af66078c141b1ea9))
+* Revert "chore(release): 2.0.2" ([e800f0b](https://github.com/redkubes/otomi-core/commit/e800f0b6f6ca2c421a6dcbe4b57b95be933df693))
+
+
+### Others
+
+* **release:** 2.0.2 ([94184cf](https://github.com/redkubes/otomi-core/commit/94184cf69cc2e6887c285d6eda94b036d25fd7d8))
+
 ### [2.0.1](https://github.com/redkubes/otomi-core/compare/v1.1.0...v2.0.1) (2023-11-24)
 
 
