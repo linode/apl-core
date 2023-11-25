@@ -22,34 +22,7 @@ prometheusOperator:
   enabled: false
 
 defaultRules:
-  create: true
-  rules:
-    alertmanager: true
-    configReloaders: false
-    etcd: false
-    general: false
-    k8s: false
-    kubeApiserver: false
-    kubeApiserverAvailability: false
-    kubeApiserverBurnrate: true
-    kubeApiserverHistogram: false
-    kubeApiserverSlos: false
-    kubelet: false
-    kubePrometheusGeneral: false
-    kubePrometheusNodeRecording: false
-    kubeProxy: false
-    kubernetesApps: false
-    kubernetesResources: false
-    kubernetesStorage: false
-    kubernetesSystem: false
-    kubeScheduler: false
-    kubeStateMetrics: false
-    network: false
-    node: false
-    nodeExporterAlerting: false
-    nodeExporterRecording: false
-    prometheus: true
-    prometheusOperator: false
+  create: false
 
 prometheus:
   additionalServiceMonitors: null
@@ -64,13 +37,6 @@ prometheus:
       requests:
         cpu: 100m
         memory: 128Mi
-    {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
-    {{ $selType }}NamespaceSelector: 
-      - team-{{ $teamId }}
-    {{ $selType }}Selector:
-      matchLabels:
-        prometheus: team-{{ $teamId }}
-    {{- end }}
 additionalPrometheusRules: null
 grafana:
   defaultDashboardsEnabled: false
