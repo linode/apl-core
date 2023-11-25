@@ -33,7 +33,7 @@ releases:
   {{- $azure := $team | get "azure" dict }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: true
-    namespace: team-https://github.com/redkubes/nodejs-helloworld.git
+    namespace: team-{{ $teamId }}
     chart: ../charts/tekton-dashboard
     labels:
       tag: teams
@@ -60,12 +60,11 @@ releases:
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
-          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
-        defaultRules:
-          appNamespacesTarget: team-{{ $teamId }}
+          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }} 
     {{- end }}
         defaultRules:
           create: false
+          appNamespacesTarget: team-{{ $teamId }}
         commonLabels:
           prometheus: system
         prometheus:
@@ -88,6 +87,7 @@ releases:
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
+        grafana:
           namespaceOverride: null # team-{{ $teamId }}
           serviceMonitor:
             namespace: null
