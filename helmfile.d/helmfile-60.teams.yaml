@@ -33,7 +33,7 @@ releases:
   {{- $azure := $team | get "azure" dict }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: true
-    namespace: team-{{ $teamId }}
+    namespace: team-https://github.com/redkubes/nodejs-helloworld.git
     chart: ../charts/tekton-dashboard
     labels:
       tag: teams
@@ -57,16 +57,11 @@ releases:
         alertmanager:
           namespaceOverride: team-{{ $teamId }}
           alertmanagerSpec:
-            externalUrl: "https://{{ $alertmanagerDomain }}"
+            externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
-          appNamespacesTarget: team-{{ $teamId }}
-    {{- else }}
-        defaultRules:
-          rules:
-            alertmanager: false
-    {{- end }}
+          create: true
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
