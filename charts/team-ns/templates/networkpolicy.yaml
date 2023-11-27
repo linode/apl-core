@@ -60,7 +60,7 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              prometheus: team-{{ $v.teamId }}
+              app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
   podSelector:
     matchLabels:
       alertmanager: {{ $v.teamId }}-po-alertmanager
@@ -81,7 +81,7 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              alertmanager: {{ $v.teamId }}-po-alertmanager
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
         - namespaceSelector:
             matchLabels:
               name: team-{{ $v.teamId }}
@@ -90,7 +90,7 @@ spec:
               app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
   podSelector:
     matchLabels:
-      prometheus: team-{{ $v.teamId }}
+      app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
   policyTypes:
     - Ingress
 ---
