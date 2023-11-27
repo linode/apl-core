@@ -55,7 +55,7 @@ releases:
         fullnameOverride: {{ $teamId }}-po
     {{- if or ($v | get "alerts" nil) ($v | get "home" nil) ($team | get "alerts" nil) }}
         alertmanager:
-          enabled: {{ and ( $team | get "monitoringStack.enabled" true) $v.apps.alertmanager.enabled }}
+          enabled: {{ $team | get "monitoringStack.enabled" true }}
           namespaceOverride: team-{{ $teamId }}
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
@@ -88,7 +88,7 @@ releases:
         commonLabels:
           prometheus: system
         prometheus:
-          enabled: {{ and ( $team | get "monitoringStack.enabled" true) $v.apps.prometheus.enabled }}
+          enabled: {{ $team | get "monitoringStack.enabled" true }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             podMetadata:
