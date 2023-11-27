@@ -49,6 +49,8 @@ prometheusOperator:
 
 
 prometheus:
+  serviceMonitor:
+    selfMonitor: false 
   prometheusSpec:
     replicas: 1
     scrapeInterval: {{ $p.scrapeInterval }}
@@ -86,9 +88,6 @@ prometheus:
 
 grafana:
   defaultDashboardsEnabled: false
-  nameOverride: po-grafana
-  fullnameOverride: po-grafana
-  namespaceOverride: grafana
   defaultDashboardsTimezone: browser
   downloadDashboards:
     resources:
@@ -118,15 +117,13 @@ grafana:
       requests:
         cpu: 50m
         memory: 50Mi
-    dashboards:
-      enabled: true
-      label: release
-      labelValue: grafana-dashboards
   testFramework:
     enabled: false
   plugins: []
 
 alertmanager:
+  serviceMonitor:
+    selfMonitor: false
   alertmanagerSpec:
     image:
        {{- with $a | get "image.tag" nil }}

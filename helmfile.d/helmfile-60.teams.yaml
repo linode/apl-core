@@ -53,8 +53,6 @@ releases:
         fullnameOverride: {{ $teamId }}-po
         alertmanager:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
-          serviceMonitor:
-            selfMonitor: false
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
@@ -62,7 +60,7 @@ releases:
               annotations:
                 sidecar.istio.io/inject: "true"
               labels:
-                prometheus-by: team-{{ $teamId }}
+                prometheus: team-{{ $teamId }}
             priorityClassName: otomi-critical
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config:
@@ -84,16 +82,14 @@ releases:
           create: false
           appNamespacesTarget: team-{{ $teamId }}
         commonLabels:
-          prometheus-by: team-{{ $teamId }}      
+          prometheus: team-{{ $teamId }}      
         prometheus:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
-          serviceMonitor:
-            selfMonitor: false 
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             podMetadata:
               labels:
-                prometheus-by: team-{{ $teamId }}
+                prometheus: team-{{ $teamId }}
             externalLabels:
               cluster: "prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}"
             externalUrl: "https://prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}"
@@ -106,7 +102,7 @@ releases:
                     - team-{{ $teamId }}
             {{ $selType }}Selector:
               matchLabels:
-                prometheus-by: team-{{ $teamId }}
+                prometheus: team-{{ $teamId }}
             {{- end }}
     {{- if gt (len .services) 0 }}
             additionalScrapeConfigs:
