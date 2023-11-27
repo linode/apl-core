@@ -323,9 +323,9 @@ registry:
       {{- end }}
   relativeurls: false
   credentials:
-    username: {{ $h | get "registry.credentials.username" }}
-    password: {{ $h | get "registry.credentials.password" $v.otomi.adminPassword }}
-    htpasswdString: {{ $h | get "registry.credentials.htpasswd" nil }}
+    username: {{ $h.registry.credentials.username }}
+    password: {{ $h.registry.credentials.password }}
+    htpasswdString: {{ $h.registry.credentials.htpasswd }}
 
 trivy:
   priorityClassName: otomi-critical
