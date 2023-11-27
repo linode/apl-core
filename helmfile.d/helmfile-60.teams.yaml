@@ -55,7 +55,7 @@ releases:
         fullnameOverride: {{ $teamId }}-po
     {{- if or ($v | get "alerts" nil) ($v | get "home" nil) ($team | get "alerts" nil) }}
         alertmanager:
-          enabled: {{ $team | get "monitoringStack.enabled" true }}
+          enabled: {{ and ( $team | get "monitoringStack.enabled" true) $v.apps.alertmanager.enabled }}
           namespaceOverride: team-{{ $teamId }}
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
@@ -66,7 +66,21 @@ releases:
                 prometheus: team-{{ $teamId }}
             priorityClassName: otomi-critical
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
-          config: {{- readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl" | nindent 12 }} 
+          config:
+            global:
+              resolve_timeout: 10m
+            route:
+              group_by: ['job']
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 12h
+              receiver: 'null'
+              routes:
+              - match:
+                  alertname: Watchdog
+                receiver: 'null'
+            receivers:
+            - name: 'null'
     {{- end }}
         defaultRules:
           create: false
@@ -74,7 +88,7 @@ releases:
         commonLabels:
           prometheus: system
         prometheus:
-          enabled: {{ $team | get "monitoringStack.enabled" true }}
+          enabled: {{ and ( $team | get "monitoringStack.enabled" true) $v.apps.prometheus.enabled }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             podMetadata:
@@ -111,9 +125,11 @@ releases:
             server:
               root_url: https://{{ $grafanaDomain }}
           sidecar:
+          {{ if $team | get "monitoringStack.enabled" true }}
             datasources:
               defaultDatasourceEnabled: true
               uid: Prometheus-team
+          {{- end }}
             dashboards:
               enabled: true
               label: release
@@ -127,6 +143,7 @@ releases:
               url: http://po-prometheus.monitoring:9090
               jsonData:
                 httpMethod: GET
+            {{- if $v.apps.loki.enabled }}
             - name: Loki
               editable: false
               uid: loki
@@ -137,6 +154,7 @@ releases:
               basicAuthUser: {{ $teamId }}
               secureJsonData: 
                 basicAuthPassword: {{ $team.password }}
+            {{- end }}
             {{- if $v.apps.tempo.enabled }}
               jsonData:
                 derivedFields:

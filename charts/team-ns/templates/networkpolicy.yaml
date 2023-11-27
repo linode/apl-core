@@ -90,7 +90,7 @@ spec:
               app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
   podSelector:
     matchLabels:
-      app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
   policyTypes:
     - Ingress
 ---
