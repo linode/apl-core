@@ -84,7 +84,7 @@ releases:
           create: false
           appNamespacesTarget: team-{{ $teamId }}
         commonLabels:
-          prometheus: system
+          otomi.io/managed-by: platform
         prometheus:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
           namespaceOverride: null # team-{{ $teamId }}
@@ -104,7 +104,7 @@ releases:
                     - team-{{ $teamId }}
             {{ $selType }}Selector:
               matchLabels:
-                prometheus: system
+                prometheus: team-{{ $teamId }}
             {{- end }}
     {{- if gt (len .services) 0 }}
             additionalScrapeConfigs:
