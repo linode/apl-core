@@ -96,7 +96,7 @@ releases:
                 prometheus-by: team-{{ $teamId }}
             externalLabels:
               cluster: "prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}"
-            externalUrl: "https://prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}}}"
+            externalUrl: "https://prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}"
             {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
             {{ $selType }}NamespaceSelector:
               matchExpressions:
