@@ -41,3 +41,12 @@ additionalPrometheusRules: null
 grafana:
   defaultDashboardsEnabled: false
   plugins: []
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi

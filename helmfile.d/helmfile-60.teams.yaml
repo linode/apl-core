@@ -59,6 +59,12 @@ releases:
           namespaceOverride: team-{{ $teamId }}
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
+            podMetadata:
+              annotations:
+                sidecar.istio.io/inject: "true"
+              labels:
+                prometheus: team-{{ $teamId }}
+            priorityClassName: otomi-critical
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }} 
     {{- end }}
@@ -71,15 +77,17 @@ releases:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
+            externalLabels:
+              cluster: "prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}"
             externalUrl: "https://{{ $prometheusDomain }}"
-    {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
+            {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
             {{ $selType }}NamespaceSelector:
-              matchLabels:
-                name: team-{{ $teamId }}
-            {{ $selType }}Selector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-    {{- end }}
+              matchExpressions:
+                - key: name
+                  operator: In
+                  values:
+                    - team-{{ $teamId }}
+            {{- end }}
     {{- if gt (len .services) 0 }}
             additionalScrapeConfigs:
           {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
