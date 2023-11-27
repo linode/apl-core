@@ -28,7 +28,6 @@ releases:
   {{- $teamServices := ($team | get "services" list) }}
   {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
   {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
-  {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $azure := $team | get "azure" dict }}
   - name: tekton-dashboard-{{ $teamId }}
@@ -85,10 +84,7 @@ releases:
           create: false
           appNamespacesTarget: team-{{ $teamId }}
         commonLabels:
-          prometheus-by: team-{{ $teamId }}
-        prometheuOperator:
-          serviceMonitor:
-            selfMonitor: false        
+          prometheus-by: team-{{ $teamId }}      
         prometheus:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
           serviceMonitor:
@@ -100,7 +96,7 @@ releases:
                 prometheus-by: team-{{ $teamId }}
             externalLabels:
               cluster: "prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}"
-            externalUrl: "https://{{ $prometheusDomain }}"
+            externalUrl: "https://prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}}}"
             {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
             {{ $selType }}NamespaceSelector:
               matchExpressions:

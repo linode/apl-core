@@ -18,7 +18,7 @@ kind: PodMonitor
 metadata:
   labels:
     {{- include "team-ns.chart-labels" $ | nindent 4 }}
-    prometheus: team-{{ $v.teamId }}
+    prometheus-by: team-{{ $v.teamId }}
   name: istio-sidecars-team-services
 spec:
   namespaceSelector:

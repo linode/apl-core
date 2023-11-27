@@ -44,8 +44,6 @@ kubeStateMetrics:
   enabled: false
 nodeExporter:
   enabled: false
-defaultRules:
-  create: false
 prometheusOperator:
   enabled: false
 
@@ -84,22 +82,7 @@ prometheus:
           resources:
             requests:
               storage: {{ $p | get "storageSize" }}
-  
-additionalPrometheusRules:
-  - name: watchdog
-    groups:
-      - name: general.rules
-        rules:
-          - alert: Watchdog
-            annotations:
-              description: |
-                This is an alert meant to ensure that the entire alerting pipeline is functional.        
-              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/general/watchdog
-              summary: An alert that should always be firing to certify that Alertmanager
-                is working properly.
-            expr: vector(1)
-            labels:
-              severity: none
+
 
 grafana:
   defaultDashboardsEnabled: false
@@ -139,12 +122,9 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards
-
   testFramework:
     enabled: false
-    
-  plugins:
-    - grafana-piechart-panel
+  plugins: []
 
 alertmanager:
   alertmanagerSpec:
