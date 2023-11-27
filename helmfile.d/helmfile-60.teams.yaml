@@ -49,20 +49,21 @@ releases:
       tag: teams
       team: {{ $teamId }}
     values:
-      - ../values/prometheus-operator/prometheus-operator.gotmpl
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
         alertmanager:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
-          namespaceOverride: team-{{ $teamId }}
+          serviceMonitor:
+            selfMonitor: false
+          namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
             podMetadata:
               annotations:
                 sidecar.istio.io/inject: "true"
               labels:
-                prometheus: team-{{ $teamId }}
+                prometheus-by: team-{{ $teamId }}
             priorityClassName: otomi-critical
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config:
@@ -84,14 +85,19 @@ releases:
           create: false
           appNamespacesTarget: team-{{ $teamId }}
         commonLabels:
-          otomi.io/managed-by: platform
+          prometheus-by: team-{{ $teamId }}
+        prometheuOperator:
+          serviceMonitor:
+            selfMonitor: false        
         prometheus:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
+          serviceMonitor:
+            selfMonitor: false 
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             podMetadata:
               labels:
-                prometheus: team-{{ $teamId }}
+                prometheus-by: team-{{ $teamId }}
             externalLabels:
               cluster: "prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}"
             externalUrl: "https://{{ $prometheusDomain }}"
@@ -104,7 +110,7 @@ releases:
                     - team-{{ $teamId }}
             {{ $selType }}Selector:
               matchLabels:
-                prometheus: team-{{ $teamId }}
+                prometheus-by: team-{{ $teamId }}
             {{- end }}
     {{- if gt (len .services) 0 }}
             additionalScrapeConfigs:
@@ -116,7 +122,7 @@ releases:
         grafana:
           namespaceOverride: null # team-{{ $teamId }}
           serviceMonitor:
-            namespace: null
+            enabled: false
           nameOverride: {{ $teamId }}-po-grafana
           fullnameOverride: {{ $teamId }}-po-grafana
           grafana.ini:

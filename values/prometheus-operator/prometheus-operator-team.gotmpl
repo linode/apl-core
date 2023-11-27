@@ -1,5 +1,31 @@
-{{- $teamId := .Release.Labels.team }}
+{{- $v := .Values }}
+{{- $c := $v.apps }}
+{{- $o := $v | get "oidc" dict }}
+{{- $a := $v.apps | get "alertmanager" }}
+{{- $g := $v.apps | get "grafana" }}
+{{- $p := $v.apps | get "prometheus" }}
 
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+{{- end }}
+prometheusOperator:
+  resources:
+    limits:
+      cpu: 400m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  admissionWebhooks:
+    enabled: true
+    certManager:
+      enabled: true
+      issuerRef:
+        name: custom-ca
+        kind: ClusterIssuer
+  priorityClassName: otomi-critical
 kubeApiServer:
   enabled: false
 coreDns:
@@ -18,17 +44,23 @@ kubeStateMetrics:
   enabled: false
 nodeExporter:
   enabled: false
-prometheusOperator:
-  enabled: false
-
 defaultRules:
   create: false
 
 prometheus:
-  additionalServiceMonitors: null
   prometheusSpec:
-    enableAdminAPI: false
     replicas: 1
+    scrapeInterval: {{ $p.scrapeInterval }}
+    podAntiAffinity: hard
+    image:
+      {{- with $g | get "image.prometheus.tag" nil }}
+      tag: {{ . }}
+      {{- end }}
+      pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
+    podMetadata:
+      annotations:
+        sidecar.istio.io/inject: "true"
+    enableAdminAPI: false
     remoteWrite: null
     resources:
       limits:
@@ -37,12 +69,88 @@ prometheus:
       requests:
         cpu: 100m
         memory: 128Mi
-additionalPrometheusRules: null
+    priorityClassName: otomi-critical
+    retention: {{ $p | get "retention" "1d" }}
+    retentionSize: {{ $p | get "retentionSize" }}
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          {{- if $v._derived.supportedCloud }}
+          storageClassName: fast
+          {{- end }}
+          resources:
+            requests:
+              storage: {{ $p | get "storageSize" }}
+  
+additionalPrometheusRules:
+  - name: watchdog
+    groups:
+      - name: general.rules
+        rules:
+          - alert: Watchdog
+            annotations:
+              description: |
+                This is an alert meant to ensure that the entire alerting pipeline is functional.        
+              runbook_url: https://runbooks.prometheus-operator.dev/runbooks/general/watchdog
+              summary: An alert that should always be firing to certify that Alertmanager
+                is working properly.
+            expr: vector(1)
+            labels:
+              severity: none
+
 grafana:
   defaultDashboardsEnabled: false
-  plugins: []
+  nameOverride: po-grafana
+  fullnameOverride: po-grafana
+  namespaceOverride: grafana
+  defaultDashboardsTimezone: browser
+  downloadDashboards:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
+  image:
+    {{- with $g | get "image.tag" nil }}
+    tag: {{ . }}
+    {{- end }}
+    pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  sidecar:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
+    dashboards:
+      enabled: true
+      label: release
+      labelValue: grafana-dashboards
+
+  testFramework:
+    enabled: false
+    
+  plugins:
+    - grafana-piechart-panel
+
 alertmanager:
   alertmanagerSpec:
+    image:
+       {{- with $a | get "image.tag" nil }}
+      tag: {{ . }}
+      {{- end }}
+      pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
+    priorityClassName: otomi-critical
     resources:
       limits:
         cpu: 200m
