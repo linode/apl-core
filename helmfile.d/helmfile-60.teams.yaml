@@ -53,7 +53,6 @@ releases:
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
-    {{- if or ($v | get "alerts" nil) ($v | get "home" nil) ($team | get "alerts" nil) }}
         alertmanager:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
           namespaceOverride: team-{{ $teamId }}
@@ -81,7 +80,6 @@ releases:
                 receiver: 'null'
             receivers:
             - name: 'null'
-    {{- end }}
         defaultRules:
           create: false
           appNamespacesTarget: team-{{ $teamId }}
@@ -125,11 +123,9 @@ releases:
             server:
               root_url: https://{{ $grafanaDomain }}
           sidecar:
-          {{ if $team | get "monitoringStack.enabled" true }}
             datasources:
-              defaultDatasourceEnabled: true
+              defaultDatasourceEnabled: {{ $team | get "monitoringStack.enabled" true }}
               uid: Prometheus-team
-          {{- end }}
             dashboards:
               enabled: true
               label: release
