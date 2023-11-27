@@ -37,5 +37,6 @@ spec:
           - {{ $v.teamId }}-po-prometheus
           - {{ $v.teamId }}-po-alertmanager
           - tekton-dashboard-{{ $v.teamId }}
+          - team-ns-{{ $v.teamId }}
 {{- end }}
 {{- end }}
