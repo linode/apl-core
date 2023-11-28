@@ -5,13 +5,6 @@ cluster:
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
   version: 'main'
-  adminPassword: test
-apps:
-  harbor:
-    enabled: true
-license: testLicense
-
-databases:
-  keycloak:
-    size: '5Gi'
-    replicas: 1
+# apps:
+#   harbor:
+#     enabled: true
