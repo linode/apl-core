@@ -58,6 +58,11 @@ releases:
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
+            podMetadata:
+              annotations:
+                sidecar.istio.io/inject: "true"
+              labels:
+                prometheus: team-{{ $teamId }}
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
@@ -88,6 +93,8 @@ releases:
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
+          - name: general
+            {{- readFile "../values/prometheus-operator/rules/general.yaml" | nindent 12 }}
         grafana:
           namespaceOverride: null # team-{{ $teamId }}
           nameOverride: {{ $teamId }}-po-grafana
