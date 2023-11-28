@@ -1,31 +1,3 @@
-{{- $v := .Values }}
-{{- $c := $v.apps }}
-{{- $o := $v | get "oidc" dict }}
-{{- $a := $v.apps | get "alertmanager" }}
-{{- $g := $v.apps | get "grafana" }}
-{{- $p := $v.apps | get "prometheus" }}
-
-{{- with .Values.otomi | get "globalPullSecret" nil }}
-global:
-  imagePullSecrets:
-    - name: otomi-pullsecret-global
-{{- end }}
-prometheusOperator:
-  resources:
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  admissionWebhooks:
-    enabled: true
-    certManager:
-      enabled: true
-      issuerRef:
-        name: custom-ca
-        kind: ClusterIssuer
-  priorityClassName: otomi-critical
 kubeApiServer:
   enabled: false
 coreDns:
@@ -47,23 +19,43 @@ nodeExporter:
 prometheusOperator:
   enabled: false
 
+defaultRules:
+  create: true
+  rules:
+    alertmanager: true
+    configReloaders: false
+    etcd: false
+    general: false
+    k8s: false
+    kubeApiserver: false
+    kubeApiserverAvailability: false
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: false
+    kubeApiserverSlos: false
+    kubelet: false
+    kubePrometheusGeneral: false
+    kubePrometheusNodeRecording: false
+    kubeProxy: false
+    kubernetesApps: false
+    kubernetesResources: false
+    kubernetesStorage: false
+    kubernetesSystem: false
+    kubeScheduler: false
+    kubeStateMetrics: false
+    network: false
+    node: false
+    nodeExporterAlerting: false
+    nodeExporterRecording: false
+    prometheus: false
+    prometheusOperator: false
 
 prometheus:
   serviceMonitor:
-    selfMonitor: false 
+    selfMonitor: false
+  additionalServiceMonitors: null
   prometheusSpec:
-    replicas: 1
-    scrapeInterval: {{ $p.scrapeInterval }}
-    podAntiAffinity: hard
-    image:
-      {{- with $g | get "image.prometheus.tag" nil }}
-      tag: {{ . }}
-      {{- end }}
-      pullPolicy: {{ $g | get "image.prometheus.pullPolicy" "IfNotPresent" }}
-    podMetadata:
-      annotations:
-        sidecar.istio.io/inject: "true"
     enableAdminAPI: false
+    replicas: 1
     remoteWrite: null
     resources:
       limits:
@@ -72,36 +64,12 @@ prometheus:
       requests:
         cpu: 100m
         memory: 128Mi
-    priorityClassName: otomi-critical
-    retention: {{ $p | get "retention" "1d" }}
-    retentionSize: {{ $p | get "retentionSize" }}
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          {{- if $v._derived.supportedCloud }}
-          storageClassName: fast
-          {{- end }}
-          resources:
-            requests:
-              storage: {{ $p | get "storageSize" }}
-
-
+additionalPrometheusRules: null
 grafana:
+  serviceMonitor:
+    enabled: false
   defaultDashboardsEnabled: false
-  defaultDashboardsTimezone: browser
-  downloadDashboards:
-    resources:
-      limits:
-        cpu: 100m
-        memory: 100Mi
-      requests:
-        cpu: 50m
-        memory: 50Mi
-  image:
-    {{- with $g | get "image.tag" nil }}
-    tag: {{ . }}
-    {{- end }}
-    pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
+  plugins: []
   resources:
     limits:
       cpu: 500m
@@ -117,20 +85,13 @@ grafana:
       requests:
         cpu: 50m
         memory: 50Mi
-  testFramework:
-    enabled: false
-  plugins: []
 
 alertmanager:
   serviceMonitor:
     selfMonitor: false
   alertmanagerSpec:
-    image:
-       {{- with $a | get "image.tag" nil }}
-      tag: {{ . }}
-      {{- end }}
-      pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
-    priorityClassName: otomi-critical
+    alertmanagerConfigMatcherStrategy:
+      type: OnNamespace
     resources:
       limits:
         cpu: 200m

@@ -28,6 +28,7 @@ releases:
   {{- $teamServices := ($team | get "services" list) }}
   {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
   {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
+  {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $azure := $team | get "azure" dict }}
   - name: tekton-dashboard-{{ $teamId }}
@@ -41,13 +42,14 @@ releases:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
   {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
   - name: prometheus-{{ $teamId }}
-    installed: true
+    installed: {{ $team | get "monitoringStack.enabled" true }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
       tag: teams
       team: {{ $teamId }}
     values:
+      - ../values/prometheus-operator/prometheus-operator.gotmpl
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
@@ -56,43 +58,18 @@ releases:
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
-            podMetadata:
-              annotations:
-                sidecar.istio.io/inject: "true"
-              labels:
-                prometheus: team-{{ $teamId }}
-            priorityClassName: otomi-critical
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
-          config:
-            global:
-              resolve_timeout: 10m
-            route:
-              group_by: ['job']
-              group_wait: 30s
-              group_interval: 5m
-              repeat_interval: 12h
-              receiver: 'null'
-              routes:
-              - match:
-                  alertname: Watchdog
-                receiver: 'null'
-            receivers:
-            - name: 'null'
+          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
           create: false
           appNamespacesTarget: team-{{ $teamId }}
         commonLabels:
-          prometheus: team-{{ $teamId }}      
+          prometheus: team-{{ $teamId }}
         prometheus:
           enabled: {{ $team | get "monitoringStack.enabled" true }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
-            podMetadata:
-              labels:
-                prometheus: team-{{ $teamId }}
-            externalLabels:
-              cluster: "prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}"
-            externalUrl: "https://prometheus-{{ $teamId }}.{{ $v.cluster.domainSuffix }}"
+            externalUrl: "https://prometheus-{{ $teamId }}.{{ $domain }}"
             {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
             {{ $selType }}NamespaceSelector:
               matchExpressions:
@@ -113,13 +90,11 @@ releases:
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
         grafana:
           namespaceOverride: null # team-{{ $teamId }}
-          serviceMonitor:
-            enabled: false
           nameOverride: {{ $teamId }}-po-grafana
           fullnameOverride: {{ $teamId }}-po-grafana
           grafana.ini:
             server:
-              root_url: https://{{ $grafanaDomain }}
+              root_url: https://grafana-{{ $teamId }}.{{ $domain }}
           sidecar:
             datasources:
               defaultDatasourceEnabled: {{ $team | get "monitoringStack.enabled" true }}
@@ -220,7 +195,7 @@ releases:
           - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
     {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
-    installed: true
+    installed: {{ $team | get "monitoringStack.enabled" true }}
     namespace: team-{{ $teamId }}
     chart: ../charts/grafana-dashboards
     labels:
