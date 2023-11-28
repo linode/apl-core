@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.4](https://github.com/redkubes/otomi-core/compare/v2.0.3...v2.0.4) (2023-11-28)
+
+
+### Bug Fixes
+
+* Harbor htpasswd bootstrap ([#1399](https://github.com/redkubes/otomi-core/issues/1399)) ([d7b8a39](https://github.com/redkubes/otomi-core/commit/d7b8a3939a6f1ed408b652bc518c2f9827512ec5))
+
 ### [2.0.3](https://github.com/redkubes/otomi-core/compare/v2.0.2...v2.0.3) (2023-11-24)
 
 
