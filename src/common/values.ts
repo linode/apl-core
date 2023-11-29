@@ -271,13 +271,11 @@ export const deriveSecrets = async (values: Record<string, any> = {}): Promise<R
   // Some secrets needs to be drived from the generated secrets
 
   const secrets = {}
-  if (values?.apps?.harbor?.enabled) {
-    const htpasswd = (
-      await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
-    ).stdout.trim()
+  const htpasswd = (
+    await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
+  ).stdout.trim()
 
-    set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
-  }
+  set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
 
   return secrets
 }
