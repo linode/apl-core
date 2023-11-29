@@ -12,6 +12,9 @@ metadata:
 spec:
   outboundTrafficPolicy: 
     mode: REGISTRY_ONLY
+{{- end }}
+{{- end }}
+{{- if $v.monitoringStack.enabled }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
@@ -38,5 +41,4 @@ spec:
           - {{ $v.teamId }}-po-alertmanager
           - tekton-dashboard-{{ $v.teamId }}
           - team-ns-{{ $v.teamId }}
-{{- end }}
 {{- end }}

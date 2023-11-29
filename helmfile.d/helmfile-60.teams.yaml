@@ -97,8 +97,6 @@ releases:
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
-          - name: general
-            {{- readFile "../values/prometheus-operator/rules/general.yaml" | nindent 12 }}
         grafana:
           namespaceOverride: null # team-{{ $teamId }}
           nameOverride: {{ $teamId }}-po-grafana
