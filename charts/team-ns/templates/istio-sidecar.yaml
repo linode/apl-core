@@ -1,5 +1,6 @@
 {{- $v := .Values | merge (dict) }}
 {{- $ := . }}
+{{- $ms := $v | dig "monitoringStack.enabled" true }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
 {{- if $egressFilteringEnabled }}
@@ -14,7 +15,7 @@ spec:
     mode: REGISTRY_ONLY
 {{- end }}
 {{- end }}
-{{- if $v.monitoringStack.enabled }}
+{{- if $ms }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
@@ -40,5 +41,4 @@ spec:
           - {{ $v.teamId }}-po-prometheus
           - {{ $v.teamId }}-po-alertmanager
           - tekton-dashboard-{{ $v.teamId }}
-          - team-ns-{{ $v.teamId }}
 {{- end }}
