@@ -22,7 +22,7 @@ prometheusOperator:
 defaultRules:
   create: true
   rules:
-    alertmanager: true
+    alertmanager: false
     configReloaders: false
     etcd: false
     general: true
@@ -54,6 +54,9 @@ prometheus:
     selfMonitor: false
   additionalServiceMonitors: null
   prometheusSpec:
+    podMetadata:
+      annotations:
+        traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
     enableAdminAPI: false
     replicas: 1
     remoteWrite: null

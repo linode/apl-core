@@ -94,33 +94,6 @@ spec:
   policyTypes:
     - Ingress
 ---
-# Allow traffic from platform prometheus to team's prometheus, grafana and alertmanager
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-to-team-prometheus-stack
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
-spec:
-  ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: monitoring
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
-        - namespaceSelector:
-            matchLabels:
-              name: team-{{ $v.teamId }}
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
-  policyTypes:
-    - Ingress
----
 # Allow traffic from team's prometheus to team's kube-state-metrics
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
