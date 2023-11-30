@@ -58,6 +58,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   }
   // we don't care about ssl verification as repo endpoint is either ours or user input
   process.env.GIT_SSL_NO_VERIFY = '1'
+  let hasCommits = false
   try {
     d.debug('Checking out remote into /tmp/xx to test if repo exists and use if needed')
     // check remote exists by cloning with a 10 second timeout (if remote is unreachable it takes 30 secs to timeout)
@@ -67,6 +68,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     try {
       await $`cd /tmp/xx && git fetch && git checkout ${branch} && git log && cd -`
       d.info('We have found a clone with commits, so we use that and rsync new files onto it')
+      hasCommits = true
     } catch (e) {
       // for some reason we were able to clone, but not checkout any commits
       // (could be empty clone)
@@ -88,9 +90,17 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     d.debug(e)
     d.info('Remote does not exist yet. Expecting first commit to come later.')
   }
+  if (!(await pathExists(`${env.ENV_DIR}/.git`))) {
+    d.info('Initializing values git repo.')
+    await $`git init .`
+  }
   if (isCli) await copyFile(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
   else await nothrow($`git config --global --add safe.directory ${env.ENV_DIR}`)
   await setIdentity(username, password, email)
+  if (!hasCommits) {
+    await nothrow($`git checkout -b ${branch}`)
+    await nothrow($`git remote add origin ${remote}`)
+  }
   if (await pathExists(`${env.ENV_DIR}/.sops.yaml`))
     await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
   d.log(`Done bootstrapping git`)
