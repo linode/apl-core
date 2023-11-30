@@ -11,7 +11,7 @@ import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/va
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $ } from 'zx'
 import { cloneOtomiChartsInGitea, commit, printWelcomeMessage } from './commit'
 import { upgrade } from './upgrade'
 
@@ -32,7 +32,6 @@ const setup = (): void => {
 
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
-  const argv: HelmArguments = getParsedArgs()
   const prevState = await getDeploymentState()
 
   await upgrade({ when: 'pre' })
@@ -57,26 +56,30 @@ const applyAll = async () => {
   }
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
+
+  d.info('Deploying CRDs')
+  await $`kubectl apply -f charts/operator-lifecycle-manager/crds --server-side`
+  await $`kubectl apply -f charts/kube-prometheus-stack/crds --server-side`
+  await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
+  d.info('Deploying essential manifests')
   await $`kubectl apply -f ${templateFile}`
-  await nothrow(
-    $`if ! kubectl replace -f charts/kube-prometheus-stack/crds; then kubectl create -f charts/kube-prometheus-stack/crds; fi`,
-  )
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
       // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
       fileOpts: 'helmfile.d/helmfile-02.init.yaml',
-      labelOpts: [...(argv.label || []), 'stage=prep'],
+      labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
       args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   await prepareDomainSuffix()
-  d.info('Deploying charts containing label stage!=prep')
+  const applyLabel: string = process.env.OTOMI_DEV_APPLY_LABEL || 'stage!=prep'
+  d.info(`Deploying charts containing label ${applyLabel}`)
   await hf(
     {
-      labelOpts: [...(argv.label || []), 'stage!=prep'],
+      labelOpts: [applyLabel],
       logLevel: logLevelString(),
       args: ['apply'],
     },

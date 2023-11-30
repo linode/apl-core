@@ -205,13 +205,15 @@ export const waitTillGitRepoAvailable = async (): Promise<void> => {
     retries: 10,
     maxTimeout: 30000,
   }
+  const d = terminal('common:k8s:waitTillGitRepoAvailable')
   await retry(async (bail) => {
     try {
       cd(env.ENV_DIR)
       // the ls-remote exist with zero even if repo is empty
       await $`git ls-remote`
     } catch (e) {
-      bail(e)
+      d.warn(e.message)
+      throw e
     }
   }, retryOptions)
 }

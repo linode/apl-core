@@ -27,8 +27,17 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
   cd(env.ENV_DIR)
   try {
+    try {
+      await $`git rev-list HEAD --count`
+    } catch {
+      d.log('Very first commit')
+      // We need at least two commits in repo, so git diff in Tekton pipeline always works. This is why  the very first time we commit twice.
+      await $`git add README.md`
+      await $`git commit -m ${message} --no-verify`
+    }
     await $`git add -A`
-    const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length
+    // The below 'git status' command will always return at least single new line
+    const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
     if (filesChangedCount === 0) {
       d.log('Nothing to commit')
       return
@@ -70,7 +79,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   const { email, username, password } = getRepo(values)
   const workDir = '/tmp/otomi-charts'
   const otomiChartsUrl = env.OTOMI_CHARTS_URL
-  const giteaChartsUrl = `https://${username}:${password}@gitea.${values.cluster.domainSuffix}/otomi/charts.git`
+  const giteaChartsUrl = `http://${username}:${password}@gitea-http.gitea.svc.cluster.local:3000/otomi/charts.git`
   try {
     await $`mkdir ${workDir}`
     await $`git clone --depth 1 ${otomiChartsUrl} ${workDir}`
