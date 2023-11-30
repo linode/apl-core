@@ -28,8 +28,8 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   cd(env.ENV_DIR)
   try {
     await $`git add -A`
-    const res = await $`git status --untracked-files=no --porcelain`
-    if (res.stdout.toString()) {
+    const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length
+    if (filesChangedCount === 0) {
       d.log('Nothing to commit')
       return
     }
