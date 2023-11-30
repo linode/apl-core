@@ -4,7 +4,7 @@ import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { waitTillAvailable } from 'src/common/k8s'
+import { waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -52,15 +52,10 @@ export const commit = async (): Promise<void> => {
   const values = (await hfValues()) as Record<string, any>
   // we call this here again, as we might not have completed (happens upon first install):
   await bootstrapGit(values)
-  const { username, password, remote, branch } = getRepo(values)
+  const { branch } = getRepo(values)
   // lets wait until the remote is ready
   if (values?.apps!.gitea!.enabled ?? true) {
-    await waitTillAvailable(remote, {
-      status: 200,
-      skipSsl: values._derived?.untrustedCA,
-      username,
-      password,
-    })
+    await waitTillGitRepoAvailable()
   }
   // continue
   await genDrone()

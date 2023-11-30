@@ -9,7 +9,7 @@ import { isEmpty, map } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
-import { $, nothrow, sleep } from 'zx'
+import { $, cd, nothrow, sleep } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -198,6 +198,22 @@ type WaitTillAvailableOptions = Options & {
   skipSsl?: boolean
   username?: string
   password?: string
+}
+
+export const waitTillGitRepoAvailable = async (): Promise<void> => {
+  const retryOptions: Options = {
+    retries: 10,
+    maxTimeout: 30000,
+  }
+  await retry(async (bail) => {
+    try {
+      cd(env.ENV_DIR)
+      // the ls-remote exist with zero even if repo is empty
+      await $`git ls-remote`
+    } catch (e) {
+      bail(e)
+    }
+  }, retryOptions)
 }
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
