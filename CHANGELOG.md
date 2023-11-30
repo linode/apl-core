@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.5](https://github.com/redkubes/otomi-core/compare/v2.0.4...v2.0.5) (2023-11-30)
+
+
+### Features
+
+* updating otomi tasks and otomi installer job resource limits ([#1406](https://github.com/redkubes/otomi-core/issues/1406)) ([b2fbc9a](https://github.com/redkubes/otomi-core/commit/b2fbc9a98e5d6d879a2c2082949614a53c174047))
+
 ### [2.0.4](https://github.com/redkubes/otomi-core/compare/v2.0.3...v2.0.4) (2023-11-28)
 
 
