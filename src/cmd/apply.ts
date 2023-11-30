@@ -48,7 +48,7 @@ const applyAll = async () => {
 
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    { streams: { stderr: d.stream.error } },
   )
   if (output.exitCode > 0) {
     throw new Error(output.stderr)
@@ -85,7 +85,6 @@ const applyAll = async () => {
 
   const intitalInstall = isEmpty(prevState.version)
   await upgrade({ when: 'post' })
-  await cloneOtomiChartsInGitea()
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit()
     if (intitalInstall) {
@@ -98,6 +97,7 @@ const applyAll = async () => {
         },
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
+      await cloneOtomiChartsInGitea()
       await printWelcomeMessage()
     }
   }
