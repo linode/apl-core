@@ -28,9 +28,14 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   cd(env.ENV_DIR)
   try {
     await $`git add -A`
+    const res = await $`git status --porcelain`
+    if (res.stdout.toString()) {
+      d.log('Nothing to commit')
+      return
+    }
     await $`git commit -m ${message} --no-verify`
   } catch (e) {
-    d.log('Could not commit. Did you make any changes?')
+    d.log(e)
     return
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
