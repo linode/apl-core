@@ -40,9 +40,8 @@ releases:
       team: {{ $teamId }}
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
-  {{- if and $a.prometheus.enabled $a.grafana.enabled }}
   - name: prometheus-{{ $teamId }}
-    installed: {{ $team | get "monitoringStack.enabled" true }}
+    installed: {{ and $a.prometheus.enabled $a.grafana.enabled }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
@@ -54,7 +53,7 @@ releases:
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
         alertmanager:
-          enabled: {{ and ( $team | get "monitoringStack.enabled" true ) ( $a.alertmanager.enabled )  }}
+          enabled: {{ and ( $team | get "monitoringStack.enabled" true ) ( $a.alertmanager.enabled ) }}
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
@@ -67,6 +66,8 @@ releases:
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
           appNamespacesTarget: team-{{ $teamId }}
+          rules:
+            general: {{ $team | get "monitoringStack.enabled" true }}
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
@@ -93,9 +94,11 @@ releases:
             additionalScrapeConfigs:
           {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
     {{- end }}
+        {{- if $team | get "monitoringStack.enabled" true }}
         additionalPrometheusRules:
           - name: blackbox
-            {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}       
+            {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
+        {{- end }}    
         grafana:
           namespaceOverride: null # team-{{ $teamId }}
           nameOverride: {{ $teamId }}-po-grafana
@@ -226,7 +229,7 @@ releases:
           {{- if $v.apps.trivy.enabled }}
           - trivy-teams
           {{- end }}
-  {{- end }}
+
   - name: team-ns-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
