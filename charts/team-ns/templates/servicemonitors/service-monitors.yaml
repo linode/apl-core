@@ -1,4 +1,4 @@
-{{- $v := .Values }}
+{{- $v := .Values | merge (dict) }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $ns := .Release.Namespace }}
 {{- if (dig "monitoringStack" "enabled" false $v) }}
