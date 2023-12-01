@@ -2,6 +2,7 @@
 {{- if not (eq $v.teamId "admin") }}
 {{- $ns := .Release.Namespace }}
 {{- if $v.monitoringStack.enabled }}
+{{- if $v.apps.alertmanager.enabled }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -22,7 +23,9 @@ spec:
     matchLabels:
       app: {{ $v.teamId }}-po-alertmanager
       release: prometheus-{{ $v.teamId }}
+{{- end }}
 ---
+{{- if $v.apps.prometheus.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -41,7 +44,9 @@ spec:
       app: {{ $v.teamId }}-po-prometheus
       release: prometheus-{{ $v.teamId }}
 {{- end }}
+{{- end }}
 ---
+{{- if $v.apps.grafana.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -62,5 +67,6 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
       app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
+{{- end }}
 ---
 {{- end }}

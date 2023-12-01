@@ -40,7 +40,7 @@ releases:
       team: {{ $teamId }}
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
-  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant }}
+  {{- if and $a.prometheus.enabled $a.grafana.enabled }}
   - name: prometheus-{{ $teamId }}
     installed: {{ $team | get "monitoringStack.enabled" true }}
     namespace: team-{{ $teamId }}
@@ -54,7 +54,7 @@ releases:
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
         alertmanager:
-          enabled: {{ $team | get "monitoringStack.enabled" true }}
+          enabled: {{ and ( $team | get "monitoringStack.enabled" true ) ( $a.alertmanager.enabled )  }}
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
@@ -72,7 +72,7 @@ releases:
         prometheus:
           annotations:
             traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
-          enabled: {{ $team | get "monitoringStack.enabled" true }}
+          enabled: {{ and ( $team | get "monitoringStack.enabled" true ) ( $a.prometheus.enabled )  }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             externalLabels:
