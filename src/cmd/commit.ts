@@ -61,10 +61,10 @@ export const commit = async (): Promise<void> => {
   const values = (await hfValues()) as Record<string, any>
   // we call this here again, as we might not have completed (happens upon first install):
   await bootstrapGit(values)
-  const { branch } = getRepo(values)
+  const { branch, remote } = getRepo(values)
   // lets wait until the remote is ready
   if (values?.apps!.gitea!.enabled ?? true) {
-    await waitTillGitRepoAvailable()
+    await waitTillGitRepoAvailable(remote)
   }
   // continue
   await genDrone()

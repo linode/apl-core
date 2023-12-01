@@ -200,7 +200,7 @@ type WaitTillAvailableOptions = Options & {
   password?: string
 }
 
-export const waitTillGitRepoAvailable = async (): Promise<void> => {
+export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
   const retryOptions: Options = {
     retries: 10,
     maxTimeout: 30000,
@@ -210,7 +210,7 @@ export const waitTillGitRepoAvailable = async (): Promise<void> => {
     try {
       cd(env.ENV_DIR)
       // the ls-remote exist with zero even if repo is empty
-      await $`git ls-remote`
+      await $`git ls-remote ${repoUrl}`
     } catch (e) {
       d.warn(e.message)
       throw e
