@@ -36,7 +36,7 @@ const applyAll = async () => {
 
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
-  d.debug(`Deployment state: ${JSON.stringify(prevState)}`)
+  d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
   const version = await getCurrentVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })

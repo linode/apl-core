@@ -56,7 +56,7 @@ spec:
         git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- end }}
         me=$(whoami)
-        chown -R $ENV_DIR $me:$me
+        chown -R $me:$me $ENV_DIR
     - name: bootstrap
       command:
         - '/bin/bash'
