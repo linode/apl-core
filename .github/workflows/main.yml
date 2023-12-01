@@ -162,8 +162,7 @@ jobs:
 
           # Update Chart.yaml and values.yaml with the new app version
           sed -i "s/CHART_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/Chart.yaml
-          sed -i "s/APP_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/values.yaml
-          sed -i "s/APP_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/Chart.yaml
+          sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/otomi/Chart.yaml
 
           echo "Chart and values files updated successfully with version $app_version"
           echo "MARK_AS_LATEST is set to $MARK_AS_LATEST"
