@@ -53,7 +53,7 @@ releases:
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
         alertmanager:
-          enabled: {{ and ( $team | get "monitoringStack.enabled" true ) ( $a.alertmanager.enabled ) }}
+          enabled: {{ and ( $team | get "monitoringStack.enabled" false ) ( $a.alertmanager.enabled ) }}
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
@@ -67,13 +67,13 @@ releases:
         defaultRules:
           appNamespacesTarget: team-{{ $teamId }}
           rules:
-            general: {{ $team | get "monitoringStack.enabled" true }}
+            general: {{ $team | get "monitoringStack.enabled" false }}
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
           annotations:
             traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
-          enabled: {{ and ( $team | get "monitoringStack.enabled" true ) ( $a.prometheus.enabled )  }}
+          enabled: {{ and ( $team | get "monitoringStack.enabled" false ) ( $a.prometheus.enabled )  }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             externalLabels:
@@ -94,7 +94,7 @@ releases:
             additionalScrapeConfigs:
           {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
     {{- end }}
-        {{- if $team | get "monitoringStack.enabled" true }}
+        {{- if $team | get "monitoringStack.enabled" false }}
         additionalPrometheusRules:
           - name: blackbox
             {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
@@ -108,7 +108,7 @@ releases:
               root_url: https://grafana-{{ $teamId }}.{{ $domain }}
           sidecar:
             datasources:
-              defaultDatasourceEnabled: {{ $team | get "monitoringStack.enabled" true }}
+              defaultDatasourceEnabled: {{ $team | get "monitoringStack.enabled" false }}
               uid: Prometheus-team
             dashboards:
               enabled: true
