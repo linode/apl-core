@@ -31,6 +31,10 @@ spec:
       value: $(params["CI"])
     - name: IN_DOCKER
       value: '1'
+    - name: ENV_DIR
+      values: /home/app/stack/env
+    - name: VERBOSE
+      values: '1'
   steps:
     - name: git-clone
       script: |
@@ -47,19 +51,19 @@ spec:
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
-        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url /home/app/stack/env
+        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- else}}
-        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url /home/app/stack/env
+        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- end }}
     - name: test
       command:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi validate-values'
+        - 'binzx/otomi validate-values'
     - name: apply
       command:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=$PWD/values && binzx/otomi apply -f helmfile.d/helmfile-60.teams.yaml'
+        - 'binzx/otomi apply -f helmfile.d/helmfile-60.teams.yaml'
