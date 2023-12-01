@@ -53,7 +53,7 @@ releases:
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
         alertmanager:
-          enabled: {{ and ( $team | get "monitoringStack.enabled" false ) ( $a.alertmanager.enabled ) }}
+          enabled: {{ and ($team | get "monitoringStack.enabled" false) ($a.alertmanager.enabled) }}
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
@@ -73,7 +73,7 @@ releases:
         prometheus:
           annotations:
             traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
-          enabled: {{ and ( $team | get "monitoringStack.enabled" false ) ( $a.prometheus.enabled )  }}
+          enabled: {{ and ($team | get "monitoringStack.enabled" false) ($a.prometheus.enabled)  }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             externalLabels:
@@ -187,7 +187,7 @@ releases:
     {{- end }}
     {{- if has "msteams" ($team | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: {{ $team | get "monitoringStack.enabled" true }}
+    installed: {{ $team | get "monitoringStack.enabled" false }}
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -206,7 +206,7 @@ releases:
           - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
     {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
-    installed: {{ $team | get "monitoringStack.enabled" true }}
+    installed: {{ $a.grafana.enabled }}
     namespace: team-{{ $teamId }}
     chart: ../charts/grafana-dashboards
     labels:
@@ -249,7 +249,7 @@ releases:
         teamId: {{ $teamId }}
         teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if and $a.prometheus.enabled $v.otomi.isMultitenant (gt (len $teamServices) 0) }}
+  {{- if and ($team | get "monitoringStack.enabled" false) ($a.prometheus.enabled) (gt (len $teamServices) 0) }}
       - name: blackbox
         svc: prometheus-blackbox-exporter
         port: 9115
