@@ -19,7 +19,6 @@ spec:
     - name: gitea-credentials
       mountPath: /etc/gitea-credentials
   stepTemplate:
-    computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     workingDir: $(workspaces.source.path)
     image: otomi/core:v1.0.0
   steps:

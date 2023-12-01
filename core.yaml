@@ -115,6 +115,7 @@ k8s:
     - name: otomi-pipelines
       app: tekton
       disableIstioInjection: true
+      disablePolicyChecks: true
 
 adminApps:
   - name: alertmanager
