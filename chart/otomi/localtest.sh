@@ -10,7 +10,7 @@ set -eu
 
 export IN_DOCKER=1
 # OTOMI_DEV_APPLY_LABEL - In local test you can narrow down the helm releases that are going to be installed while perogotim otomi apply
-export OTOMI_DEV_APPLY_LABEL=pkg=gitea
+# export OTOMI_DEV_APPLY_LABEL=pkg=gitea
 export VALUES_INPUT=${VALUES_INPUT:-'tests/bootstrap/input.yaml'}
 # export DOCKER_EXTRA_ARGS="-v $(dirname $VALUES_INPUT):$(dirname $VALUES_INPUT)"
 export VERBOSITY=${VERBOSITY:-'1'}

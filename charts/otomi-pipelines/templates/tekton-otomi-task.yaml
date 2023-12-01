@@ -68,4 +68,4 @@ spec:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi apply -l tag!=teams'
+        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi apply

@@ -13,14 +13,14 @@ spec:
     - name: giteaCredentialsSecretName
   workspaces:
     - name: source
-      mountPath: /home/app/stack
+      mountPath: /home/app/stack/env
     - name: gitea-credentials
       mountPath: /etc/gitea-credentials
   stepTemplate:
     computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     imagePullPolicy: Always
     image: otomi/core:$(params["OTOMI_VERSION"])
-    workingDir: $(workspaces.source.path)
+    workingDir: /home/app/stack
 {{- if hasKey $kms "sops" }}
     envFrom:
     - secretRef:
@@ -37,9 +37,6 @@ spec:
         #!/bin/bash
         set -e
 
-        # Cleaning up the workdir. If any folder is there (like lost+found) it will cause the git clone to fail
-        rm -rf *
-
         # Reading gitea credentials
         GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
         GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
@@ -50,16 +47,16 @@ spec:
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
-        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url /home/app/stack/env
         {{- else}}
-        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url otomi-values
+        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url /home/app/stack/env
         {{- end }}
     - name: test
       command:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=$PWD/otomi-values && binzx/otomi validate-values'
+        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi validate-values'
     - name: apply
       command:
         - '/bin/bash'

@@ -79,7 +79,7 @@ const applyAll = async () => {
   d.info(`Deploying charts containing label ${applyLabel}`)
   await hf(
     {
-      labelOpts: [applyLabel],
+      labelOpts: ['tag!=teams', applyLabel],
       logLevel: logLevelString(),
       args: ['apply'],
     },
