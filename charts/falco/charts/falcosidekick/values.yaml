@@ -5,13 +5,16 @@
 # -- number of running pods
 replicaCount: 2
 
+# -- number of old history to retain to allow rollback (If not set, default Kubernetes value is set to 10)
+# revisionHistoryLimit: 1
+
 image:
   # -- The image registry to pull from
   registry: docker.io
   # -- The image repository to pull from
   repository: falcosecurity/falcosidekick
   # -- The image tag to pull
-  tag: 2.26.0
+  tag: 2.28.0
   # -- The image pull policy
   pullPolicy: IfNotPresent
 
@@ -46,23 +49,119 @@ podLabels: {}
 # -- additions annotations on the pods
 podAnnotations: {}
 
+serviceMonitor:
+  # -- enable the deployment of a Service Monitor for the Prometheus Operator.
+  enabled: false
+  # -- specify Additional labels to be added on the Service Monitor.
+  additionalLabels: {}
+  # -- specify a user defined interval. When not specified Prometheus default interval is used.
+  interval: ""
+  # -- specify a user defined scrape timeout. When not specified Prometheus default scrape timeout is used.
+  scrapeTimeout: ""
+
+prometheusRules:
+  # -- enable the creation of PrometheusRules for alerting
+  enabled: false
+  alerts:
+    warning:
+      # -- enable the high rate rule for the warning events
+      enabled: true
+      # -- rate interval for the high rate rule for the warning events
+      rate_interval: "5m"
+      # -- threshold for the high rate rule for the warning events
+      threshold: 0
+    error:
+      # -- enable the high rate rule for the error events
+      enabled: true
+      # -- rate interval for the high rate rule for the error events
+      rate_interval: "5m"
+      # -- threshold for the high rate rule for the error events
+      threshold: 0
+    critical:
+      # -- enable the high rate rule for the critical events
+      enabled: true
+      # -- rate interval for the high rate rule for the critical events
+      rate_interval: "5m"
+      # -- threshold for the high rate rule for the critical events
+      threshold: 0
+    alert:
+      # -- enable the high rate rule for the alert events
+      enabled: true
+      # -- rate interval for the high rate rule for the alert events
+      rate_interval: "5m"
+      # -- threshold for the high rate rule for the alert events
+      threshold: 0
+    emergency:
+      # -- enable the high rate rule for the emergency events
+      enabled: true
+      # -- rate interval for the high rate rule for the emergency events
+      rate_interval: "5m"
+      # -- threshold for the high rate rule for the emergency events
+      threshold: 0
+    output:
+      # -- enable the high rate rule for the errors with the outputs
+      enabled: true
+      # -- rate interval for the high rate rule for the errors with the outputs
+      rate_interval: "5m"
+      # -- threshold for the high rate rule for the errors with the outputs
+      threshold: 0
+    additionalAlerts: {}
+
 config:
   # -- Existing secret with configuration
   existingSecret: ""
   # -- Extra environment variables
   extraEnv: []
+  # -- Extra command-line arguments
+  extraArgs: []
   # -- DEBUG environment variable
   debug: false
   # -- a list of escaped comma separated custom fields to add to falco events, syntax is "key:value\,key:value"
   customfields: ""
-
-  # -- folder which will used to store client.crt, client.key and ca.crt files for mutual tls (default: "/etc/certs")
+  # -- a list of escaped comma separated Go templated fields to add to falco events, syntax is "key:template\,key:template"
+  templatedfields: ""
+  # -- if not empty, the brackets in keys of Output Fields are replaced
+  bracketreplacer: ""
+  # -- folder which will used to store client.crt, client.key and ca.crt files for mutual tls for outputs, will be deprecated in the future (default: "/etc/certs")
   mutualtlsfilespath: "/etc/certs"
 
+  mutualtlsclient:
+    # -- client certification file for mutual TLS client certification, takes priority over mutualtlsfilespath if not empty
+    certfile: ""
+    # -- client key file for mutual TLS client certification, takes priority over mutualtlsfilespath if not empty
+    keyfile: ""
+    # -- CA certification file for server certification for mutual TLS authentication, takes priority over mutualtlsfilespath if not empty
+    cacertfile: ""
+
+  tlsserver:
+    # -- if true TLS server will be deployed instead of HTTP
+    deploy: false
+    # -- existing secret with server.crt, server.key and ca.crt files for TLS Server
+    existingSecret: ""
+    # -- server.crt file for TLS Server
+    servercrt: ""
+    # -- server certification file path for TLS Server
+    certfile: "/etc/certs/server/server.crt"
+    # -- server.key file for TLS Server
+    serverkey: ""
+    # -- server key file path for TLS Server
+    keyfile: "/etc/certs/server/server.key"
+    # -- if true mutual TLS server will be deployed instead of TLS, deploy also has to be true
+    mutualtls: false
+    # ca.crt file for client certification if mutualtls is true
+    cacrt: ""
+    # --  CA certification file path for client certification if mutualtls is true
+    cacertfile: "/etc/certs/server/ca.crt"
+    # -- port to serve http server serving selected endpoints
+    notlsport: 2810
+    # -- a comma separated list of endpoints, if not empty, and tlsserver.deploy is true, a separate http server will be deployed for the specified endpoints (/ping endpoint needs to be notls for Kubernetes to be able to perform the healthchecks)
+    notlspaths: "/ping"
 
   slack:
     # -- Slack Webhook URL (ex: <https://hooks.slack.com/services/XXXX/YYYY/ZZZZ>), if not `empty`, Slack output is *enabled*
     webhookurl: ""
+    # -- Slack channel (optionnal)
+    channel: ""
     # -- Slack Footer
     footer: ""
     # -- Slack icon (avatar)
@@ -141,6 +240,16 @@ config:
     minimumpriority: ""
     # -- if set to a non-zero value, alert expires after that time in seconds (default: 0)
     expireafter: ""
+    # -- comma separated list of labels composed of a ':' separated name and value that is added to the Alerts. Example: my_label_1:my_value_1, my_label_1:my_value_2
+    extralabels: ""
+    # -- comma separated list of annotations composed of a ':' separated name and value that is added to the Alerts. Example: my_annotation_1:my_value_1, my_annotation_1:my_value_2
+    extraannotations: ""
+    # -- comma separated list of tuple composed of a ':' separated Falco priority and Alertmanager severity that is used to override the severity label associated to the priority level of falco event. Example: debug:value_1,critical:value2. Default mapping: emergency:critical,alert:critical,critical:critical,error:warning,warning:warning,notice:information,informational:information,debug:information.
+    customseveritymap: ""
+    # -- default priority of dropped events, values are emergency|alert|critical|error|warning|notice|informational|debug
+    dropeventdefaultpriority: "critical"
+    # -- comma separated list of priority re-evaluation thresholds of dropped events composed of a ':' separated integer threshold and string priority. Example: `10000:critical, 100:warning, 1:informational`
+    dropeventthresholds: "10000:critical, 1000:critical, 100:critical, 10:warning, 1:warning"
     # -- if true, checkcert flag will be ignored (server cert will always be checked)
     mutualtls: false
     # -- check if ssl certificate of the output is valid
@@ -152,29 +261,39 @@ config:
     # -- Elasticsearch index
     index: "falco"
     # -- Elasticsearch document type
-    type: "event"
-    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
-    minimumpriority: ""
-    # -- if true, checkcert flag will be ignored (server cert will always be checked)
-    mutualtls: false
-    # -- check if ssl certificate of the output is valid
-    checkcert: true
+    type: "_doc"
+    # date suffix for index rotation : daily, monthly, annually, none
+    suffix: "daily"
     # -- use this username to authenticate to Elasticsearch if the username is not empty
     username: ""
     # -- use this password to authenticate to Elasticsearch if the password is not empty
     password: ""
+    # -- a list of comma separated custom headers to add, syntax is "key:value,key:value"
+    customheaders: ""
+    # -- if true, checkcert flag will be ignored (server cert will always be checked)
+    mutualtls: false
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+    minimumpriority: ""
 
   influxdb:
     # -- Influxdb <http://host:port>, if not `empty`, Influxdb is *enabled*
     hostport: ""
     # -- Influxdb database
     database: "falco"
+    # -- Influxdb organization
+    organization: ""
+    # -- write precision
+    precision: "ns"
     # -- User to use if auth is *enabled* in Influxdb
     user: ""
     # -- Password to use if auth is *enabled* in Influxdb
     password: ""
     # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
     minimumpriority: ""
+    # -- API token to use if auth in enabled in Influxdb (disables user and password)
+    token: ""
     # -- if true, checkcert flag will be ignored (server cert will always be checked)
     mutualtls: false
     # -- check if ssl certificate of the output is valid
@@ -183,12 +302,18 @@ config:
   loki:
     # -- Loki <http://host:port>, if not `empty`, Loki is *enabled*
     hostport: ""
-    # -- Loki endpoint URL path, default is "/api/prom/push" more info: <https://grafana.com/docs/loki/latest/api/#post-apiprompush>
-    endpoint: "/api/prom/push"
+    # -- user for Grafana Logs
+    user: ""
+    # -- API Key for Grafana Logs
+    apikey: ""
+    # -- Loki endpoint URL path, more info: <https://grafana.com/docs/loki/latest/api/#post-apiprompush>
+    endpoint: "/loki/api/v1/push"
     # -- Loki tenant, if not `empty`, Loki tenant is *enabled*
     tenant: ""
     # -- comma separated list of fields to use as labels additionally to rule, source, priority, tags and custom_fields
     extralabels: ""
+    # -- a list of comma separated custom headers to add, syntax is "key:value,key:value"
+    customheaders: ""
     # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
     minimumpriority: ""
     # -- if true, checkcert flag will be ignored (server cert will always be checked)
@@ -225,14 +350,20 @@ config:
     checkcert: true
 
   aws:
+    # -- Use IRSA, if true, the rolearn value will be used to set the ServiceAccount annotations and not the env var
+    useirsa: true
     # -- AWS IAM role ARN for falcosidekick service account to associate with (optionnal if you use EC2 Instance Profile)
     rolearn: ""
+    # -- External id for the role to assume (optional if you use EC2 Instance Profile)
+    externalid: ""
     # -- AWS Access Key Id (optionnal if you use EC2 Instance Profile)
     accesskeyid: ""
     # -- AWS Secret Access Key (optionnal if you use EC2 Instance Profile)
     secretaccesskey: ""
     # -- AWS Region (optionnal if you use EC2 Instance Profile)
     region: ""
+    # -- check the identity credentials, set to false for locale developments
+    checkidentity: true
     cloudwatchlogs:
       # -- AWS CloudWatch Logs Group name, if not empty, CloudWatch Logs output is *enabled*
       loggroup: ""
@@ -269,14 +400,39 @@ config:
       streamname: ""
       # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
       minimumpriority: ""
+    securitylake:
+      # -- Bucket for AWS SecurityLake data, if not empty, AWS SecurityLake output is enabled
+      bucket: ""
+      # -- Bucket Region
+      region: ""
+      # -- Prefix for keys
+      prefix: ""
+      # -- Account ID
+      accountid: ""
+      # -- Time in minutes between two puts to S3 (must be between 5 and 60min)
+      interval: 5
+      # -- Max number of events by parquet file
+      batchsize: 1000
+      # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+      minimumpriority: ""
 
   smtp:
     # -- "host:port" address of SMTP server, if not empty, SMTP output is *enabled*
     hostport: ""
+    # -- use TLS connection (true/false)
+    tls: true
+    # -- SASL Mechanisms : plain, oauthbearer, external, anonymous or "" (disable SASL)
+    authmechanism: "plain"
     # -- user to access SMTP server
     user: ""
     # -- password to access SMTP server
     password: ""
+    # -- OAuthBearer token for OAuthBearer Mechanism
+    token: ""
+    # -- identity string for Plain and External Mechanisms
+    identity: ""
+    # -- trace string for Anonymous Mechanism
+    trace: ""
     # -- Sender address (mandatory if SMTP output is *enabled*)
     from: ""
     # -- comma-separated list of Recipident addresses, can't be empty (mandatory if SMTP output is *enabled*)
@@ -315,6 +471,8 @@ config:
   webhook:
     # -- Webhook address, if not empty, Webhook output is *enabled*
     address: ""
+    # -- HTTP method: POST or PUT
+    method: "POST"
     # -- a list of comma separated custom headers to add, syntax is "key:value\,key:value"
     customHeaders: ""
     # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
@@ -357,6 +515,8 @@ config:
       projectid: ""
       # -- Name of the Pub/Sub topic
       topic: ""
+      # -- a list of comma separated custom headers to add, syntax is "key:value,key:value"
+      customattributes: ""
       # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
       minimumpriority: ""
     storage:
@@ -390,16 +550,38 @@ config:
     messageformat: ""
 
   kafka:
-    # -- The Host:Port of the Kafka (ex: kafka:9092). if not empty, Kafka output is *enabled*
+    # -- comma separated list of Apache Kafka bootstrap nodes for establishing the initial connection to the cluster (ex: localhost:9092,localhost:9093). Defaults to port 9092 if no port is specified after the domain, if not empty, Kafka output is *enabled*
     hostport: ""
     # -- Name of the topic, if not empty, Kafka output is enabled
     topic: ""
+    # -- SASL authentication mechanism, if empty, no authentication (PLAIN|SCRAM_SHA256|SCRAM_SHA512)
+    sasl: ""
+    # -- Use TLS for the connections
+    tls: false
+    # -- use this username to authenticate to Kafka via SASL
+    username: ""
+    # -- use this password to authenticate to Kafka via SASL
+    password: ""
+    # -- produce messages without blocking
+    async: false
+    # -- number of acknowledges from partition replicas required before receiving
+    requiredacks: NONE
+    # -- enable message compression using this algorithm, no compression (GZIP|SNAPPY|LZ4|ZSTD|NONE)
+    compression: "NONE"
+    # -- partition balancing strategy when producing
+    balancer: "round_robin"
+    # -- auto create the topic if it doesn't exist
+    topiccreation: false
+    # -- specify a client.id when communicating with the broker for tracing
+    clientid: ""
     # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
     minimumpriority: ""
 
   pagerduty:
     # -- Pagerduty Routing Key, if not empty, Pagerduty output is *enabled*
     routingkey: ""
+    # -- Pagerduty Region, can be 'us' or 'eu'
+    region: "us"
     # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
     minimumpriority: ""
 
@@ -480,12 +662,27 @@ config:
     panelid: ""
     # -- if true, all custom fields are added as tags (default: false)
     allfieldsastags: false
+    # -- a list of comma separated custom headers to add, syntax is "key:value,key:value"
+    customheaders: ""
     # -- if true, checkcert flag will be ignored (server cert will always be checked)
     mutualtls: false
     # -- check if ssl certificate of the output is valid
     checkcert: true
     # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
     minimumpriority: ""
+
+  grafanaoncall:
+    # -- if not empty, Grafana OnCall output is enabled
+    webhookurl: ""
+    # -- a list of comma separated custom headers to add, syntax is "key:value,key:value"
+    customheaders: ""
+    # -- if true, checkcert flag will be ignored (server cert will always be checked)
+    mutualtls: false
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+    minimumpriority: ""
+
   fission:
     # -- Name of Fission function, if not empty, Fission is enabled
     function: ""
@@ -518,6 +715,13 @@ config:
       prefix: ""
       # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
       minimumpriority: ""
+    datastreams:
+      # -- yandex data streams endpoint (default: https://yds.serverless.yandexcloud.net)
+      endpoint: ""
+      # -- stream name in format /${region}/${folder_id}/${ydb_id}/${stream_name}
+      streamname: ""
+      # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+      minimumpriority: ""
 
   kafkarest:
     # -- The full URL to the topic (example "http://kafkarest:8082/topics/test")
@@ -538,6 +742,8 @@ config:
     port: ""
     # -- Syslog transport protocol. It can be either "tcp" or "udp"
     protocol: "tcp"
+    # -- Syslog payload format. It can be either "json" or "cef"
+    format: "json"
     # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
     minimumpriority: ""
 
@@ -567,6 +773,161 @@ config:
     # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
     minimumpriority: ""
 
+  nodered:
+    # -- Node-RED address, if not empty, Node-RED output is enabled
+    address: ""
+    # -- User if Basic Auth is enabled for 'http in' node in Node-RED
+    user: ""
+    # -- Password if Basic Auth is enabled for 'http in' node in Node-RED
+    password: ""
+    # -- Custom headers to add in POST, useful for Authentication, syntax is "key:value\,key:value"
+    customheaders: ""
+    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+    minimumpriority: ""
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+
+  mqtt:
+    # -- Broker address, can start with tcp:// or ssl://, if not empty, MQTT output is enabled
+    broker: ""
+    # -- Topic for messages
+    topic: "falco/events"
+    # -- QOS for messages
+    qos: 0
+    # -- If true, messages are retained
+    retained: false
+    # -- User if the authentication is enabled in the broker
+    user: ""
+    # -- Password if the authentication is enabled in the broker
+    password: ""
+    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+    minimumpriority: ""
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+
+  zincsearch:
+    # -- http://{domain or ip}:{port}, if not empty, ZincSearch output is enabled
+    hostport: ""
+    # -- index
+    index: "falco"
+    # -- use this username to authenticate to ZincSearch
+    username: ""
+    # -- use this password to authenticate to ZincSearch
+    password: ""
+    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+    minimumpriority: ""
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+
+  gotify:
+    # -- http://{domain or ip}:{port}, if not empty, Gotify output is enabled
+    hostport: ""
+    # -- API Token
+    token: ""
+    # -- Format of the messages (plaintext, markdown, json)
+    format: "markdown"
+    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+    minimumpriority: ""
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+
+  tekton:
+    # -- EventListener address, if not empty, Tekton output is enabled
+    eventlistener: ""
+    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+    minimumpriority: ""
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+
+  spyderbat:
+    # -- Organization to send output to, if not empty, Spyderbat output is enabled
+    orguid: ""
+    # -- Spyderbat API key with access to the organization
+    apikey: ""
+    # -- Spyderbat API url
+    apiurl: "https://api.spyderbat.com"
+    # -- Spyderbat source ID, max 32 characters
+    source: "falcosidekick"
+    # -- Spyderbat source description and display name if not empty, max 256 characters
+    sourcedescription: ""
+    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+    minimumpriority: ""
+
+  timescaledb:
+    # -- TimescaleDB host, if not empty, TImescaleDB output is enabled
+    host: ""
+    # -- TimescaleDB port (default: 5432)
+    port: 5432
+    # -- Username to authenticate with TimescaleDB
+    user: "postgres"
+    # -- Password to authenticate with TimescaleDB
+    password: "postgres"
+    # -- TimescaleDB database used
+    database: ""
+    # -- Hypertable to store data events (default: falco_events) See TimescaleDB setup for more info
+    hypertablename: "falco_events"
+    # -- minimum priority of event to use this output, order is `emergency\|alert\|critical\|error\|warning\|notice\|informational\|debug or ""`
+    minimumpriority: ""
+
+  redis:
+    # -- Redis address, if not empty, Redis output is enabled
+    address: ""
+    # -- Password to authenticate with Redis
+    password: ""
+    # -- Redis database number
+    database: 0
+    # -- Redis storage type: hashmap or list
+    storagetype: "list"
+    # -- Redis storage key name for hashmap, list
+    key: "falco"
+    # -- minimum priority of event for using this output, order is emergency|alert|critical|error|warning|notice|informational|debug or ""
+    minimumpriority: ""
+
+  telegram:
+    # -- telegram bot authentication token
+    token: ""
+    # -- telegram Identifier of the shared chat
+    chatid: ""
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+    # -- minimum priority of event for using this output, order is emergency|alert|critical|error|warning|notice|informational|debug or ""
+    minimumpriority: ""
+
+  n8n:
+    # -- N8N address, if not empty, N8N output is enabled
+    address: ""
+    # -- Username to authenticate with N8N in basic auth
+    user: ""
+    # -- Password to authenticate with N8N in basic auth
+    password: ""
+    # -- Header Auth Key to authenticate with N8N
+    headerauthname: ""
+    # -- Header Auth Value to authenticate with N8N
+    headerauthvalue: ""
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+    # -- minimum priority of event for using this output, order is emergency|alert|critical|error|warning|notice|informational|debug or ""
+    minimumpriority: ""
+
+  openobserve:
+    # -- http://{domain or ip}:{port}, if not empty, OpenObserve output is enabled
+    hostport: ""
+    # -- Organization name
+    organizationname: "default"
+    # -- Stream name
+    streamname: "falco"
+    # -- minimum priority of event for using this output, order is emergency|alert|critical|error|warning|notice|informational|debug or ""
+    minimumpriority: ""
+    # -- if true, checkcert flag will be ignored (server cert will always be checked)
+    mutualtls: false
+    # -- check if ssl certificate of the output is valid
+    checkcert: true
+    # -- use this username to authenticate to OpenObserve if the username is not empty
+    username: ""
+    # -- use this password to authenticate to OpenObserve if the password is not empty
+    password: ""
+    # -- a list of comma separated custom headers to add, syntax is "key:value,key:value"
+    customheaders: ""
 
 service:
   # -- Service type
@@ -634,18 +995,42 @@ extraVolumeMounts: []
 # - mountPath: /etc/certs/mtlscert.optional.tls
 #   name: optional-mtls-volume
 
+testConnection:
+  # -- test connection nodeSelector field
+  nodeSelector: {}
+
+  # -- Tolerations for pod assignment
+  tolerations: []
+
+  # -- Affinity for the test connection pod
+  affinity: {}
+
 webui:
   # -- enable Falcosidekick-UI
   enabled: false
   # -- number of running pods
   replicaCount: 2
+  # -- number of old history to retain to allow rollback (If not set, default Kubernetes value is set to 10)
+  # revisionHistoryLimit: 1
+  # -- Log level ("debug", "info", "warning", "error")
+  loglevel: "info"
+  # -- TTL for keys, the syntax in X<unit>, with <unit>: s, m, d, w (0 for no ttl)
+  ttl: 0
+  # -- User in format <login>:<password>
+  user: "admin:admin"
+  # -- Disable the basic auth
+  disableauth: false
+  # -- Existing secret with configuration
+  existingSecret: ""
+  # -- Allow CORS
+  allowcors: false
   image:
     # -- The web UI image registry to pull from
     registry: docker.io
     # -- The web UI image repository to pull from
     repository: falcosecurity/falcosidekick-ui
     # -- The web UI image tag to pull
-    tag: "v2.0.2"
+    tag: "2.2.0"
     # -- The web UI image pull policy
     pullPolicy: IfNotPresent
 
@@ -727,11 +1112,17 @@ webui:
       # -- The web UI Redis image registry to pull from
       registry: docker.io
       # -- The web UI Redis image repository to pull from
-      repository: redislabs/redisearch
+      repository: redis/redis-stack
       # -- The web UI Redis image tag to pull from
-      tag: "2.2.4"
+      tag: "6.2.6-v3"
       # -- The web UI image pull policy
       pullPolicy: IfNotPresent
+
+    # -- Existing secret with configuration
+    existingSecret: ""
+
+    # -- Set a password for Redis
+    password: ""
 
     # -- Name of the priority class to be used by the Web UI Redis pods, priority class needs to be created beforehand
     priorityClassName: ""

@@ -17,6 +17,9 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.webui.replicaCount }}
+  {{- if .Values.webui.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ .Values.webui.revisionHistoryLimit }}
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "falcosidekick.name" . }}-ui
@@ -52,12 +55,33 @@ spec:
         - name: {{ .Chart.Name }}-ui
           image: "{{ .Values.webui.image.registry }}/{{ .Values.webui.image.repository }}:{{ .Values.webui.image.tag }}"
           imagePullPolicy: {{ .Values.webui.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                {{- if .Values.webui.existingSecret }}
+                name: {{ .Values.webui.existingSecret }}
+                {{- else }}
+                name: {{ include "falcosidekick.fullname" . }}-ui
+                {{- end }}
           args:
             - "-r"
             {{- if .Values.webui.redis.enabled }}
             - {{ include "falcosidekick.fullname" . }}-ui-redis{{ if .Values.webui.redis.fullfqdn }}.{{ .Release.Namespace }}.svc.cluster.local{{ end }}:{{ .Values.webui.redis.service.port | default "6379" }}
             {{- else if .Values.webui.externalRedis.enabled }}
             - "{{ required "External Redis is enabled. Please set the URL to the database." .Values.webui.externalRedis.url }}:{{ .Values.webui.externalRedis.port | default "6379" }}"
+            {{- end}}
+            {{- if .Values.webui.ttl }}
+            - "-t"
+            - {{ .Values.webui.ttl | quote }}
+            {{- end}}
+            {{- if .Values.webui.loglevel }}
+            - "-l"
+            - {{ .Values.webui.loglevel }}
+            {{- end}}
+            {{- if .Values.webui.allowcors }}
+            - "-x"
+            {{- end}}
+            {{- if .Values.webui.disableauth }}
+            - "-d"
             {{- end}}
           ports:
             - name: http
@@ -143,26 +167,35 @@ spec:
         - name: redis
           image: "{{ .Values.webui.redis.image.registry }}/{{ .Values.webui.redis.image.repository }}:{{ .Values.webui.redis.image.tag }}"
           imagePullPolicy: {{ .Values.webui.redis.image.pullPolicy }}
+          {{- if .Values.webui.redis.password }}
+          envFrom:
+            - secretRef:
+                {{- if .Values.webui.redis.existingSecret }}
+                name: {{ .Values.webui.redis.existingSecret }}
+                {{- else }}
+                name: {{ include "falcosidekick.fullname" . }}-ui-redis
+                {{- end }}
+          {{- end}}
           args: []
           ports:
             - name: redis
               containerPort: 6379
               protocol: TCP
-          livenessProbe: 
+          livenessProbe:
             tcpSocket:
               port: 6379
-            initialDelaySeconds: 5 
-            periodSeconds: 5 
-            timeoutSeconds: 2 
-            successThreshold: 1 
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
             failureThreshold: 3
           readinessProbe:
             tcpSocket:
               port: 6379
-            initialDelaySeconds: 5 
-            periodSeconds: 5 
-            timeoutSeconds: 2 
-            successThreshold: 1 
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
             failureThreshold: 3
           {{- if .Values.webui.redis.securityContext }}
           securityContext:

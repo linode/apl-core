@@ -17,3 +17,15 @@ spec:
       command: ['curl']
       args:  ["-X", "POST", '{{ include "falcosidekick.fullname" . }}:{{ .Values.service.port }}/ping']
   restartPolicy: Never
+  {{- with .Values.testConnection.nodeSelector }}
+  nodeSelector:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .Values.testConnection.affinity }}
+  affinity:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+  {{- with .Values.testConnection.tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}

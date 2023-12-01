@@ -5,6 +5,131 @@ numbering uses [semantic versioning](http://semver.org).
 
 Before release 0.1.20, the helm chart can be found in `falcosidekick` [repository](https://github.com/falcosecurity/falcosidekick/tree/master/deploy/helm/falcosidekick).
 
+## 0.7.8
+
+* Fix the condition for missing cert files
+
+## 0.7.7
+
+* Support extraArgs in the helm chart
+
+## 0.7.6
+
+* Fix the behavior with the `AWS IRSA` with a new value `aws.config.useirsa`
+* Add a section in the README to describe how to use a subpath for `Falcosidekick-ui` ingress
+* Add a `ServiceMonitor` for prometheus-operator
+* Add a `PrometheusRule` for prometheus-operator
+
+## 0.7.5
+
+* noop change just to test the ci
+
+## 0.7.4
+
+* Fix volume mount when `config.tlsserver.servercrt`, `config.tlsserver.serverkey` and `config.tlsserver.cacrt` variables are defined.
+
+## 0.7.3
+
+* Allow to set (m)TLS Server cryptographic material via `config.tlsserver.servercrt`, `config.tlsserver.serverkey` and `config.tlsserver.cacrt` variables or through `config.tlsserver.existingSecret` variables.
+
+## 0.7.2
+
+* Fix the wrong key of the secret for the user
+
+## 0.7.1
+
+* Allow to set a password `webui.redis.password` for Redis for `Falcosidekick-UI`
+* The user for `Falcosidekick-UI` is now set with an env var from a secret
+
+## 0.7.0
+
+* Support configuration of revisionHistoryLimit of the deployments
+
+## 0.6.3
+
+* Update Falcosidekick to 2.28.0
+* Add Mutual TLS Client config
+* Add TLS Server config
+* Add `bracketreplacer` config
+* Add `customseveritymap` to `alertmanager` output
+* Add Drop Event config to `alertmanager` output
+* Add `customheaders` to `elasticsearch` output
+* Add `customheaders` to `loki` output
+* Add `customheaders` to `grafana` output
+* Add `rolearn` and `externalid` for `aws` outputs
+* Add `method` to `webhook` output
+* Add `customattributes` to `gcp.pubsub` output
+* Add `region` to `pargerduty` output
+* Add `topiccreation` and `tls` to `kafka` output
+* Add `Grafana OnCall` output
+* Add `Redis` output
+* Add `Telegram` output
+* Add `N8N` output
+* Add `OpenObserver` output
+
+## 0.6.2
+
+* Fix interpolation of `SYSLOG_PORT`
+
+## 0.6.1
+
+* Add `webui.allowcors` value for `Falcosidekick-UI`
+
+## 0.6.0
+
+* Change the docker image for the redis pod for falcosidekick-ui
+
+## 0.5.16
+
+* Add `affinity`, `nodeSelector` and `tolerations` values for the Falcosidekick test-connection pod
+
+## 0.5.15
+
+* Set extra labels and annotations for `AlertManager` only if they're not empty
+
+## 0.5.14
+
+* Fix Prometheus extralabels configuration in Falcosidekick
+
+## 0.5.13
+
+* Fix missing quotes in Falcosidekick-UI ttl argument
+
+## 0.5.12
+
+* Fix missing space in Falcosidekick-UI ttl argument
+
+## 0.5.11
+
+* Fix missing space in Falcosidekick-UI arguments
+
+## 0.5.10
+
+* upgrade Falcosidekick image to 2.27.0
+* upgrade Falcosidekick-UI image to 2.1.0
+* Add `Yandex Data Streams` output
+* Add `Node-Red` output
+* Add `MQTT` output
+* Add `Zincsearch` output
+* Add `Gotify` output
+* Add `Spyderbat` output
+* Add `Tekton` output
+* Add `TimescaleDB` output
+* Add `AWS Security Lake` output
+* Add `config.templatedfields` to set templated fields
+* Add `config.slack.channel` to override `Slack` channel
+* Add `config.alertmanager.extralabels` and `config.alertmanager.extraannotations` for `AlertManager` output
+* Add `config.influxdb.token`, `config.influxdb.organization` and `config.influxdb.precision` for `InfluxDB` output
+* Add `config.aws.checkidentity` to disallow STS checks
+* Add `config.smtp.authmechanism`, `config.smtp.token`, `config.smtp.identity`, `config.smtp.trace` to manage `SMTP` auth
+* Update default doc type for `Elastichsearch`
+* Add `config.loki.user`, `config.loki.apikey` to manage auth to Grafana Cloud for `Loki` output
+* Add `config.kafka.sasl`, `config.kafka.async`, `config.kafka.compression`, `config.kafka.balancer`, `config.kafka.clientid` to manage auth and communication for `Kafka` output
+* Add `config.syslog.format` to manage the format of `Syslog` payload
+* Add `webui.ttl` to set TTL of keys in Falcosidekick-UI
+* Add `webui.loglevel` to set log level in Falcosidekick-UI
+* Add `webui.user` to set log user:password in Falcosidekick-UI
+
 ## 0.5.9
 
 * Fix: remove `namespace` from `clusterrole` and `clusterrolebinding` metadata

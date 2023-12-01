@@ -11,6 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   {{- with .Values.service.annotations }}
   annotations:
+    prometheus.io/scrape: "true"
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
@@ -20,6 +21,13 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    {{- if not (eq .Values.config.tlsserver.notlspaths "") }}
+    - port: {{ .Values.config.tlsserver.notlsport }}
+      targetPort: http-notls
+      protocol: TCP
+      name: http-notls
+    {{- end }}
+
   selector:
     app.kubernetes.io/name: {{ include "falcosidekick.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

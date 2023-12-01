@@ -4,7 +4,7 @@ kind: ServiceAccount
 metadata:
   name: {{ include "falcosidekick.fullname" . }}
   namespace: {{ .Release.Namespace }}
-  {{- if .Values.config.aws.rolearn }}
+  {{- if and .Values.config.aws.useirsa .Values.config.aws.rolearn }}
   annotations:
     eks.amazonaws.com/role-arn: {{ .Values.config.aws.rolearn }}
   {{- end }}
