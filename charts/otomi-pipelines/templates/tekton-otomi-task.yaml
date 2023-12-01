@@ -55,7 +55,8 @@ spec:
         {{- else}}
         git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- end }}
-        git config --global --add safe.directory $ENV_DIR
+        me=$(whoami)
+        chown -R $ENV_DIR $me:$me
     - name: bootstrap
       command:
         - '/bin/bash'
