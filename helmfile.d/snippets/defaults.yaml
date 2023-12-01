@@ -36,7 +36,7 @@ environments:
           cluster-overprovisioner:
             enabled: false
           drone:
-            enabled: true
+            enabled: false
             debug: false
             trace: false
             sourceControl:
@@ -270,35 +270,22 @@ environments:
             resources:
               pod:
                   requests:
-                      cpu: 50m
+                      cpu: 200m
                       memory: 128Mi
                   limits:
-                      cpu: 200m
+                      cpu: 500m
                       memory: 256Mi
               operator:
                   requests:
-                      cpu: 50m
-                      memory: 256Mi
+                      cpu: 1000m
+                      memory: 512Mi
                   limits:
-                      cpu: 200m
+                      cpu: 2000m
                       memory: 1Gi
           knative:
             enabled: false
             serving:
               replicas: 1
-          kubeapps:
-            enabled: false
-            enableCommonGround: false
-            autoscaling:
-              dashboard:
-                minReplicas: 1
-                maxReplicas: 10
-              frontend:
-                minReplicas: 1
-                maxReplicas: 10
-              kubeops:
-                minReplicas: 1
-                maxReplicas: 10
           kube-descheduler:
             enabled: false
           kured:
@@ -312,7 +299,6 @@ environments:
                       cpu: 50m
                       memory: 32Mi
           tekton:
-            enabled: false
             resources:
               dashboard:
                 limits:
@@ -740,8 +726,6 @@ environments:
               enabled: false
             argo:
               enabled: false
-            kubeapps:
-              enabled: false
             minio:
               enabled: false
         cluster: {}
@@ -769,7 +753,7 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes: (and think more?)
-        version: 15
+        version: 16
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

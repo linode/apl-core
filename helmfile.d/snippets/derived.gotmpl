@@ -21,7 +21,6 @@
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
 {{- $droneProvider := $a.drone.sourceControl.provider }}
-{{- $hasSops := hasKey $v "kms.sops.provider" }}
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}

@@ -1,4 +1,4 @@
-import { cloneDeep, merge } from 'lodash'
+import { cloneDeep, merge, set } from 'lodash'
 import { generateSecrets } from 'src/common/values'
 import stubs from 'src/test-stubs'
 
@@ -6,6 +6,8 @@ const { terminal } = stubs
 
 describe('generateSecrets', () => {
   const values = { one: 'val', secret: 'prop', apps: { yo: { di: { lo: 'loves you' } } } }
+  set(values, 'apps.harbor.registry.credentials.username', 'u')
+  set(values, 'apps.harbor.registry.credentials.password', 'p')
   const simpleTemplate = 'dummy'
   const schema = {
     properties: {

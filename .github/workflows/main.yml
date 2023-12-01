@@ -121,36 +121,71 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Prepare chart
+        id: prepare_chart
         run: |
-          # Release new chart only if its version changes
+          # Install and update helm repo
           helm repo add otomi https://otomi.io/otomi-core
           helm repo update
-          chart_version=$(helm search repo otomi -o json | jq -r 'sort_by(.version) | .[-1].version')
-          chart_patch_version=${chart_version##*.}
-          new_patch_version=$(($chart_patch_version+1))
-          # check if major or minor part of version changed (patch number is automated so left out of equation)
-          this_version=$(cat chart/otomi/Chart.yaml | yq r - 'version' | sed "s/0-chart-patch-placeholder/$chart_patch_version/g")
-          # if any of those changed then reset the patch version
-          [ "$this_version" != "$chart_version" ] && new_patch_version=1
-          release_tag=v$(cat package.json | jq -r '.version')
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/Chart.yaml
-          sed --in-place "s/0-chart-patch-placeholder/$new_patch_version/g" chart/otomi/Chart.yaml
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$release_tag/g" chart/otomi/values.yaml
-          # copy readme from repo into the charts and add tpl/chart-values.md
+
+          # Retrieve the app version from package.json
+          app_version=$(jq -r '.version' package.json)
+          if [ -z "$app_version" ]; then
+              echo "Error: Could not retrieve app version from package.json"
+              exit 1
+          fi
+
+          # Extract major and minor from the app version
+          new_app_major=$(echo "$app_version" | cut -d '.' -f 1)
+          new_app_minor=$(echo "$app_version" | cut -d '.' -f 2)
+
+          # Get existing helm charts in the registry
+          helm_output=$(helm search repo otomi -l -o json)
+
+          # Use jq to parse the output and find the latest version for the given $new_app_major.$new_app_minor app version
+          existing_version=$(echo "$helm_output" | jq -r --arg major "$new_app_major" --arg minor "$new_app_minor" '
+            map(select(.app_version | startswith("v\($major).\($minor)"))) | 
+            max_by(.version | split(".") | map(tonumber)) | 
+            .version'
+          )
+
+          # Determine if a major/minor bump has occurred
+          MARK_AS_LATEST="false"
+          if [ "${existing_version}" == "null" ]; then
+              echo "No chart found matching v$new_app_major.$new_app_minor.* app version."
+              echo "It seems this is a major/minor bump."
+              echo "Will create a new helm chart and mark it as latest!"
+              # If there is no existing chart with the same major.minor, mark this as latest
+              MARK_AS_LATEST="true"
+          else
+            echo "The latest version for $new_app_major.$new_app_minor is $existing_version"
+          fi
+
+          # Update Chart.yaml and values.yaml with the new app version
+          sed -i "s/CHART_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/Chart.yaml
+          sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/otomi/Chart.yaml
+
+          echo "Chart and values files updated successfully with version $app_version"
+          echo "MARK_AS_LATEST is set to $MARK_AS_LATEST"
+          echo "MARK_AS_LATEST=$MARK_AS_LATEST" >> "GITHUB_OUTPUT"
+
+          # Copy readme from repo into the charts and add tpl/chart-values.md
           cp README.md chart/otomi/
           printf "\n\n" >>chart/otomi/README.md
           cat tpl/chart-values.md >>chart/otomi/README.md
-          # generate schema
+
+          # Generate schema
           npx js-yaml values-schema.yaml > chart/otomi/values.schema.json
-          # and set the global id for git as it seems needed by the next step when a custom image is used
+
+          # Set the global id for git as it seems needed by the next step when a custom image is used
           git config --global user.email $GIT_USER@users.noreply.github.com
           git config --global user.name $GIT_USER
       - name: Create and publish otomi chart release
         id: chart_release
-        uses: helm/chart-releaser-action@v1.5.0
+        uses: helm/chart-releaser-action@v1.6.0
         with:
           charts_dir: chart
-          charts_repo_url: https://otomi.io/charts/
+          skip_existing: true
+          mark_as_latest: ${{ steps.prepare_chart.outputs.MARK_AS_LATEST }}
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 

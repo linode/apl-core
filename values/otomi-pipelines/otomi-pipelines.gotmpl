@@ -1,0 +1,12 @@
+{{- $v := .Values }}
+{{- $g := $v.apps.gitea }}
+{{- $kms := $v | get "kms" dict }}
+
+
+kms: {{- $kms | toYaml | nindent 2 }}
+
+giteaPassword: {{ $g.adminPassword }}
+
+{{- if $v._derived.untrustedCA }}
+cloneUnsecure: true
+{{- end }}

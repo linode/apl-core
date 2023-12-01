@@ -43,6 +43,16 @@ spec:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
             port:
               number: {{ $s.port | default 443 }}
+          {{- with (dig "trafficControl" "enabled" nil $s) }}
+            subset: v1
+          weight: {{ $s.trafficControl.weightV1 }}
+        - destination:
+            host: {{ $svc }}.{{ $ns }}.svc.cluster.local
+            port:
+              number: {{ $s.port | default 443 }}
+            subset: v2
+          weight: {{ $s.trafficControl.weightV2 }}
+          {{- end }}
       {{- else }}
   http:
     - match:
@@ -68,17 +78,21 @@ spec:
         uri: /
           {{- end }}
         {{- end }}
-        {{- if $isKnativeService }}
+      {{- if $isKnativeService }}
       route:
         - destination:
             host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
-        {{- else }}
+      {{- else }}
       route:
         - destination:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
         {{- end }}
             port:
               number: {{ $s.port | default 80 }}
+          {{- with (dig "trafficControl" "enabled" nil $s) }}
+            subset: v1
+          weight: {{ $s.trafficControl.weightV1 }}
+          {{- end }}
           headers:
             request:
               set:
@@ -97,11 +111,64 @@ spec:
                 {{ .name }}: {{ .value | quote }}
               {{- end }}
             {{- end }}
-
         {{- if hasKey $s "removeRequestHeaders" }}
               remove: {{- $s.removeRequestHeaders | toYaml | nindent 16 }}
         {{- end }}
+        {{- with (dig "trafficControl" "enabled" nil $s) }}
+        - destination:
+            {{- if $isKnativeService }}
+            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            {{- else }}
+            host: {{ $svc }}.{{ $ns }}.svc.cluster.local
+            {{- end }}
+            port:
+              number: {{ $s.port | default 80 }}
+            subset: v2
+          weight: {{ $s.trafficControl.weightV2 }}
+          headers:
+            request:
+              set:
+                # fix for istio (=envoy) incorrectly setting proto to http
+                # (@see https://github.com/istio/istio/issues/7964):
+                X-Forwarded-Proto: https
+            {{- with (dig "headers" "request" "set" nil $s) }}
+              {{- range . }}
+                {{ .name }}: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
+            {{- with (dig "headers" "response" "set" nil $s) }}
+            response:
+              set:
+              {{- range . }}
+                {{ .name }}: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
+              {{- if hasKey $s "removeRequestHeaders" }}
+              remove: {{- $s.removeRequestHeaders | toYaml | nindent 16 }}
+              {{- end }}
+        {{- end }}
       {{- end }}
+---
+{{- with (dig "trafficControl" "enabled" nil $s) }}
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: {{ $vsName }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  {{- if $isKnativeService }}
+  host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+  {{- else }}
+  host: {{ $svc }}.{{ $ns }}.svc.cluster.local
+  {{- end }}
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+{{- end }}
 ---
         {{- if $s.useCname }}
 apiVersion: networking.istio.io/v1beta1
@@ -169,6 +236,10 @@ spec:
         {{- end }}
             port:
               number: {{ $s.port | default 80 }}
+          {{- with (dig "trafficControl" "enabled" nil $s) }}
+            subset: v1
+          weight: {{ $s.trafficControl.weightV1 }}
+          {{- end }}
           headers:
             request:
               set:
@@ -190,6 +261,39 @@ spec:
 
         {{- if hasKey $s "removeRequestHeaders" }}
               remove: {{- $s.removeRequestHeaders | toYaml | nindent 16 }}
+        {{- end }}
+        {{- with (dig "trafficControl" "enabled" nil $s) }}
+        - destination:
+            {{- if $isKnativeService }}
+            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            {{- else }}
+            host: {{ $svc }}.{{ $ns }}.svc.cluster.local
+            {{- end }}
+            port:
+              number: {{ $s.port | default 80 }}
+            subset: v2
+          weight: {{ $s.trafficControl.weightV2 }}
+          headers:
+            request:
+              set:
+                # fix for istio (=envoy) incorrectly setting proto to http
+                # (@see https://github.com/istio/istio/issues/7964):
+                X-Forwarded-Proto: https
+            {{- with (dig "headers" "request" "set" nil $s) }}
+              {{- range . }}
+                {{ .name }}: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
+            {{- with (dig "headers" "response" "set" nil $s) }}
+            response:
+              set:
+              {{- range . }}
+                {{ .name }}: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
+              {{- if hasKey $s "removeRequestHeaders" }}
+              remove: {{- $s.removeRequestHeaders | toYaml | nindent 16 }}
+              {{- end }}
         {{- end }}
       {{- end }}
 ---

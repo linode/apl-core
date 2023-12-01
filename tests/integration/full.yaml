@@ -32,8 +32,6 @@ apps:
     enabled: false
   kube-descheduler:
     enabled: true
-  kubeapps:
-    enabled: true
   kured:
     enabled: true
   loki:
@@ -51,8 +49,6 @@ apps:
   redis-shared:
     enabled: false
   snapshot-controller:
-    enabled: true
-  tekton:
     enabled: true
   tempo:
     enabled: true

@@ -1,0 +1,70 @@
+{{- $kms := .Values.kms | default dict }}
+
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: otomi-task
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: OTOMI_VERSION
+    - name: CI
+    - name: repoUrl
+    - name: giteaCredentialsSecretName
+  workspaces:
+    - name: source
+      mountPath: /home/app/stack/env
+    - name: gitea-credentials
+      mountPath: /etc/gitea-credentials
+  stepTemplate:
+    imagePullPolicy: Always
+    image: otomi/core:$(params["OTOMI_VERSION"])
+    workingDir: /home/app/stack
+{{- if hasKey $kms "sops" }}
+    envFrom:
+    - secretRef:
+        name: otomi-sops-secrets
+{{- end }}
+    env:
+    - name: CI
+      value: $(params["CI"])
+    - name: IN_DOCKER
+      value: '1'
+  steps:
+    - name: git-clone
+      script: |
+        #!/bin/bash
+        set -e
+
+        # Reading gitea credentials
+        GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
+        GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
+
+        # Parsing the repo url
+        export fullRepoUrl=$(params["repoUrl"])
+        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+
+        # Cloning the values
+        {{- if .Values.cloneUnsecure }}
+        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url /home/app/stack/env
+        {{- else}}
+        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url /home/app/stack/env
+        {{- end }}
+    - name: bootstrap
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi bootstrap'
+    - name: test
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi validate-values'
+    - name: apply
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi apply'

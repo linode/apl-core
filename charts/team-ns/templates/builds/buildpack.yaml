@@ -1,9 +1,8 @@
 {{- $v := .Values }}
-{{- if $v.apps.tekton.enabled }}
 {{- range $v.builds }}
 {{- if eq .mode.type "buildpacks" }}
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: buildpacks-build-{{ .name }}
@@ -55,7 +54,7 @@ metadata:
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   resourcetemplates:
-    - apiVersion: tekton.dev/v1beta1
+    - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
         generateName: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}-
@@ -65,12 +64,14 @@ spec:
         annotations:
           sidecar.istio.io/inject: "false"
       spec:
-        serviceAccountName: sa-team-{{ $v.teamId }}
+
         pipelineRef:
           name: buildpacks-build-{{ .name }}
-        podTemplate:
-          securityContext:
-            fsGroup: 65532
+        taskRunTemplate:
+          serviceAccountName: sa-team-{{ $v.teamId }}
+          podTemplate:
+            securityContext:
+              fsGroup: 65532
         workspaces:
         - name: shared-data
           volumeClaimTemplate:
@@ -88,7 +89,7 @@ spec:
             secretName: harbor-pushsecret-builds
 ---
 {{- else }}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   name: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
@@ -96,12 +97,13 @@ metadata:
     sidecar.istio.io/inject: "false"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  serviceAccountName: sa-team-{{ $v.teamId }}
   pipelineRef:
     name: buildpacks-build-{{ .name }}
-  podTemplate:
-    securityContext:
-      fsGroup: 65532
+  taskRunTemplate:
+    serviceAccountName: sa-team-{{ $v.teamId }}
+    podTemplate:
+      securityContext:
+        fsGroup: 65532
   workspaces:
   - name: shared-data
     volumeClaimTemplate:
@@ -146,7 +148,6 @@ spec:
       template:
         ref: trigger-template-{{ .name }}
 ---
-{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}
