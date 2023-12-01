@@ -32,9 +32,9 @@ spec:
     - name: IN_DOCKER
       value: '1'
     - name: ENV_DIR
-      values: /home/app/stack/env
+      value: /home/app/stack/env
     - name: VERBOSE
-      values: '1'
+      value: '1'
   steps:
     - name: git-clone
       script: |
