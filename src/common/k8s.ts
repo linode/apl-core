@@ -210,10 +210,6 @@ export const waitTillGitRepoAvailable = async (): Promise<void> => {
     try {
       cd(env.ENV_DIR)
       // the ls-remote exist with zero even if repo is empty
-      let res = await $`pwd`
-      d.info(res.toString())
-      res = await $`find`
-      d.info(res.toString())
       await $`git ls-remote`
     } catch (e) {
       d.warn(e.message)
