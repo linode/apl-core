@@ -6,7 +6,6 @@ falco:
     actions:
       - ignore
 {{- if eq $v.cluster.provider "azure" }}
-
   grpc:
     enabled: true
     bind_address: "unix:///var/run/falco/falco.sock"
@@ -18,10 +17,6 @@ driver:
 {{- end }}
 
 {{- if eq $v.cluster.provider "google" }}
-falco:
-  syscall_event_drops:
-    actions:
-      - ignore
 driver:
   kind: ebpf
 extra:
