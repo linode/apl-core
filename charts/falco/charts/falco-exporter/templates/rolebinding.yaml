@@ -1,0 +1,20 @@
+{{- if .Values.podSecurityPolicy.create -}}
+kind: RoleBinding
+apiVersion: {{ template "rbac.apiVersion" . }}
+metadata:
+  name: {{ include "falco-exporter.podSecurityPolicyName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "falco-exporter.labels" . | nindent 4 }}
+  {{- with .Values.podSecurityPolicy.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "falco-exporter.serviceAccountName" . }}
+roleRef:
+  kind: Role
+  name: {{ include "falco-exporter.podSecurityPolicyName" . }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end -}}

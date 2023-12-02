@@ -1,0 +1,16 @@
+Get the falco-exporter metrics URL by running these commands:
+{{- if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "falco-exporter.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo {{- if .Values.service.mTLS.enabled }} https{{- else }} http{{- end }}://$NODE_IP:$NODE_PORT/metrics
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get svc -w {{ template "falco-exporter.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "falco-exporter.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo {{- if .Values.service.mTLS.enabled }} https{{- else }} http{{- end }}://$SERVICE_IP:{{ .Values.service.port }}/metrics
+{{- else if contains "ClusterIP" .Values.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "falco-exporter.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit {{- if .Values.service.mTLS.enabled }} https{{- else }} http{{- end }}://127.0.0.1:{{ .Values.service.targetPort }}/metrics to use your application"
+  kubectl port-forward --namespace {{ .Release.Namespace }} $POD_NAME {{ .Values.service.targetPort }}
+{{- end }}
+  echo {{- if .Values.service.mTLS.enabled }} "You'll need a valid client certificate and its corresponding key for Mutual TLS handshake" {{- end }}

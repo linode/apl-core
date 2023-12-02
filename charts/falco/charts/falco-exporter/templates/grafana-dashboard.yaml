@@ -1,0 +1,315 @@
+{{- if .Values.grafanaDashboard.enabled }}
+apiVersion: v1
+data:
+  grafana-falco.json: |-
+    {
+        "__inputs": [
+        ],
+        "__requires": [
+          {
+            "type": "grafana",
+            "id": "grafana",
+            "name": "Grafana",
+            "version": "6.7.3"
+          },
+          {
+            "type": "panel",
+            "id": "graph",
+            "name": "Graph",
+            "version": ""
+          },
+          {
+            "type": "datasource",
+            "id": "prometheus",
+            "name": "Prometheus",
+            "version": "1.0.0"
+          },
+          {
+            "type": "panel",
+            "id": "table",
+            "name": "Table",
+            "version": ""
+          }
+        ],
+        "annotations": {
+          "list": [
+            {
+              "builtIn": 1,
+              "datasource": "-- Grafana --",
+              "enable": true,
+              "hide": true,
+              "iconColor": "rgba(0, 211, 255, 1)",
+              "name": "Annotations & Alerts",
+              "type": "dashboard"
+            }
+          ]
+        },
+        "editable": true,
+        "gnetId": null,
+        "graphTooltip": 0,
+        "id": null,
+        "links": [],
+        "panels": [
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": "$datasource",
+            "description": "",
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+              "h": 11,
+              "w": 24,
+              "x": 0,
+              "y": 0
+            },
+            "hiddenSeries": false,
+            "id": 2,
+            "legend": {
+              "alignAsTable": true,
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "rightSide": true,
+              "show": true,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 1,
+            "nullPointMode": "null as zero",
+            "options": {
+              "dataLinks": []
+            },
+            "percentage": false,
+            "pointradius": 2,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": true,
+            "steppedLine": false,
+            "targets": [
+              {
+                "expr": "rate(falco_events[5m]) > 0",
+                "interval": "",
+                "intervalFactor": 1,
+                "legendFormat": "{{`{{rule}} (node=\"{{kubernetes_node}}\",ns=\"{{k8s_ns_name}}\",pod=\"{{k8s_pod_name}}\")"`}},
+                "refId": "A"
+              }
+            ],
+            "thresholds": [],
+            "timeFrom": null,
+            "timeRegions": [],
+            "timeShift": null,
+            "title": "Events rate",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "buckets": null,
+              "mode": "time",
+              "name": null,
+              "show": true,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              },
+              {
+                "format": "short",
+                "label": null,
+                "logBase": 1,
+                "max": null,
+                "min": null,
+                "show": true
+              }
+            ],
+            "yaxis": {
+              "align": false,
+              "alignLevel": null
+            }
+          },
+          {
+            "columns": [],
+            "datasource": "$datasource",
+            "fontSize": "100%",
+            "gridPos": {
+              "h": 10,
+              "w": 24,
+              "x": 0,
+              "y": 11
+            },
+            "id": 4,
+            "links": [],
+            "pageSize": null,
+            "showHeader": true,
+            "sort": {
+              "col": null,
+              "desc": false
+            },
+            "styles": [
+              {
+                "alias": "Time",
+                "align": "auto",
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "pattern": "Time",
+                "type": "date"
+              },
+              {
+                "alias": "",
+                "align": "auto",
+                "colorMode": null,
+                "colors": [
+                  "rgba(245, 54, 54, 0.9)",
+                  "rgba(237, 129, 40, 0.89)",
+                  "rgba(50, 172, 45, 0.97)"
+                ],
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "decimals": 2,
+                "link": false,
+                "mappingType": 1,
+                "pattern": "/__name__|instance|job|kubernetes_name|(__name|helm_|app_).*/",
+                "sanitize": false,
+                "thresholds": [],
+                "type": "hidden",
+                "unit": "short"
+              },
+              {
+                "alias": "Count",
+                "align": "auto",
+                "colorMode": null,
+                "colors": [
+                  "rgba(245, 54, 54, 0.9)",
+                  "rgba(237, 129, 40, 0.89)",
+                  "rgba(50, 172, 45, 0.97)"
+                ],
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "decimals": 0,
+                "mappingType": 1,
+                "pattern": "Value",
+                "thresholds": [],
+                "type": "number",
+                "unit": "short"
+              },
+              {
+                "alias": "",
+                "align": "left",
+                "colorMode": null,
+                "colors": [
+                  "rgba(245, 54, 54, 0.9)",
+                  "rgba(237, 129, 40, 0.89)",
+                  "rgba(50, 172, 45, 0.97)"
+                ],
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "decimals": 0,
+                "mappingType": 1,
+                "pattern": "priority",
+                "thresholds": [
+                  ""
+                ],
+                "type": "number",
+                "unit": "none",
+                "valueMaps": [
+                  {
+                    "text": "5",
+                    "value": "5"
+                  }
+                ]
+              },
+              {
+                "alias": "",
+                "align": "left",
+                "colorMode": null,
+                "colors": [
+                  "rgba(245, 54, 54, 0.9)",
+                  "rgba(237, 129, 40, 0.89)",
+                  "rgba(50, 172, 45, 0.97)"
+                ],
+                "decimals": 2,
+                "pattern": "/.*/",
+                "thresholds": [],
+                "type": "string",
+                "unit": "short"
+              }
+            ],
+            "targets": [
+              {
+                "expr": "falco_events",
+                "format": "table",
+                "instant": true,
+                "refId": "A"
+              }
+            ],
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Totals",
+            "transform": "table",
+            "transparent": true,
+            "type": "table"
+          }
+        ],
+        "schemaVersion": 22,
+        "style": "dark",
+        "tags": [],
+        "templating": {
+          "list": []
+        },
+        "templating": {
+           "list": [
+             {
+               "current": {
+                 "selected": false,
+                 "text": "{{ .Values.grafanaDashboard.prometheusDatasourceName }}",
+                 "value": "{{ .Values.grafanaDashboard.prometheusDatasourceName }}"
+               },
+               "hide": 0,
+               "includeAll": false,
+               "label": null,
+               "multi": false,
+               "name": "datasource",
+               "options": [],
+               "query": "prometheus",
+               "refresh": 1,
+               "regex": "",
+               "skipUrlSync": false,
+               "type": "datasource"
+             }
+           ]
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Falco Dashboard",
+        "uid": "FvUFlfuZz"
+      }
+kind: ConfigMap
+metadata:
+  labels:
+    grafana_dashboard: "1"
+  {{- if .Values.grafanaDashboard.folder }}
+  annotations:
+    k8s-sidecar-target-directory: /tmp/dashboards/{{ .Values.grafanaDashboard.folder }}
+  {{- end }}
+  name: grafana-falco
+  {{- if .Values.grafanaDashboard.namespace }}
+  namespace: {{ .Values.grafanaDashboard.namespace }}
+  {{- else }}
+  namespace: {{ .Release.Namespace }}
+  {{- end}}
+{{- end -}}

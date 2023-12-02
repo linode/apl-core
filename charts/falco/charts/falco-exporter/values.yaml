@@ -1,0 +1,165 @@
+# Default values for falco-exporter.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+service:
+  type: ClusterIP
+  clusterIP: None
+  port: 9376
+  targetPort: 9376
+  nodePort:
+  labels: {}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9376"
+  # Enable Mutual TLS for HTTP metrics server
+  mTLS:
+    enabled: false
+
+healthChecks:
+  livenessProbe:
+    # liveness probes port
+    probesPort: 19376
+    # -- Tells the kubelet that it should wait X seconds before performing the first probe.
+    initialDelaySeconds: 60
+    # -- Number of seconds after which the probe times out.
+    timeoutSeconds: 5
+    # -- Specifies that the kubelet should perform the check every x seconds.
+    periodSeconds: 15
+  readinessProbe:
+    # readiness probes port
+    probesPort: 19376
+    # -- Tells the kubelet that it should wait X seconds before performing the first probe.
+    initialDelaySeconds: 30
+    # -- Number of seconds after which the probe times out.
+    timeoutSeconds: 5
+    # -- Specifies that the kubelet should perform the check every x seconds.
+    periodSeconds: 15
+
+image:
+  registry: docker.io
+  repository: falcosecurity/falco-exporter
+  tag: 0.8.3
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+priorityClassName:
+
+falco:
+  grpcUnixSocketPath: "unix:///run/falco/falco.sock"
+  grpcTimeout: 2m
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  # If set and create is false, an already existing serviceAccount must be provided.
+  name:
+
+podSecurityPolicy:
+  # Specifies whether a PSP, Role and RoleBinding should be created
+  create: false
+  # Annotations to add to the PSP, Role and RoleBinding
+  annotations: {}
+  # The name of the PSP, Role and RoleBinding to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+podSecurityContext:
+  {}
+  # fsGroup: 2000
+
+daemonset:
+  # Perform rolling updates by default in the DaemonSet agent
+  # ref: https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/
+  updateStrategy:
+    # You can also customize maxUnavailable or minReadySeconds if you
+    # need it
+    type: RollingUpdate
+
+  # Annotations to add to the DaemonSet pods
+  annotations: {}
+  podLabels: {}
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  privileged: false
+  seccompProfile:
+    type: RuntimeDefault
+
+resources:
+  {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+# Allow falco-exporter to run on Kubernetes 1.6 masters.
+tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+
+affinity: {}
+
+serviceMonitor:
+  # Enable the deployment of a Service Monitor for the Prometheus Operator.
+  enabled: false
+  # Specify Additional labels to be added on the Service Monitor.
+  additionalLabels: {}
+  # Specify a user defined interval. When not specified Prometheus default interval is used.
+  interval: ""
+  # Specify a user defined scrape timeout. When not specified Prometheus default scrape timeout is used.
+  scrapeTimeout: ""
+
+grafanaDashboard:
+  enabled: false
+  folder:
+  namespace: default
+  prometheusDatasourceName: Prometheus
+scc:
+  # true here enabled creation of Security Context Constraints in Openshift
+  create: true
+
+# Create PrometheusRules for alerting on priority events
+prometheusRules:
+  enabled: false
+  alerts:
+    warning:
+      enabled: true
+      rate_interval: "5m"
+      threshold: 0
+    error:
+      enabled: true
+      rate_interval: "5m"
+      threshold: 0
+    critical:
+      enabled: true
+      rate_interval: "5m"
+      threshold: 0
+    alert:
+      enabled: true
+      rate_interval: "5m"
+      threshold: 0
+    emergency:
+      enabled: true
+      rate_interval: "1m"
+      threshold: 0
+    additionalAlerts: {}

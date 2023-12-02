@@ -1,0 +1,28 @@
+{{- if and .Values.podSecurityPolicy.create (.Capabilities.APIVersions.Has "policy/v1beta1") }}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ include "falco-exporter.podSecurityPolicyName" . }}
+  labels:
+    {{- include "falco-exporter.labels" . | nindent 4 }}
+  {{- with .Values.podSecurityPolicy.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  allowPrivilegeEscalation: false
+  allowedHostPaths:
+  - pathPrefix: "/run/falco"
+    readOnly: true
+  fsGroup:
+    rule: RunAsAny
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+  - 'hostPath'
+  - 'secret'
+{{- end -}}

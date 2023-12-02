@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "falco-exporter.fullname" . }}
+  labels:
+    {{- include "falco-exporter.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "falco-exporter.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+{{ toYaml .Values.daemonset.updateStrategy | indent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "falco-exporter.selectorLabels" . | nindent 8 }}
+        {{- if .Values.daemonset.podLabels }}
+        {{ toYaml .Values.daemonset.podLabels | nindent 8 }}
+        {{- end }}
+      {{- if .Values.daemonset.annotations }}
+      annotations:
+      {{ toYaml .Values.daemonset.annotations | nindent 8 }}
+      {{- end }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: "{{ .Values.priorityClassName }}"
+      {{- end }}
+      serviceAccountName: {{ include "falco-exporter.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - /usr/bin/falco-exporter
+            {{- if .Values.falco.grpcUnixSocketPath }}
+            - --client-socket={{ .Values.falco.grpcUnixSocketPath }}
+            {{- else }}
+            - --client-hostname={{ .Values.falco.grpcHostname }}
+            - --client-port={{ .Values.falco.grpcPort }}
+            {{- end }}
+            - --timeout={{ .Values.falco.grpcTimeout }}
+            - --listen-address=0.0.0.0:{{ .Values.service.port }}
+            {{- if .Values.service.mTLS.enabled }}
+            - --server-ca=/etc/falco/server-certs/ca.crt
+            - --server-cert=/etc/falco/server-certs/server.crt
+            - --server-key=/etc/falco/server-certs/server.key
+            {{- end }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.healthChecks.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.healthChecks.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.healthChecks.livenessProbe.periodSeconds }}          
+            httpGet:
+              path: /liveness
+              port: {{ .Values.healthChecks.livenessProbe.probesPort }}
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.healthChecks.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.healthChecks.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ .Values.healthChecks.readinessProbe.periodSeconds }}
+            httpGet:
+              path: /readiness
+              port: {{ .Values.healthChecks.readinessProbe.probesPort }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          {{- if .Values.falco.grpcUnixSocketPath }}
+            - mountPath: {{ include "falco-exporter.unixSocketDir" . }}
+              name: falco-socket-dir
+              readOnly: true
+          {{- else }}
+            - mountPath: /etc/falco/certs
+              name: certs-volume
+              readOnly: true
+          {{- end }}
+          {{- if .Values.service.mTLS.enabled }}
+            - mountPath: /etc/falco/server-certs
+              name: server-certs-volume
+              readOnly: true
+          {{- end }}
+      volumes:
+      {{- if .Values.falco.grpcUnixSocketPath }}
+        - name: falco-socket-dir
+          hostPath:
+            path: {{ include "falco-exporter.unixSocketDir" . }}
+      {{- else }}
+        - name: certs-volume
+          secret:
+            secretName: {{ include "falco-exporter.fullname" . }}-certs
+            items:
+              - key: client.key
+                path: client.key
+              - key: client.crt
+                path: client.crt
+              - key: ca.crt
+                path: ca.crt
+      {{- end }}
+      {{- if .Values.service.mTLS.enabled }}
+        - name: server-certs-volume
+          secret:
+            secretName: {{ include "falco-exporter.fullname" . }}-server-certs
+            items:
+              - key: server.key
+                path: server.key
+              - key: server.crt
+                path: server.crt
+              - key: ca.crt
+                path: ca.crt
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
