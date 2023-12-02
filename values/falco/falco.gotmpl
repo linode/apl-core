@@ -6,30 +6,16 @@ falco:
     actions:
       - ignore
 {{- if eq $v.cluster.provider "azure" }}
-  grpc:
-    enabled: true
-    bind_address: "unix:///var/run/falco/falco.sock"
-    threadiness: 0
-  grpc_output:
-    enabled: true
 driver:
   kind: module
 {{- end }}
-
 {{- if eq $v.cluster.provider "google" }}
 driver:
   kind: ebpf
-extra:
-  env:
-  - name: FALCO_BPF_PROBE
-tty: true
 {{- end }}
-
 podAnnotations: 
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
-
 resources: {{- $f.resources.falco | toYaml  | nindent 2 }}
-
 tolerations:
   - key: node-role.kubernetes.io/master
     operator: Exists
@@ -37,7 +23,6 @@ tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
     effect: NoSchedule
-
 falcoctl:
   artifact:
     install:
