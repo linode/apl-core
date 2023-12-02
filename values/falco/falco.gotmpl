@@ -39,6 +39,7 @@ falcoctl:
           memory: 32Mi
     follow:
       resources:
+        requests:
           cpu: 20m
           memory: 16Mi
         limits:
@@ -46,14 +47,14 @@ falcoctl:
           memory: 32Mi
 driver:
   loader:
-      initContainer:
-        resources:
-          requests:
-            cpu: 50m
-            memory: 32Mi
-          limits:
-            cpu: 100m
-            memory: 64Mi
+    initContainer:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
 
 falcosidekick:
   enabled: true
@@ -92,14 +93,11 @@ falcosidekick:
 
 falco-exporter:
   resources: {{- $f.resources.falcoExporter | toYaml  | nindent 4 }}
-
   falco:
     grpcUnixSocketPath: "unix:///var/run/falco/falco.sock"
-
   daemonset:
     annotations:
       policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem
-
   tolerations:
     - key: node-role.kubernetes.io/master
       operator: Exists
@@ -107,7 +105,6 @@ falco-exporter:
     - key: node-role.kubernetes.io/control-plane
       operator: Exists
       effect: NoSchedule
-
   serviceMonitor:
     enabled: true
     additionalLabels:
