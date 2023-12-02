@@ -149,10 +149,10 @@ environments:
             resources:
               falco:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 50m
+                  memory: 64Mi
                 limits:
-                  cpu: 500m
+                  cpu: 200m
                   memory: 256Mi
               falcoSidekick:
                 requests:
@@ -163,11 +163,11 @@ environments:
                   memory: 64Mi
               falcoExporter:
                 requests:
-                  cpu: 50m
-                  memory: 32Mi
+                  cpu: 20m
+                  memory: 16Mi
                 limits:
-                  cpu: 100m
-                  memory: 64Mi              
+                  cpu: 50m
+                  memory: 32Mi              
           gatekeeper:
             enabled: false
             auditFromCache: false

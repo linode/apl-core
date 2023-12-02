@@ -32,20 +32,18 @@ falcoctl:
     install:
       resources:
         requests:
+          cpu: 20m
+          memory: 16Mi
+        limits:
           cpu: 50m
           memory: 32Mi
-        limits:
-          cpu: 100m
-          memory: 64Mi
     follow:
       resources:
-        requests:
+          cpu: 20m
+          memory: 16Mi
+        limits:
           cpu: 50m
           memory: 32Mi
-        limits:
-          cpu: 100m
-          memory: 64Mi
-
 driver:
   loader:
       initContainer:
@@ -59,7 +57,6 @@ driver:
 
 falcosidekick:
   enabled: true
-  #Disabled for k8s 1.25
   podSecurityPolicy:
     create: false
   config:
@@ -72,6 +69,7 @@ falcosidekick:
   resources: {{- $f.resources.falcoSidekick | toYaml  | nindent 4 }}
   replicaCount: {{ $f.falcoSidekick.replicas }}
   webui:
+    user: "otomi-admin:{{ $v.otomi.adminPassword }}"
     enabled: true
     replicaCount: 1
     resources:
