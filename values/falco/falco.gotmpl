@@ -1,11 +1,12 @@
 {{- $v := .Values }}
 {{- $f:= $v.apps.falco }}
 
-{{- if eq $v.cluster.provider "azure" }}
 falco:
   syscall_event_drops:
     actions:
       - ignore
+{{- if eq $v.cluster.provider "azure" }}
+
   grpc:
     enabled: true
     bind_address: "unix:///var/run/falco/falco.sock"
@@ -17,14 +18,17 @@ driver:
 {{- end }}
 
 {{- if eq $v.cluster.provider "google" }}
+falco:
+  syscall_event_drops:
+    actions:
+      - ignore
 driver:
   kind: ebpf
 extra:
   env:
   - name: FALCO_BPF_PROBE
-{{- end }}
-
 tty: true
+{{- end }}
 
 podAnnotations: 
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
