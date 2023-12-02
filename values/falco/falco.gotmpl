@@ -7,12 +7,14 @@ falco:
   syscall_event_drops:
     actions:
       - ignore
+  {{- if eq $v.cluster.provider "azure" }}
   grpc:
     enabled: true
     bind_address: "unix:///var/run/falco/falco.sock"
     threadiness: 0
   grpc_output:
     enabled: true
+  {{- end }}
 
 driver:
   # -- Tell Falco which driver to use. Available options: module (kernel driver), ebpf (eBPF probe), modern-bpf (modern eBPF probe).
