@@ -276,7 +276,7 @@
           },
           "datasource": {
             "type": "prometheus",
-            "uid": "Prometheus-team"
+            "uid": "Prometheus-platform"
           },
           "definition": "label_values(namespace)",
           "hide": 0,
@@ -297,7 +297,356 @@
       ]
     },
     "time": {
-      "from": "now-6h",
+      "from": "now-6h",{
+        "annotations": {
+          "list": [
+            {
+              "builtIn": 1,
+              "datasource": {
+                "type": "datasource",
+                "uid": "grafana"
+              },
+              "enable": true,
+              "hide": true,
+              "iconColor": "rgba(0, 211, 255, 1)",
+              "name": "Annotations & Alerts",
+              "target": {
+                "limit": 100,
+                "matchAny": false,
+                "tags": [],
+                "type": "dashboard"
+              },
+              "type": "dashboard"
+            }
+          ]
+        },
+        "description": "Grafana dashboard for Falco output events",
+        "editable": true,
+        "fiscalYearStartMonth": 0,
+        "gnetId": 11914,
+        "graphTooltip": 0,
+        "id": 6,
+        "links": [],
+        "liveNow": false,
+        "panels": [
+          {
+            "aliasColors": {},
+            "bars": false,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus-platform"
+            },
+            "description": "",
+            "fieldConfig": {
+              "defaults": {
+                "links": []
+              },
+              "overrides": []
+            },
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+              "h": 11,
+              "w": 24,
+              "x": 0,
+              "y": 0
+            },
+            "hiddenSeries": false,
+            "id": 2,
+            "legend": {
+              "alignAsTable": true,
+              "avg": false,
+              "current": false,
+              "max": false,
+              "min": false,
+              "rightSide": true,
+              "show": true,
+              "total": false,
+              "values": false
+            },
+            "lines": true,
+            "linewidth": 1,
+            "nullPointMode": "null",
+            "options": {
+              "alertThreshold": true
+            },
+            "percentage": false,
+            "pluginVersion": "9.5.2",
+            "pointradius": 2,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": true,
+            "steppedLine": false,
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus-platform"
+                },
+                "editorMode": "builder",
+                "expr": "rate(falco_events{k8s_ns_name=\"$namespace\"}[5m])",
+                "intervalFactor": 1,
+                "legendFormat": "{{rule}} ({{k8s_pod_name}})",
+                "range": true,
+                "refId": "A"
+              }
+            ],
+            "thresholds": [],
+            "timeRegions": [],
+            "title": "Events rate",
+            "tooltip": {
+              "shared": true,
+              "sort": 0,
+              "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+              "mode": "time",
+              "show": true,
+              "values": []
+            },
+            "yaxes": [
+              {
+                "format": "short",
+                "logBase": 1,
+                "show": true
+              },
+              {
+                "format": "short",
+                "logBase": 1,
+                "show": true
+              }
+            ],
+            "yaxis": {
+              "align": false
+            }
+          },
+          {
+            "columns": [],
+            "datasource": {
+              "type": "prometheus",
+              "uid": "prometheus-platform"
+            },
+            "fontSize": "100%",
+            "gridPos": {
+              "h": 10,
+              "w": 24,
+              "x": 0,
+              "y": 11
+            },
+            "id": 4,
+            "links": [],
+            "showHeader": true,
+            "sort": {
+              "desc": false
+            },
+            "styles": [
+              {
+                "alias": "Time",
+                "align": "auto",
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "pattern": "Time",
+                "type": "date"
+              },
+              {
+                "alias": "",
+                "align": "auto",
+                "colors": [
+                  "rgba(245, 54, 54, 0.9)",
+                  "rgba(237, 129, 40, 0.89)",
+                  "rgba(50, 172, 45, 0.97)"
+                ],
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "decimals": 2,
+                "link": false,
+                "mappingType": 1,
+                "pattern": "/__name__|job|kubernetes_name|(__name|helm_|app_|pod_).*/",
+                "thresholds": [],
+                "type": "hidden",
+                "unit": "short"
+              },
+              {
+                "alias": "Count",
+                "align": "auto",
+                "colors": [
+                  "rgba(245, 54, 54, 0.9)",
+                  "rgba(237, 129, 40, 0.89)",
+                  "rgba(50, 172, 45, 0.97)"
+                ],
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "decimals": 0,
+                "mappingType": 1,
+                "pattern": "Value",
+                "thresholds": [],
+                "type": "number",
+                "unit": "short"
+              },
+              {
+                "alias": "",
+                "align": "left",
+                "colors": [
+                  "rgba(245, 54, 54, 0.9)",
+                  "rgba(237, 129, 40, 0.89)",
+                  "rgba(50, 172, 45, 0.97)"
+                ],
+                "dateFormat": "YYYY-MM-DD HH:mm:ss",
+                "decimals": 0,
+                "mappingType": 1,
+                "pattern": "priority",
+                "thresholds": [
+                  ""
+                ],
+                "type": "number",
+                "unit": "none",
+                "valueMaps": [
+                  {
+                    "text": "5",
+                    "value": "5"
+                  }
+                ]
+              },
+              {
+                "alias": "",
+                "align": "left",
+                "colors": [
+                  "rgba(245, 54, 54, 0.9)",
+                  "rgba(237, 129, 40, 0.89)",
+                  "rgba(50, 172, 45, 0.97)"
+                ],
+                "decimals": 2,
+                "pattern": "/.*/",
+                "thresholds": [],
+                "type": "string",
+                "unit": "short"
+              }
+            ],
+            "targets": [
+              {
+                "datasource": {
+                  "type": "prometheus",
+                  "uid": "prometheus-platform"
+                },
+                "editorMode": "builder",
+                "expr": "falco_events{k8s_ns_name=\"$namespace\"}",
+                "format": "table",
+                "instant": true,
+                "refId": "A"
+              }
+            ],
+            "title": "Totals",
+            "transform": "table",
+            "transformations": [
+              {
+                "id": "calculateField",
+                "options": {
+                  "alias": "Pod",
+                  "binary": {
+                    "left": "k8s_pod_name",
+                    "operator": "+",
+                    "reducer": "sum",
+                    "right": "k8s_pod_name"
+                  },
+                  "mode": "reduceRow",
+                  "reduce": {
+                    "include": [
+                      "k8s_pod_name"
+                    ],
+                    "reducer": "lastNotNull"
+                  },
+                  "replaceFields": false
+                }
+              },
+              {
+                "id": "organize",
+                "options": {
+                  "excludeByName": {
+                    "container": true,
+                    "endpoint": true,
+                    "hostname": true,
+                    "instance": true,
+                    "job": true,
+                    "k8s_ns_name": true,
+                    "k8s_pod_name": true,
+                    "namespace": true,
+                    "pod": true,
+                    "service": true
+                  },
+                  "indexByName": {
+                    "Pod": 2,
+                    "Time": 0,
+                    "Value": 8,
+                    "__name__": 1,
+                    "k8s_pod_name": 3,
+                    "priority": 4,
+                    "rule": 5,
+                    "source": 6,
+                    "tags": 7
+                  },
+                  "renameByName": {
+                    "Pod": "",
+                    "__name__": "",
+                    "endpoint": "",
+                    "priority": "",
+                    "rule": "",
+                    "source": "",
+                    "tags": ""
+                  }
+                }
+              }
+            ],
+            "transparent": true,
+            "type": "table-old"
+          }
+        ],
+        "refresh": "",
+        "schemaVersion": 38,
+        "style": "dark",
+        "tags": [],
+        "templating": {
+          "list": [
+            {
+              "current": {
+                "selected": true,
+                "text": "harbor",
+                "value": "harbor"
+              },
+              "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus-platform"
+              },
+              "definition": "label_values(k8s_ns_name)",
+              "hide": 0,
+              "includeAll": false,
+              "multi": false,
+              "name": "namespace",
+              "options": [],
+              "query": {
+                "query": "label_values(k8s_ns_name)",
+                "refId": "PrometheusVariableQueryEditor-VariableQuery"
+              },
+              "refresh": 1,
+              "regex": "",
+              "skipUrlSync": false,
+              "sort": 0,
+              "type": "query"
+            }
+          ]
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {},
+        "timezone": "",
+        "title": "Detected threads",
+        "uid": "FvUFlfuZzccccnnnn",
+        "version": 1,
+        "weekStart": ""
+      }
       "to": "now"
     },
     "timepicker": {},

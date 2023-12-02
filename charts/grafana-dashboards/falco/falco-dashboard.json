@@ -26,7 +26,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 11914,
   "graphTooltip": 0,
-  "id": 35,
+  "id": 17,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -74,7 +74,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "9.0.1",
+      "pluginVersion": "9.5.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -88,9 +88,11 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(falco_events[5m])",
+          "editorMode": "builder",
+          "expr": "rate(falco_events{k8s_ns_name=\"$namespace\"}[5m])",
           "intervalFactor": 1,
-          "legendFormat": "{{rule}} ({{hostname}})",
+          "legendFormat": "{{rule}} ({{k8s_pod_name}})",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -229,7 +231,8 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "falco_events",
+          "editorMode": "builder",
+          "expr": "falco_events{k8s_ns_name=\"$namespace\"}",
           "format": "table",
           "instant": true,
           "refId": "A"
@@ -237,15 +240,97 @@
       ],
       "title": "Totals",
       "transform": "table",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Pod",
+            "binary": {
+              "left": "k8s_pod_name",
+              "operator": "+",
+              "reducer": "sum",
+              "right": "k8s_pod_name"
+            },
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [
+                "k8s_pod_name"
+              ],
+              "reducer": "lastNotNull"
+            },
+            "replaceFields": false
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "container": true,
+              "endpoint": true,
+              "hostname": true,
+              "instance": true,
+              "job": true,
+              "k8s_ns_name": true,
+              "k8s_pod_name": true,
+              "namespace": true,
+              "pod": true,
+              "service": true
+            },
+            "indexByName": {
+              "Pod": 2,
+              "Time": 0,
+              "Value": 8,
+              "__name__": 1,
+              "k8s_pod_name": 3,
+              "priority": 4,
+              "rule": 5,
+              "source": 6,
+              "tags": 7
+            },
+            "renameByName": {
+              "Pod": "",
+              "__name__": "",
+              "endpoint": "",
+              "priority": "",
+              "rule": "",
+              "source": "",
+              "tags": ""
+            }
+          }
+        }
+      ],
       "transparent": true,
       "type": "table-old"
     }
   ],
-  "schemaVersion": 36,
+  "refresh": "",
+  "schemaVersion": 38,
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(k8s_ns_name)",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "namespace",
+        "options": [],
+        "query": {
+          "query": "label_values(k8s_ns_name)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-6h",
@@ -254,7 +339,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Falco Dashboard",
-  "uid": "FvUFlfuZzcccc",
-  "version": 1,
+  "uid": "otomiplatformfalco000",
+  "version": 2,
   "weekStart": ""
 }
