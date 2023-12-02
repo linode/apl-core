@@ -114,7 +114,6 @@ spec:
               value: {{ .Values.config.mutualtlsclient.keyfile | quote }}
             - name: MUTUALTLSCLIENT_CACERTFILE
               value: {{ .Values.config.mutualtlsclient.cacertfile | quote }}
-            {{-  if .Values.config.tlsserver.deploy }}  
             - name: TLSSERVER_DEPLOY
               value: {{ .Values.config.tlsserver.deploy | quote }}
             - name: TLSSERVER_CERTFILE
@@ -129,7 +128,6 @@ spec:
               value: {{ .Values.config.tlsserver.notlsport | quote }}
             - name: TLSSERVER_NOTLSPATHS
               value: {{ .Values.config.tlsserver.notlspaths | quote }}
-            {{- end }}
 
             {{- if .Values.config.extraEnv }}
             {{ toYaml .Values.config.extraEnv | nindent 12 }}
