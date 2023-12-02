@@ -34,12 +34,6 @@ releases:
     labels:
       pkg: falco
     <<: *default
-  - name: falco-exporter
-    installed: {{ $a | get "falco.enabled" }}
-    namespace: falco
-    labels:
-      pkg: falco
-    <<: *default
   - name: opencost
     installed: {{ $a | get "opencost.enabled" }}
     namespace: opencost
