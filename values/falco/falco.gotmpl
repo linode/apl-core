@@ -27,6 +27,25 @@ tolerations:
     operator: Exists
     effect: NoSchedule
 
+falcoctl:
+  artifact:
+    install:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+    follow:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+
 driver:
   loader:
       initContainer:
@@ -74,7 +93,7 @@ falcosidekick:
         runAsUser: 1001
 
 falco-exporter:
-  resources: {{- $f.resources.falcoExporter | toYaml  | nindent 2 }}
+  resources: {{- $f.resources.falcoExporter | toYaml  | nindent 4 }}
 
   falco:
     grpcUnixSocketPath: "unix:///var/run/falco/falco.sock"
