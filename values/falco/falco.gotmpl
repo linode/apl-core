@@ -14,6 +14,16 @@ falco:
   grpc_output:
     enabled: true
 
+driver:
+  # -- Tell Falco which driver to use. Available options: module (kernel driver), ebpf (eBPF probe), modern-bpf (modern eBPF probe).
+  {{- if eq $v.cluster.provider "google" }}
+  kind: ebpf
+  {{- else }}
+  kind: module
+  {{- end }}
+
+tty: true
+
 podAnnotations: 
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
 
