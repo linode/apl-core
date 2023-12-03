@@ -7,8 +7,8 @@ falco:
       - ignore
   grpc:
     enabled: true
-    bind_address: "unix:///var/run/falco.sock"
-    threadiness: 8
+    bind_address: "unix:///run/falco/falco.sock"
+    threadiness: 0
   grpc_output:
     enabled: true
 podAnnotations: 
@@ -34,26 +34,3 @@ driver:
   loader:
     initContainer:
       resources: {{- $f.resources.falcoDriverLoader| toYaml  | nindent 8 }}
-
-falcosidekick:
-  enabled: true
-  podSecurityPolicy:
-    create: false
-  config:
-    debug: false
-    {{- if $v.apps.alertmanager.enabled }}
-    alertmanager:
-      hostport: http://po-alertmanager.monitoring.svc.cluster.local:9093
-      minimumpriority: {{ $f.falcoSidekick.minPrio }}
-    {{- end }}
-  resources: {{- $f.resources.falcoSidekick | toYaml  | nindent 4 }}
-  replicaCount: {{ $f.falcoSidekick.replicas }}
-  webui:
-    user: "otomi-admin:{{ $v.otomi.adminPassword }}"
-    enabled: true
-    replicaCount: 1
-    resources: {{- $f.resources.falcoSidekickUi | toYaml  | nindent 6 }}
-    redis:
-      resources: {{- $f.resources.falcoSidekickRedis | toYaml  | nindent 8 }}
-      podSecurityContext:
-        runAsUser: 1001
