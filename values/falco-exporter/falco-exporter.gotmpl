@@ -1,0 +1,21 @@
+{{- $v := .Values }}
+{{- $f:= $v.apps.falco }}
+
+resources: {{- $f.resources.falcoExporter | toYaml  | nindent 2 }}
+
+daemonset:
+  annotations:
+    policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem
+
+tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    prometheus: system

@@ -5,9 +5,6 @@ dependencies:
   name: falcosidekick
   repository: https://falcosecurity.github.io/charts
   version: 0.7.7
-- name: falco-exporter
-  version: "0.9.7"
-  repository: "https://falcosecurity.github.io/charts"
 description: Falco
 home: https://falco.org
 icon: https://raw.githubusercontent.com/cncf/artwork/master/projects/falco/horizontal/color/falco-horizontal-color.svg

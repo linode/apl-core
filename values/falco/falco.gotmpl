@@ -57,20 +57,3 @@ falcosidekick:
       resources: {{- $f.resources.falcoSidekickRedis | toYaml  | nindent 8 }}
       podSecurityContext:
         runAsUser: 1001
-
-falco-exporter:
-  resources: {{- $f.resources.falcoExporter | toYaml  | nindent 4 }}
-  daemonset:
-    annotations:
-      policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem
-  tolerations:
-    - key: node-role.kubernetes.io/master
-      operator: Exists
-      effect: NoSchedule
-    - key: node-role.kubernetes.io/control-plane
-      operator: Exists
-      effect: NoSchedule
-  serviceMonitor:
-    enabled: true
-    additionalLabels:
-      prometheus: system
