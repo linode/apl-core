@@ -150,10 +150,10 @@ environments:
               falco:
                 requests:
                   cpu: 100m
-                  memory: 256Mi
+                  memory: 512Mi
                 limits:
                   cpu: 1000m
-                  memory: 512Mi
+                  memory: 1024Mi
               falcoCtlFollow:
                 requests:
                   cpu: 20m
@@ -163,18 +163,18 @@ environments:
                   memory: 32Mi
               falcoCtlInstall:
                 requests:
-                  cpu: 20m
-                  memory: 16Mi
+                  cpu: 100m
+                  memory: 128Mi
                 limits:
-                  cpu: 50m
-                  memory: 32Mi
+                  cpu: 200m
+                  memory: 256Mi
               falcoDriverLoader:
                 requests:
                   cpu: 100m
-                  memory: 32Mi
+                  memory: 128Mi
                 limits:
-                  cpu: 100m
-                  memory: 64Mi
+                  cpu: 200m
+                  memory: 6256Mi
               falcoSidekick:
                 requests:
                   cpu: 20m
