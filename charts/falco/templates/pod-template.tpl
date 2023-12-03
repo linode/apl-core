@@ -101,7 +101,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-      {{- if and .Values.driver.enabled (eq .Values.driver.kind "ebpf") }}
+      {{- if eq .Values.driver.kind "ebpf" }}
         - name: FALCO_BPF_PROBE
           value: {{ .Values.driver.ebpf.path }}
       {{- end }}

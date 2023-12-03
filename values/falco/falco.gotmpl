@@ -5,14 +5,6 @@ falco:
   syscall_event_drops:
     actions:
       - ignore
-{{- if eq $v.cluster.provider "azure" }}
-driver:
-  kind: module
-{{- end }}
-{{- if eq $v.cluster.provider "google" }}
-driver:
-  kind: ebpf
-{{- end }}
 podAnnotations: 
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
 resources: {{- $f.resources.falco | toYaml  | nindent 2 }}
@@ -26,31 +18,16 @@ tolerations:
 falcoctl:
   artifact:
     install:
-      resources:
-        requests:
-          cpu: 20m
-          memory: 16Mi
-        limits:
-          cpu: 50m
-          memory: 32Mi
+      resources: {{- $f.resources.falcoCtlInstall | toYaml  | nindent 8 }}
     follow:
-      resources:
-        requests:
-          cpu: 20m
-          memory: 16Mi
-        limits:
-          cpu: 50m
-          memory: 32Mi
+      resources: {{- $f.resources.falcoCtlFollow | toYaml  | nindent 8 }}
 driver:
+  {{- if eq $v.cluster.provider "google" }}
+  kind: ebpf
+  {{- end }}
   loader:
     initContainer:
-      resources:
-        requests:
-          cpu: 50m
-          memory: 32Mi
-        limits:
-          cpu: 100m
-          memory: 64Mi
+      resources: {{- $f.resources.falcoDriverLoader| toYaml  | nindent 8 }}
 
 falcosidekick:
   enabled: true
@@ -69,21 +46,9 @@ falcosidekick:
     user: "otomi-admin:{{ $v.otomi.adminPassword }}"
     enabled: true
     replicaCount: 1
-    resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
+    resources: {{- $f.resources.falcoSidekickUi | toYaml  | nindent 6 }}
     redis:
-      resources:
-        limits:
-          cpu: 200m
-          memory: 256Mi
-        requests:
-          cpu: 100m
-          memory: 64Mi
+      resources: {{- $f.resources.falcoSidekickRedis | toYaml  | nindent 8 }}
       podSecurityContext:
         runAsUser: 1001
 

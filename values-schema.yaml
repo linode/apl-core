@@ -1893,7 +1893,17 @@ properties:
             properties:
               falco:
                 $ref: '#/definitions/resources'
+              falcoCtlInstall:
+                $ref: '#/definitions/resources'
+              falcoCtlFollow:
+                $ref: '#/definitions/resources'
+              falcoDriverLoader:
+                $ref: '#/definitions/resources'
               falcoSidekick:
+                $ref: '#/definitions/resources'
+              falcoSidekickUi:
+                $ref: '#/definitions/resources'
+              falcoSidekickRedis:
                 $ref: '#/definitions/resources'
               falcoExporter:
                 $ref: '#/definitions/resources'

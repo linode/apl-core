@@ -1,27 +1,27 @@
 apiVersion: v2
-name: falco
-version: 3.8.5
-appVersion: "0.36.2"
+appVersion: 0.36.2
+dependencies:
+- condition: falcosidekick.enabled
+  name: falcosidekick
+  repository: https://falcosecurity.github.io/charts
+  version: 0.7.7
+- name: falco-exporter
+  version: "0.9.7"
+  repository: "https://falcosecurity.github.io/charts"
 description: Falco
-keywords:
-  - monitoring
-  - security
-  - alerting
-  - metric
-  - troubleshooting
-  - run-time
 home: https://falco.org
 icon: https://raw.githubusercontent.com/cncf/artwork/master/projects/falco/horizontal/color/falco-horizontal-color.svg
-sources:
-  - https://github.com/falcosecurity/falco
+keywords:
+- monitoring
+- security
+- alerting
+- metric
+- troubleshooting
+- run-time
 maintainers:
-  - name: The Falco Authors
-    email: cncf-falco-dev@lists.cncf.io
-dependencies:
-  - name: falcosidekick
-    version: "0.7.7"
-    condition: falcosidekick.enabled
-    repository: https://falcosecurity.github.io/charts
-  - name: falco-exporter
-    version: "0.9.7"
-    repository: "https://falcosecurity.github.io/charts"
+- email: cncf-falco-dev@lists.cncf.io
+  name: The Falco Authors
+name: falco
+sources:
+- https://github.com/falcosecurity/falco
+version: 3.8.5
