@@ -7,8 +7,8 @@ falco:
       - ignore
   grpc:
     enabled: true
-    bind_address: "unix:///var/run/falco/falco.sock"
-    threadiness: 0
+    bind_address: "unix:///var/run/falco.sock"
+    threadiness: 8
   grpc_output:
     enabled: true
 podAnnotations: 
@@ -60,8 +60,6 @@ falcosidekick:
 
 falco-exporter:
   resources: {{- $f.resources.falcoExporter | toYaml  | nindent 4 }}
-  falco:
-    grpcUnixSocketPath: "unix:///var/run/falco/falco.sock"
   daemonset:
     annotations:
       policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem
