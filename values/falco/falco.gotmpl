@@ -5,6 +5,12 @@ falco:
   syscall_event_drops:
     actions:
       - ignore
+  grpc:
+    enabled: true
+    bind_address: "unix:///var/run/falco/falco.sock"
+    threadiness: 0
+  grpc_output:
+    enabled: true
 podAnnotations: 
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
 resources: {{- $f.resources.falco | toYaml  | nindent 2 }}
