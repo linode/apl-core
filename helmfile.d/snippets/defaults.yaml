@@ -174,7 +174,7 @@ environments:
                   memory: 128Mi
                 limits:
                   cpu: 200m
-                  memory: 6256Mi
+                  memory: 256Mi
               falcoSidekick:
                 requests:
                   cpu: 20m
