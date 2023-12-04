@@ -176,27 +176,6 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
-              falcoSidekick:
-                requests:
-                  cpu: 20m
-                  memory: 32Mi
-                limits:
-                  cpu: 50m
-                  memory: 64Mi
-              falcoSidekickRedis:
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 64Mi
-              falcoSidekickUi:
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
               falcoExporter:
                 requests:
                   cpu: 20m
@@ -204,7 +183,6 @@ environments:
                 limits:
                   cpu: 50m
                   memory: 32Mi
-
           gatekeeper:
             enabled: false
             auditFromCache: false

@@ -1872,22 +1872,6 @@ properties:
           enabled:
             type: boolean
             default: false
-          falcoSidekick:
-            minPrio:
-              default: informational
-              enum:
-                - emergency
-                - alert
-                - critical
-                - error
-                - warning
-                - notice
-                - informational
-                - debug
-              type: string
-            replicas:
-              type: integer
-              default: 1
           resources:
             additionalProperties: false
             properties:
@@ -1898,12 +1882,6 @@ properties:
               falcoCtlFollow:
                 $ref: '#/definitions/resources'
               falcoDriverLoader:
-                $ref: '#/definitions/resources'
-              falcoSidekick:
-                $ref: '#/definitions/resources'
-              falcoSidekickUi:
-                $ref: '#/definitions/resources'
-              falcoSidekickRedis:
                 $ref: '#/definitions/resources'
               falcoExporter:
                 $ref: '#/definitions/resources'
