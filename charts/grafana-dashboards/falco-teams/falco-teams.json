@@ -26,7 +26,7 @@
   "fiscalYearStartMonth": 0,
   "gnetId": 11914,
   "graphTooltip": 0,
-  "id": 18,
+  "id": 5,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -37,7 +37,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "$datasource"
+        "uid": "prometheus-platform"
       },
       "description": "",
       "fieldConfig": {
@@ -86,7 +86,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$datasource"
+            "uid": "prometheus-platform"
           },
           "editorMode": "builder",
           "expr": "rate(falco_events{k8s_ns_name=\"$namespace\"}[5m])",
@@ -130,7 +130,7 @@
       "columns": [],
       "datasource": {
         "type": "prometheus",
-        "uid": "$datasource"
+        "uid": "prometheus-platform"
       },
       "fontSize": "100%",
       "gridPos": {
@@ -229,7 +229,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "$datasource"
+            "uid": "prometheus-platform"
           },
           "editorMode": "builder",
           "expr": "falco_events{k8s_ns_name=\"$namespace\"}",
@@ -310,9 +310,14 @@
   "templating": {
     "list": [
       {
+        "current": {
+          "selected": false,
+          "text": "team-test",
+          "value": "team-test"
+        },
         "datasource": {
           "type": "prometheus",
-          "uid": "$datasource"
+          "uid": "prometheus-platform"
         },
         "definition": "label_values(k8s_ns_name)",
         "hide": 0,
@@ -338,8 +343,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Detected Threads",
-  "uid": "FvUFlfuZzxx",
-  "version": 2,
+  "title": "Detected threads in containers",
+  "uid": "otomiplatformfalco",
+  "version": 1,
   "weekStart": ""
 }
