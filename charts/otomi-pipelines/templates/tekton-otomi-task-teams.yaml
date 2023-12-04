@@ -40,7 +40,8 @@ spec:
       script: |
         #!/bin/bash
         set -e
-
+        # Prevent the detected dubious ownership in repository error
+        git config --global --add safe.directory '*'
         # Reading gitea credentials
         GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
         GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
