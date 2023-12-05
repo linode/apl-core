@@ -124,7 +124,7 @@ gitea:
       autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
       adminGroup: team-admin
       groupClaimName: groups
-      groupTeamMap: {{ toJson $teamData | quote }}
+      #groupTeamMap: {{ toJson $teamData | quote }}
 
 init:
   resources:
