@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.26.10](https://github.com/redkubes/otomi-core/compare/v0.26.9...v0.26.10) (2023-12-05)
+
+
+### Features
+
+* update backup schedule definition ([#1405](https://github.com/redkubes/otomi-core/issues/1405)) ([e3f72f4](https://github.com/redkubes/otomi-core/commit/e3f72f499cf21a731aa70eb92d9496d061e28549))
+
 ### [0.26.9](https://github.com/redkubes/otomi-core/compare/v0.26.8...v0.26.9) (2023-11-07)
 
 
