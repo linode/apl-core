@@ -48,6 +48,8 @@ teamConfig:
       service:
         - ingress
         - networkPolicy
+    monitoringStack:
+      enabled: true
     networkPolicy:
       egressPublic: false
       ingressPrivate: false

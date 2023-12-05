@@ -1,5 +1,3 @@
-{{- $teamId := .Release.Labels.team }}
-
 kubeApiServer:
   enabled: false
 coreDns:
@@ -24,10 +22,10 @@ prometheusOperator:
 defaultRules:
   create: true
   rules:
-    alertmanager: true
+    alertmanager: false
     configReloaders: false
     etcd: false
-    general: false
+    general: true
     k8s: false
     kubeApiserver: false
     kubeApiserverAvailability: false
@@ -48,12 +46,17 @@ defaultRules:
     node: false
     nodeExporterAlerting: false
     nodeExporterRecording: false
-    prometheus: true
+    prometheus: false
     prometheusOperator: false
 
 prometheus:
+  serviceMonitor:
+    selfMonitor: false
   additionalServiceMonitors: null
   prometheusSpec:
+    podMetadata:
+      annotations:
+        traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
     enableAdminAPI: false
     replicas: 1
     remoteWrite: null
@@ -64,14 +67,38 @@ prometheus:
       requests:
         cpu: 100m
         memory: 128Mi
-    {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
-    {{ $selType }}NamespaceSelector: 
-      - team-{{ $teamId }}
-    {{ $selType }}Selector:
-      matchLabels:
-        prometheus: team-{{ $teamId }}
-    {{- end }}
 additionalPrometheusRules: null
 grafana:
+  serviceMonitor:
+    enabled: false
   defaultDashboardsEnabled: false
   plugins: []
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  sidecar:
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
+
+alertmanager:
+  serviceMonitor:
+    selfMonitor: false
+  alertmanagerSpec:
+    alertmanagerConfigMatcherStrategy:
+      type: OnNamespace
+    resources:
+      limits:
+        cpu: 200m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 64Mi
