@@ -42,7 +42,11 @@ resources:
             pathType: Prefix
       {{- if not $v.otomi.hasCloudLB }}
       tls: 
-        - secretName: {{ $domain | replace "." "-" }}
+        {{- if eq $cm.issuer "byo-wildcard-cert" }}
+        - secretName: "byo-wildcard-cert"
+        {{- else }}
+        - secretName: otomi-cert-manager-wildcard-cert
+        {{- end }}
           hosts:
             - '{{ $domain }}'
       {{- end }}
