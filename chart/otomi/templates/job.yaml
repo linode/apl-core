@@ -34,7 +34,13 @@ spec:
               drop:
               - ALL
             runAsNonRoot: true
-          resources: {}
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: '2'
+            requests:
+              memory: 1Gi
+              cpu: '1'
           command: [bash, -c]
           args:
             - |
