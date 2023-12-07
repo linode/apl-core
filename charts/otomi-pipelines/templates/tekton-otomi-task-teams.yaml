@@ -67,4 +67,4 @@ spec:
         - '/bin/bash'
       args:
         - '-c'
-        - 'binzx/otomi apply -f helmfile.d/helmfile-60.teams.yaml'
+        - 'binzx/otomi apply-as-apps -f helmfile.d/helmfile-60.teams.yaml'

@@ -75,13 +75,21 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   await prepareDomainSuffix()
-  const applyLabel: string = process.env.OTOMI_DEV_APPLY_LABEL || 'stage!=prep'
-  d.info(`Deploying charts containing label ${applyLabel}`)
+  // const applyLabel: string = process.env.OTOMI_DEV_APPLY_LABEL || 'stage!=prep'
+  // d.info(`Deploying charts containing label ${applyLabel}`)
   await hf(
     {
-      labelOpts: ['tag!=teams', applyLabel],
+      labelOpts: ['tag!=teams'],
       logLevel: logLevelString(),
       args: ['apply'],
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+  await hf(
+    {
+      labelOpts: ['name=team-ns-admin'],
+      logLevel: logLevelString(),
+      args: ['apply-as-apps'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
