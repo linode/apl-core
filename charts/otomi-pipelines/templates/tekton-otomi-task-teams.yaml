@@ -34,7 +34,7 @@ spec:
     - name: ENV_DIR
       value: /home/app/stack/env
     - name: VERBOSE
-      value: '1'
+      value: '2'
   steps:
     - name: git-clone
       script: |

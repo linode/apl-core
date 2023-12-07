@@ -14,7 +14,6 @@ const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
 const appsDir = '/tmp/otomi/apps'
 const valuesDir = '/tmp/otomi/values'
-const d = terminal(`cmd:${cmdName}:apply`)
 
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
@@ -90,6 +89,7 @@ const writeApplicationManifest = async (release: HelmRelese, otomiVersion: strin
   await writeFile(applicationPath, objectToYaml(manifest))
 }
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
+  const d = terminal(`cmd:${cmdName}:apply-as-apps`)
   const helmfileSource = argv.file?.length === 0 ? 'helmfile.d/' : argv.file?.toString()
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
 
@@ -147,7 +147,7 @@ export const module: CommandModule = {
   handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     setup()
-    await prepareEnvironment({ skipKubeContextCheck: true })
+    await prepareEnvironment()
     await applyAsApps(argv)
   },
 }
