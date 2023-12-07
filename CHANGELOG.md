@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.7](https://github.com/redkubes/otomi-core/compare/v2.0.6...v2.0.7) (2023-12-07)
+
+
+### Bug Fixes
+
+* renamed the secret to be used by the ingress ([#1412](https://github.com/redkubes/otomi-core/issues/1412)) ([5783230](https://github.com/redkubes/otomi-core/commit/578323054c2b53d3fd46bf719767a6c9b44342d4))
+
 ### [2.0.6](https://github.com/redkubes/otomi-core/compare/v2.0.5...v2.0.6) (2023-12-07)
 
 
