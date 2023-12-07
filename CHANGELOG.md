@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.6](https://github.com/redkubes/otomi-core/compare/v2.0.5...v2.0.6) (2023-12-07)
+
+
+### Bug Fixes
+
+* oauth2-proxy cert ([#1408](https://github.com/redkubes/otomi-core/issues/1408)) ([6cab141](https://github.com/redkubes/otomi-core/commit/6cab1417c06fb6a4717e8990a746043a0117995b))
+
 ### [2.0.5](https://github.com/redkubes/otomi-core/compare/v2.0.4...v2.0.5) (2023-11-30)
 
 
