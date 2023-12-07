@@ -40,7 +40,7 @@ spec:
               name: monitoring
           podSelector:
             matchLabels:
-              app: prometheus
+              app.kubernetes.io/instance: po-prometheus
     - from:
         - namespaceSelector:
             matchLabels:
@@ -60,10 +60,10 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              prometheus: {{ $v.teamId }}-po-prometheus
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
   podSelector:
     matchLabels:
-      alertmanager: {{ $v.teamId }}-po-alertmanager
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
   policyTypes:
     - Ingress
 ---
@@ -81,7 +81,7 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              alertmanager: {{ $v.teamId }}-po-alertmanager
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
         - namespaceSelector:
             matchLabels:
               name: team-{{ $v.teamId }}
@@ -90,7 +90,7 @@ spec:
               app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
   podSelector:
     matchLabels:
-      prometheus: {{ $v.teamId }}-po-prometheus
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
   policyTypes:
     - Ingress
 ---
@@ -108,7 +108,7 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              prometheus: {{ $v.teamId }}-po-prometheus
+              prometheus: team-{{ $v.teamId }}
   podSelector:
     matchLabels:
       app.kubernetes.io/name: kube-state-metrics
