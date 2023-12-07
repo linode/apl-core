@@ -43,7 +43,7 @@ resources:
       {{- if not $v.otomi.hasCloudLB }}
       tls: 
         {{- if eq $cm.issuer "byo-wildcard-cert" }}
-        - secretName: "byo-wildcard-cert"
+        - secretName: "otomi-byo-wildcard-cert"
         {{- else }}
         - secretName: otomi-cert-manager-wildcard-cert
         {{- end }}
