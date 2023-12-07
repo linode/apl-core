@@ -38,8 +38,17 @@ spec:
           command: [bash, -c]
           args:
             - |
+              # set -e
               kubectl create ns otomi &> /dev/null
-              binzx/otomi validate-cluster && binzx/otomi bootstrap && binzx/otomi apply
+              kubectl create ns olm &> /dev/null
+              kubectl create namespace argocd &> /dev/null
+              binzx/otomi validate-cluster
+              binzx/otomi bootstrap
+              kubectl apply -f crds/argocd
+              binzx/otomi apply -l name=operator-lifecycle-manager
+              binzx/otomi apply -l name=argocd-operator
+              binzx/otomi apply-as-apps -f helmfile.tpl/helmfile-init.yaml
+              binzx/otomi apply-as-apps
           env:
             - name: VERBOSITY
               value: '1'

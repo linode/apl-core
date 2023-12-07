@@ -1,5 +1,6 @@
 import { CommandModule } from 'yargs'
 import { module as applyModule } from './apply'
+import { module as applyAsAppsModule } from './apply-as-apps'
 import { module as applyE2eModule } from './apply-e2e'
 import { module as bashModule } from './bash'
 import { module as bootstrapModule } from './bootstrap'
@@ -30,6 +31,7 @@ import { module as valuesModule } from './values'
 import { module as xModule } from './x'
 
 export { module as apply } from './apply'
+export { module as applyAsAppsModule } from './apply-as-apps'
 export { module as applyE2e } from './apply-e2e'
 export { module as bash } from './bash'
 export { module as bootstrap } from './bootstrap'
@@ -59,6 +61,7 @@ export { module as x } from './x'
 
 export const commands: CommandModule[] = [
   applyModule,
+  applyAsAppsModule,
   applyE2eModule,
   bashModule,
   bootstrapModule,

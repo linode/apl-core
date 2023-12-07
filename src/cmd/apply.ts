@@ -33,6 +33,7 @@ const setup = (): void => {
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const prevState = await getDeploymentState()
+  const intitalInstall = isEmpty(prevState.version)
 
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
@@ -94,7 +95,6 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  const intitalInstall = isEmpty(prevState.version)
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit()

@@ -14,7 +14,7 @@ import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBl
 
 import { HelmArguments } from './yargs'
 
-const objectToYaml = (obj: Record<string, any>): string => {
+export const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : stringify(obj, { indent: 4 })
 }
 
