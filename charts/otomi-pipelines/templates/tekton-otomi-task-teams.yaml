@@ -70,10 +70,3 @@ spec:
         git config --global --add safe.directory '*'
         binzx/otomi apply-as-apps -f helmfile.d/helmfile-15.ingress-core.yaml -l team=admin
         binzx/otomi apply-as-apps -f helmfile.d/helmfile-60.teams.yaml
-
-    - name: apply
-      command:
-        - '/bin/bash'
-      args:
-        - '-c'
-        - 'binzx/otomi apply-as-apps -f helmfile.d/helmfile-60.teams.yaml'
