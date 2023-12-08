@@ -12,7 +12,10 @@ metadata:
   name: {{ include "gitea-operator.fullname" . }}-edit-oauth
 rules:
 - apiGroups: [""]
-  resources: ["pods", "namespaces"]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+  - apiGroups: [""]
+  resources: ["namespaces"]
   verbs: ["get", "watch", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
