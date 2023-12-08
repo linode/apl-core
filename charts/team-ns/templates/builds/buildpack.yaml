@@ -17,6 +17,7 @@ spec:
   tasks:
   - name: fetch-source
     taskRef:
+      kind: Task
       name: git-clone
     workspaces:
     - name: output
@@ -30,6 +31,7 @@ spec:
       value: {{ .mode.buildpacks.revision }}
   - name: buildpacks
     taskRef:
+      kind: Task
       name: buildpacks
     runAfter:
       - fetch-source
@@ -144,7 +146,8 @@ spec:
   triggers:
     - name: tekton-webhook-{{ .name }}
       bindings:
-        - ref: gitea-triggerbinding-{{ .name }}
+        - kind: TriggerBinding
+          ref: gitea-triggerbinding-{{ .name }}
       template:
         ref: trigger-template-{{ .name }}
 ---

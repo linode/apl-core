@@ -17,6 +17,7 @@ spec:
   tasks:
   - name: fetch-source
     taskRef:
+      kind: Task
       name: git-clone
     workspaces:
     - name: output
@@ -32,6 +33,7 @@ spec:
     runAfter: 
     - fetch-source
     taskRef:
+      kind: Task
       name: kaniko
     workspaces:
     - name: source
@@ -141,7 +143,8 @@ spec:
   triggers:
     - name: tekton-webhook-{{ .name }}
       bindings:
-        - ref: gitea-triggerbinding-{{ .name }}
+        - kind: TriggerBinding
+          ref: gitea-triggerbinding-{{ .name }}
       template:
         ref: trigger-template-{{ .name }}
 ---
