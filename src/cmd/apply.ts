@@ -12,7 +12,6 @@ import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/co
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { applyAsApps } from './apply-as-apps'
 import { cloneOtomiChartsInGitea, commit, printWelcomeMessage } from './commit'
 import { upgrade } from './upgrade'
 
@@ -88,8 +87,8 @@ const applyAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
-  argv.label = ['name=team-ns-admin']
-  await applyAsApps(argv)
+  // argv.label = ['name=team-ns-admin']
+  // await applyAsApps(argv)
 
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
