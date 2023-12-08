@@ -1,7 +1,6 @@
 {{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- $v := .Values | merge (dict) }}
 {{- $hasStack := dig "monitoringStack" "enabled" false $v }}
-{{- $hasStack := dig "monitoringStack" "enabled" false $v }}
 {{- if and (not (eq $v.teamId "admin")) (dig "networkPolicy" "ingressPrivate" true $v) }}
 ---
 apiVersion: networking.k8s.io/v1
