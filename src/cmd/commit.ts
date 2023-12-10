@@ -10,7 +10,7 @@ import { getRepo } from 'src/common/values'
 import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { Arguments as DroneArgs, genDrone } from './gen-drone'
+import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
@@ -58,7 +58,6 @@ export const commit = async (): Promise<void> => {
     })
   }
   // continue
-  await genDrone()
   await encrypt()
   await commitAndPush(values, branch)
 }
