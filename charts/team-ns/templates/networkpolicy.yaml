@@ -1,5 +1,6 @@
 {{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- $v := .Values | merge (dict) }}
+{{- $hasStack := dig "monitoringStack" "enabled" false $v }}
 {{- if and (not (eq $v.teamId "admin")) (dig "networkPolicy" "ingressPrivate" true $v) }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -40,7 +41,7 @@ spec:
               name: monitoring
           podSelector:
             matchLabels:
-              app: prometheus
+              app.kubernetes.io/instance: po-prometheus
     - from:
         - namespaceSelector:
             matchLabels:
@@ -60,10 +61,10 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              prometheus: {{ $v.teamId }}-po-prometheus
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
   podSelector:
     matchLabels:
-      alertmanager: {{ $v.teamId }}-po-alertmanager
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
   policyTypes:
     - Ingress
 ---
@@ -81,7 +82,7 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              alertmanager: {{ $v.teamId }}-po-alertmanager
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
         - namespaceSelector:
             matchLabels:
               name: team-{{ $v.teamId }}
@@ -90,7 +91,7 @@ spec:
               app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
   podSelector:
     matchLabels:
-      prometheus: {{ $v.teamId }}-po-prometheus
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
   policyTypes:
     - Ingress
 ---
@@ -108,7 +109,7 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              prometheus: {{ $v.teamId }}-po-prometheus
+              prometheus: team-{{ $v.teamId }}
   podSelector:
     matchLabels:
       app.kubernetes.io/name: kube-state-metrics
@@ -137,6 +138,28 @@ spec:
     - Ingress
 
   {{- range $s := $v.services }}
+    {{ if and ($hasStack) (not $s.isCore) }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $s.name }}-ingress-allow-prometheus
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      otomi.io/app: {{ $s.name }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              otomi.io/app: prometheus-team-{{ $v.teamId }}
+    {{- end }}
     {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
     {{- if not $s.isCore }}
       {{- $ingressPrivateMode := dig "networkPolicy" "ingressPrivate" "mode" "DenyAll" $s }}
