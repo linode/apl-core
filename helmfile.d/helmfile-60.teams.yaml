@@ -41,7 +41,7 @@ releases:
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
   - name: prometheus-{{ $teamId }}
-    installed: {{ and $a.prometheus.enabled $a.grafana.enabled }}
+    installed: {{ $team | get "monitoringStack.enabled" false }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
