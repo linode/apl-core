@@ -120,7 +120,7 @@ export const logLevel = (argv?: any): number => {
   const verbosity = Number(argv?.verbose ?? 0)
   logLevelVar = Math.max(logLevelNum, verbosity)
 
-  const boolTrace = env.TRACE || argv.trace
+  const boolTrace = env.TRACE || argv?.trace
   logLevelNum = boolTrace ? logLevels.TRACE : logLevelNum
   if (logLevelVar === logLevels.TRACE) {
     $.verbose = true
