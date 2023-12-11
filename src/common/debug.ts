@@ -116,8 +116,8 @@ let logLevelVar = Number.NEGATIVE_INFINITY
  */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const logLevel = (argv?: any): number => {
-  let logLevelNum = Number(logLevels[argv.logLevel?.toUpperCase() ?? 'INFO'])
-  const verbosity = Number(argv.verbose ?? 0)
+  let logLevelNum = Number(logLevels[argv?.logLevel?.toUpperCase() ?? 'INFO'])
+  const verbosity = Number(argv?.verbose ?? 0)
   logLevelVar = Math.max(logLevelNum, verbosity)
 
   const boolTrace = env.TRACE || argv.trace
