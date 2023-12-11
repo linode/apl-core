@@ -74,12 +74,15 @@ spec:
         workspaces:
         - name: shared-data
           volumeClaimTemplate:
+            metadata:
+              creationTimestamp: null
             spec:
               accessModes:
               - ReadWriteOnce
               resources:
                 requests:
                   storage: 1Gi
+          status: {}
         - name: git-credentials
           secret:
             secretName: gitea-credentials
@@ -106,12 +109,15 @@ spec:
   workspaces:
   - name: shared-data
     volumeClaimTemplate:
+      metadata:
+        creationTimestamp: null
       spec:
         accessModes:
         - ReadWriteOnce
         resources:
           requests:
             storage: 1Gi
+    status: {}
   - name: git-credentials
     secret:
       secretName: gitea-credentials
