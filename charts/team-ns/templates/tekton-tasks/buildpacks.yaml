@@ -75,8 +75,10 @@ spec:
   results:
     - name: APP_IMAGE_DIGEST
       description: The digest of the built `APP_IMAGE`.
+      type: string
     - name: APP_IMAGE_URL
       description: The URL of the built `APP_IMAGE`.
+      type: string
 
   stepTemplate:
     env:
@@ -145,8 +147,8 @@ spec:
           mountPath: /layers
         - name: $(params.PLATFORM_DIR)
           mountPath: /platform
-
     - name: create
+      computeResources: {}
       image: $(params.BUILDER_IMAGE)
       imagePullPolicy: Always
       command: ["/cnb/lifecycle/creator"]
