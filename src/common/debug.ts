@@ -118,7 +118,7 @@ let logLevelVar = Number.NEGATIVE_INFINITY
 export const logLevel = (argv?: any): number => {
   let logLevelNum = Number(logLevels[argv.logLevel?.toUpperCase() ?? 'INFO'])
   const verbosity = Number(argv.verbose ?? 0)
-  logLevelVar = logLevelNum < 0 && verbosity === 0 ? logLevelNum : Math.max(logLevelNum, verbosity)
+  logLevelVar = Math.max(logLevelNum, verbosity)
 
   const boolTrace = env.TRACE || argv.trace
   logLevelNum = boolTrace ? logLevels.TRACE : logLevelNum
