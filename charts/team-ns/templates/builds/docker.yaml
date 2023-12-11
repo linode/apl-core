@@ -43,8 +43,10 @@ spec:
     params:
     - name: DOCKERFILE
       value: {{ .mode.docker.path }}
+      type: string
     - name: IMAGE
       value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+      type: string
 ---
 {{- if .trigger }}
 apiVersion: triggers.tekton.dev/v1alpha1
