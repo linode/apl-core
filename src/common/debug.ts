@@ -116,7 +116,7 @@ let logLevelVar = Number.NEGATIVE_INFINITY
  */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const logLevel = (argv?: any): number => {
-  if (!argv && !_argv) return logLevels.ERROR
+  if (!argv && !_argv) return logLevels.INFO
   if (argv) _argv = argv
   if (logLevelVar > Number.NEGATIVE_INFINITY) return logLevelVar
 
