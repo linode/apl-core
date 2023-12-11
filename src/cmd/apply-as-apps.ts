@@ -4,6 +4,7 @@ import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
+import { isResourcePresent } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -81,6 +82,8 @@ const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, 
 
 const removeApplication = async (release: HelmRelese): Promise<void> => {
   const name = getAppName(release)
+  if (!(await isResourcePresent('Application', name, 'argocd'))) return
+
   // TODO: do we always want to remove finalisers?
   await $`kubectl patch app ${name}  -p '{"metadata": {"finalizers": null}}' --type merge`
   await $`kubectl delete app ${name}`
@@ -126,8 +129,8 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   await Promise.allSettled(
     releses.map(async (release: HelmRelese) => {
       try {
-        if (!release.installed) await removeApplication(release)
-        else await writeApplicationManifest(release, otomiVersion)
+        if (release.installed) await writeApplicationManifest(release, otomiVersion)
+        else await removeApplication(release)
       } catch (e) {
         errors.push(e)
       }

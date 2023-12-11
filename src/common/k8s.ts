@@ -42,6 +42,15 @@ export const createK8sSecret = async (
   d.debug(`kubectl create secret output: \n ${result.stdout}`)
 }
 
+export const isResourcePresent = async (type: string, name: string, namespace: string): Promise<boolean> => {
+  try {
+    await $`kubectl get -n ${namespace} ${type} ${name}`
+  } catch {
+    return false
+  }
+  return true
+}
+
 export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
   const result = await nothrow(
     $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`,
