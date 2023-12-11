@@ -1,5 +1,6 @@
 {{- $v := .Values | merge (dict) }}
 {{- $ := . }}
+{{- $hasStack := dig "monitoringStack" "enabled" false $v }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
 {{- if $egressFilteringEnabled }}
@@ -12,6 +13,20 @@ metadata:
 spec:
   outboundTrafficPolicy: 
     mode: REGISTRY_ONLY
+{{ if $hasStack }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: team-prometheus
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  outboundTrafficPolicy:
+    mode: ALLOW_ANY
+  workloadSelector:
+    labels:
+      otomi.io/app: prometheus-team-{{ $v.teamId }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if (dig "monitoringStack" "enabled" false $v) }}

@@ -71,11 +71,14 @@ releases:
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
-          annotations:
-            traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
           enabled: {{ and ($team | get "monitoringStack.enabled" false) ($a.prometheus.enabled)  }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
+            podMetadata:
+              annotations:
+                traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
+              labels:
+                otomi.io/app: prometheus-team-{{ $teamId }}
             externalLabels:
               cluster: "prometheus-{{ $teamId }}.{{ $domain }}"
             externalUrl: "https://prometheus-{{ $teamId }}.{{ $domain }}"
