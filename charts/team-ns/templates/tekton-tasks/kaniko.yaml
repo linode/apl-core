@@ -53,8 +53,11 @@ spec:
   results:
     - name: IMAGE_DIGEST
       description: Digest of the image just built.
+      type: string
     - name: IMAGE_URL
       description: URL of the image just built.
+      type: string
+
   steps:
     - name: build-and-push
       computeResources: {}
