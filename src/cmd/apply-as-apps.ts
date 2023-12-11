@@ -37,13 +37,16 @@ interface HelmRelese {
   chart: string
   version: string
 }
+const getAppName = (release: HelmRelese): string => {
+  return `${release.namespace}-${release.name}`
+}
 
 const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, otomiVersion) => {
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
     metadata: {
-      name: `${release.namespace}-${release.name}`,
+      name: getAppName(release),
       labels: {
         'otomi.io/app': 'managed',
       },
@@ -74,6 +77,13 @@ const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, 
       },
     },
   }
+}
+
+const removeApplication = async (release: HelmRelese): Promise<void> => {
+  const name = getAppName(release)
+  // TODO: do we always want to remove finalisers?
+  await $`kubectl patch app ${name}  -p '{"metadata": {"finalizers": null}}' --type merge`
+  await $`kubectl delete app ${name}`
 }
 
 const writeApplicationManifest = async (release: HelmRelese, otomiVersion: string): Promise<void> => {
@@ -115,9 +125,9 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const releses: [] = JSON.parse(res.stdout.toString())
   await Promise.allSettled(
     releses.map(async (release: HelmRelese) => {
-      if (!release.enabled) return
       try {
-        await writeApplicationManifest(release, otomiVersion)
+        if (!release.installed) await removeApplication(release)
+        else await writeApplicationManifest(release, otomiVersion)
       } catch (e) {
         errors.push(e)
       }
