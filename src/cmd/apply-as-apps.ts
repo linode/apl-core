@@ -82,11 +82,11 @@ const getArgocdAppManifest = (release: HelmRelese, values: Record<string, any>, 
 
 const removeApplication = async (release: HelmRelese): Promise<void> => {
   const name = getAppName(release)
-  if (!(await isResourcePresent('Application', name, 'argocd'))) return
+  if (!(await isResourcePresent('application', name, 'argocd'))) return
 
   // TODO: do we always want to remove finalisers?
-  await $`kubectl patch app ${name}  -p '{"metadata": {"finalizers": null}}' --type merge`
-  await $`kubectl delete app ${name}`
+  await $`kubectl -n argocd patch application ${name}  -p '{"metadata": {"finalizers": null}}' --type merge`
+  await $`kubectl -n argocd delete application ${name}`
 }
 
 const writeApplicationManifest = async (release: HelmRelese, otomiVersion: string): Promise<void> => {
