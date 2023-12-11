@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
 import { logLevel, logLevels } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import yargs, { Arguments as YargsArguments, Argv, Options } from 'yargs'
+import yargs, { Argv, Options, Arguments as YargsArguments } from 'yargs'
 import { chalk } from 'zx'
 
 export interface BasicArguments extends YargsArguments {
@@ -31,7 +31,7 @@ export const parser: any = yargs(process.argv.slice(3))
 export const setParsedArgs = (args: BasicArguments): void => {
   parsedArgs = args
   // Call needed to init LL for debugger and ZX calls:
-  logLevel(parsedArgs)
+  logLevel()
 }
 export const getParsedArgs = (): BasicArguments => {
   return parsedArgs || {}
