@@ -15,7 +15,7 @@ const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
 const appsDir = '/tmp/otomi/apps'
 const valuesDir = '/tmp/otomi/values'
-
+const d = terminal(`cmd:${cmdName}:apply-as-apps`)
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
   rmdirSync(dir, { recursive: true })
@@ -86,7 +86,8 @@ const removeApplication = async (release: HelmRelese): Promise<void> => {
 
   // TODO: do we always want to remove finalisers?
   await $`kubectl -n argocd patch application ${name}  -p '{"metadata": {"finalizers": null}}' --type merge`
-  await $`kubectl -n argocd delete application ${name}`
+  const resDelete = await $`kubectl -n argocd delete application ${name}`
+  d.info(resDelete.stdout.toString())
 }
 
 const writeApplicationManifest = async (release: HelmRelese, otomiVersion: string): Promise<void> => {
@@ -102,7 +103,6 @@ const writeApplicationManifest = async (release: HelmRelese, otomiVersion: strin
   await writeFile(applicationPath, objectToYaml(manifest))
 }
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:apply-as-apps`)
   const helmfileSource = argv.file?.length === 0 ? 'helmfile.d/' : argv.file?.toString()
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
 
@@ -130,7 +130,9 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
     releses.map(async (release: HelmRelese) => {
       try {
         if (release.installed) await writeApplicationManifest(release, otomiVersion)
-        else await removeApplication(release)
+        else {
+          await removeApplication(release)
+        }
       } catch (e) {
         errors.push(e)
       }
