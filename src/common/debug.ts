@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import Debug, { Debugger as DebugDebugger } from 'debug'
 import { Writable, WritableOptions } from 'stream'
-import { $, argv } from 'zx'
+import { $ } from 'zx'
 import { env } from './envalid'
 
 const debuggers = {}
@@ -43,6 +43,10 @@ export type OtomiDebugger = {
   error: DebuggerType
   stream: OtomiStreamDebugger
 }
+
+// this needs to be set at some point with the real cli args:
+let _argv: any
+
 export const terminal = (namespace: string): OtomiDebugger => {
   const createDebugger = (baseNamespace: string, cons = console.log): DebuggerType => {
     const signature = namespace + baseNamespace
@@ -111,9 +115,11 @@ let logLevelVar = Number.NEGATIVE_INFINITY
  * @returns highest loglevel
  */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const logLevel = (): number => {
-  if (!argv) return logLevels.INFO
+export const logLevel = (argv?: any): number => {
+  if (!argv && !_argv) return logLevels.ERROR
+  if (argv) _argv = argv
   if (logLevelVar > Number.NEGATIVE_INFINITY) return logLevelVar
+
   let logLevelNum = Number(logLevels[argv.logLevel?.toUpperCase() ?? 'WARN'])
   const verbosity = Number(argv.verbose ?? 0)
   const boolTrace = env.TRACE || argv.trace
