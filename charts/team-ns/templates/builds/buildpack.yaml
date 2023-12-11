@@ -85,7 +85,7 @@ spec:
               resources:
                 requests:
                   storage: 1Gi
-          status: {}
+            status: {}
         - name: git-credentials
           secret:
             secretName: gitea-credentials
@@ -120,7 +120,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-    status: {}
+      status: {}
   - name: git-credentials
     secret:
       secretName: gitea-credentials
