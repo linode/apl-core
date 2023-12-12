@@ -5,7 +5,7 @@ ENV APP_HOME=/home/app/stack
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
-ARG SKIP_TESTS='true'
+ARG SKIP_TESTS='false'
 ENV NODE_ENV='test'
 ENV CI=true
 ENV ENV_DIR=$APP_HOME/env
