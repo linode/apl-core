@@ -41,7 +41,7 @@ releases:
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
   - name: prometheus-{{ $teamId }}
-    installed: {{ $team | get "monitoringStack.enabled" false }}
+    installed: {{ or ($team | get "monitoringStack.enabled" false) ($a.prometheus.enabled) }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
@@ -53,7 +53,7 @@ releases:
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
         alertmanager:
-          enabled: {{ and ($team | get "monitoringStack.enabled" false) ($a.alertmanager.enabled) }}
+          enabled: {{ $team | get "monitoringStack.enabled" false }}
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
@@ -71,7 +71,7 @@ releases:
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
-          enabled: {{ and ($team | get "monitoringStack.enabled" false) ($a.prometheus.enabled)  }}
+          enabled: {{ $team | get "monitoringStack.enabled" false }}
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             podMetadata:
