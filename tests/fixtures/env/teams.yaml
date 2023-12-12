@@ -3,9 +3,13 @@ teamConfig:
         id: admin
     demo:
         alerts:
-            email: {}
             receivers:
-                - email
+                - slack
+            repeatInterval: 3h
+            slack:
+                channel: aaaaa
+                channelCrit: aaaaa
+                url: https://slack.con
         monitoringStack:
             enabled: true
         billingAlertQuotas:
