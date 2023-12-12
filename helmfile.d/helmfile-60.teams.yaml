@@ -118,6 +118,7 @@ releases:
               label: release
               labelValue: grafana-dashboards-{{ $teamId }}
           additionalDataSources:
+          {{- if $v.apps.prometheus.enabled }}
             - name: Prometheus-platform
               editable: false
               uid: prometheus-platform
@@ -126,6 +127,7 @@ releases:
               url: http://po-prometheus.monitoring:9090
               jsonData:
                 httpMethod: GET
+            {{- end }}
             {{- if $v.apps.loki.enabled }}
             - name: Loki
               editable: false
