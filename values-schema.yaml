@@ -1874,7 +1874,7 @@ properties:
             default: false
           driver:
             type: string
-            default: module
+            default: ebpf
             enum:
               - module
               - ebpf

@@ -28,7 +28,7 @@ falcoctl:
     follow:
       resources: {{- $f.resources.falcoCtlFollow | toYaml  | nindent 8 }}
 driver:
-  kind: {{ $f | get "driver" "module" }}
+  kind: {{ $f | get "driver" "ebpf" }}
   loader:
     initContainer:
       resources: {{- $f.resources.falcoDriverLoader| toYaml  | nindent 8 }}
