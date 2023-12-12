@@ -1872,6 +1872,13 @@ properties:
           enabled:
             type: boolean
             default: false
+          driver:
+            type: string
+            default: module
+            enum:
+              - module
+              - ebpf
+              - modern-bpf
           resources:
             additionalProperties: false
             properties:

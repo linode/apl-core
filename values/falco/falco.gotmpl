@@ -28,9 +28,7 @@ falcoctl:
     follow:
       resources: {{- $f.resources.falcoCtlFollow | toYaml  | nindent 8 }}
 driver:
-  {{- if eq $v.cluster.provider "google" }}
-  kind: ebpf
-  {{- end }}
+  kind: {{ $f | get "driver" "module" }}
   loader:
     initContainer:
       resources: {{- $f.resources.falcoDriverLoader| toYaml  | nindent 8 }}
