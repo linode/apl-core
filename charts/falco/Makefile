@@ -2,7 +2,7 @@
 DOCS_IMAGE_VERSION="v1.11.0"
 
 #Here we use the "latest" tag since our CI uses the same(https://github.com/falcosecurity/charts/blob/2f04bccb5cacbbf3ecc2d2659304b74f865f41dd/.circleci/config.yml#L16).
-LINT_IMAGE_VERSION="latest"
+LINT_IMAGE_VERSION="v3.8.0"
 
 docs:
 	docker run \
@@ -18,7 +18,7 @@ lint: helm-repo-update
 	-it \
 	--workdir=/data \
 	--volume $$(pwd)/..:/data \
-	quay.io/helmpack/chart-testing:latest \
+	quay.io/helmpack/chart-testing:$(LINT_IMAGE_VERSION) \
 	ct lint --config ./tests/ct.yaml --charts ./falco --chart-dirs .
 
 helm-repo-update:

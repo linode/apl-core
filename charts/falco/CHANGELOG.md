@@ -3,6 +3,159 @@
 This file documents all notable changes to Falco Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v3.8.5
+
+* Add mTLS cryptographic material load via Helm for Falco
+
+## v3.8.4
+
+* Upgrade Falco to 0.36.2: https://github.com/falcosecurity/falco/releases/tag/0.36.2
+
+## v3.8.3
+
+* Upgrade falcosidekick chart to `v0.7.7`.
+
+## v3.8.2
+
+* Upgrade falcosidekick chart to `v0.7.6`.
+
+## v3.8.1
+
+* noop change just to test the ci
+
+## v3.8.0
+
+* Upgrade Falco to 0.36.1: https://github.com/falcosecurity/falco/releases/tag/0.36.1
+* Sync values.yaml with 0.36.1 falco.yaml config file.
+
+## v3.7.1
+
+* Update readme
+
+## v3.7.0
+
+* Upgrade Falco to 0.36. https://github.com/falcosecurity/falco/releases/tag/0.36.0
+* Sync values.yaml with upstream falco.yaml config file.
+* Upgrade falcoctl to 0.6.2. For more info see the release notes: https://github.com/falcosecurity/falcoctl/releases/tag/v0.6.2
+
+## v3.6.2
+
+* Cleanup wrong files
+
+## v3.6.1
+
+* Upgrade falcosidekick chart to `v0.7.1`.
+
+## v3.6.0
+
+* Add `outputs` field to falco configuration
+
+## v3.5.0
+
+## Major Changes
+
+* Support configuration of revisionHistoryLimit of the deployment
+
+## v3.4.1
+
+* Upgrade falcosidekick chart to `v0.6.3`.
+
+## v3.4.0
+
+* Introduce an ability to use an additional volumeMounts for `falcoctl-artifact-install` and `falcoctl-artifact-follow` containers.
+
+## v3.3.1
+
+* No changes made to the falco chart, only some fixes in the makefile
+
+## v3.3.0
+* Upgrade Falco to 0.35.1. For more info see the release notes: https://github.com/falcosecurity/falco/releases/tag/0.35.1
+* Upgrade falcoctl to 0.5.1. For more info see the release notes: https://github.com/falcosecurity/falcoctl/releases/tag/v0.5.1
+* Introduce least privileged mode in modern ebpf. For more info see: https://falco.org/docs/event-sources/kernel/#least-privileged-mode-2
+
+## v3.2.1
+* Set falco.http_output.url to empty string in values.yaml file
+
+## v3.2.0
+* Upgrade Falco to 0.35.0. For more info see the release notes: https://github.com/falcosecurity/falco/releases/tag/0.35.0
+* Sync values.yaml with upstream falco.yaml config file.
+* Upgrade falcoctl to 0.5.0. For more info see the release notes: https://github.com/falcosecurity/falcoctl/releases/tag/v0.5.0
+* The tag used to install and follow the falco rules is `1`
+* The tag used to install and follow the k8saudit rules is `0.6`
+
+## v3.1.5
+
+* Use list as default for env parameter of init and follow containers
+
+## v3.1.4
+
+* Fix typo in values-k8audit file
+
+## v3.1.3
+
+* Updates the grpc-service to use the correct label selector
+
+## v3.1.2
+
+* Bump `falcosidekick` dependency to 0.6.1
+
+## v3.1.1
+* Update `k8saudit` section in README.md file.
+
+## v3.1.0
+* Upgrade Falco to 0.34.1
+
+## v3.0.0
+* Drop support for falcosecuriy/falco image, only the init container approach is supported out of the box;
+* Simplify the driver-loader init container logic;
+* Support **falcoctl** tool in the chart:
+  * Install the *rulesfile* artifacts;
+  * Follow the *rulesfile* artifacts in order to have the latest rules once they are released from falcosecurity org;
+* Support the **modern-bpf** probe a new driver (experimental)
+* Add a new file *BREAKING_CHANGES.md* to document the breaking changes and how to update the new chart.
+
+## v2.5.5
+
+* Bump `falcosidekick` dependency to 0.5.16
+
+## v2.5.4
+
+* Fix incorrect entry in v2.5.2 changelog 
+
+## v2.5.3
+
+* Bump `falcosidekick` dependency to 0.5.14
+
+## v2.5.2
+
+* Fixed notes template to only include daemon set info if set to daemon set
+
+## v2.5.1
+
+* Update README to clarify driver behavior for chart
+
+## v2.5.0
+
+* Support custom dictionaries when setting environment variables
+
+Note: this is a breaking change. If you were passing _objects_ to `extra.env` or `driver.loader.initContainer.env` , you will need to update your values file to pass _lists_.
+
+## v2.4.7
+
+* Add `controller.annotations` configuration
+
+## v2.4.6
+
+* Bump `falcosidekick` dependency to 0.5.11
+
+## v2.4.5
+
+* Bump `falcosidekick` dependency to 0.5.10
+
+## v2.4.4
+
+* Update README for gRPC
+
 ## v2.4.3
 
 * Update README for gVisor and GKE
@@ -175,7 +328,7 @@ update(falco/OWNERS): move inactive approvers to emeritus_approvers
 ## v1.18.5
 
 * Bump falcosidekick chart dependency
-  
+
 ## v1.18.4
 
 * Now the url to falcosidekick on NOTES.txt on falco helm chart points to the right place.

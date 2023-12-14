@@ -6,6 +6,10 @@ metadata:
   namespace: {{ include "falco.namespace" . }}
   labels:
     {{- include "falco.labels" . | nindent 4 }}
+  {{- if .Values.controller.annotations }}
+  annotations:
+  {{ toYaml .Values.controller.annotations | nindent 4 }}
+  {{- end }}
 spec:
   selector:
     matchLabels:

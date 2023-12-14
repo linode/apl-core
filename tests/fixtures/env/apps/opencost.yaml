@@ -5,3 +5,5 @@ apps:
             enabled: true
             costOfAllNodesQuotaPerMonthReached:
                 quota: 500
+        keys:
+            gcp: hshdjdkdlshaga
