@@ -10,7 +10,6 @@ app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
 app.kubernetes.io/version: {{ .Chart.Version }}
 app.kubernetes.io/part-of: otomi
 helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-otomi.io/team: team-{{ .Values.teamId }}
 {{- end -}}
 
 {{- define "helm-toolkit.utils.joinListWithSep" -}}

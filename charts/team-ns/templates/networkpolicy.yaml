@@ -146,9 +146,7 @@ metadata:
   name: {{ $s.name }}-ingress-allow-prometheus
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  podSelector:
-    matchLabels:
-      otomi.io/team: team-{{ $s.name }}
+  podSelector: {}
   policyTypes:
     - Ingress
   ingress:
