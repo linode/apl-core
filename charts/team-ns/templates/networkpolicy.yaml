@@ -136,7 +136,6 @@ spec:
       app.kubernetes.io/managed-by: EventListener
   policyTypes:
     - Ingress
----
 {{- if $hasStack }}
 ---
 apiVersion: networking.k8s.io/v1
