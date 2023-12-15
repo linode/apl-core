@@ -1,3 +1,4 @@
 apps:
     falco:
-        enabled: false
+        enabled: true
+        driver: ebpf
