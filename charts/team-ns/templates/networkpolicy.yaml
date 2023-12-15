@@ -148,7 +148,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      otomi.io/app: {{ $s.name }}
+      otomi.io/team: team-{{ $s.name }}
   policyTypes:
     - Ingress
   ingress:
