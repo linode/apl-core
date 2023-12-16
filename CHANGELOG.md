@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/redkubes/otomi-core/compare/v2.0.0...v2.1.0) (2023-12-15)
+
+
+### Features
+
+* add cpu limits for otomi pipelines ([#1411](https://github.com/redkubes/otomi-core/issues/1411)) ([de11c48](https://github.com/redkubes/otomi-core/commit/de11c48cbab7eee3c79fbf410ae76f9cd939ebf0))
+* deprecate gen-drone command ([#1400](https://github.com/redkubes/otomi-core/issues/1400)) ([d58fcfe](https://github.com/redkubes/otomi-core/commit/d58fcfede7b6a0e4ef41cd4bbc4fafe06b917e1e))
+* enable team prometheus prometheus is monitoringStack enabled ([#1418](https://github.com/redkubes/otomi-core/issues/1418)) ([0b4c449](https://github.com/redkubes/otomi-core/commit/0b4c449214a1a7b51955a87fe1e4e1d56f999bb6))
+* remove old charts while cloning into gitea ([#1415](https://github.com/redkubes/otomi-core/issues/1415)) ([d1553d1](https://github.com/redkubes/otomi-core/commit/d1553d14bd8a448a07377e27353b5c31488f8418))
+* separate disk for postgresql WAL ([#1361](https://github.com/redkubes/otomi-core/issues/1361)) ([54df047](https://github.com/redkubes/otomi-core/commit/54df04709488d75dba1fdd1774873bb44a52ba96))
+* update backup schedule definition ([#1405](https://github.com/redkubes/otomi-core/issues/1405)) ([e285355](https://github.com/redkubes/otomi-core/commit/e2853558c7cdc382c3a9f073a92ae5148a13c3ef))
+* updated tty console binaries ([#1388](https://github.com/redkubes/otomi-core/issues/1388)) ([bcbf928](https://github.com/redkubes/otomi-core/commit/bcbf9284d4e6e71a7ba3368c71c6b504c82d1ece))
+* updating otomi tasks and otomi installer job resource limits ([#1406](https://github.com/redkubes/otomi-core/issues/1406)) ([a582c51](https://github.com/redkubes/otomi-core/commit/a582c51680434e15a638c7d2f77a73c71ab4fa99))
+
+
+### Bug Fixes
+
+* add pvc dashboard to platform grafana ([#1416](https://github.com/redkubes/otomi-core/issues/1416)) ([bda5841](https://github.com/redkubes/otomi-core/commit/bda584140043b50a5addb106dfd19a4996fdfda4))
+* exclude prom in team status dashboard ([#1390](https://github.com/redkubes/otomi-core/issues/1390)) ([9ede9b9](https://github.com/redkubes/otomi-core/commit/9ede9b9bdeb76e3d953f3af119c86a63006f2606))
+* Harbor htpasswd bootstrap ([#1399](https://github.com/redkubes/otomi-core/issues/1399)) ([ec09566](https://github.com/redkubes/otomi-core/commit/ec095660f38e1703e43c7a78e1db0a421085f286))
+* oauth2-proxy cert ([#1408](https://github.com/redkubes/otomi-core/issues/1408)) ([cab078a](https://github.com/redkubes/otomi-core/commit/cab078aedbd63dc912d0347ee5aeeef009facf50))
+* releasing helm chart ([#1391](https://github.com/redkubes/otomi-core/issues/1391)) ([3f80b56](https://github.com/redkubes/otomi-core/commit/3f80b567d6b99062a5635aff5fca287685d5688c))
+* renamed the secret to be used by the ingress ([#1412](https://github.com/redkubes/otomi-core/issues/1412)) ([9445f1c](https://github.com/redkubes/otomi-core/commit/9445f1ccb65d27fa338e25e4a9b89eb328cd72fc))
+* set prom netpol selector ([#1425](https://github.com/redkubes/otomi-core/issues/1425)) ([d05cf4b](https://github.com/redkubes/otomi-core/commit/d05cf4bf639699108f92a0c6745b8d7cf917bda5))
+* set versions ([ffad657](https://github.com/redkubes/otomi-core/commit/ffad657b1252d172009a00f47b73f0a8598ed24e))
+* team monitoring logic ([#1419](https://github.com/redkubes/otomi-core/issues/1419)) ([7bcb7db](https://github.com/redkubes/otomi-core/commit/7bcb7db336b528e8081ccb4a9575a97dfb1f5667))
+* team netpol for prom ([#1414](https://github.com/redkubes/otomi-core/issues/1414)) ([b980631](https://github.com/redkubes/otomi-core/commit/b9806313d5ba76041a5d84f5e6dfa9998417ff17))
+* team observability ([#1397](https://github.com/redkubes/otomi-core/issues/1397)) ([d1d6d05](https://github.com/redkubes/otomi-core/commit/d1d6d05aece4c82080e914815bf550d0a48e12a9))
+* tekton task path ([#1394](https://github.com/redkubes/otomi-core/issues/1394)) ([42233d8](https://github.com/redkubes/otomi-core/commit/42233d8cb0a784db01fb76d498c75e303b05f304))
+* upgrade Falco and Falco exporter ([#1407](https://github.com/redkubes/otomi-core/issues/1407)) ([e1fff53](https://github.com/redkubes/otomi-core/commit/e1fff53483aec7a0d89d9d8802db16d824829eaa))
+
+
+### CI
+
+* fix chart version on release ([#1393](https://github.com/redkubes/otomi-core/issues/1393)) ([30048ad](https://github.com/redkubes/otomi-core/commit/30048adeeed1db56ba5df9e10ad4d8048eb3b74e))
+
+
+### Others
+
+* update readme  ([#1389](https://github.com/redkubes/otomi-core/issues/1389)) ([75c5076](https://github.com/redkubes/otomi-core/commit/75c5076b03640b513f0bce23224f7ce652e56e7f))
+* versions ([6c2741c](https://github.com/redkubes/otomi-core/commit/6c2741c155422243a12a93272b41cd66f86f49c4))
+
 ## [2.0.0](https://github.com/redkubes/otomi-core/compare/v1.1.0...v2.0.0) (2023-11-23)
 
 
