@@ -77,6 +77,10 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`rm -rf .git`
     await $`rm -rf deployment`
     await $`rm -rf ksvc`
+    await $`rm -rf icons`
+    await $`rm -rf .vscode`
+    await $`rm -f .gitignore`
+    await $`rm -f LICENSE`
     await $`git init`
     await setIdentity(username, password, email)
     await $`git checkout -b main`
