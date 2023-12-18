@@ -64,7 +64,6 @@ spec:
         annotations:
           sidecar.istio.io/inject: "false"
       spec:
-
         pipelineRef:
           name: buildpacks-build-{{ .name }}
         taskRunTemplate:
@@ -83,7 +82,11 @@ spec:
                   storage: 1Gi
         - name: git-credentials
           secret:
+            {{- if .mode.buildpacks.externalRepo }}
+            secretName: {{ .mode.buildpacks.secretName }}
+            {{- else }}
             secretName: gitea-credentials
+            {{- end }}
         - name: docker-credentials
           secret:
             secretName: harbor-pushsecret-builds
@@ -115,7 +118,11 @@ spec:
             storage: 1Gi
   - name: git-credentials
     secret:
+      {{- if .mode.buildpacks.externalRepo }}
+      secretName: {{ .mode.buildpacks.secretName }}
+      {{- else }}
       secretName: gitea-credentials
+      {{- end }}
   - name: docker-credentials
     secret:
       secretName: harbor-pushsecret-builds

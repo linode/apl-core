@@ -80,7 +80,11 @@ spec:
                   storage: 1Gi
         - name: git-credentials
           secret:
+            {{- if .mode.docker.externalRepo }}
+            secretName: {{ .mode.docker.secretName }}
+            {{- else }}
             secretName: gitea-credentials
+            {{- end }}
         - name: docker-credentials
           secret:
             secretName: harbor-pushsecret-builds
@@ -112,7 +116,11 @@ spec:
             storage: 1Gi
   - name: git-credentials
     secret:
+      {{- if .mode.docker.externalRepo }}
+      secretName: {{ .mode.docker.secretName }}
+      {{- else }}
       secretName: gitea-credentials
+      {{- end }}
   - name: docker-credentials
     secret:
       secretName: harbor-pushsecret-builds
