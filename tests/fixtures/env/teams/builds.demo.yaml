@@ -10,6 +10,7 @@ teamConfig:
                       revision: HEAD
                       path: ./Docker
                   type: docker
+              externalRepo: false
             - name: demo-java2
               tag: v.0.0.1
               trigger: false
@@ -19,6 +20,7 @@ teamConfig:
                       revision: HEAD
                       path: apps/java-maven
                   type: buildpacks
+              externalRepo: false
             - name: demo-java3
               tag: v_0_0_1
               trigger: true
@@ -27,6 +29,6 @@ teamConfig:
                       repoUrl: https://github.com/buildpacks/samples
                       revision: HEAD
                       path: ./Docker
-                      externalRepo: true
-                      secretName: my-secret
                   type: docker
+              externalRepo: true
+              secretName: my-secret

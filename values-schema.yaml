@@ -1350,6 +1350,13 @@ definitions:
       trigger:
         type: boolean
         default: false
+      externalRepo:
+        type: boolean
+        description: Select when using an external private Git repository.
+        default: false
+      secretName:
+        description: The name of the secret with the credentials of the external private Git repository
+        type: string
       mode:
         properties:
           docker:
@@ -1365,14 +1372,6 @@ definitions:
                 description: A relative directory path within the Git repository.
                 type: string
                 default: ./Dockerfile
-              externalRepo:
-                type: boolean
-                description: Select when using an external private Git repository.
-                default: false
-              secretName:
-                description: The name of the secret with the credentials of the external private Git repository
-                example: my-git-credentials
-                type: string
           buildpacks:
             properties:
               repoUrl:
@@ -1384,14 +1383,6 @@ definitions:
                 default: HEAD
               path:
                 description: A relative directory path within the Git repository.
-                type: string
-              externalRepo:
-                type: boolean
-                description: Select when using an external private Git repository.
-                default: false
-              secretName:
-                description: The name of the secret with the credentials of the external private Git repository
-                example: my-git-credentials
                 type: string
     required:
       - name
