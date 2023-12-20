@@ -15,4 +15,17 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: team-{{ $v.teamId }}
+  syncPolicy:
+    automated:
+      allowEmpty: false
+      prune: true
+      selfHeal: true
+    retry:
+      backoff:
+        # duration - Retry backoff base duration. Input needs to be a duration (e.g. 2m, 1h) (default 5s)
+        # factor - Factor multiplies the base duration after each failed retry (default 2)
+        # maxDuration - Max retry backoff duration. Input needs to be a duration (e.g. 2m, 1h) (default 3m0s)
+        duration: 10s
+        factor: 2
+    syncOptions: []
 {{- end }}

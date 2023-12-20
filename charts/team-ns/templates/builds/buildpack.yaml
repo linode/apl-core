@@ -146,7 +146,9 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+  labels:
+    tekton.dev/pipeline: buildpacks-build-{{ .name }}
+    {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
   triggers:
