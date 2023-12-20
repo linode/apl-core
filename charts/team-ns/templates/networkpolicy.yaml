@@ -136,19 +136,15 @@ spec:
       app.kubernetes.io/managed-by: EventListener
   policyTypes:
     - Ingress
-
-  {{- range $s := $v.services }}
-    {{ if and ($hasStack) (not $s.isCore) }}
+{{- if $hasStack }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $s.name }}-ingress-allow-prometheus
+  name: default-from-team-prometheus
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  podSelector:
-    matchLabels:
-      otomi.io/app: {{ $s.name }}
+  podSelector: {}
   policyTypes:
     - Ingress
   ingress:
@@ -159,7 +155,8 @@ spec:
           podSelector:
             matchLabels:
               otomi.io/app: prometheus-team-{{ $v.teamId }}
-    {{- end }}
+{{- end }}
+  {{- range $s := $v.services }}
     {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
     {{- if not $s.isCore }}
       {{- $ingressPrivateMode := dig "networkPolicy" "ingressPrivate" "mode" "DenyAll" $s }}

@@ -3,9 +3,6 @@
 
 resources: {{- $f.resources.falcoExporter | toYaml  | nindent 2 }}
 
-falco:
-  grpcUnixSocketPath: "unix:///var/run/falco/falco.sock"
-
 daemonset:
   annotations:
     policy.otomi.io/ignore: psp-allowed-users,psp-host-filesystem
