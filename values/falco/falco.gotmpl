@@ -1,24 +1,19 @@
 {{- $v := .Values }}
 {{- $f:= $v.apps.falco }}
-{{- $rules:= $f | get "rules" dict }}
 
 falco:
-  json_output: true
   syscall_event_drops:
     actions:
       - ignore
   grpc:
     enabled: true
-    bind_address: "unix:///var/run/falco/falco.sock"
+    bind_address: "unix:///run/falco/falco.sock"
     threadiness: 0
   grpc_output:
     enabled: true
-
 podAnnotations: 
   policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
-
 resources: {{- $f.resources.falco | toYaml  | nindent 2 }}
-
 tolerations:
   - key: node-role.kubernetes.io/master
     operator: Exists
@@ -26,49 +21,14 @@ tolerations:
   - key: node-role.kubernetes.io/control-plane
     operator: Exists
     effect: NoSchedule
-
+falcoctl:
+  artifact:
+    install:
+      resources: {{- $f.resources.falcoCtlInstall | toYaml  | nindent 8 }}
+    follow:
+      resources: {{- $f.resources.falcoCtlFollow | toYaml  | nindent 8 }}
 driver:
+  kind: {{ $f | get "driver" "ebpf" }}
   loader:
-      initContainer:
-        resources:
-          requests:
-            cpu: 50m
-            memory: 32Mi
-          limits:
-            cpu: 100m
-            memory: 64Mi
-
-falcosidekick:
-  enabled: true
-  #Disabled for k8s 1.25
-  podSecurityPolicy:
-    create: false
-  config:
-    debug: false
-    {{- if $v.apps.alertmanager.enabled }}
-    alertmanager:
-      hostport: http://po-alertmanager.monitoring.svc.cluster.local:9093
-      minimumpriority: {{ $f.falcoSidekick.minPrio }}
-    {{- end }}
-  resources: {{- $f.resources.falcoSidekick | toYaml  | nindent 4 }}
-  replicaCount: {{ $f.falcoSidekick.replicas }}
-  webui:
-    enabled: true
-    replicaCount: 1
-    resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-    redis:
-      resources:
-        limits:
-          cpu: 200m
-          memory: 256Mi
-        requests:
-          cpu: 100m
-          memory: 64Mi
-      podSecurityContext:
-        runAsUser: 1001
+    initContainer:
+      resources: {{- $f.resources.falcoDriverLoader| toYaml  | nindent 8 }}
