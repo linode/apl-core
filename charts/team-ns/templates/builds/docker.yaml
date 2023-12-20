@@ -80,8 +80,8 @@ spec:
                   storage: 1Gi
         - name: git-credentials
           secret:
-            {{- if .mode.docker.externalRepo }}
-            secretName: {{ .mode.docker.secretName }}
+            {{- if .externalRepo }}
+            secretName: {{ .secretName }}
             {{- else }}
             secretName: gitea-credentials
             {{- end }}
@@ -116,8 +116,8 @@ spec:
             storage: 1Gi
   - name: git-credentials
     secret:
-      {{- if .mode.docker.externalRepo }}
-      secretName: {{ .mode.docker.secretName }}
+      {{- if .externalRepo }}
+      secretName: {{ .secretName }}
       {{- else }}
       secretName: gitea-credentials
       {{- end }}

@@ -82,8 +82,8 @@ spec:
                   storage: 1Gi
         - name: git-credentials
           secret:
-            {{- if .mode.buildpacks.externalRepo }}
-            secretName: {{ .mode.buildpacks.secretName }}
+            {{- if .externalRepo }}
+            secretName: {{ .secretName }}
             {{- else }}
             secretName: gitea-credentials
             {{- end }}
@@ -118,8 +118,8 @@ spec:
             storage: 1Gi
   - name: git-credentials
     secret:
-      {{- if .mode.buildpacks.externalRepo }}
-      secretName: {{ .mode.buildpacks.secretName }}
+      {{- if .externalRepo }}
+      secretName: {{ .secretName }}
       {{- else }}
       secretName: gitea-credentials
       {{- end }}
