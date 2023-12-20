@@ -6,6 +6,10 @@
 
 The deployment of Falco in a Kubernetes cluster is managed through a **Helm chart**. This chart manages the lifecycle of Falco in a cluster by handling all the k8s objects needed by Falco to be seamlessly integrated in your environment. Based on the configuration in `values.yaml` file, the chart will render and install the required k8s objects. Keep in mind that Falco could be deployed in your cluster using a `daemonset` or a `deployment`. See next sections for more info.
 
+## Attention
+
+Before installing Falco in a Kubernetes cluster, a user should check that the kernel version used in the nodes is supported by the community. Also, before reporting any issue with Falco (missing kernel image, CrashLoopBackOff and similar), make sure to read [about the driver](#about-the-driver) section and adjust your setup as required.
+
 ## Adding `falcosecurity` repository
 
 Before installing the chart, add the `falcosecurity` charts repository:
@@ -39,17 +43,35 @@ The cluster in our example has three nodes, one *control-plane* node and two *wo
 > **Tip**: List Falco release using `helm list -n falco`, a release is a name used to track a specific deployment
 
 ### Falco, Event Sources and Kubernetes
-Starting from Falco 0.31.0 the [new plugin system](https://falco.org/docs/plugins/) is stable and production ready. The **plugin system** can be seen as the next step in the evolution of Falco. Historically, Falco monitored system events from the **kernel** trying to detect malicious behaviors on Linux systems. It also had the capability to process k8s Audit Logs to detect suspicious activities in kubernetes clusters. Since Falco 0.32.0 all the related code to the k8s Audit Logs in Falco was removed and ported in a [plugin](https://github.com/falcosecurity/plugins/tree/master/plugins/k8saudit). At the time being Falco supports different event sources coming from **plugins** or the **drivers** (system events). 
+Starting from Falco 0.31.0 the [new plugin system](https://falco.org/docs/plugins/) is stable and production ready. The **plugin system** can be seen as the next step in the evolution of Falco. Historically, Falco monitored system events from the **kernel** trying to detect malicious behaviors on Linux systems. It also had the capability to process k8s Audit Logs to detect suspicious activities in Kubernetes clusters. Since Falco 0.32.0 all the related code to the k8s Audit Logs in Falco was removed and ported in a [plugin](https://github.com/falcosecurity/plugins/tree/master/plugins/k8saudit). At the time being Falco supports different event sources coming from **plugins** or **drivers** (system events). 
 
-Note that **multiple event sources can not be handled in the same Falco instance**. It means, you can not have Falco deployed leveraging **drivers** for syscalls events and at the same time loading **plugins**. Here you can find the [tracking issue](https://github.com/falcosecurity/falco/issues/2074) about multiple **event sources** in the same Falco instance.
-If you need to handle **syscalls** and **plugins** events than consider deploying different Falco instances, one for each use case.
-#### About the Driver
+Note that **a Falco instance can handle multiple event sources in parallel**. you can deploy Falco leveraging **drivers** for syscalls events and at the same time loading **plugins**. A step by step guide on how to deploy Falco with multiple sources can be found [here](https://falco.org/docs/getting-started/third-party/learning/#falco-with-multiple-sources).
 
-Falco needs a **driver** (the [kernel module](https://falco.org/docs/event-sources/drivers/#kernel-module) or the [eBPF probe](https://falco.org/docs/event-sources/drivers/#ebpf-probe)) that taps into the stream of system calls and passes that system calls to Falco. The driver must be installed on the node where Falco is running.
+#### About Drivers
 
-By default the drivers are managed using an *init container* which includes a script (`falco-driver-loader`) that either tries to build the driver on-the-fly or downloads a prebuilt driver as a fallback. Usually, no action is required.
+Falco needs a **driver** to analyze the system workload and pass security events to userspace. The supported drivers are:
 
-If a prebuilt driver is not available for your distribution/kernel, Falco needs **kernel headers** installed on the host as a prerequisite to build the driver on the fly correctly. You can find instructions for installing the kernel headers for your system under the [Install section](https://falco.org/docs/getting-started/installation/) of the official documentation.
+* [Kernel module](https://falco.org/docs/event-sources/drivers/#kernel-module) 
+* [eBPF probe](https://falco.org/docs/event-sources/drivers/#ebpf-probe)
+* [Modern eBPF probe](https://falco.org/docs/event-sources/drivers/#modern-ebpf-probe)
+
+The driver should be installed on the node where Falco is running. The _kernel module_ (default option) and the _eBPF probe_ are installed on the node through an *init container* (i.e. `falco-driver-loader`) that tries to build drivers to download a prebuilt driver or build it on-the-fly or as a fallback. The _Modern eBPF probe_ doesn't require an init container because it is shipped directly into the Falco binary. However, the _Modern eBPF probe_ requires [recent BPF features](https://falco.org/docs/event-sources/kernel/#modern-ebpf-probe)
+
+##### Pre-built drivers
+
+The [kernel-crawler](https://github.com/falcosecurity/kernel-crawler) automatically discovers kernel versions and flavors. At the time being, it runs weekly. We have a site where users can check for the discovered kernel flavors and versions, [example for Amazon Linux 2](https://falcosecurity.github.io/kernel-crawler/?arch=x86_64&target=AmazonLinux2).
+
+The discovery of a kernel version by the [kernel-crawler](https://falcosecurity.github.io/kernel-crawler/) does not imply that pre-built kernel modules and bpf probes are available. That is because once kernel-crawler has discovered new kernels versions, the drivers need to be built by jobs running on our [Driver Build Grid infra](https://github.com/falcosecurity/test-infra#dbg). Please keep in mind that the building process is based on best effort. Users can check the existence of prebuilt modules at the following [link](https://download.falco.org/driver/site/index.html?lib=3.0.1%2Bdriver&target=all&arch=all&kind=all).
+
+##### Building the driver on the fly (fallback)
+
+If a prebuilt driver is not available for your distribution/kernel, users can build the modules by them self or install the kernel headers on the nodes, and the init container (falco-driver-loader) will try and build the module on the fly.
+
+Falco needs **kernel headers** installed on the host as a prerequisite to build the driver on the fly correctly. You can find instructions for installing the kernel headers for your system under the [Install section](https://falco.org/docs/getting-started/installation/) of the official documentation.
+
+##### Selecting an different driver loader image
+
+Note that since Falco 0.36.0 and Helm chart version 3.7.0 the driver loader image has been updated to be compatible with newer kernels (5.x and above) meaning that if you have an older kernel version and you are trying to build the kernel module you may experience issues. In that case you can use the `falco-driver-loader-legacy` image to use the previous version of the toolchain. To do so you can set the appropriate value, i.e. `--set driver.loader.initContainer.image.repository=falcosecurity/falco-driver-loader-legacy`.
 
 #### About Plugins
 [Plugins](https://falco.org/docs/plugins/) are used to extend Falco to support new **data sources**. The current **plugin framework** supports *plugins* with the following *capabilities*:
@@ -57,9 +79,9 @@ If a prebuilt driver is not available for your distribution/kernel, Falco needs 
 * Event sourcing capability;
 * Field extraction capability;
 
-Plugin capabilities are *composable*, we can have a single plugin with both the capabilities. Or on the other hand we can load two different plugins each with its capability, one plugin as a source of events and another as an extractor. A good example of this are the [Kubernetes Audit Events](https://github.com/falcosecurity/plugins/tree/master/plugins/k8saudit) and the [Falcosecurity Json](https://github.com/falcosecurity/plugins/tree/master/plugins/json) *plugins*. By deploying them both we have support for the **K8s Audit Logs** in Falco
+Plugin capabilities are *composable*, we can have a single plugin with both capabilities. Or on the other hand, we can load two different plugins each with its capability, one plugin as a source of events and another as an extractor. A good example of this is the [Kubernetes Audit Events](https://github.com/falcosecurity/plugins/tree/master/plugins/k8saudit) and the [Falcosecurity Json](https://github.com/falcosecurity/plugins/tree/master/plugins/json) *plugins*. By deploying them both we have support for the **K8s Audit Logs** in Falco
 
-Note that **the driver is not required when using plugins**. When *plugins* are enabled Falco is deployed without the *init container*.
+Note that **the driver is not required when using plugins**. 
 
 #### About gVisor
 gVisor is an application kernel, written in Go, that implements a substantial portion of the Linux system call interface. It provides an additional layer of isolation between running applications and the host operating system. For more information please consult the [official docs](https://gvisor.dev/docs/). In version `0.32.1`, Falco first introduced support for gVisor by leveraging the stream of system call information coming from gVisor.
@@ -99,26 +121,57 @@ The two instances of Falco will operate independently and can be installed, unin
 ##### Falco+gVisor additional resources
 An exhaustive blog post about Falco and gVisor can be found on the [Falco blog](https://falco.org/blog/intro-gvisor-falco/).
 If you need help on how to set gVisor in your environment please have a look at the [gVisor official docs](https://gvisor.dev/docs/user_guide/quick_start/kubernetes/)
+
+### About Falco Artifacts
+Historically **rules files** and **plugins** used to be shipped inside the Falco docker image and/or inside the chart. Starting from version `v0.3.0` of the chart, the [**falcoctl tool**](https://github.com/falcosecurity/falcoctl) can be used to install/update **rules files** and **plugins**. When referring to such objects we will use the term **artifact**.  For more info please check out the following [proposal](https://github.com/falcosecurity/falcoctl/blob/main/proposals/20220916-rules-and-plugin-distribution.md).
+
+The default configuration of the chart for new installations is to use the **falcoctl** tool to handle **artifacts**. The chart will deploy two new containers along the Falco one:
+* `falcoctl-artifact-install` an init container that makes sure to install the configured **artifacts** before the Falco container starts;
+* `falcoctl-artifact-follow` a sidecar container that periodically checks for new artifacts (currently only *falco-rules*) and downloads them;
+
+For more info on how to enable/disable and configure the **falcoctl** tool checkout the config values [here](./generated/helm-values.md) and the [upgrading notes](./BREAKING-CHANGES.md#300)
 ### Deploying Falco in Kubernetes
-After the clarification of the different **event sources** and how they are consumed by Falco using the **drivers** and the **plugins**, now lets discuss about how Falco is deployed in Kubernetes.
+After the clarification of the different [**event sources**](#falco-event-sources-and-kubernetes) and how they are consumed by Falco using the **drivers** and the **plugins**, now let us discuss how Falco is deployed in Kubernetes.
 
 The chart deploys Falco using a `daemonset` or a `deployment` depending on the **event sources**.
 
 #### Daemonset
-When using the [drivers](#about-the-driver), Falco is deployed as `daemonset`. By using a `daemonset`, k8s assures that a Falco instance will be running in each of our nodes even when we add new nodes to our cluster. So it is the perfect match when we need to monitor all the nodes in our cluster. 
-Using the default values of the helm chart we get Falco deployed with the [kernel module](https://falco.org/docs/event-sources/drivers/#kernel-module).
+When using the [drivers](#about-the-driver), Falco is deployed as `daemonset`. By using a `daemonset`, k8s assures that a Falco instance will be running in each of our nodes even when we add new nodes to our cluster. So it is the perfect match when we need to monitor all the nodes in our cluster.
 
-If the [eBPF probe](https://falco.org/docs/event-sources/drivers/#ebpf-probe) is desired, we just need to set `driver.kind=ebpf` as as show in the following snippet:
+**Kernel module**
+
+To run Falco with the [kernel module](https://falco.org/docs/event-sources/drivers/#kernel-module) you can use the default values of the helm chart:
+
+```yaml
+driver:
+  enabled: true
+  kind: module
+```
+
+**eBPF probe**
+
+To run Falco with the [eBPF probe](https://falco.org/docs/event-sources/drivers/#ebpf-probe) you just need to set `driver.kind=ebpf` as shown in the following snippet:
 
 ```yaml
 driver:
   enabled: true
   kind: ebpf
 ```
+
 There are other configurations related to the eBPF probe, for more info please check the `values.yaml` file. After you have made your changes to the configuration file you just need to run:
 
 ```bash
 helm install falco falcosecurity/falco --namespace "your-custom-name-space" --create-namespace
+```
+
+**modern eBPF probe**
+
+To run Falco with the [modern eBPF probe](https://falco.org/docs/event-sources/drivers/#modern-ebpf-probe-experimental) you just need to set `driver.kind=modern-bpf` as shown in the following snippet:
+
+```yaml
+driver:
+  enabled: true
+  kind: modern-bpf
 ```
 
 #### Deployment
@@ -224,14 +277,43 @@ The Kubernetes Audit Log is now supported via the built-in [k8saudit](https://gi
 
 The following snippet shows how to deploy Falco with the [k8saudit](https://github.com/falcosecurity/plugins/tree/master/plugins/k8saudit) plugin:
 ```yaml
+# -- Disable the drivers since we want to deplouy only the k8saudit plugin.
 driver:
   enabled: false
 
+# -- Disable the collectors, no syscall events to enrich with metadata.
 collectors:
   enabled: false
 
+# -- Deploy Falco as a deployment. One instance of Falco is enough. Anyway the number of replicas is configurabale.
 controller:
   kind: deployment
+  deployment:
+    # -- Number of replicas when installing Falco using a deployment. Change it if you really know what you are doing.
+    # For more info check the section on Plugins in the README.md file.
+    replicas: 1
+
+
+falcoctl:
+  artifact:
+    install:
+      # -- Enable the init container. We do not recommend installing (or following) plugins for security reasons since they are executable objects.
+      enabled: true
+    follow:
+      # -- Enable the sidecar container. We do not support it yet for plugins. It is used only for rules feed such as k8saudit-rules rules.
+      enabled: true
+  config:
+    artifact:
+      install:
+        # -- Do not resolve the depenencies for artifacts. By default is true, but for our use case we disable it.
+        resolveDeps: false
+        # -- List of artifacts to be installed by the falcoctl init container.
+        # Only rulesfiles, we do no recommend plugins for security reasonts since they are executable objects.
+        refs: [k8saudit-rules:0.5]
+      follow:
+        # -- List of artifacts to be followed by the falcoctl sidecar container.
+        # Only rulesfiles, we do no recommend plugins for security reasonts since they are executable objects.
+        refs: [k8saudit-rules:0.5]
 
 services:
   - name: k8saudit-webhook
@@ -242,7 +324,7 @@ services:
         protocol: TCP
 
 falco:
-  rulesFile:
+  rules_file:
     - /etc/falco/k8s_audit_rules.yaml
     - /etc/falco/rules.d
   plugins:
@@ -256,15 +338,20 @@ falco:
     - name: json
       library_path: libjson.so
       init_config: ""
+  # Plugins that Falco will load. Note: the same plugins are installed by the falcoctl-artifact-install init container.
   load_plugins: [k8saudit, json]
+
 ```
-What the above configuration does is:
+Here is the explanation of the above configuration:
 * disable the drivers by setting `driver.enabled=false`;
 * disable the collectors by setting `collectors.enabled=false`;
 * deploy the Falco using a k8s *deploment* by setting `controller.kind=deployment`;
 * makes our Falco instance reachable by the `k8s api-server` by configuring a service for it in `services`;
+* enable the `falcoctl-artifact-install` init container;
+* configure `falcoctl-artifact-install` to install the required plugins;
+* disable the `falcoctl-artifact-follow` sidecar container;
 * load the correct ruleset for our plugin in `falco.rulesFile`;
-* configure the plugins to be loaded, in this case the `k8saudit` and `json`;
+* configure the plugins to be loaded, in this case, the `k8saudit` and `json`;
 * and finally we add our plugins in the `load_plugins` to be loaded by Falco.
 
 The configuration can be found in the `values-k8saudit.yaml` file ready to be used:
@@ -379,13 +466,44 @@ To install Falco with gRPC enabled over the **network**, you have to:
 ```shell
 helm install falco \
   --set falco.grpc.enabled=true \
-  --set falco.grpcOutput.enabled=true \
+  --set falco.grpc_output.enabled=true \
   --set falco.grpc.unixSocketPath="" \
   --set-file certs.server.key=/path/to/server.key \
   --set-file certs.server.crt=/path/to/server.crt \
   --set-file certs.ca.crt=/path/to/ca.crt \
   falcosecurity/falco
 ```
+
+## Enable http_output
+
+HTTP output enables Falco to send events through HTTP(S) via the following configuration:
+
+```shell
+helm install falco \
+  --set falco.http_output.enabled=true \
+  --set falco.http_output.url="http://some.url/some/path/" \
+  --set falco.json_output=true \
+  --set json_include_output_property=true
+  falcosecurity/falco
+```
+
+Additionaly, you can enable mTLS communication and load HTTP client cryptographic material via:
+
+```shell
+helm install falco \
+  --set falco.http_output.enabled=true \
+  --set falco.http_output.url="https://some.url/some/path/" \
+  --set falco.json_output=true \
+  --set json_include_output_property=true \
+  --set falco.http_output.mtls=true \
+  --set falco.http_output.client_cert="/etc/falco/certs/client/client.crt" \
+  --set falco.http_output.client_key="/etc/falco/certs/client/client.key" \
+  --set falco.http_output.ca_cert="/etc/falco/certs/client/ca.crt" \
+  --set-file certs.client.key="/path/to/client.key",certs.client.crt="/path/to/client.crt",certs.ca.crt="/path/to/cacert.crt" \
+  falcosecurity/falco
+```
+
+Or instead of directly setting the files via `--set-file`, mounting an existing volume with the `certs.existingClientSecret` value.
 
 ## Deploy Falcosidekick with Falco
 
