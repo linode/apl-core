@@ -6,7 +6,9 @@ kind: ArgoCD
 metadata:
   name: argocd
 spec:
-  applicationInstanceLabelKey: argocd.argoproj.io/instance
+  # applicationInstanceLabelKey: argocd.argoproj.io/instance
+  # resourceExclusions: ''
+  resourceTrackingMethod: annotation
   usersAnonymousEnabled: false
   oidcConfig: |
     issuer: {{ $v._derived.oidcBaseUrl }}
