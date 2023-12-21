@@ -4,7 +4,7 @@ import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { waitTillAvailable } from 'src/common/k8s'
+import { waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -27,10 +27,24 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
   cd(env.ENV_DIR)
   try {
+    try {
+      await $`git rev-list HEAD --count`
+    } catch {
+      d.log('Very first commit')
+      // We need at least two commits in repo, so git diff in Tekton pipeline always works. This is why  the very first time we commit twice.
+      await $`git add README.md`
+      await $`git commit -m ${message} --no-verify`
+    }
     await $`git add -A`
+    // The below 'git status' command will always return at least single new line
+    const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
+    if (filesChangedCount === 0) {
+      d.log('Nothing to commit')
+      return
+    }
     await $`git commit -m ${message} --no-verify`
   } catch (e) {
-    d.log('Could not commit. Did you make any changes?')
+    d.log(e)
     return
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
@@ -47,15 +61,10 @@ export const commit = async (): Promise<void> => {
   const values = (await hfValues()) as Record<string, any>
   // we call this here again, as we might not have completed (happens upon first install):
   await bootstrapGit(values)
-  const { username, password, remote, branch } = getRepo(values)
+  const { branch, remote } = getRepo(values)
   // lets wait until the remote is ready
   if (values?.apps!.gitea!.enabled ?? true) {
-    await waitTillAvailable(remote, {
-      status: 200,
-      skipSsl: values._derived?.untrustedCA,
-      username,
-      password,
-    })
+    await waitTillGitRepoAvailable(remote)
   }
   // continue
   await encrypt()
@@ -69,7 +78,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   const { email, username, password } = getRepo(values)
   const workDir = '/tmp/otomi-charts'
   const otomiChartsUrl = env.OTOMI_CHARTS_URL
-  const giteaChartsUrl = `https://${username}:${password}@gitea.${values.cluster.domainSuffix}/otomi/charts.git`
+  const giteaChartsUrl = `http://${username}:${password}@gitea-http.gitea.svc.cluster.local:3000/otomi/charts.git`
   try {
     await $`mkdir ${workDir}`
     await $`git clone --depth 1 ${otomiChartsUrl} ${workDir}`

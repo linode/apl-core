@@ -17,6 +17,7 @@ spec:
   tasks:
   - name: fetch-source
     taskRef:
+      kind: Task
       name: git-clone
     workspaces:
     - name: output
@@ -30,6 +31,7 @@ spec:
       value: {{ .mode.buildpacks.revision }}
   - name: buildpacks
     taskRef:
+      kind: Task
       name: buildpacks
     runAfter:
       - fetch-source
@@ -75,12 +77,15 @@ spec:
         workspaces:
         - name: shared-data
           volumeClaimTemplate:
+            metadata:
+              creationTimestamp: null
             spec:
               accessModes:
               - ReadWriteOnce
               resources:
                 requests:
                   storage: 1Gi
+            status: {}
         - name: git-credentials
           secret:
             secretName: gitea-credentials
@@ -107,12 +112,15 @@ spec:
   workspaces:
   - name: shared-data
     volumeClaimTemplate:
+      metadata:
+        creationTimestamp: null
       spec:
         accessModes:
         - ReadWriteOnce
         resources:
           requests:
             storage: 1Gi
+      status: {}
   - name: git-credentials
     secret:
       secretName: gitea-credentials
@@ -146,7 +154,8 @@ spec:
   triggers:
     - name: tekton-webhook-{{ .name }}
       bindings:
-        - ref: gitea-triggerbinding-{{ .name }}
+        - kind: TriggerBinding
+          ref: gitea-triggerbinding-{{ .name }}
       template:
         ref: trigger-template-{{ .name }}
 ---

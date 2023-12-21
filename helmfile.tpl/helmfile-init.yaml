@@ -31,6 +31,7 @@ releases:
     installed: true
     labels:
       init: true
+    namespace: kube-system
     chart: ../charts/raw
     values:
     - ../values/k8s/k8s-raw.gotmpl

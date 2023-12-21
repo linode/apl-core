@@ -11,7 +11,7 @@ import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/va
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $ } from 'zx'
 import { cloneOtomiChartsInGitea, commit, printWelcomeMessage } from './commit'
 import { upgrade } from './upgrade'
 
@@ -32,12 +32,13 @@ const setup = (): void => {
 
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
-  const argv: HelmArguments = getParsedArgs()
   const prevState = await getDeploymentState()
+  const intitalInstall = isEmpty(prevState.version)
+  const argv: HelmArguments = getParsedArgs()
 
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
-  d.debug(`Deployment state: ${JSON.stringify(prevState)}`)
+  d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
   const version = await getCurrentVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
@@ -48,7 +49,7 @@ const applyAll = async () => {
 
   const output: ProcessOutputTrimmed = await hf(
     { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    { streams: { stderr: d.stream.error } },
   )
   if (output.exitCode > 0) {
     throw new Error(output.stderr)
@@ -57,35 +58,39 @@ const applyAll = async () => {
   }
   const templateOutput = output.stdout
   writeFileSync(templateFile, templateOutput)
+
+  d.info('Deploying CRDs')
+  await $`kubectl apply -f charts/operator-lifecycle-manager/crds --server-side`
+  await $`kubectl apply -f charts/kube-prometheus-stack/crds --server-side`
+  await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
+  d.info('Deploying essential manifests')
   await $`kubectl apply -f ${templateFile}`
-  await nothrow(
-    $`if ! kubectl replace -f charts/kube-prometheus-stack/crds; then kubectl create -f charts/kube-prometheus-stack/crds; fi`,
-  )
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
       // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
       fileOpts: 'helmfile.d/helmfile-02.init.yaml',
-      labelOpts: [...(argv.label || []), 'stage=prep'],
+      labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
       args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   await prepareDomainSuffix()
-  d.info('Deploying charts containing label stage!=prep')
+  // const applyLabel: string = process.env.OTOMI_DEV_APPLY_LABEL || 'stage!=prep'
+  // d.info(`Deploying charts containing label ${applyLabel}`)
   await hf(
     {
-      labelOpts: [...(argv.label || []), 'stage!=prep'],
+      labelOpts: ['tag!=teams'],
       logLevel: logLevelString(),
       args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
+  // argv.label = ['name=team-ns-admin']
+  // await applyAsApps(argv)
 
-  const intitalInstall = isEmpty(prevState.version)
   await upgrade({ when: 'post' })
-  await cloneOtomiChartsInGitea()
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit()
     if (intitalInstall) {
@@ -98,6 +103,7 @@ const applyAll = async () => {
         },
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
+      await cloneOtomiChartsInGitea()
       await printWelcomeMessage()
     }
   }
