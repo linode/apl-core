@@ -17,6 +17,7 @@ spec:
   tasks:
   - name: fetch-source
     taskRef:
+      kind: Task
       name: git-clone
     workspaces:
     - name: output
@@ -32,6 +33,7 @@ spec:
     runAfter: 
     - fetch-source
     taskRef:
+      kind: Task
       name: kaniko
     workspaces:
     - name: source
@@ -72,12 +74,15 @@ spec:
         workspaces:
         - name: shared-data
           volumeClaimTemplate:
+            metadata:
+              creationTimestamp: null
             spec:
               accessModes:
               - ReadWriteOnce
               resources:
                 requests:
                   storage: 1Gi
+            status: {}
         - name: git-credentials
           secret:
             {{- if .externalRepo }}
@@ -108,12 +113,15 @@ spec:
   workspaces:
   - name: shared-data
     volumeClaimTemplate:
+      metadata:
+        creationTimestamp: null
       spec:
         accessModes:
         - ReadWriteOnce
         resources:
           requests:
             storage: 1Gi
+      status: {}
   - name: git-credentials
     secret:
       {{- if .externalRepo }}
@@ -143,13 +151,16 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+  labels:
+    tekton.dev/pipeline: docker-build-{{ .name }}
+    {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
   triggers:
     - name: tekton-webhook-{{ .name }}
       bindings:
-        - ref: gitea-triggerbinding-{{ .name }}
+        - kind: TriggerBinding
+          ref: gitea-triggerbinding-{{ .name }}
       template:
         ref: trigger-template-{{ .name }}
 ---
