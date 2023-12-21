@@ -9,7 +9,7 @@ import { isEmpty, map } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
-import { $, nothrow, sleep } from 'zx'
+import { $, cd, nothrow, sleep } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -40,6 +40,15 @@ export const createK8sSecret = async (
   )
   if (result.stderr) d.error(result.stderr)
   d.debug(`kubectl create secret output: \n ${result.stdout}`)
+}
+
+export const isResourcePresent = async (type: string, name: string, namespace: string): Promise<boolean> => {
+  try {
+    await $`kubectl get -n ${namespace} ${type} ${name}`
+  } catch {
+    return false
+  }
+  return true
 }
 
 export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
@@ -198,6 +207,24 @@ type WaitTillAvailableOptions = Options & {
   skipSsl?: boolean
   username?: string
   password?: string
+}
+
+export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
+  const retryOptions: Options = {
+    retries: 10,
+    maxTimeout: 30000,
+  }
+  const d = terminal('common:k8s:waitTillGitRepoAvailable')
+  await retry(async (bail) => {
+    try {
+      cd(env.ENV_DIR)
+      // the ls-remote exist with zero even if repo is empty
+      await $`git ls-remote ${repoUrl}`
+    } catch (e) {
+      d.warn(e.message)
+      throw e
+    }
+  }, retryOptions)
 }
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {

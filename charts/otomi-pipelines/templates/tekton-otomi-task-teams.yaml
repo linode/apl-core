@@ -3,7 +3,7 @@
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
-  name: otomi-task
+  name: otomi-task-teams
   namespace: otomi-pipelines
 spec:
   params:
@@ -34,7 +34,7 @@ spec:
     - name: ENV_DIR
       value: /home/app/stack/env
     - name: VERBOSE
-      value: '1'
+      value: '2'
   steps:
     - name: git-clone
       script: |
@@ -56,12 +56,6 @@ spec:
         {{- else}}
         git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- end }}
-    - name: bootstrap
-      command:
-        - '/bin/bash'
-      args:
-        - '-c'
-        - 'binzx/otomi bootstrap'
     - name: test
       command:
         - '/bin/bash'
@@ -74,4 +68,5 @@ spec:
         set -e
         # Prevent the detected dubious ownership in repository error
         git config --global --add safe.directory '*'
-        binzx/otomi apply
+        binzx/otomi apply-as-apps -f helmfile.d/helmfile-15.ingress-core.yaml -l team=admin
+        binzx/otomi apply-as-apps -f helmfile.d/helmfile-60.teams.yaml

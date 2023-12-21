@@ -1,10 +1,10 @@
 # Minimal values file with defaults
 cluster:
   name: 'dev'
-  provider: digitalocean
+  provider: custom
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
   version: 'main'
-# apps:
-#   harbor:
-#     enabled: true
+apps:
+  metrics-server:
+    enabled: false
