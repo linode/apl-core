@@ -25,9 +25,11 @@ teamConfig:
               url: https://myrepo.local/mychart.git
               path: ./
               revision: main
+              imageUpdateStrategy:
+                  type: disabled
             - name: wd
               url: https://myrepo.local/mychart.git
               path: ./
               revision: main
-              autoUpdate:
-                  enabled: false
+              imageUpdateStrategy:
+                  type: disabled

@@ -1,5 +1,5 @@
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
-import { isEmpty } from 'lodash'
+import { cloneDeep, isEmpty } from 'lodash'
 import { prepareDomainSuffix } from 'src/common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -12,6 +12,7 @@ import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/co
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
+import { applyAsApps } from './apply-as-apps'
 import { cloneOtomiChartsInGitea, commit, printWelcomeMessage } from './commit'
 import { upgrade } from './upgrade'
 
@@ -79,16 +80,26 @@ const applyAll = async () => {
   await prepareDomainSuffix()
   // const applyLabel: string = process.env.OTOMI_DEV_APPLY_LABEL || 'stage!=prep'
   // d.info(`Deploying charts containing label ${applyLabel}`)
+
+  // The 'tag!=teams' does not include team-ns-admin release name
+  let labelOpts = ['tag!=teams']
+
+  if (!intitalInstall) {
+    const params = cloneDeep(argv)
+    params.label = ['team=admin']
+    // We still ned to deploy team admin as it contain ingress for platform apps
+    await applyAsApps(params)
+    labelOpts = ['pipeline!=otomi-task-teams']
+  }
+
   await hf(
     {
-      labelOpts: ['tag!=teams'],
+      labelOpts,
       logLevel: logLevelString(),
       args: ['apply'],
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
-  // argv.label = ['name=team-ns-admin']
-  // await applyAsApps(argv)
 
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {

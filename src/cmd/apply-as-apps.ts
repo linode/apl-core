@@ -103,9 +103,9 @@ const writeApplicationManifest = async (release: HelmRelese, otomiVersion: strin
   await writeFile(applicationPath, objectToYaml(manifest))
 }
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
-  const helmfileSource = argv.file?.length === 0 ? 'helmfile.d/' : argv.file?.toString()
+  const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
-
+  setup()
   const otomiVersion = await getImageTag()
 
   const res = await hf({
@@ -161,7 +161,6 @@ export const module: CommandModule = {
 
   handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
-    setup()
     await prepareEnvironment()
     await applyAsApps(argv)
   },
