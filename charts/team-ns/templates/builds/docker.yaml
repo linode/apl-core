@@ -85,7 +85,11 @@ spec:
             status: {}
         - name: git-credentials
           secret:
+            {{- if .externalRepo }}
+            secretName: {{ .secretName }}
+            {{- else }}
             secretName: gitea-credentials
+            {{- end }}
         - name: docker-credentials
           secret:
             secretName: harbor-pushsecret-builds
@@ -120,7 +124,11 @@ spec:
       status: {}
   - name: git-credentials
     secret:
+      {{- if .externalRepo }}
+      secretName: {{ .secretName }}
+      {{- else }}
       secretName: gitea-credentials
+      {{- end }}
   - name: docker-credentials
     secret:
       secretName: harbor-pushsecret-builds
