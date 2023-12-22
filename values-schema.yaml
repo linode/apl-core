@@ -1350,6 +1350,13 @@ definitions:
       trigger:
         type: boolean
         default: false
+      externalRepo:
+        type: boolean
+        description: Select when using an external private Git repository.
+        default: false
+      secretName:
+        description: The name of the secret with the credentials of the external private Git repository
+        type: string
       mode:
         properties:
           docker:
