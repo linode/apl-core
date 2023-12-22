@@ -106,10 +106,3 @@ changes:
       - platformBackups.persistentVolumes.kubeapps
     additions:
       - apps.drone.enabled: true
-  - version: 17
-    additions:
-      - teamConfig.managedMonitoring.grafana: true
-      - teamConfig.managedMonitoring.prometheus: false
-      - teamConfig.managedMonitoring.alertmanager: false
-    deletions:
-      - teamConfig.monitoringStack
