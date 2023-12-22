@@ -68,5 +68,4 @@ spec:
         set -e
         # Prevent the detected dubious ownership in repository error
         git config --global --add safe.directory '*'
-        binzx/otomi apply-as-apps -f helmfile.d/helmfile-15.ingress-core.yaml -l pipeline=otomi-task-teams
-        binzx/otomi apply-as-apps -f helmfile.d/helmfile-60.teams.yaml
+        binzx/otomi apply-as-apps -l pipeline=otomi-task-teams
