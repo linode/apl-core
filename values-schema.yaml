@@ -1641,7 +1641,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: false
+            default: true
           autoscaling:
             $ref: '#/definitions/autoscalingEnabled'
           resources:

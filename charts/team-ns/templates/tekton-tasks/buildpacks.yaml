@@ -31,10 +31,13 @@ spec:
   params:
     - name: APP_IMAGE
       description: The name of where to store the app image.
+      type: string
     - name: BUILDER_IMAGE
       description: The image on which builds will run (must include lifecycle and compatible buildpacks).
+      type: string
     - name: SOURCE_SUBPATH
       description: A subpath within the `source` input where the source to build is located.
+      type: string
       default: ""
     - name: ENV_VARS
       type: array
@@ -42,31 +45,40 @@ spec:
       default: []
     - name: PROCESS_TYPE
       description: The default process type to set on the image.
+      type: string
       default: "web"
     - name: RUN_IMAGE
       description: Reference to a run image to use.
+      type: string
       default: ""
     - name: CACHE_IMAGE
       description: The name of the persistent app cache image (if no cache workspace is provided).
+      type: string
       default: ""
     - name: SKIP_RESTORE
       description: Do not write layer metadata or restore cached layers.
+      type: string
       default: "false"
     - name: USER_ID
       description: The user ID of the builder image user.
+      type: string
       default: "1000"
     - name: GROUP_ID
       description: The group ID of the builder image user.
+      type: string
       default: "1000"
     - name: PLATFORM_DIR
       description: The name of the platform directory.
+      type: string
       default: empty-dir
 
   results:
     - name: APP_IMAGE_DIGEST
       description: The digest of the built `APP_IMAGE`.
+      type: string
     - name: APP_IMAGE_URL
       description: The URL of the built `APP_IMAGE`.
+      type: string
 
   stepTemplate:
     env:
@@ -81,6 +93,7 @@ spec:
         memory: 512Mi
   steps:
     - name: prepare
+      computeResources: {}
       image: docker.io/library/bash:5.1.4@sha256:b208215a4655538be652b2769d82e576bc4d0a2bb132144c060efc5be8c3f5d6
       args:
         - "--env-vars"
@@ -134,8 +147,8 @@ spec:
           mountPath: /layers
         - name: $(params.PLATFORM_DIR)
           mountPath: /platform
-
     - name: create
+      computeResources: {}
       image: $(params.BUILDER_IMAGE)
       imagePullPolicy: Always
       command: ["/cnb/lifecycle/creator"]
@@ -166,6 +179,7 @@ spec:
         runAsGroup: 1000
 
     - name: results
+      computeResources: {}
       image: docker.io/library/bash:5.1.4@sha256:b208215a4655538be652b2769d82e576bc4d0a2bb132144c060efc5be8c3f5d6
       script: |
         #!/usr/bin/env bash

@@ -17,9 +17,9 @@
   "cSpell.diagnosticLevel": "Hint",
   "cSpell.enabled": true,
   "editor.codeActionsOnSave": {
-    "source.addMissingImports": true,
-    "source.fixAll": true,
-    "source.organizeImports": true
+    "source.addMissingImports": "explicit",
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
