@@ -85,12 +85,11 @@ const applyAll = async () => {
   let labelOpts = ['tag!=teams']
 
   if (!intitalInstall) {
-    // If Otomi has already been deployed, then team-ns-admin can be deployed as ArgoCD Application
     const params = cloneDeep(argv)
-    params.label = ['name=team-ns-admin']
+    params.label = ['team=admin']
+    // We still ned to deploy team admin as it contain ingress for platform apps
     await applyAsApps(params)
-    // Since team-ns-admin is deployed as app then we can exlude it for hf apply
-    labelOpts = ['tag!=teams', 'name!=team-ns-admin']
+    labelOpts = ['pipeline!=otomi-task-teams']
   }
 
   await hf(
