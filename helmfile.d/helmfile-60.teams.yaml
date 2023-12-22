@@ -36,6 +36,7 @@ releases:
     labels:
       tag: teams
       team: {{ $teamId }}
+      pipeline: otomi-task-teams
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
   - name: prometheus-{{ $teamId }}
@@ -45,6 +46,7 @@ releases:
     labels:
       tag: teams
       team: {{ $teamId }}
+      pipeline: otomi-task-teams
     values:
       - ../values/prometheus-operator/prometheus-operator.gotmpl
       - ../values/prometheus-operator/prometheus-operator-team.gotmpl
@@ -191,6 +193,7 @@ releases:
     labels:
       tag: teams
       team: {{ $teamId }}
+      pipeline: otomi-task-teams
     values:
       - ../values/prometheus-msteams/prometheus-msteams.gotmpl
       - commonLabels:
@@ -210,6 +213,7 @@ releases:
     labels:
       tag: teams
       team: {{ $teamId }}
+      pipeline: otomi-task-teams
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         team: {{ $teamId }}
@@ -236,6 +240,7 @@ releases:
       tag: teams
       ingress: 'true'
       team: {{ $teamId }}
+      pipeline: otomi-task-teams
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
         apps: {{- $a | toYaml | nindent 10 }}
@@ -261,6 +266,7 @@ releases:
       group: jobs
       tag: teams
       team: {{ $teamId }}
+      pipeline: otomi-task-teams
     hooks:
       - events: [presync]
         showlogs: true
