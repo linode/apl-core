@@ -1,7 +1,7 @@
 {{- $v := .Values | merge (dict) }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $ns := .Release.Namespace }}
-{{- if (dig "monitoringStack" "enabled" false $v) }}
+{{- if (dig "managedMonitoring.prometheus" "enabled" false $v) }}
 {{- if $v.apps.alertmanager.enabled }}
 ---
 apiVersion: monitoring.coreos.com/v1

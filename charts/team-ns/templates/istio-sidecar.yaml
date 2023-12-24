@@ -1,6 +1,5 @@
 {{- $v := .Values | merge (dict) }}
 {{- $ := . }}
-{{- $hasStack := dig "monitoringStack" "enabled" false $v }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
 {{- if $egressFilteringEnabled }}
@@ -13,7 +12,7 @@ metadata:
 spec:
   outboundTrafficPolicy: 
     mode: REGISTRY_ONLY
-{{ if $hasStack }}
+{{- if $v.managedMonitoring.prometheus }}
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: Sidecar
@@ -29,7 +28,7 @@ spec:
 {{- end }}
 {{- end }}
 {{- end }}
-{{- if (dig "monitoringStack" "enabled" false $v) }}
+{{- if $v.managedMonitoring.prometheus }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
