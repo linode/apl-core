@@ -1,5 +1,7 @@
 {{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- $v := .Values | merge (dict) }}
+{{- $hasProm := dig "managedMonitoring" "prometheus" false $v }}
+{{- $hasAlert := dig "managedMonitoring" "alertmanager" false $v }}
 {{- if and (not (eq $v.teamId "admin")) (dig "networkPolicy" "ingressPrivate" true $v) }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -45,7 +47,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: tekton-pipelines
-{{- if $v.managedMonitoring.alertmanager }}
+{{- if $hasAlert }}
 ---
 # Allow traffic from team's prometheus to team's alertmanager
 apiVersion: networking.k8s.io/v1
@@ -68,13 +70,13 @@ spec:
   policyTypes:
     - Ingress
 {{- end }}
-{{- if $v.managedMonitoring.prometheus }}
+{{- if $hasProm }}
 ---
 # Allow traffic from Alertmanager and Grafana to Prometheus
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-to-team-prometheus
+  name: default-to-prometheus
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   ingress:
@@ -139,13 +141,13 @@ spec:
       app.kubernetes.io/managed-by: EventListener
   policyTypes:
     - Ingress
-{{- if $v.managedMonitoring.prometheus }}
+{{- if $hasProm }}
 ---
 # Allow traffic from Prometheus to all pods for scraping metrics
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: default-from-team-prometheus
+  name: default-from-prometheus
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   podSelector: {}
