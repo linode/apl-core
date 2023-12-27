@@ -188,7 +188,86 @@ jobs:
           mark_as_latest: ${{ steps.prepare_chart.outputs.MARK_AS_LATEST }}
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+  test-otomi-release:
+    needs: chart-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Scaleway CLI
+        uses: scaleway/action-scw@v0
+        with:
+          save-config: true
+          export-config: true
+          version: v2.23.0
+          access-key: ${{ secrets.SCW_ACCESS_KEY }}
+          secret-key: ${{ secrets.SCW_SECRET_KEY }}
+          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+      - name: Installing new otomi release
+        id: test_release
+        run: |
+          # Install and update helm repo
+          helm repo add otomi https://otomi.io/otomi-core
+          helm repo update
 
+          # Pull the latest otomi chart
+          helm pull otomi/otomi --untar
+
+          # Create cluster private network and get ID
+          SCALEWAY_PRIVATE_NETWORK_ID=$(scw vpc private-network create project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} name='otomi-test-release' region=nl-ams -ojson | jq -r .id)
+
+          # Get k8s 1.27 patch version
+          K8s_VERSION=scw k8s version list -o json | jq -ce '.[] | .name' -r | grep 1.27
+
+          # Create cluster
+          scw k8s cluster create \
+            name=otomi-test-release \
+            pools.0.node-type=PRO2-M \
+            private-network-id=$SCALEWAY_PRIVATE_NETWORK_ID \
+            auto-upgrade.enable=false \
+            cni=calico \
+            pools.0.name=otomi-test-release \
+            pools.0.size=3 \
+            pools.0.max-size=3 \
+            pools.0.autohealing=true \
+            pools.0.autoscaling=true \
+            pools.0.root-volume-size=50GB \
+            version=$K8s_VERSION \
+            region=nl-ams \
+            project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} \
+            --wait
+
+          # Get cluster ID and set env var
+          cluster_id=$(scw k8s cluster list | grep otomi-test-release | awk '{print $1}')
+          echo SCALEWAY_CLUSTER_ID=$cluster_id >> $GITHUB_ENV
+
+          # Get kubeconfig
+          scw k8s kubeconfig install $cluster_id
+
+          # Update values.yaml integration test file
+          SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
+          sed --in-place "s/CONTEXT_PLACEHOLDER/$SCALEWAY_CLUSTER_CONTEXT/g" tests/integration/minimial.yaml
+          sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/minimal.yaml
+
+          # Install otomi
+          helm install otomi otomi \
+          --wait --wait-for-jobs --timeout 30m0s otomi ./otomi \
+          --set cluster.provider=scaleway --set cluster.name=otomi-test-release
+      - name: Gather k8s events on failure
+        if: failure()
+        run: |
+          kubectl get events --sort-by='.lastTimestamp' -A
+      - name: Gather k8s pods on failure
+        if: failure()
+        run: |
+          kubectl get pods -A -o wide
+      - name: Gather otomi logs on failure
+        if: failure()
+        run: |
+          kubectl logs jobs/otomi --tail 150
+      - name: Delete k8s cluster at Scaleway
+        if: always()
+        run: |
+          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
   notification:
     needs: [build-test-cache, push-to-docker, release, chart-release]
     if: always()
