@@ -189,6 +189,7 @@ jobs:
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
   test-otomi-release:
+    name: Test Otomi Helm Chart Installation
     needs: chart-release
     runs-on: ubuntu-latest
     steps:
