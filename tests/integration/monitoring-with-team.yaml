@@ -50,8 +50,8 @@ teamConfig:
         - networkPolicy
     managedMonitoring:
       grafana: true
-      prometheus: false
-      alertmanager: false
+      prometheus: true
+      alertmanager: true
     networkPolicy:
       egressPublic: false
       ingressPrivate: false
