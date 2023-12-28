@@ -61,7 +61,7 @@ jobs:
             --wait
 
           # Get cluster ID and set env var
-          cluster_id=$(scw k8s cluster list | grep otomi-test-release | awk '{print $1}')
+          cluster_id=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.name == "otomi-test-release") | .id')
           echo SCALEWAY_CLUSTER_ID=$cluster_id >> $GITHUB_ENV
 
           # Get kubeconfig
