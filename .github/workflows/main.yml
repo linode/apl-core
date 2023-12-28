@@ -74,7 +74,7 @@ jobs:
           SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
 
           # Install otomi
-          helm install otomi otomi \
+          helm install \
           --wait --wait-for-jobs --timeout 30m0s otomi ./otomi \
           --set cluster.provider=scaleway \
           --set cluster.name=otomi-test-release \
