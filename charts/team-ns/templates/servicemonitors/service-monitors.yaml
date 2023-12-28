@@ -1,8 +1,10 @@
 {{- $v := .Values | merge (dict) }}
+{{- $prometheus := dig "managedMonitoring" "prometheus" false $v }}
+{{- $alertmng := dig "managedMonitoring" "alertmanager" false $v }}
+{{- $grafana := dig "managedMonitoring" "grafana" false $v }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $ns := .Release.Namespace }}
-{{- if (dig "monitoringStack" "enabled" false $v) }}
-{{- if $v.apps.alertmanager.enabled }}
+{{- if $alertmng }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -25,7 +27,7 @@ spec:
       release: prometheus-{{ $v.teamId }}
 {{- end }}
 ---
-{{- if $v.apps.prometheus.enabled }}
+{{- if $prometheus }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -44,9 +46,8 @@ spec:
       app: {{ $v.teamId }}-po-prometheus
       release: prometheus-{{ $v.teamId }}
 {{- end }}
-{{- end }}
 ---
-{{- if $v.apps.grafana.enabled }}
+{{- if $grafana }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
