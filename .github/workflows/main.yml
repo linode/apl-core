@@ -67,7 +67,7 @@ jobs:
           echo SCALEWAY_CLUSTER_ID=$cluster_id >> $GITHUB_ENV
 
           # Get kubeconfig
-          scw k8s kubeconfig install $cluster_id
+          scw k8s kubeconfig install $cluster_id region=nl-ams
           echo "Kubeconfig installed successfully"
 
           # Update values.yaml integration test file
