@@ -12,8 +12,8 @@ teamConfig:
                 url: https://slack.con
         managedMonitoring:
             grafana: true
-            prometheus: false
-            alertmanager: false
+            prometheus: true
+            alertmanager: true
         billingAlertQuotas:
             teamCpuMonthQuotaReached:
                 quota: 150
