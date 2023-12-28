@@ -78,8 +78,8 @@ jobs:
           --wait --wait-for-jobs --timeout 30m0s otomi ./otomi \
           --set cluster.provider=scaleway \
           --set cluster.name=otomi-test-release \
-          --set cluster.context=$SCALEWAY_CLUSTER_CONTEXT \
-          --set otomi.version=2.1.0 
+          --set cluster.k8sContext=$SCALEWAY_CLUSTER_CONTEXT \
+          --set otomi.version=v2.1.0 
           # --set otomi.version=${GITHUB_REF##*/} \
       - name: Gather k8s events on failure
         if: failure()
