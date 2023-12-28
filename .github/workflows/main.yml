@@ -72,14 +72,15 @@ jobs:
 
           # Update values.yaml integration test file
           SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
-          sed --in-place "s/CONTEXT_PLACEHOLDER/$SCALEWAY_CLUSTER_CONTEXT/g" tests/integration/minimal.yaml
-          sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/minimal.yaml
-          echo "Updated integration test values.yaml file"
 
           # Install otomi
           helm install otomi otomi \
           --wait --wait-for-jobs --timeout 30m0s otomi ./otomi \
-          --set cluster.provider=scaleway --set cluster.name=otomi-test-release
+          --set cluster.provider=scaleway \
+          --set cluster.name=otomi-test-release \
+          --set cluster.context=$SCALEWAY_CLUSTER_CONTEXT \
+          --set otomi.version=2.1.0 
+          # --set otomi.version=${GITHUB_REF##*/} \
       - name: Gather k8s events on failure
         if: failure()
         run: |
