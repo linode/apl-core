@@ -193,6 +193,7 @@ jobs:
 
   test-otomi-release:
     name: Test Helm Chart Installation
+    needs: [ release, chart-release ]
     runs-on: ubuntu-latest
     steps:
       - name: Use Scaleway CLI
