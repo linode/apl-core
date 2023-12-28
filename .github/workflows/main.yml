@@ -72,7 +72,7 @@ jobs:
 
           # Update values.yaml integration test file
           SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
-          sed --in-place "s/CONTEXT_PLACEHOLDER/$SCALEWAY_CLUSTER_CONTEXT/g" tests/integration/minimial.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/$SCALEWAY_CLUSTER_CONTEXT/g" tests/integration/minimal.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/minimal.yaml
           echo "Updated integration test values.yaml file"
 
