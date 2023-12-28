@@ -59,18 +59,22 @@ jobs:
             region=nl-ams \
             project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} \
             --wait
+          echo "CLuster deployed successfully"
 
           # Get cluster ID and set env var
           cluster_id=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.name == "otomi-test-release") | .id')
+          echo "Cluster ID: $cluster_id"
           echo SCALEWAY_CLUSTER_ID=$cluster_id >> $GITHUB_ENV
 
           # Get kubeconfig
           scw k8s kubeconfig install $cluster_id
+          echo "Kubeconfig installed successfully"
 
           # Update values.yaml integration test file
           SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
           sed --in-place "s/CONTEXT_PLACEHOLDER/$SCALEWAY_CLUSTER_CONTEXT/g" tests/integration/minimial.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/minimal.yaml
+          echo "Updated integration test values.yaml file"
 
           # Install otomi
           helm install otomi otomi \
