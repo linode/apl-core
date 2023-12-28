@@ -12,91 +12,6 @@ env:
   GIT_USER: redkubesbot
 
 jobs:
-  test-otomi-release:
-    name: Test Helm Chart Installation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Use Scaleway CLI
-        uses: scaleway/action-scw@v0
-        with:
-          save-config: true
-          export-config: true
-          version: v2.23.0
-          access-key: ${{ secrets.SCW_ACCESS_KEY }}
-          secret-key: ${{ secrets.SCW_SECRET_KEY }}
-          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
-          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-      - name: Installing new otomi release
-        id: test_release
-        run: |
-          # Install and update helm repo
-          helm repo add otomi https://otomi.io/otomi-core
-          helm repo update
-
-          # Pull the latest otomi chart
-          helm pull otomi/otomi --untar
-
-          # Create cluster private network and get ID
-          SCALEWAY_PRIVATE_NETWORK_ID=$(scw vpc private-network create project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} name='otomi-test-release' region=nl-ams -ojson | jq -r .id)
-
-          # Get k8s 1.27 patch version
-          K8s_VERSION=$(scw k8s version list -o json | jq -ce '.[] | .name' -r | grep 1.27)
-
-          # Create cluster
-          scw k8s cluster create \
-            name=otomi-test-release \
-            pools.0.node-type=PRO2-M \
-            private-network-id=$SCALEWAY_PRIVATE_NETWORK_ID \
-            auto-upgrade.enable=false \
-            cni=calico \
-            pools.0.name=otomi-test-release \
-            pools.0.size=3 \
-            pools.0.max-size=3 \
-            pools.0.autohealing=true \
-            pools.0.autoscaling=true \
-            pools.0.root-volume-size=50GB \
-            version=$K8s_VERSION \
-            region=nl-ams \
-            project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} \
-            --wait
-          echo "CLuster deployed successfully"
-
-          # Get cluster ID and set env var
-          cluster_id=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.name == "otomi-test-release") | .id')
-          echo "Cluster ID: $cluster_id"
-          echo SCALEWAY_CLUSTER_ID=$cluster_id >> $GITHUB_ENV
-
-          # Get kubeconfig
-          scw k8s kubeconfig install $cluster_id region=nl-ams
-          echo "Kubeconfig installed successfully"
-
-          # Update values.yaml integration test file
-          SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
-
-          # Install otomi
-          helm install \
-          --wait --wait-for-jobs --timeout 30m0s otomi ./otomi \
-          --set cluster.provider=scaleway \
-          --set cluster.name=otomi-test-release \
-          --set cluster.k8sContext=$SCALEWAY_CLUSTER_CONTEXT \
-          --set otomi.version=v2.1.0 
-          # --set otomi.version=${GITHUB_REF##*/} \
-      - name: Gather k8s events on failure
-        if: failure()
-        run: |
-          kubectl get events --sort-by='.lastTimestamp' -A
-      - name: Gather k8s pods on failure
-        if: failure()
-        run: |
-          kubectl get pods -A -o wide
-      - name: Gather otomi logs on failure
-        if: failure()
-        run: |
-          kubectl logs jobs/otomi --tail 150
-      - name: Delete k8s cluster at Scaleway
-        if: always()
-        run: |
-          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
 
   # build-test-cache:
   #   if: (!contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/') && !github.event.act)
@@ -154,6 +69,7 @@ jobs:
   #     - name: Show me the logic
   #       run: |
   #         echo github.ref == ${{ github.ref }}
+
   # release:
   #   needs: push-to-docker
   #   if: always() && (startsWith(github.ref, 'refs/heads/releases/') || startsWith(github.ref, 'refs/heads/main')) && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
@@ -274,6 +190,93 @@ jobs:
   #         mark_as_latest: ${{ steps.prepare_chart.outputs.MARK_AS_LATEST }}
   #       env:
   #         CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
+  test-otomi-release:
+    name: Test Helm Chart Installation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Scaleway CLI
+        uses: scaleway/action-scw@v0
+        with:
+          save-config: true
+          export-config: true
+          version: v2.23.0
+          access-key: ${{ secrets.SCW_ACCESS_KEY }}
+          secret-key: ${{ secrets.SCW_SECRET_KEY }}
+          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+      - name: Pulling the helm chart
+        run: |
+          # Install and update helm repo
+          helm repo add otomi https://otomi.io/otomi-core
+          helm repo update
+
+          # Pull the latest otomi chart
+          helm pull otomi/otomi --untar
+      - name: Creating the cluster
+        run: |
+          # Create cluster private network and get ID
+          SCALEWAY_PRIVATE_NETWORK_ID=$(scw vpc private-network create project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} name='otomi-test-release' region=nl-ams -ojson | jq -r .id)
+
+          # Get k8s 1.27 patch version
+          K8s_VERSION=$(scw k8s version list -o json | jq -ce '.[] | .name' -r | grep 1.27)
+
+          # Create cluster
+          scw k8s cluster create \
+            name=otomi-test-release \
+            pools.0.node-type=PRO2-M \
+            private-network-id=$SCALEWAY_PRIVATE_NETWORK_ID \
+            auto-upgrade.enable=false \
+            cni=calico \
+            pools.0.name=otomi-test-release \
+            pools.0.size=3 \
+            pools.0.max-size=3 \
+            pools.0.autohealing=true \
+            pools.0.autoscaling=true \
+            pools.0.root-volume-size=50GB \
+            version=$K8s_VERSION \
+            region=nl-ams \
+            project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} \
+            --wait
+          echo "CLuster deployed successfully"
+      - name: Installing new otomi release
+        run: |
+          # Get cluster ID and set env var
+          cluster_id=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.name == "otomi-test-release") | .id')
+          echo "Cluster ID: $cluster_id"
+          echo SCALEWAY_CLUSTER_ID=$cluster_id >> $GITHUB_ENV
+
+          # Get kubeconfig
+          scw k8s kubeconfig install $cluster_id region=nl-ams
+          echo "Kubeconfig installed successfully"
+
+          # Update values.yaml integration test file
+          SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
+
+          # Install otomi
+          helm install \
+          --wait --wait-for-jobs --timeout 30m0s otomi ./otomi \
+          --set cluster.provider=scaleway \
+          --set cluster.name=otomi-test-release \
+          --set cluster.k8sContext=$SCALEWAY_CLUSTER_CONTEXT \
+          --set otomi.version=${GITHUB_REF##*/} \
+      - name: Gather k8s events on failure
+        if: failure()
+        run: |
+          kubectl get events --sort-by='.lastTimestamp' -A
+      - name: Gather k8s pods on failure
+        if: failure()
+        run: |
+          kubectl get pods -A -o wide
+      - name: Gather otomi logs on failure
+        if: failure()
+        run: |
+          kubectl logs jobs/otomi --tail 150
+      - name: Delete k8s cluster at Scaleway
+        if: always()
+        run: |
+          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
+
   # notification:
   #   needs: [build-test-cache, push-to-docker, release, chart-release]
   #   if: always()
@@ -290,18 +293,18 @@ jobs:
   #         SLACK_USERNAME: RedKubesBot
 
   # execute-aws-marketplace:
-  #   name: AWS Dispatch
-  #   needs: chart-release
-  #   if: always() && contains(needs.chart-release.result, 'success') && !github.event.act
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/github-script@v6
-  #       with:
-  #         github-token: ${{ secrets.ACTIONS_KEY }}
-  #         script: |
-  #           await github.rest.actions.createWorkflowDispatch({
-  #             owner: 'redkubes',
-  #             repo: 'aws-marketplace',
-  #             workflow_id: 'deploy_release.yaml',
-  #             ref: 'main'
-  #           })
+    name: AWS Dispatch
+    needs: chart-release
+    if: always() && contains(needs.chart-release.result, 'success') && !github.event.act
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ACTIONS_KEY }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'redkubes',
+              repo: 'aws-marketplace',
+              workflow_id: 'deploy_release.yaml',
+              ref: 'main'
+            })
