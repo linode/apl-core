@@ -116,21 +116,17 @@ let logLevelVar = Number.NEGATIVE_INFINITY
  */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const logLevel = (argv?: any): number => {
-  if (!argv && !_argv) return logLevels.ERROR
-  if (argv) _argv = argv
-  if (logLevelVar > Number.NEGATIVE_INFINITY) return logLevelVar
+  let logLevelNum = Number(logLevels[argv?.logLevel?.toUpperCase() ?? 'INFO'])
+  const verbosity = Number(argv?.verbose ?? 0)
+  logLevelVar = Math.max(logLevelNum, verbosity)
 
-  let logLevelNum = Number(logLevels[argv.logLevel?.toUpperCase() ?? 'WARN'])
-  const verbosity = Number(argv.verbose ?? 0)
-  const boolTrace = env.TRACE || argv.trace
+  const boolTrace = env.TRACE || argv?.trace
   logLevelNum = boolTrace ? logLevels.TRACE : logLevelNum
-
-  logLevelVar = logLevelNum < 0 && verbosity === 0 ? logLevelNum : Math.max(logLevelNum, verbosity)
   if (logLevelVar === logLevels.TRACE) {
     $.verbose = true
     $.prefix = 'set -xeuo pipefail;'
   }
-  return logLevelVar
+  return logLevelNum
 }
 
 export const logLevelString = (): string => {

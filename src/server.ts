@@ -2,7 +2,6 @@
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { bootstrapSops } from 'src/cmd/bootstrap'
-import { genDrone } from 'src/cmd/gen-drone'
 import { validateValues } from 'src/cmd/validate-values'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
@@ -45,7 +44,6 @@ app.get('/prepare', async (req: Request, res: Response) => {
     // Decrypt ensures that a brand new encrypted secret file is decrypted to the .dec file
     await decrypt(envDir)
     await validateValues(envDir)
-    await genDrone(envDir)
     res.status(200).send('ok')
   } catch (error) {
     const err = `${error}`

@@ -2,8 +2,7 @@ import { readdir } from 'fs/promises'
 import { chalk } from 'zx'
 import { decrypt } from './crypt'
 import { terminal } from './debug'
-import { env, isCli } from './envalid'
-import { checkKubeContext } from './k8s'
+import { env } from './envalid'
 import { isCore } from './utils'
 
 chalk.level = 2
@@ -39,7 +38,6 @@ export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): P
   d.info('Checking environment')
   if (!options?.skipEnvDirCheck && (await isReadyEnvDir())) {
     if (!options?.skipDecrypt) await decrypt()
-    if (isCli && !options?.skipKubeContextCheck) await checkKubeContext()
   }
 }
 

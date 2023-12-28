@@ -8,7 +8,7 @@ environments:
           alertmanager:
             enabled: false
           argocd:
-            enabled: false
+            enabled: true
             autoscaling:
               enabled: false
               minReplicas: 1
@@ -74,6 +74,7 @@ environments:
                               docker.io/otomi/api,
                               docker.io/drone/drone-runner-kube,
                               docker.io/grafana/promtail,
+                              gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
                               quay.io/argoprojlabs/argocd-image-updater
                             ) or (k8s.ns.name = "kube-system")
                               or (k8s.ns.name = "ingress")
@@ -150,24 +151,38 @@ environments:
               falco:
                 requests:
                   cpu: 100m
-                  memory: 128Mi
+                  memory: 512Mi
                 limits:
-                  cpu: 500m
-                  memory: 256Mi
-              falcoSidekick:
+                  cpu: 1000m
+                  memory: 1024Mi
+              falcoCtlFollow:
                 requests:
                   cpu: 20m
-                  memory: 32Mi
+                  memory: 16Mi
                 limits:
                   cpu: 50m
-                  memory: 64Mi
+                  memory: 32Mi
+              falcoCtlInstall:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              falcoDriverLoader:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
               falcoExporter:
                 requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
                   cpu: 50m
                   memory: 32Mi
-                limits:
-                  cpu: 100m
-                  memory: 64Mi              
           gatekeeper:
             enabled: false
             auditFromCache: false
@@ -280,10 +295,10 @@ environments:
               pod:
                   requests:
                       cpu: 200m
-                      memory: 128Mi
+                      memory: 256Mi
                   limits:
                       cpu: 500m
-                      memory: 256Mi
+                      memory: 1Gi
               operator:
                   requests:
                       cpu: 1000m

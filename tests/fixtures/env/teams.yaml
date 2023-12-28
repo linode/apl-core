@@ -3,11 +3,17 @@ teamConfig:
         id: admin
     demo:
         alerts:
-            email: {}
             receivers:
-                - email
-        monitoringStack:
-            enabled: true
+                - slack
+            repeatInterval: 3h
+            slack:
+                channel: aaaaa
+                channelCrit: aaaaa
+                url: https://slack.con
+        managedMonitoring:
+            grafana: true
+            prometheus: false
+            alertmanager: false
         billingAlertQuotas:
             teamCpuMonthQuotaReached:
                 quota: 150
