@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- range $v.builds }}
 {{- if eq .mode.type "docker" }}
+{{- $context := ( dir .mode.docker.path ) }}
 ---
 apiVersion: tekton.dev/v1
 kind: Pipeline
@@ -43,6 +44,8 @@ spec:
     params:
     - name: DOCKERFILE
       value: {{ .mode.docker.path }}
+    - name: CONTEXT
+      value: {{ $context }}
     - name: IMAGE
       value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
 ---
