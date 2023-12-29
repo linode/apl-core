@@ -178,9 +178,17 @@ spec:
     matchLabels:
         {{- if $isKnativeService }}
       # The app label cannot be used because Knative appends revision number to the service
-      serving.knative.dev/service: {{ $s.name }}
+            {{- if hasKey $s.networkPolicy "podSelector" }}
+      serving.knative.dev/service: {{ $s.networkPolicy.podSelector }}
+            {{- else }}
+      serving.knative.dev/service: {{ $s.name }} 
+            {{- end }}  
         {{- else }}
+            {{- if hasKey $s.networkPolicy "podSelector" }}
+      otomi.io/app: {{ $s.networkPolicy.podSelector }}
+            {{- else }}
       otomi.io/app: {{ $s.name }}
+            {{- end }}
         {{- end }}
   policyTypes:
     - Ingress
@@ -201,9 +209,17 @@ spec:
     matchLabels:
         {{- if $isKnativeService }}
       # The app label cannot be used because Knative appends revision number to its value
-      serving.knative.dev/service: {{ $s.name }}
+            {{- if hasKey $s.networkPolicy "podSelector" }}
+      serving.knative.dev/service: {{ $s.networkPolicy.podSelector }}
+            {{- else }}
+      serving.knative.dev/service: {{ $s.name }} 
+            {{- end }}  
         {{- else }}
+            {{- if hasKey $s.networkPolicy "podSelector" }}
+      otomi.io/app: {{ $s.networkPolicy.podSelector }}
+            {{- else }}
       otomi.io/app: {{ $s.name }}
+            {{- end }}
         {{- end }}
   policyTypes:
     - Ingress
@@ -224,7 +240,7 @@ spec:
               name: team-{{ .team }}
           podSelector:
             matchLabels:
-              serving.knative.dev/service: {{ .service}}
+              serving.knative.dev/service: {{ .service }}
             {{- end }}
           {{- end }}
         {{- end }}

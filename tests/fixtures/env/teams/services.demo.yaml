@@ -59,6 +59,7 @@ teamConfig:
               type: public
             - name: service-a
               networkPolicy:
+                  podSelector: test-label-value
                   egressPublic:
                       - domain: domain1.com
                         ports:
