@@ -1,0 +1,73 @@
+{{- $v := .Values | merge (dict) }}
+{{- $prometheus := dig "managedMonitoring" "prometheus" false $v }}
+{{- $alertmng := dig "managedMonitoring" "alertmanager" false $v }}
+{{- $grafana := dig "managedMonitoring" "grafana" false $v }}
+{{- if not (eq $v.teamId "admin") }}
+{{- $ns := .Release.Namespace }}
+{{- if $alertmng }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    prometheus: system
+  name: po-alertmanager-team-{{ $v.teamId }}
+  namespace: {{ $ns }}
+spec:
+  endpoints:
+  - enableHttp2: true
+    path: /metrics
+    port: http-web
+  namespaceSelector:
+    matchNames:
+    - team-{{ $v.teamId }}
+  selector:
+    matchLabels:
+      app: {{ $v.teamId }}-po-alertmanager
+      release: prometheus-{{ $v.teamId }}
+{{- end }}
+---
+{{- if $prometheus }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    prometheus: system
+  name: po-prometheus-team-{{ $v.teamId }}
+spec:
+  endpoints:
+  - path: /metrics
+    port: http-web
+  namespaceSelector:
+    matchNames:
+    - team-{{ $v.teamId }}
+  selector:
+    matchLabels:
+      app: {{ $v.teamId }}-po-prometheus
+      release: prometheus-{{ $v.teamId }}
+{{- end }}
+---
+{{- if $grafana }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    prometheus: system
+  name: po-grafana-team-{{ $v.teamId }}
+spec:
+  endpoints:
+  - honorLabels: true
+    path: /metrics
+    port: http-web
+    scheme: http
+    scrapeTimeout: 30s
+  namespaceSelector:
+    matchNames:
+    - team-{{ $v.teamId }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
+      app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
+{{- end }}
+---
+{{- end }}

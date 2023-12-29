@@ -50,3 +50,29 @@ spec:
         - input: $(tasks.otomi-git-clone.results.CI)
           operator: in
           values: ['1']
+        - input: $(tasks.otomi-git-clone.results.TRIGGER_PLATFORM_PIPELINE)
+          operator: in
+          values: ['1']
+    - name: otomi-task-teams
+      params:
+        - name: repoUrl
+          value: '$(params.repoUrl)'
+        - name: OTOMI_VERSION
+          value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
+        - name: CI
+          value: $(tasks.otomi-git-clone.results.CI)
+        - name: giteaCredentialsSecretName
+          value: $(params.giteaCredentialsSecretName)
+      taskRef:
+        name: otomi-task-teams
+      workspaces:
+        - name: source
+          workspace: source
+        - name: gitea-credentials
+          workspace: gitea-credentials
+      runAfter:
+        - otomi-git-clone
+      when:
+        - input: $(tasks.otomi-git-clone.results.TRIGGER_TEAMS_PIPELINE)
+          operator: in
+          values: ['1']

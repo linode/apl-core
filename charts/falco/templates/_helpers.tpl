@@ -58,6 +58,19 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Renders a value that contains template.
+Usage:
+{{ include "falco.renderTemplate" ( dict "value" .Values.path.to.the.Value "context" $) }}
+*/}}
+{{- define "falco.renderTemplate" -}}
+    {{- if typeIs "string" .value }}
+        {{- tpl .value .context }}
+    {{- else }}
+        {{- tpl (.value | toYaml) .context }}
+    {{- end }}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "falco.serviceAccountName" -}}
@@ -88,6 +101,13 @@ Return the proper Falco driver loader image name
 {{- end -}}
 {{- .Values.driver.loader.initContainer.image.repository }}:
 {{- .Values.driver.loader.initContainer.image.tag | default .Chart.AppVersion -}}
+{{- end -}}
+
+{{/*
+Return the proper Falcoctl image name
+*/}}
+{{- define "falcoctl.image" -}}
+{{ printf "%s/%s:%s" .Values.falcoctl.image.registry .Values.falcoctl.image.repository .Values.falcoctl.image.tag }}
 {{- end -}}
 
 {{/*
@@ -203,6 +223,7 @@ be temporary and will stay here until we move this logic to the falcoctl tool.
       if [[ -f /host${config} ]]; then
           echo "* Generating the Falco configuration..."
           /usr/bin/falco --gvisor-generate-config=${root}/falco.sock > /host${root}/pod-init.json
+          sed -E -i.orig '/"ignore_missing" : true,/d' /host${root}/pod-init.json
           if [[ -z $(grep pod-init-config /host${config}) ]]; then
             echo "* Updating the runsc config file /host${config}..."
             echo "  pod-init-config = \"${root}/pod-init.json\"" >> /host${config}
@@ -228,4 +249,73 @@ be temporary and will stay here until we move this logic to the falcoctl tool.
       name: runsc-config
     - mountPath: /gvisor-config
       name: falco-gvisor-config
+{{- end -}}
+
+
+{{- define "falcoctl.initContainer" -}}
+- name: falcoctl-artifact-install
+  image: {{ include "falcoctl.image" . }}
+  imagePullPolicy: {{ .Values.falcoctl.image.pullPolicy }}
+  args: 
+    - artifact
+    - install
+  {{- with .Values.falcoctl.artifact.install.args }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.falcoctl.artifact.install.resources }}
+  resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  securityContext:
+  {{- if .Values.falcoctl.artifact.install.securityContext }}
+    {{- toYaml .Values.falcoctl.artifact.install.securityContext | nindent 4 }}
+  {{- end }}
+  volumeMounts:
+    - mountPath: {{ .Values.falcoctl.config.artifact.install.pluginsDir }}
+      name: plugins-install-dir
+    - mountPath: {{ .Values.falcoctl.config.artifact.install.rulesfilesDir }}
+      name: rulesfiles-install-dir
+    - mountPath: /etc/falcoctl
+      name: falcoctl-config-volume
+      {{- with .Values.falcoctl.artifact.install.mounts.volumeMounts }}
+        {{- toYaml . | nindent 4 }}
+      {{- end }}
+  env:
+  {{- if .Values.falcoctl.artifact.install.env }}
+  {{- include "falco.renderTemplate" ( dict "value" .Values.falcoctl.artifact.install.env "context" $) | nindent 4 }}
+  {{- end }}
+{{- end -}}
+
+{{- define "falcoctl.sidecar" -}}
+- name: falcoctl-artifact-follow
+  image: {{ include "falcoctl.image" . }}
+  imagePullPolicy: {{ .Values.falcoctl.image.pullPolicy }}
+  args:
+    - artifact
+    - follow
+  {{- with .Values.falcoctl.artifact.follow.args }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.falcoctl.artifact.follow.resources }}
+  resources:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  securityContext:
+  {{- if .Values.falcoctl.artifact.follow.securityContext }}
+    {{- toYaml .Values.falcoctl.artifact.follow.securityContext | nindent 4 }}
+  {{- end }}
+  volumeMounts:
+    - mountPath: {{ .Values.falcoctl.config.artifact.follow.pluginsDir }}
+      name: plugins-install-dir
+    - mountPath: {{ .Values.falcoctl.config.artifact.follow.rulesfilesDir }}
+      name: rulesfiles-install-dir
+    - mountPath: /etc/falcoctl
+      name: falcoctl-config-volume
+      {{- with .Values.falcoctl.artifact.follow.mounts.volumeMounts }}
+        {{- toYaml . | nindent 4 }}
+      {{- end }}
+  env:
+  {{- if .Values.falcoctl.artifact.follow.env }}
+  {{- include "falco.renderTemplate" ( dict "value" .Values.falcoctl.artifact.follow.env "context" $) | nindent 4 }}
+  {{- end }}
 {{- end -}}

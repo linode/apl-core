@@ -22,6 +22,7 @@ apps:
                             docker.io/otomi/api,
                             docker.io/drone/drone-runner-kube,
                             docker.io/grafana/promtail,
+                            gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
                             quay.io/argoprojlabs/argocd-image-updater
                           ) or (k8s.ns.name = "kube-system")
                             or (k8s.ns.name = "ingress")

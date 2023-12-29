@@ -20,6 +20,10 @@ teamConfig:
       service:
         - ingress
         - networkPolicy
+    managedMonitoring:
+      grafana: false
+      prometheus: false
+      alertmanager: false
     networkPolicy:
       egressPublic: true
       ingressPrivate: true

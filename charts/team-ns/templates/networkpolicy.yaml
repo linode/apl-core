@@ -1,5 +1,7 @@
 {{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- $v := .Values | merge (dict) }}
+{{- $prometheus := dig "managedMonitoring" "prometheus" false $v }}
+{{- $alertmng := dig "managedMonitoring" "alertmanager" false $v }}
 {{- if and (not (eq $v.teamId "admin")) (dig "networkPolicy" "ingressPrivate" true $v) }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -40,11 +42,12 @@ spec:
               name: monitoring
           podSelector:
             matchLabels:
-              app: prometheus
+              app.kubernetes.io/instance: po-prometheus
     - from:
         - namespaceSelector:
             matchLabels:
               name: tekton-pipelines
+{{- if $alertmng }}
 ---
 # Allow traffic from team's prometheus to team's alertmanager
 apiVersion: networking.k8s.io/v1
@@ -60,14 +63,16 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              prometheus: {{ $v.teamId }}-po-prometheus
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
   podSelector:
     matchLabels:
-      alertmanager: {{ $v.teamId }}-po-alertmanager
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
   policyTypes:
     - Ingress
+{{- end }}
+{{- if $prometheus }}
 ---
-# Allow traffic from team's kube-state-metrics + team's alertmanager to team's prometheus
+# Allow traffic from Alertmanager and Grafana to Prometheus
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -81,7 +86,7 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              alertmanager: {{ $v.teamId }}-po-alertmanager
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
         - namespaceSelector:
             matchLabels:
               name: team-{{ $v.teamId }}
@@ -90,11 +95,11 @@ spec:
               app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
   podSelector:
     matchLabels:
-      prometheus: {{ $v.teamId }}-po-prometheus
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
   policyTypes:
     - Ingress
 ---
-# Allow traffic from team's prometheus to team's kube-state-metrics
+# Allow traffic from Prometheus to kube-state-metrics
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -108,12 +113,13 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              prometheus: {{ $v.teamId }}-po-prometheus
+              prometheus: team-{{ $v.teamId }}
   podSelector:
     matchLabels:
       app.kubernetes.io/name: kube-state-metrics
   policyTypes:
     - Ingress
+{{- end }}
 ---
 # Allow webhook traffic from gitea to event listeners
 apiVersion: networking.k8s.io/v1
@@ -135,7 +141,27 @@ spec:
       app.kubernetes.io/managed-by: EventListener
   policyTypes:
     - Ingress
-
+{{- if $prometheus }}
+---
+# Allow traffic from Prometheus to all pods for scraping metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-from-prometheus
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
+{{- end }}
   {{- range $s := $v.services }}
     {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
     {{- if not $s.isCore }}

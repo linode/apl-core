@@ -35,9 +35,9 @@ releases:
     namespace: team-admin
     chart: ../charts/team-ns
     labels:
-      tag: teams
       ingress: 'true'
       team: admin
+      pipeline: otomi-task-teams
     values:
       - name: admin
         teamId: admin
