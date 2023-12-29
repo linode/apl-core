@@ -12,187 +12,187 @@ env:
   GIT_USER: redkubesbot
 
 jobs:
-  # build-test-cache:
-  #   if: (!contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/') && !github.event.act)
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     COMMIT_MSG: ${{ github.event.head_commit.message }}
-  #   steps:
-  #     - name: Set env
-  #       run: |
-  #         tag=${GITHUB_REF##*/}
-  #         echo "Creating tag: $tag"
-  #         echo "TAG=$tag" >> $GITHUB_ENV
-  #         git config --global user.email $GIT_USER@users.noreply.github.com
-  #         git config --global user.name $GIT_USER
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #     # - name: CI tests, image build and push tag for main or branch
-  #     #   uses: whoan/docker-build-with-cache-action@v5
-  #     #   with:
-  #     #     username: ${{ env.GIT_USER }}
-  #     #     password: '${{ secrets.NPM_TOKEN }}'
-  #     #     registry: ${{ env.CACHE_REGISTRY }}
-  #     #     image_name: ${{ env.CACHE_REPO }}
-  #     #     image_tag: ${{ env.TAG }}
-  #     #     pull_image_and_stages: true
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
-  #     - name: Login to Github Packages
-  #       uses: docker/login-action@v2.1.0
-  #       with:
-  #         registry: ${{ env.CACHE_REGISTRY }}
-  #         username: ${{ env.GIT_USER }}
-  #         password: '${{ secrets.NPM_TOKEN }}'
-  #     - name: CI tests, image build and push tag for main or branch
-  #       uses: docker/build-push-action@v3
-  #       with:
-  #         push: true
-  #         tags: |
-  #           ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
+  build-test-cache:
+    if: (!contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/') && !github.event.act)
+    runs-on: ubuntu-latest
+    env:
+      COMMIT_MSG: ${{ github.event.head_commit.message }}
+    steps:
+      - name: Set env
+        run: |
+          tag=${GITHUB_REF##*/}
+          echo "Creating tag: $tag"
+          echo "TAG=$tag" >> $GITHUB_ENV
+          git config --global user.email $GIT_USER@users.noreply.github.com
+          git config --global user.name $GIT_USER
+      - name: Checkout
+        uses: actions/checkout@v3
+      # - name: CI tests, image build and push tag for main or branch
+      #   uses: whoan/docker-build-with-cache-action@v5
+      #   with:
+      #     username: ${{ env.GIT_USER }}
+      #     password: '${{ secrets.NPM_TOKEN }}'
+      #     registry: ${{ env.CACHE_REGISTRY }}
+      #     image_name: ${{ env.CACHE_REPO }}
+      #     image_tag: ${{ env.TAG }}
+      #     pull_image_and_stages: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Github Packages
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ${{ env.CACHE_REGISTRY }}
+          username: ${{ env.GIT_USER }}
+          password: '${{ secrets.NPM_TOKEN }}'
+      - name: CI tests, image build and push tag for main or branch
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags: |
+            ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
-  # push-to-docker:
-  #   needs: build-test-cache
-  #   if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Push to docker hub
-  #       run: |
-  #         TAG=${GITHUB_REF##*/}
-  #         docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
-  #         image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
-  #         docker pull $image
-  #         docker tag $image $REPO:$TAG
-  #         docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
-  #         docker push $REPO:$TAG
-  #     - name: Show me the logic
-  #       run: |
-  #         echo github.ref == ${{ github.ref }}
+  push-to-docker:
+    needs: build-test-cache
+    if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push to docker hub
+        run: |
+          TAG=${GITHUB_REF##*/}
+          docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
+          image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
+          docker pull $image
+          docker tag $image $REPO:$TAG
+          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+          docker push $REPO:$TAG
+      - name: Show me the logic
+        run: |
+          echo github.ref == ${{ github.ref }}
 
-  # release:
-  #   needs: push-to-docker
-  #   if: always() && (startsWith(github.ref, 'refs/heads/releases/') || startsWith(github.ref, 'refs/heads/main')) && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     COMMIT_MSG: ${{ github.event.head_commit.message }}
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #     - name: Set env
-  #       run: |
-  #         git config --global user.email $GIT_USER@users.noreply.github.com
-  #         git config --global user.name $GIT_USER
-  #     - name: Create and push git tag
-  #       id: git_tag
-  #       run: |
-  #         TAG=${GITHUB_REF##*/}
-  #         docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
-  #         docker pull $REPO:$TAG
-  #         docker tag $REPO:$TAG $REPO:latest
-  #         docker push $REPO:latest
-  #         release_tag="v$(echo $COMMIT_MSG | cut -d' ' -f2)"
-  #         echo tag=$release_tag >> $GITHUB_OUTPUT
-  #         echo "Releasing $REPO:$release_tag"
-  #         docker tag $REPO:$TAG $REPO:$release_tag
-  #         docker push $REPO:$release_tag
-  #         docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
-  #         docker tag $REPO:$TAG $CACHE_REGISTRY/$CACHE_REPO:$release_tag
-  #         docker push $CACHE_REGISTRY/$CACHE_REPO:$release_tag
-  #         echo "machine github.com login $GIT_USER password ${{ secrets.GIT_PASSWORD }}" > ~/.netrc
-  #         git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags
-  #         #Cut the CHANGELOG.md file up to the first occurence of the "### \[[0-9]*" (meaning three #, a space,a square bracket and any number after it)
-  #         sed -n '/### \[[0-9]*/q;p' CHANGELOG.md > NEW_CHANGELOG.md
-  #     - name: Create GitHub release
-  #       uses: ncipollo/release-action@v1.12.0
-  #       env:
-  #         token: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         tag: ${{ steps.git_tag.outputs.tag }}
-  #         name: Release ${{ steps.git_tag.outputs.tag }}
-  #         bodyFile: 'NEW_CHANGELOG.md'
+  release:
+    needs: push-to-docker
+    if: always() && (startsWith(github.ref, 'refs/heads/releases/') || startsWith(github.ref, 'refs/heads/main')) && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
+    runs-on: ubuntu-latest
+    env:
+      COMMIT_MSG: ${{ github.event.head_commit.message }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set env
+        run: |
+          git config --global user.email $GIT_USER@users.noreply.github.com
+          git config --global user.name $GIT_USER
+      - name: Create and push git tag
+        id: git_tag
+        run: |
+          TAG=${GITHUB_REF##*/}
+          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+          docker pull $REPO:$TAG
+          docker tag $REPO:$TAG $REPO:latest
+          docker push $REPO:latest
+          release_tag="v$(echo $COMMIT_MSG | cut -d' ' -f2)"
+          echo tag=$release_tag >> $GITHUB_OUTPUT
+          echo "Releasing $REPO:$release_tag"
+          docker tag $REPO:$TAG $REPO:$release_tag
+          docker push $REPO:$release_tag
+          docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
+          docker tag $REPO:$TAG $CACHE_REGISTRY/$CACHE_REPO:$release_tag
+          docker push $CACHE_REGISTRY/$CACHE_REPO:$release_tag
+          echo "machine github.com login $GIT_USER password ${{ secrets.GIT_PASSWORD }}" > ~/.netrc
+          git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags
+          #Cut the CHANGELOG.md file up to the first occurence of the "### \[[0-9]*" (meaning three #, a space,a square bracket and any number after it)
+          sed -n '/### \[[0-9]*/q;p' CHANGELOG.md > NEW_CHANGELOG.md
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1.12.0
+        env:
+          token: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ steps.git_tag.outputs.tag }}
+          name: Release ${{ steps.git_tag.outputs.tag }}
+          bodyFile: 'NEW_CHANGELOG.md'
 
-  # chart-release:
-  #   needs: release
-  #   if: always() && contains(needs.release.result, 'success') && !github.event.act
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: otomi/tools:v1.4.20
-  #     options: --user 0
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #     - name: Prepare chart
-  #       id: prepare_chart
-  #       run: |
-  #         # Install and update helm repo
-  #         helm repo add otomi https://otomi.io/otomi-core
-  #         helm repo update
+  chart-release:
+    needs: release
+    if: always() && contains(needs.release.result, 'success') && !github.event.act
+    runs-on: ubuntu-latest
+    container:
+      image: otomi/tools:v1.4.20
+      options: --user 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Prepare chart
+        id: prepare_chart
+        run: |
+          # Install and update helm repo
+          helm repo add otomi https://otomi.io/otomi-core
+          helm repo update
 
-  #         # Retrieve the app version from package.json
-  #         app_version=$(jq -r '.version' package.json)
-  #         if [ -z "$app_version" ]; then
-  #             echo "Error: Could not retrieve app version from package.json"
-  #             exit 1
-  #         fi
+          # Retrieve the app version from package.json
+          app_version=$(jq -r '.version' package.json)
+          if [ -z "$app_version" ]; then
+              echo "Error: Could not retrieve app version from package.json"
+              exit 1
+          fi
 
-  #         # Extract major and minor from the app version
-  #         new_app_major=$(echo "$app_version" | cut -d '.' -f 1)
-  #         new_app_minor=$(echo "$app_version" | cut -d '.' -f 2)
+          # Extract major and minor from the app version
+          new_app_major=$(echo "$app_version" | cut -d '.' -f 1)
+          new_app_minor=$(echo "$app_version" | cut -d '.' -f 2)
 
-  #         # Get existing helm charts in the registry
-  #         helm_output=$(helm search repo otomi -l -o json)
+          # Get existing helm charts in the registry
+          helm_output=$(helm search repo otomi -l -o json)
 
-  #         # Use jq to parse the output and find the latest version for the given $new_app_major.$new_app_minor app version
-  #         existing_version=$(echo "$helm_output" | jq -r --arg major "$new_app_major" --arg minor "$new_app_minor" '
-  #           map(select(.app_version | startswith("v\($major).\($minor)"))) |
-  #           max_by(.version | split(".") | map(tonumber)) |
-  #           .version'
-  #         )
+          # Use jq to parse the output and find the latest version for the given $new_app_major.$new_app_minor app version
+          existing_version=$(echo "$helm_output" | jq -r --arg major "$new_app_major" --arg minor "$new_app_minor" '
+            map(select(.app_version | startswith("v\($major).\($minor)"))) |
+            max_by(.version | split(".") | map(tonumber)) |
+            .version'
+          )
 
-  #         # Determine if a major/minor bump has occurred
-  #         MARK_AS_LATEST="false"
-  #         if [ "${existing_version}" == "null" ]; then
-  #             echo "No chart found matching v$new_app_major.$new_app_minor.* app version."
-  #             echo "It seems this is a major/minor bump."
-  #             echo "Will create a new helm chart and mark it as latest!"
-  #             # If there is no existing chart with the same major.minor, mark this as latest
-  #             MARK_AS_LATEST="true"
-  #         else
-  #           echo "The latest version for $new_app_major.$new_app_minor is $existing_version"
-  #         fi
+          # Determine if a major/minor bump has occurred
+          MARK_AS_LATEST="false"
+          if [ "${existing_version}" == "null" ]; then
+              echo "No chart found matching v$new_app_major.$new_app_minor.* app version."
+              echo "It seems this is a major/minor bump."
+              echo "Will create a new helm chart and mark it as latest!"
+              # If there is no existing chart with the same major.minor, mark this as latest
+              MARK_AS_LATEST="true"
+          else
+            echo "The latest version for $new_app_major.$new_app_minor is $existing_version"
+          fi
 
-  #         # Update Chart.yaml and values.yaml with the new app version
-  #         sed -i "s/CHART_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/Chart.yaml
-  #         sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/otomi/Chart.yaml
+          # Update Chart.yaml and values.yaml with the new app version
+          sed -i "s/CHART_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/Chart.yaml
+          sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/otomi/Chart.yaml
 
-  #         echo "Chart and values files updated successfully with version $app_version"
-  #         echo "MARK_AS_LATEST is set to $MARK_AS_LATEST"
-  #         echo "MARK_AS_LATEST=$MARK_AS_LATEST" >> "GITHUB_OUTPUT"
+          echo "Chart and values files updated successfully with version $app_version"
+          echo "MARK_AS_LATEST is set to $MARK_AS_LATEST"
+          echo "MARK_AS_LATEST=$MARK_AS_LATEST" >> "GITHUB_OUTPUT"
 
-  #         # Copy readme from repo into the charts and add tpl/chart-values.md
-  #         cp README.md chart/otomi/
-  #         printf "\n\n" >>chart/otomi/README.md
-  #         cat tpl/chart-values.md >>chart/otomi/README.md
+          # Copy readme from repo into the charts and add tpl/chart-values.md
+          cp README.md chart/otomi/
+          printf "\n\n" >>chart/otomi/README.md
+          cat tpl/chart-values.md >>chart/otomi/README.md
 
-  #         # Generate schema
-  #         npx js-yaml values-schema.yaml > chart/otomi/values.schema.json
+          # Generate schema
+          npx js-yaml values-schema.yaml > chart/otomi/values.schema.json
 
-  #         # Set the global id for git as it seems needed by the next step when a custom image is used
-  #         git config --global user.email $GIT_USER@users.noreply.github.com
-  #         git config --global user.name $GIT_USER
-  #     - name: Create and publish otomi chart release
-  #       id: chart_release
-  #       uses: helm/chart-releaser-action@v1.6.0
-  #       with:
-  #         charts_dir: chart
-  #         skip_existing: true
-  #         mark_as_latest: ${{ steps.prepare_chart.outputs.MARK_AS_LATEST }}
-  #       env:
-  #         CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          # Set the global id for git as it seems needed by the next step when a custom image is used
+          git config --global user.email $GIT_USER@users.noreply.github.com
+          git config --global user.name $GIT_USER
+      - name: Create and publish otomi chart release
+        id: chart_release
+        uses: helm/chart-releaser-action@v1.6.0
+        with:
+          charts_dir: chart
+          skip_existing: true
+          mark_as_latest: ${{ steps.prepare_chart.outputs.MARK_AS_LATEST }}
+        env:
+          CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
   test-otomi-release:
     name: Test Helm Chart Installation
-    #needs: [ release, chart-release ]
+    needs: [release, chart-release]
     runs-on: ubuntu-latest
     steps:
       - name: Use Scaleway CLI
@@ -276,34 +276,34 @@ jobs:
         run: |
           scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
 
-  # notification:
-  #   needs: [build-test-cache, push-to-docker, release, chart-release]
-  #   if: always()
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Slack Notification
-  #       uses: rtCamp/action-slack-notify@v2
-  #       env:
-  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-  #         SLACK_CHANNEL: github-ci
-  #         SLACK_COLOR: ${{ job.status }}
-  #         SLACK_ICON: https://github.com/redkubes.png?size=48
-  #         SLACK_TITLE: CI run
-  #         SLACK_USERNAME: RedKubesBot
+  notification:
+    needs: [build-test-cache, push-to-docker, release, chart-release]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: github-ci
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://github.com/redkubes.png?size=48
+          SLACK_TITLE: CI run
+          SLACK_USERNAME: RedKubesBot
 
-  # execute-aws-marketplace:
-  #   name: AWS Dispatch
-  #   needs: chart-release
-  #   if: always() && contains(needs.chart-release.result, 'success') && !github.event.act
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/github-script@v6
-  #       with:
-  #         github-token: ${{ secrets.ACTIONS_KEY }}
-  #         script: |
-  #           await github.rest.actions.createWorkflowDispatch({
-  #             owner: 'redkubes',
-  #             repo: 'aws-marketplace',
-  #             workflow_id: 'deploy_release.yaml',
-  #             ref: 'main'
-  #           })
+  execute-aws-marketplace:
+    name: AWS Dispatch
+    needs: chart-release
+    if: always() && contains(needs.chart-release.result, 'success') && !github.event.act
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ACTIONS_KEY }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'redkubes',
+              repo: 'aws-marketplace',
+              workflow_id: 'deploy_release.yaml',
+              ref: 'main'
+            })
