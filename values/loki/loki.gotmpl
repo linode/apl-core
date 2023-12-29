@@ -239,6 +239,8 @@ distributor:
 
 queryFrontend:
   resources: {{- $l.resources.queryFrontend | toYaml | nindent 4 }}
+  podAnnotations:
+    rollme: {{ randAlphaNum 5 | quote }}
   autoscaling:
     enabled: {{ $l.autoscaling.queryFrontend.enabled }}
     minReplicas: {{ $l.autoscaling.queryFrontend.minReplicas }}
