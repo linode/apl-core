@@ -28,7 +28,7 @@ teamConfig:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples
                       revision: HEAD
-                      path: ./Docker
+                      path: ./test/Docker
                   type: docker
               externalRepo: true
               secretName: my-secret
