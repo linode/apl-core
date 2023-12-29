@@ -646,9 +646,11 @@ definitions:
   networkPolicy:
     additionalProperties: false
     properties:
-      ingressPrivate:
+      podSelector:
+        type: string
         title: Internal ingress filtering
         description: 'Pods belonging to this service must contain "otomi.io/app: <service name>" label'
+      ingressPrivate:
         oneOf:
           - title: Deny all
             description: Deny traffic from all teams (including this one)
@@ -670,12 +672,12 @@ definitions:
                   type: object
                   properties:
                     team:
-                      title: Team name
-                      description: 'Allow traffic from a given team'
+                      title: FROM team name
+                      description: Allow traffic from a given team
                       type: string
                     service:
-                      title: Service name
-                      description: 'Allow traffic from pods with "otomi.io/app: <some service name>" label'
+                      title: FROM label value
+                      description: 'Allow traffic from pods with label "otomi.io/app: <value>"'
                       type: string
                   required:
                     - team
