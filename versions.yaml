@@ -1,4 +1,4 @@
 api: main
 console: main
-tasks: gitea-mapping-to-tasks
+tasks: main
 tools: 1.6.0
