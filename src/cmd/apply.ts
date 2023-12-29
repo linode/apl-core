@@ -86,13 +86,9 @@ const applyAll = async () => {
 
   if (!intitalInstall) {
     const params = cloneDeep(argv)
-    params.label = ['team=admin']
-    // We still need to deploy team admin as it contain ingress for platform apps
-    await applyAsApps(params)
-
-    // We still need to deploy teams because some settings depend on platform apps
-    // We deploy it separately to ensure error isolation
-    params.label = ['tag=teams']
+    // We still need to deploy all teams because some settings depend on platform apps
+    // We still need to deploy team admin because it contains ingress for platform apps
+    params.label = ['pipeline=otomi-task-teams']
     await applyAsApps(params)
 
     // We ensure that helmfile does not deploy any team related Helm release
