@@ -160,7 +160,7 @@
         "x": 6,
         "y": 1
       },
-      "id": 2,
+      "id": 4,
       "interval": "1m",
       "links": [],
       "options": {
@@ -183,7 +183,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "sum(namespace_cpu:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\",cluster=\"$cluster\"})",
+          "expr": "1 - sum(:node_memory_MemAvailable_bytes:sum{cluster=\"$cluster\"}) / sum(node_memory_MemTotal_bytes{job=\"node-exporter\",cluster=\"$cluster\"})",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 2,
@@ -191,7 +191,7 @@
           "refId": "A"
         }
       ],
-      "title": "CPU Requests Commitment",
+      "title": "Memory Utilisation",
       "type": "gauge"
     },
     {
@@ -234,7 +234,7 @@
         "x": 12,
         "y": 1
       },
-      "id": 4,
+      "id": 2,
       "interval": "1m",
       "links": [],
       "options": {
@@ -257,7 +257,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "1 - sum(:node_memory_MemAvailable_bytes:sum{cluster=\"$cluster\"}) / sum(node_memory_MemTotal_bytes{job=\"node-exporter\",cluster=\"$cluster\"})",
+          "expr": "sum(namespace_cpu:kube_pod_container_resource_requests:sum{cluster=\"$cluster\"}) / sum(kube_node_status_allocatable{job=\"kube-state-metrics\",resource=\"cpu\",cluster=\"$cluster\"})",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 2,
@@ -265,7 +265,7 @@
           "refId": "A"
         }
       ],
-      "title": "Memory Utilisation",
+      "title": "CPU Requests Commitment",
       "type": "gauge"
     },
     {
@@ -421,6 +421,8 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "percentage",
             "steps": [
@@ -429,8 +431,12 @@
                 "value": null
               },
               {
-                "color": "red",
+                "color": "orange",
                 "value": 80
+              },
+              {
+                "color": "red",
+                "value": 90
               }
             ]
           },
