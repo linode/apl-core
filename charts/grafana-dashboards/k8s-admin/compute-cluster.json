@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 11,
+  "id": 14,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -59,6 +59,8 @@
             "mode": "thresholds"
           },
           "mappings": [],
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "percentage",
             "steps": [
@@ -2972,6 +2974,6 @@
   "timezone": "browser",
   "title": "Kubernetes / Compute Resources / Cluster",
   "uid": "efa86fd1d0c121a26444b636a3f509a8",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
