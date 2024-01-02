@@ -72,3 +72,65 @@ describe('Upgrading values', () => {
     })
   })
 })
+
+describe('Values migrations', () => {
+  let values: any = undefined
+  let valuesChanges: any = undefined
+  let deps: any = undefined
+  beforeEach(() => {
+    values = {
+      teamConfig: {
+        teamA: {
+          services: [{ name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] }],
+          monitoringStack: true,
+        },
+        teamB: {
+          services: [{ name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] }],
+          monitoringStack: false,
+        },
+      },
+    }
+
+    valuesChanges = {
+      deletions: ['teamConfig.{team}.monitoringStack'],
+      additions: [
+        { 'teamConfig.{team}.managedMonitoring.grafana': 'true' },
+        { 'teamConfig.{team}.managedMonitoring.prometheus': 'true' },
+        { 'teamConfig.{team}.managedMonitoring.alertmanager': 'true' },
+      ],
+    }
+    deps = {
+      cd: jest.fn(),
+      rename: jest.fn(),
+      hfValues: jest.fn().mockReturnValue(values),
+      terminal,
+      writeValues: jest.fn(),
+    }
+  })
+  it('should apply changes to team values', async () => {
+    await applyChanges([valuesChanges], false, deps)
+    expect(deps.writeValues).toBeCalledWith(
+      {
+        teamConfig: {
+          teamA: {
+            services: [{ name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] }],
+            managedMonitoring: {
+              grafana: 'true',
+              prometheus: 'true',
+              alertmanager: 'true',
+            },
+          },
+          teamB: {
+            services: [{ name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] }],
+            managedMonitoring: {
+              grafana: 'true',
+              prometheus: 'true',
+              alertmanager: 'true',
+            },
+          },
+        },
+      },
+      true,
+    )
+  })
+})

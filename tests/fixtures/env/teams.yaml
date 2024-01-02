@@ -1,6 +1,11 @@
 teamConfig:
     admin:
         id: admin
+    dev:
+        id: dev
+        services: []
+        password: ''
+        test: test
     demo:
         alerts:
             receivers:
