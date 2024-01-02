@@ -769,7 +769,7 @@
         "datasource": "$datasource",
         "definition": "",
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": "Deployment",
         "multi": false,
         "name": "deployment_name",
