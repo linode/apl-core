@@ -240,7 +240,7 @@ distributor:
 queryFrontend:
   resources: {{- $l.resources.queryFrontend | toYaml | nindent 4 }}
   podAnnotations:
-    checksum/team-config: {{ sha256sum ( toJson $v.teamConfig ) }}
+    checksum/team-config: {{ ( toString (keys $v.teamConfig | sortAlpha ) ) | sha256sum }}
   autoscaling:
     enabled: {{ $l.autoscaling.queryFrontend.enabled }}
     minReplicas: {{ $l.autoscaling.queryFrontend.minReplicas }}
