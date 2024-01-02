@@ -211,8 +211,6 @@ jobs:
           helm repo add otomi https://otomi.io/otomi-core
           helm repo update
 
-          # Pull the latest otomi chart
-          helm pull otomi/otomi --untar
       - name: Creating the cluster
         run: |
           # Create cluster private network and get ID
@@ -254,8 +252,8 @@ jobs:
           SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
 
           # Install otomi
-          helm install \
-          --wait --wait-for-jobs --timeout 30m0s otomi ./otomi \
+          helm install otomi otomi/otomi \
+          --wait --wait-for-jobs --timeout 30m0s \
           --set cluster.provider=scaleway \
           --set cluster.name=otomi-test-release \
           --set cluster.k8sContext=$SCALEWAY_CLUSTER_CONTEXT
