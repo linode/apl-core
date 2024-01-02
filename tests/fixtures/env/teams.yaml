@@ -1,30 +1,29 @@
 teamConfig:
     admin:
         id: admin
-    dev:
-        id: dev
-        services: []
-        password: ''
-        test: test
+        managedMonitoring:
+            alertmanager: true
+            grafana: true
+            prometheus: true
     demo:
         alerts:
+            email: {}
             receivers:
                 - slack
             repeatInterval: 3h
             slack:
                 channel: aaaaa
                 channelCrit: aaaaa
-                url: https://slack.con
-        managedMonitoring:
-            grafana: true
-            prometheus: true
-            alertmanager: true
         billingAlertQuotas:
             teamCpuMonthQuotaReached:
                 quota: 150
             teamMemMonthQuotaReached:
                 quota: 200
         id: demo
+        managedMonitoring:
+            alertmanager: true
+            grafana: true
+            prometheus: true
         networkPolicy:
             egressPublic: true
             ingressPrivate: true
@@ -39,3 +38,9 @@ teamConfig:
                 - networkPolicy
             team:
                 - alerts
+    dev:
+        id: dev
+        managedMonitoring:
+            alertmanager: true
+            grafana: true
+            prometheus: true

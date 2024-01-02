@@ -106,7 +106,7 @@ changes:
       - platformBackups.persistentVolumes.kubeapps
     additions:
       - apps.drone.enabled: true
-  - version: 16
+  - version: 17
     deletions:
       - 'teamConfig.{team}.monitoringStack'
     additions:
