@@ -47,6 +47,13 @@ spec:
       value: {{ .mode.buildpacks.path }}
     - name: BUILDER_IMAGE
       value: paketobuildpacks/builder:full
+      {{- with (dig "mode" "buildpacks" "envVars" nil . ) }}
+    - name: ENV_VARS
+      value: 
+        {{- range . }}
+        - {{ .name }}={{ .value }}
+        {{- end }}
+      {{- end }}
 ---
 {{- if .trigger }}
 apiVersion: triggers.tekton.dev/v1alpha1
