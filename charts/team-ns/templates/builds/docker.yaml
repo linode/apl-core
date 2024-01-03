@@ -52,7 +52,7 @@ spec:
     - name: EXTRA_ARGS
       value: 
         {{- range . }}
-        - --build-arg {{ .name }}={{ .value }}
+        - --build-arg={{ .name }}={{ .value }}
         {{- end }}
     {{- end }}
 ---
