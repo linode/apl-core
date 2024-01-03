@@ -1394,6 +1394,18 @@ definitions:
               path:
                 description: A relative directory path within the Git repository.
                 type: string
+              envVars:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
     required:
       - name
 
