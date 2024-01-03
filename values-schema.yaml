@@ -1382,6 +1382,18 @@ definitions:
                 description: A relative directory path within the Git repository.
                 type: string
                 default: ./Dockerfile
+              envVars:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
           buildpacks:
             properties:
               repoUrl:
