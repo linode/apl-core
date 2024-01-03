@@ -52,7 +52,7 @@ spec:
     - name: EXTRA_ARGS
       value: 
         {{- range . }}
-        - {{ .name }}={{ .value }}
+        - "export {{ .name }}={{ .value }}"
         {{- end }}
     {{- end }}
 ---
