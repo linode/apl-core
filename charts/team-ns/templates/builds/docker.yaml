@@ -48,6 +48,13 @@ spec:
       value: {{ $context }}
     - name: IMAGE
       value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+    {{- with (dig "mode" "docker" "envVars" nil . ) }}
+    - name: EXTRA_ARGS
+      value: 
+        {{- range . }}
+        - --build-arg={{ .name }}={{ .value }}
+        {{- end }}
+    {{- end }}
 ---
 {{- if .trigger }}
 apiVersion: triggers.tekton.dev/v1alpha1

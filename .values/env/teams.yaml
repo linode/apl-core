@@ -1,3 +1,7 @@
 teamConfig:
     admin:
         id: admin
+        managedMonitoring:
+            alertmanager: true
+            grafana: true
+            prometheus: true
