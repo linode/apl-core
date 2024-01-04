@@ -13,13 +13,12 @@
   <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
   <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/badge/slack--channel-blue?logo=slack"></a>
   <a href="https://twitter.com/RedKubes"><img src="https://img.shields.io/static/v1?label=Twitter&message=Follow&color=1DA1F2" alt="Follow us on Twitter"></a>
-  <a href="https://www.facebook.com/groups/otomiusers"><img src="https://img.shields.io/static/v1?label=Facebook&message=Join group&color=1877F2" alt="Join Facebook group"></a>
 </p>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
 <h4 align="center">
-Otomi turns any Kubernetes cluster into a DevOps Platform to provide a paved road from code to production
+Otomi turns any Kubernetes cluster into a DevOps Platform to provide paved roads from code to production
 </h4>
 
 ## How Otomi helps
@@ -123,12 +122,14 @@ Otomi offers a set of Kubernetes applications for all the required platform capa
 - [Tekton Triggers](https://github.com/tektoncd/triggers): Trigger pipelines from event payloads
 - [Tekton dashboard](https://github.com/tektoncd/dashboard): Web-based UI for Tekton Pipelines and Tekton Triggers
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
+- [Cloudnative-pg](https://github.com/cloudnative-pg/cloudnative-pg): Open source operator designed to manage PostgreSQL workloads
+- [Paketo build packs](https://github.com/paketo-buildpacks): Cloud Native Buildpack implementations for popular programming
+- [Kaniko](https://github.com/GoogleContainerTools/kaniko): Build container images from a Dockerfile
 
 **Optional Applications (that you can activate to compose your ideal platform):**
 
 - [Velero](https://github.com/vmware-tanzu/velero): Back up and restore your Kubernetes cluster resources and persistent volumes
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
-- [Kaniko](https://github.com/GoogleContainerTools/kaniko): Build container images from a Dockerfile
 - [Drone](https://github.com/harness/drone): Continuous integration platform built on Docker
 - [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics
 - [Grafana](https://github.com/grafana/grafana): Visualize metrics, logs, and traces from multiple sources
@@ -143,8 +144,7 @@ Otomi offers a set of Kubernetes applications for all the required platform capa
 - [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
 - [Opencost](https://github.com/opencost/opencost): Cost monitoring for Kubernetes
-- [Paketo build packs](https://github.com/paketo-buildpacks): Cloud Native Buildpack implementations for popular programming language ecosystems
-- [Cloudnative-pg](https://github.com/cloudnative-pg/cloudnative-pg): Open source operator designed to manage PostgreSQL workloads
+language ecosystems
 - [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-operator): Instrument, generate, collect, and export telemetry data to help you analyze your software’s performance and behavior
 
