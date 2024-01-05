@@ -43,8 +43,10 @@ spec:
     params:
     - name: APP_IMAGE
       value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+    {{- with .mode.buildpacks.path }}
     - name: SOURCE_SUBPATH
-      value: {{ .mode.buildpacks.path }}
+      value: {{ . }}
+    {{- end }}
     - name: BUILDER_IMAGE
       value: paketobuildpacks/builder:full
       {{- with (dig "mode" "buildpacks" "envVars" nil . ) }}
