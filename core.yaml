@@ -288,6 +288,7 @@ adminApps:
   - name: tekton
     tags: [buildpacks, ci, pipelines]
     ownHost: true
+    path: /#/namespaces/otomi-pipelines/pipelineruns
     ingress:
       - svc: tekton-dashboard
         namespace: tekton-pipelines
