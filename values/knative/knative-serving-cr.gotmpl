@@ -17,7 +17,7 @@ spec:
     defaults:
       revision-timeout-seconds: "300"  # 5 minutes
       enable-service-links: "false"
-      domain-template: {{`{{.Name}}-{{.Namespace}}.{{.Domain}}`}}
+      domain-template: {{`{{`}}.Name{{`}}`}}-{{`{{`}}.Namespace{{`}}`}}.{{`{{`}}.Domain{{`}}`}}
     autoscaler:
       stable-window: 600s
       scale-to-zero-grace-period: 60s
