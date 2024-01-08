@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $sp := $v.securityPolicy }}
 {{- $pol := $v.policies }}
+{{- if $pol.requirePodProbes.enabled }}
 {{- with $pol.requirePodProbes }}
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -57,4 +58,5 @@ spec:
             - key: readinessProbe
               operator: AllNotIn
               value: "{{`{{ element.keys(@)[] }}`}}"
+{{- end }}
 {{- end }}

@@ -1,7 +1,8 @@
 {{- $v := .Values }}
 {{- $sp := $v.securityPolicy }}
 {{- $pol := $v.policies }}
-{{- with $pol.allowedLabel }}
+{{- if $pol.requiredLabel.enabled }}
+{{- with $pol.requiredLabel }}
 apiVersion: kyverno.io/v1
 kind: Policy
 metadata:
@@ -36,4 +37,5 @@ spec:
         metadata:
           labels:
             otomi.io/app: "?*"
+{{- end }}
 {{- end }}

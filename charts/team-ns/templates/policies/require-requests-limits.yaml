@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $sp := $v.securityPolicy }}
 {{- $pol := $v.policies }}
+{{- if $pol.requireRequestsLimits.enabled }}
 {{- with $pol.requireRequestsLimits }}
 ---
 apiVersion: kyverno.io/v1
@@ -46,4 +47,5 @@ spec:
               limits:
                 memory: "?*"
                 cpu: "?*"
+{{- end }}
 {{- end }}

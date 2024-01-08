@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $sp := $v.securityPolicy }}
 {{- $pol := $v.policies }}
+{{- if $pol.disallowLatestTag.enabled }}
 {{- with $pol.disallowLatestTag }}
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -49,4 +50,5 @@ spec:
         spec:
           containers:
           - image: "!*:latest"
+{{- end }}
 {{- end }}

@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $sp := $v.securityPolicy }}
 {{- $pol := $v.policies }}
+{{- if $pol.allowedImageRepos.enabled }}
 {{- with $pol.allowedImageRepos }}
 ---
 apiVersion: kyverno.io/v1
@@ -19,10 +20,10 @@ metadata:
       image repositories present in a given Pod, across any container type, come from the
       designated list.      
 spec:
-  {{- if eq .actionOverride $sp.defaultAction }}
-  validationFailureAction: {{ $sp.defaultAction }}
-  {{- else }}
+  {{- if not (eq .actionOverride $sp.defaultAction) }}
   validationFailureAction: {{ .actionOverride }}
+  {{- else }}
+  validationFailureAction: {{ $sp.defaultAction }}
   {{- end }}
   background: false
   rules:
@@ -40,7 +41,8 @@ spec:
             all:
             - key: "{{`{{ images.[containers, initContainers, ephemeralContainers][].*.name[] }}`}}"
               operator: AnyNotIn
-              {{- with .repos }}
+              {{- with .customValues }}
               value: {{ . | toYaml | nindent 14 }}
               {{- end }}
+{{- end }}
 {{- end }}

@@ -2,20 +2,32 @@ teamConfig:
     demo:
         policies:
             requireRequestsLimits:
+                enabled: true
                 actionOverride: Audit
             allowedImageRepos:
+                description: >-
+                    In addition to restricting the image registry from which images are pulled, in some cases
+                    and environments it may be required to also restrict which image repositories are used, 
+                    for example in some restricted Namespaces. This policy ensures that the only allowed
+                    image repositories present in a given Pod, across any container type, come from the
+                    designated list.
+                enabled: true
                 actionOverride: Audit
-                repos:
+                customValues:
                     - harbor.bla.com
             disallowLatestTag:
+                enabled: true
                 actionOverride: Audit
             requirePodProbes:
+                enabled: true
                 actionOverride: Audit
-            allowedLabel:
+            requiredLabel:
+                enabled: true
                 actionOverride: Audit
             disallowedCapabilities:
+                enabled: true
                 actionOverride: Audit
-                capabilities:
+                customValues:
                     - AUDIT_WRITE
                     - CHOWN
                     - DAC_OVERRIDE
@@ -31,7 +43,3 @@ teamConfig:
                     - SYS_CHROOT
             disallowedHostNamespaces:
                 actionOverride: Audit
-                namespaces:
-                    hostPID: false
-                    hostIPC: false
-                    hostNetwork: false

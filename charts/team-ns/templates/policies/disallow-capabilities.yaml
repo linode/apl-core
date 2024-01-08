@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $sp := $v.securityPolicy }}
 {{- $pol := $v.policies }}
+{{- if $pol.disallowedCapabilities.enabled }}
 {{- with $pol.disallowedCapabilities }}
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -37,7 +38,8 @@ spec:
             all:
             - key: "{{`{{ request.object.spec.[ephemeralContainers, initContainers, containers][].securityContext.capabilities.add[] }}`}}"
               operator: AnyNotIn
-              {{- with .capabilities }}
+              {{- with .customValues }}
               value: {{ . | toYaml | nindent 14 }}
               {{- end }}
+{{- end }}
 {{- end }}

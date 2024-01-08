@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $sp := $v.securityPolicy }}
 {{- $pol := $v.policies }}
+{{- if $pol.disallowedHostNamespaces.enabled }}
 {{- with $pol.disallowedHostNamespaces }}
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -36,7 +37,8 @@ spec:
           spec.hostIPC, and spec.hostPID must be unset or set to `false`.
         pattern:
           spec:
-            =(hostPID): {{ .namespaces.hostPID }}
-            =(hostIPC): {{ .namespaces.hostIPC }}
-            =(hostNetwork): {{ .namespaces.hostNetwork }}
+            =(hostPID): false
+            =(hostIPC): false
+            =(hostNetwork): false
+{{- end }}
 {{- end }}
