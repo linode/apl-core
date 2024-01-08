@@ -60,3 +60,7 @@ releases:
     installed: true
     namespace: otomi-pipelines
     <<: *default
+  - name: kyverno
+    installed: {{ $a | get "kyverno.enabled" }}
+    namespace: kyverno
+    <<: *default

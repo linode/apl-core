@@ -39,6 +39,10 @@ spec:
           {{- with .Values.webhooksCleanup.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
+          resources:
+            limits:
+              cpu: 100m
+              memory: 64Mi
           {{- end }}
       {{- with .Values.webhooksCleanup.tolerations }}
       tolerations:

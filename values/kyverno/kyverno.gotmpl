@@ -1,1 +1,40 @@
 {{- $v := .Values -}}
+
+cleanupJobs:
+  admissionReports:
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+  clusterAdmissionReports:
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+
+admissionController:
+  initContainer:
+    resources:
+      limits:
+        cpu: 1
+
+cleanupController:
+  resources:
+    limits:
+      cpu: 1
+
+backgroundController:
+  resources:
+    limits:
+      cpu: 1
+
+reportsController:
+  resources:
+    limits:
+      cpu: 1
+
+admissionController:
+  container:
+    resources:
+      limits:
+        cpu: 1

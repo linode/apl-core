@@ -2,6 +2,7 @@
 {{- $sp := $v.securityPolicy }}
 {{- $pol := $v.policies }}
 {{- with $pol.disallowedHostNamespaces }}
+apiVersion: kyverno.io/v1
 kind: Policy
 metadata:
   name: disallow-host-namespaces
