@@ -23,7 +23,7 @@ spec:
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}
-  background: true
+  background: false
   rules:
   - name: check-for-label
     match:

@@ -17,6 +17,9 @@ admissionController:
     resources:
       limits:
         cpu: 1
+  serviceMonitor:
+    # -- Create a `ServiceMonitor` to collect Prometheus metrics.
+    enabled: true
 
 cleanupController:
   resources:
@@ -27,6 +30,8 @@ backgroundController:
   resources:
     limits:
       cpu: 1
+  serviceMonitor:
+    enabled: true
 
 reportsController:
   resources:

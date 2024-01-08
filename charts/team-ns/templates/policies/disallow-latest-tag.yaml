@@ -24,7 +24,7 @@ spec:
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}
-  background: true
+  background: false
   rules:
   - name: require-image-tag
     match:

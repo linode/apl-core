@@ -27,7 +27,7 @@ spec:
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}
-  background: true
+  background: false
   rules:
   - name: validate-probes
     match:
