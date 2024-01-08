@@ -205,7 +205,7 @@ environments:
                 username: otomi-admin
             database:
               type: external
-              size: '2Gi'
+              size: '5Gi'
               name: harbor-otomi-db
               user: harbor
               coreDatabase: registry
@@ -715,7 +715,7 @@ environments:
           keycloak:
             useOtomiDB: true
             imported: false
-            size: "1Gi"
+            size: "5Gi"
             replicas: 2
             resources:
               limits:
