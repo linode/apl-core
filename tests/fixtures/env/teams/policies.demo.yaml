@@ -1,0 +1,37 @@
+teamConfig:
+    demo:
+        policies:
+            requireRequestsLimits:
+                actionOverride: Audit
+            allowedImageRepos:
+                actionOverride: Audit
+                repos:
+                    - harbor.bla.com
+            disallowLatestTag:
+                actionOverride: Audit
+            requirePodProbes:
+                actionOverride: Audit
+            allowedLabel:
+                actionOverride: Audit
+            disallowedCapabilities:
+                actionOverride: Audit
+                capabilities:
+                    - AUDIT_WRITE
+                    - CHOWN
+                    - DAC_OVERRIDE
+                    - FOWNER
+                    - FSETID
+                    - KILL
+                    - MKNOD
+                    - NET_BIND_SERVICE
+                    - SETFCAP
+                    - SETGID
+                    - SETPCAP
+                    - SETUID
+                    - SYS_CHROOT
+            disallowedHostNamespaces:
+                actionOverride: Audit
+                namespaces:
+                    hostPID: false
+                    hostIPC: false
+                    hostNetwork: false

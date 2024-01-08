@@ -1,0 +1,43 @@
+{{- $v := .Values }}
+{{- $sp := $v.securityPolicy }}
+{{- $pol := $v.policies }}
+{{- with $pol.disallowedCapabilities }}
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: disallowed-capabilities
+  annotations:
+    policies.kyverno.io/title: Disallow Capabilities
+    policies.kyverno.io/category: Pod Security Standards (Baseline)
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Adding capabilities beyond those listed in the policy must be disallowed.
+spec:
+  {{- if eq .actionOverride $sp.defaultAction }}
+  validationFailureAction: {{ $sp.defaultAction }}
+  {{- else }}
+  validationFailureAction: {{ .actionOverride }}
+  {{- end }}
+  background: false
+  rules:
+    - name: adding-capabilities
+      match:
+        any:
+        - resources:
+            kinds:
+              - Pod
+      validate:
+        message: >-
+          Any capabilities added beyond the allowed list (AUDIT_WRITE, CHOWN, DAC_OVERRIDE, FOWNER,
+          FSETID, KILL, MKNOD, NET_BIND_SERVICE, SETFCAP, SETGID, SETPCAP, SETUID, SYS_CHROOT)
+          are disallowed.
+        deny:
+          conditions:
+            all:
+            - key: "{{`{{ request.object.spec.[ephemeralContainers, initContainers, containers][].securityContext.capabilities.add[] }}`}}"
+              operator: AnyNotIn
+              {{- with .capabilities }}
+              value: {{ . | toYaml | nindent 14 }}
+              {{- end }}
+{{- end }}

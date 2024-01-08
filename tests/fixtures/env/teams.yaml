@@ -27,6 +27,8 @@ teamConfig:
         networkPolicy:
             egressPublic: true
             ingressPrivate: true
+        securityPolicy:
+            defaultAction: Enforce
         oidc:
             groupMapping: somesecretvalue
         resourceQuota:

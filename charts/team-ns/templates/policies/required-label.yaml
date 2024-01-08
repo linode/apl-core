@@ -1,0 +1,39 @@
+{{- $v := .Values }}
+{{- $sp := $v.securityPolicy }}
+{{- $pol := $v.policies }}
+{{- with $pol.allowedLabel }}
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: require-label
+  annotations:
+    policies.kyverno.io/title: Require Annotations
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod, Label
+    policies.kyverno.io/description: >-
+      Define and use annotations that identify semantic attributes of your application or Deployment.
+      A common set of annotations allows tools to work collaboratively, describing objects in a common manner that
+      all tools can understand. The recommended annotations describe applications in a way that can be
+      queried. This policy validates that the annotation `corp.org/department` is specified with some value.            
+spec:
+  {{- if eq .actionOverride $sp.defaultAction }}
+  validationFailureAction: {{ $sp.defaultAction }}
+  {{- else }}
+  validationFailureAction: {{ .actionOverride }}
+  {{- end }}
+  background: true
+  rules:
+  - name: check-for-label
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    validate:
+      message: "The label `otomi.io/app` is required."
+      pattern:
+        metadata:
+          labels:
+            otomi.io/app: "?*"
+{{- end }}

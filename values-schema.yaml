@@ -1272,6 +1272,14 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/project'
+      securityPolicy:
+        properties:
+          defaultAction:
+            type: string
+            enum: ['Audit', 'Enforce']
+            default: Audit
+      policies:
+        type: object
       builds:
         type: array
         items:
@@ -2374,6 +2382,14 @@ properties:
                 $ref: '#/definitions/resources'
               operator:
                 $ref: '#/definitions/resources'
+      kyverno:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
       kiali:
         additionalProperties: false
         properties:
