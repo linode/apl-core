@@ -19,12 +19,10 @@ releases:
       pkg: prometheus-operator
     <<: *raw
   - name: prometheus-operator
-    # we turn on the whole chart just by checking prometheus (not alertmanager or grafana, as all should be on)
-    installed: {{ $a | get "prometheus.enabled" }}
+    installed: true
     namespace: monitoring
     labels:
       pkg: prometheus-operator
-    # chart: ../charts/prometheus-operator
     chart: ../charts/kube-prometheus-stack
     values:
       - ../values/prometheus-operator/prometheus-operator.gotmpl
