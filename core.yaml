@@ -29,6 +29,8 @@ k8s:
       app: gatekeeper
       disableIstioInjection: true
     - name: gitea
+    - name: gitea-operator
+      disableIstioInjection: true
     - name: grafana
       app: grafana
     - name: istio-system
@@ -286,6 +288,7 @@ adminApps:
   - name: tekton
     tags: [buildpacks, ci, pipelines]
     ownHost: true
+    path: /#/namespaces/otomi-pipelines/pipelineruns
     ingress:
       - svc: tekton-dashboard
         namespace: tekton-pipelines
@@ -298,7 +301,7 @@ adminApps:
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus, minio]
     useHost: grafana
-    path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B%7D,%7B"mode":"Logs"%7D,%7B"ui":%5Btrue,true,true,"none"%5D%7D%5D
+    path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A"%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
     shortcuts:
       - title: Ingress logs
         description: All logs generated in the "ingress" namespace

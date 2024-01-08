@@ -196,6 +196,15 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
+          gitea-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
           grafana:
             enabled: false
           harbor:
@@ -768,7 +777,7 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes: (and think more?)
-        version: 16
+        version: 17
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

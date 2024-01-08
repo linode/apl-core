@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.0](https://github.com/redkubes/otomi-core/compare/v2.1.0...v2.2.0) (2024-01-04)
+
+### ⓘ UPGRADE NOTE
+Since tekton pipeline is reconfigured it needs to be re-run after the upgrade.
+In order to trigger the pipeline commit a new line to the `env/settings.yaml` file.
+
+### Features
+
+* deploy teams as argocd applications ([#1413](https://github.com/redkubes/otomi-core/issues/1413)), ([1750cef](https://github.com/redkubes/otomi-core/commit/1750cefe1db77e80fe8cba45e8033a596d2dd853)) ([#1433](https://github.com/redkubes/otomi-core/issues/1433)) ([d4abb7d](https://github.com/redkubes/otomi-core/commit/d4abb7d48e041789964c7bcabb6bae3d091ec86f)), ([#1438](https://github.com/redkubes/otomi-core/issues/1438)) ([701754e](https://github.com/redkubes/otomi-core/commit/701754e59b97435a6b68bc0dd0835c4043f1a654))
+* add gitea-operator to set gitea team mappings ([#1420](https://github.com/redkubes/otomi-core/issues/1420)) ([ec8e52c](https://github.com/redkubes/otomi-core/commit/ec8e52c7551f85d4c04e0c62312ad00ea666df5a))
+* add sync policy to team gitops argocd application ([#1422](https://github.com/redkubes/otomi-core/issues/1422)) ([e2d4524](https://github.com/redkubes/otomi-core/commit/e2d45245b91980fca9362f4f24230e6d19b40734))
+* enhance values migration ([#1448](https://github.com/redkubes/otomi-core/issues/1448)) ([f23a32c](https://github.com/redkubes/otomi-core/commit/f23a32c7985fc43ca9d46814fd17529ac85fb410))
+* use additional secret for external private git repository ([#1429](https://github.com/redkubes/otomi-core/issues/1429)) ([65db561](https://github.com/redkubes/otomi-core/commit/65db561701f3be8c96ab4163cd80e7fe094a1c35))
+
+
+### Bug Fixes
+
+* add env vars for paketo ([#1449](https://github.com/redkubes/otomi-core/issues/1449)) ([124b026](https://github.com/redkubes/otomi-core/commit/124b0268a7c8e1cfdc11f5464be839947f08f64c))
+* add netpol podselector ([#1440](https://github.com/redkubes/otomi-core/issues/1440)) ([e0609a3](https://github.com/redkubes/otomi-core/commit/e0609a307d5b833b515a139aefc638ed1a96c00d))
+* docker build context ([#1437](https://github.com/redkubes/otomi-core/issues/1437)) ([599a4b1](https://github.com/redkubes/otomi-core/commit/599a4b1f45e79bfdc93df11b36c4aa7970479417))
+* eventlistener labels ([#1424](https://github.com/redkubes/otomi-core/issues/1424)) ([a9868f7](https://github.com/redkubes/otomi-core/commit/a9868f7f6d0c30ab695f327a1a9aa6f8a684a3a6))
+* team grafana dashboards ([#1443](https://github.com/redkubes/otomi-core/issues/1443)) ([5534fba](https://github.com/redkubes/otomi-core/commit/5534fbaddb411dc6c70a78a3b79c10a4d210ec2c))
+* grafana settings ([#1432](https://github.com/redkubes/otomi-core/issues/1432)) ([701472e](https://github.com/redkubes/otomi-core/commit/701472efdba3b5399e3e1ed1a28f05d2f8dbc4c8))
+* increase memory limits and requests for kiali ([#1423](https://github.com/redkubes/otomi-core/issues/1423)) ([00fce5d](https://github.com/redkubes/otomi-core/commit/00fce5d2913dcabf8ace28f68323f3a5948b093e))
+* customisable env variables for kaniko ([#1450](https://github.com/redkubes/otomi-core/issues/1450)) ([1393524](https://github.com/redkubes/otomi-core/commit/1393524c11cf2b9f1eeec3db14dc46f0106bafe7))
+* loki platform url ([#1446](https://github.com/redkubes/otomi-core/issues/1446)) ([17585c8](https://github.com/redkubes/otomi-core/commit/17585c8076015b6f534afb967866dd48b1b66788))
+* loki query frontend rolling update on teamConfig change ([#1442](https://github.com/redkubes/otomi-core/issues/1442)) ([c74b22a](https://github.com/redkubes/otomi-core/commit/c74b22a69f39baead22f062f465f562b37341d13))
+* managed monitoring apps ([#1430](https://github.com/redkubes/otomi-core/issues/1430)) ([fef6dc8](https://github.com/redkubes/otomi-core/commit/fef6dc8eb692608b9cab7951e0a979ee8413835b))
+* rm deprecated files from otomi/charts repo ([#1427](https://github.com/redkubes/otomi-core/issues/1427)) ([db86b6c](https://github.com/redkubes/otomi-core/commit/db86b6c331cb547d92a69c7f6e78ef4f0dd29d88))
+* team monitoring stack schema change ([#1434](https://github.com/redkubes/otomi-core/issues/1434)) ([d9fb736](https://github.com/redkubes/otomi-core/commit/d9fb736a4125386ce38e7c7f4d6b14efcd2f3374))
+
+
+### CI
+
+* fix latest tag on github release ([#1395](https://github.com/redkubes/otomi-core/issues/1395)) ([5728736](https://github.com/redkubes/otomi-core/commit/572873611c013efad5d2e8b0141bc8a639d7982d))
+* slack release ([#1447](https://github.com/redkubes/otomi-core/issues/1447)) ([c856a48](https://github.com/redkubes/otomi-core/commit/c856a484d78f15891f2cd26fcdf704db9b825ae8))
+
+
+### Others
+
+* versions ([#1452](https://github.com/redkubes/otomi-core/issues/1452)) ([2a21d48](https://github.com/redkubes/otomi-core/commit/2a21d4873eaf5f58a9c3e530e4a177d8abe54e6a))
+
 ## [2.1.0](https://github.com/redkubes/otomi-core/compare/v2.0.0...v2.1.0) (2023-12-15)
 
 

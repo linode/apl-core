@@ -81,15 +81,21 @@ const applyAll = async () => {
   // const applyLabel: string = process.env.OTOMI_DEV_APPLY_LABEL || 'stage!=prep'
   // d.info(`Deploying charts containing label ${applyLabel}`)
 
-  // The 'tag!=teams' does not include team-ns-admin release name
-  let labelOpts = ['tag!=teams']
-
-  if (!intitalInstall) {
-    const params = cloneDeep(argv)
-    params.label = ['team=admin']
-    // We still ned to deploy team admin as it contain ingress for platform apps
-    await applyAsApps(params)
+  let labelOpts = ['']
+  if (intitalInstall) {
+    // When Otomi is installed for the very first time and ArgoCD is not yet there.
+    // The 'tag!=teams' does not include team-ns-admin release name.
+    labelOpts = ['tag!=teams']
+  } else {
+    // When Otomi is already installed and Tekton pipeline performs GitOps.
+    // We ensure that helmfile does not deploy any team related Helm release.
     labelOpts = ['pipeline!=otomi-task-teams']
+
+    // We still need to deploy all teams because some settings depend on platform apps.
+    // Note that team-ns-admin contains ingress for platform apps.
+    const params = cloneDeep(argv)
+    params.label = ['pipeline=otomi-task-teams']
+    await applyAsApps(params)
   }
 
   await hf(

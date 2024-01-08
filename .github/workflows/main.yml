@@ -110,7 +110,7 @@ jobs:
           tag: ${{ steps.git_tag.outputs.tag }}
           name: Release ${{ steps.git_tag.outputs.tag }}
           bodyFile: 'NEW_CHANGELOG.md'
-
+          generateReleaseNotes: true
   chart-release:
     needs: release
     if: always() && contains(needs.release.result, 'success') && !github.event.act
@@ -149,25 +149,11 @@ jobs:
             .version'
           )
 
-          # Determine if a major/minor bump has occurred
-          MARK_AS_LATEST="false"
-          if [ "${existing_version}" == "null" ]; then
-              echo "No chart found matching v$new_app_major.$new_app_minor.* app version."
-              echo "It seems this is a major/minor bump."
-              echo "Will create a new helm chart and mark it as latest!"
-              # If there is no existing chart with the same major.minor, mark this as latest
-              MARK_AS_LATEST="true"
-          else
-            echo "The latest version for $new_app_major.$new_app_minor is $existing_version"
-          fi
-
           # Update Chart.yaml and values.yaml with the new app version
           sed -i "s/CHART_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/Chart.yaml
           sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/otomi/Chart.yaml
 
           echo "Chart and values files updated successfully with version $app_version"
-          echo "MARK_AS_LATEST is set to $MARK_AS_LATEST"
-          echo "MARK_AS_LATEST=$MARK_AS_LATEST" >> "GITHUB_OUTPUT"
 
           # Copy readme from repo into the charts and add tpl/chart-values.md
           cp README.md chart/otomi/
@@ -186,7 +172,7 @@ jobs:
         with:
           charts_dir: chart
           skip_existing: true
-          mark_as_latest: ${{ steps.prepare_chart.outputs.MARK_AS_LATEST }}
+          mark_as_latest: false
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
