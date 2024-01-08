@@ -42,6 +42,7 @@ spec:
         value:
         - CREATE
         - UPDATE
+    skipBackgroundRequests: true
     validate:
       message: "Liveness, readiness, or startup probes are required for all containers."
       foreach:

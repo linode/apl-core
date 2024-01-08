@@ -31,6 +31,7 @@ spec:
         - resources:
             kinds:
               - Pod
+      skipBackgroundRequests: true
       validate:
         message: >-
           Sharing the host namespaces is disallowed. The fields spec.hostNetwork,

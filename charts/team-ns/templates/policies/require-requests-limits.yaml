@@ -35,6 +35,7 @@ spec:
       - resources:
           kinds:
           - Pod
+    skipBackgroundRequests: true
     validate:
       message: "CPU and memory resource requests and limits are required."
       pattern:

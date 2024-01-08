@@ -20,6 +20,8 @@ admissionController:
   serviceMonitor:
     # -- Create a `ServiceMonitor` to collect Prometheus metrics.
     enabled: true
+    additionalLabels:
+      prometheus: systen
 
 cleanupController:
   resources:
@@ -32,6 +34,8 @@ backgroundController:
       cpu: 1
   serviceMonitor:
     enabled: true
+    additionalLabels:
+      prometheus: systen
 
 reportsController:
   resources:
