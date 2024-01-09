@@ -32,7 +32,7 @@ export const addApp = async (name: string): Promise<void> => {
       },
       enabled: {
         type: 'boolean',
-        default: false,
+        default: true,
       },
       resources: {
         $ref: '#/definitions/resources',
@@ -72,7 +72,7 @@ export const addApp = async (name: string): Promise<void> => {
 
   const defaultsData = (await loadYaml(defaultsPath)) || {}
   const defaultsDataChunk = {
-    enabled: false,
+    enabled: true,
   }
 
   set(defaultsData, `environments.default.values[0].apps.${name}`, defaultsDataChunk)
