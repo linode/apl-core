@@ -1387,7 +1387,7 @@ definitions:
     type: object
     properties:
       name:
-        description: Name of policiy
+        description: Name of policy
         $ref: '#/definitions/wordCharacterPattern'
       profile:
         description: Profile that contains this policy
