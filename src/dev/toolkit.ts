@@ -1,21 +1,21 @@
 #!/usr/bin/env node --nolazy -r ts-node/register
 
 import { createFileSync, mkdirpSync, writeFile } from 'fs-extra'
-import { set } from 'lodash'
+import { get, set } from 'lodash'
 import { loadYaml } from 'src/common/utils'
 import { objectToYaml } from 'src/common/values'
 
 export const addApp = async (name: string): Promise<void> => {
   const projectDir = process.cwd()
-  const valuesFile = `${projectDir}/values/${name}.gotmpl`
-  const artifactsFile = `${projectDir}/values/${name}-raw.gotmpl`
+  const valuesFile = `${projectDir}/values/${name}/${name}.gotmpl`
+  const artifactsFile = `${projectDir}/values/${name}/${name}-raw.gotmpl`
   const chartDir = `charts/${name}`
   const valuesDir = `values/${name}`
   const valuesSchemaPath = `${projectDir}/values-schema.yaml`
   const corePath = `${projectDir}/core.yaml`
   const appsPath = `${projectDir}/apps.yaml`
   const defaultsPath = `${projectDir}/helmfile.d/snippets/defaults.yaml`
-  const helmfilePath = `${projectDir}/helmfile.d/helmfile-${name}.yaml`
+  const helmfilePath = `${projectDir}/helmfile-${name}.yaml`
   const fixturesPath = `${projectDir}/tests/fixtures/env/apps/${name}.yaml`
   const secretFixturesPath = `${projectDir}/tests/fixtures/env/apps/secrets.${name}.yaml`
   mkdirpSync(chartDir)
@@ -44,12 +44,15 @@ export const addApp = async (name: string): Promise<void> => {
 
   const coredata = (await loadYaml(corePath)) || {}
   const coreDataChunk = {
-    name,
-    app: name,
-    disableIstioInjection: true,
-    disablePolicyChecks: true,
+    name: {
+      app: name,
+      disableIstioInjection: true,
+      disablePolicyChecks: true,
+    },
   }
-  set(coredata, `properties.apps.${name}`, coreDataChunk)
+
+  const namespaces = get(coredata, `k8s.namespaces`) as Record<string, any>
+  namespaces.push(coreDataChunk)
   await writeFile(corePath, objectToYaml(coredata))
 
   const appsData = (await loadYaml(appsPath)) || {}
@@ -94,4 +97,4 @@ export const addApp = async (name: string): Promise<void> => {
   await writeFile(fixturesPath, objectToYaml(fixturesData))
 }
 
-addApp('myapp')
+addApp('sealed-secrets')
