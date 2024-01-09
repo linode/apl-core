@@ -76,7 +76,7 @@ export const addApp = async (name: string): Promise<void> => {
   }
 
   set(defaultsData, `environments.default.values[0].apps.${name}`, defaultsDataChunk)
-  await writeFile(defaultsPath, objectToYaml(defaultsData))
+  await writeFile(defaultsPath, objectToYaml(defaultsData, 2, 200))
 
   const helmfileReleaseChunk = {
     releases: [
