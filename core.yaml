@@ -110,6 +110,10 @@ k8s:
       app: trivy
       disableIstioInjection: true
       disablePolicyChecks: true
+    - name: sealed-secrets
+      app: sealed-secrets
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: vault
       app: vault
     - name: velero

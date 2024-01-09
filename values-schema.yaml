@@ -2432,6 +2432,16 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
+      sealed-secrets:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+          resources:
+            $ref: '#/definitions/resources'
       tekton:
         additionalProperties: false
         properties:
