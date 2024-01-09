@@ -32,6 +32,7 @@ spec:
         - resources:
             kinds:
               - Pod
+      skipBackgroundRequests: true
       validate:
         message: >-
           Setting the SELinux type is restricted. The fields
@@ -61,6 +62,7 @@ spec:
         - resources:
             kinds:
               - Pod
+      skipBackgroundRequests: true
       validate:
         message: >-
           Setting the SELinux user or role is forbidden. The fields

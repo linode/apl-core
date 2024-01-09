@@ -36,6 +36,7 @@ spec:
         - resources:
             kinds:
               - Pod
+      skipBackgroundRequests: true
       validate:
         message: >-
           Specifying other AppArmor profiles is disallowed. The annotation
