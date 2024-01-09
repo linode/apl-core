@@ -513,6 +513,7 @@ environments:
                     cpu: 500m
                     memory: 128Mi
           sealed-secrets:
+            enabled: true
             resources:
               operator:
                 requests:
