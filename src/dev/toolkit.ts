@@ -14,9 +14,10 @@ export const addApp = async (name: string): Promise<void> => {
   const valuesSchemaPath = `${projectDir}/values-schema.yaml`
   const corePath = `${projectDir}/core.yaml`
   const appsPath = `${projectDir}/apps.yaml`
-  const defaultsPath = `${projectDir}/defaults.yaml`
-  const fixturesPath = `${projectDir}/tests/fixtures/apps/${name}.yaml`
-  const secretFixturesPath = `${projectDir}/tests/fixtures/apps/secrets.${name}.yaml`
+  const defaultsPath = `${projectDir}/helmfile.d/snippets/defaults.yaml`
+  const helmfilePath = `${projectDir}/helmfile.d/helmfile-${name}.yaml`
+  const fixturesPath = `${projectDir}/tests/fixtures/env/apps/${name}.yaml`
+  const secretFixturesPath = `${projectDir}/tests/fixtures/env/apps/secrets.${name}.yaml`
   mkdirpSync(chartDir)
   mkdirpSync(valuesDir)
   createFileSync(artifactsFile)
@@ -52,7 +53,7 @@ export const addApp = async (name: string): Promise<void> => {
     disablePolicyChecks: true,
   }
   set(coredata, `properties.apps.${name}`, coreDataChunk)
-  await writeFile(valuesSchemaPath, objectToYaml(coredata))
+  await writeFile(corePath, objectToYaml(coredata))
 
   const appsData = (await loadYaml(appsPath)) || {}
   const appsDataChunk = {
@@ -68,6 +69,32 @@ export const addApp = async (name: string): Promise<void> => {
   }
   set(appsData, `appsInfo.${name}`, appsDataChunk)
   await writeFile(appsPath, objectToYaml(appsData))
+
+  const defaultsData = (await loadYaml(defaultsPath)) || {}
+  const defaultsDataChunk = {
+    enabled: false,
+  }
+
+  set(defaultsData, `environments.default.values[0].apps.${name}`, defaultsDataChunk)
+  await writeFile(defaultsPath, objectToYaml(defaultsData))
+
+  const helmfileReleaseChunk = {
+    releases: [
+      {
+        name,
+        installed: `{{ $a | get "${name}.enabled" }}'`,
+        namespace: name,
+        '<<:': '*default',
+      },
+    ],
+  }
+
+  await writeFile(helmfilePath, objectToYaml(helmfileReleaseChunk))
+
+  const fixturesData = {}
+  const fixturesDataChunk = { enabled: true }
+  set(fixturesData, `apps.${name}`, fixturesDataChunk)
+  await writeFile(fixturesPath, objectToYaml(fixturesData))
 }
 
 addApp('myapp')
