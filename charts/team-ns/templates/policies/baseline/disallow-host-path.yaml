@@ -4,7 +4,7 @@
 {{- if and (eq $p.name "disallow-host-path") ($p.enabled) }}
 ---
 apiVersion: kyverno.io/v1
-kind: Policy}
+kind: Policy
 metadata:
   name: disallow-host-path
   annotations:
@@ -13,7 +13,6 @@ metadata:
     policies.kyverno.io/severity: {{ .severity }}
     policies.kyverno.io/subject: Pod,Volume
     kyverno.io/kyverno-version: 1.6.0
-    kyverno.io/kubernetes-version: "1.22-1.23"
     policies.kyverno.io/description: >-
       HostPath volumes let Pods use host directories and volumes in containers.
       Using host resources can be used to access shared data or escalate privileges
