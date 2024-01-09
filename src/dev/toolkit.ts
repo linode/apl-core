@@ -34,9 +34,6 @@ export const addApp = async (name: string): Promise<void> => {
         type: 'boolean',
         default: false,
       },
-      image: {
-        $ref: '#/definitions/imageSimple',
-      },
       resources: {
         $ref: '#/definitions/resources',
       },
@@ -84,7 +81,7 @@ export const addApp = async (name: string): Promise<void> => {
         name,
         installed: `{{ $a | get "${name}.enabled" }}'`,
         namespace: name,
-        '<<:': '*default',
+        '<<': '*default',
       },
     ],
   }
