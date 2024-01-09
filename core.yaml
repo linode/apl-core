@@ -1,8 +1,8 @@
-# NOTE: This file is merged with other values in ./helmfile.d/snippets/env.gotmpl
 k8s:
   namespaces:
     - name: argocd
       app: argocd
+    - name: cert-manager
     - name: cert-manager
       disableIstioInjection: true
     - name: cnpg-system
@@ -41,8 +41,6 @@ k8s:
     - name: httpbin
       app: httpbin
     - name: ingress
-      # disabling istio sidecar as it does not preserve client ip (yet)
-      # TODO: enable once it does
       disableIstioInjection: true
     - name: jaeger
       app: jaeger
@@ -118,21 +116,28 @@ k8s:
       app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
-
+    - name:
+        app: sealed-secrets
+        disableIstioInjection: true
+        disablePolicyChecks: true
 adminApps:
   - name: alertmanager
-    tags: [alerting, observability]
-    deps: [prometheus]
+    tags:
+      - alerting
+      - observability
+    deps:
+      - prometheus
     ownHost: true
     ingress:
       - svc: po-alertmanager
         namespace: monitoring
-        # namespace: alertmanager
         port: 9093
         type: public
         auth: true
   - name: argocd
-    tags: [cicd, gitops]
+    tags:
+      - cicd
+      - gitops
     isShared: true
     ownHost: true
     ingress:
@@ -140,14 +145,19 @@ adminApps:
         namespace: argocd
         type: public
         auth: true
-        # removeRequestHeaders:
-        #   - authorization
   - name: cert-manager
-    tags: [ingress, security, tls]
+    tags:
+      - ingress
+      - security
+      - tls
   - name: cnpg
-    tags: [database]
+    tags:
+      - database
   - name: drone
-    tags: [cicd, deployment, pipeline]
+    tags:
+      - cicd
+      - deployment
+      - pipeline
     isShared: true
     ownHost: true
     ingress:
@@ -160,31 +170,47 @@ adminApps:
       - svc: drone
         namespace: drone
         type: public
-        paths: [/hook, /api/user, /api/repo]
+        paths:
+          - /hook
+          - /api/user
+          - /api/repo
         forwardPath: true
         removeRequestHeaders:
           - authorization
   - name: tty
-    tags: [tty]
+    tags:
+      - tty
     isShared: true
     ownHost: true
     ingress:
       - svc: tty
-        # virtual service is not going to be used.
         namespace: ingress
         type: public
         auth: true
   - name: external-dns
-    tags: [ingress, security, tls]
+    tags:
+      - ingress
+      - security
+      - tls
   - name: external-secrets
-    tags: [secrets, security, tls]
+    tags:
+      - secrets
+      - security
+      - tls
   - name: falco
-    tags: [security]
-    deps: [prometheus, grafana]
+    tags:
+      - security
+    deps:
+      - prometheus
+      - grafana
   - name: gatekeeper
-    tags: [security, policies, observability]
+    tags:
+      - security
+      - policies
+      - observability
   - name: gitea
-    tags: [git]
+    tags:
+      - git
     isShared: true
     ownHost: true
     ingress:
@@ -193,8 +219,12 @@ adminApps:
         port: 3000
         type: public
   - name: grafana
-    tags: [tracing, telemetry, observability]
-    deps: [prometheus]
+    tags:
+      - tracing
+      - telemetry
+      - observability
+    deps:
+      - prometheus
     path: /dashboards
     ownHost: true
     ingress:
@@ -209,7 +239,8 @@ adminApps:
         description: NGINX ingress controller metrics
         path: /d/nginx/nginx-ingress-controller?orgId=1&refresh=5s
   - name: harbor
-    tags: [security]
+    tags:
+      - security
     isShared: true
     ownHost: true
     ingress:
@@ -219,21 +250,31 @@ adminApps:
         auth: true
       - svc: harbor-core
         namespace: harbor
-        paths: [/api/, /c/]
+        paths:
+          - /api/
+          - /c/
         forwardPath: true
         type: public
         auth: true
       - svc: harbor-core
         namespace: harbor
-        paths: [/chartrepo/, /service/, /v1/, /v2/]
+        paths:
+          - /chartrepo/
+          - /service/
+          - /v1/
+          - /v2/
         forwardPath: true
         type: public
         hasOwnIngress: true
   - name: hello
     hide: true
-    tags: [demo]
+    tags:
+      - demo
   - name: httpbin
-    tags: [dev, testing, debugging]
+    tags:
+      - dev
+      - testing
+      - debugging
     isShared: true
     ownHost: true
     ingress:
@@ -242,12 +283,25 @@ adminApps:
         type: public
         auth: true
   - name: ingress-nginx
-    tags: [ingress, auth]
+    tags:
+      - ingress
+      - auth
   - name: istio
-    tags: [ingress, egress, routing, security, tls, observability, policies]
+    tags:
+      - ingress
+      - egress
+      - routing
+      - security
+      - tls
+      - observability
+      - policies
   - name: jaeger
-    tags: [ingress, telemetry, observability]
-    deps: [istio]
+    tags:
+      - ingress
+      - telemetry
+      - observability
+    deps:
+      - istio
     ingress:
       - svc: jaeger-operator-jaeger-query
         port: 16686
@@ -256,8 +310,9 @@ adminApps:
         type: public
         auth: true
   - name: keycloak
-    tags: [auth, sso]
-    # isShared: true
+    tags:
+      - auth
+      - sso
     ownHost: true
     ingress:
       - namespace: keycloak
@@ -269,8 +324,13 @@ adminApps:
         description: Edit your account settings.
         path: /realms/otomi/account/
   - name: kiali
-    tags: [tracing, telemetry, observability]
-    deps: [istio, prometheus]
+    tags:
+      - tracing
+      - telemetry
+      - observability
+    deps:
+      - istio
+      - prometheus
     ingress:
       - svc: kiali
         forwardPath: true
@@ -281,12 +341,19 @@ adminApps:
         type: public
         auth: true
   - name: knative
-    tags: [serverless, functions]
-    deps: [istio]
+    tags:
+      - serverless
+      - functions
+    deps:
+      - istio
   - name: kured
-    tags: [security]
+    tags:
+      - security
   - name: tekton
-    tags: [buildpacks, ci, pipelines]
+    tags:
+      - buildpacks
+      - ci
+      - pipelines
     ownHost: true
     path: /#/namespaces/otomi-pipelines/pipelineruns
     ingress:
@@ -298,8 +365,14 @@ adminApps:
         removeRequestHeaders:
           - authorization
   - name: loki
-    tags: [logging, telemetry, observability]
-    deps: [grafana, prometheus, minio]
+    tags:
+      - logging
+      - telemetry
+      - observability
+    deps:
+      - grafana
+      - prometheus
+      - minio
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A"%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
     shortcuts:
@@ -313,7 +386,9 @@ adminApps:
         description: Kube API violations logged by OPA gatekepeer
         path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D%20%7C%3D%5C"Policy:%20%5C""%7D%5D
   - name: minio
-    tags: [storage, backup]
+    tags:
+      - storage
+      - backup
     ownHost: true
     ingress:
       - svc: minio
@@ -324,7 +399,8 @@ adminApps:
         removeRequestHeaders:
           - authorization
   - name: opencost
-    tags: [finops]
+    tags:
+      - finops
     ownHost: true
     ingress:
       - svc: opencost
@@ -339,7 +415,8 @@ adminApps:
     ingress:
       - svc: otomi-api
         namespace: otomi
-        paths: [/api/]
+        paths:
+          - /api/
         type: public
         auth: true
       - svc: otomi-console
@@ -347,26 +424,37 @@ adminApps:
         type: public
         auth: true
   - name: prometheus
-    tags: [metrics, observability]
+    tags:
+      - metrics
+      - observability
     ownHost: true
     ingress:
       - svc: po-prometheus
         port: 9090
         namespace: monitoring
-        # namespace: prometheus
         type: public
         auth: true
   - name: tempo
-    tags: [tracing]
-    deps: [prometheus, grafana, minio]
+    tags:
+      - tracing
+    deps:
+      - prometheus
+      - grafana
+      - minio
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"tempo","queries":%5B%7B"refId":"A","datasource":%7B"type":"tempo","uid":"tempo"%7D,"queryType":"clear","limit":20%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
   - name: otel
-    tags: [tracing]
+    tags:
+      - tracing
   - name: thanos
-    tags: [metrics, observability]
+    tags:
+      - metrics
+      - observability
     ownHost: true
-    deps: [prometheus, grafana, minio]
+    deps:
+      - prometheus
+      - grafana
+      - minio
     ingress:
       - svc: thanos-query-frontend
         port: 9090
@@ -377,15 +465,23 @@ adminApps:
       - svc: thanos-receive
         port: 19291
         namespace: monitoring
-        paths: [/api]
+        paths:
+          - /api
         forwardPath: true
         type: public
   - name: trivy
-    tags: [security]
-    deps: [prometheus, grafana]
+    tags:
+      - security
+    deps:
+      - prometheus
+      - grafana
   - name: vault
-    tags: [secrets, security, observability]
-    deps: [external-secrets]
+    tags:
+      - secrets
+      - security
+      - observability
+    deps:
+      - external-secrets
     isShared: true
     ownHost: true
     path: /ui/vault/auth?redirect_to=%2Fvault%2Fsecrets%2Fsecret%2Flist%2Fteams%2F#NS#%2F&with=oidc
@@ -396,8 +492,8 @@ adminApps:
         type: public
         auth: true
   - name: velero
-    tags: [backup]
-
+    tags:
+      - backup
 teamApps:
   - name: alertmanager
     ownHost: true
