@@ -82,7 +82,7 @@ teamConfig:
               enabled: true
               actionOverride: Audit
               severity: medium
-            - name: estrict-apparmor-profiles
+            - name: restrict-apparmor-profiles
               profile: baseline
               enabled: true
               actionOverride: Audit

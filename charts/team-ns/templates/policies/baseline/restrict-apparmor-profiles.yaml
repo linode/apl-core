@@ -1,12 +1,12 @@
 {{- $v := .Values }}
 {{- $sp := $v.policyProfile.baseline }}
 {{- range $p := $v.policies }}
-{{- if and (eq $p.name "estrict-apparmor-profiles") ($p.enabled) }}
+{{- if and (eq $p.name "restrict-apparmor-profiles") ($p.enabled) }}
 ---
 apiVersion: kyverno.io/v1
-kind: policy
+kind: Policy
 metadata:
-  name: estrict-apparmor-profiles
+  name: restrict-apparmor-profiles
   annotations:
     policies.kyverno.io/title: Restrict AppArmor
     policies.kyverno.io/category: Pod Security Standards (Baseline)
