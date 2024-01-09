@@ -1,11 +1,9 @@
-$schema: http://json-schema.org/draft-07/schema
+$schema: 'http://json-schema.org/draft-07/schema'
 version: 3
 additionalProperties: true
 definitions:
   rawValues:
-    description: "May define value overrides for a chart. WARNING: these values
-      currently have no schema and can't be validated as such, and may
-      break deployment. You are on your own here."
+    description: "May define value overrides for a chart. WARNING: these values currently have no schema and can't be validated as such, and may break deployment. You are on your own here."
     type: object
   alerts:
     additionalProperties: false
@@ -28,14 +26,11 @@ definitions:
             x-secret: ''
           nonCritical:
             $ref: '#/definitions/email'
-            description: One or more email addresses (comma separated) for non-critical
-              events.
+            description: One or more email addresses (comma separated) for non-critical events.
             x-secret: ''
       groupInterval:
         default: 5m
-        description: How long to wait before sending a notification about new alerts
-          that are added to a group of alerts for which an initial
-          notification has already been sent. (Usually ~5m or more.)
+        description: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent. (Usually ~5m or more.)
         $ref: '#/definitions/duration'
       msteams:
         additionalProperties: false
@@ -62,9 +57,7 @@ definitions:
         uniqueItems: true
       repeatInterval:
         default: 3h
-        description: How long to wait before sending a notification again if it has
-          already been sent successfully for an alert. (Usually ~3h or
-          more).
+        description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
         $ref: '#/definitions/duration'
       slack:
         additionalProperties: false
@@ -106,25 +99,22 @@ definitions:
                         - schedule
                 - oneOf:
                     - title: ID
-                      required:
-                        - id
+                      required: [id]
                       properties:
                         id:
                           $ref: '#/definitions/wordCharacterPattern'
                     - title: Name
-                      required:
-                        - name
+                      required: [name]
                       properties:
                         name:
                           $ref: '#/definitions/idName'
                     - title: Username
-                      required:
-                        - username
+                      required: [username]
                       properties:
                         username:
                           $ref: '#/definitions/wordCharacterPattern'
-              required:
-                - type
+              required: [type]
+
   annotations:
     $ref: '#/definitions/labelsAnnotations'
     description: A set of annotations.
@@ -279,27 +269,22 @@ definitions:
     additionalProperties: false
     properties:
       apiName:
-        description: Exact name of cluster as created when on AWS. Optional otherwise
-          and will be generated for UI purposes. When on AWS this name
-          is used for chart cluster-autoscaler and
-          aws-alb-ingress-controller (enabled if otomi.hasExternalLB).
+        description:
+          Exact name of cluster as created when on AWS. Optional otherwise and will be generated for UI purposes.
+          When on AWS this name is used for chart cluster-autoscaler and aws-alb-ingress-controller (enabled if otomi.hasExternalLB).
         $ref: '#/definitions/wordCharacterPattern'
       apiServer:
-        description: Used to generate KUBECONFIG for download, for local access to
-          target cluster.
-        pattern: ^https:\/\/.*
+        description: Used to generate KUBECONFIG for download, for local access to target cluster.
+        pattern: '^https:\/\/.*'
       domainSuffix:
         $ref: '#/definitions/domain'
-        description: Domain suffix for the cluster. Also added to list of dns zones in
-          the Otomi Console.
+        description: Domain suffix for the cluster. Also added to list of dns zones in the Otomi Console.
       k8sContext:
         $ref: '#/definitions/k8sContext'
-        description: Optional. Must be set for development mode and must point to an
-          existing context in KUBECONFIG.
+        description: Optional. Must be set for development mode and must point to an existing context in KUBECONFIG.
       name:
         $ref: '#/definitions/clusterName'
-        description: Short name that will be used in construction of cluster domain and
-          messaging.
+        description: Short name that will be used in construction of cluster domain and messaging.
       owner:
         $ref: '#/definitions/idName'
         description: The name of the organization owning the cluster.
@@ -307,7 +292,7 @@ definitions:
       provider:
         $ref: '#/definitions/provider'
       region:
-        description: An AWS region. Only required for AWS.
+        description: 'An AWS region. Only required for AWS.'
         examples:
           - eu-central-1
     required:
@@ -317,16 +302,14 @@ definitions:
       - oneOf:
           - properties:
               provider:
-                enum:
-                  - aws
+                enum: [aws]
             required:
               - apiName
               - region
           - not:
               properties:
                 provider:
-                  enum:
-                    - aws
+                  enum: [aws]
   clusterName:
     $ref: '#/definitions/wordCharacterPattern'
     type: string
@@ -384,8 +367,7 @@ definitions:
         default: false
       labelSelector:
         $ref: '#/definitions/labels'
-        description: Individual objects must match this label selector to be included in
-          the backup.
+        description: Individual objects must match this label selector to be included in the backup.
   domain:
     pattern: ^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]))|([a-f0-9:]+:+)+[a-f0-9]+$
     type: string
@@ -397,14 +379,12 @@ definitions:
         type: string
         x-secret: ''
   duration:
-    description: "Prometheus duration (See:
-      https://prometheus.io/docs/prometheus/latest/configuration/configur\
-      ation/#configuration-file)"
-    pattern: ((([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?|0)
+    description: 'Prometheus duration (See: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#configuration-file)'
+    pattern: '((([0-9]+)y)?(([0-9]+)w)?(([0-9]+)d)?(([0-9]+)h)?(([0-9]+)m)?(([0-9]+)s)?(([0-9]+)ms)?|0)'
     type: string
     default: 1d
   email:
-    pattern: ^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$
+    pattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     type: string
   env:
     additionalProperties: false
@@ -433,11 +413,11 @@ definitions:
       project:
         $ref: '#/definitions/wordCharacterPattern'
   hostPort:
-    pattern: ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$
+    pattern: '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):()([1-9]|[1-5]?[0-9]{2,4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
     type: string
   idName:
     description: A lowercase name that starts with a letter and may contain dashes.
-    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])$
+    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
     type: string
   image:
     additionalProperties: false
@@ -462,7 +442,7 @@ definitions:
     type: string
   imageTag:
     x-default: stable
-    pattern: "[\\w][\\w.-]{0,127}"
+    pattern: '[\w][\w.-]{0,127}'
     type: string
     x-message: a valid container registry image tag
   imageSimple:
@@ -498,15 +478,13 @@ definitions:
         type: integer
         minimum: 0
         default: 1073741824
-        description: Needed for modsecurity. Should correspond to maxBodySize, but
-          expressed in bytes.
+        description: Needed for modsecurity. Should correspond to maxBodySize, but expressed in bytes.
       modsecurity:
         title: MOD Security
         description: Enables MOD Security functionality.
         properties:
           block:
-            description: Makes nginx block requests that are marked as violating the modsec
-              rules.
+            description: Makes nginx block requests that are marked as violating the modsec rules.
             type: boolean
             default: false
           enabled:
@@ -534,9 +512,7 @@ definitions:
     type: object
     properties:
       entrypoint:
-        description: A public IP address that has a route to a private loadbalancer ip,
-          allowing access to private clusters. (Provider "custom"
-          only.)
+        description: A public IP address that has a route to a private loadbalancer ip, allowing access to private clusters. (Provider "custom" only.)
         type: string
       network:
         title: Load balancer type
@@ -555,20 +531,18 @@ definitions:
       loadBalancerSubnet:
         title: Load balancer Azure subnet
         type: string
-        description: Specify subnet provider for load balancer IP address (applies to
-          private network only)
+        description: Specify subnet provider for load balancer IP address (applies to private network only)
       sourceIpAddressFiltering:
         title: Source IP address filtering
         type: string
-        description: Whitelist source IP address ranges. The value is a comma separated
-          list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1
+        description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
   jobs:
-    description: You may pass an array of Job objects. The Kubernetes API accepts a
-      Job specification, which is meant for run-to-completion apps (e.g.
-      batch Jobs).
+    description: You may pass an array of Job objects. The Kubernetes API accepts
+      a Job specification, which is meant for run-to-completion apps (e.g. batch
+      Jobs).
     items:
       type: object
       allOf:
@@ -598,10 +572,8 @@ definitions:
         type: boolean
       runPolicy:
         default: OnSpecChange
-        description: >
-          If runPolicy is set to 'Always', the job controller will always be
-          re-deployed after a successful deployment with Helm.
-
+        description: |
+          If runPolicy is set to 'Always', the job controller will always be re-deployed after a successful deployment with Helm.
           If runPolicy is set to 'OnSpecChange', the job controller will only be re-deployed if one changes this specification.
         enum:
           - Always
@@ -619,8 +591,7 @@ definitions:
         type: string
       ttlSecondsAfterFinished:
         default: 86400
-        description: Time To Live after job is finished in seconds. Will be removed
-          afterwards.
+        description: Time To Live after job is finished in seconds. Will be removed afterwards.
         minimum: 0
         title: TTL after finished
         type: integer
@@ -643,8 +614,8 @@ definitions:
   labelsAnnotations:
     additionalProperties: false
     patternProperties:
-      "^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9]){1,253}\\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$":
-        pattern: ^((.){1,253}\/)?(.){1,63}$
+      '^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]){1,253}\/)?([a-z0-9A-Z]+[a-z0-9A-Z-_.]+[a-z0-9A-Z]){1,63}$':
+        pattern: '^((.){1,253}\/)?(.){1,63}$'
         type: string
   logLevel:
     type: string
@@ -660,7 +631,7 @@ definitions:
     examples:
       - 1Mi
       - 0.5M
-    pattern: ^([0-9]+\.)?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$
+    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G|M|K|Ei|Pi|Ti|Gi|Mi|Ki)?$'
     type: string
   nativeSecrets:
     description: List of kubernetes secret names.
@@ -678,8 +649,7 @@ definitions:
       podSelector:
         type: string
         title: Internal ingress filtering
-        description: 'Pods belonging to this service must contain "otomi.io/app:
-          <service name>" label'
+        description: 'Pods belonging to this service must contain "otomi.io/app: <service name>" label'
       ingressPrivate:
         oneOf:
           - title: Deny all
@@ -740,10 +710,7 @@ definitions:
                   protocol:
                     title: Protocol
                     type: string
-                    enum:
-                      - HTTPS
-                      - HTTP
-                      - TCP
+                    enum: [HTTPS, HTTP, TCP]
                     default: HTTPS
                 required:
                   - number
@@ -758,26 +725,19 @@ definitions:
   path:
     description: An absolute path
     type: string
-    pattern: ^[/].*$
+    pattern: '^[/].*$'
   podSecurityContext:
     allOf:
       - $ref: '#/definitions/securityContext'
       - properties:
           fsGroup:
-            description: Supplementary group ID. Volumes that support ownership management
-              are modified to be owned and writable by this ID.
+            description: Supplementary group ID. Volumes that support ownership management are modified to be owned and writable by this ID.
             $ref: '#/definitions/unixOwnerId'
           fsGroupChangePolicy:
-            description: >
-              'Defines behavior for changing ownership and permission of the
-              volume before being exposed inside a Pod. This field
-              only applies to volume types that support fsGroup
-              controlled ownership and permissions.
-
+            description: |
+              'Defines behavior for changing ownership and permission of the volume before being exposed inside a Pod. This field only applies to volume types that support fsGroup controlled ownership and permissions.
               This field has two possible values:
-
               - OnRootMismatch: Only change permissions and ownership if permission and ownership of root directory does not match with expected permissions of the volume. This could help shorten the time it takes to change ownership and permission of a volume.
-
               - Always: Always change permission and ownership of the volume when volume is mounted.'
             type: string
             enum:
@@ -801,8 +761,7 @@ definitions:
     type: integer
   provider:
     type: string
-    description: Enter the cloud provider of this cluster. Choose 'custom' for
-      laptop install (minikube, kind) or onprem installs.
+    description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube, kind) or onprem installs.
     enum:
       - aws
       - azure
@@ -847,16 +806,15 @@ definitions:
             $ref: '#/definitions/size'
     type: object
   registry:
-    pattern: ^[a-z0-9]+(?:[._-][a-z0-9]+)*$
+    pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
     type: string
   repoUrl:
-    description: Path to a remote git repo with or without protocol prefix of either
-      https:// or file:// (https:// used if omitted)
-    pattern: ^(https://|file://)?(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$
+    description: Path to a remote git repo with or without protocol prefix of either https:// or file:// (https:// used if omitted)
+    pattern: '^(https://|file://)?(.+@)*([\w\d\.]+)(:[\d]+){0,1}/*(.*)$'
     type: string
   repository:
     description: A container image repository.
-    pattern: ^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$
+    pattern: '^[a-z0-9]+(?:[/._-]{1,2}[a-z0-9]+)*$'
     type: string
   resource:
     additionalProperties: false
@@ -899,9 +857,7 @@ definitions:
   unixOwnerIdRange:
     type: object
     additionalProperties: false
-    required:
-      - min
-      - max
+    required: [min, max]
     properties:
       min:
         type: integer
@@ -912,11 +868,7 @@ definitions:
         minimum: 0
         maximum: 65535
   unixOwnerId:
-    description: The UID to run the entrypoint of the container process. Defaults to
-      user specified in image metadata if unspecified. May also be set in
-      PodSecurityContext. If set in both SecurityContext and
-      PodSecurityContext, the value specified in SecurityContext takes
-      precedence.
+    description: The UID to run the entrypoint of the container process. Defaults to user specified in image metadata if unspecified. May also be set in PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
     type: integer
     minimum: 0
     maximum: 65535
@@ -935,8 +887,7 @@ definitions:
       - type
   backupSchedule:
     default: 0 0 * * *
-    description: Cron-type expression to schedule the backup. Defaults to once a day
-      at 00:00.
+    description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
     type: string
   secret:
     type: object
@@ -971,7 +922,8 @@ definitions:
             items:
               description: A property name at vaultPath
               minItems: 1
-              pattern: ^[-._a-zA-Z0-9]+$
+              # a valid secret key must consist of alphanumeric characters, '-', '_' or '.' (e.g. 'key.name',  or 'KEY_NAME',  or 'key-name' )
+              pattern: '^[-._a-zA-Z0-9]+$'
               type: string
             uniqueItems: true
         required:
@@ -995,20 +947,19 @@ definitions:
             type: string
           crt:
             type: string
-            default: tls.crt
+            default: 'tls.crt'
           key:
             type: string
-            default: tls.key
+            default: 'tls.key'
           ca:
             type: string
-            default: ca.crt
+            default: 'ca.crt'
         required:
           - type
           - crt
           - key
   secrets:
-    description: List of secret names that will have their props injected as env
-      vars into the container.
+    description: List of secret names that will have their props injected as env vars into the container.
     items:
       type: string
       pattern: '[a-zA-Z_]{1,}[a-zA-Z0-9_]*'
@@ -1016,9 +967,7 @@ definitions:
     title: Secrets
     type: array
   secretMounts:
-    description: Dictionary of absolute folder path > secret name. Will mount the
-      contents of the secret in the container at the specified folder
-      path.
+    description: Dictionary of absolute folder path > secret name. Will mount the contents of the secret in the container at the specified folder path.
     examples:
       - /foo: bar
     nullable: true
@@ -1030,7 +979,7 @@ definitions:
   secretTemplates:
     definitions:
       otomiAdminUsername:
-        x-secret: admin
+        x-secret: 'admin'
   securityContext:
     additionalProperties:
       uniqueItems: true
@@ -1038,16 +987,11 @@ definitions:
       runAsUser:
         $ref: '#/definitions/unixOwnerId'
       runAsNonRoot:
-        description: Enforces that the container must run as non root. This implies that
-          the UID must also be set with runAsUser.
+        description: Enforces that the container must run as non root. This implies that the UID must also be set with runAsUser.
         type: boolean
         default: true
       runAsGroup:
-        description: The GID to run the entrypoint of the container process. Defaults to
-          group specified in image metadata if unspecified. May also
-          be set in PodSecurityContext.  If set in both
-          SecurityContext and PodSecurityContext, the value specified
-          in SecurityContext takes precedence.
+        description: The GID to run the entrypoint of the container process. Defaults to group specified in image metadata if unspecified. May also be set in PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the value specified in SecurityContext takes precedence.
         $ref: '#/definitions/unixOwnerId'
   service:
     additionalProperties: false
@@ -1058,17 +1002,14 @@ definitions:
         properties:
           forwardOriginalToken:
             default: false
-            description: If true istio will forward the bearer token instead of removing it
-              from the headers.
+            description: If true istio will forward the bearer token instead of removing it from the headers.
             type: boolean
           workload:
             $ref: '#/definitions/labelsAnnotations'
       certArn:
-        description: Only available on AWS when an external LB is configured. The cert
-          ARN will be registered on the load balancer for SSL
-          termination.
+        description: Only available on AWS when an external LB is configured. The cert ARN will be registered on the load balancer for SSL termination.
         example: arn:aws:acm:eu-central-1:xxx:certificate/xxx
-        pattern: arn:aws(-cn|-us-gov)?:acm:\S+:\d+:\w+\/\S+
+        pattern: 'arn:aws(-cn|-us-gov)?:acm:\S+:\d+:\w+\/\S+'
         type: string
       trafficControl:
         title: Traffic Control
@@ -1129,13 +1070,10 @@ definitions:
                     - name
                     - value
       hide:
-        description: Used by otomi console to determine wether to render it on screen or
-          not. Only used by core services.
+        description: Used by otomi console to determine wether to render it on screen or not. Only used by core services.
         type: boolean
       host:
-        description: Reference to another core service name. Used by otomi console to
-          show a variation of a core service with a different path
-          (i.e. Loki). Only used by core services.
+        description: Reference to another core service name. Used by otomi console to show a variation of a core service with a different path (i.e. Loki). Only used by core services.
         $ref: '#/definitions/wordCharacterPattern'
       id:
         description: Unique identifier created by and used in API. Optional.
@@ -1144,8 +1082,7 @@ definitions:
         description: Available only for core apps.
         type: boolean
       isShared:
-        description: When true the service will get it's own domain by prefixing the app
-          name to the cluster domain. Mostly used by core apps.
+        description: When true the service will get it's own domain by prefixing the app name to the cluster domain. Mostly used by core apps.
         type: boolean
       ksvc:
         type: object
@@ -1155,8 +1092,7 @@ definitions:
             type: boolean
             default: false
       logo:
-        description: Used by otomi-console as an override mechanism to display another
-          logo.
+        description: Used by otomi-console as an override mechanism to display another logo.
         properties:
           name:
             type: string
@@ -1164,33 +1100,26 @@ definitions:
           - name
       name:
         $ref: '#/definitions/idName'
-        description: Short name. Will be used for generation of knative service name, as
-          well as service URL.
+        description: Short name. Will be used for generation of knative service name, as well as service URL.
       namespace:
         $ref: '#/definitions/idName'
-        description: A kubernetes namespace. Only used by core services, so should be
-          disallowed for non-admins.
+        description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
       networkPolicy:
         $ref: '#/definitions/networkPolicy'
       ownHost:
         default: true
-        description: When true the service will get it's own domain by prefixing the app
-          name to the team domain. Mostly set to true. This will
-          probably be removed soon.
+        description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
         type: boolean
       path:
-        description: Used by otomi-console to render a path for the app. Only used by
-          core services.
+        description: Used by otomi-console to render a path for the app. Only used by core services.
         $ref: '#/definitions/wordCharacterPattern'
       paths:
         items:
-          description: >
-            Path mapping to only route certain paths to the service. This
-            allows micro services to operate on the same domain and
-            port.
-
+          description: |
+            Path mapping to only route certain paths to the service. This allows micro services to operate on the same domain and port.
             When left empty all paths will go to this service.
           $ref: '#/definitions/wordCharacterPattern'
+        # nullable: true
         type: array
       port:
         $ref: '#/definitions/portNumber'
@@ -1199,14 +1128,12 @@ definitions:
         description: Ingress class name
         type: string
         default: platform
-        pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])+$
+        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])+$'
       svc:
         $ref: '#/definitions/idName'
-        description: When given a backing k8s service is expected to be deployed with
-          this name, which will be exposed through this team service.
+        description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
       tlsPass:
-        description: Will pass the request to the backing service without TLS
-          termination.
+        description: Will pass the request to the backing service without TLS termination.
         type: boolean
         default: false
       useCname:
@@ -1219,8 +1146,7 @@ definitions:
             description: CNAME of the service.
             type: string
           tlsSecretName:
-            description: Kubernetes secret name of type TLS (not required if the tlsPass
-              flag is set to true).
+            description: Kubernetes secret name of type TLS (not required if the tlsPass flag is set to true).
             type: string
       type:
         nullable: true
@@ -1231,7 +1157,8 @@ definitions:
           - cluster
         type: string
       removeRequestHeaders:
-        description: Strip selected headers from HTTP request.
+        description: >-
+          Strip selected headers from HTTP request.
         type: array
         items:
           type: string
@@ -1243,11 +1170,12 @@ definitions:
     examples:
       - 1Gi
       - 0.5Ti
-    pattern: ^([0-9]+\.)?[0-9]+(E|P|T|G||Ti|Gi)?$
+    pattern: '^([0-9]+\.)?[0-9]+(E|P|T|G||Ti|Gi)?$'
     type: string
   subdomainType:
     type: string
-    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+    # A lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com')
+    pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$'
   team:
     additionalProperties: false
     properties:
@@ -1274,7 +1202,7 @@ definitions:
       jobs:
         $ref: '#/definitions/jobs'
       limitRange:
-        description: Kubernetes limit range. As is.
+        description: 'Kubernetes limit range. As is.'
         properties:
           default:
             $ref: '#/definitions/resource'
@@ -1291,11 +1219,7 @@ definitions:
         type: string
         x-secret: ''
       resourceQuota:
-        description: 'List of kubernetes resource quota. Should adhere to the
-          "spec.hard" format as described here:
-          https://kubernetes.io/docs/concepts/policy/resource-quotas/.
-          Not validated as there is no schema published. Change at
-          your own risk.'
+        description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
         type: object
       billingAlertQuotas:
         title: Billing alert quotas
@@ -1332,14 +1256,12 @@ definitions:
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster
-          description: When set a user can define ingress from other services for a
-            particular team service
+          description: When set a user can define ingress from other services for a particular team service
           type: boolean
           default: true
         egressPublic:
           title: Enable filtering of egress traffic outside the cluster
-          description: When set a user can define egress towards FQDNs and public IPs for
-            a team service
+          description: When set a user can define egress towards FQDNs and public IPs for a team service
           type: boolean
           default: true
       workloads:
@@ -1363,31 +1285,29 @@ definitions:
         type: array
         items:
           type: string
-          enum:
-            - ingress
-            - networkPolicy
+          enum: [ingress, networkPolicy]
         uniqueItems: true
       team:
         type: array
         items:
           type: string
           enum:
-            - alerts
-            - backup
-            - billingAlertQuotas
-            - oidc
-            - resourceQuota
-            - downloadKubeConfig
-            - downloadDockerConfig
-            - networkPolicy
+            [
+              alerts,
+              backup,
+              billingAlertQuotas,
+              oidc,
+              resourceQuota,
+              downloadKubeConfig,
+              downloadDockerConfig,
+              networkPolicy,
+            ]
         uniqueItems: true
       apps:
         type: array
         items:
           type: string
-          enum:
-            - argocd
-            - gitea
+          enum: [argocd, gitea]
         uniqueItems: true
   backupTtl:
     default: 168h
@@ -1400,7 +1320,7 @@ definitions:
     title: Retention policy
     type: string
   url:
-    pattern: ^https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/=]*)
+    pattern: '^https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/=]*)'
     type: string
   volumes:
     items:
@@ -1416,11 +1336,11 @@ definitions:
     type: array
   wordCharacterPattern:
     type: string
+    # At least one non whitespace character
     pattern: ^[^\s]+$
   project:
     type: object
-    description: A single project can represent application's build, workload and
-      service.
+    description: A single project can represent application's build, workload and service.
     properties:
       name:
         description: Name of the project
@@ -1445,8 +1365,7 @@ definitions:
         description: Select when using an external private Git repository.
         default: false
       secretName:
-        description: The name of the secret with the credentials of the external private
-          Git repository
+        description: The name of the secret with the credentials of the external private Git repository
         type: string
       mode:
         properties:
@@ -1456,8 +1375,7 @@ definitions:
                 description: URL of the Git repository holding the application code.
                 $ref: '#/definitions/url'
               revision:
-                description: This may be a commit sha, branch name, or tag. If omitted, will
-                  equal to HEAD.
+                description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
                 $ref: '#/definitions/wordCharacterPattern'
                 default: HEAD
               path:
@@ -1482,8 +1400,7 @@ definitions:
                 description: URL of the Git repository holding the application code.
                 $ref: '#/definitions/url'
               revision:
-                description: This may be a commit sha, branch name, or tag. If omitted, will
-                  equal to HEAD.
+                description: This may be a commit sha, branch name, or tag. If omitted, will equal to HEAD.
                 $ref: '#/definitions/wordCharacterPattern'
                 default: HEAD
               path:
@@ -1503,6 +1420,7 @@ definitions:
                     - value
     required:
       - name
+
   workload:
     type: object
     description: Define location of the application's manifests or chart
@@ -1515,22 +1433,16 @@ definitions:
       chartProvider:
         type: string
         title: Chart provider
-        enum:
-          - helm
-          - git
+        enum: ['helm', 'git']
         default: git
       path:
-        description: A relative directory path within the Git repository. Absolute paths
-          cause errors. (only valid for applications sourced from Git)
+        description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
         $ref: '#/definitions/wordCharacterPattern'
       chart:
-        description: Chart is a Helm chart name, and must be specified for applications
-          sourced from a Helm repo.
+        description: Chart is a Helm chart name, and must be specified for applications sourced from a Helm repo.
         $ref: '#/definitions/wordCharacterPattern'
       revision:
-        description: In case of Git, this can be commit, tag, or branch. If omitted,
-          will equal to HEAD. In case of Helm, this is a semver tag
-          for the Chart's version.
+        description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
         $ref: '#/definitions/wordCharacterPattern'
         default: HEAD
       chartMetadata:
@@ -1545,12 +1457,10 @@ definitions:
             title: Helm chart description
             default: ''
       namespace:
-        description: Workload namespace. Applicable only for team-admin. Default value
-          is 'team-<team_id>'
+        description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
       imageUpdateStrategy:
-        description: Automatically update the image. Only supported wit Helm charts in
-          local Gitea repository and images stored in Harbor.
+        description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
         additionalProperties: false
         properties:
@@ -1712,6 +1622,7 @@ definitions:
         required:
           - gcs
           - type
+
 properties:
   alerts:
     $ref: '#/definitions/alerts'
@@ -1728,21 +1639,18 @@ properties:
         properties:
           isManaged:
             default: false
-            description: Indicates Azure Application Gateway Ingress Controller add-on is
-              installed by AKS.
+            description: Indicates Azure Application Gateway Ingress Controller add-on is installed by AKS.
             type: boolean
       monitor:
         $ref: '#/definitions/azure/definitions/monitor'
+
   cloud:
     additionalProperties: true
     properties:
       skipStorageClasses:
-        description: >
-          List of storage classes to exclude from deployment, to avoid k8s
-          errors due to patching not allowed.
-
+        description: |
+          List of storage classes to exclude from deployment, to avoid k8s errors due to patching not allowed.
           This is a rather hacky way to circumvent the patching problem, going against idempotency, but we need it.
-
           Without it we can't add new storageclasses to a cluster upgrading otomi.
         type: array
         items:
@@ -1796,33 +1704,27 @@ properties:
           resources:
             $ref: '#/definitions/resources'
           byoWildcardCert:
-            description: Bring your own trusted wildcard certificate. Only applicable for
-              byo-wildcard-cert issuer
+            description: 'Bring your own trusted wildcard certificate. Only applicable for byo-wildcard-cert issuer'
             type: string
           byoWildcardCertKey:
-            description: A certificate key corresponding to the byoWildcardCert.
+            description: 'A certificate key corresponding to the byoWildcardCert.'
             type: string
             x-secret: ''
           customRootCA:
             x-secret: ''
             type: string
-            description: CA that is used to create and verify self-signed certificates.
-              Leave it empty to generate one automatically.
+            description: CA that is used to create and verify self-signed certificates. Leave it empty to generate one automatically.
           customRootCAKey:
             x-secret: ''
             type: string
-            description: CA private key that is used to issue certificates. Leave it empty
-              to generate one automatically.
+            description: CA private key that is used to issue certificates. Leave it empty to generate one automatically.
           email:
             $ref: '#/definitions/email'
           issuer:
-            description: >
+            description: |
               Indicates the origin of the wildcard certificate. 
-
               The custom-ca - cert-manager uses the customRootCA to generate wildcard certificate.
-
               The letsencrypt - cert-manager requests certificate from letsencrypt endpoint.
-
               The byo-wildcard-cert allows users to bring their own trusted wildcard certificate (cert-manager not involved)
             type: string
             enum:
@@ -1914,23 +1816,19 @@ properties:
                   requests:
                     properties:
                       cpu:
-                        description: Requested compute resources for all the containers started by the
-                          runner (guaranteed),
-                          expressed in millicores.
+                        description: Requested compute resources for all the containers started by the runner (guaranteed), expressed in millicores.
                         type: integer
                         default: 1000
                       memory:
                         $ref: '#/definitions/memoryQuantity'
-                        description: Requested memory resources for all the containers started by the
-                          runner (guaranteed).
+                        description: Requested memory resources for all the containers started by the runner (guaranteed).
                         default: 1Gi
               agent:
                 $ref: '#/definitions/resources'
               server:
                 $ref: '#/definitions/resources'
           sharedSecret:
-            description: A secret used by drone-admit-members plugin.
-              https://docs.drone.io/runner/kubernetes/configuration/reference/drone-secret-plugin-token/
+            description: A secret used by drone-admit-members plugin. https://docs.drone.io/runner/kubernetes/configuration/reference/drone-secret-plugin-token/
             type: string
             x-secret: '{{ randAlphaNum 32 }}'
           sourceControl:
@@ -1968,7 +1866,7 @@ properties:
                   - $ref: '#/definitions/droneGit'
                   - properties:
                       server:
-                        default: https://github.com
+                        default: 'https://github.com'
                         type: string
               gitlab:
                 allOf:
@@ -2006,7 +1904,7 @@ properties:
             $ref: '#/definitions/rawValues'
           logLevel:
             type: string
-            default: info
+            default: 'info'
       falco:
         additionalProperties: false
         properties:
@@ -2066,9 +1964,7 @@ properties:
                 version:
                   description: A k8s resource version.
                   type: string
-              required:
-                - kind
-                - version
+              required: [kind, version]
           disableValidatingWebhook:
             type: boolean
             default: true
@@ -2084,7 +1980,7 @@ properties:
             default: false
           logLevel:
             type: string
-            default: INFO
+            default: 'INFO'
           replicas:
             type: integer
           image:
@@ -2107,8 +2003,7 @@ properties:
             x-secret: ''
           postgresqlPassword:
             type: string
-            description: This password was generated and cannot be changed without manual
-              intervention.
+            description: This password was generated and cannot be changed without manual intervention.
             x-secret: '{{ randAlphaNum 20 }}'
             readOnly: true
           image:
@@ -2161,8 +2056,7 @@ properties:
             x-secret: ''
           databasePassword:
             type: string
-            description: Once set and deployed it cannot be changed with manual
-              intervention.
+            description: Once set and deployed it cannot be changed with manual intervention.
             x-secret: '{{ randAlphaNum 20 }}'
           core:
             properties:
@@ -2182,8 +2076,7 @@ properties:
             properties:
               imageChartStorage:
                 additionalProperties: false
-                description: For reference go to
-                  https://github.com/distribution/distribution/blob/main/docs/configuration.md#storage
+                description: For reference go to https://github.com/distribution/distribution/blob/main/docs/configuration.md#storage
                 properties:
                   s3:
                     additionalProperties: false
@@ -2271,9 +2164,7 @@ properties:
                 type: string
               type:
                 type: string
-                description: Internal is a database provided by the community chart. The
-                  external is database provided by the
-                  cloudnative-pg.
+                description: Internal is a database provided by the community chart. The external is database provided by the cloudnative-pg.
                 enum:
                   - internal
                   - external
@@ -2282,8 +2173,7 @@ properties:
               user:
                 type: string
               importHarborDb:
-                description: Indicate if an existing database should be importend. (Once set to
-                  true you must not change it back)
+                description: Indicate if an existing database should be importend. (Once set to true you must not change it back)
                 type: boolean
           image:
             $ref: '#/definitions/imageSimple'
@@ -2333,8 +2223,7 @@ properties:
                 description: A name of the Application Gateway.
                 type: string
               resourceGroup:
-                description: A name of the Azure Resource Group in which Application Gateway was
-                  created.
+                description: A name of the Azure Resource Group in which Application Gateway was created.
                 type: string
               subnetName:
                 description: A subnet of the application gateway.
@@ -2422,9 +2311,7 @@ properties:
                   resources:
                     $ref: '#/definitions/resources'
           extensionProviders:
-            description: "See:
-              https://istio.io/latest/docs/reference/config/istio.mesh.v1al\
-              pha1/#MeshConfig"
+            description: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
             type: array
             items:
               type: object
@@ -2512,8 +2399,7 @@ properties:
             type: object
             properties:
               replicas:
-                description: For HA mode set to 5. Read more at
-                  https://github.com/knative/operator/issues/376
+                description: For HA mode set to 5. Read more at https://github.com/knative/operator/issues/376
                 default: 1
                 type: integer
                 minimum: 1
@@ -2614,8 +2500,7 @@ properties:
                 type: string
               period:
                 default: 24h
-                description: Should be a multiple of 24h. See
-                  https://grafana.com/docs/loki/latest/operations/storage/boltdb-shipper/.
+                description: Should be a multiple of 24h. See https://grafana.com/docs/loki/latest/operations/storage/boltdb-shipper/.
                 type: string
             required:
               - duration
@@ -2664,8 +2549,7 @@ properties:
                   - filesystem
                 default: minioLocal
           v11StartDate:
-            description: Set this to a date just after deployment in case of an upgrade.
-              (Otomi started at v9 with filesystem.)
+            description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
             title: Schema v11 start date
             type: string
         required:
@@ -2729,7 +2613,7 @@ properties:
             properties:
               cookieSecret:
                 description: Cookie secret must be 32 byte base64 encoded string.
-                pattern: ^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$
+                pattern: '^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$'
                 type: string
                 x-secret: '{{ randAlphaNum 32 | b64enc }}'
       oauth2-proxy-redis:
@@ -2830,6 +2714,7 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
+
       oltp:
         additionalProperties: false
         properties:
@@ -2876,8 +2761,7 @@ properties:
                         $ref: '#/definitions/wordCharacterPattern'
                         x-secret: ''
                   customConfig:
-                    description: Custom remote write config. Will be appended to the remoteWrite
-                      list.
+                    description: Custom remote write config. Will be appended to the remoteWrite list.
                     type: string
           replicas:
             type: integer
@@ -2888,12 +2772,9 @@ properties:
           retention:
             $ref: '#/definitions/duration'
           retentionSize:
-            description: 'The maximum number of bytes of storage blocks to retain. The
-              oldest data will be removed first. Defaults to 0 or
-              disabled. Units supported: B, KB, MB, GB, TB, PB,
-              EB'
+            description: 'The maximum number of bytes of storage blocks to retain. The oldest data will be removed first. Defaults to 0 or disabled. Units supported: B, KB, MB, GB, TB, PB, EB'
             default: 4GB
-            pattern: ^([0-9]+\.)?[0-9]+(B|KB|MB|GB|TB|PB|EB)?$
+            pattern: '^([0-9]+\.)?[0-9]+(B|KB|MB|GB|TB|PB|EB)?$'
           storageSize:
             $ref: '#/definitions/size'
             default: 5Gi
@@ -3184,6 +3065,14 @@ properties:
                 $ref: '#/definitions/resources'
               kubeRBACProxy:
                 $ref: '#/definitions/resources'
+      sealed-secrets:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
       vault:
         additionalProperties: false
         properties:
@@ -3193,11 +3082,9 @@ properties:
           logLevel:
             $ref: '#/definitions/logLevel'
           seal:
-            description: >
+            description: |
               Use a KMS to encrypt and decrypt the master key.\n
-
               WARNING - You must first copy the keys from the "vault-unseal-keys" secret, and import them to your KMS.\n
-
               (enabling this feature will delete the unseal key from the cluster without pushing to external kms!)
             nullable: true
             type: object
@@ -3265,8 +3152,7 @@ properties:
                 required:
                   - azurekeyvault
           storage:
-            description: Storage configuration. See
-              https://www.vaultproject.io/docs/configuration/storage.
+            description: Storage configuration. See https://www.vaultproject.io/docs/configuration/storage.
             type: object
           image:
             properties:
@@ -3343,8 +3229,7 @@ properties:
                 properties:
                   serviceAccount:
                     type: string
-                    description: The IAM account with permissions to manage snapshot resources in
-                      the GCP Project.
+                    description: The IAM account with permissions to manage snapshot resources in the GCP Project.
                     $ref: '#/definitions/wordCharacterPattern'
                   project:
                     type: string
@@ -3452,24 +3337,13 @@ properties:
     patternProperties:
       '^ingress-nginx-[a-z0-9]([-a-z0-9]*[a-z0-9])+$':
         $ref: '#/definitions/ingressNginx'
-    sealed-secrets:
-      additionalProperties: false
-      properties:
-        _rawValues:
-          $ref: '#/definitions/rawValues'
-        enabled:
-          type: boolean
-          default: false
-        resources:
-          $ref: '#/definitions/resources'
   cluster:
     $ref: '#/definitions/cluster'
   dns:
     additionalProperties: false
     properties:
       zones:
-        description: Extra dns zones that the cluster can administer. Team services can
-          use this to publish their URLs on.
+        description: Extra dns zones that the cluster can administer. Team services can use this to publish their URLs on.
         items:
           $ref: '#/definitions/domain'
         type: array
@@ -3487,8 +3361,7 @@ properties:
         description: The DNS provider managing the domains.
         oneOf:
           - title: AWS
-            description: Uses credentials when either a pair of id+key or a secret name is
-              provided. Assumes node role otherwise.
+            description: Uses credentials when either a pair of id+key or a secret name is provided. Assumes node role otherwise.
             additionalProperties: false
             properties:
               aws:
@@ -3499,26 +3372,19 @@ properties:
                         $ref: '#/definitions/aws/definitions/secretKey'
                       accessKey:
                         $ref: '#/definitions/aws/definitions/accessKey'
-                    required:
-                      - secretKey
-                      - accessKey
+                    required: [secretKey, accessKey]
                   region:
                     $ref: '#/definitions/aws/definitions/region'
                   role:
                     $ref: '#/definitions/aws/definitions/role'
-                required:
-                  - region
+                required: [region]
                 oneOf:
-                  - required:
-                      - credentials
-                  - required:
-                      - role
+                  - required: [credentials]
+                  - required: [role]
                   - not:
                       anyOf:
-                        - required:
-                            - credentials
-                        - required:
-                            - role
+                        - required: [credentials]
+                        - required: [role]
             required:
               - aws
           - title: Azure
@@ -3545,9 +3411,7 @@ properties:
                     description: A service account key in json format for managing a DNS zone.
                   project:
                     $ref: '#/definitions/google/definitions/project'
-                required:
-                  - project
-                  - serviceAccountKey
+                required: [project, serviceAccountKey]
             required:
               - google
           - title: Digital Ocean
@@ -3593,28 +3457,20 @@ properties:
                     type: boolean
                     x-default: true
                 oneOf:
-                  - required:
-                      - apiToken
-                  - required:
-                      - apiSecret
-                      - email
+                  - required: [apiToken]
+                  - required: [apiSecret, email]
                   - not:
                       anyOf:
-                        - required:
-                            - apiToken
-                        - required:
-                            - apiSecret
-                        - required:
-                            - email
+                        - required: [apiToken]
+                        - required: [apiSecret]
+                        - required: [email]
             required:
               - cloudflare
           - title: Other
             additionalProperties: false
             properties:
               other:
-                description: This option requires configuration for both external-dns as well as
-                  cert-manager. No schema validation is
-                  available so provide correct data.
+                description: This option requires configuration for both external-dns as well as cert-manager. No schema validation is available so provide correct data.
                 type: object
                 properties:
                   name:
@@ -3623,16 +3479,11 @@ properties:
                   external-dns:
                     title: YAML for external-dns.
                     type: object
-                    description: "The provider config as provided here:
-                      https://github.com/redkubes/otomi-cor\
-                      e/blob/main/charts/external-dns/value\
-                      s.yaml"
+                    description: 'The provider config as provided here: https://github.com/redkubes/otomi-core/blob/main/charts/external-dns/values.yaml'
                   cert-manager:
                     title: YAML for cert-manager.
                     type: object
-                    description: "The dns01 config as provided here:
-                      https://cert-manager.io/docs/configur\
-                      ation/acme/dns01/"
+                    description: 'The dns01 config as provided here: https://cert-manager.io/docs/configuration/acme/dns01/'
                 required:
                   - name
                   - external-dns
@@ -3641,16 +3492,14 @@ properties:
               - other
       entrypoint:
         $ref: '#/definitions/ipV4Address'
-        description: Optional. A public IP address that will override (loadbalancer) ip
-          used for registering hosts. This allows for access to
-          private clusters.
+        description: Optional. A public IP address that will override (loadbalancer) ip used for registering hosts. This allows for access to private clusters.
   home:
     $ref: '#/definitions/alerts'
   files:
     type: object
-    description: Custom values for the workload chart.
+    description: 'Custom values for the workload chart.'
     patternProperties:
-      "^/|(/[\\w-]+)+$":
+      '^/|(/[\w-]+)+$':
         type: string
         pattern: ^[^\s]+$
   kms:
@@ -3665,11 +3514,7 @@ properties:
               aws:
                 properties:
                   keys:
-                    description: Comma separated list of one or two ARNs to keys as defined in AWS
-                      KMS. One if used for both enc+dec. Two
-                      if one for enc, other for dec. (You
-                      can specify a role by appending it to
-                      the ARN of the key with a + sign.)
+                    description: Comma separated list of one or two ARNs to keys as defined in AWS KMS. One if used for both enc+dec. Two if one for enc, other for dec. (You can specify a role by appending it to the ARN of the key with a + sign.)
                     title: AWS KMS keys
                     type: string
                   accessKey:
@@ -3691,10 +3536,7 @@ properties:
               azure:
                 properties:
                   keys:
-                    description: Comma separated list of one or two paths to keys as defined in
-                      Azure Keyvault. One if used for both
-                      enc+dec. Two if one for enc, other for
-                      dec.
+                    description: Comma separated list of one or two paths to keys as defined in Azure Keyvault. One if used for both enc+dec. Two if one for enc, other for dec.
                     title: Azure Keyvault keys
                     type: string
                   clientId:
@@ -3716,9 +3558,7 @@ properties:
               google:
                 properties:
                   keys:
-                    description: Comma separated list of one or two paths to keys as defined in GCP
-                      KMS. One if used for both enc+dec. Two
-                      if one for enc, other for dec.
+                    description: Comma separated list of one or two paths to keys as defined in GCP KMS. One if used for both enc+dec. Two if one for enc, other for dec.
                     title: GCP KMS keys
                     type: string
                   accountJson:
@@ -3738,9 +3578,7 @@ properties:
               vault:
                 properties:
                   keys:
-                    description: Comma separated list of one or two paths to keys as defined in
-                      Vault. One if used for both enc+dec.
-                      Two if one for enc, other for dec.
+                    description: Comma separated list of one or two paths to keys as defined in Vault. One if used for both enc+dec. Two if one for enc, other for dec.
                     title: Vault keys
                     type: string
                   token:
@@ -3753,9 +3591,7 @@ properties:
               - vault
   oidc:
     additionalProperties: false
-    description: Holds many parts used in different locations. Please see keycloak,
-      grafana, istio and oauth-proxy as those are all consuming (parts of)
-      these settings.
+    description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
     properties:
       issuer:
         $ref: '#/definitions/url'
@@ -3770,13 +3606,11 @@ properties:
         $ref: '#/definitions/wordCharacterPattern'
       usernameClaimMapper:
         $ref: '#/definitions/wordCharacterPattern'
-        description: Claim name from identity provider used by Keycloak to create the
-          username. Best to not change this from the default.
-        default: ${CLAIM.upn}
+        description: Claim name from identity provider used by Keycloak to create the username. Best to not change this from the default.
+        default: '${CLAIM.upn}'
       subClaimMapper:
         type: string
-        description: Claim name passed by Keycloak as a unique user identifier. Best to
-          not change this from the default.
+        description: Claim name passed by Keycloak as a unique user identifier. Best to not change this from the default.
         default: sub
     required:
       - clientID
@@ -3806,11 +3640,9 @@ properties:
         x-secret: '{{ randAlphaNum 20 }}'
       globalPullSecret:
         title: Global pullsecret
-        description: Will be connected to each "default" service account in all otomi
-          app namespaces. Handy for authenticating with DockerHub to
-          avoid rate limiting. Also useful when pulling all otomi
-          images from a private repo. (One would need to override all
-          the images in the config first.)
+        description: Will be connected to each "default" service account in all otomi app namespaces.
+          Handy for authenticating with DockerHub to avoid rate limiting.
+          Also useful when pulling all otomi images from a private repo. (One would need to override all the images in the config first.)
         additionalProperties: false
         properties:
           username:
@@ -3829,52 +3661,40 @@ properties:
           - password
       hasCloudLB:
         default: false
-        description: Set this to true when a cloud specific ingress controller is
-          wanted/installed that terminates TLS and forwards traffic
-          unencrypted. Otherwise Otomi's Nginx controller will create
-          a loadbalancer that will take care of this.
+        description: "Set this to true when a cloud specific ingress controller is wanted/installed that terminates TLS and forwards traffic unencrypted. Otherwise Otomi's Nginx controller will create a loadbalancer that will take care of this."
         type: boolean
       hasExternalDNS:
-        description: Set this to true when an external dns zone is available to manage
-          dns records. (Expects required `dns:` fields to be set.)
+        description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
         default: false
         type: boolean
       hasExternalIDP:
         default: false
-        description: Set this to true when bringing your own external IDP such as Azure
-          AD. (Expects required `oidc:` fields to be set.)
+        description: Set this to true when bringing your own external IDP such as Azure AD. (Expects required `oidc:` fields to be set.)
         type: boolean
       isHomeMonitored:
         default: false
-        description: Whether this cluster is home monitored (like when under a Premium
-          SLA). Sends criticals home.
+        description: Whether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
         type: boolean
       isMultitenant:
         default: true
-        description: Whether to separate team metrics and logs. Disabling this lets
-          everybody be admin and see everything.
+        description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
         type: boolean
       nodeSelector:
         $ref: '#/definitions/labelsAnnotations'
-        description: 'One or more "label: value" pairs that must exist on one or more
-          nodes, which will force all otomi platform workloads to be
-          scheduled there.'
+        description: 'One or more "label: value" pairs that must exist on one or more nodes, which will force all otomi platform workloads to be scheduled there.'
       version:
         default: latest
-        description: Best pin this to a valid release version found in the repo.
-        pattern: (v[0-9]+.[0-9]+.[0-9]+|[a-zA-Z]+[a-zA-Z0-9-])
+        description: 'Best pin this to a valid release version found in the repo.'
+        pattern: '(v[0-9]+.[0-9]+.[0-9]+|[a-zA-Z]+[a-zA-Z0-9-])'
   policies:
     type: object
-    description: >
-      List of policy objects used by Open Policy Agent tools (Conftest,
-      Gatekeeper) to run policy based validation against both in-cluster
-      Kubernetes contexts and plain Yaml resources
+    description: |
+      List of policy objects used by Open Policy Agent tools (Conftest, Gatekeeper) to run policy based validation against both in-cluster Kubernetes contexts and plain Yaml resources
     additionalProperties: false
     properties:
       banned-image-tags:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           tags:
             type: array
@@ -3885,20 +3705,18 @@ properties:
             default: false
       container-limits:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           cpu:
-            $ref: '#/definitions/cpuQuantity'
+            '$ref': '#/definitions/cpuQuantity'
           memory:
-            $ref: '#/definitions/memoryQuantity'
+            '$ref': '#/definitions/memoryQuantity'
           enabled:
             type: boolean
             default: false
       psp-allowed-repos:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           repos:
             type: array
@@ -3909,16 +3727,13 @@ properties:
             default: false
       psp-host-filesystem:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           allowedHostPaths:
             type: array
             items:
               type: object
-              required:
-                - pathPrefix
-                - readOnly
+              required: [pathPrefix, readOnly]
               properties:
                 pathPrefix:
                   type: string
@@ -3930,21 +3745,16 @@ properties:
             default: false
       psp-allowed-users:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           runAsUser:
             type: object
             additionalProperties: false
-            required:
-              - rule
+            required: [rule]
             properties:
               rule:
                 type: string
-                enum:
-                  - RunAsAny
-                  - MustRunAsNonRoot
-                  - MustRunAs
+                enum: [RunAsAny, MustRunAsNonRoot, MustRunAs]
               ranges:
                 type: array
                 items:
@@ -3954,10 +3764,7 @@ properties:
             properties:
               rule:
                 type: string
-                enum:
-                  - RunAsAny
-                  - MayRunAs
-                  - MustRunAs
+                enum: [RunAsAny, MayRunAs, MustRunAs]
               ranges:
                 type: array
                 items:
@@ -3967,10 +3774,7 @@ properties:
             properties:
               rule:
                 type: string
-                enum:
-                  - RunAsAny
-                  - MayRunAs
-                  - MustRunAs
+                enum: [RunAsAny, MayRunAs, MustRunAs]
               ranges:
                 type: array
                 items:
@@ -3980,10 +3784,7 @@ properties:
             properties:
               rule:
                 type: string
-                enum:
-                  - RunAsAny
-                  - MayRunAs
-                  - MustRunAs
+                enum: [RunAsAny, MayRunAs, MustRunAs]
               ranges:
                 type: array
                 items:
@@ -3993,32 +3794,28 @@ properties:
             default: false
       psp-host-security:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           enabled:
             type: boolean
             default: false
       psp-host-networking-ports:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           enabled:
             type: boolean
             default: false
       psp-privileged:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           enabled:
             type: boolean
             default: false
       psp-capabilities:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           enabled:
             type: boolean
@@ -4033,8 +3830,7 @@ properties:
               type: string
       psp-forbidden-sysctls:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           enabled:
             type: boolean
@@ -4045,8 +3841,7 @@ properties:
               type: string
       psp-apparmor:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           enabled:
             type: boolean
@@ -4057,8 +3852,7 @@ properties:
               type: string
       psp-seccomp:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           enabled:
             type: boolean
@@ -4069,17 +3863,14 @@ properties:
               type: string
       psp-selinux:
         additionalProperties: false
-        required:
-          - enabled
+        required: [enabled]
         properties:
           enabled:
             type: boolean
             default: false
           seLinuxContext:
             type: string
-            enum:
-              - MustRunAs
-              - RunAsAny
+            enum: [MustRunAs, RunAsAny]
           allowedSELinuxOptions:
             type: array
             items:
@@ -4102,8 +3893,7 @@ properties:
           - properties:
               className:
                 type: string
-                enum:
-                  - platform
+                enum: [platform]
           - $ref: '#/definitions/ingressClassParameters'
       classes:
         type: array
@@ -4136,7 +3926,7 @@ properties:
         type: string
       smarthost:
         $ref: '#/definitions/hostPort'
-        description: The smtp host:port combination.
+        description: 'The smtp host:port combination.'
     required:
       - smarthost
   platformBackups:
@@ -4265,8 +4055,7 @@ properties:
             x-secret: '{{ randAlpha 16 }}'
   version:
     type: integer
-    description: DO NOT CHANGE! Holds the values-schema version. For more details,
-      see `otomi migrate`.
+    description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.
   license:
     type: string
     describe: License in form of JWT
@@ -4282,9 +4071,7 @@ properties:
             type: string
           status:
             type: string
-            enum:
-              - deploying
-              - deployed
+            enum: [deploying, deployed]
           version:
             type: string
       helm:
