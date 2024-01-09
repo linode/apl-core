@@ -322,6 +322,40 @@ environments:
                   limits:
                       cpu: 50m
                       memory: 32Mi
+          kyverno:
+            enabled: false
+            mode: DevTest
+            resources:
+              admissionController:
+                  requests:
+                      cpu: 200m
+                      memory: 128Mi
+                  limits:
+                      cpu: 1
+                      memory: 512Mi
+              cleanupController:
+                  requests:
+                      cpu: 100m
+                      memory: 128Mi
+                  limits:
+                      cpu: 1
+                      memory: 512Mi
+              backgroundController:
+                  requests:
+                      cpu: 50m
+                      memory: 128Mi
+                  limits:
+                      cpu: 1
+                      memory: 512Mi
+              reportsController:
+                  requests:
+                      cpu: 50m
+                      memory: 128Mi
+                  limits:
+                      cpu: 1
+                      memory: 512Mi
+
+
           tekton:
             resources:
               dashboard:

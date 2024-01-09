@@ -1,29 +1,31 @@
 {{- $v := .Values }}
-{{- $sp := $v.securityPolicy }}
-{{- $pol := $v.policies }}
-{{- if $pol.requiredLabel.enabled }}
-{{- with $pol.requiredLabel }}
+{{- $sp := $v.policyProfile.otomi }}
+{{- range $p := $v.policies }}
+{{- if and (eq $p.name "required-otomi-label") ($p.enabled) }}
+---
 apiVersion: kyverno.io/v1
 kind: Policy
 metadata:
-  name: require-label
+  name: required-otomi-label
   annotations:
-    policies.kyverno.io/title: Require Annotations
-    policies.kyverno.io/category: Other
+    policies.kyverno.io/title: Required Otomi Label
+    policies.kyverno.io/category: otomi
     policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod, Label
     policies.kyverno.io/description: >-
       Define and use annotations that identify semantic attributes of your application or Deployment.
       A common set of annotations allows tools to work collaboratively, describing objects in a common manner that
       all tools can understand. The recommended annotations describe applications in a way that can be
-      queried. This policy validates that the annotation `corp.org/department` is specified with some value.            
+      queried. This policy validates that the annotation `corp.org/department` is specified with some value.
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}       
 spec:
   {{- if eq .actionOverride $sp.defaultAction }}
   validationFailureAction: {{ $sp.defaultAction }}
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}
-  background: false
+  background: true
+  failurePolicy: Fail
   rules:
   - name: check-for-label
     match:

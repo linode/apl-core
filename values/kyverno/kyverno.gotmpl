@@ -1,4 +1,5 @@
 {{- $v := .Values -}}
+{{- $kv := $v.apps.kyverno -}}
 
 cleanupJobs:
   admissionReports:
@@ -13,37 +14,50 @@ cleanupJobs:
         memory: 1Gi
 
 admissionController:
+  {{- if eq $kv.mode "DevTest" }}
+  replicas: 1
+  {{- end }}
+  {{- if eq $kv.mode "Prod" }}
+  replicas: 3
+  {{- end }}
   initContainer:
     resources:
       limits:
         cpu: 1
   serviceMonitor:
-    # -- Create a `ServiceMonitor` to collect Prometheus metrics.
     enabled: true
     additionalLabels:
       prometheus: systen
+  container:
+    resources: {{- $kv.resources.admissionController | toYaml | nindent 6 }}
 
 cleanupController:
-  resources:
-    limits:
-      cpu: 1
+  {{- if eq $kv.mode "DevTest" }}
+  replicas: 1
+  {{- end }}
+  {{- if eq $kv.mode "Prod" }}
+  replicas: 3
+  {{- end }}
+  resources: {{- $kv.resources.cleanupController | toYaml | nindent 4 }}
 
 backgroundController:
-  resources:
-    limits:
-      cpu: 1
+  {{- if eq $kv.mode "DevTest" }}
+  replicas: 1
+  {{- end }}
+  {{- if eq $kv.mode "Prod" }}
+  replicas: 2
+  {{- end }}
+  resources: {{- $kv.resources.backgroundController | toYaml | nindent 4 }}
   serviceMonitor:
     enabled: true
     additionalLabels:
       prometheus: systen
 
 reportsController:
-  resources:
-    limits:
-      cpu: 1
-
-admissionController:
-  container:
-    resources:
-      limits:
-        cpu: 1
+  {{- if eq $kv.mode "DevTest" }}
+  replicas: 1
+  {{- end }}
+  {{- if eq $kv.mode "Prod" }}
+  replicas: 2
+  {{- end }}
+  resources: {{- $kv.resources.reportsController | toYaml | nindent 4 }}

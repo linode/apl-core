@@ -1,5 +1,5 @@
 teamConfig:
-    demo:
+    admin:
         policies:
             - name: require-limits-and-requests
               profile: best-practice

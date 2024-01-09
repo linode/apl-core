@@ -1272,14 +1272,42 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/project'
-      securityPolicy:
+      policyProfile:
         properties:
-          defaultAction:
-            type: string
-            enum: ['Audit', 'Enforce']
-            default: Audit
+          baseline:
+            properties:
+              defaultAction:
+                type: string
+                enum: ['Audit', 'Enforce']
+                default: Enforce
+          restricted:
+            properties:
+              defaultAction:
+                type: string
+                enum: ['Audit', 'Enforce']
+                default: Enforce
+          bestPractice:
+            properties:
+              defaultAction:
+                type: string
+                enum: ['Audit', 'Enforce']
+                default: Audit
+          otomi:
+            properties:
+              defaultAction:
+                type: string
+                enum: ['Audit', 'Enforce']
+                default: Audit
+          other:
+            properties:
+              defaultAction:
+                type: string
+                enum: ['Audit', 'Enforce']
+                default: Audit
       policies:
-        type: object
+        type: array
+        items:
+          $ref: '#/definitions/policies'
       builds:
         type: array
         items:
@@ -1355,6 +1383,30 @@ definitions:
         $ref: '#/definitions/wordCharacterPattern'
     required:
       - name
+  policies:
+    type: object
+    properties:
+      name:
+        description: Name of policiy
+        $ref: '#/definitions/wordCharacterPattern'
+      profile:
+        description: Profile that contains this policy
+        $ref: '#/definitions/wordCharacterPattern'
+      actionOverride:
+        type: string
+        enum: ['Audit', 'Enforce']
+        default: Audit
+      description:
+        description: Description of the policy
+        $ref: '#/definitions/wordCharacterPattern'
+      enabled:
+        type: boolean
+      severity:
+        type: string
+        enum: ['low', 'medium', 'high']
+        default: medium
+      customValues:
+        type: array
   build:
     type: object
     description: Define location of code to build
@@ -2390,6 +2442,22 @@ properties:
             default: false
           _rawValues:
             $ref: '#/definitions/rawValues'
+          mode:
+            type: string
+            enum: ['DevTest', 'Prod']
+            default: DevTest
+          resources:
+            additionalProperties: false
+            properties:
+              admissionController:
+                $ref: '#/definitions/resources'
+              cleanupController:
+                $ref: '#/definitions/resources'
+              backgroundController:
+                $ref: '#/definitions/resources'
+              reportsController:
+                $ref: '#/definitions/resources'
+
       kiali:
         additionalProperties: false
         properties:

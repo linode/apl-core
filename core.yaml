@@ -62,6 +62,9 @@ k8s:
     - name: kured
       app: kured
       disableIstioInjection: true
+    - name: kyverno
+      app: kyverno
+      disableIstioInjection: true
     - name: tekton-pipelines
       app: tekton
       disableIstioInjection: true
@@ -397,6 +400,8 @@ adminApps:
         auth: true
   - name: velero
     tags: [backup]
+  - name: kyverno
+    tags: [security]
 
 teamApps:
   - name: alertmanager

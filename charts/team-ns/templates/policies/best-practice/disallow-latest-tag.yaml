@@ -1,15 +1,15 @@
 {{- $v := .Values }}
-{{- $sp := $v.securityPolicy }}
-{{- $pol := $v.policies }}
-{{- if $pol.disallowLatestTag.enabled }}
-{{- with $pol.disallowLatestTag }}
+{{- $sp := $v.policyProfile.bestPractice }}
+{{- range $p := $v.policies }}
+{{- if and (eq $p.name "disallow-latest-tag") ($p.enabled) }}
+---
 apiVersion: kyverno.io/v1
 kind: Policy
 metadata:
   name: disallow-latest-tag
   annotations:
     policies.kyverno.io/title: Disallow Latest Tag
-    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/category: best-practice
     policies.kyverno.io/minversion: 1.6.0
     policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod
@@ -17,14 +17,16 @@ metadata:
       The ':latest' tag is mutable and can lead to unexpected errors if the
       image changes. A best practice is to use an immutable tag that maps to
       a specific version of an application Pod. This policy validates that the image
-      specifies a tag and that it is not called `latest`.      
+      specifies a tag and that it is not called `latest`. 
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
 spec:
   {{- if eq .actionOverride $sp.defaultAction }}
   validationFailureAction: {{ $sp.defaultAction }}
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}
-  background: false
+  background: true
+  failurePolicy: Fail
   rules:
   - name: require-image-tag
     match:
