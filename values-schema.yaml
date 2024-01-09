@@ -2441,7 +2441,9 @@ properties:
             type: boolean
             default: true
           resources:
-            $ref: '#/definitions/resources'
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
       tekton:
         additionalProperties: false
         properties:
