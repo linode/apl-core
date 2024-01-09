@@ -1,907 +1,846 @@
 environments:
-    default:
-        values:
-            - azure:
-                  appgw:
-                      isManaged: false
-              apps:
-                  alertmanager:
-                      enabled: false
-                  argocd:
-                      enabled: true
-                      autoscaling:
-                          enabled: false
-                          minReplicas: 1
-                          maxReplicas: 3
-                          targetCPUUtilizationPercentage: 50
-                  cert-manager:
-                      issuer: custom-ca
-                      resources:
-                          requests:
-                              cpu: 50m
-                              memory: 64Mi
-                          limits:
-                              cpu: 200m
-                              memory: 384Mi
-                  cnpg:
-                      storage:
-                          type: minioLocal
-                      resources:
-                          requests:
-                              cpu: 100m
-                              memory: 100Mi
-                          limits:
-                              cpu: 1000m
-                              memory: 512Mi
-                  cluster-overprovisioner:
-                      enabled: false
-                  drone:
-                      enabled: false
-                      debug: false
-                      trace: false
-                      sourceControl:
-                          provider: gitea
-                          username: otomi-admin
-                  external-dns:
-                      logLevel: info
-                  external-secrets:
-                      enabled: false
-                      logLevel: info
-                      pollingInterval: 60000
-                  falco:
-                      enabled: false
-                      falcoSidekick:
-                          replicas: 1
-                          minPrio: informational
-                      _rawValues:
-                          customRules:
-                              otomi-rules.yaml: >-
-                                  - macro: k8s_containers
-                                    condition: (
-                                        container.image.repository in (
-                                          docker.io/openpolicyagent/gatekeeper,
-                                          docker.io/velero/velero,
-                                          docker.io/weaveworks/kured,
-                                          k8s.gcr.io/kube-state-metrics/kube-state-metrics,
-                                          quay.io/jetstack/cert-manager-cainjector,
-                                          quay.io/jetstack/cert-manager-controller,
-                                          quay.io/jetstack/cert-manager-webhook,
-                                          quay.io/prometheus-operator/prometheus-operator,
-                                          quay.io/prometheus/prometheus,
-                                          quay.io/kiwigrid/k8s-sidecar,
-                                          docker.io/otomi/core,
-                                          docker.io/otomi/tasks,
-                                          docker.io/otomi/api,
-                                          docker.io/drone/drone-runner-kube,
-                                          docker.io/grafana/promtail,
-                                          gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
-                                          quay.io/argoprojlabs/argocd-image-updater
-                                        ) or (k8s.ns.name = "kube-system")
-                                          or (k8s.ns.name = "ingress")
-                                      )
-                                  - macro: user_known_write_below_etc_activities
-                                    condition: (
-                                        (container.image.repository = docker.io/goharbor/harbor-core and proc.name = cp) or
-                                        (container.image.repository = docker.io/goharbor/harbor-registryctl and proc.name = cp) or
-                                        (container.image.repository = docker.io/goharbor/registry-photon and proc.name = cp) or
-                                        (container.image.repository = docker.io/goharbor/trivy-adapter-photon and proc.name = cp)
-                                      )
-                                  - macro: user_sensitive_mount_containers
-                                    condition: (
-                                        container.image.repository in (
-                                          quay.io/prometheus/node-exporter
-                                        )
-                                      )
-                                  - macro: user_trusted_containers
-                                    condition: (
-                                        container.image.repository in (
-                                          docker.io/drone/drone-runner-kube,
-                                          docker.io/otomi/api,
-                                          docker.io/otomi/tasks
-                                        )
-                                      )
-                                  - macro: user_known_package_manager_in_container
-                                    condition: (
-                                        container.image.repository in (
-                                          docker.io/otomi/tasks
-                                        )
-                                      )
-                                  - macro: user_known_k8s_client_container
-                                    condition: (
-                                        container.image.repository in (
-                                          docker.io/otomi/tasks,
-                                          ocker.io/otomi/core
-                                        ) or (k8s.ns.name = "drone-pipelines")
-                                      )
-                                  - macro: user_known_non_sudo_setuid_conditions
-                                    condition: (
-                                        container.image.repository in (
-                                          docker.io/otomi/tasks,
-                                          docker.io/otomi/api,
-                                          docker.io/otomi/console,
-                                          docker.io/gitea/gitea,
-                                          docker.io/grafana/grafana
-                                        ) or (k8s.ns.name = "ingress")
-                                          or (k8s.ns.name = "keycloak")
-                                      )
-                                  - macro: excessively_capable_container
-                                    condition: (
-                                        container.image.repository in (
-                                          docker.io/otomi/console,
-                                          docker.io/otomi/api
-                                        ) or (k8s.ns.name = "keycloak")
-                                      )
-                                  - macro: user_known_write_below_root_activities
-                                    condition: (
-                                        k8s.ns.name = "drone-pipelines"
-                                      )
-                                  - macro: user_known_network_tool_activities
-                                    condition: (
-                                        container.image.repository in (
-                                          docker.io/gitea/gitea
-                                        ) or (k8s.ns.name = "keycloak")  
-                                      )
-                                  - macro: user_known_create_files_below_dev_activities
-                                    condition: (
-                                        container.image.repository in (
-                                          quay.io/operatorhubio/catalog
-                                        )
-                                      )
-                      resources:
-                          falco:
-                              requests:
-                                  cpu: 100m
-                                  memory: 512Mi
-                              limits:
-                                  cpu: 1000m
-                                  memory: 1024Mi
-                          falcoCtlFollow:
-                              requests:
-                                  cpu: 20m
-                                  memory: 16Mi
-                              limits:
-                                  cpu: 50m
-                                  memory: 32Mi
-                          falcoCtlInstall:
-                              requests:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                          falcoDriverLoader:
-                              requests:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                          falcoExporter:
-                              requests:
-                                  cpu: 20m
-                                  memory: 16Mi
-                              limits:
-                                  cpu: 50m
-                                  memory: 32Mi
-                  gatekeeper:
-                      enabled: false
-                      auditFromCache: false
-                      auditInterval: 60
-                      constraintViolationsLimit: 20
-                      disableValidatingWebhook: true
-                      emitAdmissionEvents: false
-                      emitAuditEvents: false
-                      logLevel: INFO
-                      replicas: 2
-                  gitea:
-                      enabled: true
-                      adminUsername: otomi-admin
-                  gitea-operator:
-                      resources:
-                          operator:
-                              requests:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                  grafana:
-                      enabled: false
-                  harbor:
-                      enabled: false
-                      registry:
-                          credentials:
-                              username: otomi-admin
-                      database:
-                          type: external
-                          size: 2Gi
-                          name: harbor-otomi-db
-                          user: harbor
-                          coreDatabase: registry
-                          importHarborDb: false
-                      resources:
-                          trivy:
-                              requests:
-                                  cpu: 200m
-                                  memory: 256Mi
-                              limits:
-                                  cpu: 400m
-                                  memory: 512Mi
-                  httpbin:
-                      enabled: false
-                  ingress-nginx:
-                      enabled: true
-                      autoscaling:
-                          enabled: true
-                          minReplicas: 2
-                          maxReplicas: 10
-                      modsecurity:
-                          enabled: false
-                          block: false
-                          owasp: true
-                      private:
-                          enabled: false
-                          autoscaling:
-                              enabled: true
-                              minReplicas: 2
-                              maxReplicas: 10
-                      tracing:
-                          enabled: false
-                          samplingRatio: "0.01"
-                  istio:
-                      enabled: true
-                      tracing:
-                          enabled: false
-                          samplingRatio: "0.01"
-                      autoscaling:
-                          egressgateway:
-                              minReplicas: 2
-                              maxReplicas: 10
-                          ingressgateway:
-                              minReplicas: 2
-                              maxReplicas: 10
-                          pilot:
-                              minReplicas: 2
-                              maxReplicas: 10
-                      egressGateway:
-                          enabled: false
-                  jaeger:
-                      enabled: false
-                  keycloak:
-                      enabled: true
-                      adminUsername: otomi-admin
-                      theme: otomi
-                      resources:
-                          keycloak:
-                              requests:
-                                  cpu: 200m
-                                  memory: 512Mi
-                              limits:
-                                  cpu: 2000m
-                                  memory: 1Gi
-                          operator:
-                              requests:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 1000m
-                                  memory: 512Mi
-                      idp:
-                          alias: otomi-idp
-                          clientID: otomi
-                  kiali:
-                      enabled: false
-                      resources:
-                          pod:
-                              requests:
-                                  cpu: 200m
-                                  memory: 256Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 1Gi
-                          operator:
-                              requests:
-                                  cpu: 1000m
-                                  memory: 512Mi
-                              limits:
-                                  cpu: 2000m
-                                  memory: 1Gi
-                  knative:
-                      enabled: false
-                      serving:
-                          replicas: 1
-                  kube-descheduler:
-                      enabled: false
-                  kured:
-                      enabled: false
-                      resources:
-                          kuredDaemonSet:
-                              requests:
-                                  cpu: 20m
-                                  memory: 16Mi
-                              limits:
-                                  cpu: 50m
-                                  memory: 32Mi
-                  tekton:
-                      resources:
-                          dashboard:
-                              limits:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              requests:
-                                  cpu: 10m
-                                  memory: 64Mi
-                  loki:
-                      enabled: false
-                      storage:
-                          type: minioLocal
-                      resources:
-                          compactor:
-                              requests:
-                                  cpu: 50m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                          ingester:
-                              requests:
-                                  cpu: 250m
-                                  memory: 512Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 1Gi
-                          gateway:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                          querier:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                          distributor:
-                              requests:
-                                  cpu: 150m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 512Mi
-                          queryFrontend:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                      persistence:
-                          ingester:
-                              size: 20Gi
-                          querier:
-                              size: 10Gi
-                      autoscaling:
-                          ingester:
-                              enabled: false
-                              minReplicas: 1
-                              maxReplicas: 3
-                              targetCPUUtilizationPercentage: 80
-                              targetMemoryUtilizationPercentage: 80
-                          gateway:
-                              enabled: false
-                              minReplicas: 1
-                              maxReplicas: 3
-                              targetCPUUtilizationPercentage: 80
-                              targetMemoryUtilizationPercentage: 80
-                          querier:
-                              enabled: false
-                              minReplicas: 1
-                              maxReplicas: 3
-                              targetCPUUtilizationPercentage: 80
-                              targetMemoryUtilizationPercentage: 80
-                          distributor:
-                              enabled: false
-                              minReplicas: 1
-                              maxReplicas: 3
-                              targetCPUUtilizationPercentage: 80
-                              targetMemoryUtilizationPercentage: 80
-                          queryFrontend:
-                              enabled: false
-                              minReplicas: 1
-                              maxReplicas: 3
-                              targetCPUUtilizationPercentage: 80
-                              targetMemoryUtilizationPercentage: 80
-                  metrics-server:
-                      apiServer:
-                          create: true
-                      extraArgs:
-                          kubelet-preferred-address-types: InternalIP
-                  minio:
-                      enabled: false
-                      provisioning:
-                          enabled: true
-                      persistence:
-                          enabled: true
-                          size: 50Gi
-                      resources:
-                          requests:
-                              cpu: 500m
-                              memory: 128Mi
-                          limits:
-                              cpu: 1
-                              memory: 1Gi
-                  oauth2-proxy: {}
-                  opa-exporter: {}
-                  oauth2-proxy-redis: {}
-                  otomi-api:
-                      editorInactivityTimeout: 1
-                  otomi-console: {}
-                  otomi-operator:
-                      resources:
-                          operator:
-                              requests:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                  opencost:
-                      enabled: false
-                      alerts:
-                          enabled: false
-                      resources:
-                          exporter:
-                              requests:
-                                  cpu: 500m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 1
-                                  memory: 1Gi
-                          ui:
-                              requests:
-                                  cpu: 500m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 1
-                                  memory: 1Gi
-                  promtail:
-                      enabled: false
-                  prometheus-blackbox-exporter: {}
-                  prometheus:
-                      enabled: false
-                      disabledRules:
-                          - InfoInhibitor
-                      remoteWrite:
-                          enabled: false
-                          rwConfig:
-                              insecureSkipVerify: false
-                      replicas: 1
-                      scrapeInterval: 60s
-                      retentionSize: 4GB
-                      storageSize: 5Gi
-                  redis-shared:
-                      enabled: false
-                  otel:
-                      enabled: false
-                      collector:
-                          mode: deployment
-                      operator:
-                          replicaCount: 1
-                      resources:
-                          collector:
-                              requests:
-                                  cpu: 100m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 512Mi
-                          manager:
-                              requests:
-                                  cpu: 50m
-                                  memory: 16Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 512Mi
-                          kubeRBACProxy:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 128Mi
-                  tempo:
-                      enabled: false
-                      storage:
-                          type: minioLocal
-                      resources:
-                          compactor:
-                              requests:
-                                  cpu: 100m
-                                  memory: 256Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 1Gi
-                          ingester:
-                              requests:
-                                  cpu: 100m
-                                  memory: 256Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 1Gi
-                          memcached:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                          querier:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                          metricsGenerator:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                          distributor:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                          queryFrontend:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 200m
-                                  memory: 256Mi
-                      persistence:
-                          ingester:
-                              size: 10Gi
-                      autoscaling:
-                          ingester:
-                              enabled: false
-                          querier:
-                              enabled: false
-                              minReplicas: 1
-                              maxReplicas: 3
-                              targetCPUUtilizationPercentage: 80
-                              targetMemoryUtilizationPercentage: 80
-                          distributor:
-                              enabled: false
-                              minReplicas: 1
-                              maxReplicas: 3
-                              targetCPUUtilizationPercentage: 80
-                              targetMemoryUtilizationPercentage: 80
-                          queryFrontend:
-                              enabled: false
-                              minReplicas: 1
-                              maxReplicas: 3
-                              targetCPUUtilizationPercentage: 80
-                              targetMemoryUtilizationPercentage: 80
-                  thanos:
-                      enabled: false
-                      query:
-                          replicaCount: 1
-                      receiver:
-                          mode: standalone
-                          replicaCount: 1
-                          tsdbRetention: 7d
-                          replicationFactor: 1
-                      receiverDistributor:
-                          enabled: true
-                      compactor:
-                          retentionResolutionRaw: 30d
-                          retentionResolution5m: 60d
-                          retentionResolution1h: 0s
-                      ruler:
-                          enabled: false
-                      objstore:
-                          storageProvider:
-                              type: minioLocal
-                      resources:
-                          bucketweb:
-                              requests:
-                                  cpu: 50m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 100m
-                                  memory: 128Mi
-                          query:
-                              requests:
-                                  cpu: 100m
-                                  memory: 256Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 1Gi
-                          queryFrontend:
-                              requests:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 512Mi
-                          receiver:
-                              requests:
-                                  cpu: 200m
-                                  memory: 512Mi
-                              limits:
-                                  cpu: "1"
-                                  memory: 2Gi
-                          receiverDistributor:
-                              requests:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: "1"
-                                  memory: 512Mi
-                          storegateway:
-                              requests:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 256Mi
-                          compactor:
-                              requests:
-                                  cpu: 100m
-                                  memory: 128Mi
-                              limits:
-                                  cpu: "1"
-                                  memory: 512Mi
-                          ruler:
-                              requests:
-                                  cpu: 100m
-                                  memory: 256Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 512Mi
-                      persistence:
-                          receiver:
-                              size: 50Gi
-                          storegateway:
-                              size: 8Gi
-                          compactor:
-                              size: 8Gi
-                          ruler:
-                              size: 8Gi
-                  trivy:
-                      enabled: false
-                      operator:
-                          replicaCount: 1
-                      resources:
-                          operator:
-                              requests:
-                                  cpu: 100m
-                                  memory: 64Mi
-                              limits:
-                                  cpu: 500m
-                                  memory: 512Mi
-                          trivy:
-                              requests:
-                                  cpu: 100m
-                                  memory: 64M
-                              limits:
-                                  cpu: 500m
-                                  memory: 512Mi
-                  vault:
-                      enabled: false
-                      resources:
-                          limits:
-                              cpu: 1000m
-                              memory: 512Mi
-                          requests:
-                              cpu: 500m
-                              memory: 256Mi
-                  velero:
-                      enabled: false
-                      restic:
-                          enabled: false
-                      cloud:
-                          type: custom
-                      storage:
-                          type: minioLocal
-                      logLevel: info
-                      resources:
-                          requests:
-                              cpu: 500m
-                              memory: 128Mi
-                          limits:
-                              cpu: 1000m
-                              memory: 512Mi
-                  sealed-secrets:
-                      enabled: false
-              databases:
-                  keycloak:
-                      useOtomiDB: true
-                      imported: false
-                      size: 1Gi
-                      replicas: 2
-                      resources:
-                          limits:
-                              cpu: 100m
-                              memory: 512Mi
-                          requests:
-                              cpu: 50m
-                              memory: 256Mi
-              platformBackups:
-                  database:
-                      harbor:
-                          enabled: false
-                  persistentVolumes:
-                      gitea:
-                          enabled: false
-                      drone:
-                          enabled: false
-                      keycloak:
-                          enabled: false
-                      harbor:
-                          enabled: false
-                      vault:
-                          enabled: false
-                      argo:
-                          enabled: false
-                      minio:
-                          enabled: false
-              cluster: {}
-              dns:
-                  domainFilters: []
-                  zoneIdFilters: []
-              ingress:
-                  platformClass:
-                      className: platform
-                      network: public
-                  classes: []
-              oidc: {}
-              alerts:
-                  receivers:
-                      - none
-              otomi:
-                  hasCloudLB: false
-                  hasExternalDNS: false
-                  hasExternalIDP: false
-                  isHomeMonitored: false
-                  isMultitenant: true
-                  nodeSelector: {}
-              e2e:
-                  enabled: false
-                  upgrade:
-                      version: main
-              version: 17
-              letsencryptRootCA: >
-                  -----BEGIN CERTIFICATE-----
-
-                  MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm
-
-                  MQswCQYDVQQGEwJVUzEzMDEGA1UEChMqKFNUQUdJTkcpIEludGVybmV0IFNlY3Vy
-
-                  aXR5IFJlc2VhcmNoIEdyb3VwMSIwIAYDVQQDExkoU1RBR0lORykgUHJldGVuZCBQ
-
-                  ZWFyIFgxMB4XDTE1MDYwNDExMDQzOFoXDTM1MDYwNDExMDQzOFowZjELMAkGA1UE
-
-                  BhMCVVMxMzAxBgNVBAoTKihTVEFHSU5HKSBJbnRlcm5ldCBTZWN1cml0eSBSZXNl
-
-                  YXJjaCBHcm91cDEiMCAGA1UEAxMZKFNUQUdJTkcpIFByZXRlbmQgUGVhciBYMTCC
-
-                  AiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBALbagEdDTa1QgGBWSYkyMhsc
-
-                  ZXENOBaVRTMX1hceJENgsL0Ma49D3MilI4KS38mtkmdF6cPWnL++fgehT0FbRHZg
-
-                  jOEr8UAN4jH6omjrbTD++VZneTsMVaGamQmDdFl5g1gYaigkkmx8OiCO68a4QXg4
-
-                  wSyn6iDipKP8utsE+x1E28SA75HOYqpdrk4HGxuULvlr03wZGTIf/oRt2/c+dYmD
-
-                  oaJhge+GOrLAEQByO7+8+vzOwpNAPEx6LW+crEEZ7eBXih6VP19sTGy3yfqK5tPt
-
-                  TdXXCOQMKAp+gCj/VByhmIr+0iNDC540gtvV303WpcbwnkkLYC0Ft2cYUyHtkstO
-
-                  fRcRO+K2cZozoSwVPyB8/J9RpcRK3jgnX9lujfwA/pAbP0J2UPQFxmWFRQnFjaq6
-
-                  rkqbNEBgLy+kFL1NEsRbvFbKrRi5bYy2lNms2NJPZvdNQbT/2dBZKmJqxHkxCuOQ
-
-                  FjhJQNeO+Njm1Z1iATS/3rts2yZlqXKsxQUzN6vNbD8KnXRMEeOXUYvbV4lqfCf8
-
-                  mS14WEbSiMy87GB5S9ucSV1XUrlTG5UGcMSZOBcEUpisRPEmQWUOTWIoDQ5FOia/
-
-                  GI+Ki523r2ruEmbmG37EBSBXdxIdndqrjy+QVAmCebyDx9eVEGOIpn26bW5LKeru
-
-                  mJxa/CFBaKi4bRvmdJRLAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMB
-
-                  Af8EBTADAQH/MB0GA1UdDgQWBBS182Xy/rAKkh/7PH3zRKCsYyXDFDANBgkqhkiG
-
-                  9w0BAQsFAAOCAgEAncDZNytDbrrVe68UT6py1lfF2h6Tm2p8ro42i87WWyP2LK8Y
-
-                  nLHC0hvNfWeWmjZQYBQfGC5c7aQRezak+tHLdmrNKHkn5kn+9E9LCjCaEsyIIn2j
-
-                  qdHlAkepu/C3KnNtVx5tW07e5bvIjJScwkCDbP3akWQixPpRFAsnP+ULx7k0aO1x
-
-                  qAeaAhQ2rgo1F58hcflgqKTXnpPM02intVfiVVkX5GXpJjK5EoQtLceyGOrkxlM/
-
-                  sTPq4UrnypmsqSagWV3HcUlYtDinc+nukFk6eR4XkzXBbwKajl0YjztfrCIHOn5Q
-
-                  CJL6TERVDbM/aAPly8kJ1sWGLuvvWYzMYgLzDul//rUF10gEMWaXVZV51KpS9DY/
-
-                  5CunuvCXmEQJHo7kGcViT7sETn6Jz9KOhvYcXkJ7po6d93A/jy4GKPIPnsKKNEmR
-
-                  xUuXY4xRdh45tMJnLTUDdC9FIU0flTeO9/vNpVA8OPU1i14vCz+MU8KX1bV3GXm/
-
-                  fxlB7VBBjX9v5oUep0o/j68R/iDlCOM4VVfRa8gX6T2FU7fNdatvGro7uQzIvWof
-
-                  gN9WUwCbEMBy/YhBSrXycKA8crgGg3x1mIsopn88JKwmMBa68oS7EHM9w7C4y71M
-
-                  7DiA+/9Qdp9RBWJpTS9i/mDnJg1xvo8Xz49mrrgfmcAXTCJqXi24NatI3Oc=
-
-                  -----END CERTIFICATE-----
-              letsencryptCA: >
-                  -----BEGIN CERTIFICATE-----
-
-                  MIIFWzCCA0OgAwIBAgIQTfQrldHumzpMLrM7jRBd1jANBgkqhkiG9w0BAQsFADBm
-
-                  MQswCQYDVQQGEwJVUzEzMDEGA1UEChMqKFNUQUdJTkcpIEludGVybmV0IFNlY3Vy
-
-                  aXR5IFJlc2VhcmNoIEdyb3VwMSIwIAYDVQQDExkoU1RBR0lORykgUHJldGVuZCBQ
-
-                  ZWFyIFgxMB4XDTIwMDkwNDAwMDAwMFoXDTI1MDkxNTE2MDAwMFowWTELMAkGA1UE
-
-                  BhMCVVMxIDAeBgNVBAoTFyhTVEFHSU5HKSBMZXQncyBFbmNyeXB0MSgwJgYDVQQD
-
-                  Ex8oU1RBR0lORykgQXJ0aWZpY2lhbCBBcHJpY290IFIzMIIBIjANBgkqhkiG9w0B
-
-                  AQEFAAOCAQ8AMIIBCgKCAQEAu6TR8+74b46mOE1FUwBrvxzEYLck3iasmKrcQkb+
-
-                  gy/z9Jy7QNIAl0B9pVKp4YU76JwxF5DOZZhi7vK7SbCkK6FbHlyU5BiDYIxbbfvO
-
-                  L/jVGqdsSjNaJQTg3C3XrJja/HA4WCFEMVoT2wDZm8ABC1N+IQe7Q6FEqc8NwmTS
-
-                  nmmRQm4TQvr06DP+zgFK/MNubxWWDSbSKKTH5im5j2fZfg+j/tM1bGaczFWw8/lS
-
-                  nukyn5J2L+NJYnclzkXoh9nMFnyPmVbfyDPOc4Y25aTzVoeBKXa/cZ5MM+WddjdL
-
-                  biWvm19f1sYn1aRaAIrkppv7kkn83vcth8XCG39qC2ZvaQIDAQABo4IBEDCCAQww
-
-                  DgYDVR0PAQH/BAQDAgGGMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATAS
-
-                  BgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBTecnpI3zHDplDfn4Uj31c3S10u
-
-                  ZTAfBgNVHSMEGDAWgBS182Xy/rAKkh/7PH3zRKCsYyXDFDA2BggrBgEFBQcBAQQq
-
-                  MCgwJgYIKwYBBQUHMAKGGmh0dHA6Ly9zdGcteDEuaS5sZW5jci5vcmcvMCsGA1Ud
-
-                  HwQkMCIwIKAeoByGGmh0dHA6Ly9zdGcteDEuYy5sZW5jci5vcmcvMCIGA1UdIAQb
-
-                  MBkwCAYGZ4EMAQIBMA0GCysGAQQBgt8TAQEBMA0GCSqGSIb3DQEBCwUAA4ICAQCN
-
-                  DLam9yN0EFxxn/3p+ruWO6n/9goCAM5PT6cC6fkjMs4uas6UGXJjr5j7PoTQf3C1
-
-                  vuxiIGRJC6qxV7yc6U0X+w0Mj85sHI5DnQVWN5+D1er7mp13JJA0xbAbHa3Rlczn
-
-                  y2Q82XKui8WHuWra0gb2KLpfboYj1Ghgkhr3gau83pC/WQ8HfkwcvSwhIYqTqxoZ
-
-                  Uq8HIf3M82qS9aKOZE0CEmSyR1zZqQxJUT7emOUapkUN9poJ9zGc+FgRZvdro0XB
-
-                  yphWXDaqMYph0DxW/10ig5j4xmmNDjCRmqIKsKoWA52wBTKKXK1na2ty/lW5dhtA
-
-                  xkz5rVZFd4sgS4J0O+zm6d5GRkWsNJ4knotGXl8vtS3X40KXeb3A5+/3p0qaD215
-
-                  Xq8oSNORfB2oI1kQuyEAJ5xvPTdfwRlyRG3lFYodrRg6poUBD/8fNTXMtzydpRgy
-
-                  zUQZh/18F6B/iW6cbiRN9r2Hkh05Om+q0/6w0DdZe+8YrNpfhSObr/1eVZbKGMIY
-
-                  qKmyZbBNu5ysENIK5MPc14mUeKmFjpN840VR5zunoU52lqpLDua/qIM8idk86xGW
-
-                  xx2ml43DO/Ya/tVZVok0mO0TUjzJIfPqyvr455IsIut4RlCR9Iq0EDTve2/ZwCuG
-
-                  hSjpTUFGSiQrR2JK2Evp+o6AETUkBCO1aw0PpQBPDQ==
-
-                  -----END CERTIFICATE-----
+  default:
+    values:
+      - azure:
+          appgw:
+            isManaged: false
+        apps:
+          alertmanager:
+            enabled: false
+          argocd:
+            enabled: true
+            autoscaling:
+              enabled: false
+              minReplicas: 1
+              maxReplicas: 3
+              targetCPUUtilizationPercentage: 50
+          cert-manager:
+            issuer: custom-ca
+            resources:
+              requests:
+                cpu: 50m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 384Mi
+          cnpg:
+            storage:
+              type: minioLocal
+            resources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+              limits:
+                cpu: 1000m
+                memory: 512Mi
+          cluster-overprovisioner:
+            enabled: false
+          drone:
+            enabled: false
+            debug: false
+            trace: false
+            sourceControl:
+              provider: gitea
+              username: otomi-admin
+          external-dns:
+            logLevel: info
+          external-secrets:
+            enabled: false
+            logLevel: info
+            pollingInterval: 60000
+          falco:
+            enabled: false
+            falcoSidekick:
+              replicas: 1
+              minPrio: informational
+            _rawValues:
+              customRules:
+                otomi-rules.yaml: |-
+                  - macro: k8s_containers
+                    condition: (
+                        container.image.repository in (
+                          docker.io/openpolicyagent/gatekeeper,
+                          docker.io/velero/velero,
+                          docker.io/weaveworks/kured,
+                          k8s.gcr.io/kube-state-metrics/kube-state-metrics,
+                          quay.io/jetstack/cert-manager-cainjector,
+                          quay.io/jetstack/cert-manager-controller,
+                          quay.io/jetstack/cert-manager-webhook,
+                          quay.io/prometheus-operator/prometheus-operator,
+                          quay.io/prometheus/prometheus,
+                          quay.io/kiwigrid/k8s-sidecar,
+                          docker.io/otomi/core,
+                          docker.io/otomi/tasks,
+                          docker.io/otomi/api,
+                          docker.io/drone/drone-runner-kube,
+                          docker.io/grafana/promtail,
+                          gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
+                          quay.io/argoprojlabs/argocd-image-updater
+                        ) or (k8s.ns.name = "kube-system")
+                          or (k8s.ns.name = "ingress")
+                      )
+                  - macro: user_known_write_below_etc_activities
+                    condition: (
+                        (container.image.repository = docker.io/goharbor/harbor-core and proc.name = cp) or
+                        (container.image.repository = docker.io/goharbor/harbor-registryctl and proc.name = cp) or
+                        (container.image.repository = docker.io/goharbor/registry-photon and proc.name = cp) or
+                        (container.image.repository = docker.io/goharbor/trivy-adapter-photon and proc.name = cp)
+                      )
+                  - macro: user_sensitive_mount_containers
+                    condition: (
+                        container.image.repository in (
+                          quay.io/prometheus/node-exporter
+                        )
+                      )
+                  - macro: user_trusted_containers
+                    condition: (
+                        container.image.repository in (
+                          docker.io/drone/drone-runner-kube,
+                          docker.io/otomi/api,
+                          docker.io/otomi/tasks
+                        )
+                      )
+                  - macro: user_known_package_manager_in_container
+                    condition: (
+                        container.image.repository in (
+                          docker.io/otomi/tasks
+                        )
+                      )
+                  - macro: user_known_k8s_client_container
+                    condition: (
+                        container.image.repository in (
+                          docker.io/otomi/tasks,
+                          ocker.io/otomi/core
+                        ) or (k8s.ns.name = "drone-pipelines")
+                      )
+                  - macro: user_known_non_sudo_setuid_conditions
+                    condition: (
+                        container.image.repository in (
+                          docker.io/otomi/tasks,
+                          docker.io/otomi/api,
+                          docker.io/otomi/console,
+                          docker.io/gitea/gitea,
+                          docker.io/grafana/grafana
+                        ) or (k8s.ns.name = "ingress")
+                          or (k8s.ns.name = "keycloak")
+                      )
+                  - macro: excessively_capable_container
+                    condition: (
+                        container.image.repository in (
+                          docker.io/otomi/console,
+                          docker.io/otomi/api
+                        ) or (k8s.ns.name = "keycloak")
+                      )
+                  - macro: user_known_write_below_root_activities
+                    condition: (
+                        k8s.ns.name = "drone-pipelines"
+                      )
+                  - macro: user_known_network_tool_activities
+                    condition: (
+                        container.image.repository in (
+                          docker.io/gitea/gitea
+                        ) or (k8s.ns.name = "keycloak")  
+                      )
+                  - macro: user_known_create_files_below_dev_activities
+                    condition: (
+                        container.image.repository in (
+                          quay.io/operatorhubio/catalog
+                        )
+                      )
+            resources:
+              falco:
+                requests:
+                  cpu: 100m
+                  memory: 512Mi
+                limits:
+                  cpu: 1000m
+                  memory: 1024Mi
+              falcoCtlFollow:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 50m
+                  memory: 32Mi
+              falcoCtlInstall:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              falcoDriverLoader:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              falcoExporter:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 50m
+                  memory: 32Mi
+          gatekeeper:
+            enabled: false
+            auditFromCache: false
+            auditInterval: 60
+            constraintViolationsLimit: 20
+            disableValidatingWebhook: true
+            emitAdmissionEvents: false
+            emitAuditEvents: false
+            logLevel: INFO
+            replicas: 2
+          gitea:
+            enabled: true
+            adminUsername: otomi-admin
+          gitea-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+          grafana:
+            enabled: false
+          harbor:
+            enabled: false
+            registry:
+              credentials:
+                username: otomi-admin
+            database:
+              type: external
+              size: 2Gi
+              name: harbor-otomi-db
+              user: harbor
+              coreDatabase: registry
+              importHarborDb: false
+            resources:
+              trivy:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: 400m
+                  memory: 512Mi
+          httpbin:
+            enabled: false
+          ingress-nginx:
+            enabled: true
+            autoscaling:
+              enabled: true
+              minReplicas: 2
+              maxReplicas: 10
+            modsecurity:
+              enabled: false
+              block: false
+              owasp: true
+            private:
+              enabled: false
+              autoscaling:
+                enabled: true
+                minReplicas: 2
+                maxReplicas: 10
+            tracing:
+              enabled: false
+              samplingRatio: "0.01"
+          istio:
+            enabled: true
+            tracing:
+              enabled: false
+              samplingRatio: "0.01"
+            autoscaling:
+              egressgateway:
+                minReplicas: 2
+                maxReplicas: 10
+              ingressgateway:
+                minReplicas: 2
+                maxReplicas: 10
+              pilot:
+                minReplicas: 2
+                maxReplicas: 10
+            egressGateway:
+              enabled: false
+          jaeger:
+            enabled: false
+          keycloak:
+            enabled: true
+            adminUsername: otomi-admin
+            theme: otomi
+            resources:
+              keycloak:
+                requests:
+                  cpu: 200m
+                  memory: 512Mi
+                limits:
+                  cpu: 2000m
+                  memory: 1Gi
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 1000m
+                  memory: 512Mi
+            idp:
+              alias: otomi-idp
+              clientID: otomi
+          kiali:
+            enabled: false
+            resources:
+              pod:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              operator:
+                requests:
+                  cpu: 1000m
+                  memory: 512Mi
+                limits:
+                  cpu: 2000m
+                  memory: 1Gi
+          knative:
+            enabled: false
+            serving:
+              replicas: 1
+          kube-descheduler:
+            enabled: false
+          kured:
+            enabled: false
+            resources:
+              kuredDaemonSet:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 50m
+                  memory: 32Mi
+          tekton:
+            resources:
+              dashboard:
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+          loki:
+            enabled: false
+            storage:
+              type: minioLocal
+            resources:
+              compactor:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              ingester:
+                requests:
+                  cpu: 250m
+                  memory: 512Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              gateway:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              querier:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              distributor:
+                requests:
+                  cpu: 150m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              queryFrontend:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+            persistence:
+              ingester:
+                size: 20Gi
+              querier:
+                size: 10Gi
+            autoscaling:
+              ingester:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              gateway:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              querier:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              distributor:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              queryFrontend:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+          metrics-server:
+            apiServer:
+              create: true
+            extraArgs:
+              kubelet-preferred-address-types: InternalIP
+          minio:
+            enabled: false
+            provisioning:
+              enabled: true
+            persistence:
+              enabled: true
+              size: 50Gi
+            resources:
+              requests:
+                cpu: 500m
+                memory: 128Mi
+              limits:
+                cpu: 1
+                memory: 1Gi
+          oauth2-proxy: {}
+          opa-exporter: {}
+          oauth2-proxy-redis: {}
+          otomi-api:
+            editorInactivityTimeout: 1
+          otomi-console: {}
+          otomi-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+          opencost:
+            enabled: false
+            alerts:
+              enabled: false
+            resources:
+              exporter:
+                requests:
+                  cpu: 500m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+              ui:
+                requests:
+                  cpu: 500m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 1Gi
+          promtail:
+            enabled: false
+          prometheus-blackbox-exporter: {}
+          prometheus:
+            enabled: false
+            disabledRules:
+              - InfoInhibitor
+            remoteWrite:
+              enabled: false
+              rwConfig:
+                insecureSkipVerify: false
+            replicas: 1
+            scrapeInterval: 60s
+            retentionSize: 4GB
+            storageSize: 5Gi
+          redis-shared:
+            enabled: false
+          otel:
+            enabled: false
+            collector:
+              mode: deployment
+            operator:
+              replicaCount: 1
+            resources:
+              collector:
+                requests:
+                  cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              manager:
+                requests:
+                  cpu: 50m
+                  memory: 16Mi
+                limits:
+                  cpu: 200m
+                  memory: 512Mi
+              kubeRBACProxy:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 128Mi
+          tempo:
+            enabled: false
+            storage:
+              type: minioLocal
+            resources:
+              compactor:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              ingester:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              memcached:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              querier:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              metricsGenerator:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              distributor:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              queryFrontend:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+            persistence:
+              ingester:
+                size: 10Gi
+            autoscaling:
+              ingester:
+                enabled: false
+              querier:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              distributor:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+              queryFrontend:
+                enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+          thanos:
+            enabled: false
+            query:
+              replicaCount: 1
+            receiver:
+              mode: standalone
+              replicaCount: 1
+              tsdbRetention: 7d
+              replicationFactor: 1
+            receiverDistributor:
+              enabled: true
+            compactor:
+              retentionResolutionRaw: 30d
+              retentionResolution5m: 60d
+              retentionResolution1h: 0s
+            ruler:
+              enabled: false
+            objstore:
+              storageProvider:
+                type: minioLocal
+            resources:
+              bucketweb:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              query:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              queryFrontend:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              receiver:
+                requests:
+                  cpu: 200m
+                  memory: 512Mi
+                limits:
+                  cpu: "1"
+                  memory: 2Gi
+              receiverDistributor:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+              storegateway:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              compactor:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+              ruler:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+            persistence:
+              receiver:
+                size: 50Gi
+              storegateway:
+                size: 8Gi
+              compactor:
+                size: 8Gi
+              ruler:
+                size: 8Gi
+          trivy:
+            enabled: false
+            operator:
+              replicaCount: 1
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              trivy:
+                requests:
+                  cpu: 100m
+                  memory: 64M
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+          vault:
+            enabled: false
+            resources:
+              limits:
+                cpu: 1000m
+                memory: 512Mi
+              requests:
+                cpu: 500m
+                memory: 256Mi
+          velero:
+            enabled: false
+            restic:
+              enabled: false
+            cloud:
+              type: custom
+            storage:
+              type: minioLocal
+            logLevel: info
+            resources:
+              requests:
+                cpu: 500m
+                memory: 128Mi
+              limits:
+                cpu: 1000m
+                memory: 512Mi
+          sealed-secrets:
+            enabled: true
+        databases:
+          keycloak:
+            useOtomiDB: true
+            imported: false
+            size: 1Gi
+            replicas: 2
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 256Mi
+        platformBackups:
+          database:
+            harbor:
+              enabled: false
+          persistentVolumes:
+            gitea:
+              enabled: false
+            drone:
+              enabled: false
+            keycloak:
+              enabled: false
+            harbor:
+              enabled: false
+            vault:
+              enabled: false
+            argo:
+              enabled: false
+            minio:
+              enabled: false
+        cluster: {}
+        dns:
+          domainFilters: []
+          zoneIdFilters: []
+        ingress:
+          platformClass:
+            className: platform
+            network: public
+          classes: []
+        oidc: {}
+        alerts:
+          receivers:
+            - none
+        otomi:
+          hasCloudLB: false
+          hasExternalDNS: false
+          hasExternalIDP: false
+          isHomeMonitored: false
+          isMultitenant: true
+          nodeSelector: {}
+        e2e:
+          enabled: false
+          upgrade:
+            version: main
+        version: 17
+        letsencryptRootCA: |
+          -----BEGIN CERTIFICATE-----
+          MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm
+          MQswCQYDVQQGEwJVUzEzMDEGA1UEChMqKFNUQUdJTkcpIEludGVybmV0IFNlY3Vy
+          aXR5IFJlc2VhcmNoIEdyb3VwMSIwIAYDVQQDExkoU1RBR0lORykgUHJldGVuZCBQ
+          ZWFyIFgxMB4XDTE1MDYwNDExMDQzOFoXDTM1MDYwNDExMDQzOFowZjELMAkGA1UE
+          BhMCVVMxMzAxBgNVBAoTKihTVEFHSU5HKSBJbnRlcm5ldCBTZWN1cml0eSBSZXNl
+          YXJjaCBHcm91cDEiMCAGA1UEAxMZKFNUQUdJTkcpIFByZXRlbmQgUGVhciBYMTCC
+          AiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBALbagEdDTa1QgGBWSYkyMhsc
+          ZXENOBaVRTMX1hceJENgsL0Ma49D3MilI4KS38mtkmdF6cPWnL++fgehT0FbRHZg
+          jOEr8UAN4jH6omjrbTD++VZneTsMVaGamQmDdFl5g1gYaigkkmx8OiCO68a4QXg4
+          wSyn6iDipKP8utsE+x1E28SA75HOYqpdrk4HGxuULvlr03wZGTIf/oRt2/c+dYmD
+          oaJhge+GOrLAEQByO7+8+vzOwpNAPEx6LW+crEEZ7eBXih6VP19sTGy3yfqK5tPt
+          TdXXCOQMKAp+gCj/VByhmIr+0iNDC540gtvV303WpcbwnkkLYC0Ft2cYUyHtkstO
+          fRcRO+K2cZozoSwVPyB8/J9RpcRK3jgnX9lujfwA/pAbP0J2UPQFxmWFRQnFjaq6
+          rkqbNEBgLy+kFL1NEsRbvFbKrRi5bYy2lNms2NJPZvdNQbT/2dBZKmJqxHkxCuOQ
+          FjhJQNeO+Njm1Z1iATS/3rts2yZlqXKsxQUzN6vNbD8KnXRMEeOXUYvbV4lqfCf8
+          mS14WEbSiMy87GB5S9ucSV1XUrlTG5UGcMSZOBcEUpisRPEmQWUOTWIoDQ5FOia/
+          GI+Ki523r2ruEmbmG37EBSBXdxIdndqrjy+QVAmCebyDx9eVEGOIpn26bW5LKeru
+          mJxa/CFBaKi4bRvmdJRLAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMB
+          Af8EBTADAQH/MB0GA1UdDgQWBBS182Xy/rAKkh/7PH3zRKCsYyXDFDANBgkqhkiG
+          9w0BAQsFAAOCAgEAncDZNytDbrrVe68UT6py1lfF2h6Tm2p8ro42i87WWyP2LK8Y
+          nLHC0hvNfWeWmjZQYBQfGC5c7aQRezak+tHLdmrNKHkn5kn+9E9LCjCaEsyIIn2j
+          qdHlAkepu/C3KnNtVx5tW07e5bvIjJScwkCDbP3akWQixPpRFAsnP+ULx7k0aO1x
+          qAeaAhQ2rgo1F58hcflgqKTXnpPM02intVfiVVkX5GXpJjK5EoQtLceyGOrkxlM/
+          sTPq4UrnypmsqSagWV3HcUlYtDinc+nukFk6eR4XkzXBbwKajl0YjztfrCIHOn5Q
+          CJL6TERVDbM/aAPly8kJ1sWGLuvvWYzMYgLzDul//rUF10gEMWaXVZV51KpS9DY/
+          5CunuvCXmEQJHo7kGcViT7sETn6Jz9KOhvYcXkJ7po6d93A/jy4GKPIPnsKKNEmR
+          xUuXY4xRdh45tMJnLTUDdC9FIU0flTeO9/vNpVA8OPU1i14vCz+MU8KX1bV3GXm/
+          fxlB7VBBjX9v5oUep0o/j68R/iDlCOM4VVfRa8gX6T2FU7fNdatvGro7uQzIvWof
+          gN9WUwCbEMBy/YhBSrXycKA8crgGg3x1mIsopn88JKwmMBa68oS7EHM9w7C4y71M
+          7DiA+/9Qdp9RBWJpTS9i/mDnJg1xvo8Xz49mrrgfmcAXTCJqXi24NatI3Oc=
+          -----END CERTIFICATE-----
+        letsencryptCA: |
+          -----BEGIN CERTIFICATE-----
+          MIIFWzCCA0OgAwIBAgIQTfQrldHumzpMLrM7jRBd1jANBgkqhkiG9w0BAQsFADBm
+          MQswCQYDVQQGEwJVUzEzMDEGA1UEChMqKFNUQUdJTkcpIEludGVybmV0IFNlY3Vy
+          aXR5IFJlc2VhcmNoIEdyb3VwMSIwIAYDVQQDExkoU1RBR0lORykgUHJldGVuZCBQ
+          ZWFyIFgxMB4XDTIwMDkwNDAwMDAwMFoXDTI1MDkxNTE2MDAwMFowWTELMAkGA1UE
+          BhMCVVMxIDAeBgNVBAoTFyhTVEFHSU5HKSBMZXQncyBFbmNyeXB0MSgwJgYDVQQD
+          Ex8oU1RBR0lORykgQXJ0aWZpY2lhbCBBcHJpY290IFIzMIIBIjANBgkqhkiG9w0B
+          AQEFAAOCAQ8AMIIBCgKCAQEAu6TR8+74b46mOE1FUwBrvxzEYLck3iasmKrcQkb+
+          gy/z9Jy7QNIAl0B9pVKp4YU76JwxF5DOZZhi7vK7SbCkK6FbHlyU5BiDYIxbbfvO
+          L/jVGqdsSjNaJQTg3C3XrJja/HA4WCFEMVoT2wDZm8ABC1N+IQe7Q6FEqc8NwmTS
+          nmmRQm4TQvr06DP+zgFK/MNubxWWDSbSKKTH5im5j2fZfg+j/tM1bGaczFWw8/lS
+          nukyn5J2L+NJYnclzkXoh9nMFnyPmVbfyDPOc4Y25aTzVoeBKXa/cZ5MM+WddjdL
+          biWvm19f1sYn1aRaAIrkppv7kkn83vcth8XCG39qC2ZvaQIDAQABo4IBEDCCAQww
+          DgYDVR0PAQH/BAQDAgGGMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATAS
+          BgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBTecnpI3zHDplDfn4Uj31c3S10u
+          ZTAfBgNVHSMEGDAWgBS182Xy/rAKkh/7PH3zRKCsYyXDFDA2BggrBgEFBQcBAQQq
+          MCgwJgYIKwYBBQUHMAKGGmh0dHA6Ly9zdGcteDEuaS5sZW5jci5vcmcvMCsGA1Ud
+          HwQkMCIwIKAeoByGGmh0dHA6Ly9zdGcteDEuYy5sZW5jci5vcmcvMCIGA1UdIAQb
+          MBkwCAYGZ4EMAQIBMA0GCysGAQQBgt8TAQEBMA0GCSqGSIb3DQEBCwUAA4ICAQCN
+          DLam9yN0EFxxn/3p+ruWO6n/9goCAM5PT6cC6fkjMs4uas6UGXJjr5j7PoTQf3C1
+          vuxiIGRJC6qxV7yc6U0X+w0Mj85sHI5DnQVWN5+D1er7mp13JJA0xbAbHa3Rlczn
+          y2Q82XKui8WHuWra0gb2KLpfboYj1Ghgkhr3gau83pC/WQ8HfkwcvSwhIYqTqxoZ
+          Uq8HIf3M82qS9aKOZE0CEmSyR1zZqQxJUT7emOUapkUN9poJ9zGc+FgRZvdro0XB
+          yphWXDaqMYph0DxW/10ig5j4xmmNDjCRmqIKsKoWA52wBTKKXK1na2ty/lW5dhtA
+          xkz5rVZFd4sgS4J0O+zm6d5GRkWsNJ4knotGXl8vtS3X40KXeb3A5+/3p0qaD215
+          Xq8oSNORfB2oI1kQuyEAJ5xvPTdfwRlyRG3lFYodrRg6poUBD/8fNTXMtzydpRgy
+          zUQZh/18F6B/iW6cbiRN9r2Hkh05Om+q0/6w0DdZe+8YrNpfhSObr/1eVZbKGMIY
+          qKmyZbBNu5ysENIK5MPc14mUeKmFjpN840VR5zunoU52lqpLDua/qIM8idk86xGW
+          xx2ml43DO/Ya/tVZVok0mO0TUjzJIfPqyvr455IsIut4RlCR9Iq0EDTve2/ZwCuG
+          hSjpTUFGSiQrR2JK2Evp+o6AETUkBCO1aw0PpQBPDQ==
+          -----END CERTIFICATE-----
