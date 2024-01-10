@@ -6,6 +6,8 @@
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
 
+upgradeJobResources: {{- $vl.resources | toYaml | nindent 2 }}
+
 metrics:
   enabled: true
   serviceMonitor:
