@@ -1,14 +1,14 @@
 {{- $v := .Values }}
 {{- $sp := $v.policyProfile.bestPractice }}
 {{- range $p := $v.policies }}
-{{- if and (eq $p.name "require-requests-limits") ($p.enabled) }}
+{{- if and (eq $p.name "require-requests") ($p.enabled) }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
 metadata:
-  name: require-requests-limits
+  name: require-requests
   annotations:
-    policies.kyverno.io/title: Require Limits and Requests
+    policies.kyverno.io/title: Require Requests
     policies.kyverno.io/category: best-practice
     policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod
@@ -44,9 +44,6 @@ spec:
           containers:
           - resources:
               requests:
-                memory: "?*"
-                cpu: "?*"
-              limits:
                 memory: "?*"
                 cpu: "?*"
 {{- end }}
