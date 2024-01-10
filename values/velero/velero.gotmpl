@@ -59,9 +59,10 @@ podSecurityContext:
 
 configuration:
   {{- if eq $sp.type "azureBlob" }}
-  provider: azure
+
   backupStorageLocation:
-    name: otomi
+  - name: otomi
+    provider: azure
     default: true
     bucket: {{ $sp.azureBlob.bucket }}
     config:
@@ -69,9 +70,9 @@ configuration:
       resourceGroup: {{ $sp.azureBlob.resourceGroup }}
   {{- end }}
   {{- if eq $sp.type "s3" }}
-  provider: aws
   backupStorageLocation:
-    name: otomi
+  - name: otomi
+    provider: aws
     default: true
     bucket: {{ $sp.s3.bucket }}
     config:
@@ -79,9 +80,9 @@ configuration:
       region: {{ $cp.aws.region }}
   {{- end }}
   {{- if eq $sp.type "minioLocal" }}
-  provider: aws
   backupStorageLocation:
-    name: otomi
+  - name: otomi
+    provider: aws
     default: true
     bucket: velero   
     config:
@@ -91,9 +92,9 @@ configuration:
       s3ForcePathStyle: true
   {{- end }}
   {{- if eq $sp.type "gcs" }}
-  provider: gcp
   backupStorageLocation:
-    name: otomi
+  - name: otomi
+    provider: gcp
     default: true
     bucket: {{ $sp.gcs.bucket }}   
     config:
@@ -102,21 +103,24 @@ configuration:
 
   {{- if eq $cp.type "azure" }}
   volumeSnapshotLocation:
-    name: otomi
+  - name: otomi
+    provider: azure
     config:
       resourceGroup: {{ $cp.azure.resourceGroup }}
   {{- end }}
   
   {{- if eq $cp.type "aws" }}
   volumeSnapshotLocation:
-    name: otomi
+  - name: otomi
+    provider: aws
     config:
       region: {{ $cp.aws.region }}
   {{- end }}
 
   {{- if eq $cp.type "google" }}
   volumeSnapshotLocation:
-    name: otomi
+  - name: otomi
+    provider: gcp
     config:
       project: {{ $cp.google.project }}
   {{- end }}
@@ -177,7 +181,7 @@ kubectl:
     # do not inject sidecar, so the kubectl k8s job can exit and return the completed status
     sidecar.istio.io/inject: "false"
 
-deployRestic: {{ $vl.restic.enabled }}
+deployNodeAgent: {{ $vl.restic.enabled }}
 
 schedules:
 {{- if $b.gitea.enabled }}
