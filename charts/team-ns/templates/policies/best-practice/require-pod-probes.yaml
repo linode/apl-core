@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "require-pod-probes") ($p.enabled) }}
 ---
@@ -23,11 +22,7 @@ metadata:
       or startupProbe defined.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
 spec:
-  {{- if eq .actionOverride $pa.bestPractice }}
-  validationFailureAction: {{ $pa.bestPractice }}
-  {{- else }}
-  validationFailureAction: {{ .actionOverride }}
-  {{- end }}
+  validationFailureAction: {{ .action }}
   background: true
   failurePolicy: Fail
   rules:

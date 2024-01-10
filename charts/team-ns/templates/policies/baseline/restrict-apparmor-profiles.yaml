@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "restrict-apparmor-profiles") ($p.enabled) }}
 ---
@@ -22,11 +21,7 @@ metadata:
       specify any other AppArmor profiles than `runtime/default` or `localhost/*`.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  {{- if eq .actionOverride $pa.baseline }}
-  validationFailureAction: {{ $pa.baseline }}
-  {{- else }}
-  validationFailureAction: {{ .actionOverride }}
-  {{- end }}
+  validationFailureAction: {{ .action }}
   background: true
   failurePolicy: Fail
   rules:

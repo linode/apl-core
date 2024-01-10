@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "allowed-image-repos") ($p.enabled) }}
 ---
@@ -20,11 +19,7 @@ metadata:
       designated list.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}    
 spec:
-  {{- if not (eq .actionOverride $pa.bestPractice) }}
-  validationFailureAction: {{ .actionOverride }}
-  {{- else }}
-  validationFailureAction: {{ $pa.bestPractice }}
-  {{- end }}
+  validationFailureAction: {{ .action }}
   background: true
   failurePolicy: Fail
   rules:

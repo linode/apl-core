@@ -1272,28 +1272,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/project'
-      policyProfileAction:
-        properties:
-          baseline:
-            type: string
-            enum: ['Audit', 'Enforce']
-            default: Enforce
-          restricted:
-            type: string
-            enum: ['Audit', 'Enforce']
-            default: Enforce
-          bestPractice:
-            type: string
-            enum: ['Audit', 'Enforce']
-            default: Audit
-          otomi:
-            type: string
-            enum: ['Audit', 'Enforce']
-            default: Audit
-          other:
-            type: string
-            enum: ['Audit', 'Enforce']
-            default: Audit
       policies:
         type: array
         items:
@@ -1382,7 +1360,7 @@ definitions:
       profile:
         description: Profile that contains this policy
         $ref: '#/definitions/wordCharacterPattern'
-      actionOverride:
+      action:
         type: string
         enum: ['Audit', 'Enforce']
         default: Audit

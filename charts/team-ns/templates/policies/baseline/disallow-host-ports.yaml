@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "disallow-host-ports") ($p.enabled) }}
 ---
@@ -20,11 +19,7 @@ metadata:
       field is unset or set to `0`.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  {{- if eq .actionOverride $pa.baseline }}
-  validationFailureAction: {{ $pa.baseline }}
-  {{- else }}
-  validationFailureAction: {{ .actionOverride }}
-  {{- end }}
+  validationFailureAction: {{ .action }}
   background: true
   failurePolicy: Fail
   rules:

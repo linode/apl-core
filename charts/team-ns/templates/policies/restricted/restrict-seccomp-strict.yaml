@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "restrict-seccomp-strict") ($p.enabled) }}
 ---
@@ -21,11 +20,7 @@ metadata:
       using `anyPattern` from being persisted properly in Kubernetes 1.23.0-1.23.2.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  {{- if eq .actionOverride $pa.restricted }}
-  validationFailureAction: {{ $pa.restricted }}
-  {{- else }}
-  validationFailureAction: {{ .actionOverride }}
-  {{- end }}
+  validationFailureAction: {{ .action }}
   background: true
   failurePolicy: Fail
   rules:

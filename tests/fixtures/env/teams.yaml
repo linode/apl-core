@@ -5,12 +5,6 @@ teamConfig:
             alertmanager: true
             grafana: true
             prometheus: true
-        policyProfileAction:
-            baseline: Audit
-            restricted: Audit
-            bestPractice: Audit
-            otomi: Audit
-            other: Audit
     demo:
         alerts:
             email: {}
@@ -33,12 +27,6 @@ teamConfig:
         networkPolicy:
             egressPublic: true
             ingressPrivate: true
-        policyProfileAction:
-            baseline: Enforce
-            restricted: Enforce
-            bestPractice: Audit
-            otomi: Audit
-            other: Audit
         oidc:
             groupMapping: somesecretvalue
         resourceQuota:
@@ -56,9 +44,3 @@ teamConfig:
             alertmanager: true
             grafana: true
             prometheus: true
-        policyProfileAction:
-            baseline: Enforce
-            restricted: Enforce
-            bestPractice: Audit
-            otomi: Audit
-            other: Audit

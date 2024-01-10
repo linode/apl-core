@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "allowed-repo") ($p.enabled) }}
 ---
@@ -20,11 +19,7 @@ metadata:
       designated list.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }} 
 spec:
-  {{- if eq .actionOverride $pa.otomi }}
-  validationFailureAction: {{ $pa.otomi  }}
-  {{- else }}
-  validationFailureAction: {{ .actionOverride }}
-  {{- end }}
+  validationFailureAction: {{ .action }}
   background: true
   failurePolicy: Fail
   rules:
