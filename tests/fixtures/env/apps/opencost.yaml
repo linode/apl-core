@@ -2,7 +2,7 @@ apps:
     opencost:
         enabled: true
         alerts:
-            enabled: true
+            enabled: false
             costOfAllNodesQuotaPerMonthReached:
                 quota: 500
         keys:
