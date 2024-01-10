@@ -7,7 +7,8 @@ metadata:
   name: {{ template "velero.fullname" . }}-upgrade-crds
   namespace: {{ .Release.Namespace }}
   annotations:
-    "helm.sh/hook": post-install,post-upgrade,post-rollback
+    "helm.sh/hook": pre-install,pre-upgrade,pre-rollback
+    "helm.sh/hook-weight": "5"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
     app.kubernetes.io/name: {{ include "velero.name" . }}
@@ -34,7 +35,7 @@ spec:
         - name: {{ . }}
       {{- end }}
     {{- end }}
-      serviceAccountName: {{ include "velero.serverServiceAccount" . }}
+      serviceAccountName: {{ include "velero.serverServiceAccount" . }}-upgrade-crds
       initContainers:
         - name: kubectl
           {{- if .Values.kubectl.image.digest }}
@@ -74,7 +75,7 @@ spec:
           args:
             - -c
             - /velero install --crds-only --dry-run -o yaml | /tmp/kubectl apply -f -
-          {{- with .Values.resources }}
+          {{- with .Values.upgradeJobResources }}
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -85,9 +86,24 @@ spec:
           volumeMounts:
             - mountPath: /tmp
               name: crds
+          {{- if (.Values.upgradeCRDsJob).extraVolumeMounts }}
+          {{- toYaml .Values.upgradeCRDsJob.extraVolumeMounts | nindent 12 }}
+          {{- end }}
+          {{- if (.Values.upgradeCRDsJob).extraEnvVars }}
+          env:
+          {{- with .Values.upgradeCRDsJob.extraEnvVars }}
+          {{- range $key, $value := . }}
+            - name: {{ default "none" $key }}
+              value: {{ default "none" $value | quote }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
       volumes:
         - name: crds
           emptyDir: {}
+        {{- if (.Values.upgradeCRDsJob).extraVolumes }}
+        {{- toYaml .Values.upgradeCRDsJob.extraVolumes | nindent 8 }}
+        {{- end }}
       restartPolicy: OnFailure
       {{- with $podSecurityContext }}
       securityContext:

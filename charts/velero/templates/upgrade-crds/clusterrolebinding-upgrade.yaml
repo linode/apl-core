@@ -1,0 +1,25 @@
+{{- if .Values.upgradeCRDs }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "velero.fullname" . }}-upgrade-crds
+  labels:
+    app.kubernetes.io/component: upgrade-crds
+    app.kubernetes.io/name: {{ include "velero.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "velero.chart" . }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade,pre-rollback
+    "helm.sh/hook-weight": "-3"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+subjects:
+  - kind: ServiceAccount
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "velero.serverServiceAccount" . }}-upgrade-crds
+roleRef:
+  kind: ClusterRole
+  name: {{ include "velero.fullname" . }}-upgrade-crds
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
+

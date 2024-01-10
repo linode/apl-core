@@ -1,10 +1,14 @@
-{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+{{ if and (and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled) (or (not .Values.metrics.serviceMonitor.autodetect) (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1")) }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "velero.fullname" . }}
   {{- if .Values.metrics.serviceMonitor.namespace }}
   namespace: {{ .Values.metrics.serviceMonitor.namespace }}
+  {{- end }}
+  {{- with .Values.metrics.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
   {{- end }}
   labels:
     app.kubernetes.io/name: {{ include "velero.name" . }}
@@ -26,4 +30,17 @@ spec:
   - port: http-monitoring
     interval: {{ .Values.metrics.scrapeInterval }}
     scrapeTimeout: {{ .Values.metrics.scrapeTimeout }}
+    {{- if .Values.metrics.serviceMonitor.scheme }}
+    scheme: {{ .Values.metrics.serviceMonitor.scheme }}
+    {{- end }}
+    {{- if .Values.metrics.serviceMonitor.metricRelabelings }}
+    metricRelabelings: {{- toYaml .Values.metrics.serviceMonitor.metricRelabelings | nindent 6 }}
+    {{- end }}
+    {{- if .Values.metrics.serviceMonitor.relabelings }}
+    relabelings: {{ toYaml .Values.metrics.serviceMonitor.relabelings | nindent 6 }}
+    {{- end }}
+    {{- if .Values.metrics.serviceMonitor.tlsConfig }}
+    tlsConfig:
+      {{- toYaml .Values.metrics.serviceMonitor.tlsConfig | nindent 6 }}
+    {{- end }}
 {{- end }}
