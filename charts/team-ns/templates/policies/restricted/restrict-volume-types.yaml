@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $sp := $v.policyProfile.restricted }}
+{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "restrict-volume-types") ($p.enabled) }}
 ---
@@ -20,8 +20,8 @@ metadata:
       This policy blocks any other type of volume other than those in the allow list.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  {{- if eq .actionOverride $sp.defaultAction }}
-  validationFailureAction: {{ $sp.defaultAction }}
+  {{- if eq .actionOverride $pa.restricted }}
+  validationFailureAction: {{ $pa.restricted }}
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}

@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $sp := $v.policyProfile.bestPractice }}
+{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "require-limits") ($p.enabled) }}
 ---
@@ -22,8 +22,8 @@ metadata:
       requests and memory limits.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
 spec:
-  {{- if eq .actionOverride $sp.defaultAction }}
-  validationFailureAction: {{ $sp.defaultAction }}
+  {{- if eq .actionOverride $pa.bestPractice }}
+  validationFailureAction: {{ $pa.bestPractice }}
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}

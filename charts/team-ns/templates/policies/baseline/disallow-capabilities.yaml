@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $sp := $v.policyProfile.baseline }}
+{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "disallow-capabilities") ($p.enabled) }}
 ---
@@ -16,8 +16,8 @@ metadata:
       Adding capabilities beyond those listed in the policy must be disallowed.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  {{- if eq .actionOverride $sp.defaultAction }}
-  validationFailureAction: {{ $sp.defaultAction }}
+  {{- if eq .actionOverride $pa.baseline }}
+  validationFailureAction: {{ $pa.baseline }}
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}

@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $sp := $v.policyProfile.bestPractice }}
+{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "disallow-latest-tag") ($p.enabled) }}
 ---
@@ -20,8 +20,8 @@ metadata:
       specifies a tag and that it is not called `latest`. 
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
 spec:
-  {{- if eq .actionOverride $sp.defaultAction }}
-  validationFailureAction: {{ $sp.defaultAction }}
+  {{- if eq .actionOverride $pa.bestPractice }}
+  validationFailureAction: {{ $pa.bestPractice }}
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}

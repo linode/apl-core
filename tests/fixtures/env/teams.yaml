@@ -5,17 +5,12 @@ teamConfig:
             alertmanager: true
             grafana: true
             prometheus: true
-        policyProfile:
-            baseline:
-                defaultAction: Enforce
-            restricted:
-                defaultAction: Enforce
-            bestPractice:
-                defaultAction: Audit
-            otomi:
-                defaultAction: Audit
-            other:
-                defaultAction: Audit
+        policyProfileAction:
+            baseline: Audit
+            restricted: Audit
+            bestPractice: Audit
+            otomi: Audit
+            other: Audit
     demo:
         alerts:
             email: {}
@@ -38,17 +33,12 @@ teamConfig:
         networkPolicy:
             egressPublic: true
             ingressPrivate: true
-        policyProfile:
-            baseline:
-                defaultAction: Enforce
-            restricted:
-                defaultAction: Enforce
-            bestPractice:
-                defaultAction: Audit
-            otomi:
-                defaultAction: Audit
-            other:
-                defaultAction: Audit
+        policyProfileAction:
+            baseline: Enforce
+            restricted: Enforce
+            bestPractice: Audit
+            otomi: Audit
+            other: Audit
         oidc:
             groupMapping: somesecretvalue
         resourceQuota:
@@ -66,14 +56,9 @@ teamConfig:
             alertmanager: true
             grafana: true
             prometheus: true
-        policyProfile:
-            baseline:
-                defaultAction: Enforce
-            restricted:
-                defaultAction: Enforce
-            bestPractice:
-                defaultAction: Audit
-            otomi:
-                defaultAction: Audit
-            other:
-                defaultAction: Audit
+        policyProfileAction:
+            baseline: Enforce
+            restricted: Enforce
+            bestPractice: Audit
+            otomi: Audit
+            other: Audit

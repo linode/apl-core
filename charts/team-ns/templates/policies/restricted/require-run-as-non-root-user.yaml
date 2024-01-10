@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $sp := $v.policyProfile.restricted }}
+{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "require-run-as-non-root-user") ($p.enabled) }}
 ---
@@ -18,8 +18,8 @@ metadata:
       `runAsUser` is either unset or set to a number greater than zero.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  {{- if eq .actionOverride $sp.defaultAction }}
-  validationFailureAction: {{ $sp.defaultAction }}
+  {{- if eq .actionOverride $pa.restricted }}
+  validationFailureAction: {{ $pa.restricted }}
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}

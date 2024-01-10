@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $sp := $v.policyProfile.otomi }}
+{{- $pa := $v.policyProfileAction }}
 {{- range $p := $v.policies }}
 {{- if and (eq $p.name "required-otomi-label") ($p.enabled) }}
 ---
@@ -19,8 +19,8 @@ metadata:
       queried. This policy validates that the annotation `corp.org/department` is specified with some value.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}       
 spec:
-  {{- if eq .actionOverride $sp.defaultAction }}
-  validationFailureAction: {{ $sp.defaultAction }}
+  {{- if eq .actionOverride $pa.otomi }}
+  validationFailureAction: {{ $pa.otomi }}
   {{- else }}
   validationFailureAction: {{ .actionOverride }}
   {{- end }}

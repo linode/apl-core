@@ -42,7 +42,7 @@ teamConfig:
             - name: disallow-capabilities
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
               customValues:
                   - AUDIT_WRITE
@@ -61,47 +61,47 @@ teamConfig:
             - name: disallow-host-namespaces
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: disallow-host-path
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: disallow-host-ports
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: disallow-proc-mount
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: disallow-privileged-containers
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: disallow-selinux
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: restrict-apparmor-profiles
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: restrict-sysctls
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: restrict-seccomp
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: require-non-root-groups
               profile: other
@@ -111,32 +111,32 @@ teamConfig:
             - name: disallow-capabilities-strict
               profile: restricted
               enabled: false
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: disallow-privilege-escalation
               profile: restricted
               enabled: false
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: require-run-as-non-root-user
               profile: restricted
               enabled: false
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: require-run-as-nonroot
               profile: restricted
               enabled: false
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: restrict-seccomp-strict
               profile: restricted
               enabled: false
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
             - name: restrict-volume-types
               profile: baseline
               enabled: true
-              actionOverride: Audit
+              actionOverride: Enforce
               severity: medium
               customValues:
                   - name
