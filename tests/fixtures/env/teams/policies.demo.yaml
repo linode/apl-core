@@ -133,7 +133,7 @@ teamConfig:
               enabled: false
               actionOverride: Audit
               severity: medium
-            - name: disallow-capabilities
+            - name: restrict-volume-types
               profile: baseline
               enabled: true
               actionOverride: Audit

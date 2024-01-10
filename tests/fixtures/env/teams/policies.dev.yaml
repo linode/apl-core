@@ -1,7 +1,12 @@
 teamConfig:
     dev:
         policies:
-            - name: require-limits-and-requests
+            - name: require-requests
+              profile: best-practice
+              enabled: true
+              actionOverride: Audit
+              severity: medium
+            - name: require-limits
               profile: best-practice
               enabled: true
               actionOverride: Audit
@@ -32,6 +37,7 @@ teamConfig:
               profile: otomi
               enabled: true
               actionOverride: Audit
+              description: 'In addition to restricting the image registry from which images are pulled, in some cases and environments it may be required to also restrict which image repositories are used, for example in some restricted Namespaces. This policy ensures that the only allowed image repositories present in a given Pod, across any container type, come from the designated list.'
               severity: low
             - name: disallow-capabilities
               profile: baseline
@@ -82,7 +88,7 @@ teamConfig:
               enabled: true
               actionOverride: Audit
               severity: medium
-            - name: estrict-apparmor-profiles
+            - name: restrict-apparmor-profiles
               profile: baseline
               enabled: true
               actionOverride: Audit
@@ -97,3 +103,49 @@ teamConfig:
               enabled: true
               actionOverride: Audit
               severity: medium
+            - name: require-non-root-groups
+              profile: other
+              enabled: false
+              actionOverride: Audit
+              severity: medium
+            - name: disallow-capabilities-strict
+              profile: restricted
+              enabled: false
+              actionOverride: Audit
+              severity: medium
+            - name: disallow-privilege-escalation
+              profile: restricted
+              enabled: false
+              actionOverride: Audit
+              severity: medium
+            - name: require-run-as-non-root-user
+              profile: restricted
+              enabled: false
+              actionOverride: Audit
+              severity: medium
+            - name: require-run-as-nonroot
+              profile: restricted
+              enabled: false
+              actionOverride: Audit
+              severity: medium
+            - name: restrict-seccomp-strict
+              profile: restricted
+              enabled: false
+              actionOverride: Audit
+              severity: medium
+            - name: restrict-volume-types
+              profile: baseline
+              enabled: true
+              actionOverride: Audit
+              severity: medium
+              customValues:
+                  - name
+                  - configMap
+                  - csi
+                  - downwardAPI
+                  - emptyDir
+                  - ephemeral
+                  - persistentVolumeClaim
+                  - projected
+                  - secret
+                  - ''

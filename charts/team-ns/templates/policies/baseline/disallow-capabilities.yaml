@@ -6,7 +6,7 @@
 apiVersion: kyverno.io/v1
 kind: Policy
 metadata:
-  name: disallowed-capabilities
+  name: disallow-capabilities
   annotations:
     policies.kyverno.io/title: Disallow Capabilities
     policies.kyverno.io/category: baseline
