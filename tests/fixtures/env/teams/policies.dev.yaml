@@ -4,45 +4,45 @@ teamConfig:
             - name: require-requests
               profile: best-practice
               enabled: true
-              actionOverride: Audit
+              action: Audit
               severity: medium
             - name: require-limits
               profile: best-practice
               enabled: true
-              actionOverride: Audit
+              action: Audit
               severity: medium
             - name: allowed-image-repositories
               profile: best-practice
               enabled: true
-              actionOverride: Audit
+              action: Audit
               severity: medium
               customValues:
                   - harbor.bla.com
             - name: disallow-latest-tag
               profile: best-practice
               enabled: true
-              actionOverride: Audit
+              action: Audit
               severity: medium
             - name: require-pod-probes
               profile: best-practice
               enabled: true
-              actionOverride: Audit
+              action: Audit
               severity: medium
             - name: required-otomi-label
               profile: otomi
               enabled: true
-              actionOverride: Audit
+              action: Audit
               severity: medium
             - name: allowed-repo
               profile: otomi
               enabled: true
-              actionOverride: Audit
+              action: Audit
               description: 'In addition to restricting the image registry from which images are pulled, in some cases and environments it may be required to also restrict which image repositories are used, for example in some restricted Namespaces. This policy ensures that the only allowed image repositories present in a given Pod, across any container type, come from the designated list.'
               severity: medium
             - name: disallow-capabilities
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
               customValues:
                   - AUDIT_WRITE
@@ -61,82 +61,82 @@ teamConfig:
             - name: disallow-host-namespaces
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: disallow-host-path
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: disallow-host-ports
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: disallow-proc-mount
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: disallow-privileged-containers
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: disallow-selinux
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: restrict-apparmor-profiles
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: restrict-sysctls
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: restrict-seccomp
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: require-non-root-groups
               profile: other
               enabled: false
-              actionOverride: Audit
+              action: Audit
               severity: medium
             - name: disallow-capabilities-strict
               profile: restricted
               enabled: false
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: disallow-privilege-escalation
               profile: restricted
               enabled: false
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: require-run-as-non-root-user
               profile: restricted
               enabled: false
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: require-run-as-nonroot
               profile: restricted
               enabled: false
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: restrict-seccomp-strict
               profile: restricted
               enabled: false
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
             - name: restrict-volume-types
               profile: baseline
               enabled: true
-              actionOverride: Enforce
+              action: Enforce
               severity: medium
               customValues:
                   - name
