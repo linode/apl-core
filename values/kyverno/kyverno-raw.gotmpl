@@ -14,8 +14,9 @@ resources:
           any:
           - resources:
               kinds:
-              - Pod
-            namespaces:
+              - Deployments
+              - StatefulSet
+              namespaces:
               - otomi
               - harbor
               - keycloak
@@ -41,19 +42,15 @@ resources:
               names:
               - prometheus-po-prometheus
               - alertmanager-po-alertmanager
-          validate:
-            message: "Pods must be scheduled on nodes with the 'backend' label"
-            pattern:
-              spec:
-                affinity:
-                  nodeAffinity:
-                    requiredDuringSchedulingIgnoredDuringExecution:
-                      nodeSelectorTerms:
-                      - matchExpressions:
-                      {{- range $key, $val := . }}
-                        - key: {{ $key }}
-                          operator: In
-                          values:
-                          - {{ $val }}
-                      {{- end }}
+        mutate:
+          patchesJson6902: |-
+            - path: "/spec/template/spec/affinity/nodeAffinity/requiredDuringSchedulingIgnoredDuringExecution/nodeSelectorTerms/-1/matchExpressions/-1"
+              op: add
+              value:
+              {{- range $key, $val := . }}
+                key: {{ $key }}
+                operator: Lt
+                values:
+                - {{ $val }}
+              {{- end }}
 {{- end }}
