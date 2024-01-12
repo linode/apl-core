@@ -1,7 +1,7 @@
 {{- $v := .Values -}}
 {{- with $v.otomi | get "nodeSelector" nil }}
 resources:
-  - apiVersion: kyverno.io/v
+  - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
     metadata:
       name: require-otomi-node-affinity
