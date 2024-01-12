@@ -34,7 +34,7 @@ initContainers:
       - mountPath: /target
         name: plugins
   - name: velero-plugin-for-aws
-    image: velero/velero-plugin-for-aws:v1.5.0
+    image: velero/velero-plugin-for-aws:v1.8.2
     imagePullPolicy: IfNotPresent
     resources:
       requests:
@@ -47,7 +47,7 @@ initContainers:
       - mountPath: /target
         name: plugins
   - name: velero-plugin-for-gcp
-    image: velero/velero-plugin-for-gcp:v1.5.0
+    image: velero/velero-plugin-for-gcp:v1.8.2
     imagePullPolicy: IfNotPresent
     resources:
       requests:
@@ -187,7 +187,8 @@ kubectl:
     # do not inject sidecar, so the kubectl k8s job can exit and return the completed status
     sidecar.istio.io/inject: "false"
 
-
+# Whether to deploy the node-agent daemonset.
+deployNodeAgent: {{ $vl.restic.enabled }}
 
 schedules:
 {{- if $b.gitea.enabled }}
