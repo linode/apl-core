@@ -6,15 +6,14 @@ resources:
     metadata:
       name: require-otomi-node-affinity
     spec:
-      validationFailureAction: Enforce
-      background: true
+      background: false
       rules:
       - name: otomi-node-affinity
         match:
           any:
           - resources:
               kinds:
-              - Deployments
+              - Deployment
               - StatefulSet
               namespaces:
               - otomi
