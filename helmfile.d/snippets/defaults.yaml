@@ -59,7 +59,6 @@ environments:
                       - macro: k8s_containers
                         condition: (
                             container.image.repository in (
-                              docker.io/openpolicyagent/gatekeeper,
                               docker.io/velero/velero,
                               docker.io/weaveworks/kured,
                               k8s.gcr.io/kube-state-metrics/kube-state-metrics,
@@ -183,16 +182,6 @@ environments:
                 limits:
                   cpu: 50m
                   memory: 32Mi
-          gatekeeper:
-            enabled: false
-            auditFromCache: false
-            auditInterval: 60
-            constraintViolationsLimit: 20
-            disableValidatingWebhook: true
-            emitAdmissionEvents: false
-            emitAuditEvents: false
-            logLevel: INFO
-            replicas: 2
           gitea:
             enabled: true
             adminUsername: otomi-admin

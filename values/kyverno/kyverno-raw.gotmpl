@@ -1,0 +1,59 @@
+{{- $v := .Values -}}
+{{- with $v.otomi | get "nodeSelector" nil }}
+resources:
+  - apiVersion: kyverno.io/v
+    kind: ClusterPolicy
+    metadata:
+      name: require-otomi-node-affinity
+    spec:
+      validationFailureAction: Enforce
+      background: true
+      rules:
+      - name: otomi-node-affinity
+        match:
+          any:
+          - resources:
+              kinds:
+              - Pod
+            namespaces:
+              - otomi
+              - harbor
+              - keycloak
+              - tempo
+              - otel
+              - grafana
+              - istio-system
+              - knative-serving
+              - gitea
+              - gitea-operator
+              - cert-manager
+              - argocd
+              - tekton-pipelines
+              - otomi-pipelines
+              - otomi-operator
+              - maintenance
+              - external-dns
+              - ingress
+              - cnpg-system
+          - resources:
+              kinds:
+              - StatefulSet
+              names:
+              - prometheus-po-prometheus
+              - alertmanager-po-alertmanager
+          validate:
+            message: "Pods must be scheduled on nodes with the 'backend' label"
+            pattern:
+              spec:
+                affinity:
+                  nodeAffinity:
+                    requiredDuringSchedulingIgnoredDuringExecution:
+                      nodeSelectorTerms:
+                      - matchExpressions:
+                      {{- range $key, $val := . }}
+                        - key: {{ $key }}
+                          operator: In
+                          values:
+                          - {{ $val }}
+                      {{- end }}
+{{- end }}

@@ -56,4 +56,3 @@ releases:
         backups: {{- $tca | get "backups" list | toYaml | nindent 10 }}
         builds: {{- $tca | get "builds" list | toYaml | nindent 10 }}
         policies: {{- $tca | get "policies" list | toYaml | nindent 10 }}
-        policyProfile: {{- $tca | get "policyProfile" list | toYaml | nindent 10 }}

@@ -1375,6 +1375,8 @@ definitions:
         default: medium
       customValues:
         type: array
+    required:
+      - name
   build:
     type: object
     description: Define location of code to build
@@ -1960,65 +1962,6 @@ properties:
               falcoDriverLoader:
                 $ref: '#/definitions/resources'
               falcoExporter:
-                $ref: '#/definitions/resources'
-      gatekeeper:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          auditInterval:
-            type: integer
-            default: 60
-          auditFromCache:
-            type: boolean
-            default: false
-          constraintViolationsLimit:
-            type: integer
-            default: 20
-          dataSync:
-            type: array
-            items:
-              type: object
-              properties:
-                group:
-                  description: A k8s resource api group.
-                  type: string
-                kind:
-                  description: A k8s resource kind.
-                  type: string
-                version:
-                  description: A k8s resource version.
-                  type: string
-              required: [kind, version]
-          disableValidatingWebhook:
-            type: boolean
-            default: true
-          excludedNamespaces:
-            type: array
-            items:
-              type: string
-          emitAuditEvents:
-            type: boolean
-            default: false
-          emitAdmissionEvents:
-            type: boolean
-            default: false
-          logLevel:
-            type: string
-            default: 'INFO'
-          replicas:
-            type: integer
-          image:
-            $ref: '#/definitions/imageSimple'
-          resources:
-            additionalProperties: false
-            properties:
-              audit:
-                $ref: '#/definitions/resources'
-              controller:
                 $ref: '#/definitions/resources'
       gitea:
         properties:
@@ -2670,14 +2613,6 @@ properties:
                 x-secret: '{{ randAlphaNum 32 | b64enc }}'
       oauth2-proxy-redis:
         $ref: '#/definitions/redisChart'
-      opa-exporter:
-        description: Expose OPA/Gatekeeper Constraint Violations metrics.
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
       opencost:
         additionalProperties: false
         properties:
