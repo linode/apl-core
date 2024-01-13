@@ -48,7 +48,7 @@ resources:
               value:
               {{- range $key, $val := . }}
                 key: {{ $key }}
-                operator: Lt
+                operator: In
                 values:
                 - {{ $val }}
               {{- end }}
