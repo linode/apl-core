@@ -20,6 +20,14 @@ resources:
           batch:
             send_batch_size: 10000
             timeout: 10s
+          k8sattributes:
+            auth_type: "serviceAccount"
+            passthrough: false
+            extract:
+              {{- with $o.collector.attributes }}
+              metadata:
+              {{ . | toYaml | nindent 16 }}
+              {{- end }}
         exporters:
           logging:
             loglevel: info
@@ -56,6 +64,7 @@ resources:
               processors:
               - memory_limiter
               - batch
+              - k8sattributes
               exporters:
               - logging
               {{- if $v.apps.tempo.enabled }}
