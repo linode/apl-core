@@ -4,11 +4,11 @@ resources:
   - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
     metadata:
-      name: require-otomi-node-affinity
+      name: require-otomi-general-node-affinity
     spec:
       background: false
       rules:
-      - name: otomi-node-affinity
+      - name: otomi-general-node-affinity
         match:
           any:
           - resources:
@@ -24,26 +24,50 @@ resources:
               - grafana
               - istio-system
               - knative-serving
+              - kyverno
               - gitea
               - gitea-operator
               - cert-manager
-              - argocd
+              ## argo still excluded. There is an issue where matchExpressions are added in an endless loop
+              # - argocd
               - tekton-pipelines
+              - tekton-pipelines-resolvers
               - otomi-pipelines
               - otomi-operator
               - maintenance
               - external-dns
               - ingress
               - cnpg-system
-          - resources:
-              kinds:
-              - StatefulSet
-              names:
-              - prometheus-po-prometheus
-              - alertmanager-po-alertmanager
+              - kyverno
         mutate:
           patchesJson6902: |-
             - path: "/spec/template/spec/affinity/nodeAffinity/requiredDuringSchedulingIgnoredDuringExecution/nodeSelectorTerms/-1/matchExpressions/-1"
+              op: add
+              value:
+              {{- range $key, $val := . }}
+                key: {{ $key }}
+                operator: In
+                values:
+                - {{ $val }}
+              {{- end }}
+  - apiVersion: kyverno.io/v1
+    kind: ClusterPolicy
+    metadata:
+      name: require-otomi-taskrun-node-affinity
+    spec:
+      background: false
+      rules:
+      - name: otomi-taskrun-node-affinity
+        match:
+          any:
+          - resources:
+              kinds:
+              - TaskRun
+              namespaces:
+              - otomi-pipelines
+        mutate:
+          patchesJson6902: |-
+            - path: "/spec/podTemplate/affinity/nodeAffinity/requiredDuringSchedulingIgnoredDuringExecution/nodeSelectorTerms/-1/matchExpressions/-1"
               op: add
               value:
               {{- range $key, $val := . }}

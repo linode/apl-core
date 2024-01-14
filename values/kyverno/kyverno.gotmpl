@@ -61,3 +61,17 @@ reportsController:
   replicas: 2
   {{- end }}
   resources: {{- $kv.resources.reportsController | toYaml | nindent 4 }}
+
+features:
+  logging:
+    # -- Logging format
+    format: text
+    # -- Logging verbosity
+    # kyverno generates a lot of logs. Set to a higher value when required
+    verbosity: 1
+
+config:
+  # -- Exclude Kyverno namespace
+  # Determines if default Kyverno namespace exclusion is enabled for webhooks and resourceFilters
+  # required for nodeAffinity (alse force kyverno to disired nodes)
+  excludeKyvernoNamespace: false
