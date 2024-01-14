@@ -45,7 +45,7 @@ spec:
         workspace: shared-data
   - name: build-push
     runAfter:
-    - grype-code-local
+    - grype-code-scan
     taskRef:
       kind: Task
       name: kaniko
