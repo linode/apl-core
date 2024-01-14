@@ -31,12 +31,17 @@ spec:
       value: $(params["CI"])
     - name: IN_DOCKER
       value: '1'
+    - name: ENV_DIR
+      value: /home/app/stack/env
+    - name: VERBOSE
+      value: '1'
   steps:
     - name: git-clone
       script: |
         #!/bin/bash
         set -e
-
+        # Prevent the detected dubious ownership in repository error
+        git config --global --add safe.directory '*'
         # Reading gitea credentials
         GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
         GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
@@ -47,25 +52,26 @@ spec:
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
-        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url /home/app/stack/env
+        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- else}}
-        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url /home/app/stack/env
+        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- end }}
     - name: bootstrap
       command:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi bootstrap'
+        - 'binzx/otomi bootstrap'
     - name: test
       command:
         - '/bin/bash'
       args:
         - '-c'
-        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi validate-values'
+        - 'binzx/otomi validate-values'
     - name: apply
-      command:
-        - '/bin/bash'
-      args:
-        - '-c'
-        - 'export ENV_DIR=/home/app/stack/env && binzx/otomi apply'
+      script: |
+        #!/bin/bash
+        set -e
+        # Prevent the detected dubious ownership in repository error
+        git config --global --add safe.directory '*'
+        binzx/otomi apply

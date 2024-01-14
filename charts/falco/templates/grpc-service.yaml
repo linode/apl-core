@@ -9,7 +9,7 @@ metadata:
 spec:
   clusterIP: None
   selector:
-    app: {{ include "falco.fullname" . }}
+    {{- include "falco.selectorLabels" . | nindent 4 }}
   ports:
   - protocol: TCP
     port: {{ include "grpc.port" . }}

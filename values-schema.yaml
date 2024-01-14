@@ -646,9 +646,11 @@ definitions:
   networkPolicy:
     additionalProperties: false
     properties:
-      ingressPrivate:
+      podSelector:
+        type: string
         title: Internal ingress filtering
         description: 'Pods belonging to this service must contain "otomi.io/app: <service name>" label'
+      ingressPrivate:
         oneOf:
           - title: Deny all
             description: Deny traffic from all teams (including this one)
@@ -670,12 +672,12 @@ definitions:
                   type: object
                   properties:
                     team:
-                      title: Team name
-                      description: 'Allow traffic from a given team'
+                      title: FROM team name
+                      description: Allow traffic from a given team
                       type: string
                     service:
-                      title: Service name
-                      description: 'Allow traffic from pods with "otomi.io/app: <some service name>" label'
+                      title: FROM label value
+                      description: 'Allow traffic from pods with label "otomi.io/app: <value>"'
                       type: string
                   required:
                     - team
@@ -1238,9 +1240,17 @@ definitions:
         items:
           $ref: '#/definitions/service'
         type: array
-      monitoringStack:
+      managedMonitoring:
+        title: Managed monitoring
+        description: Activate managed Grafana, Prometheus or Alertmanager instances
         properties:
-          enabled:
+          grafana:
+            type: boolean
+            default: true
+          prometheus:
+            type: boolean
+            default: false
+          alertmanager:
             type: boolean
             default: false
       networkPolicy:
@@ -1350,6 +1360,13 @@ definitions:
       trigger:
         type: boolean
         default: false
+      externalRepo:
+        type: boolean
+        description: Select when using an external private Git repository.
+        default: false
+      secretName:
+        description: The name of the secret with the credentials of the external private Git repository
+        type: string
       mode:
         properties:
           docker:
@@ -1365,6 +1382,18 @@ definitions:
                 description: A relative directory path within the Git repository.
                 type: string
                 default: ./Dockerfile
+              envVars:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
           buildpacks:
             properties:
               repoUrl:
@@ -1377,6 +1406,18 @@ definitions:
               path:
                 description: A relative directory path within the Git repository.
                 type: string
+              envVars:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
     required:
       - name
 
@@ -1641,7 +1682,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: false
+            default: true
           autoscaling:
             $ref: '#/definitions/autoscalingEnabled'
           resources:
@@ -1872,28 +1913,23 @@ properties:
           enabled:
             type: boolean
             default: false
-          falcoSidekick:
-            minPrio:
-              default: informational
-              enum:
-                - emergency
-                - alert
-                - critical
-                - error
-                - warning
-                - notice
-                - informational
-                - debug
-              type: string
-            replicas:
-              type: integer
-              default: 1
+          driver:
+            type: string
+            default: ebpf
+            enum:
+              - module
+              - ebpf
+              - modern-bpf
           resources:
             additionalProperties: false
             properties:
               falco:
                 $ref: '#/definitions/resources'
-              falcoSidekick:
+              falcoCtlInstall:
+                $ref: '#/definitions/resources'
+              falcoCtlFollow:
+                $ref: '#/definitions/resources'
+              falcoDriverLoader:
                 $ref: '#/definitions/resources'
               falcoExporter:
                 $ref: '#/definitions/resources'

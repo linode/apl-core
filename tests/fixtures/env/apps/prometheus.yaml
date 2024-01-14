@@ -1,6 +1,6 @@
 apps:
     prometheus:
-        enabled: true
+        enabled: false
         disabledRules:
             - InfoInhibitor
             - PrometheusOperatorListErrors

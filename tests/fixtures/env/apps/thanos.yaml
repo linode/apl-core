@@ -1,6 +1,6 @@
 apps:
     thanos:
-        enabled: true
+        enabled: false
         compactor:
             retentionResolutionRaw: 0s
             retentionResolution5m: 0s

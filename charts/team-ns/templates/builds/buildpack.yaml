@@ -17,6 +17,7 @@ spec:
   tasks:
   - name: fetch-source
     taskRef:
+      kind: Task
       name: git-clone
     workspaces:
     - name: output
@@ -30,6 +31,7 @@ spec:
       value: {{ .mode.buildpacks.revision }}
   - name: buildpacks
     taskRef:
+      kind: Task
       name: buildpacks
     runAfter:
       - fetch-source
@@ -41,10 +43,19 @@ spec:
     params:
     - name: APP_IMAGE
       value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+    {{- with .mode.buildpacks.path }}
     - name: SOURCE_SUBPATH
-      value: {{ .mode.buildpacks.path }}
+      value: {{ . }}
+    {{- end }}
     - name: BUILDER_IMAGE
       value: paketobuildpacks/builder:full
+      {{- with (dig "mode" "buildpacks" "envVars" nil . ) }}
+    - name: ENV_VARS
+      value: 
+        {{- range . }}
+        - {{ .name }}={{ .value }}
+        {{- end }}
+      {{- end }}
 ---
 {{- if .trigger }}
 apiVersion: triggers.tekton.dev/v1alpha1
@@ -64,7 +75,6 @@ spec:
         annotations:
           sidecar.istio.io/inject: "false"
       spec:
-
         pipelineRef:
           name: buildpacks-build-{{ .name }}
         taskRunTemplate:
@@ -75,15 +85,22 @@ spec:
         workspaces:
         - name: shared-data
           volumeClaimTemplate:
+            metadata:
+              creationTimestamp: null
             spec:
               accessModes:
               - ReadWriteOnce
               resources:
                 requests:
                   storage: 1Gi
+            status: {}
         - name: git-credentials
           secret:
+            {{- if .externalRepo }}
+            secretName: {{ .secretName }}
+            {{- else }}
             secretName: gitea-credentials
+            {{- end }}
         - name: docker-credentials
           secret:
             secretName: harbor-pushsecret-builds
@@ -107,15 +124,22 @@ spec:
   workspaces:
   - name: shared-data
     volumeClaimTemplate:
+      metadata:
+        creationTimestamp: null
       spec:
         accessModes:
         - ReadWriteOnce
         resources:
           requests:
             storage: 1Gi
+      status: {}
   - name: git-credentials
     secret:
+      {{- if .externalRepo }}
+      secretName: {{ .secretName }}
+      {{- else }}
       secretName: gitea-credentials
+      {{- end }}
   - name: docker-credentials
     secret:
       secretName: harbor-pushsecret-builds
@@ -138,13 +162,16 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+  labels:
+    tekton.dev/pipeline: buildpacks-build-{{ .name }}
+    {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
   triggers:
     - name: tekton-webhook-{{ .name }}
       bindings:
-        - ref: gitea-triggerbinding-{{ .name }}
+        - kind: TriggerBinding
+          ref: gitea-triggerbinding-{{ .name }}
       template:
         ref: trigger-template-{{ .name }}
 ---

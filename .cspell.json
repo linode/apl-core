@@ -30,6 +30,7 @@
     "CNAMEs",
     "encodedkey",
     "envs",
+    "ebpf",
     "gcpckms",
     "gotmpl",
     "groupsname",

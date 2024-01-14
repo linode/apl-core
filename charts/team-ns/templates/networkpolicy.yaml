@@ -1,6 +1,7 @@
 {{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- $v := .Values | merge (dict) }}
-{{- $hasStack := dig "monitoringStack" "enabled" false $v }}
+{{- $prometheus := dig "managedMonitoring" "prometheus" false $v }}
+{{- $alertmng := dig "managedMonitoring" "alertmanager" false $v }}
 {{- if and (not (eq $v.teamId "admin")) (dig "networkPolicy" "ingressPrivate" true $v) }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -46,6 +47,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               name: tekton-pipelines
+{{- if $alertmng }}
 ---
 # Allow traffic from team's prometheus to team's alertmanager
 apiVersion: networking.k8s.io/v1
@@ -67,8 +69,10 @@ spec:
       app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
   policyTypes:
     - Ingress
+{{- end }}
+{{- if $prometheus }}
 ---
-# Allow traffic from team's kube-state-metrics + team's alertmanager to team's prometheus
+# Allow traffic from Alertmanager and Grafana to Prometheus
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -95,7 +99,7 @@ spec:
   policyTypes:
     - Ingress
 ---
-# Allow traffic from team's prometheus to team's kube-state-metrics
+# Allow traffic from Prometheus to kube-state-metrics
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -115,6 +119,7 @@ spec:
       app.kubernetes.io/name: kube-state-metrics
   policyTypes:
     - Ingress
+{{- end }}
 ---
 # Allow webhook traffic from gitea to event listeners
 apiVersion: networking.k8s.io/v1
@@ -136,19 +141,16 @@ spec:
       app.kubernetes.io/managed-by: EventListener
   policyTypes:
     - Ingress
-
-  {{- range $s := $v.services }}
-    {{ if and ($hasStack) (not $s.isCore) }}
+{{- if $prometheus }}
 ---
+# Allow traffic from Prometheus to all pods for scraping metrics
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $s.name }}-ingress-allow-prometheus
+  name: default-from-prometheus
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  podSelector:
-    matchLabels:
-      otomi.io/app: {{ $s.name }}
+  podSelector: {}
   policyTypes:
     - Ingress
   ingress:
@@ -158,8 +160,9 @@ spec:
               name: team-{{ $v.teamId }}
           podSelector:
             matchLabels:
-              otomi.io/app: prometheus-team-{{ $v.teamId }}
-    {{- end }}
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
+{{- end }}
+  {{- range $s := $v.services }}
     {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
     {{- if not $s.isCore }}
       {{- $ingressPrivateMode := dig "networkPolicy" "ingressPrivate" "mode" "DenyAll" $s }}
@@ -175,9 +178,17 @@ spec:
     matchLabels:
         {{- if $isKnativeService }}
       # The app label cannot be used because Knative appends revision number to the service
-      serving.knative.dev/service: {{ $s.name }}
+            {{- if hasKey $s.networkPolicy "podSelector" }}
+      serving.knative.dev/service: {{ $s.networkPolicy.podSelector }}
+            {{- else }}
+      serving.knative.dev/service: {{ $s.name }} 
+            {{- end }}  
         {{- else }}
+            {{- if hasKey $s.networkPolicy "podSelector" }}
+      otomi.io/app: {{ $s.networkPolicy.podSelector }}
+            {{- else }}
       otomi.io/app: {{ $s.name }}
+            {{- end }}
         {{- end }}
   policyTypes:
     - Ingress
@@ -198,9 +209,17 @@ spec:
     matchLabels:
         {{- if $isKnativeService }}
       # The app label cannot be used because Knative appends revision number to its value
-      serving.knative.dev/service: {{ $s.name }}
+            {{- if hasKey $s.networkPolicy "podSelector" }}
+      serving.knative.dev/service: {{ $s.networkPolicy.podSelector }}
+            {{- else }}
+      serving.knative.dev/service: {{ $s.name }} 
+            {{- end }}  
         {{- else }}
+            {{- if hasKey $s.networkPolicy "podSelector" }}
+      otomi.io/app: {{ $s.networkPolicy.podSelector }}
+            {{- else }}
       otomi.io/app: {{ $s.name }}
+            {{- end }}
         {{- end }}
   policyTypes:
     - Ingress
@@ -221,7 +240,7 @@ spec:
               name: team-{{ .team }}
           podSelector:
             matchLabels:
-              serving.knative.dev/service: {{ .service}}
+              serving.knative.dev/service: {{ .service }}
             {{- end }}
           {{- end }}
         {{- end }}

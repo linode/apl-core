@@ -75,7 +75,7 @@
     "jest-ts-auto-mock": "2.1.0",
     "json-schema-to-typescript": "10.1.5",
     "json2ts": "0.0.7",
-    "jsonpath": "1.1.1",
+    "jsonpath": "^1.1.1",
     "lint-staged": "10.5.4",
     "npm-run-all": "4.1.5",
     "prettier": "2.7.1",
@@ -161,5 +161,5 @@
     }
   },
   "type": "commonjs",
-  "version": "2.0.0"
+  "version": "2.3.0"
 }

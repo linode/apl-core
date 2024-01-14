@@ -37,6 +37,12 @@ releases:
     labels:
       pkg: gitea
     <<: *raw
+  - name: gitea-operator
+    installed: true
+    namespace: gitea-operator
+    labels:
+      pkg: gitea-operator
+    <<: *default
   - name: kiali-operator-artifacts
     installed: {{ $a | get "kiali.enabled" }}
     namespace: kiali
