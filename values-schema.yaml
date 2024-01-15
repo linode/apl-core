@@ -2794,6 +2794,19 @@ properties:
                 $ref: '#/definitions/resources'
               node-exporter:
                 $ref: '#/definitions/resources'
+      rabbitmq-cluster-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+          resources:
+            properties:
+              operator:
+                description: the operator property can be any arbitray string (change it if needed
+                $ref: '#/definitions/resources'
       redis-shared:
         allOf:
           - $ref: '#/definitions/redisChart'

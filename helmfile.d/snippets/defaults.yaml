@@ -590,6 +590,8 @@ environments:
                 maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
+          rabbitmq-cluster-operator:
+            enabled: true
           thanos:
             enabled: false
             query:

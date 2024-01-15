@@ -102,6 +102,10 @@ k8s:
     - name: cluster-overprovisioner
       app: cluster-overprovisioner
       disableIstioInjection: true
+    - name: rabbitmq-cluster-operator
+      app: rabbitmq-cluster-operator
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: redis
       app: prometheus
       disableIstioInjection: true

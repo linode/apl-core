@@ -87,6 +87,10 @@ releases:
       - ../values/vault-operator/vault-operator.gotmpl
       - {{- $v.apps.vault | get "_rawValues" dict | toYaml | nindent 8 }}
     <<: *upgrade
+  - name: rabbitmq-cluster-operator
+    installed: {{ $a | get "rabbitmq-cluster-operator.enabled" }}
+    namespace: rabbitmq-cluster-operator
+    <<: *default
   - name: tekton-pipelines
     installed: true
     namespace: tekton-pipelines
