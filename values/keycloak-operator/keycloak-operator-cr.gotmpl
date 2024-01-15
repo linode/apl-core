@@ -8,6 +8,7 @@ metadata:
   name: keycloak
   namespace: keycloak
 spec:
+  image: 22.0.4
   additionalOptions: 
   - name: proxy
     value: "edge"
@@ -63,3 +64,4 @@ spec:
           volumeMounts: 
             - name: theme-volume
               mountPath: /opt/keycloak/providers
+
