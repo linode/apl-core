@@ -123,6 +123,7 @@
     "compile:watch": "npm run compile && tsc -w",
     "cz": "git-cz",
     "cz:retry": "git-cz -- --retry",
+    "dev:bootstrapCoreApp": "ts-node src/dev/bootstrapCoreApp.ts",
     "eslint": "eslint --ext ts .",
     "eslint:fix": "eslint --fix --ext ts .",
     "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",

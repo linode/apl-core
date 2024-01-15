@@ -1,5 +1,3 @@
-#!/usr/bin/env node --nolazy -r ts-node/register
-
 import { createFileSync, mkdirpSync, writeFile } from 'fs-extra'
 import { set } from 'lodash'
 import { terminal } from 'src/common/debug'
@@ -151,6 +149,7 @@ export const addApp = async (name: string): Promise<void> => {
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
+  d.info(process.argv)
   const appName = process.argv[2] || 'my-app'
   addApp(appName)
 }
