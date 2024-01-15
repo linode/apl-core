@@ -2805,7 +2805,7 @@ properties:
           resources:
             properties:
               operator:
-                description: the operator property can be any arbitray string (change it if needed
+                description: the operator property can be any arbitrary string (change it if needed
                 $ref: '#/definitions/resources'
       redis-shared:
         allOf:
