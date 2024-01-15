@@ -21,7 +21,12 @@ const generateValuesSchema = async (projectDir: string, name: string): Promise<v
         default: true,
       },
       resources: {
-        $ref: '#/definitions/resources',
+        properties: {
+          operator: {
+            description: 'the operator property can be any arbitray string (change it if needed',
+            $ref: '#/definitions/resources',
+          },
+        },
       },
     },
   }
@@ -74,7 +79,7 @@ const generateHelmfileFile = async (projectDir: string, name: string): Promise<v
     releases: [
       {
         name,
-        installed: `{{ $a | get "${name}.enabled" }}'`,
+        installed: `{{ $a | get "${name}.enabled" }}`,
         namespace: name,
         '<<': '*default',
       },
@@ -144,12 +149,12 @@ export const addApp = async (name: string): Promise<void> => {
   generateHelmChart(projectDir, name)
   generateHelmChartValues(projectDir, name)
   const cmd = "find . -name '*.chunk' -type f  -exec rm {} \\;"
-  d.info('File with the .chunk extenstion needs to merged with their parents')
+  d.info('File with the .chunk extenstion needs to merged with their corresponding peers')
   d.info(`Remove chunks with the following command: "${cmd}"`)
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
   d.info(process.argv)
   const appName = process.argv[2] || 'my-app'
-  addApp(appName)
+  addApp(appName.trim())
 }
