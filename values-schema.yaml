@@ -1441,46 +1441,19 @@ definitions:
         type: string
         default: kubernetes.io/opaque
         enum:
-          - kubernetes.io/opaque
-          - kubernetes.io/service-account-token
-          - kubernetes.io/dockercfg
-          - kubernetes.io/dockerconfigjson
-          - kubernetes.io/basic-auth
-          - kubernetes.io/ssh-auth
-          - kubernetes.io/tls
+          [
+            'kubernetes.io/opaque',
+            'kubernetes.io/service-account-token',
+            'kubernetes.io/dockercfg',
+            'kubernetes.io/dockerconfigjson',
+            'kubernetes.io/basic-auth',
+            'kubernetes.io/ssh-auth',
+            'kubernetes.io/tls',
+          ]
       encryptedData:
         type: object
       metadata:
-        description: 'Standard objects metadata.'
-        properties:
-          annotations:
-            type: array
-            items:
-              type: object
-              properties:
-                key:
-                  type: string
-                value:
-                  type: string
-              required:
-                - key
-                - value
-          finalizers:
-            items:
-              type: string
-            type: array
-          labels:
-            type: array
-            items:
-              type: object
-              properties:
-                key:
-                  type: string
-                value:
-                  type: string
-              required:
-                - key
-                - value
+        type: object
     required:
       - type
       - encryptedData
