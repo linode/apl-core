@@ -351,7 +351,7 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Set k8s cluster name
         run: |
-          echo DIGITALOCEAN_CLUSTER_NAME=${{ github.actor }}-$(TZ="GMT-2" date +"%m-%d-%H-%M") >> $GITHUB_ENV
+          echo "DIGITALOCEAN_CLUSTER_NAME=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')-$(TZ='GMT-2' date +'%m-%d-%H-%M')" >> $GITHUB_ENV
           # Cluster name must be no longer than 63 characters
       - name: Determine exact k8s version
         run: |
