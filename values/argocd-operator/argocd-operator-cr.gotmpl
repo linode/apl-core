@@ -38,6 +38,19 @@ spec:
     defaultPolicy: role:readonly
 {{- end }}
   applicationSet:
+    {{- with $v.otomi | get "nodeSelector" nil }}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            {{- range $key, $val := . }}
+            - key: {{ $key }}
+              operator: In
+              values:
+              - {{ $val }}
+            {{- end }}
+    {{- end }}
     logLevel: info
     resources:
       limits:
@@ -72,8 +85,34 @@ spec:
         cpu: 100m
         memory: 256M
       {{- end }}
+    {{- with $v.otomi | get "nodeSelector" nil }}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            {{- range $key, $val := . }}
+            - key: {{ $key }}
+              operator: In
+              values:
+              - {{ $val }}
+            {{- end }}
+    {{- end }}
   controller:
     logLevel: info
+    {{- with $v.otomi | get "nodeSelector" nil }}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            {{- range $key, $val := . }}
+            - key: {{ $key }}
+              operator: In
+              values:
+              - {{ $val }}
+            {{- end }}
+    {{- end }}
     resources:
       {{- with $a | get "resources.controller" nil }}
         {{- toYaml .| nindent 4 }}
@@ -86,6 +125,19 @@ spec:
         memory: 1Gi
       {{- end }}
   repo:
+    {{- with $v.otomi | get "nodeSelector" nil }}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            {{- range $key, $val := . }}
+            - key: {{ $key }}
+              operator: In
+              values:
+              - {{ $val }}
+            {{- end }}
+    {{- end }}
     logLevel: info
     resources:
       {{- with $a | get "resources.repo" nil }}
@@ -110,6 +162,19 @@ spec:
           secretName: custom-ca
 {{- end }}
   redis:
+    {{- with $v.otomi | get "nodeSelector" nil }}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            {{- range $key, $val := . }}
+            - key: {{ $key }}
+              operator: In
+              values:
+              - {{ $val }}
+            {{- end }}
+    {{- end }}
     resources:
       {{- with $a | get "resources.redis" nil }}
         {{- toYaml .| nindent 4 }}
