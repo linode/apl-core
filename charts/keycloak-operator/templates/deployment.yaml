@@ -9,7 +9,8 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: keycloak-operator
-      app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion }}
+      # Workaround to the selector immutable validation error
+      app.kubernetes.io/version: "22.0.1"
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -19,7 +20,8 @@ spec:
       labels:
         app.kubernetes.io/managed-by: quarkus
         app.kubernetes.io/name: keycloak-operator
-        app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion }}
+        # Workaround to the selector immutable validation error
+        app.kubernetes.io/version: "22.0.1"
     spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
