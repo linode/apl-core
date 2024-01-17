@@ -307,6 +307,6 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: 'redkubes',
               repo: 'azure-marketplace',
-              workflow_id: 'deploy_marketplace.yaml',
+              workflow_id: 'deploy_release.yaml',
               ref: 'main'
             })
