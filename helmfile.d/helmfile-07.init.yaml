@@ -19,17 +19,13 @@ releases:
     namespace: cert-manager
     labels:
       pkg: cert-manager
-    chart: ../charts/cert-manager-webhook-civo
-    values:
-      - ../values/cert-manager-webhook-civo/cert-manager-webhook-civo.gotmpl
+    <<: *default
   - name: cert-manager-webhook-linode
     installed: {{ hasKey $p "linode" }}
     namespace: cert-manager
     labels:
       pkg: cert-manager
-    chart: ../charts/cert-manager-webhook-linode
-    values:
-      - ../values/cert-manager-webhook-civo/cert-manager-webhook-linode.gotmpl
+    <<: *default
   - name: cert-manager-artifacts
     installed: true
     namespace: cert-manager

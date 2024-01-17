@@ -24,8 +24,7 @@ dns:
     # provider:
     #     aws:
     #         region: eu-central-1
-    # zoneIdFilters:
-    #     - otomi
+    zoneIdFilters: []
 e2e:
     enabled: true
 home:
