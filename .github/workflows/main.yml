@@ -308,5 +308,5 @@ jobs:
               owner: 'redkubes',
               repo: 'azure-marketplace',
               workflow_id: 'deploy_marketplace.yaml',
-              ref: 'matthew/feat/azure-marketplace-automation'
+              ref: 'main'
             })
