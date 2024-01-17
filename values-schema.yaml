@@ -3050,6 +3050,11 @@ properties:
                   - deployment
                   - daemonset
                   - statefulset
+              attributes:
+                type: array
+                title: Kubernetes Attributes
+                $ref: '#/definitions/labelsAnnotations'
+                description: 'Attributes to extract metadata from pods'
           operator:
             properties:
               replicaCount:
