@@ -1,9 +1,9 @@
 {{- $v := .Values }}
-{{- if $v.apps.tekton.enabled }}
 {{- range $v.builds }}
 {{- if eq .mode.type "docker" }}
+{{- $context := ( dir .mode.docker.path ) }}
 ---
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: docker-build-{{ .name }}
@@ -18,6 +18,7 @@ spec:
   tasks:
   - name: fetch-source
     taskRef:
+      kind: Task
       name: git-clone
     workspaces:
     - name: output
@@ -33,6 +34,7 @@ spec:
     runAfter: 
     - fetch-source
     taskRef:
+      kind: Task
       name: kaniko
     workspaces:
     - name: source
@@ -42,8 +44,17 @@ spec:
     params:
     - name: DOCKERFILE
       value: {{ .mode.docker.path }}
+    - name: CONTEXT
+      value: {{ $context }}
     - name: IMAGE
       value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+    {{- with (dig "mode" "docker" "envVars" nil . ) }}
+    - name: EXTRA_ARGS
+      value: 
+        {{- range . }}
+        - --build-arg={{ .name }}={{ .value }}
+        {{- end }}
+    {{- end }}
 ---
 {{- if .trigger }}
 apiVersion: triggers.tekton.dev/v1alpha1
@@ -53,7 +64,7 @@ metadata:
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   resourcetemplates:
-    - apiVersion: tekton.dev/v1beta1
+    - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
         generateName: docker-trigger-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}-
@@ -63,30 +74,38 @@ spec:
         annotations:
           sidecar.istio.io/inject: "false"
       spec:
-        serviceAccountName: sa-team-{{ $v.teamId }}
         pipelineRef:
           name: docker-build-{{ .name }}
-        podTemplate:
-          securityContext:
-            fsGroup: 65532
+        taskRunTemplate:
+          serviceAccountName: sa-team-{{ $v.teamId }}
+          podTemplate:
+            securityContext:
+              fsGroup: 65532
         workspaces:
         - name: shared-data
           volumeClaimTemplate:
+            metadata:
+              creationTimestamp: null
             spec:
               accessModes:
               - ReadWriteOnce
               resources:
                 requests:
                   storage: 1Gi
+            status: {}
         - name: git-credentials
           secret:
+            {{- if .externalRepo }}
+            secretName: {{ .secretName }}
+            {{- else }}
             secretName: gitea-credentials
+            {{- end }}
         - name: docker-credentials
           secret:
             secretName: harbor-pushsecret-builds
 ---
 {{- else }}
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   name: docker-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
@@ -94,24 +113,32 @@ metadata:
     sidecar.istio.io/inject: "false"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  serviceAccountName: sa-team-{{ $v.teamId }}
   pipelineRef:
     name: docker-build-{{ .name }}
-  podTemplate:
-    securityContext:
-      fsGroup: 65532
+  taskRunTemplate:
+    serviceAccountName: sa-team-{{ $v.teamId }}
+    podTemplate:
+      securityContext:
+        fsGroup: 65532
   workspaces:
   - name: shared-data
     volumeClaimTemplate:
+      metadata:
+        creationTimestamp: null
       spec:
         accessModes:
         - ReadWriteOnce
         resources:
           requests:
             storage: 1Gi
+      status: {}
   - name: git-credentials
     secret:
+      {{- if .externalRepo }}
+      secretName: {{ .secretName }}
+      {{- else }}
       secretName: gitea-credentials
+      {{- end }}
   - name: docker-credentials
     secret:
       secretName: harbor-pushsecret-builds
@@ -134,18 +161,19 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+  labels:
+    tekton.dev/pipeline: docker-build-{{ .name }}
+    {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
   triggers:
     - name: tekton-webhook-{{ .name }}
       bindings:
-        - ref: gitea-triggerbinding-{{ .name }}
+        - kind: TriggerBinding
+          ref: gitea-triggerbinding-{{ .name }}
       template:
         ref: trigger-template-{{ .name }}
 ---
-{{- end }}
-
 {{- end }}
 {{- end }}
 {{- end }}

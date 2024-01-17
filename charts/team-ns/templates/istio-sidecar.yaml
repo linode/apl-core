@@ -1,5 +1,6 @@
 {{- $v := .Values | merge (dict) }}
 {{- $ := . }}
+{{- $prometheus := dig "managedMonitoring" "prometheus" false $v }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
 {{- if $egressFilteringEnabled }}
@@ -12,6 +13,23 @@ metadata:
 spec:
   outboundTrafficPolicy: 
     mode: REGISTRY_ONLY
+{{- if $prometheus }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: team-prometheus
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  outboundTrafficPolicy:
+    mode: ALLOW_ANY
+  workloadSelector:
+    labels:
+      otomi.io/app: prometheus-team-{{ $v.teamId }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if $prometheus }}
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
@@ -19,7 +37,7 @@ metadata:
   labels:
     {{- include "team-ns.chart-labels" $ | nindent 4 }}
     prometheus: team-{{ $v.teamId }}
-  name: istio-sidecars
+  name: istio-sidecars-team-services
 spec:
   namespaceSelector:
     matchNames: [team-{{ $v.teamId }}]
@@ -29,5 +47,12 @@ spec:
   selector:
     matchLabels:
       security.istio.io/tlsMode: istio
-{{- end }}
+    matchExpressions:
+      - key: app.kubernetes.io/instance
+        operator: NotIn
+        values:
+          - prometheus-{{ $v.teamId }}
+          - {{ $v.teamId }}-po-prometheus
+          - {{ $v.teamId }}-po-alertmanager
+          - tekton-dashboard-{{ $v.teamId }}
 {{- end }}

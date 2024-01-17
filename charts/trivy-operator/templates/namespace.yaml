@@ -1,0 +1,11 @@
+{{- if .Values.operator.namespace }}
+{{- if not (lookup "v1" "Namespace" "" .Values.operator.namespace) }}
+{{- if not (eq .Release.Namespace .Values.operator.namespace) }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.operator.namespace }}
+  labels: {{- include "trivy-operator.labels" . | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}

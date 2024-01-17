@@ -176,7 +176,7 @@
           "datasource": {
             "uid": "$datasource"
           },
-          "expr": "sum(kube_pod_status_phase{phase=\"Pending\", cluster=~\"$cluster\", namespace=~\"$namespace\"} == 1)",
+          "expr": "sum(kube_pod_status_phase{phase=\"Pending\", cluster=~\"$cluster\", namespace=~\"$namespace\", service!=\"prometheus-operator-kube-state-metrics\"} == 1)",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -307,7 +307,7 @@
             "uid": "$datasource"
           },
           "exemplar": true,
-          "expr": "count(kube_deployment_status_replicas_unavailable{cluster=~\"$cluster\", namespace=~\"$namespace\"} > 0)",
+          "expr": "count(kube_deployment_status_replicas_unavailable{cluster=~\"$cluster\", namespace=~\"$namespace\", service!=\"prometheus-operator-kube-state-metrics\"} > 0)",
           "interval": "",
           "legendFormat": "{{deployment}}",
           "refId": "A"

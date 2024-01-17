@@ -1,0 +1,71 @@
+{{- $kms := .Values.kms | default dict }}
+
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: otomi-task-teams
+  namespace: otomi-pipelines
+spec:
+  params:
+    - name: OTOMI_VERSION
+    - name: CI
+    - name: repoUrl
+    - name: giteaCredentialsSecretName
+  workspaces:
+    - name: source
+      mountPath: /home/app/stack/env
+    - name: gitea-credentials
+      mountPath: /etc/gitea-credentials
+  stepTemplate:
+    computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
+    imagePullPolicy: Always
+    image: otomi/core:$(params["OTOMI_VERSION"])
+    workingDir: /home/app/stack
+{{- if hasKey $kms "sops" }}
+    envFrom:
+    - secretRef:
+        name: otomi-sops-secrets
+{{- end }}
+    env:
+    - name: CI
+      value: $(params["CI"])
+    - name: IN_DOCKER
+      value: '1'
+    - name: ENV_DIR
+      value: /home/app/stack/env
+    - name: VERBOSE
+      value: '2'
+  steps:
+    - name: git-clone
+      script: |
+        #!/bin/bash
+        set -e
+        # Prevent the detected dubious ownership in repository error
+        git config --global --add safe.directory '*'
+        # Reading gitea credentials
+        GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
+        GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
+
+        # Parsing the repo url
+        export fullRepoUrl=$(params["repoUrl"])
+        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+
+        # Cloning the values
+        {{- if .Values.cloneUnsecure }}
+        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
+        {{- else}}
+        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
+        {{- end }}
+    - name: test
+      command:
+        - '/bin/bash'
+      args:
+        - '-c'
+        - 'binzx/otomi validate-values'
+    - name: apply
+      script: |
+        #!/bin/bash
+        set -e
+        # Prevent the detected dubious ownership in repository error
+        git config --global --add safe.directory '*'
+        binzx/otomi apply-as-apps -l pipeline=otomi-task-teams

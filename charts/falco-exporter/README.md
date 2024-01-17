@@ -49,7 +49,7 @@ The following table lists the main configurable parameters of the chart and thei
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ---------------------------------- |
 | `image.registry`                                 | The image registry to pull from                                                                  | `docker.io`                        |
 | `image.repository`                               | The image repository to pull from                                                                | `falcosecurity/falco-exporter`     |
-| `image.tag`                                      | The image tag to pull                                                                            | `0.6.0`                            |
+| `image.tag`                                      | The image tag to pull                                                                            | `0.8.3`                            |
 | `image.pullPolicy`                               | The image pull policy                                                                            | `IfNotPresent`                     |
 | `falco.grpcUnixSocketPath`                       | Unix socket path for connecting to a Falco gRPC server                                           | `unix:///var/run/falco/falco.sock` |
 | `falco.grpcTimeout`                              | gRPC connection timeout                                                                          | `2m`                               |
@@ -60,12 +60,21 @@ The following table lists the main configurable parameters of the chart and thei
 | `serviceMonitor.interval`                        | Specify a user defined interval for the Service Monitor                                          | `""`                               |
 | `serviceMonitor.scrapeTimeout`                   | Specify a user defined scrape timeout for the Service Monitor                                    | `""`                               |
 | `grafanaDashboard.enabled`                       | Enable the falco security dashboard, see https://github.com/falcosecurity/falco-exporter#grafana | `false`                            |
+| `grafanaDashboard.folder`                        | The grafana folder to deplay the dashboard in                                                    |     `""`                                 |
 | `grafanaDashboard.namespace`                     | The namespace to deploy the dashboard configmap in                                               | `default`                          |
 | `grafanaDashboard.prometheusDatasourceName`      | The prometheus datasource name to be used for the dashboard                                      | `Prometheus`                       |
 | `scc.create`                                     | Create OpenShift's Security Context Constraint                                                   | `true`                             |
 | `service.mTLS.enabled`                           | Enable falco-exporter server Mutual TLS feature                                                  | `false`                            |
 | `prometheusRules.enabled`                        | Enable the creation of falco-exporter PrometheusRules                                            | `false`                            |
-| `daemonset.podLabels`                            | Customized Daemonset pod labels                                                                  | `{}`
+| `daemonset.podLabels`                            | Customized Daemonset pod labels                                                                  | `{}`                               |
+| `healthChecks.livenessProbe.probesPort`          | Liveness probes port                                                                             | `19376`                            |
+| `healthChecks.readinessProbe.probesPort`         | Readiness probes port                                                                            | `19376`                            |
+| `healthChecks.livenessProbe.initialDelaySeconds` | Number of seconds before performing the first liveness probe                                     | `60`                               |
+| `healthChecks.readinessProbe.initialDelaySeconds`| Number of seconds before performing the first readiness probe                                    | `30`                               |
+| `healthChecks.livenessProbe.timeoutSeconds`      | Number of seconds after which the liveness probe times out                                       | `5`                                |
+| `healthChecks.readinessProbe.timeoutSeconds`     | Number of seconds after which the readiness probe times out                                      | `5`                                |
+| `healthChecks.livenessProbe.periodSeconds`       | Time interval in seconds to perform the liveness probe                                           | `15`                               |
+| `healthChecks.readinessProbe.periodSeconds`      | Time interval in seconds to perform the readiness probe                                          | `15`                               |
 
 Please, refer to [values.yaml](./values.yaml) for the full list of configurable parameters.
 

@@ -1,0 +1,78 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: otomi-pipeline
+  namespace: otomi-pipelines
+spec:
+  workspaces:
+    - name: source
+    - name: gitea-credentials
+  params:
+    - name: repoUrl
+    - name: commitMessage
+    - name: giteaCredentialsSecretName
+  tasks:
+    - name: otomi-git-clone
+      params:
+        - name: repoUrl
+          value: '$(params.repoUrl)'
+        - name: commitMessage
+          value: '$(params.commitMessage)'
+        - name: giteaCredentialsSecretName
+          value: $(params.giteaCredentialsSecretName)
+      taskRef:
+        name: otomi-git-clone
+      workspaces:
+        - name: source
+          workspace: source
+        - name: gitea-credentials
+          workspace: gitea-credentials
+    - name: otomi-task
+      params:
+        - name: repoUrl
+          value: '$(params.repoUrl)'
+        - name: OTOMI_VERSION
+          value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
+        - name: CI
+          value: $(tasks.otomi-git-clone.results.CI)
+        - name: giteaCredentialsSecretName
+          value: $(params.giteaCredentialsSecretName)
+      taskRef:
+        name: otomi-task
+      workspaces:
+        - name: source
+          workspace: source
+        - name: gitea-credentials
+          workspace: gitea-credentials
+      runAfter:
+        - otomi-git-clone
+      when:
+        - input: $(tasks.otomi-git-clone.results.CI)
+          operator: in
+          values: ['1']
+        - input: $(tasks.otomi-git-clone.results.TRIGGER_PLATFORM_PIPELINE)
+          operator: in
+          values: ['1']
+    - name: otomi-task-teams
+      params:
+        - name: repoUrl
+          value: '$(params.repoUrl)'
+        - name: OTOMI_VERSION
+          value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
+        - name: CI
+          value: $(tasks.otomi-git-clone.results.CI)
+        - name: giteaCredentialsSecretName
+          value: $(params.giteaCredentialsSecretName)
+      taskRef:
+        name: otomi-task-teams
+      workspaces:
+        - name: source
+          workspace: source
+        - name: gitea-credentials
+          workspace: gitea-credentials
+      runAfter:
+        - otomi-git-clone
+      when:
+        - input: $(tasks.otomi-git-clone.results.TRIGGER_TEAMS_PIPELINE)
+          operator: in
+          values: ['1']

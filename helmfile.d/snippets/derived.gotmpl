@@ -21,7 +21,6 @@
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
 {{- $droneProvider := $a.drone.sourceControl.provider }}
-{{- $hasSops := hasKey $v "kms.sops.provider" }}
 {{- $isManaged := has $provider (list "aws" "azure" "google") }}
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
@@ -109,7 +108,7 @@ environments:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           snapshot-controller:
             # TODO: upgrade snapshot-controller from piraeus-charts/snapshot-controller and toggle below:
-            enabled: false # {{ $a | get "snapshot-controller.enabled" (and (eq $provider "aws") (gt ($v.cluster.k8sVersion | float64) 1.22)) }}
+            enabled: false
           {{- if $v.otomi.hasCloudLB }}
           istio: 
             meshConfig:

@@ -9,4 +9,3 @@ data:
   falco.yaml: |-
     {{- include "falco.falcosidekickConfig" . }}
     {{- toYaml .Values.falco | nindent 4 }}
-{{ (.Files.Glob "rules/*").AsConfig | indent 2 }}

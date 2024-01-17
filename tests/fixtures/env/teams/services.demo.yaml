@@ -23,8 +23,12 @@ teamConfig:
               tlsPass: true
               useCname: true
               cname:
-                  domain: 'hello-demo-cname.com'
+                  domain: 'hello-demo.cname.com'
                   tslSecretName: ''
+              trafficControl:
+                  enabled: true
+                  weightV1: 70
+                  weightV2: 30
             - domain: tlspass.eks.dev.otomi.cloud
               id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
               ksvc:
@@ -55,6 +59,7 @@ teamConfig:
               type: public
             - name: service-a
               networkPolicy:
+                  podSelector: test-label-value
                   egressPublic:
                       - domain: domain1.com
                         ports:
@@ -104,3 +109,27 @@ teamConfig:
                       set:
                           - name: someheader
                             value: somevalue
+              useCname: true
+              cname:
+                  domain: 'net-a-demo.cname.com'
+                  tslSecretName: ''
+              trafficControl:
+                  enabled: true
+                  weightV1: 50
+                  weightV2: 50
+            - ingressClassName: platform
+              ksvc:
+                  predeployed: false
+              name: hello-blue-green
+              networkPolicy:
+                  ingressPrivate:
+                      mode: DenyAll
+              ownHost: true
+              useCname: false
+              paths: []
+              port: 80
+              type: public
+              trafficControl:
+                  enabled: true
+                  weightV1: 90
+                  weightV2: 10

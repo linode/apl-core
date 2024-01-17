@@ -5,36 +5,31 @@ teamConfig:
               url: https://myrepo.local/mychart.git
               path: ./
               revision: main
-              autoUpdate:
-                  strategy:
-                      digest:
-                          tag: latest
-                      type: digest
-                  enabled: true
-                  build: hello
+              imageUpdateStrategy:
+                  digest:
+                      imageRepository: harbor.try-otomi.net/team-orange/blue
+                      tag: latest
+                      imageParameter: v2.image.name
+                      tagParameter: v2.image.tag
+                  type: digest
             - name: wd2
               url: https://myrepo.local/mychart.git
               path: ./
               revision: main
-              autoUpdate:
-                  strategy:
-                      type: semver
-                      semver:
-                          versionConstraint: '1.12'
-                  enabled: true
-                  build: hello
+              imageUpdateStrategy:
+                  semver:
+                      imageRepository: harbor.try-otomi.net/team-orange/green
+                      versionConstraint: '1.12'
+                  type: semver
             - name: wd3
               url: https://myrepo.local/mychart.git
               path: ./
               revision: main
-              autoUpdate:
-                  strategy:
-                      type: latest
-                  enabled: true
-                  build: hello
+              imageUpdateStrategy:
+                  type: disabled
             - name: wd
               url: https://myrepo.local/mychart.git
               path: ./
               revision: main
-              autoUpdate:
-                  enabled: false
+              imageUpdateStrategy:
+                  type: disabled

@@ -14,7 +14,7 @@ import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBl
 
 import { HelmArguments } from './yargs'
 
-const objectToYaml = (obj: Record<string, any>): string => {
+export const objectToYaml = (obj: Record<string, any>): string => {
   return isEmpty(obj) ? '' : stringify(obj, { indent: 4 })
 }
 
@@ -65,7 +65,6 @@ export interface Repo {
 
 export const getRepo = (values: Record<string, any>): Repo => {
   const giteaEnabled = values?.apps?.gitea?.enabled ?? true
-  const clusterDomain = values?.cluster?.domainSuffix
   const byor = !!values?.apps?.['otomi-api']?.git
   if (!giteaEnabled && !byor) {
     throw new Error('Gitea is disabled but no apps.otomi-api.git config was given.')
@@ -85,11 +84,11 @@ export const getRepo = (values: Record<string, any>): Repo => {
   } else {
     username = 'otomi-admin'
     password = values?.apps?.gitea?.adminPassword ?? values?.otomi?.adminPassword
-    email = `otomi-admin@${clusterDomain}`
-    const giteaUrl = `gitea.${clusterDomain}`
+    email = `pipeline@cluster.local`
+    const giteaUrl = `gitea-http.gitea.svc.cluster.local:3000`
     const giteaOrg = 'otomi'
     const giteaRepo = 'values'
-    remote = `https://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
+    remote = `http://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
   }
   return { remote, branch, email, username, password }
 }
@@ -271,13 +270,11 @@ export const deriveSecrets = async (values: Record<string, any> = {}): Promise<R
   // Some secrets needs to be drived from the generated secrets
 
   const secrets = {}
-  if (values?.apps?.harbor?.enabled) {
-    const htpasswd = (
-      await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
-    ).stdout.trim()
+  const htpasswd = (
+    await $`htpasswd -nbB ${values.apps.harbor.registry.credentials.username} ${values.apps.harbor.registry.credentials.password}`
+  ).stdout.trim()
 
-    set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
-  }
+  set(secrets, 'apps.harbor.registry.credentials.htpasswd', htpasswd)
 
   return secrets
 }

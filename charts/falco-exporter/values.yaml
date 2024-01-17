@@ -16,13 +16,30 @@ service:
   mTLS:
     enabled: false
 
-# /readiness and /liveness probes port
-probesPort: 19376
+healthChecks:
+  livenessProbe:
+    # liveness probes port
+    probesPort: 19376
+    # -- Tells the kubelet that it should wait X seconds before performing the first probe.
+    initialDelaySeconds: 60
+    # -- Number of seconds after which the probe times out.
+    timeoutSeconds: 5
+    # -- Specifies that the kubelet should perform the check every x seconds.
+    periodSeconds: 15
+  readinessProbe:
+    # readiness probes port
+    probesPort: 19376
+    # -- Tells the kubelet that it should wait X seconds before performing the first probe.
+    initialDelaySeconds: 30
+    # -- Number of seconds after which the probe times out.
+    timeoutSeconds: 5
+    # -- Specifies that the kubelet should perform the check every x seconds.
+    periodSeconds: 15
 
 image:
   registry: docker.io
   repository: falcosecurity/falco-exporter
-  tag: 0.8.0
+  tag: 0.8.3
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -71,13 +88,14 @@ daemonset:
   podLabels: {}
 
 securityContext:
-  {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  privileged: false
+  seccompProfile:
+    type: RuntimeDefault
 
 resources:
   {}
@@ -113,6 +131,7 @@ serviceMonitor:
 
 grafanaDashboard:
   enabled: false
+  folder:
   namespace: default
   prometheusDatasourceName: Prometheus
 scc:

@@ -94,3 +94,22 @@ changes:
     deletions:
       - apps.keycloak.postgresqlPassword
       - apps.keycloak.postgresql
+  - version: 16
+    deletions:
+      - apps.tekton.enabled
+      - apps.demo-tlspass
+      - apps.hello
+      - apps.host-mods
+      - apps.kubeclarity
+      - apps.tigera-operator
+      - apps.kubeapps
+      - platformBackups.persistentVolumes.kubeapps
+    additions:
+      - apps.drone.enabled: true
+  - version: 17
+    deletions:
+      - 'teamConfig.{team}.monitoringStack'
+    additions:
+      - 'teamConfig.{team}.managedMonitoring.alertmanager': true
+      - 'teamConfig.{team}.managedMonitoring.grafana': true
+      - 'teamConfig.{team}.managedMonitoring.prometheus': true

@@ -1,19 +1,29 @@
 teamConfig:
     admin:
         id: admin
+        managedMonitoring:
+            alertmanager: true
+            grafana: true
+            prometheus: true
     demo:
         alerts:
             email: {}
             receivers:
-                - email
-        monitoringStack:
-            enabled: true
+                - slack
+            repeatInterval: 3h
+            slack:
+                channel: aaaaa
+                channelCrit: aaaaa
         billingAlertQuotas:
             teamCpuMonthQuotaReached:
                 quota: 150
             teamMemMonthQuotaReached:
                 quota: 200
         id: demo
+        managedMonitoring:
+            alertmanager: true
+            grafana: true
+            prometheus: true
         networkPolicy:
             egressPublic: true
             ingressPrivate: true
@@ -28,3 +38,9 @@ teamConfig:
                 - networkPolicy
             team:
                 - alerts
+    dev:
+        id: dev
+        managedMonitoring:
+            alertmanager: true
+            grafana: true
+            prometheus: true

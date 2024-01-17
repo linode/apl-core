@@ -18,6 +18,12 @@ releases:
     labels:
       pkg: argocd
     <<: *default
+  - name: otomi-operator
+    installed: true
+    namespace: otomi-operator
+    labels:
+      pkg: otomi-operator
+    <<: *default
   - name: external-secrets
     installed: {{ $a | get "external-secrets.enabled" }}
     namespace: external-secrets
@@ -31,6 +37,12 @@ releases:
     labels:
       pkg: gitea
     <<: *raw
+  - name: gitea-operator
+    installed: true
+    namespace: gitea-operator
+    labels:
+      pkg: gitea-operator
+    <<: *default
   - name: kiali-operator-artifacts
     installed: {{ $a | get "kiali.enabled" }}
     namespace: kiali
@@ -76,13 +88,13 @@ releases:
       - {{- $v.apps.vault | get "_rawValues" dict | toYaml | nindent 8 }}
     <<: *upgrade
   - name: tekton-pipelines
-    installed: {{ $a | get "tekton.enabled" }}
+    installed: true
     namespace: tekton-pipelines
     labels:
       pkg: tekton-pipelines
     <<: *default
   - name: tekton-dashboard
-    installed: {{ $a | get "tekton.enabled" }}
+    installed: true
     namespace: tekton-pipelines
     labels:
       pkg: tekton-pipelines

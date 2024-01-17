@@ -24,6 +24,9 @@ interface Arguments extends BasicArguments {
 
 interface Change {
   version: number
+  clones?: Array<{
+    [targetPath: string]: string
+  }>
   deletions?: Array<string>
   relocations?: Array<{
     [oldLocation: string]: string
@@ -184,8 +187,8 @@ export const applyChanges = async (
   const prevValues = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
   const values = cloneDeep(prevValues)
   for (const c of changes) {
-    c.deletions?.forEach((entry) => unset(values, entry) && unset(values, entry))
-    c.additions?.forEach((entry) => each(entry, (val, path) => set(values, path, val)))
+    c.deletions?.forEach((entry) => unsetAtPath(entry, values))
+    c.additions?.forEach((entry: any) => each(entry, (val, path) => setAtPath(path, values, val)))
     c.relocations?.forEach((entry) => each(entry, (newName, oldName) => moveGivenJsonPath(values, oldName, newName)))
     if (c.mutations)
       // 'for const of' is used here to allow await in loop
@@ -210,6 +213,25 @@ export const applyChanges = async (
   return diff(prevValues, values)
 }
 
+export const unparsePaths = (path: string, values: Record<string, any>): Array<string> => {
+  if (path.includes('{team}')) {
+    const paths: Array<string> = []
+    const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+    teams.forEach((teamName) => paths.push(path.replace('{team}', teamName)))
+    return paths.sort()
+  } else {
+    return [path]
+  }
+}
+export const unsetAtPath = (path: string, values: Record<string, any>): void => {
+  const paths = unparsePaths(path, values)
+  paths.forEach((p) => unset(values, p))
+}
+
+export const setAtPath = (path: string, values: Record<string, any>, value: string): void => {
+  const paths = unparsePaths(path, values)
+  paths.forEach((p) => set(values, p, value))
+}
 export const preserveIngressControllerConfig = async (
   dryRun = false,
   deps = {
@@ -250,7 +272,6 @@ export const preserveIngressControllerConfig = async (
 
   return true
 }
-
 /**
  * Differences are reported as one or more change records. Change records have the following structure:
 

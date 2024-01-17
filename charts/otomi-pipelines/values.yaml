@@ -1,0 +1,33 @@
+# Default values for otomi-pipelines.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+podSecurityContext:
+  securityContext:
+    fsGroup: 999
+    runAsNonRoot: true
+    runAsUser: 999
+
+eventListener:
+  resources:
+    # Event Listener pod resouce limits and requests
+    requests:
+      memory: '64Mi'
+      cpu: '250m'
+    limits:
+      memory: '128Mi'
+      cpu: '500m'
+
+tektonTask:
+  resources:
+    # Tekton Task pod resouce limits and requests
+    requests:
+      cpu: '500m'
+    limits:
+      cpu: '2'
+
+kms: {}
+
+giteaPassword: ""
+
+cloneUnsecure: false

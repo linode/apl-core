@@ -8,7 +8,7 @@ environments:
           alertmanager:
             enabled: false
           argocd:
-            enabled: false
+            enabled: true
             autoscaling:
               enabled: false
               minReplicas: 1
@@ -36,7 +36,7 @@ environments:
           cluster-overprovisioner:
             enabled: false
           drone:
-            enabled: true
+            enabled: false
             debug: false
             trace: false
             sourceControl:
@@ -74,6 +74,7 @@ environments:
                               docker.io/otomi/api,
                               docker.io/drone/drone-runner-kube,
                               docker.io/grafana/promtail,
+                              gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
                               quay.io/argoprojlabs/argocd-image-updater
                             ) or (k8s.ns.name = "kube-system")
                               or (k8s.ns.name = "ingress")
@@ -150,24 +151,38 @@ environments:
               falco:
                 requests:
                   cpu: 100m
-                  memory: 128Mi
+                  memory: 512Mi
                 limits:
-                  cpu: 500m
-                  memory: 256Mi
-              falcoSidekick:
+                  cpu: 1000m
+                  memory: 1024Mi
+              falcoCtlFollow:
                 requests:
                   cpu: 20m
-                  memory: 32Mi
+                  memory: 16Mi
                 limits:
                   cpu: 50m
-                  memory: 64Mi
+                  memory: 32Mi
+              falcoCtlInstall:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              falcoDriverLoader:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
               falcoExporter:
                 requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
                   cpu: 50m
                   memory: 32Mi
-                limits:
-                  cpu: 100m
-                  memory: 64Mi              
           gatekeeper:
             enabled: false
             auditFromCache: false
@@ -181,6 +196,15 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
+          gitea-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
           grafana:
             enabled: false
           harbor:
@@ -190,7 +214,7 @@ environments:
                 username: otomi-admin
             database:
               type: external
-              size: '2Gi'
+              size: '5Gi'
               name: harbor-otomi-db
               user: harbor
               coreDatabase: registry
@@ -270,35 +294,22 @@ environments:
             resources:
               pod:
                   requests:
-                      cpu: 50m
-                      memory: 128Mi
-                  limits:
                       cpu: 200m
                       memory: 256Mi
+                  limits:
+                      cpu: 500m
+                      memory: 1Gi
               operator:
                   requests:
-                      cpu: 50m
-                      memory: 256Mi
+                      cpu: 1000m
+                      memory: 512Mi
                   limits:
-                      cpu: 200m
+                      cpu: 2000m
                       memory: 1Gi
           knative:
             enabled: false
             serving:
               replicas: 1
-          kubeapps:
-            enabled: false
-            enableCommonGround: false
-            autoscaling:
-              dashboard:
-                minReplicas: 1
-                maxReplicas: 10
-              frontend:
-                minReplicas: 1
-                maxReplicas: 10
-              kubeops:
-                minReplicas: 1
-                maxReplicas: 10
           kube-descheduler:
             enabled: false
           kured:
@@ -312,7 +323,6 @@ environments:
                       cpu: 50m
                       memory: 32Mi
           tekton:
-            enabled: false
             resources:
               dashboard:
                 limits:
@@ -429,10 +439,19 @@ environments:
           otomi-api:
             editorInactivityTimeout: 1
           otomi-console: {}
+          otomi-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
           opencost:
             enabled: false
             alerts:
-              enabled: false          
+              enabled: false
             resources:
               exporter:
                 requests:
@@ -705,8 +724,8 @@ environments:
           keycloak:
             useOtomiDB: true
             imported: false
-            size: "1Gi"
-            replicas: 1
+            size: "5Gi"
+            replicas: 2
             resources:
               limits:
                 cpu: 100m
@@ -730,8 +749,6 @@ environments:
             vault:
               enabled: false
             argo:
-              enabled: false
-            kubeapps:
               enabled: false
             minio:
               enabled: false
@@ -760,7 +777,7 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes: (and think more?)
-        version: 15
+        version: 17
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

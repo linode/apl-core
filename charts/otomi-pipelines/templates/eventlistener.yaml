@@ -1,0 +1,21 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: otomi-tekton-listener
+  namespace: otomi-pipelines
+spec:
+  triggers:
+    - name: otomi-tekton-listener
+      bindings:
+        - ref: otomi-tekton-binding
+      template:
+        ref: otomi-tekton-template
+  resources:
+    kubernetesResource:
+      spec:
+        template:
+          spec:
+            serviceAccountName: otomi-tekton-triggers-sa
+            containers:
+              - resources: {{- toYaml .Values.eventListener.resources | nindent 18 }}
+                  

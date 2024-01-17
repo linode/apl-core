@@ -646,9 +646,11 @@ definitions:
   networkPolicy:
     additionalProperties: false
     properties:
-      ingressPrivate:
+      podSelector:
+        type: string
         title: Internal ingress filtering
         description: 'Pods belonging to this service must contain "otomi.io/app: <service name>" label'
+      ingressPrivate:
         oneOf:
           - title: Deny all
             description: Deny traffic from all teams (including this one)
@@ -670,12 +672,12 @@ definitions:
                   type: object
                   properties:
                     team:
-                      title: Team name
-                      description: 'Allow traffic from a given team'
+                      title: FROM team name
+                      description: Allow traffic from a given team
                       type: string
                     service:
-                      title: Service name
-                      description: 'Allow traffic from pods with "otomi.io/app: <some service name>" label'
+                      title: FROM label value
+                      description: 'Allow traffic from pods with label "otomi.io/app: <value>"'
                       type: string
                   required:
                     - team
@@ -1009,6 +1011,19 @@ definitions:
         example: arn:aws:acm:eu-central-1:xxx:certificate/xxx
         pattern: 'arn:aws(-cn|-us-gov)?:acm:\S+:\d+:\w+\/\S+'
         type: string
+      trafficControl:
+        title: Traffic Control
+        description: Split traffic between multiple services (blue/green, canary)
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          weightV1:
+            type: integer
+            default: 90
+          weightV2:
+            type: integer
+            default: 10
       certName:
         description: The name of a TLS secret known to exist in the team namespace.
         example: www-example-com
@@ -1225,11 +1240,19 @@ definitions:
         items:
           $ref: '#/definitions/service'
         type: array
-      monitoringStack:
+      managedMonitoring:
+        title: Managed monitoring
+        description: Activate managed Grafana, Prometheus or Alertmanager instances
         properties:
-          enabled:
+          grafana:
             type: boolean
             default: true
+          prometheus:
+            type: boolean
+            default: false
+          alertmanager:
+            type: boolean
+            default: false
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster
@@ -1297,7 +1320,7 @@ definitions:
     title: Retention policy
     type: string
   url:
-    pattern: '^(https:\/\/)([\w\-])+\.{1}([a-zA-Z]{2,63})([\/\w-]*)*\/?\??([^#\n\r]*)?#?([^\n\r]*)$'
+    pattern: '^https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&\/=]*)'
     type: string
   volumes:
     items:
@@ -1337,6 +1360,13 @@ definitions:
       trigger:
         type: boolean
         default: false
+      externalRepo:
+        type: boolean
+        description: Select when using an external private Git repository.
+        default: false
+      secretName:
+        description: The name of the secret with the credentials of the external private Git repository
+        type: string
       mode:
         properties:
           docker:
@@ -1352,6 +1382,18 @@ definitions:
                 description: A relative directory path within the Git repository.
                 type: string
                 default: ./Dockerfile
+              envVars:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
           buildpacks:
             properties:
               repoUrl:
@@ -1364,6 +1406,18 @@ definitions:
               path:
                 description: A relative directory path within the Git repository.
                 type: string
+              envVars:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    value:
+                      type: string
+                  required:
+                    - name
+                    - value
     required:
       - name
 
@@ -1380,7 +1434,7 @@ definitions:
         type: string
         title: Chart provider
         enum: ['helm', 'git']
-        default: helm
+        default: git
       path:
         description: A relative directory path within the Git repository. Absolute paths cause errors. (only valid for applications sourced from Git)
         $ref: '#/definitions/wordCharacterPattern'
@@ -1391,51 +1445,72 @@ definitions:
         description: In case of Git, this can be commit, tag, or branch. If omitted, will equal to HEAD. In case of Helm, this is a semver tag for the Chart's version.
         $ref: '#/definitions/wordCharacterPattern'
         default: HEAD
+      chartMetadata:
+        title: ''
+        properties:
+          helmChartVersion:
+            type: string
+            title: Helm chart version
+            default: ''
+          helmChartDescription:
+            type: string
+            title: Helm chart description
+            default: ''
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/domain'
-      autoUpdate:
+      imageUpdateStrategy:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
         additionalProperties: false
         properties:
-          enabled:
-            description: Enable Auto Image Updater
-            type: boolean
-            default: false
-          build:
-            $ref: '#/definitions/wordCharacterPattern'
-          tag:
-            description: Tag of the build. Only if strategy is digest.
-            $ref: '#/definitions/wordCharacterPattern'
-          versionConstraint:
-            $ref: '#/definitions/wordCharacterPattern'
-          strategy:
+          digest:
             additionalProperties: false
             properties:
-              digest:
-                additionalProperties: false
-                properties:
-                  tag:
-                    $ref: '#/definitions/wordCharacterPattern'
-                required:
-                  - tag
-              semver:
-                additionalProperties: false
-                properties:
-                  versionConstraint:
-                    $ref: '#/definitions/wordCharacterPattern'
-                required:
-                  - versionConstraint
-              type:
+              imageRepository:
                 type: string
-                enum:
-                  - semver
-                  - digest
-                  - latest
-                default: latest
+                description: The container image repository name
+                $ref: '#/definitions/wordCharacterPattern'
+              tag:
+                $ref: '#/definitions/wordCharacterPattern'
+              imageParameter:
+                type: string
+                default: image.name
+                description: The parameter for specifying the image name
+              tagParameter:
+                type: string
+                default: image.tag
+                description: The parameter for specifying the image tag
             required:
-              - type
+              - tag
+          semver:
+            additionalProperties: false
+            properties:
+              imageRepository:
+                type: string
+                description: The container image repository name
+                $ref: '#/definitions/wordCharacterPattern'
+              versionConstraint:
+                $ref: '#/definitions/wordCharacterPattern'
+              imageParameter:
+                type: string
+                default: image.name
+                description: The parameter for specifying the image name
+              tagParameter:
+                type: string
+                default: image.tag
+                description: The parameter for specifying the image tag
+            required:
+              - versionConstraint
+          type:
+            type: string
+            enum:
+              - semver
+              - digest
+              - disabled
+            default: disabled
+        required:
+          - type
     required:
       - name
       - url
@@ -1607,7 +1682,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: false
+            default: true
           autoscaling:
             $ref: '#/definitions/autoscalingEnabled'
           resources:
@@ -1697,7 +1772,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            description: Discarded as this is a core app.
+            default: false
           adminIsMachine:
             type: boolean
             default: false
@@ -1838,28 +1913,23 @@ properties:
           enabled:
             type: boolean
             default: false
-          falcoSidekick:
-            minPrio:
-              default: informational
-              enum:
-                - emergency
-                - alert
-                - critical
-                - error
-                - warning
-                - notice
-                - informational
-                - debug
-              type: string
-            replicas:
-              type: integer
-              default: 1
+          driver:
+            type: string
+            default: ebpf
+            enum:
+              - module
+              - ebpf
+              - modern-bpf
           resources:
             additionalProperties: false
             properties:
               falco:
                 $ref: '#/definitions/resources'
-              falcoSidekick:
+              falcoCtlInstall:
+                $ref: '#/definitions/resources'
+              falcoCtlFollow:
+                $ref: '#/definitions/resources'
+              falcoDriverLoader:
                 $ref: '#/definitions/resources'
               falcoExporter:
                 $ref: '#/definitions/resources'
@@ -2333,59 +2403,6 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
-      kubeapps:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: false
-            type: boolean
-          enableCommonGround:
-            default: false
-            type: boolean
-          initialRepos:
-            type: array
-            items:
-              type: object
-              required:
-                - type
-                - url
-              properties:
-                name:
-                  type: string
-                type:
-                  type: string
-                  enum: ['helm', 'oci']
-                url:
-                  type: string
-                description:
-                  type: string
-                authorizationHeader:
-                  type: string
-                basicAuth:
-                  type: string
-                caCert:
-                  type: string
-                tlsInsecureSkipVerify:
-                  type: boolean
-                filterRule:
-                  type: object
-                  properties:
-                    jq:
-                      type: string
-                    variables:
-                      type: object
-                      additionalProperties:
-                        type: string
-                ociRepositories:
-                  type: array
-                  items:
-                    type: string
-          postgresqlPassword:
-            type: string
-            description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: '{{ randAlphaNum 20 }}'
-        required:
-          - postgresqlPassword
       external-secrets:
         additionalProperties: false
         properties:
@@ -2420,9 +2437,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
           resources:
             additionalProperties: false
             properties:
@@ -2690,6 +2704,17 @@ properties:
                       - username
                       - password
         type: object
+      otomi-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+
       oltp:
         additionalProperties: false
         properties:
@@ -3398,7 +3423,7 @@ properties:
             properties:
               civo:
                 properties:
-                  apiKey:
+                  apiToken:
                     type: string
                     x-secret: ''
                 required:
@@ -3985,16 +4010,6 @@ properties:
                 $ref: '#/definitions/backupSchedule'
           argo:
             title: ArgoCD
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          kubeapps:
-            title: Kubeapps
             properties:
               enabled:
                 type: boolean

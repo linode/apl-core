@@ -23,12 +23,12 @@ spec:
       name: Age
       type: date
     - description: The number of checks that failed
-      jsonPath: .status.totalCounts.failCount
+      jsonPath: .status.summary.failCount
       name: Fail
       priority: 1
       type: integer
     - description: The number of checks that passed
-      jsonPath: .status.totalCounts.passCount
+      jsonPath: .status.summary.passCount
       name: Pass
       priority: 1
       type: integer

@@ -1,6 +1,6 @@
 <h1 align="center">
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
-  Self-hosted PaaS for Kubernetes
+  Self-hosted DevOps Platform for Kubernetes
 </h1>
 
 <p align="center">
@@ -13,33 +13,31 @@
   <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
   <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/badge/slack--channel-blue?logo=slack"></a>
   <a href="https://twitter.com/RedKubes"><img src="https://img.shields.io/static/v1?label=Twitter&message=Follow&color=1DA1F2" alt="Follow us on Twitter"></a>
-  <a href="https://www.facebook.com/groups/otomiusers"><img src="https://img.shields.io/static/v1?label=Facebook&message=Join group&color=1877F2" alt="Join Facebook group"></a>
 </p>
-
-<h4 align="center">
-Otomi adds developer- and operations-centric tools, automation, and self-service on top of Kubernetes in any infrastructure or cloud, to code, build, and run containerized applications
-</h4>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
-## Otomi helps
+<h4 align="center">
+Otomi turns any Kubernetes cluster into a DevOps Platform to provide paved roads from code to production
+</h4>
 
-**Developers** - With easy self-service to let them focus on their apps only
+## How Otomi helps
 
-- Build OCI compliant images from application code
-- Deploy containerized workloads the GitOps way using build-in or custom golden path templates
+**DevOps Teams** - With self-service, automation and visibility to let them take full-service ownership
+
+- Create private Git repositories
+- Build OCI compliant images from application code and store them in a private registry
+- Deploy containerized workloads using a catalog with pre-filled golden path templates
 - Automatically update container images of workloads
 - Publicly expose applications
-- Get instant access to logs, metrics and traces
-- Store charts and images in a private registry
+- Get instant access to logs, metrics and traces, vulnerabilities, threads and policy violations
 - Configure network policies, response headers and CNAMEs
 - Manage secrets
-- Create private Git repositories and custom pipelines
 
-**Platform engineers** - To setup a Kubernetes-based platform and provide a paved road to production
+**Platform teams** - To setup a Kubernetes-based platform for DevOps teams and provide them a paved road to production
 
-- Create your platform profile and deploy to any K8s
-- Onboard development teams in a comprehensive multi-tenant setup and make them self-serving
+- Create a platform profile and deploy to any Kubernetes cluster
+- Onboard DevOps teams in a comprehensive multi-tenant setup and allow them to take full ownership over their applications
 - Get all the required capabilities in an integrated and automated way
 - Ensure governance with security policies
 - Implement zero-trust networking
@@ -47,6 +45,11 @@ Otomi adds developer- and operations-centric tools, automation, and self-service
 - Support multi- and hybrid cloud scenarios
 - Prevent cloud provider lock-in
 - Implement full observability
+- Create Golden path templates and offer them to DevOps teams through a catalog
+
+<!-- Check the video below to see how Otomi can be used as a self service portal for developers 
+
+[![Use Otomi as a self service portal for developers](https://img.youtube.com/vi/RI4pIVxbhS0/maxresdefault.jpg)](https://www.youtube.com/watch?v=RI4pIVxbhS0) -->
 
 ## Getting started
 
@@ -83,46 +86,51 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-platform.png/?raw=true" width="100%" align="center" alt="Otomi platform"></p>
 
-### Self-service portal and CLI
+### Self-service portal and Cloud Shell
 
-The self-service portal (Otomi Console) offers seamless user experience for developers and platform administrators. Platform administrators can use Otomi Console to enable and configure platform capabilities and onboard development teams. Developers can use Otomi Console to build images, deploy applications, expose services, configure CNAMEs, configure network policies and manage secrets. Otomi Console also provided direct and context aware access to platform capabilities like code repositories, registries, logs, metrics, traces, dashboards, etc. Next to the web based self-service, both developers and admins can start a Cloud Shell and run cli commands.
+The self-service portal (Otomi Console) offers seamless user experience for DevOps teams and platform administrators. Platform administrators can use Otomi Console to enable and configure platform capabilities and onboard development teams. DevOps teams can use Otomi Console to build images, deploy applications, expose services, configure CNAMEs, configure network policies and manage secrets. Otomi Console also provided direct and context aware access to platform capabilities like code repositories, registries, logs, metrics, traces, dashboards, etc. Next to the web based self-service, both teams and admins can start a Cloud Shell and run CLI commands.
 
 ### Desired state store
 
-When Otomi is installed, the desired state of the platform is stored in the Desired State Store (the `otomi/values` repo in the local Git repository). Changes made through the Console will be reflected in the repo.
+When Otomi is installed, the desired state of the platform is stored in the `otomi/values` Git repository. Changes made through the Console will be reflected in the repository.
 
-### Golden templates catalog
+### Golden path templates Catalog
 
-The `otomi/charts` Git repo includes a set of build-in Helm charts that are used to create workloads in the Console. You can also add your own charts and offer them to the users of the platform.
+The `otomi/charts` Git repo includes a set of build-in Helm charts that can be used to create workloads in the Console. You can also add your own charts and offer them to the teams on the platform.
 
 ### Control plane
 
-All changes made through the Console are validated by the control plane (`otomi-api`) and then committed in the state store. This will automatically trigger the platform to synchronize the desired state to the actual state of the platform.
+All changes made through the Console are validated by the control plane (`otomi-api`) and then committed in Git. This will automatically trigger the platform to synchronize the desired state to the actual state of the platform based on GitOps.
 
 ### Automation
 
-The automation is used to synchronize desired state with the state of applications like Keycloak, Harbor and Gitea.
+The automation (operator) is used to synchronize desired state with the state of applications like Keycloak, Harbor and Gitea.
 
 ### Capabilities
 
-The platform offers a set of Kubernetes applications for all the required capabilities. Core applications are always installed, optional applications can be activated. When an application is activated, the application will be installed based on default configuration. Default configuration can be adjusted using the Console.
+Otomi offers a set of Kubernetes applications for all the required platform capabilities. Core applications are always installed, optional applications can be activated. When an application is activated, the application will be installed based on a configuration profile that contains defaults, best-practices and platform integrations. Default configuration can be adjusted using the Console.
 
 **Core Applications (that are always installed):**
 
 - [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
+- [Argo CD](https://github.com/argoproj/argo-cd): Declarative Continuous Deployment
 - [Keycloak](https://github.com/keycloak/keycloak): Identity and access management for modern applications and services
 - [Cert Manager](https://github.com/cert-manager/cert-manager) - Bring your own wildcard certificate or request one from Let's Encrypt
 - [Nginx Ingress Controller](https://github.com/kubernetes/ingress-nginx): Ingress controller for Kubernetes
 - [External DNS](https://github.com/kubernetes-sigs/external-dns): Synchronize exposed ingresses with DNS providers
-- [Drone](https://github.com/harness/drone): Continuous integration platform built on Docker
+- [Tekton Pipeline](https://github.com/tektoncd/pipeline): K8s-style resources for declaring CI/CD pipelines
+- [Tekton Triggers](https://github.com/tektoncd/triggers): Trigger pipelines from event payloads
+- [Tekton dashboard](https://github.com/tektoncd/dashboard): Web-based UI for Tekton Pipelines and Tekton Triggers
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
+- [Cloudnative-pg](https://github.com/cloudnative-pg/cloudnative-pg): Open source operator designed to manage PostgreSQL workloads
+- [Paketo build packs](https://github.com/paketo-buildpacks): Cloud Native Buildpack implementations for popular programming
+- [Kaniko](https://github.com/GoogleContainerTools/kaniko): Build container images from a Dockerfile
 
 **Optional Applications (that you can activate to compose your ideal platform):**
 
 - [Velero](https://github.com/vmware-tanzu/velero): Back up and restore your Kubernetes cluster resources and persistent volumes
-- [Argo CD](https://github.com/argoproj/argo-cd): Declarative continuous deployment
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
-- [Kaniko](https://github.com/GoogleContainerTools/kaniko): Build container images from a Dockerfile
+- [Drone](https://github.com/harness/drone): Continuous integration platform built on Docker
 - [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics
 - [Grafana](https://github.com/grafana/grafana): Visualize metrics, logs, and traces from multiple sources
 - [Grafana Loki](https://github.com/grafana/loki): Collecting container application logs
@@ -136,12 +144,7 @@ The platform offers a set of Kubernetes applications for all the required capabi
 - [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
 - [Opencost](https://github.com/opencost/opencost): Cost monitoring for Kubernetes
-- [Tekton Pipeline](https://github.com/tektoncd/pipeline): K8s-style resources for declaring CI/CD pipelines
-- [Tekton Triggers](https://github.com/tektoncd/triggers): Trigger pipelines from event payloads
-- [Tekton dashboard](https://github.com/tektoncd/dashboard): Web-based UI for Tekton Pipelines and Tekton Triggers
-- [Paketo build packs](https://github.com/paketo-buildpacks): Cloud Native Buildpack implementations for popular programming language ecosystems
-- [KubeClarity](https://github.com/openclarity/kubeclarity): Detect vulnerabilities of container images
-- [Cloudnative-pg](https://github.com/cloudnative-pg/cloudnative-pg): Open source operator designed to manage PostgreSQL workloads
+language ecosystems
 - [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-operator): Instrument, generate, collect, and export telemetry data to help you analyze your software’s performance and behavior
 
@@ -158,27 +161,6 @@ Otomi can be installed on any Kubernetes cluster. At this time, the following pr
 - `scaleway` for [Scaleway Kapsule](https://www.scaleway.com/en/kubernetes-kapsule/)
 - `civo` for [Civo Cloud K3S](https://www.civo.com/)
 - `custom` for any other cloud/infrastructure
-
-## Otomi Features
-
-- Activate capabilities to compose your ideal platform
-- Generate resources for ArgoCD, Tekton, Istio and Ingress based on build-in golden templates
-- BYO golden templates and deploy them the GitOps way using ArgoCD
-- Scan container images for vulnerabilities (at the gate and at runtime)
-- Apply security policies (at the gate and at runtime)
-- Advanced ingress architecture using Istio, Nginx and Oauth2
-- Configure network policies for internal ingress and external egress
-- Deploy workloads the GitOps way without writing any YAML
-- Create secrets and use them in workloads
-- Role-based access to all integrated applications
-- Comprehensive multi-tenant setup
-- Automation tasks for Harbor, Keycloak, ArgoCD, Vault, Velero, Gitea and Drone
-- Expose services on multiple (public/private) networks
-- Automated Istio resource configuration
-- SOPS/KMS for encryption of sensitive configuration values
-- BYO IdP, DNS and/or CA
-- Full observability (logs, metrics, traces, rules, alerts)
-- Cloud shell with integrated cli tools like velero and k9s
 
 ## Otomi Projects
 

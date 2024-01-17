@@ -1,0 +1,30 @@
+{{- if .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "otomi-operator.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace | quote }}
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list", "delete", "update", "create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+subjects:
+- kind: ServiceAccount
+  namespace: {{ .Release.Namespace }}
+  name: {{ include "otomi-operator.fullname" . }}
+roleRef:
+  kind: ClusterRole
+  name: {{ include "otomi-operator.fullname" . }}-edit-secrets
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

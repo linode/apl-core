@@ -28,6 +28,7 @@ global:
 {{- end }}
 
 defaultRules:
+  create: {{ $p.enabled }}
   disabled:
     {{- range $p.disabledRules }}
     {{ . }}: true
@@ -54,19 +55,6 @@ prometheus:
   enabled: {{ $p.enabled }}
   prometheusSpec:
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
-    {{- if $v.otomi.isMultitenant }}
-    {{ $selType }}NamespaceSelector:
-      matchExpressions:
-        - key: name
-          operator: NotIn
-          values:
-            {{- range $teamId, $_ := $v.teamConfig }}
-            - team-{{ $teamId }}
-            {{- end }}
-    {{- else }}
-    {{ $selType }}NamespaceSelector:
-      matchLabels: {}
-    {{- end }}
     {{ $selType }}Selector:
       matchLabels:
         prometheus: system
@@ -151,8 +139,6 @@ prometheus:
   additionalServiceMonitors:
     {{- range $m := (tpl (readFile "service-monitors.gotmpl") $v | fromYaml) | get "additionalServiceMonitors" }}
     - {{- toYaml $m | nindent 6 }}
-      additionalLabels:
-        prometheus: system
     {{- end }}
 {{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") ($v.apps.opencost.alerts.enabled) }}  
 additionalPrometheusRules:
@@ -259,7 +245,7 @@ grafana:
           enabled: true
     {{- end }}
   serviceMonitor:
-    # namespace: grafana
+    enabled: {{ $p.enabled }}
     labels:
       prometheus: system
 
@@ -269,6 +255,7 @@ grafana:
   plugins:
     - grafana-piechart-panel
   additionalDataSources:
+    {{- if $c.loki.enabled }}
     - name: Loki
       editable: false
       uid: loki
@@ -279,6 +266,7 @@ grafana:
       basicAuthUser: otomi-admin
       secureJsonData:
         basicAuthPassword: {{ $v.apps.loki.adminPassword }}
+    {{- end }}
     {{- if $c.tempo.enabled }}
       jsonData:
         derivedFields:
@@ -347,6 +335,14 @@ grafana:
     server:
       root_url: https://{{ $grafanaDomain }}
       # serve_from_sub_path: true
+    security:
+      allow_embedding: true
+
+kubernetesServiceMonitors:
+  enabled: {{ $p.enabled }}
+
+kubeStateMetrics:
+  enabled: {{ $p.enabled }}
 
 kube-state-metrics:
   prometheus:
@@ -369,6 +365,10 @@ kube-state-metrics:
       cpu: 100m
       memory: 128Mi
     {{- end }}
+
+
+nodeExporter:
+  enabled: {{ $p.enabled }}
 
 prometheus-node-exporter:
   prometheus:
