@@ -29,6 +29,7 @@ spec:
       value: {{ .mode.buildpacks.repoUrl }}
     - name: revision
       value: {{ .mode.buildpacks.revision }}
+  {{- if .scanSource }}
   - name: grype-code-scan
     taskRef:
       name: grype
@@ -42,12 +43,17 @@ spec:
     workspaces:
       - name: source-dir
         workspace: shared-data
+  {{- end }}
   - name: buildpacks
     taskRef:
       kind: Task
       name: buildpacks
     runAfter:
+      {{- if .scanSource }}
       - grype-code-scan
+      {{- else }}
+      - fetch-source
+      {{- end }}
     workspaces:
     - name: source
       workspace: shared-data
