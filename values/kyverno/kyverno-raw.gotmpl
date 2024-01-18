@@ -4,11 +4,11 @@ resources:
   - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
     metadata:
-      name: require-otomi-general-node-affinity
+      name: require-otomi-node-selector
     spec:
       background: false
       rules:
-      - name: otomi-general-node-affinity
+      - name: otomi-all-node-selector
         match:
           any:
           - resources:
@@ -45,14 +45,7 @@ resources:
                 {{- range $key, $val := . }}
                 {{ $key }}: {{ $val }}
                 {{- end }}
-  - apiVersion: kyverno.io/v1
-    kind: ClusterPolicy
-    metadata:
-      name: require-otomi-taskrun-node-affinity
-    spec:
-      background: false
-      rules:
-      - name: otomi-taskrun-node-affinity
+      - name: otomi-taskrun-node-selector
         match:
           any:
           - resources:
