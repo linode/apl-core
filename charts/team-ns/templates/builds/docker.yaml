@@ -41,6 +41,7 @@ spec:
       - name: ARGS
         value:
           - dir:.
+          - --name={{ .name }}
     workspaces:
       - name: source-dir
         workspace: shared-data
