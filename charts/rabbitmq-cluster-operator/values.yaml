@@ -203,8 +203,12 @@ clusterOperator:
   ## @param clusterOperator.resources.requests The requested resources for the RabbitMQ Cluster Operator containers
   ##
   resources:
-    limits: {}
-    requests: {}
+    limits:
+      cpu: 900m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
   ## Configure Pods Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
@@ -665,8 +669,12 @@ msgTopologyOperator:
   ## @param msgTopologyOperator.resources.requests The requested resources for the RabbitMQ Messaging Topology Operator containers
   ##
   resources:
-    limits: {}
-    requests: {}
+    limits:
+        cpu: 900m
+        memory: 512Mi
+    requests:
+        cpu: 100m
+        memory: 128Mi
 
   ## Configure Pods Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
