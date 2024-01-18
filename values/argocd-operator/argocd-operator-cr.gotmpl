@@ -46,6 +46,13 @@ spec:
       requests:
         cpu: 100m
         memory: 256M
+  {{- with $v.otomi | get "nodeSelector" nil }}
+  nodePlacement:
+    nodeSelector:
+      {{- range $key, $val := . }}
+      {{ $key }}: {{ $val }}
+      {{- end }}
+  {{- end }}
   server:
     host: argocd.{{ $v.cluster.domainSuffix }}
     insecure: true # nginx terminates tls
