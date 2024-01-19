@@ -8,6 +8,8 @@ metadata:
     chart: {{ include "cert-manager-webhook-linode.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+  annotations:
+    policy.otomi.io/ignore: psp-allowed-users
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
