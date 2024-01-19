@@ -87,9 +87,6 @@ k8s:
     - name: olm
       disableIstioInjection: true
       disablePolicyChecks: true
-    - name: opa-exporter
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: operators
       disableIstioInjection: true
       disablePolicyChecks: true

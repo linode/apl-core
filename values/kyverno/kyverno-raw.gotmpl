@@ -13,30 +13,46 @@ resources:
           any:
           - resources:
               kinds:
-              - Deployment
-              - StatefulSet
+              - Pod
               namespaces:
               - otomi
               - harbor
               - keycloak
               - tempo
               - otel
+              - jaeger
               - grafana
               - istio-system
+              - istio-operator
               - knative-serving
-              - kyverno
               - gitea
               - gitea-operator
               - cert-manager
               - tekton-pipelines
+              - tekton-triggers
               - tekton-pipelines-resolvers
               - otomi-pipelines
               - otomi-operator
               - maintenance
+              - external-secrets
               - external-dns
               - ingress
               - cnpg-system
               - kyverno
+              - minio
+              - vault
+              - trivy-operator
+          - resources:
+              kinds:
+              - Pod
+              namespaces:
+              - monitoring
+              names:
+              - "prometheus-po-prometheus-*"
+              - "po-operator-*"
+              - "prometheus-blackbox-exporter-*"
+              - "prometheus-operator-kube-state-metrics-*"
+              - "loki-*"
         mutate:
           patchStrategicMerge:
             spec:
@@ -61,3 +77,4 @@ resources:
                   {{ $key }}: {{ $val }}
                   {{- end }}
 {{- end }}
+app.kubernetes.io/instance: loki
