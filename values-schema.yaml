@@ -769,6 +769,7 @@ definitions:
       - google
       - custom
       - kind
+      - linode
       - ovh
       - vultr
       - scaleway
