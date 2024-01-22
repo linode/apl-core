@@ -1,2 +1,8 @@
 {{- $v := .Values -}}
-{{- $app:= $v.apps | get "rabbitmq-cluster-operator" }}
+{{- $rbmqco:= $v.apps | get "rabbitmq-cluster-operator" }}
+
+clusterOperator:
+  resources: {{- $rbmqco.resources.clusterOperator | toYaml | nindent 4 }}
+
+msgTopologyOperator:
+  resources: {{- $rbmqco.resources.msgTopologyOperator | toYaml | nindent 4 }}

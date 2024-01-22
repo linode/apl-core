@@ -592,6 +592,21 @@ environments:
                 targetMemoryUtilizationPercentage: 80
           rabbitmq-cluster-operator:
             enabled: true
+            resources:
+              clusterOperator:
+                  requests:
+                      cpu: 100m
+                      memory: 128Mi
+                  limits:
+                      cpu: 900m
+                      memory: 512Mi
+              msgTopologyOperator:
+                  requests:
+                      cpu: 100m
+                      memory: 128Mi
+                  limits:
+                      cpu: 900m
+                      memory: 512Mi
           thanos:
             enabled: false
             query:
