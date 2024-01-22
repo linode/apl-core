@@ -2804,8 +2804,11 @@ properties:
             default: true
           resources:
             properties:
-              operator:
-                description: the operator property can be any arbitrary string (change it if needed
+              clusterOperator:
+                description: the operator property can be any arbitrary string
+                $ref: '#/definitions/resources'
+              msgTopologyOperator:
+                description: the operator property can be any arbitrary string
                 $ref: '#/definitions/resources'
       redis-shared:
         allOf:
