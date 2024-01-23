@@ -17,24 +17,28 @@ releases:
     namespace: argocd
     labels:
       pkg: argocd
+      stage: init
     <<: *raw
   - name: istio-operator
     installed: true
     namespace: istio-operator
     labels:
       pkg: istio
+      stage: init
     <<: *default
   - name: keycloak-artifacts
     installed: true
     namespace: keycloak
     labels:
       pkg: keycloak
+      stage: init
     <<: *raw
   - name: keycloak-operator
     installed: true
     namespace: keycloak
     labels:
       pkg: keycloak-operator
+      stage: init
     <<: *default
   - name: vault-operator-artifacts
     installed: {{ $a | get "vault.enabled" }}

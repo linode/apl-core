@@ -19,6 +19,7 @@ releases:
     namespace: cert-manager
     labels:
       pkg: cert-manager
+      stage: init
     chart: ../charts/cert-manager-webhook-civo
     values:
       - ../values/cert-manager-webhook-civo/cert-manager-webhook-civo.gotmpl
@@ -27,6 +28,7 @@ releases:
     namespace: cert-manager
     labels:
       pkg: cert-manager
+      stage: init
     <<: *raw
   - name: minio-artifacts
     installed: {{ $a.minio.enabled }}

@@ -18,6 +18,7 @@ releases:
     chart: ../charts/gatekeeper
     labels:
       pkg: gatekeeper
+      stage: init
     values:
       - ../values/gatekeeper/gatekeeper.gotmpl
       - snippets/common.gotmpl
@@ -32,6 +33,7 @@ releases:
     disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
+      stage: init
     hooks:
       - events: [prepare]
         showlogs: true
@@ -49,6 +51,7 @@ releases:
     disableValidationOnInstall: true
     labels:
       pkg: gatekeeper
+      stage: init
     values:
       - ../values/gatekeeper/gatekeeper-constraints.gotmpl
       - snippets/common.gotmpl

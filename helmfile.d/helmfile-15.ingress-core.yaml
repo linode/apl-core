@@ -38,6 +38,7 @@ releases:
       ingress: 'true'
       team: admin
       pipeline: otomi-task-teams
+      stage: init
     values:
       - name: admin
         teamId: admin
@@ -55,3 +56,8 @@ releases:
         workloads: {{- $tca | get "workloads" list | toYaml | nindent 10 }}
         backups: {{- $tca | get "backups" list | toYaml | nindent 10 }}
         builds: {{- $tca | get "builds" list | toYaml | nindent 10 }}
+  - name: external-dns
+    installed: {{ $a | get "external-dns.enabled" }}
+    namespace: external-dns
+    stage: init
+    <<: *default

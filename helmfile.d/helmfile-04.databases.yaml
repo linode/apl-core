@@ -19,10 +19,12 @@ releases:
     namespace: harbor
     labels:
       pkg: harbor
+      stage: init
     <<: *otomiDb
   - name: keycloak-otomi-db
     installed: {{ or $v.databases.keycloak.useOtomiDB  $v.databases.keycloak.imported }}
     namespace: keycloak
     labels:
       pkg: keycloak
+      stage: init
     <<: *otomiDb

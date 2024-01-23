@@ -17,24 +17,28 @@ releases:
     namespace: keycloak
     labels:
       pkg: keycloak
+      stage: init
     <<: *rawCR
   - name: argocd-operator-cr
     installed: {{ $a | get "argocd.enabled" }}
     namespace: argocd
     labels:
       pkg: argocd
+      stage: init
     <<: *rawCR
   - name: cert-manager
     installed: true
     namespace: cert-manager
     labels:
       pkg: cert-manager
+      stage: init
     <<: *default
   - name: istio-operator-artifacts
     installed: true
     namespace: istio-operator
     labels:
       pkg: istio
+      stage: init
     chart: ../charts/raw
     values:
       - ../values/istio-operator/istio-operator-raw.gotmpl

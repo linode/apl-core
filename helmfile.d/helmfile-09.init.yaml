@@ -34,6 +34,7 @@ releases:
     chart: ../charts/redis
     labels:
       pkg: oauth2-proxy
+      stage: init
     values:
       - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
       - snippets/common.gotmpl
@@ -55,8 +56,10 @@ releases:
     namespace: tekton-pipelines
     labels:
       pkg: tekton-triggers
+      stage: init
     <<: *default
   - name: otomi-pipelines
     installed: true
     namespace: otomi-pipelines
+    stage: init
     <<: *default

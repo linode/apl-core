@@ -17,6 +17,7 @@ releases:
     namespace: argocd
     labels:
       pkg: argocd
+      stage: init
     <<: *default
   - name: otomi-operator
     installed: true
@@ -60,6 +61,7 @@ releases:
     labels:
       init: true
       pkg: knative
+      stage: init
     values:
       - ../values/knative/knative-serving-raw.gotmpl
     <<: *upgrade
@@ -69,6 +71,7 @@ releases:
     labels:
       init: true
       pkg: knative
+      stage: init
     <<: *default
   - name: loki-artifacts
     installed: {{ $a | get "loki.enabled" }}
@@ -92,6 +95,7 @@ releases:
     namespace: tekton-pipelines
     labels:
       pkg: tekton-pipelines
+      stage: init
     <<: *default
   - name: tekton-dashboard
     installed: true

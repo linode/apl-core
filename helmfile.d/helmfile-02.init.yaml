@@ -66,4 +66,5 @@ releases:
     namespace: cnpg-system
     labels:
       pkg: cloudnative-pg
+      stage: init
     <<: *default
