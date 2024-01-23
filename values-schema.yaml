@@ -769,6 +769,7 @@ definitions:
       - google
       - custom
       - kind
+      - linode
       - ovh
       - vultr
       - scaleway
@@ -3422,6 +3423,18 @@ properties:
                   - apiToken
             required:
               - civo
+          - title: Linode
+            additionalProperties: false
+            properties:
+              linode:
+                properties:
+                  apiKey:
+                    type: string
+                    x-secret: ''
+                required:
+                  - apiToken
+            required:
+              - linode
           - title: CloudFlare
             additionalProperties: false
             properties:
