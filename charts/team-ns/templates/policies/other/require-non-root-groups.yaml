@@ -82,6 +82,7 @@ spec:
         - resources:
             kinds:
               - Pod
+      skipBackgroundRequests: true
       validate:
         message: >-
           Containers cannot run with a root primary or supplementary GID. The field
