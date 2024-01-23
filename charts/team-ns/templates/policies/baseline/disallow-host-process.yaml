@@ -3,7 +3,7 @@
 {{- if and (eq $p.name "disallow-host-process") ($p.enabled) }}
 ---
 apiVersion: kyverno.io/v1
-kind: policy
+kind: Policy
 metadata:
   name: disallow-host-process
   annotations:
