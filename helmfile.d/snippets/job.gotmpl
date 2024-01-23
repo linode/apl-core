@@ -25,3 +25,9 @@ script: |
   {{- end }}
   npm run tasks:{{ $task }}
 {{- end }}
+podDnsConfig:
+  nameservers:
+    - 8.8.8.8
+    - 8.8.4.4
+  searches:
+    - {{ $v.cluster.domainSuffix }}
