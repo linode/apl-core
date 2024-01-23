@@ -99,7 +99,7 @@ const applyAll = async () => {
     // Wait until DNS records are propagated to the cluster DNS
     const host = `keycloak.${domainSuffix}`
     d.info(`Checking DNS contains A record for ${host} host`)
-    await waitForDns(host)
+    await waitForDns(host, 1800, 1000)
     d.info('The expected host was found in your DNS')
   } else {
     // When Otomi is already installed and Tekton pipeline performs GitOps.
