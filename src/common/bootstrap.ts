@@ -12,7 +12,7 @@ import { $, cd, nothrow } from 'zx'
 
 const cmdName = getFilename(__filename)
 
-export const prepareDomainSuffix = async (inValues: Record<string, any> | undefined = undefined): Promise<void> => {
+export const prepareDomainSuffix = async (inValues: Record<string, any> | undefined = undefined): Promise<string> => {
   const d = terminal(`cmd:${cmdName}:setDomainSuffix`)
   const values = inValues ?? (await hfValues())
   if (values && !values.cluster.domainSuffix) {
@@ -25,9 +25,11 @@ export const prepareDomainSuffix = async (inValues: Record<string, any> | undefi
         domainSuffix,
       },
     })
+    return domainSuffix
   } else {
     d.info('cluster.domainSuffix is already set')
   }
+  return values!.cluster.domainSuffix
 }
 
 export const setIdentity = async (username, password, email) => {

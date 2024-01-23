@@ -8,6 +8,7 @@ import { hf } from 'src/common/hf'
 import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
+import { waitForDns } from 'src/common/wait'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
@@ -77,7 +78,8 @@ const applyAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
-  await prepareDomainSuffix()
+
+  const domainSuffix = await prepareDomainSuffix()
   // const applyLabel: string = process.env.OTOMI_DEV_APPLY_LABEL || 'stage!=prep'
   // d.info(`Deploying charts containing label ${applyLabel}`)
 
@@ -86,6 +88,19 @@ const applyAll = async () => {
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // The 'tag!=teams' does not include team-ns-admin release name.
     labelOpts = ['tag!=teams']
+    await hf(
+      {
+        labelOpts: ['name=teams-ns-admin'],
+        logLevel: logLevelString(),
+        args: ['apply'],
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+    // Wait until DNS records are propagated to the cluster DNS
+    const host = `keycloak.${domainSuffix}`
+    d.info(`Checking DNS contains A record for ${host} host`)
+    await waitForDns(host)
+    d.info('The expected host was found in your DNS')
   } else {
     // When Otomi is already installed and Tekton pipeline performs GitOps.
     // We ensure that helmfile does not deploy any team related Helm release.
