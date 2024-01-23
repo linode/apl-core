@@ -1,13 +1,13 @@
 import { promises as dnsPromises } from 'dns'
 import { sleep } from 'zx'
-import { terminal } from './debug'
+import { OtomiDebugger, terminal } from './debug'
 
 export const waitForDns = async (
   host: string,
   maxRetries = 1000,
   intervalMs = 1000,
   expectedConfirmations = 10,
-  log = undefined,
+  log: OtomiDebugger | undefined = undefined,
 ): Promise<void> => {
   const d = log || terminal(`waitForDns`)
   let confirmations = 0
@@ -21,7 +21,7 @@ export const waitForDns = async (
     try {
       await dnsPromises.lookup(host)
       confirmations += 1
-      console.debug(`Attempt #${attempt}/${maxRetries}: ${confirmations}/${expectedConfirmations} checks succeeded`)
+      console.info(`Attempt #${attempt}/${maxRetries}: ${confirmations}/${expectedConfirmations} checks succeeded`)
     } catch (e) {
       console.error(`Attempt #${attempt}/${maxRetries}: `, e.message)
     }

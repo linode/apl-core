@@ -100,10 +100,10 @@ const applyAll = async () => {
     const host = `keycloak.${domainSuffix}`
     d.info(`Checking DNS contains A record for ${host} host`)
     try {
-      await waitForDns(host, 1800, 1000)
+      await waitForDns(host, 1800, 1000, 10, d)
     } catch {
       d.error(
-        `Could not resolve host ${host}. Ensure that external-dns is using the correct credentials. Also check if you DNS zone has NS records.`,
+        `Could not resolve host ${host}.\nRoot cause analisis:\n1. Check if there are correct DNS access credentials (check the external-dns logs)\n 2. Check if your DNS zone has NS records.`,
       )
       process.exit(1)
     }
