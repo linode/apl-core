@@ -298,18 +298,6 @@ definitions:
     required:
       - name
       - provider
-    allOf:
-      - oneOf:
-          - properties:
-              provider:
-                enum: [aws]
-            required:
-              - apiName
-              - region
-          - not:
-              properties:
-                provider:
-                  enum: [aws]
   clusterName:
     $ref: '#/definitions/wordCharacterPattern'
     type: string
