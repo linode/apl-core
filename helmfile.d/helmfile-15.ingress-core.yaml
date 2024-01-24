@@ -59,5 +59,6 @@ releases:
   - name: external-dns
     installed: {{ $a | get "external-dns.enabled" }}
     namespace: external-dns
-    stage: init
+    labels:
+      stage: init
     <<: *default
