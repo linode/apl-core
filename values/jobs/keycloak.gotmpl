@@ -54,4 +54,11 @@ nativeSecrets:
   IDP_CLIENT_ID: {{ $o.clientID }}
   IDP_CLIENT_SECRET: {{ $o.clientSecret }}
 {{- end }}
+podDnsPolicy: "None"
+podDnsConfig:
+  nameservers:
+    - 8.8.8.8
+    - 8.8.4.4
+  searches:
+    - {{ $v.cluster.domainSuffix }}
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "keycloak") }}

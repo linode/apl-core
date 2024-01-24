@@ -28,6 +28,7 @@ releases:
           {{- $v._derived.caCert | nindent 10 }}
         {{- end }}
         runPolicy: OnSpecChange
+        podDnsPolicy: "None"
         podDnsConfig:
           nameservers:
             - "8.8.4.4"
