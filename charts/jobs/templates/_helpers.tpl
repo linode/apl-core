@@ -96,12 +96,12 @@ template:
       {{ $key }}: {{ $value | quote }}
   {{- end }}
   spec:
-      {{- with .Values.podDnsPolicy }}
-      dnsPolicy: {{ . }}
-      {{- end }}
-      {{- with .Values.podDnsConfig }}
-      dnsConfig: {{- toYaml . | nindent 8 }}
-      {{- end }}
+    {{- with .Values.podDnsPolicy }}
+    dnsPolicy: {{ . }}
+    {{- end }}
+    {{- with .Values.podDnsConfig }}
+    dnsConfig: {{- toYaml . | nindent 8 }}
+    {{- end }}
     serviceAccountName: {{ $v.serviceAccountName | default "default" }}
     securityContext:
       {{- with $podSecurityContext }}
