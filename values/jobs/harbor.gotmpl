@@ -14,8 +14,8 @@ runPolicy: OnSpecChange
 nativeSecrets:
   HARBOR_PASSWORD:  {{ $h.adminPassword }}
   HARBOR_USER: admin
-  OIDC_ENDPOINT: {{ $v._derived.oidcBaseUrl }}
-  # OIDC_ENDPOINT: {{ $v._derived.oidcBaseUrlBackchannel }}
+  # OIDC_ENDPOINT: {{ $v._derived.oidcBaseUrl }}
+  OIDC_ENDPOINT: {{ $v._derived.oidcBaseUrlBackchannel }}
   OIDC_CLIENT_ID: {{ $k.idp.clientID  }}
   OIDC_CLIENT_SECRET: {{ $k.idp.clientSecret }}
 
