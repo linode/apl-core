@@ -90,7 +90,7 @@ const applyAll = async () => {
     labelOpts = ['tag!=teams']
     await hf(
       {
-        labelOpts: ['name=team-ns-admin'],
+        labelOpts: ['name=init'],
         logLevel: logLevelString(),
         args: ['apply'],
       },
