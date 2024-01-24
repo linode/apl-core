@@ -61,5 +61,6 @@ releases:
   - name: otomi-pipelines
     installed: true
     namespace: otomi-pipelines
-    stage: init
+    labels:
+      stage: init
     <<: *default
