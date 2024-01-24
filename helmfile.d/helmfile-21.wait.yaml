@@ -32,6 +32,7 @@ releases:
           nameservers:
             - "8.8.4.4"
             - "8.8.8.8"
+          {{- with $v.cluster | get "domainSuffix" nil }}
           searches:
-            - {{ $v.cluster | get "domainSuffix" nil }}
-
+            - {{ . }}
+          {{- end }}
