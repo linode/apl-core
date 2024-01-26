@@ -20,9 +20,6 @@ releases:
     labels:
       pkg: cert-manager
       stage: init
-    chart: ../charts/cert-manager-webhook-civo
-    values:
-      - ../values/cert-manager-webhook-civo/cert-manager-webhook-civo.gotmpl
     <<: *default
   - name: cert-manager-webhook-linode
     installed: {{ hasKey $p "linode" }}
