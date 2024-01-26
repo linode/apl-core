@@ -89,7 +89,7 @@ releases:
     <<: *upgrade
   - name: rabbitmq-cluster-operator
     installed: {{ $a | get "rabbitmq-cluster-operator.enabled" }}
-    namespace: rabbitmq-cluster-operator
+    namespace: rabbitmq
     <<: *default
   - name: tekton-pipelines
     installed: true
