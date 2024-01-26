@@ -391,6 +391,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Prepare Otomi chart
+        if: ${{ inputs.install_profile != 'no-otomi' }}
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
