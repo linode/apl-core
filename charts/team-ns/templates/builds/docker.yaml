@@ -30,9 +30,29 @@ spec:
       value: {{ .mode.docker.repoUrl }}
     - name: revision
       value: {{ .mode.docker.revision }}
+  {{- if .scanSource }}
+  - name: grype-code-scan
+    taskRef:
+      name: grype
+      kind: Task
+    runAfter:
+      - fetch-source
+    params:
+      - name: ARGS
+        value:
+          - dir:.
+          - --name={{ .name }}
+    workspaces:
+      - name: source-dir
+        workspace: shared-data
+  {{- end }}
   - name: build-push
-    runAfter: 
-    - fetch-source
+    runAfter:
+      {{- if .scanSource }}
+      - grype-code-scan
+      {{- else }}
+      - fetch-source
+      {{- end }}
     taskRef:
       kind: Task
       name: kaniko
