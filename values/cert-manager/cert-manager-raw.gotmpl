@@ -25,6 +25,8 @@ resources:
       secret: "{{ $p.civo.apiToken | b64enc }}"
       {{- else if hasKey $p "cloudflare" }}
       secret: "{{ $p.cloudflare.apiToken | b64enc }}"
+      {{- else if hasKey $p "linode" }}
+      secret: "{{ $p.linode.apiToken | b64enc }}"
       {{- end }}
 {{- end }}
   - apiVersion: cert-manager.io/v1
@@ -114,6 +116,14 @@ resources:
               webhook:
                 solverName: "civo"
                 groupName: civo.webhook.okteto.com
+                config:
+                  secretKey: secret
+                  secretName: external-dns
+              {{- end }}
+              {{- with $p | get "linode" nil }}
+              webhook:
+                solverName: "linode"
+                groupName: acme.slicen.me
                 config:
                   secretKey: secret
                   secretName: external-dns
