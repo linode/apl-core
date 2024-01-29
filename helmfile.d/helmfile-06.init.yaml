@@ -26,13 +26,6 @@ releases:
       pkg: argocd
       stage: init
     <<: *rawCR
-  - name: cert-manager
-    installed: true
-    namespace: cert-manager
-    labels:
-      pkg: cert-manager
-      stage: init
-    <<: *default
   - name: istio-operator-artifacts
     installed: true
     namespace: istio-operator

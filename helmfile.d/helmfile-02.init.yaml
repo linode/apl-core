@@ -68,3 +68,16 @@ releases:
       pkg: cloudnative-pg
       stage: init
     <<: *default
+  - name: cert-manager
+    installed: true
+    namespace: cert-manager
+    labels:
+      pkg: cert-manager
+      stage: init
+    <<: *default
+  - name: external-dns
+    installed: {{ $a | get "external-dns.enabled" }}
+    namespace: external-dns
+    labels:
+      stage: init
+    <<: *default
