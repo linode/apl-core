@@ -29,7 +29,7 @@ env:
   FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
   KC_HOSTNAME_URL: https://keycloak.{{ $v.cluster.domainSuffix }}
   KC_HOSTNAME: keycloak.{{ $v.cluster.domainSuffix }}
-  KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak
+  KEYCLOAK_ADDRESS_INTERNAL: https://keycloak-service.keycloak:8443
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
   REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
