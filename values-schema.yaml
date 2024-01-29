@@ -769,6 +769,7 @@ definitions:
       - google
       - custom
       - kind
+      - linode
       - ovh
       - vultr
       - scaleway
@@ -1368,6 +1369,10 @@ definitions:
         type: boolean
         description: Select when using an external private Git repository.
         default: false
+      scanSource:
+        type: boolean
+        default: true
+        description: Select to scan source
       secretName:
         description: The name of the secret with the credentials of the external private Git repository
         type: string
