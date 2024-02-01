@@ -34,7 +34,7 @@ env:
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
   REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
   TEAM_IDS: '{{ $teamIds | toJson }}'
-  WAIT_OPTIONS: '{"retries": "100"}'
+  WAIT_OPTIONS: '{"retries": "200"}'
 {{- if $v.otomi.hasExternalIDP }}
   IDP_ALIAS: {{ $k.idp.alias }}
   {{- with $o | get "usernameClaimMapper" nil }}
