@@ -68,6 +68,7 @@ namespaces:
   {{- range $teamId := (.teamIds | sortAlpha) }}
   - team-{{ $teamId }}
   {{- end }}
+  - argocd
 {{- end -}}
 {{- end -}}
 

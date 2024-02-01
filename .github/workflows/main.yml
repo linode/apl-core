@@ -294,3 +294,19 @@ jobs:
               workflow_id: 'deploy_release.yaml',
               ref: 'main'
             })
+  execute-azure-marketplace:
+    name: Azure Dispatch
+    needs: chart-release
+    if: always() && contains(needs.chart-release.result, 'success') && !github.event.act
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.ACTIONS_KEY }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'redkubes',
+              repo: 'azure-marketplace',
+              workflow_id: 'deploy_release.yaml',
+              ref: 'main'
+            })
