@@ -104,7 +104,7 @@ environments:
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean" "linode")) }}
-            {{- if eq $v.cluster.provider "linode" }}
+            {{- if eq $provider "linode" }}
             _rawValues:
               extraArgs:
                 kubelet-insecure-tls: true
