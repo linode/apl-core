@@ -203,6 +203,10 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   if (plainValues.cluster || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
+  if (plainValues.bootstrap || overwrite)
+    promises.push(
+      writeValuesToFile(`${env.ENV_DIR}/env/bootstrap.yaml`, { bootstrap: plainValues.bootstrap }, overwrite),
+    )
   if (plainValues.policies || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
   if (plainValues.teamConfig || overwrite) {
