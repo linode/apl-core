@@ -19,10 +19,6 @@ spec:
           nameservers:
             - 8.8.8.8
             - 8.8.4.4
-          {{- with .Values.cluster.domainSuffix }}
-          searches:
-            - {{ . }}
-          {{- end }}
       restartPolicy: Never
       serviceAccountName: {{ include "otomi.fullname" . }}
       securityContext:
