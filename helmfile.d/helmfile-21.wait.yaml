@@ -28,4 +28,4 @@ releases:
           {{- $v._derived.caCert | nindent 10 }}
         {{- end }}
         runPolicy: OnSpecChange
-
+        retries: "200"
