@@ -13,6 +13,11 @@ resources:
         {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
         {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
       {{- with $v.otomi | get "globalPullSecret" nil }}
+
+  {{- if  ( (hasKey $v "bootstrap"))}}
+  - {{- $v.bootstrap | toYaml | nindent 4 }}
+  {{- end }}
+
   - apiVersion: v1
     kind: Secret
     type: kubernetes.io/dockerconfigjson

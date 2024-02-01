@@ -181,7 +181,17 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
   const plainValues = omit(values, cleanSecretPaths) as any
-  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', '_derived', 'license', 'databases', 'files']
+  const fieldsToOmit = [
+    'cluster',
+    'policies',
+    'teamConfig',
+    'apps',
+    '_derived',
+    'license',
+    'databases',
+    'files',
+    'bootstrap',
+  ]
   const secretSettings = omit(secrets, fieldsToOmit)
   const license = { license: values?.license }
   const settings = omit(plainValues, fieldsToOmit)
