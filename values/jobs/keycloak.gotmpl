@@ -61,4 +61,7 @@ podDnsConfig:
   nameservers:
     - 8.8.8.8
     - 8.8.4.4
+  options:
+    - name: ndots
+      value: "1"
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "keycloak") }}
