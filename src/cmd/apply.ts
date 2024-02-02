@@ -135,7 +135,7 @@ const apply = async (): Promise<void> => {
   const retryOptions: Options = {
     factor: 1,
     retries: 3,
-    maxTimeout: 2000,
+    maxTimeout: 30000,
   }
   if (!argv.label && !argv.file) {
     await retry(async (bail) => {
