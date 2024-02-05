@@ -266,7 +266,7 @@ grafana:
       basicAuthUser: otomi-admin
       secureJsonData:
         basicAuthPassword: {{ $v.apps.loki.adminPassword }}
-    {{- end }}
+
     {{- if $c.tempo.enabled }}
       jsonData:
         derivedFields:
@@ -314,6 +314,7 @@ grafana:
         httpMethod: GET
         lokiSearch:
           datasourceUid: 'loki'
+    {{- end }}
     {{- end }}
     {{- if $v | get "azure.monitor" nil }}
     - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
