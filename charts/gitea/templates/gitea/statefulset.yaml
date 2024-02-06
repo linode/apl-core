@@ -41,10 +41,9 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      dnsConfig:
-        options:
-          - name: ndots
-            value: "1"
+      {{- with .Values.podDns }}
+      {{- . | toYaml | nindent 6 }}
+      {{- end }}
       initContainers:
         - name: init-directories
           image: "{{ include "gitea.image" . }}"

@@ -1,18 +1,16 @@
 <h1 align="center">
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
-  Self-hosted DevOps Platform for Kubernetes
+  Self-hosted DevSecOps Platform for Kubernetes
 </h1>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/release-date/redkubes/otomi-core?label=latest%20release" /></a>
-  <a href="https://hub.docker.com/r/otomi/core"><img alt="Docker pulls" src="https://img.shields.io/docker/pulls/otomi/core" /></a>
   <a href="https://img.shields.io/github//redkubes/otomi-core/actions/workflows/main.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/redkubes/otomi-core/main.yml" /></a>
   <a href="https://img.shields.io/github/last-commit/redkubes/otomi-core"><img alt="Last commit" src="https://img.shields.io/github/last-commit/redkubes/otomi-core" /></a>
   <a href="https://img.shields.io/crates/l/ap"><img alt="License" src="https://img.shields.io/crates/l/ap" /></a>
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
   <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
   <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/badge/slack--channel-blue?logo=slack"></a>
-  <a href="https://twitter.com/RedKubes"><img src="https://img.shields.io/static/v1?label=Twitter&message=Follow&color=1DA1F2" alt="Follow us on Twitter"></a>
 </p>
 
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
@@ -23,9 +21,9 @@ Otomi turns any Kubernetes cluster into a DevOps Platform to provide paved roads
 
 ## How Otomi helps
 
-**DevOps Teams** - With self-service, automation and visibility to let them take full-service ownership
+**DevSecOps Teams** - With self-service, automation and visibility to let them take full-service ownership
 
-- Create private Git repositories
+- Scan source code for vulnerabilities
 - Build OCI compliant images from application code and store them in a private registry
 - Deploy containerized workloads using a catalog with pre-filled golden path templates
 - Automatically update container images of workloads
@@ -37,15 +35,15 @@ Otomi turns any Kubernetes cluster into a DevOps Platform to provide paved roads
 **Platform teams** - To setup a Kubernetes-based platform for DevOps teams and provide them a paved road to production
 
 - Create a platform profile and deploy to any Kubernetes cluster
-- Onboard DevOps teams in a comprehensive multi-tenant setup and allow them to take full ownership over their applications
+- Onboard DevSecOps teams in a comprehensive multi-tenant setup and allow them to take full ownership over their applications
 - Get all the required capabilities in an integrated and automated way
 - Ensure governance with security policies
 - Implement zero-trust networking
 - Change the desired state of the platform based on Configuration-as-Code
 - Support multi- and hybrid cloud scenarios
 - Prevent cloud provider lock-in
-- Implement full observability
-- Create Golden path templates and offer them to DevOps teams through a catalog
+- Implement full observability (metrics, logs, traces, alerts)
+- Create Golden path templates and offer them to teams on the platform through a catalog
 
 <!-- Check the video below to see how Otomi can be used as a self service portal for developers 
 
@@ -77,38 +75,34 @@ and then install the Helm chart:
 ```bash
 helm install otomi otomi/otomi \
 --set cluster.name=$CLUSTERNAME \
---set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', 'scaleway', 'civo', or 'custom' for any other cloud or onprem K8s
+--set cluster.provider=$PROVIDER # use 'azure', 'aws', 'google', 'digitalocean', 'ovh', 'vultr', 'scaleway', 'civo', 'linode', or 'custom' for any other cloud or onprem infrastructure
 ```
 
 When the installer job is completed, follow the [activation steps](https://otomi.io/docs/get-started/activation).
 
 ## Platform architecture
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-platform.png/?raw=true" width="100%" align="center" alt="Otomi platform"></p>
+Otomi consists out of the following components:
 
 ### Self-service portal and Cloud Shell
 
-The self-service portal (Otomi Console) offers seamless user experience for DevOps teams and platform administrators. Platform administrators can use Otomi Console to enable and configure platform capabilities and onboard development teams. DevOps teams can use Otomi Console to build images, deploy applications, expose services, configure CNAMEs, configure network policies and manage secrets. Otomi Console also provided direct and context aware access to platform capabilities like code repositories, registries, logs, metrics, traces, dashboards, etc. Next to the web based self-service, both teams and admins can start a Cloud Shell and run CLI commands.
+The `otomi-console` self-service portal offers a seamless user experience for DevSecOps teams and platform administrators. Platform administrators can use Otomi Console to enable and configure platform capabilities and onboard development teams. DevOps teams can use Otomi Console to build images, deploy and expose Workloads, configure CNAMEs, configure network policies and manage secrets. Otomi Console also provides context aware access to platform capabilities like code repositories, registries, logs, metrics, traces, dashboards, etc. Next to the web based self-service, both teams and admins can start a Cloud Shell and run CLI commands.
 
-### Desired state store
+### Platform Control plane
 
-When Otomi is installed, the desired state of the platform is stored in the `otomi/values` Git repository. Changes made through the Console will be reflected in the repository.
+All changes made through the Console are validated by the platform control plane (`otomi-api`) and then committed as code in Git. This will automatically trigger the platform to synchronize the desired state to the Kubernetes state of the platform based on GitOps.
 
-### Golden path templates Catalog
+### Pre-filled Catalog
 
-The `otomi/charts` Git repo includes a set of build-in Helm charts that can be used to create workloads in the Console. You can also add your own charts and offer them to the teams on the platform.
-
-### Control plane
-
-All changes made through the Console are validated by the control plane (`otomi-api`) and then committed in Git. This will automatically trigger the platform to synchronize the desired state to the actual state of the platform based on GitOps.
+A Catalog with reusable templates to create workloads. The Catalog is pre-filled with a set of templates maintained in the `otomi/charts` repo. You can also add your own charts and offer them to the teams on the platform.
 
 ### Automation
 
-The automation (operator) is used to synchronize desired state with the state of applications like Keycloak, Harbor and Gitea.
+The automation (a set of Kubernetes operators) is used to synchronize the desired state to the state of applications like Keycloak, Harbor and Gitea.
 
 ### Capabilities
 
-Otomi offers a set of Kubernetes applications for all the required platform capabilities. Core applications are always installed, optional applications can be activated. When an application is activated, the application will be installed based on a configuration profile that contains defaults, best-practices and platform integrations. Default configuration can be adjusted using the Console.
+Otomi offers a set of integrated Kubernetes applications (using upstream open source projects) for all the required platform capabilities. Core applications are always installed, optional applications can be activated on-demand. When an application is activated, the application will be installed based on a configuration profile that contains defaults, best-practices and platform integrations. Default configuration can be adjusted using the Console.
 
 **Core Applications (that are always installed):**
 
@@ -169,6 +163,7 @@ Otomi open source consists out of the following projects:
 - Otomi Core (this project): The heart of Otomi
 - [Otomi Tasks](https://github.com/redkubes/otomi-tasks): Autonomous jobs orchestrated by Otomi Core
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in by otomi-tasks
+- [Otomi Charts](https://github.com/redkubes/otomi-charts): Quickstart Helm templates offered in the Catalog
 
 ## Documentation
 
