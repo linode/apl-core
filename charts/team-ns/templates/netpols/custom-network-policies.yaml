@@ -52,7 +52,7 @@ spec:
           {{- if hasKey . "fromLabelName" }}
           podSelector:
             matchLabels:
-              {{ .fromLabelName }}:{{ .fromLabelValue }}
+              {{ .fromLabelName }}: {{ .fromLabelValue }}
           {{- end }}
         {{- end }}
       {{- end }}
