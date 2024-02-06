@@ -1,0 +1,42 @@
+teamConfig:
+    demo:
+        netpols:
+            - name: egress-policy-a
+              ruleType:
+                  egressPublic:
+                      domain: domain1.com
+                      ports:
+                          - number: 8443
+                            protocol: TCP
+                  type: egressPublic
+            - name: egress-policy-b
+              ruleType:
+                  egressPublic:
+                      domain: 185.199.110.153
+                      ports:
+                          - number: 443
+                            protocol: TCP
+                  type: egressPublic
+            - name: ingress-policy-wl1
+              ruleType:
+                  ingressPrivate:
+                      mode: AllowAll
+                      # the podSelector label/value (one per policy)
+                      toLabelName: otomi.io/app
+                      toLabelValue: workload-1
+                  type: ingressPrivate
+            - name: ingress-policy-wl2
+              ruleType:
+                  ingressPrivate:
+                      # the podSelector label/value (one per policy)
+                      toLabelName: otomi.io/app
+                      toLabelValue: workload-2
+                      allow:
+                          # allow access from a specific workload
+                          - fromLabelName: otomi.io/app
+                            fromLabelValue: workload-3
+                            fromNamespace: team-b
+                            # allow access from any workload in team-c
+                          - fromNamespace: team-c
+
+                  type: ingressPrivate

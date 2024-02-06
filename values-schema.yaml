@@ -643,85 +643,92 @@ definitions:
     nullable: true
     type: object
     title: Kubernetes secrets
-  networkPolicy:
-    additionalProperties: false
+  netpol:
+    type: object
     properties:
-      podSelector:
+      name:
         type: string
-        title: Internal ingress filtering
-        description: 'Pods belonging to this service must contain "otomi.io/app: <service name>" label'
-      ingressPrivate:
-        oneOf:
-          - title: Deny all
-            description: Deny traffic from all teams (including this one)
-            properties:
-              mode:
-                default: DenyAll
-                enum:
-                  - DenyAll
-          - title: Allow selected
-            properties:
-              mode:
-                default: AllowOnly
-                enum:
-                  - AllowOnly
-              allow:
-                title: Add team or team with service
-                type: array
-                items:
-                  type: object
-                  properties:
-                    team:
-                      title: FROM team name
-                      description: Allow traffic from a given team
-                      type: string
-                    service:
-                      title: FROM label value
-                      description: 'Allow traffic from pods with label "otomi.io/app: <value>"'
-                      type: string
-                  required:
-                    - team
-          - title: Allow all
-            description: Allow traffic from all teams
-            properties:
-              mode:
-                default: AllowAll
-                enum:
-                  - AllowAll
-      egressPublic:
-        title: External egress filtering
-        description: Trusted domains this service can access
-        type: array
-        items:
-          type: object
-          properties:
-            host:
-              title: FQDN or IP address
-              $ref: '#/definitions/domain'
-            ports:
-              type: array
-              items:
+        title: Network Policy name
+        description: 'A unique name for the network policy'
+      ruleType:
+        properties:
+          ingressPrivate:
+            toLabelName:
+              type: string
+              title: Selector label name
+              description: 'The name of the Pod selector label'
+            toLabelValue:
+              type: string
+              title: Selector label value
+              description: 'The value of the Pod selector label'
+            oneOf:
+              - title: Allow selected
                 properties:
-                  number:
-                    title: Port number
-                    type: integer
-                    minimum: 1
-                    maximum: 65535
-                  protocol:
-                    title: Protocol
-                    type: string
-                    enum: [HTTPS, HTTP, TCP]
-                    default: HTTPS
-                required:
-                  - number
-                  - protocol
-                minItems: 1
-                uniqueItems: true
-              default:
-                - number: 443
-                  protocol: HTTPS
-          required:
-            - domain
+                  mode:
+                    default: AllowOnly
+                    enum:
+                      - AllowOnly
+                  allow:
+                    title: Add team or team with service
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fromLabelName:
+                          type: string
+                          title: Selector label name
+                          description: 'The name of the Pod selector label'
+                        fromLabelValue:
+                          type: string
+                          title: Selector label value
+                          description: 'The value of the Pod selector label'
+                        fromNamespace:
+                          type: string
+                          title: Namespace name
+                          description: 'The name of the namespace'
+                      required:
+                        - fromNamespace
+              - title: Allow all
+                description: Allow traffic from all teams
+                properties:
+                  mode:
+                    default: AllowAll
+                    enum:
+                      - AllowAll
+          egressPublic:
+            title: External egress filtering
+            description: Trusted domains this service can access
+            type: array
+            items:
+              type: object
+              properties:
+                domain:
+                  title: FQDN or IP address
+                  $ref: '#/definitions/domain'
+                ports:
+                  type: array
+                  items:
+                    properties:
+                      number:
+                        title: Port number
+                        type: integer
+                        minimum: 1
+                        maximum: 65535
+                      protocol:
+                        title: Protocol
+                        type: string
+                        enum: [HTTPS, HTTP, TCP]
+                        default: HTTPS
+                    required:
+                      - number
+                      - protocol
+                    minItems: 1
+                    uniqueItems: true
+                  default:
+                    - number: 443
+                      protocol: HTTPS
+              required:
+                - domain
   path:
     description: An absolute path
     type: string
@@ -1241,6 +1248,10 @@ definitions:
         items:
           $ref: '#/definitions/service'
         type: array
+      netpols:
+        items:
+          $ref: '#/definitions/netpol'
+        type: array
       managedMonitoring:
         title: Managed monitoring
         description: Activate managed Grafana, Prometheus or Alertmanager instances
@@ -1286,7 +1297,7 @@ definitions:
         type: array
         items:
           type: string
-          enum: [ingress, networkPolicy]
+          enum: [ingress]
         uniqueItems: true
       team:
         type: array
