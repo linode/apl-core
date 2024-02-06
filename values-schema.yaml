@@ -769,6 +769,7 @@ definitions:
       - google
       - custom
       - kind
+      - linode
       - ovh
       - vultr
       - scaleway
@@ -1364,6 +1365,10 @@ definitions:
         type: boolean
         description: Select when using an external private Git repository.
         default: false
+      scanSource:
+        type: boolean
+        default: true
+        description: Select to scan source
       secretName:
         description: The name of the secret with the credentials of the external private Git repository
         type: string
@@ -3050,6 +3055,11 @@ properties:
                   - deployment
                   - daemonset
                   - statefulset
+              attributes:
+                type: array
+                title: Kubernetes Attributes
+                $ref: '#/definitions/labelsAnnotations'
+                description: 'Attributes to extract metadata from pods'
           operator:
             properties:
               replicaCount:
@@ -3430,6 +3440,18 @@ properties:
                   - apiToken
             required:
               - civo
+          - title: Linode
+            additionalProperties: false
+            properties:
+              linode:
+                properties:
+                  apiKey:
+                    type: string
+                    x-secret: ''
+                required:
+                  - apiToken
+            required:
+              - linode
           - title: CloudFlare
             additionalProperties: false
             properties:

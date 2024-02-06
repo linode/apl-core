@@ -351,11 +351,12 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
       - name: Set k8s cluster name
         run: |
-          echo DIGITALOCEAN_CLUSTER_NAME=${{ github.actor }}-$(TZ="GMT-2" date +"%m-%d-%H-%M") >> $GITHUB_ENV
+          echo "DIGITALOCEAN_CLUSTER_NAME=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')-$(TZ='GMT-2' date +'%m-%d-%H-%M')" >> $GITHUB_ENV
           # Cluster name must be no longer than 63 characters
       - name: Determine exact k8s version
         run: |
-          echo DIGITALOCEAN_K8S_VERSION=`doctl kubernetes options versions -o json | jq -re 'map(select(.kubernetes_versions | startswith("${{ matrix.kubernetes_versions }}"))) | .[0] | .slug'` >> $GITHUB_ENV
+          echo "DIGITALOCEAN_K8S_VERSION=$(doctl kubernetes options versions -o json | jq -r '.[] | select(.kubernetes_version | startswith("${{ matrix.kubernetes_versions }}")) | .slug')" >> $GITHUB_ENV
+
       - name: Get default VPC for region
         run: |
           echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list -o json | jq -re 'map(select((.region == "ams3") and .default)) | .[0] | .id'` >> $GITHUB_ENV

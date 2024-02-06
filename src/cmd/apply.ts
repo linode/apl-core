@@ -1,3 +1,4 @@
+import retry, { Options } from 'async-retry'
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { cloneDeep, isEmpty } from 'lodash'
 import { prepareDomainSuffix } from 'src/common/bootstrap'
@@ -11,7 +12,7 @@ import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/va
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
-import { $ } from 'zx'
+import { $, nothrow } from 'zx'
 import { applyAsApps } from './apply-as-apps'
 import { cloneOtomiChartsInGitea, commit, printWelcomeMessage } from './commit'
 import { upgrade } from './upgrade'
@@ -131,8 +132,25 @@ const applyAll = async () => {
 const apply = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:apply`)
   const argv: HelmArguments = getParsedArgs()
+  const retryOptions: Options = {
+    factor: 1,
+    retries: 3,
+    maxTimeout: 30000,
+  }
   if (!argv.label && !argv.file) {
-    await applyAll()
+    await retry(async (bail) => {
+      try {
+        await applyAll()
+      } catch (e) {
+        d.error(e)
+        await nothrow($`helm uninstall job-keycloak -n maintenance`)
+        await nothrow($`helm uninstall wait-for-otomi-realm -n maintenance`)
+        await nothrow($`kubectl delete job wait-for-otomi-realm -n maintenance`)
+        d.info(`Retrying in ${retryOptions.maxRetryTime} ms`)
+        throw e
+      }
+    }, retryOptions)
+
     return
   }
   d.info('Start apply')

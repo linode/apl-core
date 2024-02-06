@@ -7,6 +7,15 @@
 nameOverride: gitea
 fullnameOverride: gitea
 
+podDns:
+  # dnsPolicy: "None"
+  dnsConfig:
+    options:
+      - name: ndots
+        value: "1"
+    nameservers:
+      - "8.8.4.4"
+      - "8.8.8.8"
 resources:
   {{ with $g | get "resources.gitea" nil }}
     {{- toYaml . | nindent 2 }}

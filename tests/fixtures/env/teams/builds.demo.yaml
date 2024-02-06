@@ -11,6 +11,7 @@ teamConfig:
                       path: ./Docker
                   type: docker
               externalRepo: false
+              scanSource: true
             - name: demo-java2
               tag: v.0.0.1
               trigger: false
@@ -26,6 +27,7 @@ teamConfig:
                             value: test2
                   type: buildpacks
               externalRepo: false
+              scanSource: false
             - name: demo-java3
               tag: v_0_0_1
               trigger: true
@@ -41,4 +43,5 @@ teamConfig:
                             value: test2
                   type: docker
               externalRepo: true
+              scanSource: true
               secretName: my-secret
