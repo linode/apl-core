@@ -31,6 +31,7 @@ teamConfig:
                       # the podSelector label/value (one per policy)
                       toLabelName: otomi.io/app
                       toLabelValue: workload-2
+                      mode: AllowOnly
                       allow:
                           # allow access from a specific workload
                           - fromLabelName: otomi.io/app
@@ -38,5 +39,4 @@ teamConfig:
                             fromNamespace: team-b
                             # allow access from any workload in team-c
                           - fromNamespace: team-c
-
                   type: ingressPrivate

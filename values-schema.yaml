@@ -696,39 +696,34 @@ definitions:
                     enum:
                       - AllowAll
           egressPublic:
-            title: External egress filtering
-            description: Trusted domains this service can access
-            type: array
-            items:
-              type: object
-              properties:
-                domain:
-                  title: FQDN or IP address
-                  $ref: '#/definitions/domain'
-                ports:
-                  type: array
-                  items:
-                    properties:
-                      number:
-                        title: Port number
-                        type: integer
-                        minimum: 1
-                        maximum: 65535
-                      protocol:
-                        title: Protocol
-                        type: string
-                        enum: [HTTPS, HTTP, TCP]
-                        default: HTTPS
-                    required:
-                      - number
-                      - protocol
-                    minItems: 1
-                    uniqueItems: true
-                  default:
-                    - number: 443
-                      protocol: HTTPS
-              required:
-                - domain
+            properties:
+              domain:
+                title: FQDN or IP address
+                $ref: '#/definitions/domain'
+              ports:
+                type: array
+                items:
+                  properties:
+                    number:
+                      title: Port number
+                      type: integer
+                      minimum: 1
+                      maximum: 65535
+                    protocol:
+                      title: Protocol
+                      type: string
+                      enum: [HTTPS, HTTP, TCP]
+                      default: HTTPS
+                  required:
+                    - number
+                    - protocol
+                  minItems: 1
+                  uniqueItems: true
+                default:
+                  - number: 443
+                    protocol: HTTPS
+            required:
+              - domain
   path:
     description: An absolute path
     type: string
@@ -1112,8 +1107,6 @@ definitions:
       namespace:
         $ref: '#/definitions/idName'
         description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
-      networkPolicy:
-        $ref: '#/definitions/networkPolicy'
       ownHost:
         default: true
         description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.

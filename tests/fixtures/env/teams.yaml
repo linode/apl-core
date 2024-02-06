@@ -35,7 +35,6 @@ teamConfig:
             apps: []
             service:
                 - ingress
-                - networkPolicy
             team:
                 - alerts
     dev:
