@@ -1,0 +1,19 @@
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1alpha1.{{ .Values.api.groupName }}
+  labels:
+    app: {{ include "cert-manager-webhook-linode.name" . }}
+    chart: {{ include "cert-manager-webhook-linode.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    cert-manager.io/inject-ca-from: "{{ .Release.Namespace }}/{{ include "cert-manager-webhook-linode.servingCertificate" . }}"
+spec:
+  group: {{ .Values.api.groupName }}
+  groupPriorityMinimum: 1000
+  versionPriority: 15
+  service:
+    name: {{ include "cert-manager-webhook-linode.fullname" . }}
+    namespace: {{ .Values.certManager.namespace | quote }}
+  version: v1alpha1

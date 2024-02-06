@@ -34,6 +34,7 @@ env:
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
   REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
   TEAM_IDS: '{{ $teamIds | toJson }}'
+  WAIT_OPTIONS: '{"retries": "200"}'
 {{- if $v.otomi.hasExternalIDP }}
   IDP_ALIAS: {{ $k.idp.alias }}
   {{- with $o | get "usernameClaimMapper" nil }}
@@ -46,6 +47,7 @@ env:
   {{- with $o | get "teamAdminGroupID" nil }}
   IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
   IDP_OIDC_URL: {{ $o.issuer }}
+
 {{- end }}
 nativeSecrets:
   KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
@@ -54,4 +56,12 @@ nativeSecrets:
   IDP_CLIENT_ID: {{ $o.clientID }}
   IDP_CLIENT_SECRET: {{ $o.clientSecret }}
 {{- end }}
+podDnsPolicy: "None"
+podDnsConfig:
+  nameservers:
+    - 8.8.8.8
+    - 8.8.4.4
+  options:
+    - name: ndots
+      value: "1"
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "tasks" "v" $v "task" "keycloak") }}

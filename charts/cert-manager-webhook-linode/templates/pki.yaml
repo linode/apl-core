@@ -1,0 +1,76 @@
+---
+# Create a selfsigned Issuer, in order to create a root CA certificate for
+# signing webhook serving certificates
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "cert-manager-webhook-linode.selfSignedIssuer" . }}
+  namespace: {{ .Values.certManager.namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-webhook-linode.name" . }}
+    chart: {{ include "cert-manager-webhook-linode.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selfSigned: {}
+
+---
+
+# Generate a CA Certificate used to sign certificates for the webhook
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "cert-manager-webhook-linode.rootCACertificate" . }}
+  namespace: {{ .Values.certManager.namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-webhook-linode.name" . }}
+    chart: {{ include "cert-manager-webhook-linode.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "cert-manager-webhook-linode.rootCACertificate" . }}
+  duration: 43800h # 5y
+  issuerRef:
+    name: {{ include "cert-manager-webhook-linode.selfSignedIssuer" . }}
+  commonName: "ca.cert-manager-webhook-linode.cert-manager"
+  isCA: true
+
+---
+
+# Create an Issuer that uses the above generated CA certificate to issue certs
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "cert-manager-webhook-linode.rootCAIssuer" . }}
+  namespace: {{ .Values.certManager.namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-webhook-linode.name" . }}
+    chart: {{ include "cert-manager-webhook-linode.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ca:
+    secretName: {{ include "cert-manager-webhook-linode.rootCACertificate" . }}
+
+---
+
+# Finally, generate a serving certificate for the webhook to use
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "cert-manager-webhook-linode.servingCertificate" . }}
+  namespace: {{ .Values.certManager.namespace | quote }}
+  labels:
+    app: {{ include "cert-manager-webhook-linode.name" . }}
+    chart: {{ include "cert-manager-webhook-linode.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  secretName: {{ include "cert-manager-webhook-linode.servingCertificate" . }}
+  duration: 8760h # 1y
+  issuerRef:
+    name: {{ include "cert-manager-webhook-linode.rootCAIssuer" . }}
+  dnsNames:
+  - {{ include "cert-manager-webhook-linode.fullname" . }}
+  - {{ include "cert-manager-webhook-linode.fullname" . }}.{{ .Values.certManager.namespace }}
+  - {{ include "cert-manager-webhook-linode.fullname" . }}.{{ .Values.certManager.namespace }}.svc
