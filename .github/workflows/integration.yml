@@ -161,6 +161,8 @@ jobs:
     steps:
       - name: Install scw-cli
         uses: scaleway/action-scw@v0
+        with:
+          version: v2.26.0
       - id: k8s-versions
         name: Process k8s version input
         run: |
@@ -213,7 +215,7 @@ jobs:
         with:
           save-config: true
           export-config: true
-          version: v2.23.0
+          version: v2.26.0
           access-key: ${{ secrets.SCW_ACCESS_KEY }}
           secret-key: ${{ secrets.SCW_SECRET_KEY }}
           default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
