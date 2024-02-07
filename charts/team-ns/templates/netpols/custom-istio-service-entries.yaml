@@ -6,8 +6,8 @@
 {{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
 {{- if $egressFilteringEnabled }}
 {{- range $n := $v.netpols }}
-{{- if eq .ruleType.type "egressPublic" }}
-{{- $host := .ruleType.egressPublic.domain }}
+{{- if eq .ruleType.type "egress" }}
+{{- $host := .ruleType.egress.domain }}
 {{- $hostName := (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" | replace "/" "-" ) }}
 {{/* Service entry names need to globally unique */}}
 {{- $serviceEntryName := printf "%s-%s-%s" $v.teamId $n.name $hostName }}
@@ -26,7 +26,7 @@ spec:
   addresses:
     - {{ $host | quote }}
   ports:
-{{- with .ruleType.egressPublic.ports }}
+{{- with .ruleType.egress.ports }}
 {{- range . }}
   - number: {{ .number }}
     name: {{ printf "%s-%s" (lower .protocol) (toString .number) }}
@@ -50,7 +50,7 @@ spec:
   hosts:
   - {{ $host }}
   ports:
-{{- with .ruleType.egressPublic.ports }}
+{{- with .ruleType.egress.ports }}
 {{- range . }}
   - number: {{ .number }}
     name: {{ printf "%s-%s" (lower .protocol) (toString .number) }}
@@ -63,6 +63,6 @@ spec:
   resolution: DNS
 {{- end }} {{/* if isIp */}}
 {{- end }} {{/* range $n */}}
-{{- end }} {{/* if egressPublic */}}
+{{- end }} {{/* if egress */}}
 {{- end }} {{/* if $egressFilteringEnabled */}}
 {{- end }} {{/* if not team-admin */}}

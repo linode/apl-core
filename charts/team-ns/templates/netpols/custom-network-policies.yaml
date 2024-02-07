@@ -3,11 +3,11 @@
 {{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- $ := . }}
 {{- if not (eq $v.teamId "admin") }}
-{{- $ingressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
+{{- $ingressFilteringEnabled := $v | dig "networkPolicy" "ingressPrivate" true }}
 {{- if $ingressFilteringEnabled }}
 {{- range $v.netpols }}
-{{- if eq .ruleType.type "ingressPrivate" }}
-{{- if eq .ruleType.ingressPrivate.mode "AllowAll" }}
+{{- if eq .ruleType.type "ingress" }}
+{{- if eq .ruleType.ingress.mode "AllowAll" }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -20,7 +20,7 @@ spec:
       # Note for docs:
       # The app label cannot be used for ksvc because Knative appends revision number to the service
       # if workload is a ksvc use: 'serving.knative.dev/service' label name
-      {{ .ruleType.ingressPrivate.toLabelName }}: {{ .ruleType.ingressPrivate.toLabelValue }}
+      {{ .ruleType.ingress.toLabelName }}: {{ .ruleType.ingress.toLabelValue }}
   policyTypes:
     - Ingress
   ingress:
@@ -29,7 +29,7 @@ spec:
             matchLabels:
               type: team
  
-{{- else if eq .ruleType.ingressPrivate.mode "AllowOnly" }}
+{{- else if eq .ruleType.ingress.mode "AllowOnly" }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -39,10 +39,10 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      {{ .ruleType.ingressPrivate.toLabelName }}: {{ .ruleType.ingressPrivate.toLabelValue }}
+      {{ .ruleType.ingress.toLabelName }}: {{ .ruleType.ingress.toLabelValue }}
   policyTypes:
     - Ingress
-      {{- with .ruleType.ingressPrivate.allow }}
+      {{- with .ruleType.ingress.allow }}
   ingress:
     - from:
        {{- range . }}
@@ -56,8 +56,8 @@ spec:
           {{- end }}
         {{- end }}
       {{- end }}
-{{- end }} {{/* if eq .ruleType.ingressPrivate.mode "AllowAll" */}}
-{{- end }} {{/* if eq .ruleType.type "ingressPrivate" */}}
+{{- end }} {{/* if eq .ruleType.ingress.mode "AllowAll" */}}
+{{- end }} {{/* if eq .ruleType.type "ingress" */}}
 {{- end }}{{/* range netpols */}}
 {{- end }} {{/* if $ingressFilteringEnabled */}}
 {{- end }} {{/* if not team-admin */}}

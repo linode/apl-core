@@ -652,7 +652,7 @@ definitions:
         description: 'A unique name for the network policy'
       ruleType:
         properties:
-          ingressPrivate:
+          ingress:
             toLabelName:
               type: string
               title: Selector label name
@@ -695,30 +695,26 @@ definitions:
                     default: AllowAll
                     enum:
                       - AllowAll
-          egressPublic:
+          egress:
             properties:
               domain:
                 title: FQDN or IP address
                 $ref: '#/definitions/domain'
               ports:
-                type: array
-                items:
-                  properties:
-                    number:
-                      title: Port number
-                      type: integer
-                      minimum: 1
-                      maximum: 65535
-                    protocol:
-                      title: Protocol
-                      type: string
-                      enum: [HTTPS, HTTP, TCP]
-                      default: HTTPS
-                  required:
-                    - number
-                    - protocol
-                  minItems: 1
-                  uniqueItems: true
+                properties:
+                  number:
+                    title: Port number
+                    type: integer
+                    minimum: 1
+                    maximum: 65535
+                  protocol:
+                    title: Protocol
+                    type: string
+                    enum: [HTTPS, HTTP, TCP]
+                    default: HTTPS
+                required:
+                  - number
+                  - protocol
                 default:
                   - number: 443
                     protocol: HTTPS
