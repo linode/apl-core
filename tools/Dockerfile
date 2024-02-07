@@ -14,8 +14,6 @@ ARG HELM_DIFF_VERSION=3.8.0
 ARG HELM_SECRETS_VERSION=3.15.0
 # https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=3.7.3
-# https://github.com/bitnami-labs/sealed-secrets/releases
-ARG KUBESEAL_VERSION=0.24.5
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.6.6
 # https://github.com/helmfile/helmfile/releases
@@ -82,15 +80,10 @@ RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 ENV PATH $PATH:$APP_HOME
 
-
 # kubectl
 ADD --checksum=sha256:98ea4a13895e54ba24f57e0d369ff6be0d3906895305d5390197069b1da12ae2 https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/amd64/kubectl .
 RUN chmod +x kubectl
 
-# kubeseal
-ADD "https://github.com/bitnami-labs/sealed-secrets/releases/download/v${KUBESEAL_VERSION}/kubeseal-${KUBESEAL_VERSION}-linux-amd64.tar.gz" kubeseal.tar.gz
-RUN tar -xvzf kubeseal.tar.gz kubeseal
-RUN chmod +x kubeseal
 # sops
 ADD https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux sops
 RUN chmod +x sops
