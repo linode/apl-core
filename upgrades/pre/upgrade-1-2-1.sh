@@ -3,9 +3,9 @@
 set -eu
 
 if [[ $(helm status -n velero velero 2>/dev/null) ]]; then
-    echo "Found old velero release. Will anotate stuff"
-    # kubectl annotate 
+    echo "Found old velero release. Will anotate otomi BackupStorageLocation CR."
+    kubectl annotate -n velero backupstoragelocations.velero.io otomi meta.helm.sh/release-name=velero meta.helm.sh/release-namespace=velero
 else
-    echo "Trivy Operator helm release not found"
+    echo "Velero helm release not found"
 fi
 
