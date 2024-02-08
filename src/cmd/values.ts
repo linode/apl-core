@@ -2,7 +2,7 @@ import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
 import { hfValues } from 'src/common/hf'
 import { getFilename } from 'src/common/utils'
-import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
+import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { stringify } from 'yaml'
 import { Argv } from 'yargs'
 
@@ -13,10 +13,9 @@ interface Arguments extends BasicArguments {
   excludeSecrets?: boolean
 }
 
-const values = async (): Promise<void> => {
+const values = async (argv: Arguments): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:values`)
   d.info('Get values')
-  const argv: Arguments = getParsedArgs()
   const hfVal = await hfValues({ filesOnly: argv.filesOnly, excludeSecrets: argv.excludeSecrets })
   d.info('Print values')
   console.log(stringify(hfVal))
@@ -41,6 +40,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await values()
+    await values(argv)
   },
 }
