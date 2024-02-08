@@ -24,11 +24,11 @@ jobs:
       - name: Delete Clusters in DEV
         run: |
           scw k8s cluster list project_id="${{ secrets.SCW_DEFAULT_PROJECT_ID }}" region=nl-ams -o template={{.ID}} | while read -r cluster_id; do
-            scw k8s cluster delete $cluster_id with-additional-resources=true region=nl-ams --wait || true
+            scw k8s cluster delete $cluster_id with-additional-resources=true region=nl-ams --wait || echo "Could not delete cluster: $cluster_id"
           done
 
       - name: Delete Private Networks in DEV
         run: |
           scw vpc private-network list project-id="e41d0c87-e67c-45be-9b28-9ca10d8d035f" -o template={{.ID}} | while read -r network_id; do
-            scw vpc private-network delete $network_id --wait || true
+            scw vpc private-network delete $network_id --wait || echo "Could not delete network: $network_id"
           done
