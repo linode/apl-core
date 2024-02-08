@@ -12,6 +12,8 @@ apps:
     enabled: true
   harbor:
     enabled: true
+  sealed-secrets:
+    enabled: true
 teamConfig:
   demo:
     password: somesecretvalue
