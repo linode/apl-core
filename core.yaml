@@ -363,6 +363,7 @@ adminApps:
   - name: sealed-secrets
     tags: [secrets, security, observability]
     isShared: true
+    ownHost: true
   - name: tempo
     tags: [tracing]
     deps: [prometheus, grafana, minio]
