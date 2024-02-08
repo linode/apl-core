@@ -23,7 +23,7 @@ jobs:
           default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
       - name: Delete Clusters in DEV
         run: |
-          scw k8s cluster list project_id="${{ secrets.SCW_DEFAULT_PROJECT_ID }}" region=nl-ams -o template={{.ID}} | while read -r cluster_id; do
+          scw k8s cluster list project-id="${{ secrets.SCW_DEFAULT_PROJECT_ID }}" region=nl-ams -o template={{.ID}} | while read -r cluster_id; do
             scw k8s cluster delete $cluster_id with-additional-resources=true region=nl-ams --wait || echo "Could not delete cluster: $cluster_id"
           done
 
