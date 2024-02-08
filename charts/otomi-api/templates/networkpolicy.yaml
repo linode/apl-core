@@ -1,0 +1,32 @@
+
+{{- $ := . }}
+{{- $ingressNs := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
+
+---
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: {{ include "otomi-api.fullname" $ }}
+  labels: {{- include "otomi-api.labels" $ | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: 
+      app.kubernetes.io/name: {{ include "otomi-api.name" . }}
+      app.kubernetes.io/instance: {{ $.Release.Name }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        # This policy allow establish connection between otomi-api and otomi-api-tools containers
+        - podSelector:
+            matchLabels: 
+              app.kubernetes.io/name: {{ include "otomi-api.name" . }}
+              app.kubernetes.io/instance: {{ $.Release.Name }}
+        - namespaceSelector:
+            matchLabels:
+              name: {{ $.Release.Namespace }}
+    - from:
+        # This policy allow establish connection from ingress namespace
+        - namespaceSelector:
+            matchLabels:
+              name: {{ $ingressNs }}
