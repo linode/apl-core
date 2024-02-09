@@ -24,6 +24,8 @@ env:
   HARBOR_BASE_URL: http://harbor-core.harbor
   HARBOR_BASE_REPO_URL: {{ $harborRepo }}
   TEAM_IDS: '{{ $teams | sortAlpha | toJson }}'
+  OIDC_AUTO_ONBOARD: "{{ $h.oidcAutoOnboard }}"
+  OIDC_USER_CLAIM: {{ $h.oidcUserClaim }}
   OIDC_GROUPS_CLAIM: groups
   OIDC_NAME: keycloak
   OIDC_SCOPE: openid
