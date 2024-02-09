@@ -210,7 +210,7 @@ environments:
           harbor:
             enabled: false
             oidcAutoOnboard: true
-            oidcUserClaim: 'username'
+            oidcUserClaim: 'email'
             registry:
               credentials:
                 username: otomi-admin
