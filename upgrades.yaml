@@ -72,3 +72,6 @@ operations:
   - version: 1.2.0
     pre:
       - upgrades/pre/upgrade-1-2.0.sh || true
+  - version: 2.5.0
+    pre:
+      - upgrades/pre/upgrade-2-5.0.sh || true
