@@ -2810,10 +2810,10 @@ properties:
           resources:
             properties:
               clusterOperator:
-                description: the operator property can be any arbitrary string
+                description: Controller which is used to create RabbitMQ-clusters
                 $ref: '#/definitions/resources'
               msgTopologyOperator:
-                description: the operator property can be any arbitrary string
+                description: Controller which is used to create RabbitMQ queues and policies
                 $ref: '#/definitions/resources'
       redis-shared:
         allOf:
