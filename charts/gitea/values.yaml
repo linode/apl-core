@@ -112,6 +112,16 @@ statefulset:
   terminationGracePeriodSeconds: 60
   labels: {}
 
+# podDns:
+#   dnsPolicy: "None"
+#   dnsConfig: 
+#     options:
+#       - name: ndots
+#         value: "1"
+#     nameservers:
+#       - "8.8.4.4"
+#       - "8.8.8.8"
+
 persistence:
   enabled: true
   # existingClaim:

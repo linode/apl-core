@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.4.0](https://github.com/redkubes/otomi-core/compare/v2.3.0...v2.4.0) (2024-02-05)
+
+
+### Features
+* add k8s attributes processor to otel collector ([#1464](https://github.com/redkubes/otomi-core/issues/1464)) ([b84a460](https://github.com/redkubes/otomi-core/commit/b84a460b9317a10614589f2e0735d016bab47583))
+* add support for linode DNS ([#1365](https://github.com/redkubes/otomi-core/issues/1365)) ([75bada4](https://github.com/redkubes/otomi-core/commit/75bada4b7c9564541bec5fd9c241c804fb17067b))
+* increase wait time for keycloak ([#1476](https://github.com/redkubes/otomi-core/issues/1476)) ([cbbb9d3](https://github.com/redkubes/otomi-core/commit/cbbb9d35dbe51b8e2407a8b38e77713195ff2ba2))
+* scan source code before build ([#1465](https://github.com/redkubes/otomi-core/issues/1465)) ([9c3b77a](https://github.com/redkubes/otomi-core/commit/9c3b77a3723f44c19e696e780cc2a6913ccc5ab0))
+* set pod dns for jobs ([#1482](https://github.com/redkubes/otomi-core/issues/1482)) ([7ceaae1](https://github.com/redkubes/otomi-core/commit/7ceaae192940052c07ee146d4d346aa96433f343))
+* upgrade keycloak to 22.0.4 ([#1469](https://github.com/redkubes/otomi-core/issues/1469)) ([2861eb4](https://github.com/redkubes/otomi-core/commit/2861eb463eb6ecf603e39d3a02c62a8b09fe850a))
+
+
+### Bug Fixes
+* linode provider ([#1477](https://github.com/redkubes/otomi-core/issues/1477)) ([55364eb](https://github.com/redkubes/otomi-core/commit/55364eb2f512c7bd17ff188e556f04fe3153b5d3))
+* linode webhook ([#1478](https://github.com/redkubes/otomi-core/issues/1478)) ([ec44ad5](https://github.com/redkubes/otomi-core/commit/ec44ad5e08937d1e48326c5c1b0a8976d3804b93))
+* node selector with argocd ([#1475](https://github.com/redkubes/otomi-core/issues/1475)) ([b83eec4](https://github.com/redkubes/otomi-core/commit/b83eec453a0ff97f11bb04bfbc45e3de7887ee15))
+* set tls for metrics-server ([#1499](https://github.com/redkubes/otomi-core/issues/1499)) ([83d6e12](https://github.com/redkubes/otomi-core/commit/83d6e12c7dd0eb2f7053de511ae8077042c5b2d5))
+* tempo manifests that depends on loki ([#1500](https://github.com/redkubes/otomi-core/issues/1500)) ([9544378](https://github.com/redkubes/otomi-core/commit/954437861b6f0d58f870f71a18d5edc4dad99460))
+* update readme ([36ed862](https://github.com/redkubes/otomi-core/commit/36ed86285703b5de4f8042276c49c8fda546b0b1))
+
+### CI
+* azure marketplace ([#1473](https://github.com/redkubes/otomi-core/issues/1473)) ([a9396a8](https://github.com/redkubes/otomi-core/commit/a9396a80cf5f408f1f4ff8a098d072d89e4cbf7b))
+* digitalocean release ([#1472](https://github.com/redkubes/otomi-core/issues/1472)) ([b5bf1ec](https://github.com/redkubes/otomi-core/commit/b5bf1ece26aaa558b2d11192cfe123c73930fc32))
+
 ## [2.3.0](https://github.com/redkubes/otomi-core/compare/v2.2.0...v2.3.0) (2024-01-12)
 
 

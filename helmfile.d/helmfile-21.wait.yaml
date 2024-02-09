@@ -28,4 +28,12 @@ releases:
           {{- $v._derived.caCert | nindent 10 }}
         {{- end }}
         runPolicy: OnSpecChange
-
+        podDnsPolicy: "None"
+        podDnsConfig:
+          nameservers:
+            - "8.8.4.4"
+            - "8.8.8.8"
+          options:
+            - name: ndots
+              value: "1"
+        retries: "200"
