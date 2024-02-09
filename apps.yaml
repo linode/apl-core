@@ -308,7 +308,7 @@ appsInfo:
     title: RabbitMQ
     appVersion: 2.7.0
     repo: https://github.com/rabbitmq/cluster-operator
-    maintainers: 'RabbitMQ'
+    maintainers: RabbitMQ
     relatedLinks:
       - https://github.com/rabbitmq/cluster-operator
       - https://www.rabbitmq.com
