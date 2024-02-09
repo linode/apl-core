@@ -209,6 +209,8 @@ environments:
             enabled: false
           harbor:
             enabled: false
+            oidcAutoOnboard: true
+            oidcUserClaim: 'username'
             registry:
               credentials:
                 username: otomi-admin
