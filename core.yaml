@@ -112,8 +112,6 @@ k8s:
       disablePolicyChecks: true
     - name: sealed-secrets
       app: sealed-secrets
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: vault
       app: vault
     - name: velero
@@ -362,7 +360,7 @@ adminApps:
         auth: true
   - name: sealed-secrets
     tags: [secrets, security, observability]
-    isShared: true
+    isShared: false
     ownHost: true
   - name: tempo
     tags: [tracing]
