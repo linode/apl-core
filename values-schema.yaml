@@ -653,48 +653,40 @@ definitions:
       ruleType:
         properties:
           ingress:
-            toLabelName:
-              type: string
-              title: Selector label name
-              description: 'The name of the Pod selector label'
-            toLabelValue:
-              type: string
-              title: Selector label value
-              description: 'The value of the Pod selector label'
-            oneOf:
-              - title: Allow selected
-                properties:
-                  mode:
-                    default: AllowOnly
-                    enum:
-                      - AllowOnly
-                  allow:
-                    title: Add team or team with service
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        fromLabelName:
-                          type: string
-                          title: Selector label name
-                          description: 'The name of the Pod selector label'
-                        fromLabelValue:
-                          type: string
-                          title: Selector label value
-                          description: 'The value of the Pod selector label'
-                        fromNamespace:
-                          type: string
-                          title: Namespace name
-                          description: 'The name of the namespace'
-                      required:
-                        - fromNamespace
-              - title: Allow all
-                description: Allow traffic from all teams
-                properties:
-                  mode:
-                    default: AllowAll
-                    enum:
-                      - AllowAll
+            properties:
+              toLabelName:
+                type: string
+                title: Selector label name
+                description: 'The name of the Pod selector label'
+              toLabelValue:
+                type: string
+                title: Selector label value
+                description: 'The value of the Pod selector label'
+              mode:
+                default: AllowOnly
+                enum:
+                  - AllowOnly
+                  - AllowAll
+              allow:
+                title: Add team or team with service
+                type: array
+                items:
+                  type: object
+                  properties:
+                    fromLabelName:
+                      type: string
+                      title: Selector label name
+                      description: 'The name of the Pod selector label'
+                    fromLabelValue:
+                      type: string
+                      title: Selector label value
+                      description: 'The value of the Pod selector label'
+                    fromNamespace:
+                      type: string
+                      title: Namespace name
+                      description: 'The name of the namespace'
+                  required:
+                    - fromNamespace
           egress:
             properties:
               domain:
