@@ -362,7 +362,7 @@ adminApps:
         auth: true
   - name: sealed-secrets
     tags: [secrets, security, observability]
-    isShared: true
+    isShared: false
     ownHost: true
   - name: tempo
     tags: [tracing]
