@@ -597,7 +597,7 @@ environments:
                 maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
-          rabbitmq-cluster-operator:
+          rabbitmq:
             enabled: true
             resources:
               clusterOperator:
