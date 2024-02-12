@@ -71,7 +71,7 @@ spec:
         {{- include "common.tplvalues.render" (dict "value" .Values.clusterOperator.initContainers "context" $) | nindent 8 }}
         {{- end }}
       containers:
-        - name: rabbitmq-cluster-operator
+        - name: rabbitmq
           image: {{ template "rmqco.clusterOperator.image" . }}
           imagePullPolicy: {{ .Values.clusterOperator.image.pullPolicy }}
           {{- if .Values.clusterOperator.containerSecurityContext.enabled }}

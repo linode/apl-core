@@ -1,5 +1,5 @@
 {{- $v := .Values -}}
-{{- $r:= $v.apps | get "rabbitmq-cluster-operator" }}
+{{- $r:= $v.apps | get "rabbitmq" }}
 
 clusterOperator:
   resources: {{- $r.resources.clusterOperator | toYaml | nindent 4 }}

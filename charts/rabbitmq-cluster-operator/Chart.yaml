@@ -32,7 +32,7 @@ kubeVersion: '>= 1.19.0-0'
 maintainers:
 - name: VMware, Inc.
   url: https://github.com/bitnami/charts
-name: rabbitmq-cluster-operator
+name: rabbitmq
 sources:
 - https://github.com/bitnami/charts/tree/main/bitnami/rabbitmq-cluster-operator
 version: 3.10.10

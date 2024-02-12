@@ -80,7 +80,7 @@ spec:
         {{- include "common.tplvalues.render" (dict "value" .Values.msgTopologyOperator.initContainers "context" $) | nindent 8 }}
         {{- end }}
       containers:
-        - name: rabbitmq-cluster-operator
+        - name: rabbitmq
           image: {{ template "rmqco.msgTopologyOperator.image" . }}
           imagePullPolicy: {{ .Values.msgTopologyOperator.image.pullPolicy }}
           {{- if .Values.msgTopologyOperator.containerSecurityContext.enabled }}
