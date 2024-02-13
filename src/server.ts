@@ -66,9 +66,10 @@ app.get('/otomi/values', async (req: Request, res: Response) => {
 
   const filesOnly = parseBoolean(req.query.filesOnly, true)
   const excludeSecrets = parseBoolean(req.query.excludeSecrets, true)
+  const withWorkloadValues = parseBoolean(req.query.withWorkloadValues, true)
   d.log('Get otomi values', req.query)
   try {
-    const data = await hfValues({ filesOnly, excludeSecrets, withWorkloadValues: true }, envDir)
+    const data = await hfValues({ filesOnly, excludeSecrets, withWorkloadValues }, envDir)
     res.setHeader('Content-type', 'text/plain')
     const yamlData = objectToYaml(data!)
     res.status(200).send(yamlData)

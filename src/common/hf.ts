@@ -107,15 +107,16 @@ export const hfValues = async (
   if (withWorkloadValues) {
     const tragetDir = `${envDir}/env/teams/workloads`
     const files = {}
-    if (!(await pathExists(tragetDir))) return res
-    const paths = await readdirRecurse(tragetDir)
-    await Promise.allSettled(
-      paths.map(async (path) => {
-        const relativePath = path.replace(`${envDir}/`, '')
-        files[relativePath] = (await readFile(path)).toString()
-      }),
-    )
-    res.files = files
+    if (await pathExists(tragetDir)) {
+      const paths = await readdirRecurse(tragetDir)
+      await Promise.allSettled(
+        paths.map(async (path) => {
+          const relativePath = path.replace(`${envDir}/`, '')
+          files[relativePath] = (await readFile(path)).toString()
+        }),
+      )
+      res.files = files
+    }
   }
   return res
 }
