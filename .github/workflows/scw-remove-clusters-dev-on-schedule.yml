@@ -16,17 +16,19 @@ jobs:
         with:
           save-config: true
           export-config: true
-          version: v2.13.0
+          version: v2.26.0
           access-key: ${{ secrets.SCW_ACCESS_KEY }}
           secret-key: ${{ secrets.SCW_SECRET_KEY }}
           default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
           default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-      - name: Delete Clusters and Private Networks in DEV
+      - name: Delete Clusters in DEV
         run: |
-          SCALEWAY_CLUSTER_IDS=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id')
-          echo Deleting Cluster\(s\) with ID\(s\): $SCALEWAY_CLUSTER_IDS
-          scw k8s cluster delete $SCALEWAY_CLUSTER_IDS with-additional-resources=true region=nl-ams --wait
+          scw k8s cluster list project-id="${{ secrets.SCW_DEFAULT_PROJECT_ID }}" region=nl-ams -o template={{.ID}} | while read -r cluster_id; do
+            scw k8s cluster delete $cluster_id with-additional-resources=true region=nl-ams --wait || echo "Could not delete cluster: $cluster_id"
+          done
 
-          PRIVATE_NETWORK_IDS=$(scw vpc private-network list region=nl-ams -o json | jq -r '.[] | select(.project_id == "${{ secrets.SCW_DEFAULT_PROJECT_ID }}") | .id')
-          echo Deleting Private Network\(s\) with ID\(s\):
-          scw vpc private-network delete region=nl-ams $PRIVATE_NETWORK_IDS
+      - name: Delete Private Networks in DEV
+        run: |
+          scw vpc private-network list project-id="${{ secrets.SCW_DEFAULT_PROJECT_ID }}" -o template={{.ID}} | while read -r network_id; do
+            scw vpc private-network delete $network_id --wait || echo "Could not delete network: $network_id"
+          done
