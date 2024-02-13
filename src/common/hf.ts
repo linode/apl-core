@@ -1,6 +1,6 @@
 import { pathExists } from 'fs-extra'
-import { has, set } from 'lodash'
 import { readFile } from 'fs/promises'
+import { has, set } from 'lodash'
 import { parse } from 'yaml'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
@@ -102,7 +102,6 @@ export const hfValues = async (
     allSecretsPaths.forEach((path) => {
       if (has(res, path)) set(res, path, '<redacted>')
     })
-    return res
   }
 
   if (withWorkloadValues) {
