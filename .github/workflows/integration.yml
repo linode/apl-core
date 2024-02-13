@@ -70,6 +70,7 @@ on:
           - monitoring-with-team
           - full
           - upgrade
+          - no-otomi
       cluster_persistence:
         type: choice
         description: Should a cluster be destroyed on pipeline finish?
@@ -263,6 +264,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Prepare Otomi chart
+        if: ${{ inputs.install_profile != 'no-otomi' }}
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
@@ -282,6 +284,7 @@ jobs:
             - reg-otomi-github
           EOF
       - name: Otomi install
+        if: ${{ inputs.install_profile != 'no-otomi' }}
         env:
           AZ_DNS: ${{ secrets.AZ_DNS }}
           AZ_KMS: ${{ secrets.AZ_KMS }}
@@ -390,6 +393,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Prepare Otomi chart
+        if: ${{ inputs.install_profile != 'no-otomi' }}
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
@@ -409,6 +413,7 @@ jobs:
             - reg-otomi-github
           EOF
       - name: Otomi install
+        if: ${{ inputs.install_profile != 'no-otomi' }}
         env:
           AZ_DNS: ${{ secrets.AZ_DNS }}
           AZ_KMS: ${{ secrets.AZ_KMS }}
