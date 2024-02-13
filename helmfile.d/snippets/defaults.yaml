@@ -198,6 +198,8 @@ environments:
             enabled: false
           harbor:
             enabled: false
+            oidcAutoOnboard: true
+            oidcUserClaim: 'email'
             registry:
               credentials:
                 username: otomi-admin

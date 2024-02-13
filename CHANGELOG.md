@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.5.0](https://github.com/redkubes/otomi-core/compare/v2.4.0...v2.5.0) (2024-02-09)
+
+
+### Bug Fixes
+
+* ensure argo sync properly external-secrets ([#1501](https://github.com/redkubes/otomi-core/issues/1501)) ([09a7272](https://github.com/redkubes/otomi-core/commit/09a72727bff671b156c5861938f2d33c93b84f97))
+* harbor auto-onboard ([#1509](https://github.com/redkubes/otomi-core/issues/1509)) ([2ad72de](https://github.com/redkubes/otomi-core/commit/2ad72ded34c8ee865c5b8fd5dcec7ce2d266c5ee))
+
+
+### CI
+
+* deploy scaleway cluster ([#1483](https://github.com/redkubes/otomi-core/issues/1483)) ([5d8022c](https://github.com/redkubes/otomi-core/commit/5d8022cff23ab689f2f0ca192d60f5faed181d63))
+* reworked cluster and private network deletion ([#1505](https://github.com/redkubes/otomi-core/issues/1505)) ([036cecc](https://github.com/redkubes/otomi-core/commit/036cecc33064977bd20bafd48d12a662c1eb79a6))
+
 ## [2.4.0](https://github.com/redkubes/otomi-core/compare/v2.3.0...v2.4.0) (2024-02-05)
 
 
