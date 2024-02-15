@@ -1,0 +1,6 @@
+bootstrap:
+    apiVersion: v1
+    items: []
+    kind: List
+    metadata:
+        resourceVersion: ''
