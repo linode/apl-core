@@ -209,6 +209,8 @@ environments:
             enabled: false
           harbor:
             enabled: false
+            oidcAutoOnboard: true
+            oidcUserClaim: 'email'
             registry:
               credentials:
                 username: otomi-admin
@@ -418,7 +420,7 @@ environments:
             apiServer:
               create: true
             extraArgs:
-              kubelet-preferred-address-types: InternalIP
+              - --kubelet-preferred-address-types=InternalIP
           minio:
             enabled: false
             provisioning:
@@ -519,6 +521,16 @@ environments:
                 limits:
                     cpu: 500m
                     memory: 128Mi
+          sealed-secrets:
+            enabled: true
+            resources:
+              operator:
+                requests:
+                    cpu: 50m
+                    memory: 64Mi
+                limits:
+                    cpu: 2000m
+                    memory: 1024Mi
           tempo:
             enabled: false
             storage:

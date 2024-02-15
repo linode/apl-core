@@ -5,6 +5,8 @@ import { bootstrapSops } from 'src/cmd/bootstrap'
 import { validateValues } from 'src/cmd/validate-values'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
+import { hfValues } from './common/hf'
+import { objectToYaml } from './common/values'
 
 const d = terminal('server')
 const app = express()
@@ -53,6 +55,28 @@ app.get('/prepare', async (req: Request, res: Response) => {
       status = 422
     }
     res.status(status).send(err)
+  }
+})
+
+function parseBoolean(string, defaultValue = false) {
+  return string === 'true' ? true : string === 'false' ? false : defaultValue
+}
+app.get('/otomi/values', async (req: Request, res: Response) => {
+  const { envDir } = req.query as QueryParams
+
+  const filesOnly = parseBoolean(req.query.filesOnly, true)
+  const excludeSecrets = parseBoolean(req.query.excludeSecrets, true)
+  const withWorkloadValues = parseBoolean(req.query.withWorkloadValues, true)
+  d.log('Get otomi values', req.query)
+  try {
+    const data = await hfValues({ filesOnly, excludeSecrets, withWorkloadValues }, envDir)
+    res.setHeader('Content-type', 'text/plain')
+    const yamlData = objectToYaml(data!)
+    res.status(200).send(yamlData)
+  } catch (error) {
+    const status = 500
+    d.error(error)
+    res.status(status).send(error)
   }
 })
 
