@@ -2624,10 +2624,7 @@ properties:
                 type: boolean
                 default: true
           extraArgs:
-            type: object
-            description: See https://github.com/kubernetes-sigs/metrics-server for details.
-            default:
-              kubelet-preferred-address-types: InternalIP
+            type: array
           resources:
             additionalProperties: false
             properties:
