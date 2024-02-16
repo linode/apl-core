@@ -58,6 +58,7 @@ environments:
           oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
           oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
           oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
+          giteaDomain: {{ printf "gitea.%s" $domainSuffix }}
         apps:
           aws-alb-ingress-controller:
             enabled: {{ and (eq $provider "aws") $v.otomi.hasCloudLB }}

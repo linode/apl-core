@@ -41,6 +41,7 @@ releases:
     values:
       - name: admin
         teamId: admin
+        _derived: {{- toYaml $v._derived | nindent 10 }}
         teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
         apps: {{- $a | toYaml | nindent 10 }}
         oidc: {{- $v.oidc | toYaml | nindent 10 }}
