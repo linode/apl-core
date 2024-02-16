@@ -1,0 +1,21 @@
+{{- if and (and .Values.metrics.enabled .Values.metrics.prometheusRule.enabled) (or (not .Values.metrics.prometheusRule.autodetect) (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1")) (.Values.metrics.prometheusRule.spec) }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "velero.fullname" . }}
+  {{- if .Values.metrics.prometheusRule.namespace }}
+  namespace: {{ .Values.metrics.prometheusRule.namespace }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "velero.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- if .Values.metrics.prometheusRule.additionalLabels }}
+    {{- toYaml .Values.metrics.prometheusRule.additionalLabels | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+  - name: {{ include "velero.name" . }}
+    rules:
+    {{- toYaml .Values.metrics.prometheusRule.spec | nindent 4 }}
+{{- end }}

@@ -22,3 +22,7 @@ releases:
     labels:
       pkg: kyverno
     <<: *raw
+  - name: sealed-secrets
+    installed: {{ $a | get "sealed-secrets.enabled" }}
+    namespace: sealed-secrets
+    <<: *default

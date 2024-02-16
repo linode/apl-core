@@ -86,7 +86,8 @@
     "kyverno",
     "Paketo",
     "tekton",
-    "cnpg"
+    "cnpg",
+    "dockercfg"
   ],
   "language": "en",
   "words": [
