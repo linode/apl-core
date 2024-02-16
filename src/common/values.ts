@@ -16,7 +16,6 @@ import { HelmArguments } from './yargs'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 20): string => {
   return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
-}
 
 let otomiK8sVersion: string
 /**
@@ -181,7 +180,17 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
   const plainValues = omit(values, cleanSecretPaths) as any
-  const fieldsToOmit = ['cluster', 'policies', 'teamConfig', 'apps', '_derived', 'license', 'databases', 'files']
+  const fieldsToOmit = [
+    'cluster',
+    'policies',
+    'teamConfig',
+    'apps',
+    '_derived',
+    'license',
+    'databases',
+    'files',
+    'bootstrap',
+  ]
   const secretSettings = omit(secrets, fieldsToOmit)
   const license = { license: values?.license }
   const settings = omit(plainValues, fieldsToOmit)
@@ -193,6 +202,10 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   if (plainValues.cluster || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
+  if (plainValues.bootstrap || overwrite)
+    promises.push(
+      writeValuesToFile(`${env.ENV_DIR}/env/bootstrap.yaml`, { bootstrap: plainValues.bootstrap }, overwrite),
+    )
   if (plainValues.policies || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
   if (plainValues.teamConfig || overwrite) {

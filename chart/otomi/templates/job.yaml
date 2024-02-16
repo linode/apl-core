@@ -15,6 +15,10 @@ spec:
       {{- end }}
       labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
     spec:
+      dnsConfig:
+          nameservers:
+            - 8.8.8.8
+            - 8.8.4.4
       restartPolicy: Never
       serviceAccountName: {{ include "otomi.fullname" . }}
       securityContext:

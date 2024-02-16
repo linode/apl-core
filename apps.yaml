@@ -316,6 +316,17 @@ appsInfo:
     dependencies: ''
     about: RabbitMQ is the most widely deployed open source message broker.
     integration: Otomi install the RabbitMQ-Cluster-Kubernetes-Operator, afterwards users can use the RabbitMQ Catalog item to create RabbitMQ-cluster with queues and policies.
+  sealed-secrets:
+    title: Sealed Secrets
+    appVersion: 0.24.5
+    repo: https://github.com/bitnami-labs/sealed-secrets
+    maintainers: Bitnami Labs
+    relatedLinks:
+      - https://otomi.io/docs/apps/sealed-secrets
+      - https://github.com/bitnami-labs/sealed-secrets/tree/main/docs
+    license: Apache 2.0
+    about: Sealed Secrets is a Kubernetes Custom Resource Definition Controller which allows you to store even sensitive information in Git repositories.
+    integration: Otomi uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
     isBeta: true
   tempo:
     title: Tempo

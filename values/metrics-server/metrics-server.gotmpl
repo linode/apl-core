@@ -1,7 +1,11 @@
 {{- $v := .Values }}
 {{- $m := $v.apps | get "metrics-server" }}
 
-extraArgs: {{- $m.extraArgs | toYaml | nindent 2 }}
+extraArgs:
+  - --kubelet-preferred-address-types=InternalIP
+{{- with $m.extraArgs }}
+{{- toYaml . | nindent 2 }}
+{{- end }}
 
 apiService:
   create: {{ $m.apiServer.create }}

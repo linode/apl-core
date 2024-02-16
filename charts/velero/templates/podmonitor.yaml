@@ -1,0 +1,44 @@
+{{ if and (and .Values.metrics.enabled .Values.metrics.nodeAgentPodMonitor.enabled) (or (not .Values.metrics.nodeAgentPodMonitor.autodetect) (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1")) }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: node-agent
+  {{- if .Values.metrics.nodeAgentPodMonitor.namespace }}
+  namespace: {{ .Values.metrics.nodeAgentPodMonitor.namespace }}
+  {{- end }}
+  {{- with .Values.metrics.nodeAgentPodMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "velero.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "velero.chart" . }}
+  {{- with .Values.metrics.nodeAgentPodMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "velero.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      name: node-agent
+    {{- with .Values.nodeAgent.labels }}
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  podMetricsEndpoints:
+  - port: http-monitoring
+    interval: {{ .Values.metrics.scrapeInterval }}
+    scrapeTimeout: {{ .Values.metrics.scrapeTimeout }}
+    {{- if .Values.metrics.nodeAgentPodMonitor.scheme }}
+    scheme: {{ .Values.metrics.nodeAgentPodMonitor.scheme }}
+    {{- end }}
+    {{- if .Values.metrics.nodeAgentPodMonitor.tlsConfig }}
+    tlsConfig:
+      {{- toYaml .Values.metrics.nodeAgentPodMonitor.tlsConfig | nindent 6 }}
+    {{- end }}
+{{- end }}
