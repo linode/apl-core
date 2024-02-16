@@ -1,0 +1,202 @@
+{{- if .Values.deployNodeAgent }}
+{{/* 'nodeAgent.securityContext' got renamed to 'nodeAgent.containerSecurityContext', merge both dicts into one for backward compatibility */}}
+{{- $containerSecurityContext := merge (.Values.nodeAgent.containerSecurityContext | default dict) (.Values.nodeAgent.securityContext | default dict) -}}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-agent
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.nodeAgent.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "velero.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "velero.chart" . }}
+    {{- with .Values.nodeAgent.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      name: node-agent
+  template:
+    metadata:
+      labels:
+        name: node-agent
+        app.kubernetes.io/name: {{ include "velero.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        helm.sh/chart: {{ include "velero.chart" . }}
+      {{- if .Values.podLabels }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
+      {{- end }}
+    {{- if or .Values.podAnnotations .Values.metrics.enabled (and .Values.credentials.useSecret (not .Values.credentials.existingSecret)) }}
+      annotations:
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if and (.Values.metrics.enabled) (not .Values.metrics.nodeAgentPodMonitor.enabled) }}
+        {{- with .Values.metrics.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      {{- if and .Values.credentials.useSecret (not .Values.credentials.existingSecret) }}
+        checksum/secret: {{ template "chart.config-checksum" . }}
+      {{- end }}
+    {{- end }}
+    spec:
+    {{- if .Values.image.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.image.imagePullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+    {{- end }}
+      serviceAccountName: {{ include "velero.serverServiceAccount" . }}
+      {{- with .Values.nodeAgent.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.nodeAgent.priorityClassName }}
+      priorityClassName: {{ include "velero.nodeAgent.priorityClassName" . }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      volumes:
+        {{- if .Values.credentials.useSecret }}
+        - name: cloud-credentials
+          secret:
+            secretName: {{ include "velero.secretName" . }}
+        {{- end }}
+        - name: host-pods
+          hostPath:
+            path: {{ .Values.nodeAgent.podVolumePath }}
+        {{- if .Values.nodeAgent.useScratchEmptyDir }}
+        - name: scratch
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.nodeAgent.extraVolumes }}
+        {{- toYaml .Values.nodeAgent.extraVolumes | nindent 8 }}
+        {{- end }}
+      dnsPolicy: {{ .Values.nodeAgent.dnsPolicy }}
+      containers:
+        - name: node-agent
+        {{- if .Values.image.digest }}
+          image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+        {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.metrics.enabled }}
+          ports:
+            - name: http-monitoring
+              containerPort: 8085
+          {{- end }}
+          command:
+            - /velero
+          args:
+            - node-agent
+            - server
+          {{- with .Values.configuration }}
+            {{- with .features }}
+            - --features={{ . }}
+            {{- end }}
+            {{- with .logLevel }}
+            - --log-level={{ . }}
+            {{- end }}
+            {{- with .logFormat }}
+            - --log-format={{ . }}
+            {{- end }}
+          {{- end }}
+          volumeMounts:
+            {{- if .Values.credentials.useSecret }}
+            - name: cloud-credentials
+              mountPath: /credentials
+            {{- end }}
+            - name: host-pods
+              mountPath: /host_pods
+              mountPropagation: HostToContainer
+            {{- if .Values.nodeAgent.useScratchEmptyDir }}
+            - name: scratch
+              mountPath: /scratch
+            {{- end }}
+            {{- if .Values.nodeAgent.extraVolumeMounts }}
+            {{- toYaml .Values.nodeAgent.extraVolumeMounts | nindent 12 }}
+            {{- end }}
+        {{- if .Values.credentials.extraSecretRef }}
+          envFrom:
+          - secretRef:
+              name: {{ .Values.credentials.extraSecretRef }}
+        {{- end }}
+          env:
+            - name: VELERO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: VELERO_SCRATCH_DIR
+              value: /scratch
+          {{- if .Values.credentials.useSecret }}
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: /credentials/cloud
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /credentials/cloud
+            - name: AZURE_CREDENTIALS_FILE
+              value: /credentials/cloud
+            - name: ALIBABA_CLOUD_CREDENTIALS_FILE
+              value: /credentials/cloud
+          {{- end }}
+          {{- with .Values.configuration.extraEnvVars }}
+          {{- range $key, $value := . }}
+            - name: {{ default "none" $key }}
+              value: {{ tpl (default "none" $value) $ | quote }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.credentials.extraEnvVars }}
+          {{- range $key, $value := . }}
+            - name: {{ default "none" $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "velero.secretName" $ }}
+                  key: {{ default "none" $key }}
+          {{- end }}
+          {{- end }}
+          {{- with .Values.nodeAgent.extraEnvVars }}
+          {{- range $key, $value := . }}
+            - name: {{ default "none" $key }}
+              value: {{ default "none" $value | quote }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.lifecycle }}
+          lifecycle: {{ toYaml .Values.nodeAgent.lifecycle | nindent 12 }}
+          {{- end }}
+          securityContext:
+            privileged: {{ .Values.nodeAgent.privileged }}
+            {{- with $containerSecurityContext }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.nodeAgent.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeAgent.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeAgent.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeAgent.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.nodeAgent.dnsConfig }}
+    dnsConfig:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+{{- end }}
