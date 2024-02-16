@@ -304,6 +304,18 @@ appsInfo:
     license: Apache 2.0
     about: Prometheus is a systems and service monitoring system. It collects metrics from configured targets at given intervals, evaluates rule expressions, displays the results, and can trigger alerts when specified conditions are observed.
     integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
+  rabbitmq:
+    title: RabbitMQ
+    appVersion: 2.7.0
+    repo: https://github.com/rabbitmq/cluster-operator
+    maintainers: RabbitMQ
+    relatedLinks:
+      - https://github.com/rabbitmq/cluster-operator
+      - https://www.rabbitmq.com
+    license: MPL-2.0 license
+    dependencies: ''
+    about: RabbitMQ is the most widely deployed open source message broker.
+    integration: Otomi install the RabbitMQ-Cluster-Kubernetes-Operator, afterwards users can use the RabbitMQ Catalog item to create RabbitMQ-cluster with queues and policies.
   sealed-secrets:
     title: Sealed Secrets
     appVersion: 0.24.5
