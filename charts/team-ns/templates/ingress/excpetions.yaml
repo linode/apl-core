@@ -10,6 +10,7 @@ spec:
   - {{ $.Release.Namespace }}/team-admin-public-tlsterm
   hosts:
   - {{ $v._derived.giteaDomain }}
+  - {{ $v._derived.keycloakDomain }}
   http:
   - match:
     - uri:
