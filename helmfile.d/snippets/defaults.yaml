@@ -610,7 +610,7 @@ environments:
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
           rabbitmq:
-            enabled: true
+            enabled: false
             resources:
               clusterOperator:
                   requests:
