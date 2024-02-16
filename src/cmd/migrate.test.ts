@@ -83,32 +83,20 @@ describe('Values migrations', () => {
         teamA: {
           services: [{ name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] }],
           monitoringStack: true,
-          selfService: {
-            team: ['downloadKubeConfig', 'downloadDockerConfig'],
-          },
         },
         teamB: {
           services: [{ name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] }],
           monitoringStack: false,
-          selfService: {
-            team: ['downloadKubeConfig'],
-          },
         },
       },
-      version: 5,
     }
 
     valuesChanges = {
-      version: 6,
       deletions: ['teamConfig.{team}.monitoringStack'],
       additions: [
         { 'teamConfig.{team}.managedMonitoring.grafana': 'true' },
         { 'teamConfig.{team}.managedMonitoring.prometheus': 'true' },
         { 'teamConfig.{team}.managedMonitoring.alertmanager': 'true' },
-      ],
-      relocations: [
-        { 'teamConfig.{team}.selfService.team.downloadKubeConfig': 'teamConfig.{team}.selfService.access' },
-        { 'teamConfig.{team}.selfService.team.downloadDockerConfig': 'teamConfig.{team}.selfService.access' },
       ],
     }
     deps = {
@@ -131,10 +119,6 @@ describe('Values migrations', () => {
               prometheus: 'true',
               alertmanager: 'true',
             },
-            selfService: {
-              team: [],
-              access: ['downloadKubeConfig', 'downloadDockerConfig'],
-            },
           },
           teamB: {
             services: [{ name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] }],
@@ -143,13 +127,8 @@ describe('Values migrations', () => {
               prometheus: 'true',
               alertmanager: 'true',
             },
-            selfService: {
-              team: [],
-              access: ['downloadKubeConfig'],
-            },
           },
         },
-        version: 6,
       },
       true,
     )
