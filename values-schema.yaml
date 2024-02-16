@@ -1269,6 +1269,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
+      sealedsecrets:
+        type: array
+        items:
+          $ref: '#/definitions/sealedsecret'
   teamSelfService:
     title: Team self service flags
     description: Grant team permissions to modify certain configuration parameters.
@@ -1416,6 +1420,40 @@ definitions:
                     - name
                     - value
     required:
+      - name
+
+  sealedsecret:
+    type: object
+    description: Define location of code to build
+    properties:
+      name:
+        type: string
+      namespace:
+        type: string
+      immutable:
+        description: 'Immutable, if set to true, ensures that data stored in the Secret cannot be updated (only object metadata can be modified).'
+        type: boolean
+      type:
+        description: Used to facilitate programmatic handling of secret data.
+        type: string
+        default: kubernetes.io/opaque
+        enum:
+          [
+            'kubernetes.io/opaque',
+            'kubernetes.io/service-account-token',
+            'kubernetes.io/dockercfg',
+            'kubernetes.io/dockerconfigjson',
+            'kubernetes.io/basic-auth',
+            'kubernetes.io/ssh-auth',
+            'kubernetes.io/tls',
+          ]
+      encryptedData:
+        type: object
+      metadata:
+        type: object
+    required:
+      - type
+      - encryptedData
       - name
 
   workload:
@@ -2429,6 +2467,18 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
+      sealed-secrets:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+          resources:
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
       tekton:
         additionalProperties: false
         properties:
@@ -2566,10 +2616,7 @@ properties:
                 type: boolean
                 default: true
           extraArgs:
-            type: object
-            description: See https://github.com/kubernetes-sigs/metrics-server for details.
-            default:
-              kubelet-preferred-address-types: InternalIP
+            type: array
           resources:
             additionalProperties: false
             properties:

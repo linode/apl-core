@@ -1,10 +1,11 @@
 import { pathExists } from 'fs-extra'
-import { set } from 'lodash'
+import { readFile } from 'fs/promises'
+import { has, set } from 'lodash'
 import { parse } from 'yaml'
 import { $, ProcessOutput, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { asArray, extract, flattenObject, getValuesSchema, isCore, rootDir } from './utils'
+import { asArray, extract, flattenObject, getValuesSchema, isCore, readdirRecurse, rootDir } from './utils'
 import { HelmArguments, getParsedArgs } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -67,13 +68,14 @@ export const hf = async (args: HFParams, opts?: HFOptions, envDir?: string): Pro
 }
 
 export interface ValuesArgs {
+  // Only files from values
   filesOnly?: boolean
+  withWorkloadValues?: boolean
   excludeSecrets?: boolean
   envDir?: string
 }
-
 export const hfValues = async (
-  { filesOnly = false, excludeSecrets = false }: ValuesArgs = {},
+  { filesOnly = false, excludeSecrets = false, withWorkloadValues = false }: ValuesArgs = {},
   envDir: string = env.ENV_DIR,
 ): Promise<Record<string, any> | undefined> => {
   const d = terminal('common:hf:hfValues')
@@ -96,10 +98,25 @@ export const hfValues = async (
     // strip secrets
     const schema = await getValuesSchema()
     const allSecrets = extract(schema, 'x-secret')
-    Object.keys(flattenObject(allSecrets)).forEach((path) => {
-      set(res, path, '<redacted>')
+    const allSecretsPaths = Object.keys(flattenObject(allSecrets))
+    allSecretsPaths.forEach((path) => {
+      if (has(res, path)) set(res, path, '<redacted>')
     })
-    return res
+  }
+
+  if (withWorkloadValues) {
+    const tragetDir = `${envDir}/env/teams/workloads`
+    const files = {}
+    if (await pathExists(tragetDir)) {
+      const paths = await readdirRecurse(tragetDir)
+      await Promise.allSettled(
+        paths.map(async (path) => {
+          const relativePath = path.replace(`${envDir}/`, '')
+          files[relativePath] = (await readFile(path)).toString()
+        }),
+      )
+      res.files = files
+    }
   }
   return res
 }

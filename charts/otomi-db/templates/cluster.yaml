@@ -8,11 +8,9 @@ metadata:
   {{- end }}
 spec:
   instances: {{ .Values.instances }}
-  
   {{- with .Values.imageName }}
   imageName: {{ . }}
   {{- end }}
-
   storage:
     {{- with .Values.storage.storageClass }}
     storageClass: {{ . }}
@@ -23,12 +21,10 @@ spec:
     storageClass: {{ . }}
     {{- end }}
     size: {{ .Values.walStorage.size }}
-
   {{- with .Values.monitoring }}
   monitoring:
     enablePodMonitor: {{ . }}
   {{- end }}
-
   resources:
     {{- with .Values.resources }}
     {{- toYaml . | nindent 4 }}
@@ -40,11 +36,10 @@ spec:
       cpu: 50m
       memory: 256Mi
     {{- end }}
-
   {{- with .Values.clusterAffinity }}
   {{- toYaml . | nindent 2 }}
   {{- end }}
-
+{{- if .Values.backup.enabled }}
   {{- if eq .Values.backup.type "minioLocal" }}
   backup:
     retentionPolicy: {{ .Values.backup.retentionPolicy }}
@@ -96,7 +91,7 @@ spec:
           name: gcs-creds
           key: gcsCredentials
   {{- end }}
-
+{{- end }}
   {{- with .Values.clusterSpec }}
   {{- toYaml . | nindent 2 }}
   {{- end }}

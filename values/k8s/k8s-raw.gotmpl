@@ -2,6 +2,9 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $dockerConfigTpl := readFile "../../helmfile.d/snippets/dockercfg.gotmpl" }}
 resources:
+  {{- if  ( (hasKey $v "bootstrap"))}}
+  - {{- $v.bootstrap | toYaml | nindent 4 }}
+  {{- end }}
   {{- range $ns := $v.k8s.namespaces }}
     {{- if or (not (hasKey $ns "app")) ($v.apps | get ($ns | get "app" "-dummy-") dict | get "enabled" false) }}
   - apiVersion: v1

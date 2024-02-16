@@ -1,3 +1,5 @@
 apps:
     metrics-server:
         enabled: true
+        extraArgs:
+            - --kubelet-insecure-tls=true
