@@ -85,7 +85,8 @@
     "thanos",
     "Paketo",
     "tekton",
-    "cnpg"
+    "cnpg",
+    "dockercfg"
   ],
   "language": "en",
   "words": [

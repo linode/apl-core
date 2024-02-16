@@ -1,4 +1,3 @@
-
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -6,8 +5,7 @@ metadata:
   labels:
     component: velero
   annotations:
-    controller-gen.kubebuilder.io/version: v0.7.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.12.0
   name: podvolumerestores.velero.io
 spec:
   group: velero.io
@@ -26,6 +24,10 @@ spec:
     - description: Name of the pod containing the volume to be restored
       jsonPath: .spec.pod.name
       name: Pod
+      type: string
+    - description: The type of the uploader to handle data transfer
+      jsonPath: .spec.uploaderType
+      name: Uploader Type
       type: string
     - description: Name of the volume to be restored
       jsonPath: .spec.volume
@@ -69,7 +71,7 @@ spec:
             properties:
               backupStorageLocation:
                 description: BackupStorageLocation is the name of the backup storage
-                  location where the restic repository is stored.
+                  location where the backup repository is stored.
                 type: string
               pod:
                 description: Pod is a reference to the pod containing the volume to
@@ -108,11 +110,24 @@ spec:
                     description: 'UID of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#uids'
                     type: string
                 type: object
+                x-kubernetes-map-type: atomic
               repoIdentifier:
-                description: RepoIdentifier is the restic repository identifier.
+                description: RepoIdentifier is the backup repository identifier.
                 type: string
               snapshotID:
                 description: SnapshotID is the ID of the volume snapshot to be restored.
+                type: string
+              sourceNamespace:
+                description: SourceNamespace is the original namespace for namaspace
+                  mapping.
+                type: string
+              uploaderType:
+                description: UploaderType is the type of the uploader to handle the
+                  data transfer.
+                enum:
+                - kopia
+                - restic
+                - ""
                 type: string
               volume:
                 description: Volume is the name of the volume within the Pod to be
@@ -123,6 +138,7 @@ spec:
             - pod
             - repoIdentifier
             - snapshotID
+            - sourceNamespace
             - volume
             type: object
           status:
@@ -169,9 +185,3 @@ spec:
     served: true
     storage: true
     subresources: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
