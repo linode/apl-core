@@ -1,0 +1,15 @@
+{{- $v := .Values -}}
+{{- $r:= $v.apps | get "rabbitmq" }}
+
+clusterOperator:
+  resources: {{- $r.resources.clusterOperator | toYaml | nindent 4 }}
+
+msgTopologyOperator:
+  resources: {{- $r.resources.msgTopologyOperator | toYaml | nindent 4 }}
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - otomi-pullsecret-global
+{{- end }}
+  

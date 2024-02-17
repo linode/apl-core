@@ -47,6 +47,8 @@ apps:
     enabled: false
   snapshot-controller:
     enabled: true
+  rabbitmq:
+    enabled: true
   tempo:
     enabled: true
   thanos:

@@ -632,6 +632,23 @@ environments:
                 maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
+          rabbitmq:
+            enabled: false
+            resources:
+              clusterOperator:
+                  requests:
+                      cpu: 100m
+                      memory: 128Mi
+                  limits:
+                      cpu: 900m
+                      memory: 512Mi
+              msgTopologyOperator:
+                  requests:
+                      cpu: 100m
+                      memory: 128Mi
+                  limits:
+                      cpu: 900m
+                      memory: 512Mi
           thanos:
             enabled: false
             query:

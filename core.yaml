@@ -99,6 +99,9 @@ k8s:
     - name: cluster-overprovisioner
       app: cluster-overprovisioner
       disableIstioInjection: true
+    - name: rabbitmq
+      app: rabbitmq
+      disableIstioInjection: true
     - name: redis
       app: prometheus
       disableIstioInjection: true
@@ -396,6 +399,8 @@ adminApps:
     tags: [backup]
   - name: kyverno
     tags: [security]
+  - name: rabbitmq
+    tags: [messaging]
 
 teamApps:
   - name: alertmanager

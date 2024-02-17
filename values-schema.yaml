@@ -2833,6 +2833,22 @@ properties:
                 $ref: '#/definitions/resources'
               node-exporter:
                 $ref: '#/definitions/resources'
+      rabbitmq:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+          resources:
+            properties:
+              clusterOperator:
+                description: Controller which is used to create RabbitMQ-clusters
+                $ref: '#/definitions/resources'
+              msgTopologyOperator:
+                description: Controller which is used to create RabbitMQ queues and policies
+                $ref: '#/definitions/resources'
       redis-shared:
         allOf:
           - $ref: '#/definitions/redisChart'
