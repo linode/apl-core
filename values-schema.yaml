@@ -1277,38 +1277,42 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
+      sealedsecrets:
+        type: array
+        items:
+          $ref: '#/definitions/sealedsecret'
   teamSelfService:
-    title: Team self service flags
+    title: Team permissions
     description: Grant team permissions to modify certain configuration parameters.
     type: object
     properties:
       service:
+        title: Service
         type: array
         items:
           type: string
           enum: [ingress, networkPolicy]
         uniqueItems: true
       team:
+        title: Team settings
         type: array
         items:
           type: string
-          enum:
-            [
-              alerts,
-              backup,
-              billingAlertQuotas,
-              oidc,
-              resourceQuota,
-              downloadKubeConfig,
-              downloadDockerConfig,
-              networkPolicy,
-            ]
+          enum: [oidc, managedMonitoring, alerts, billingAlertQuotas, resourceQuota, networkPolicy]
         uniqueItems: true
       apps:
+        title: Apps
         type: array
         items:
           type: string
           enum: [argocd, gitea]
+        uniqueItems: true
+      access:
+        title: Access
+        type: array
+        items:
+          type: string
+          enum: [shell, downloadKubeConfig, downloadDockerConfig, downloadCertificateAuthority]
         uniqueItems: true
   backupTtl:
     default: 168h
@@ -1424,6 +1428,40 @@ definitions:
                     - name
                     - value
     required:
+      - name
+
+  sealedsecret:
+    type: object
+    description: Define location of code to build
+    properties:
+      name:
+        type: string
+      namespace:
+        type: string
+      immutable:
+        description: 'Immutable, if set to true, ensures that data stored in the Secret cannot be updated (only object metadata can be modified).'
+        type: boolean
+      type:
+        description: Used to facilitate programmatic handling of secret data.
+        type: string
+        default: kubernetes.io/opaque
+        enum:
+          [
+            'kubernetes.io/opaque',
+            'kubernetes.io/service-account-token',
+            'kubernetes.io/dockercfg',
+            'kubernetes.io/dockerconfigjson',
+            'kubernetes.io/basic-auth',
+            'kubernetes.io/ssh-auth',
+            'kubernetes.io/tls',
+          ]
+      encryptedData:
+        type: object
+      metadata:
+        type: object
+    required:
+      - type
+      - encryptedData
       - name
 
   workload:
@@ -2437,6 +2475,18 @@ properties:
             properties:
               kuredDaemonSet:
                 $ref: '#/definitions/resources'
+      sealed-secrets:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: true
+          resources:
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
       tekton:
         additionalProperties: false
         properties:
@@ -2574,10 +2624,7 @@ properties:
                 type: boolean
                 default: true
           extraArgs:
-            type: object
-            description: See https://github.com/kubernetes-sigs/metrics-server for details.
-            default:
-              kubelet-preferred-address-types: InternalIP
+            type: array
           resources:
             additionalProperties: false
             properties:
@@ -2798,6 +2845,22 @@ properties:
               kube-state-metrics:
                 $ref: '#/definitions/resources'
               node-exporter:
+                $ref: '#/definitions/resources'
+      rabbitmq:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          resources:
+            properties:
+              clusterOperator:
+                description: Controller which is used to create RabbitMQ-clusters
+                $ref: '#/definitions/resources'
+              msgTopologyOperator:
+                description: Controller which is used to create RabbitMQ queues and policies
                 $ref: '#/definitions/resources'
       redis-shared:
         allOf:

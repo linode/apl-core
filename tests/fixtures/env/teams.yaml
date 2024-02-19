@@ -5,6 +5,10 @@ teamConfig:
             alertmanager: true
             grafana: true
             prometheus: true
+        selfService:
+            access:
+                - shell
+                - downloadCertificateAuthority
     demo:
         alerts:
             email: {}
@@ -38,9 +42,16 @@ teamConfig:
                 - networkPolicy
             team:
                 - alerts
+            access:
+                - shell
+                - downloadCertificateAuthority
     dev:
         id: dev
         managedMonitoring:
             alertmanager: true
             grafana: true
             prometheus: true
+        selfService:
+            access:
+                - shell
+                - downloadCertificateAuthority

@@ -12,6 +12,10 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
+  - name: sealed-secrets
+    installed: {{ $a | get "sealed-secrets.enabled" }}
+    namespace: sealed-secrets
+    <<: *default
   - name: gatekeeper
     installed: {{ $a | get "gatekeeper.enabled" }}
     namespace: gatekeeper-system
