@@ -1282,37 +1282,37 @@ definitions:
         items:
           $ref: '#/definitions/sealedsecret'
   teamSelfService:
-    title: Team self service flags
+    title: Team permissions
     description: Grant team permissions to modify certain configuration parameters.
     type: object
     properties:
       service:
+        title: Service
         type: array
         items:
           type: string
           enum: [ingress, networkPolicy]
         uniqueItems: true
       team:
+        title: Team settings
         type: array
         items:
           type: string
-          enum:
-            [
-              alerts,
-              backup,
-              billingAlertQuotas,
-              oidc,
-              resourceQuota,
-              downloadKubeConfig,
-              downloadDockerConfig,
-              networkPolicy,
-            ]
+          enum: [oidc, managedMonitoring, alerts, billingAlertQuotas, resourceQuota, networkPolicy]
         uniqueItems: true
       apps:
+        title: Apps
         type: array
         items:
           type: string
           enum: [argocd, gitea]
+        uniqueItems: true
+      access:
+        title: Access
+        type: array
+        items:
+          type: string
+          enum: [shell, downloadKubeConfig, downloadDockerConfig, downloadCertificateAuthority]
         uniqueItems: true
   backupTtl:
     default: 168h
