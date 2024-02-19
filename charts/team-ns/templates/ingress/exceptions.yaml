@@ -1,0 +1,22 @@
+{{- $v := .Values }}
+{{- if eq $v.teamId "admin" }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: otomi-forbidden-urls
+spec:
+  gateways:
+  - {{ $.Release.Namespace }}/team-admin-public-tlsterm
+  hosts:
+  - {{ $v._derived.giteaDomain }}
+  - {{ $v._derived.keycloakDomain }}
+  http:
+  - match:
+    - uri:
+        exact: /metrics
+    directResponse:
+      status: 403
+      body:
+        string: "Forbidden"
+{{- end }}
