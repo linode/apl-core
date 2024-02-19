@@ -107,7 +107,7 @@ environments:
             {{- if eq $provider "linode" }}
             _rawValues:
               extraArgs:
-                kubelet-insecure-tls: true
+                - --kubelet-insecure-tls=true
             {{- end}}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
