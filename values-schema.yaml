@@ -2853,7 +2853,7 @@ properties:
             $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
-            default: true
+            default: false
           resources:
             properties:
               clusterOperator:
