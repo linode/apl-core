@@ -4,7 +4,7 @@
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { unlink } from 'fs/promises'
-import { cloneDeep, each, get, set, unset } from 'lodash'
+import { cloneDeep, each, get, pull, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
@@ -92,8 +92,32 @@ export const rename = async (
 }
 
 const moveGivenJsonPath = (values: Record<string, any>, lhs: string, rhs: string): void => {
-  const val = get(values, lhs)
-  if (val !== undefined && set(values, rhs, val)) unset(values, lhs)
+  const lhsPaths = unparsePaths(lhs, values)
+  const rhsPaths = unparsePaths(rhs, values)
+
+  lhsPaths.forEach((lhsPath, index) => {
+    const pathParts = lhsPath.split('.')
+    const item = pathParts.pop()
+    const path = pathParts.join('.')
+    const prev = get(values, path)
+    const val = get(values, lhsPath)
+
+    if (!val && Array.isArray(prev) && prev.includes(item)) {
+      set(values, lhsPath, pull(prev, item))
+      const next = get(values, rhsPaths[index])
+      if (next && !next.includes(item)) {
+        next.push(item)
+        set(values, rhsPaths[index], next)
+      } else {
+        set(values, rhsPaths[index], [item])
+      }
+      return
+    }
+
+    if (val && set(values, rhsPaths[index], val)) {
+      unset(values, lhsPath)
+    }
+  })
 }
 
 export function filterChanges(version: number, changes: Changes): Changes {
@@ -316,7 +340,7 @@ export const unsetAtPath = (path: string, values: Record<string, any>): void => 
 
 export const setAtPath = (path: string, values: Record<string, any>, value: string): void => {
   const paths = unparsePaths(path, values)
-  paths.forEach((p) => set(values, p, value))
+  paths.forEach((p) => set(values, p, Array.isArray(value) ? [...value] : value))
 }
 export const preserveIngressControllerConfig = async (
   dryRun = false,
