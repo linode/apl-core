@@ -41,6 +41,7 @@ interface Change {
     [mutation: string]: string
   }>
   fileAdditions?: Array<string>
+  networkPoliciesMigration?: boolean
 }
 
 export type Changes = Array<Change>
@@ -159,6 +160,89 @@ export const setDeep = async (obj: Record<string, any>, path: string, tmplStr: s
   )
 }
 
+const transformIngressPolicy = (service: any, networkPolicy: any, netpols: any[]) => {
+  if (!networkPolicy.ingressPrivate) return
+  const ingress = {
+    ...networkPolicy.ingressPrivate,
+    ...(networkPolicy.podSelector && { toLabelName: 'otomi.io/app' }),
+    ...(networkPolicy.podSelector && { toLabelValue: networkPolicy.podSelector }),
+  }
+  if (ingress?.allow?.length > 0) {
+    ingress.allow = ingress.allow.map((a: any) => transformAllow(a))
+  }
+  netpols.push({
+    ...(service.id && { id: `${service.id}-ingress` }),
+    ...(service.name && { name: service.name }),
+    ruleType: {
+      type: 'ingress',
+      ingress,
+    },
+  })
+}
+
+const transformAllow = (a: any) => {
+  const allow = { ...a }
+  if (allow.team) {
+    allow.fromNamespace = `team-${allow.team}`
+    unset(allow, 'team')
+  }
+  if (allow.service) {
+    allow.fromLabelName = 'otomi.io/app'
+    allow.fromLabelValue = allow.service
+    unset(allow, 'service')
+  }
+  return allow
+}
+
+const transformEgressPolicy = (service: any, netpols: any[]) => {
+  if (!service.networkPolicy.egressPublic) return
+  const egress = [...service.networkPolicy.egressPublic]
+  egress.forEach((e: any) => {
+    netpols.push({
+      ...(service.id && { id: `${service.id}-egress` }),
+      ...(e.domain && { name: e.domain.replaceAll('.', '-').replaceAll(':', '-') }),
+      ruleType: {
+        type: 'egress',
+        egress: e,
+      },
+    })
+  })
+}
+
+const networkPoliciesMigration = async (values: Record<string, any>): Promise<void> => {
+  const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+  await Promise.all(
+    teams.map(async (teamName) => {
+      createFileSync(`${env.ENV_DIR}/env/teams/netpols.${teamName}.yaml`)
+      let services = get(values, `teamConfig.${teamName}.services`)
+      if (!services || services.length === 0) return
+      const valuesToWrite = {
+        teamConfig: {},
+      }
+      const netpols: any = []
+
+      services
+        .filter((s) => s?.networkPolicy && s?.networkPolicy?.ingressPrivate?.mode !== 'DenyAll')
+        .forEach((service: any) => {
+          const { networkPolicy } = service
+          transformIngressPolicy(service, networkPolicy, netpols)
+          transformEgressPolicy(service, netpols)
+        })
+
+      valuesToWrite.teamConfig[teamName] = { netpols }
+      await writeValuesToFile(`${env.ENV_DIR}/env/teams/netpols.${teamName}.yaml`, valuesToWrite, true)
+      set(values, `teamConfig.${teamName}.netpols`, netpols)
+      services = services.map((service: any) => {
+        if (service.networkPolicy) {
+          unset(service, 'networkPolicy')
+        }
+        return service
+      })
+      set(values, `teamConfig.${teamName}.services`, services)
+    }),
+  )
+}
+
 /**
  * Applies changes from configuration.
  *
@@ -205,6 +289,8 @@ export const applyChanges = async (
           await setDeep(values, path, tmplStr)
         }
       }
+
+    if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
 
     Object.assign(values, { version: c.version })
   }
