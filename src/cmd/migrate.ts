@@ -237,6 +237,14 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
   await Promise.all(
     teams.map(async (teamName) => {
+      const servicePermissions = get(values, `teamConfig.${teamName}.selfService.service`, [])
+      if (servicePermissions.includes('networkPolicy'))
+        set(
+          values,
+          `teamConfig.${teamName}.selfService.service`,
+          servicePermissions.filter((s: any) => s !== 'networkPolicy'),
+        )
+
       createFileSync(`${env.ENV_DIR}/env/teams/netpols.${teamName}.yaml`)
       let services = get(values, `teamConfig.${teamName}.services`)
       if (!services || services.length === 0) return

@@ -138,6 +138,7 @@ describe('Values migrations', () => {
 const getMockValues = () => ({
   teamConfig: {
     teamA: {
+      selfService: { service: ['ingress', 'networkPolicy'] },
       services: [
         { name: 'svc1', networkPolicy: { ingressPrivate: { mode: 'AllowAll' } } },
         {
@@ -243,6 +244,7 @@ const getMockValues = () => ({
 const getExpectedValues = () => ({
   teamConfig: {
     teamA: {
+      selfService: { service: ['ingress'] },
       services: [
         { name: 'svc1' },
         { id: 'svc2' },
