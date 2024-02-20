@@ -185,7 +185,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "1 - sum(:node_memory_MemAvailable_bytes:sum{cluster=\"$cluster\"}) / sum(node_memory_MemTotal_bytes{job=\"node-exporter\",cluster=\"$cluster\"})",
+          "expr": "sum(:node_memory_MemAvailable_bytes:sum{cluster=\"$cluster\"}) / sum(node_memory_MemTotal_bytes{cluster=\"$cluster\"})",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 2,
