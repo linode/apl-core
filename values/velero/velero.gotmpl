@@ -19,6 +19,9 @@ metrics:
 snapshotsEnabled: false
 {{- end }}
 
+upgradeCRDs: false
+cleanUpCRDs: false
+
 initContainers:
   - name: velero-plugin-for-azure
     image: velero/velero-plugin-for-microsoft-azure:v1.8.2
