@@ -6,6 +6,9 @@
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
 
+upgradeCRDs: false
+cleanUpCRDs: false
+
 metrics:
   enabled: true
   serviceMonitor:
