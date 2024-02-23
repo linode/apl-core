@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.6.1](https://github.com/redkubes/otomi-core/compare/v2.5.0...v2.6.1) (2024-02-23)
+
+
+### Features
+
+* download otomi values ([#1510](https://github.com/redkubes/otomi-core/issues/1510)) ([3bd8ce3](https://github.com/redkubes/otomi-core/commit/3bd8ce3f363808fbfb677300a00d541b200b1c38))
+
+
+### Bug Fixes
+
+* do not run velero upgrade crds job ([393d9d4](https://github.com/redkubes/otomi-core/commit/393d9d49f0b4cb3811af8d703adc6324f1352de4))
+
+
+### CI
+
+* fix scheduled deletion of scaleway cluster and private networks ([#1507](https://github.com/redkubes/otomi-core/issues/1507)) ([52eae23](https://github.com/redkubes/otomi-core/commit/52eae23e76198b5aa9dc57a65b4e5456bdf37a30))
+
+
+### Others
+
+* release branch [ci skip] ([2f030e4](https://github.com/redkubes/otomi-core/commit/2f030e48888c0869cab559ca28c6cf5817d6d4a7))
+
 ## [2.6.0](https://github.com/redkubes/otomi-core/compare/v2.5.0...v2.6.0) (2024-02-13)
 
 
