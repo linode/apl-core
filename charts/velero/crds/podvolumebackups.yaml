@@ -37,10 +37,6 @@ spec:
       jsonPath: .spec.volume
       name: Volume
       type: string
-    - description: Backup repository identifier for this backup
-      jsonPath: .spec.repoIdentifier
-      name: Repository ID
-      type: string
     - description: The type of the uploader to handle data transfer
       jsonPath: .spec.uploaderType
       name: Uploader Type
@@ -126,6 +122,13 @@ spec:
                   type: string
                 description: Tags are a map of key-value pairs that should be applied
                   to the volume backup as tags.
+                type: object
+              uploaderSettings:
+                additionalProperties:
+                  type: string
+                description: UploaderSettings are a map of key-value pairs that should
+                  be applied to the uploader configuration.
+                nullable: true
                 type: object
               uploaderType:
                 description: UploaderType is the type of the uploader to handle the

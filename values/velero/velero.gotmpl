@@ -19,8 +19,10 @@ metrics:
 snapshotsEnabled: false
 {{- end }}
 
-upgradeCRDs: false
+upgradeCRDs: true
 cleanUpCRDs: false
+
+uploaderType: restic
 
 initContainers:
   - name: velero-plugin-for-azure
