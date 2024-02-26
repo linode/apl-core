@@ -71,7 +71,7 @@ podSecurityContext:
 configuration:
   uploaderType: restic
   defaultBackupStorageLocation: otomi
-  defaultVolumeSnapshotLocations: otomi
+
   {{- if eq $sp.type "azureBlob" }}
   backupStorageLocation:
   - name: otomi
