@@ -51,7 +51,7 @@ apps:
   snapshot-controller:
     enabled: true
   sealed-secrets:
-    enabled: false
+    enabled: true
   rabbitmq:
     enabled: true
   tempo:
