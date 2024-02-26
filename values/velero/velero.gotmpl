@@ -22,7 +22,7 @@ snapshotsEnabled: false
 upgradeCRDs: true
 cleanUpCRDs: false
 
-uploaderType: restic
+
 
 initContainers:
   - name: velero-plugin-for-azure
@@ -69,8 +69,10 @@ podSecurityContext:
   runAsUser: 1000
 
 configuration:
+  uploaderType: restic
+  defaultBackupStorageLocation: otomi
+  defaultVolumeSnapshotLocations: otomi
   {{- if eq $sp.type "azureBlob" }}
-
   backupStorageLocation:
   - name: otomi
     provider: azure
