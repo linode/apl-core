@@ -19,7 +19,7 @@ metrics:
 snapshotsEnabled: false
 {{- end }}
 
-upgradeCRDs: true
+upgradeCRDs: false
 cleanUpCRDs: false
 
 
@@ -69,6 +69,7 @@ podSecurityContext:
   runAsUser: 1000
 
 configuration:
+# Use restic for File System Backups instead of kopia
   uploaderType: restic
   defaultBackupStorageLocation: otomi
 
@@ -195,6 +196,8 @@ kubectl:
     sidecar.istio.io/inject: "false"
 
 # Whether to deploy the node-agent daemonset.
+# This parampeter is responsible for enabling restic(or kopia) to backup and restore volumes using File System Backup.
+# Equivalent to running the velero install with --use-node-agent flag.
 deployNodeAgent: {{ $vl.restic.enabled }}
 
 schedules:
