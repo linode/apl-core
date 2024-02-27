@@ -86,7 +86,7 @@ spec:
             - server
             ### Flags
           {{- with .Values.configuration }}
-            - --uploader-type={{ default "restic" .uploaderType }}
+            - --uploader-type={{ default "kopia" .uploaderType }}
             {{- with .backupSyncPeriod }}
             - --backup-sync-period={{ . }}
             {{- end }}
@@ -107,6 +107,9 @@ spec:
             {{- end }}
             {{- with .defaultBackupTTL }}
             - --default-backup-ttl={{ . }}
+            {{- end }}
+            {{- with .defaultItemOperationTimeout }}
+            - --default-item-operation-timeout={{ . }}
             {{- end }}
             {{- with .defaultVolumeSnapshotLocations }}
             - --default-volume-snapshot-locations={{ . }}

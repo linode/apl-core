@@ -15,6 +15,9 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ include "velero.chart" . }}
+  {{- with .Values.kubectl.labels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   backoffLimit: 3
   template:

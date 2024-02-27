@@ -63,6 +63,16 @@ spec:
                 description: Schedule is a Cron expression defining when to run the
                   Backup.
                 type: string
+              skipImmediately:
+                description: 'SkipImmediately specifies whether to skip backup if
+                  schedule is due immediately from `schedule.status.lastBackup` timestamp
+                  when schedule is unpaused or if schedule is new. If true, backup
+                  will be skipped immediately when schedule is unpaused if it is due
+                  based on .Status.LastBackupTimestamp or schedule is new, and will
+                  run at next schedule time. If false, backup will not be skipped
+                  immediately when schedule is unpaused, but will run at next schedule
+                  time. If empty, will follow server configuration (default: false).'
+                type: boolean
               template:
                 description: Template is the definition of the Backup to be run on
                   the provided schedule
@@ -516,6 +526,16 @@ spec:
                     description: TTL is a time.Duration-parseable string describing
                       how long the Backup should be retained for.
                     type: string
+                  uploaderConfig:
+                    description: UploaderConfig specifies the configuration for the
+                      uploader.
+                    nullable: true
+                    properties:
+                      parallelFilesUpload:
+                        description: ParallelFilesUpload is the number of files parallel
+                          uploads to perform when using the uploader.
+                        type: integer
+                    type: object
                   volumeSnapshotLocations:
                     description: VolumeSnapshotLocations is a list containing names
                       of VolumeSnapshotLocations associated with this backup.
@@ -538,6 +558,11 @@ spec:
               lastBackup:
                 description: LastBackup is the last time a Backup was run for this
                   Schedule schedule
+                format: date-time
+                nullable: true
+                type: string
+              lastSkipped:
+                description: LastSkipped is the last time a Schedule was skipped
                 format: date-time
                 nullable: true
                 type: string
