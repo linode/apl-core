@@ -4,7 +4,7 @@
 {{- $alertmng := dig "managedMonitoring" "alertmanager" false $v }}
 {{- if (not (dig "networkPolicy" "ingressPrivate" true $v)) }}
 ---
-# If team network policies are disable then we whitelist all traffic to prvent undesired blocking while deploying team workloads
+# If team network policies are disabled then we whitelist all traffic to prevent undesired blocking while deploying team workloads
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
