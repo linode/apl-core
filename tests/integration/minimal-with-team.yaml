@@ -14,6 +14,8 @@ apps:
     enabled: true
   sealed-secrets:
     enabled: true
+  vault:
+    enabled: true
 teamConfig:
   demo:
     password: somesecretvalue
@@ -49,6 +51,102 @@ teamConfig:
             path: apps/java-maven
           type: buildpacks
       - name: demo-java-trigger
+        tag: v_0_0_1
+        trigger: true
+        mode:
+          docker:
+            repoUrl: https://github.com/buildpacks/samples
+            revision: HEAD
+            path: ./Docker
+          type: docker
+    services:
+      - headers:
+          response:
+            set: []
+        id: 78595314-cdaf-4b60-acc2-3b1a7f80fe2b
+        ingressClassName: platform
+        name: httpbin
+        networkPolicy:
+          ingressPrivate:
+            mode: DenyAll
+        ownHost: true
+        port: 80
+        type: public
+      - id: a106eb22-8c06-41b6-ab15-97aafb0888b5
+        ingressClassName: platform
+        name: nginx-deployment
+        networkPolicy:
+          ingressPrivate:
+            mode: DenyAll
+        ownHost: true
+        paths: []
+        port: 80
+        type: public
+      - id: 91f6af98-ad8e-4111-b916-cf1b5bdcafb0
+        ingressClassName: platform
+        ksvc:
+          predeployed: true
+        name: nginx-ksvc
+        networkPolicy:
+          ingressPrivate:
+            mode: DenyAll
+        ownHost: true
+        paths: []
+        port: 80
+        type: public
+    workloads:
+      - name: nodejs-helloworld
+        url: https://github.com/redkubes/nodejs-helloworld.git
+        path: ./
+        revision: HEAD
+      - name: httpbin
+        path: charts/httpbin
+        revision: HEAD
+        url: https://github.com/redkubes/otomi-core.git
+      - name: nginx-deployment
+        path: deployment
+        revision: main
+        selectedChart: deployment
+        url: https://github.com/redkubes/otomi-charts.git
+      - name: nginx-ksvc
+        path: ksvc
+        revision: main
+        selectedChart: ksvc
+        url: https://github.com/redkubes/otomi-charts.git
+  dev:
+    password: somesecretvalue
+    id: dev
+    selfService:
+      service:
+        - ingress
+        - networkPolicy
+    managedMonitoring:
+      grafana: false
+      prometheus: false
+      alertmanager: false
+    networkPolicy:
+      egressPublic: true
+      ingressPrivate: true
+    builds:
+      - name: nodejs-hello-world
+        tag: v0.0.1
+        trigger: false
+        mode:
+          docker:
+            repoUrl: https://github.com/redkubes/nodejs-helloworld
+            revision: HEAD
+            path: ./Docker
+          type: docker
+      - name: dev-java-maven
+        tag: v0.0.1
+        trigger: false
+        mode:
+          buildpacks:
+            repoUrl: https://github.com/buildpacks/samples
+            revision: HEAD
+            path: apps/java-maven
+          type: buildpacks
+      - name: dev-java-trigger
         tag: v_0_0_1
         trigger: true
         mode:
@@ -170,3 +268,49 @@ files:
       image:
         repository: otomi/nodejs-helloworld
         tag: v1.2.13
+  env/teams/workloads/dev/nodejs-helloworld.yaml: |
+    values: |
+      image:
+        repository: otomi/nodejs-helloworld
+        tag: v1.2.13
+  env/teams/workloads/dev/nginx-deployment.yaml: |
+    values: |
+      fullnameOverride: nginx-deployment
+      image:
+        repository: nginxinc/nginx-unprivileged
+        tag: stable
+      containerPorts:
+        - containerPort: 8080
+          protocol: TCP
+          name: http
+      resources:
+        requests:
+          cpu: 200m
+          memory: 32Mi
+      autoscaling:
+        minReplicas: 2
+        maxReplicas: 10
+  env/teams/workloads/dev/nginx-ksvc.yaml: |
+    values: |
+      fullnameOverride: nginx-ksvc
+      image:
+        repository: nginxinc/nginx-unprivileged
+        tag: stable
+      containerPorts:
+        - containerPort: 8080
+          name: http1
+          protocol: TCP
+      readinessProbe:
+          httpGet:
+              path: /
+              port: http1
+      resources:
+        requests:
+          cpu: 200m
+          memory: 32Mi
+      autoscaling:
+        minReplicas: 0
+        maxReplicas: 10
+  env/teams/workloads/dev/httpbin.yaml: |
+    values: |
+      {}
