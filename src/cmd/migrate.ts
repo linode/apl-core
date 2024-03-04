@@ -13,6 +13,7 @@ import { hfValues } from 'src/common/hf'
 import { getFilename, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
+import { v4 as uuidv4 } from 'uuid'
 import { Argv } from 'yargs'
 import { cd } from 'zx'
 
@@ -188,14 +189,14 @@ const transformIngressPolicy = (service: any, networkPolicy: any, netpols: any[]
   if (!networkPolicy.ingressPrivate) return
   const ingress = {
     ...networkPolicy.ingressPrivate,
-    ...(networkPolicy.podSelector && { toLabelName: 'otomi.io/app' }),
-    ...(networkPolicy.podSelector && { toLabelValue: networkPolicy.podSelector }),
+    toLabelName: 'otomi.io/app',
+    toLabelValue: service.name,
   }
   if (ingress?.allow?.length > 0) {
     ingress.allow = ingress.allow.map((a: any) => transformAllow(a))
   }
   netpols.push({
-    ...(service.id && { id: `${service.id}-ingress` }),
+    id: uuidv4(),
     ...(service.name && { name: service.name }),
     ruleType: {
       type: 'ingress',
@@ -223,7 +224,7 @@ const transformEgressPolicy = (service: any, netpols: any[]) => {
   const egress = [...service.networkPolicy.egressPublic]
   egress.forEach((e: any) => {
     netpols.push({
-      ...(service.id && { id: `${service.id}-egress` }),
+      id: uuidv4(),
       ...(e.domain && { name: e.domain.replaceAll('.', '-').replaceAll(':', '-') }),
       ruleType: {
         type: 'egress',
