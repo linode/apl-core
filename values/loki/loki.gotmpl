@@ -19,6 +19,14 @@ serviceMonitor:
   labels:
     prometheus: system
 
+env:
+  - name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
+
+
+
 loki:
   podAnnotations:
     sidecar.istio.io/inject: "false"
@@ -33,6 +41,8 @@ loki:
         kvstore:
           store: memberlist
     memberlist:
+      bind_addr:
+        - ${MY_POD_IP}
       join_members:
         - loki-memberlist
     ingester:
@@ -201,7 +211,11 @@ ingester:
         size: {{ $l.persistence.ingester.size }}
         storageClass: null
   {{- end }}
-
+  extraEnv:
+    name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
 gateway:
   resources: {{- $l.resources.gateway | toYaml | nindent 4 }}
   autoscaling:
@@ -210,7 +224,11 @@ gateway:
     maxReplicas: {{ $l.autoscaling.gateway.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $l.autoscaling.gateway.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.gateway.targetMemoryUtilizationPercentage }}
-
+  extraEnv:
+    name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
 querier:
   resources: {{- $l.resources.querier | toYaml | nindent 4 }}
   podAnnotations:
@@ -227,6 +245,11 @@ querier:
     size: {{ $l.persistence.querier.size }}
     storageClass: null
   {{- end }}
+  extraEnv:
+    name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
 
 distributor:
   resources: {{- $l.resources.distributor | toYaml | nindent 4 }}
@@ -236,6 +259,11 @@ distributor:
     maxReplicas: {{ $l.autoscaling.distributor.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $l.autoscaling.distributor.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.distributor.targetMemoryUtilizationPercentage }}
+  extraEnv:
+    name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
 
 queryFrontend:
   resources: {{- $l.resources.queryFrontend | toYaml | nindent 4 }}
@@ -278,7 +306,16 @@ queryFrontend:
     protocol: TCP
     name: http
     targetPort: http
-
+  extraEnv:
+    name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
 compactor:
   enabled: true
   resources: {{- $l.resources.compactor | toYaml | nindent 4 }}
+  extraEnv:
+    name: MY_POD_IP
+    valueFrom:
+      fieldRef:
+        fieldPath: status.podIP
