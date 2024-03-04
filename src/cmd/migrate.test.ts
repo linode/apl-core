@@ -1,6 +1,10 @@
 import { applyChanges, Changes, filterChanges } from 'src/cmd/migrate'
 import stubs from 'src/test-stubs'
 
+jest.mock('uuid', () => ({
+  v4: jest.fn(() => 'my-fixed-uuid'),
+}))
+
 const { terminal } = stubs
 
 describe('Upgrading values', () => {
@@ -140,9 +144,10 @@ const getMockValues = () => ({
     teamA: {
       selfService: { service: ['ingress', 'networkPolicy'] },
       services: [
-        { name: 'svc1', networkPolicy: { ingressPrivate: { mode: 'AllowAll' } } },
+        { id: 'my-fixed-uuid', name: 'svc1', networkPolicy: { ingressPrivate: { mode: 'AllowAll' } } },
         {
-          id: 'svc2',
+          id: 'my-fixed-uuid',
+          name: 'svc2',
           networkPolicy: {
             ingressPrivate: {
               mode: 'AllowOnly',
@@ -150,6 +155,7 @@ const getMockValues = () => ({
           },
         },
         {
+          id: 'my-fixed-uuid',
           name: 'svc3',
           networkPolicy: {
             ingressPrivate: {
@@ -157,9 +163,10 @@ const getMockValues = () => ({
             },
           },
         },
-        { id: 'svc4', name: 'svc4' },
-        { name: 'svc5', networkPolicy: { ingressPrivate: { mode: 'AllowAll' }, podSelector: 'test-label-value' } },
+        { id: 'my-fixed-uuid', name: 'svc4' },
+        { id: 'my-fixed-uuid', name: 'svc5', networkPolicy: { ingressPrivate: { mode: 'AllowAll' } } },
         {
+          id: 'my-fixed-uuid',
           name: 'svc6',
           networkPolicy: {
             ingressPrivate: {
@@ -181,9 +188,9 @@ const getMockValues = () => ({
     teamB: {
       services: [
         {
+          id: 'my-fixed-uuid',
           name: 'svc7',
           networkPolicy: {
-            podSelector: 'test-label-value',
             ingressPrivate: {
               mode: 'AllowOnly',
               allow: [
@@ -246,24 +253,40 @@ const getExpectedValues = () => ({
     teamA: {
       selfService: { service: ['ingress'] },
       services: [
-        { name: 'svc1' },
-        { id: 'svc2' },
-        { name: 'svc3' },
-        { id: 'svc4', name: 'svc4' },
-        { name: 'svc5' },
-        { name: 'svc6' },
+        { id: 'my-fixed-uuid', name: 'svc1' },
+        { id: 'my-fixed-uuid', name: 'svc2' },
+        { id: 'my-fixed-uuid', name: 'svc3' },
+        { id: 'my-fixed-uuid', name: 'svc4' },
+        { id: 'my-fixed-uuid', name: 'svc5' },
+        { id: 'my-fixed-uuid', name: 'svc6' },
       ],
       netpols: [
-        { name: 'svc1', ruleType: { type: 'ingress', ingress: { mode: 'AllowAll' } } },
-        { id: 'svc2-ingress', ruleType: { type: 'ingress', ingress: { mode: 'AllowOnly' } } },
         {
-          name: 'svc5',
+          id: 'my-fixed-uuid',
+          name: 'svc1',
           ruleType: {
             type: 'ingress',
-            ingress: { mode: 'AllowAll', toLabelName: 'otomi.io/app', toLabelValue: 'test-label-value' },
+            ingress: { mode: 'AllowAll', toLabelName: 'otomi.io/app', toLabelValue: 'svc1' },
           },
         },
         {
+          id: 'my-fixed-uuid',
+          name: 'svc2',
+          ruleType: {
+            type: 'ingress',
+            ingress: { mode: 'AllowOnly', toLabelName: 'otomi.io/app', toLabelValue: 'svc2' },
+          },
+        },
+        {
+          id: 'my-fixed-uuid',
+          name: 'svc5',
+          ruleType: {
+            type: 'ingress',
+            ingress: { mode: 'AllowAll', toLabelName: 'otomi.io/app', toLabelValue: 'svc5' },
+          },
+        },
+        {
+          id: 'my-fixed-uuid',
           name: 'svc6',
           ruleType: {
             type: 'ingress',
@@ -273,15 +296,18 @@ const getExpectedValues = () => ({
                 { fromNamespace: 'team-team1' },
                 { fromNamespace: 'team-team2', fromLabelName: 'otomi.io/app', fromLabelValue: 'svc6' },
               ],
+              toLabelName: 'otomi.io/app',
+              toLabelValue: 'svc6',
             },
           },
         },
       ],
     },
     teamB: {
-      services: [{ name: 'svc7' }],
+      services: [{ id: 'my-fixed-uuid', name: 'svc7' }],
       netpols: [
         {
+          id: 'my-fixed-uuid',
           name: 'svc7',
           ruleType: {
             type: 'ingress',
@@ -298,11 +324,12 @@ const getExpectedValues = () => ({
                 },
               ],
               toLabelName: 'otomi.io/app',
-              toLabelValue: 'test-label-value',
+              toLabelValue: 'svc7',
             },
           },
         },
         {
+          id: 'my-fixed-uuid',
           name: 'domain1-com',
           ruleType: {
             type: 'egress',
@@ -318,6 +345,7 @@ const getExpectedValues = () => ({
           },
         },
         {
+          id: 'my-fixed-uuid',
           name: 'domain2-com',
           ruleType: {
             type: 'egress',
@@ -333,6 +361,7 @@ const getExpectedValues = () => ({
           },
         },
         {
+          id: 'my-fixed-uuid',
           name: '185-199-110-153',
           ruleType: {
             type: 'egress',
@@ -348,6 +377,7 @@ const getExpectedValues = () => ({
           },
         },
         {
+          id: 'my-fixed-uuid',
           name: 'ae--1',
           ruleType: {
             type: 'egress',
