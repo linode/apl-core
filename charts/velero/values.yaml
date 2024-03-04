@@ -33,7 +33,7 @@ namespace:
 # enabling node-agent). Required.
 image:
   repository: velero/velero
-  tag: v1.12.2
+  tag: v1.13.0
   # Digest value example: sha256:d238835e151cec91c6a811fe3a89a66d3231d9f64d09e5f3c49552672d271f38.
   # If used, it will take precedence over the image.tag.
   # digest:
@@ -106,13 +106,13 @@ dnsPolicy: ClusterFirst
 # If the value is a string then it is evaluated as a template.
 initContainers:
   # - name: velero-plugin-for-csi
-  #   image: velero/velero-plugin-for-csi:v0.6.0
+  #   image: velero/velero-plugin-for-csi:v0.7.0
   #   imagePullPolicy: IfNotPresent
   #   volumeMounts:
   #     - mountPath: /target
   #       name: plugins
   # - name: velero-plugin-for-aws
-  #   image: velero/velero-plugin-for-aws:v1.8.0
+  #   image: velero/velero-plugin-for-aws:v1.9.0
   #   imagePullPolicy: IfNotPresent
   #   volumeMounts:
   #     - mountPath: /target
@@ -391,7 +391,7 @@ configuration:
   # here if using a non-default value. The `velero server` default values are shown in the
   # comments below.
   # --------------------
-  # `velero server` default: restic
+  # `velero server` default: kopia
   uploaderType:
   # `velero server` default: 1m
   backupSyncPeriod:
@@ -405,6 +405,8 @@ configuration:
   clientQPS:
   # Name of the default backup storage location. Default: default
   defaultBackupStorageLocation:
+  # The default duration any single item operation can take before timing out, especially important for large volume schedules. Default 4h
+  defaultItemOperationTimeout:
   # How long to wait by default before backups can be garbage collected. Default: 72h
   defaultBackupTTL:
   # Name of the default volume snapshot location.

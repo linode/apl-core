@@ -30,7 +30,7 @@ teamConfig:
             prometheus: true
         networkPolicy:
             egressPublic: true
-            ingressPrivate: true
+            ingressPrivate: false
         oidc:
             groupMapping: somesecretvalue
         resourceQuota:
