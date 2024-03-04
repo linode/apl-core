@@ -314,6 +314,7 @@ appsInfo:
     dependencies: ''
     about: RabbitMQ is the most widely deployed open source message broker.
     integration: Otomi install the RabbitMQ-Cluster-Kubernetes-Operator, afterwards users can use the RabbitMQ Catalog item to create RabbitMQ-cluster with queues and policies.
+    isBeta: true
   sealed-secrets:
     title: Sealed Secrets
     appVersion: 0.24.5

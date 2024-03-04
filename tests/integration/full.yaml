@@ -47,6 +47,8 @@ apps:
     enabled: false
   snapshot-controller:
     enabled: true
+  sealed-secrets:
+    enabled: true
   rabbitmq:
     enabled: true
   tempo:
@@ -56,6 +58,8 @@ apps:
   trivy:
     enabled: true
   vault:
+    enabled: true
+  velero:
     enabled: true
 teamConfig:
   demo:

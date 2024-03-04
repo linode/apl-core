@@ -19,6 +19,11 @@ metrics:
 snapshotsEnabled: false
 {{- end }}
 
+upgradeCRDs: false
+cleanUpCRDs: false
+
+
+
 initContainers:
   - name: velero-plugin-for-azure
     image: velero/velero-plugin-for-microsoft-azure:v1.8.2
@@ -29,7 +34,7 @@ initContainers:
         memory: 32Mi
       limits:
         cpu: 100m
-        memory: 32Mi
+        memory: 512Mi
     volumeMounts:
       - mountPath: /target
         name: plugins
@@ -64,8 +69,11 @@ podSecurityContext:
   runAsUser: 1000
 
 configuration:
-  {{- if eq $sp.type "azureBlob" }}
+# Use restic for File System Backups instead of kopia
+  uploaderType: restic
+  defaultBackupStorageLocation: otomi
 
+  {{- if eq $sp.type "azureBlob" }}
   backupStorageLocation:
   - name: otomi
     provider: azure
@@ -188,6 +196,8 @@ kubectl:
     sidecar.istio.io/inject: "false"
 
 # Whether to deploy the node-agent daemonset.
+# This parampeter is responsible for enabling restic(or kopia) to backup and restore volumes using File System Backup.
+# Equivalent to running the velero install with --use-node-agent flag.
 deployNodeAgent: {{ $vl.restic.enabled }}
 
 schedules:

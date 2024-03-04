@@ -113,3 +113,9 @@ changes:
       - 'teamConfig.{team}.managedMonitoring.alertmanager': true
       - 'teamConfig.{team}.managedMonitoring.grafana': true
       - 'teamConfig.{team}.managedMonitoring.prometheus': true
+  - version: 18
+    additions:
+      - 'teamConfig.{team}.selfService.access': ['shell', 'downloadCertificateAuthority']
+    relocations:
+      - 'teamConfig.{team}.selfService.team.downloadKubeConfig': 'teamConfig.{team}.selfService.access'
+      - 'teamConfig.{team}.selfService.team.downloadDockerConfig': 'teamConfig.{team}.selfService.access'

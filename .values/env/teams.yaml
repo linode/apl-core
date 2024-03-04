@@ -5,3 +5,7 @@ teamConfig:
             alertmanager: true
             grafana: true
             prometheus: true
+        selfService:
+            access:
+                - shell
+                - downloadCertificateAuthority
