@@ -1,7 +1,7 @@
 # Set provider name and backup storage location bucket name
 configuration:
   backupStorageLocation:
-  - name: backups-primary
+  - name: default
     bucket: velero-backups
     default: true
     provider: aws
