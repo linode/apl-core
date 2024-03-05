@@ -3672,6 +3672,10 @@ properties:
     properties:
       issuer:
         $ref: '#/definitions/url'
+        description: Deprecated in favour of the wellKnownUrl
+      wellKnownUrl:
+        $ref: '#/definitions/url'
+        description: Provider well-known configuration endpoint
       clientID:
         $ref: '#/definitions/wordCharacterPattern'
       clientSecret:
@@ -3692,7 +3696,7 @@ properties:
     required:
       - clientID
       - clientSecret
-      - issuer
+      # - issuer
   otomi:
     additionalProperties: false
     properties:
