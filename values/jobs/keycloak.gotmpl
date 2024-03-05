@@ -47,7 +47,7 @@ env:
   {{- with $o | get "teamAdminGroupID" nil }}
   IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
   {{- with $o | get "issuer" nil }}
-  IDP_OIDC_URL: {{ . }}
+  IDP_OIDC_URL: {{ . }}{{ end }}
   {{- with $o | get "wellKnownUrl" nil }}
   IDP_OIDC_WELL_KNOWN_URL: {{ . }}{{ end }}
 
