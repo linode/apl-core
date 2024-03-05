@@ -9,7 +9,7 @@ on:
       kubernetes_versions:
         description: "Kubernetes versions (JSON formatted list e.g.: ['1.27'])"
         type: string
-        default: "['1.27']"
+        default: "['1.28']"
       install_profile:
         description: Otomi installation profile
         default: full
@@ -59,7 +59,8 @@ on:
           - "['1.25']"
           - "['1.26']"
           - "['1.27']"
-        default: "['1.27']"
+          - "['1.28']"
+        default: "['1.28']"
       install_profile:
         description: Otomi installation profile
         default: minimal-with-team
