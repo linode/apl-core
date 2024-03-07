@@ -175,8 +175,8 @@ spec:
         - name: $(params.PLATFORM_DIR)
           mountPath: /platform
       securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
+        runAsUser: 1001
+        runAsGroup: 1001
 
     - name: results
       computeResources: {}
