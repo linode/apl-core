@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.6.2](https://github.com/redkubes/otomi-core/compare/v2.6.1...v2.6.2) (2024-03-07)
+
+
+### Bug Fixes
+
+* exclude argocd namespace from podAffinity mutation  ([#1547](https://github.com/redkubes/otomi-core/issues/1547)) ([ec0ef6d](https://github.com/redkubes/otomi-core/commit/ec0ef6d1bf8cfd45652a7eb1bde8c31012242f5a))
+
 ### [2.6.1](https://github.com/redkubes/otomi-core/compare/v2.5.0...v2.6.1) (2024-02-23)
 
 
