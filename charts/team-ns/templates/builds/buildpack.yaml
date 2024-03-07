@@ -67,7 +67,7 @@ spec:
       value: {{ . }}
     {{- end }}
     - name: BUILDER_IMAGE
-      value: paketobuildpacks/builder:full
+      value: paketobuildpacks/builder-jammy-full:latest
       {{- with (dig "mode" "buildpacks" "envVars" nil . ) }}
     - name: ENV_VARS
       value: 
