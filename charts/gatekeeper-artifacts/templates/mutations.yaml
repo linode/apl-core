@@ -28,7 +28,11 @@ spec:
     kinds:
       - apiGroups: [batch]
         kinds: [CronJob]
-    {{- include "gatekeeper-artifacts.namespaces" (dict "teamIds" $v.teamIds "excludedNamespaces" true) | nindent 4 }}
+    excludedNamespaces:
+      {{- range $teamId := ($v.teamIds | sortAlpha) }}
+      - team-{{ $teamId }}
+      {{- end }}
+      - argocd
   location: spec.jobTemplate.spec.affinity.nodeAffinity
   parameters:
     assign:
@@ -64,7 +68,11 @@ spec:
         kinds: [Job]
       - apiGroups: [serving.knative.dev]
         kinds: [Service]
-    {{- include "gatekeeper-artifacts.namespaces" (dict "teamIds" $v.teamIds "excludedNamespaces" true) | nindent 4 }}
+    excludedNamespaces:
+      {{- range $teamId := ($v.teamIds | sortAlpha) }}
+      - team-{{ $teamId }}
+      {{- end }}
+      - argocd
   location: spec.template.spec.affinity.nodeAffinity
   parameters:
     assign:
@@ -86,7 +94,12 @@ spec:
     kinds:
     - apiGroups: ["*"]
       kinds: [Pod]
-    {{- include "gatekeeper-artifacts.namespaces" (dict "teamIds" $v.teamIds) | nindent 4 }}
+    {{- if gt (len $v.teamIds) 0 }}
+    namespaces:
+      {{- range $teamId := ($v.teamIds | sortAlpha) }}
+      - team-{{ $teamId }}
+      {{- end }}
+    {{- end }}
   location: spec.affinity.nodeAffinity
   parameters:
     assign:
