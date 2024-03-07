@@ -69,6 +69,10 @@ spec:
     - name: BUILDER_IMAGE
       value: paketobuildpacks/builder-jammy-full:latest
       {{- with (dig "mode" "buildpacks" "envVars" nil . ) }}
+    - name: USER_ID
+      value: "1001"
+    - name: GROUP_ID
+      value: "1001"
     - name: ENV_VARS
       value: 
         {{- range . }}
