@@ -106,6 +106,32 @@ entries:
     - https://github.com/redkubes/otomi-core/releases/download/otomi-2.7.0/otomi-2.7.0.tgz
     version: 2.7.0
   - apiVersion: v2
+    appVersion: v2.6.2
+    created: "2024-03-07T12:43:01.681252273Z"
+    description: A Helm chart for installing otomi in Kubernetes
+    digest: b8c431a47f7ae61b87db7956545818e62140c96c153900046311c01719fdaa71
+    home: https://otomi.io/
+    icon: https://otomi.io/img/otomi-logo.svg
+    keywords:
+    - otomi
+    - otomi.io
+    - container-management
+    - cicd
+    - multi-tenancy
+    - continuous-delivery
+    - continuous-deployment
+    - continuous-integration
+    - observability
+    - metrics
+    - tracing
+    name: otomi
+    sources:
+    - https://github.com/redkubes/otomi-core
+    type: application
+    urls:
+    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.6.2/otomi-2.6.2.tgz
+    version: 2.6.2
+  - apiVersion: v2
     appVersion: v2.6.1
     created: "2024-02-23T08:15:00.756486728Z"
     description: A Helm chart for installing otomi in Kubernetes
@@ -2263,4 +2289,4 @@ entries:
     urls:
     - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.1/otomi-0.5.1.tgz
     version: 0.5.1
-generated: "2024-03-07T12:24:37.238166139Z"
+generated: "2024-03-07T12:43:01.681843214Z"
