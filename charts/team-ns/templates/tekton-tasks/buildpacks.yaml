@@ -10,6 +10,7 @@ metadata:
     tekton.dev/tags: image-build
     tekton.dev/displayName: "Buildpacks"
     tekton.dev/platforms: "linux/amd64"
+    policy.otomi.io/ignore: banned-image-tags
 spec:
   description: >-
     The Buildpacks task builds source into a container image and pushes it to a registry,
