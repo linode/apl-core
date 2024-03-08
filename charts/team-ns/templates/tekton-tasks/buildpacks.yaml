@@ -176,7 +176,7 @@ spec:
           mountPath: /platform
       securityContext:
         runAsUser: 1001
-        runAsGroup: 1001
+        runAsGroup: 1000
 
     - name: results
       computeResources: {}
