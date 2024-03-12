@@ -146,9 +146,6 @@ loki:
         cache_location: /var/loki/cache
         cache_ttl: 168h
       {{- else }}
-      bigtable:
-        instance: {{ $st.gcs.instance }}
-        project: {{ $st.gcs.project }}
       gcs:
         bucket_name: {{ $st.gcs.bucket }}   
       {{- end }}

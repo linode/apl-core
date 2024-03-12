@@ -2560,6 +2560,7 @@ properties:
             required:
               - duration
           storage:
+            description: 'Chunk storage'
             properties:
               azure:
                 properties:
@@ -2589,10 +2590,6 @@ properties:
               gcs:
                 properties:
                   bucket:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  project:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  instance:
                     $ref: '#/definitions/wordCharacterPattern'
               type:
                 type: string
