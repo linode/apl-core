@@ -60,16 +60,12 @@ Create the name of the service account to use
 
 {{- define "gatekeeper-artifacts.namespaces" -}}
 {{- if gt (len .teamIds) 0 }}
-  {{- if .excludedNamespaces }}
 excludedNamespaces:
-  {{- else }}
-namespaces:
-  {{- end }}
   {{- range $teamId := (.teamIds | sortAlpha) }}
   - team-{{ $teamId }}
   {{- end }}
-  - argocd
 {{- end -}}
+  - argocd
 {{- end -}}
 
 {{- define "gatekeeper-artifacts.nodeselector-terms" -}}

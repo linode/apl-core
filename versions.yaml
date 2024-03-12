@@ -1,4 +1,4 @@
 api: move-netpols
 console: move-netpols
-tasks: 2.4.0
-tools: 1.6.0
+tasks: main
+tools: 1.6.4
