@@ -21,7 +21,6 @@ teamConfig:
     selfService:
       service:
         - ingress
-        - networkPolicy
     managedMonitoring:
       grafana: false
       prometheus: false
@@ -64,18 +63,12 @@ teamConfig:
         id: 78595314-cdaf-4b60-acc2-3b1a7f80fe2b
         ingressClassName: platform
         name: httpbin
-        networkPolicy:
-          ingressPrivate:
-            mode: DenyAll
         ownHost: true
         port: 80
         type: public
       - id: a106eb22-8c06-41b6-ab15-97aafb0888b5
         ingressClassName: platform
         name: nginx-deployment
-        networkPolicy:
-          ingressPrivate:
-            mode: DenyAll
         ownHost: true
         paths: []
         port: 80
@@ -85,9 +78,6 @@ teamConfig:
         ksvc:
           predeployed: true
         name: nginx-ksvc
-        networkPolicy:
-          ingressPrivate:
-            mode: DenyAll
         ownHost: true
         paths: []
         port: 80

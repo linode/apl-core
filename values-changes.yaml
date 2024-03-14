@@ -122,3 +122,5 @@ changes:
   - version: 19
     deletions:
       - 'apps.argocd.enabled'
+  - version: 20
+    networkPoliciesMigration: true

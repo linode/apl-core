@@ -5,7 +5,6 @@ teamConfig:
             alertmanager: true
             grafana: true
             prometheus: true
-        sealedsecrets: []
         selfService:
             access:
                 - shell
@@ -36,21 +35,6 @@ teamConfig:
             groupMapping: somesecretvalue
         resourceQuota:
             services.loadbalancers: '1'
-        sealedsecrets:
-            - encryptedData:
-                  foo: bar
-              id: 3bfe13bc-1d81-4af1-b098-338ba7339cf8
-              metadata:
-                  annotations:
-                      - key: test
-                        value: annotation
-                  finalizers:
-                      - sealedsecrets.bitnami.com/finalizer-sealedsecret-v1alpha1
-                  labels:
-                      - key: test
-                        value: label
-              name: demo
-              type: kubernetes.io/opaque
         selfService:
             access:
                 - shell
@@ -58,7 +42,6 @@ teamConfig:
             apps: []
             service:
                 - ingress
-                - networkPolicy
             team:
                 - alerts
     dev:
