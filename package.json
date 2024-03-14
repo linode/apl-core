@@ -116,6 +116,7 @@
     "values-schema.yaml": "npm run gen:chart-schema"
   },
   "scripts": {
+    "install-deps": "bin/install-deps.sh",
     "app-versions:csv": "echo 'name,appVersion,chartVersion'; for f in $(find charts -name Chart.yaml -type f -maxdepth 2| sort); do yq eval -o=json $f | jq -rc '. | [.name, .appVersion, .version] | @csv' | tr -d '\"'; done",
     "adr": "adr-log -d adr -i",
     "check-policies": "NODE_ENV=test binzx/otomi check-policies",
