@@ -9,8 +9,8 @@ Effective development starts with an understanding the code structure and the re
 - [Integrating core apps](#Integrating-core-apps)
 - [Working with the team-ns chart](#working-with-the-team-ns-chart)
 - [Testing](#testing)
-- [Install dependencies](#Install-deps)
 - [Otomi CLI](#otomi-cli)
+- [Troubleshooting](#troubleshooting)
 
 # Navigating through code
 
@@ -404,3 +404,21 @@ otomi validate-templates -l name=myapp
 otomi x helmfile -l name=myapp write-values
 
 ```
+
+# Troubleshooting
+
+Some cloud providers are suing custom plugins to refresh the token. Since Otomi CLI executes by default in container some plugins may not be available. In order to solve this issue you can instruct Otomi CLI to execute directly on your host.
+
+First ensure that you have all required binaries
+
+```
+npm run install-deps
+```
+
+Then instruct Otomi to not run in docker:
+
+```
+export IN_DOCKER=1
+```
+
+Next you can execute `otomi apply` or `otomi status` against your to connect with your kubernetes cluster.
