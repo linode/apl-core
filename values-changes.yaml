@@ -123,3 +123,4 @@ changes:
     deletions:
       - 'apps.loki.storage.gcs.project'
       - 'apps.loki.storage.gcs.instance'
+      - 'apps.argocd.enabled'
