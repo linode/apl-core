@@ -9,6 +9,7 @@ Effective development starts with an understanding the code structure and the re
 - [Integrating core apps](#Integrating-core-apps)
 - [Working with the team-ns chart](#working-with-the-team-ns-chart)
 - [Testing](#testing)
+- [Install dependencies](#Install-deps)
 - [Otomi CLI](#otomi-cli)
 
 # Navigating through code
@@ -323,6 +324,12 @@ To run Otomi CLI in the development mode, you must:
 - export `ENV_DIR`
 
 First, run `npm install` to build all modules required for CLI.
+
+Then, install other dependencies
+
+```
+npm run install-deps
+```
 
 To create a values repository, follow the below steps:
 
