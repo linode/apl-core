@@ -120,4 +120,7 @@ changes:
       - 'teamConfig.{team}.selfService.team.downloadKubeConfig': 'teamConfig.{team}.selfService.access'
       - 'teamConfig.{team}.selfService.team.downloadDockerConfig': 'teamConfig.{team}.selfService.access'
   - version: 19
+    deletions:
+      - 'apps.argocd.enabled'
+  - version: 20
     networkPoliciesMigration: true
