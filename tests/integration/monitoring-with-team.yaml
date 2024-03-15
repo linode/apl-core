@@ -47,7 +47,6 @@ teamConfig:
     selfService:
       service:
         - ingress
-        - networkPolicy
     managedMonitoring:
       grafana: true
       prometheus: true

@@ -1,0 +1,63 @@
+{{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+{{- $v := .Values | merge (dict) }}
+{{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+{{- $ := . }}
+{{- if not (eq $v.teamId "admin") }}
+{{- $ingressFilteringEnabled := $v | dig "networkPolicy" "ingressPrivate" true }}
+{{- if $ingressFilteringEnabled }}
+{{- range $v.netpols }}
+{{- if eq .ruleType.type "ingress" }}
+{{- if eq .ruleType.ingress.mode "AllowAll" }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .name }}-allow-ingress-all
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      # Note for docs:
+      # The app label cannot be used for ksvc because Knative appends revision number to the service
+      # if workload is a ksvc use: 'serving.knative.dev/service' label name
+      {{ .ruleType.ingress.toLabelName }}: {{ .ruleType.ingress.toLabelValue }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              type: team
+ 
+{{- else if eq .ruleType.ingress.mode "AllowOnly" }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .name }}-ingress-allow-only
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{ .ruleType.ingress.toLabelName }}: {{ .ruleType.ingress.toLabelValue }}
+  policyTypes:
+    - Ingress
+      {{- with .ruleType.ingress.allow }}
+  ingress:
+    - from:
+       {{- range . }}
+        - namespaceSelector:
+            matchLabels:
+              name: {{ .fromNamespace }}
+          {{- if hasKey . "fromLabelName" }}
+          podSelector:
+            matchLabels:
+              {{ .fromLabelName }}: {{ .fromLabelValue }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+{{- end }} {{/* if eq .ruleType.ingress.mode "AllowAll" */}}
+{{- end }} {{/* if eq .ruleType.type "ingress" */}}
+{{- end }}{{/* range netpols */}}
+{{- end }} {{/* if $ingressFilteringEnabled */}}
+{{- end }} {{/* if not team-admin */}}
