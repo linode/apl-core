@@ -2682,6 +2682,7 @@ properties:
             properties:
               gcp:
                 type: string
+                x-secret: ''
                 $ref: '#/definitions/wordCharacterPattern'
           alerts:
             properties:
