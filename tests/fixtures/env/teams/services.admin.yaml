@@ -5,9 +5,6 @@ teamConfig:
               domain: hello.team-admin.demo.eks.otomi.cloud
               id: cb5149c4-8ea5-4c5a-be04-a37258658bd0
               name: hello-admin
-              networkPolicy:
-                  ingressPrivate:
-                      mode: AllowAll
               ownHost: true
               port: 80
               type: public

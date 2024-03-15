@@ -1,0 +1,179 @@
+{{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+{{- $v := .Values | merge (dict) }}
+{{- $prometheus := dig "managedMonitoring" "prometheus" false $v }}
+{{- $alertmng := dig "managedMonitoring" "alertmanager" false $v }}
+{{- if (not (dig "networkPolicy" "ingressPrivate" true $v)) }}
+---
+# If team network policies are disabled then we whitelist all traffic to prevent undesired blocking while deploying team workloads
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: default-ingress-allow-all
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {}
+  ingress:
+  - from:
+    - namespaceSelector: {}
+{{- else if and (not (eq $v.teamId "admin")) (dig "networkPolicy" "ingressPrivate" true $v) }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-ingress-deny
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-ingress-platform
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  # Match all Pods in this namespace
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              # FIXME: it seems that knative operator wipes out 'name' label, 
+              # we can still rely on automatic k8s labeling but it has some prerequsites: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/#automatic-labelling
+              # name: knative-serving
+              kubernetes.io/metadata.name: knative-serving
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: po-prometheus
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: tekton-pipelines
+{{- if $alertmng }}
+---
+# Allow traffic from team's prometheus to team's alertmanager
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-to-alertmanager
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
+  policyTypes:
+    - Ingress
+{{- end }}
+{{- if $prometheus }}
+---
+# Allow traffic from Alertmanager and Grafana to Prometheus
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-to-prometheus
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ $v.teamId }}-po-grafana
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
+  policyTypes:
+    - Ingress
+---
+# Allow traffic from Prometheus to kube-state-metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-to-kube-state-metrics
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              prometheus: team-{{ $v.teamId }}
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kube-state-metrics
+  policyTypes:
+    - Ingress
+{{- end }}
+---
+# Allow webhook traffic from gitea to event listeners
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-from-gitea
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: gitea
+          podSelector:
+            matchLabels:
+              app: gitea
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/managed-by: EventListener
+  policyTypes:
+    - Ingress
+{{- if $prometheus }}
+---
+# Allow traffic from Prometheus to all pods for scraping metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-from-prometheus
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: team-{{ $v.teamId }}
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-prometheus
+{{- end }}
+{{- end }}

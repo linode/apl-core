@@ -29,6 +29,7 @@
     "node-forge": "0.10.0",
     "semver": "7.3.7",
     "tar": "6.1.11",
+    "uuid": "^9.0.1",
     "validator": "13.7.0",
     "yaml": "^2.1.3",
     "yargs": "17.5.1",
@@ -115,6 +116,7 @@
     "values-schema.yaml": "npm run gen:chart-schema"
   },
   "scripts": {
+    "install-deps": "bin/install-deps.sh",
     "app-versions:csv": "echo 'name,appVersion,chartVersion'; for f in $(find charts -name Chart.yaml -type f -maxdepth 2| sort); do yq eval -o=json $f | jq -rc '. | [.name, .appVersion, .version] | @csv' | tr -d '\"'; done",
     "adr": "adr-log -d adr -i",
     "check-policies": "NODE_ENV=test binzx/otomi check-policies",
@@ -151,7 +153,7 @@
     "test:ts": "NODE_ENV=test jest",
     "test:ts-cov": "jest --coverage",
     "validate-templates": "NODE_ENV=test binzx/otomi validate-templates",
-    "validate-templates:all": "set -e; i=25; while [ $i -le 27 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
+    "validate-templates:all": "set -e; i=25; while [ $i -le 28 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
     "validate-values": "NODE_ENV=test binzx/otomi validate-values",
     "bootstrap-dev": "rm -rf /tmp/otomi-bootstrap-dev; CI=1 VALUES_INPUT=$PWD/tests/bootstrap/input.yaml ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi bootstrap",
     "bootstrap-dev-with-repo": "CI=1 ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi bootstrap"
@@ -162,5 +164,5 @@
     }
   },
   "type": "commonjs",
-  "version": "2.8.0"
+  "version": "2.9.0"
 }

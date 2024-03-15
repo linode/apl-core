@@ -1,3 +1,2 @@
 apps:
-    argocd:
-        enabled: true
+    argocd: {}

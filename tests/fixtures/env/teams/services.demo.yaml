@@ -14,9 +14,6 @@ teamConfig:
               ksvc:
                   predeployed: true
               name: hello
-              networkPolicy:
-                  ingressPrivate:
-                      mode: AllowAll
               ownHost: true
               port: 80
               type: public
@@ -47,9 +44,6 @@ teamConfig:
               type: public
             - id: cb5149c4-8ea5-4c5a-be04-a37258658bd6
               name: some-svc
-              networkPolicy:
-                  ingressPrivate:
-                      mode: AllowAll
               port: 80
               type: cluster
             - hasCert: true
@@ -58,42 +52,10 @@ teamConfig:
                   - /jeho
               type: public
             - name: service-a
-              networkPolicy:
-                  podSelector: test-label-value
-                  egressPublic:
-                      - domain: domain1.com
-                        ports:
-                            - number: 8443
-                              protocol: TCP
-                      - domain: domain2.com
-                        ports:
-                            - number: 443
-                              protocol: HTTPS
-                      - domain: 185.199.110.153
-                        ports:
-                            - number: 443
-                              protocol: TCP
-                      - domain: ae::1
-                        ports:
-                            - number: 443
-                              protocol: TCP
-                  ingressPrivate:
-                      allow:
-                          - team: team1
-                          - service: service-x
-                            team: team2
-                      mode: AllowOnly
               type: cluster
             - name: service-b
-              networkPolicy:
-                  egressPublic: []
-                  ingressPrivate:
-                      mode: DenyAll
               type: cluster
             - name: service-d
-              networkPolicy:
-                  ingressPrivate:
-                      mode: AllowOnly
               type: cluster
             - ingressClassName: net-a
               name: service-e
@@ -121,9 +83,6 @@ teamConfig:
               ksvc:
                   predeployed: false
               name: hello-blue-green
-              networkPolicy:
-                  ingressPrivate:
-                      mode: DenyAll
               ownHost: true
               useCname: false
               paths: []
