@@ -270,7 +270,6 @@ jobs:
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CHART_VERSION_PLACEHOLDER/1.0.0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.SCALEWAY_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
@@ -399,7 +398,6 @@ jobs:
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CHART_VERSION_PLACEHOLDER/1.0.0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
