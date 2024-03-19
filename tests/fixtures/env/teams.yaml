@@ -36,15 +36,14 @@ teamConfig:
         resourceQuota:
             services.loadbalancers: '1'
         selfService:
-            apps: []
-            service:
-                - ingress
-                - networkPolicy
-            team:
-                - alerts
             access:
                 - shell
                 - downloadCertificateAuthority
+            apps: []
+            service:
+                - ingress
+            team:
+                - alerts
     dev:
         id: dev
         managedMonitoring:

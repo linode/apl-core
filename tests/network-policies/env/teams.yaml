@@ -6,7 +6,6 @@ teamConfig:
     selfService:
       service:
         - ingress
-        - networkPolicy
       team:
         - alerts
     id: a1
@@ -17,7 +16,6 @@ teamConfig:
     selfService:
       service:
         - ingress
-        - networkPolicy
       team:
         - alerts
     id: a2

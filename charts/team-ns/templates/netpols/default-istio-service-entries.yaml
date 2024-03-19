@@ -1,0 +1,21 @@
+{{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+{{- $v := .Values | merge (dict) }}
+{{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+{{- $ := . }}
+{{- if (eq $v.teamId "admin") }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: platform-keycloak
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  hosts:
+    - {{ trimPrefix "https://" .Values.apps.keycloak.address }}
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS
+  location: MESH_EXTERNAL
+  resolution: DNS
+{{- end }}
