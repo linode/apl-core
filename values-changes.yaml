@@ -124,6 +124,8 @@ changes:
       - 'apps.argocd.enabled'
   - version: 20
     networkPoliciesMigration: true
+    additions:
+      - 'apps.loki.storage.gcs.serviceAccount'
     deletions:
       - 'apps.loki.storage.gcs.project'
       - 'apps.loki.storage.gcs.instance'

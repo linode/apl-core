@@ -2583,6 +2583,8 @@ properties:
                 properties:
                   bucket:
                     $ref: '#/definitions/wordCharacterPattern'
+                  serviceAccount:
+                    $ref: '#/definitions/wordCharacterPattern'
               type:
                 type: string
                 enum:
