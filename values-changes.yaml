@@ -121,8 +121,9 @@ changes:
       - 'teamConfig.{team}.selfService.team.downloadDockerConfig': 'teamConfig.{team}.selfService.access'
   - version: 19
     deletions:
-      - 'apps.loki.storage.gcs.project'
-      - 'apps.loki.storage.gcs.instance'
       - 'apps.argocd.enabled'
   - version: 20
     networkPoliciesMigration: true
+    deletions:
+      - 'apps.loki.storage.gcs.project'
+      - 'apps.loki.storage.gcs.instance'
