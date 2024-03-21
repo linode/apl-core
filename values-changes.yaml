@@ -124,3 +124,5 @@ changes:
       - 'apps.loki.storage.gcs.project'
       - 'apps.loki.storage.gcs.instance'
       - 'apps.argocd.enabled'
+  - version: 20
+    networkPoliciesMigration: true

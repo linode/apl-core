@@ -109,7 +109,9 @@ status:
             namespace: drone
             revision: '1'
             status: deployed
-            updated: '2023-05-31 09:54:32.168150254 +0000 UTC'
+            updated: 2023-05-31
+                09:54:32.168150254
+                +0000 UTC
         harbor/harbor:
             app_version: 1.6.1
             chart: harbor-3.0.0
@@ -117,10 +119,12 @@ status:
             namespace: harbor
             revision: '1'
             status: deployed
-            updated: '2023-05-31 09:54:32.168150254 +0000 UTC'
+            updated: 2023-05-31
+                09:54:32.168150254
+                +0000 UTC
     otomi:
         deployingTag: main
         deployingVersion: 0.21.0
         status: deployed
         version: 0.21.0
-version: 19
+version: 20

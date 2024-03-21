@@ -643,64 +643,56 @@ definitions:
     nullable: true
     type: object
     title: Kubernetes secrets
-  networkPolicy:
-    additionalProperties: false
+  netpol:
+    type: object
     properties:
-      podSelector:
+      name:
         type: string
-        title: Internal ingress filtering
-        description: 'Pods belonging to this service must contain "otomi.io/app: <service name>" label'
-      ingressPrivate:
-        oneOf:
-          - title: Deny all
-            description: Deny traffic from all teams (including this one)
+        title: Network Policy name
+        description: 'A unique name for the network policy'
+      ruleType:
+        properties:
+          ingress:
             properties:
-              mode:
-                default: DenyAll
-                enum:
-                  - DenyAll
-          - title: Allow selected
-            properties:
+              toLabelName:
+                type: string
+                title: Selector label name
+                description: 'The name of the Pod selector label'
+              toLabelValue:
+                type: string
+                title: Selector label value
+                description: 'The value of the Pod selector label'
               mode:
                 default: AllowOnly
                 enum:
                   - AllowOnly
+                  - AllowAll
               allow:
                 title: Add team or team with service
                 type: array
                 items:
                   type: object
                   properties:
-                    team:
-                      title: FROM team name
-                      description: Allow traffic from a given team
+                    fromLabelName:
                       type: string
-                    service:
-                      title: FROM label value
-                      description: 'Allow traffic from pods with label "otomi.io/app: <value>"'
+                      title: Selector label name
+                      description: 'The name of the Pod selector label'
+                    fromLabelValue:
                       type: string
+                      title: Selector label value
+                      description: 'The value of the Pod selector label'
+                    fromNamespace:
+                      type: string
+                      title: Namespace name
+                      description: 'The name of the namespace'
                   required:
-                    - team
-          - title: Allow all
-            description: Allow traffic from all teams
+                    - fromNamespace
+          egress:
             properties:
-              mode:
-                default: AllowAll
-                enum:
-                  - AllowAll
-      egressPublic:
-        title: External egress filtering
-        description: Trusted domains this service can access
-        type: array
-        items:
-          type: object
-          properties:
-            host:
-              title: FQDN or IP address
-              $ref: '#/definitions/domain'
-            ports:
-              type: array
-              items:
+              domain:
+                title: FQDN or IP address
+                $ref: '#/definitions/domain'
+              ports:
                 properties:
                   number:
                     title: Port number
@@ -715,13 +707,11 @@ definitions:
                 required:
                   - number
                   - protocol
-                minItems: 1
-                uniqueItems: true
-              default:
-                - number: 443
-                  protocol: HTTPS
-          required:
-            - domain
+                default:
+                  - number: 443
+                    protocol: HTTPS
+            required:
+              - domain
   path:
     description: An absolute path
     type: string
@@ -1105,8 +1095,6 @@ definitions:
       namespace:
         $ref: '#/definitions/idName'
         description: A kubernetes namespace. Only used by core services, so should be disallowed for non-admins.
-      networkPolicy:
-        $ref: '#/definitions/networkPolicy'
       ownHost:
         default: true
         description: When true the service will get it's own domain by prefixing the app name to the team domain. Mostly set to true. This will probably be removed soon.
@@ -1241,6 +1229,10 @@ definitions:
         items:
           $ref: '#/definitions/service'
         type: array
+      netpols:
+        items:
+          $ref: '#/definitions/netpol'
+        type: array
       managedMonitoring:
         title: Managed monitoring
         description: Activate managed Grafana, Prometheus or Alertmanager instances
@@ -1291,7 +1283,7 @@ definitions:
         type: array
         items:
           type: string
-          enum: [ingress, networkPolicy]
+          enum: [ingress]
         uniqueItems: true
       team:
         title: Team settings
@@ -2687,6 +2679,7 @@ properties:
             properties:
               gcp:
                 type: string
+                x-secret: ''
                 $ref: '#/definitions/wordCharacterPattern'
           alerts:
             properties:

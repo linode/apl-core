@@ -1,4 +1,4 @@
 api: loki
-console: 2.6.0
+console: main
 tasks: 2.4.0
 tools: 1.6.4

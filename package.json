@@ -29,6 +29,7 @@
     "node-forge": "0.10.0",
     "semver": "7.3.7",
     "tar": "6.1.11",
+    "uuid": "^9.0.1",
     "validator": "13.7.0",
     "yaml": "^2.1.3",
     "yargs": "17.5.1",
@@ -115,6 +116,7 @@
     "values-schema.yaml": "npm run gen:chart-schema"
   },
   "scripts": {
+    "install-deps": "bin/install-deps.sh",
     "app-versions:csv": "echo 'name,appVersion,chartVersion'; for f in $(find charts -name Chart.yaml -type f -maxdepth 2| sort); do yq eval -o=json $f | jq -rc '. | [.name, .appVersion, .version] | @csv' | tr -d '\"'; done",
     "adr": "adr-log -d adr -i",
     "check-policies": "NODE_ENV=test binzx/otomi check-policies",
@@ -162,5 +164,5 @@
     }
   },
   "type": "commonjs",
-  "version": "2.8.0"
+  "version": "2.9.0"
 }
