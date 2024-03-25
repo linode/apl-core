@@ -11,11 +11,12 @@
   auth_url: {{ printf "%s/protocol/openid-connect/auth" .keycloakBase }}
   token_url: {{ printf "%s/protocol/openid-connect/token" .keycloakBase }}
   api_url: {{ printf "%s/protocol/openid-connect/userinfo" .keycloakBase }}
-  role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || 'Editor'
+  role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin'
+  role_attribute_strict: true
 log:
   level: error
 users:
-  allow_sign_up: true
+  allow_sign_up: false
   auto_assign_org: true
   # fall back to admin for anonymous when no auth is available
   auto_assign_org_role: Viewer
