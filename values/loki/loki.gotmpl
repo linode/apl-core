@@ -106,11 +106,7 @@ loki:
     schema_config:
       configs:
       - from: {{ $l | get "v11StartDate" "2023-01-01" }}
-        {{- if eq $st.type "gcs" }}
-        store: bigtable
-        {{- else }}
         store: boltdb-shipper
-        {{- end }}
         {{- if eq $st.type "minioLocal" }}
         object_store: s3
         {{- end }}
@@ -128,7 +124,6 @@ loki:
           prefix: index_
           period: 24h
     storage_config:
-      {{- if ne $st.type "gcs" }}
       boltdb_shipper:
         {{- if eq $st.type "minioLocal" }}
         shared_store: s3
@@ -139,16 +134,16 @@ loki:
         {{- if eq $st.type "azure" }}
         shared_store: azure
         {{- end }}
+        {{- if eq $st.type "gcs" }}
+        shared_store: gcs
+        {{- end }}
         {{- if eq $st.type "filesystem" }}
         shared_store: filesystem
         {{- end }}
         active_index_directory: /var/loki/index
         cache_location: /var/loki/cache
         cache_ttl: 168h
-      {{- else }}
-      bigtable:
-        instance: {{ $st.gcs.instance }}
-        project: {{ $st.gcs.project }}
+      {{- if eq $st.type "gcs" }}
       gcs:
         bucket_name: {{ $st.gcs.bucket }}   
       {{- end }}
@@ -181,6 +176,12 @@ loki:
         account_key: {{ $st.azure.accountKey }}
         container_name: {{ $st.azure.containerName }}
       {{- end }}
+
+{{- if and (eq $st.type "gcs") $st.gcs.serviceAccount }}
+serviceAccount:
+  annotations:
+    iam.gke.io/gcp-service-account: {{ $st.gcs.serviceAccount }}
+{{- end }}
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}

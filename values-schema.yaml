@@ -2552,6 +2552,7 @@ properties:
             required:
               - duration
           storage:
+            description: 'Chunk storage'
             properties:
               azure:
                 properties:
@@ -2582,9 +2583,7 @@ properties:
                 properties:
                   bucket:
                     $ref: '#/definitions/wordCharacterPattern'
-                  project:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  instance:
+                  serviceAccount:
                     $ref: '#/definitions/wordCharacterPattern'
               type:
                 type: string
