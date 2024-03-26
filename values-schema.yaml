@@ -1246,6 +1246,9 @@ definitions:
           alertmanager:
             type: boolean
             default: false
+          private:
+            type: boolean
+            default: false
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster
@@ -2552,6 +2555,7 @@ properties:
             required:
               - duration
           storage:
+            description: 'Chunk storage'
             properties:
               azure:
                 properties:
@@ -2582,9 +2586,7 @@ properties:
                 properties:
                   bucket:
                     $ref: '#/definitions/wordCharacterPattern'
-                  project:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  instance:
+                  serviceAccount:
                     $ref: '#/definitions/wordCharacterPattern'
               type:
                 type: string
