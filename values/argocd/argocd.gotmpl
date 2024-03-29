@@ -78,7 +78,7 @@ configs:
     application.resourceTrackingMethod: annotation
     ga.anonymizeusers: "false"
     statusbadge.enabled: "false"
-    url: argocd.{{ $v.cluster.domainSuffix }}
+    url: https://argocd.{{ $v.cluster.domainSuffix }}
     users.anonymous.enabled: "false"
     oidc.config: |
       name: Otomi
