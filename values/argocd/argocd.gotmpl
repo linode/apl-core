@@ -26,6 +26,16 @@ controller:
       memory: 256M
 dex:
   enabled: false
+notifications:
+  # -- Enable notifications controller
+  enabled: true
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256M
 redis:
   resources:
     limits:
