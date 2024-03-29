@@ -1,7 +1,59 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.keycloak }}
+global:
+  domain: argocd.{{ $v.cluster.domainSuffix }}
+  nodeSelector: {}
+applicationSet:
+  autoscaling:
+    enabled: true
+  resources:
+    limits:
+      cpu: '500m'
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256M
 
-
+controller:
+  autoscaling:
+    enabled: true
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256M
+dex:
+  enabled: false
+redis:
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256M
+repoServer:
+  autoscaling:
+    enabled: true
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256M
+server:
+  autoscaling:
+    enabled: true
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256M
 configs:
   # General Argo CD configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
@@ -25,4 +77,33 @@ configs:
     statusbadge.enabled: "false"
     url: argocd.{{ $v.cluster.domainSuffix }}
     users.anonymous.enabled: "false"
-
+  params:
+    server.insecure: true # nginx terminates tls
+  oidc.config: |
+    name: Otomi
+    issuer: {{ $v._derived.oidcBaseUrl }}
+    clientID: {{ $k.idp.clientID }}
+    clientSecret: '$oidc.clientSecret'
+    requestedScopes:
+      - openid
+      - profile
+      - email
+    {{- if $v._derived.untrustedCA }}
+    rootCA: |
+      {{- $v._derived.caCert | nindent 6 }}
+    {{- end }}
+  rbac:
+    policy.csv: |
+      # image updater
+      p, role:image-updater, applications, get, */*, allow
+      p, role:image-updater, applications, update, */*, allow
+      g, image-updater, role:image-updater
+      # admin
+      g, admin, role:admin
+    {{- if $v.otomi.isMultitenant }}
+    policy.default: ''
+    {{- else }}
+      # not multitenant, make team-admin admin and keep global read-only
+      g, team-admin, role:admin
+    policy.default: role:readonly
+    {{- end }}
