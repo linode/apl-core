@@ -62,18 +62,6 @@ configs:
     application.instanceLabelKey: app.kubernetes.io/instance
     application.resourceTrackingMethod: annotation
     ga.anonymizeusers: "false"
-    oidc.config: |
-      issuer: {{ $v._derived.oidcBaseUrl }}
-      clientID: {{ $k.idp.clientID }}
-      clientSecret: '$oidc.clientSecret'
-      requestedScopes:
-        - openid
-        - profile
-        - email
-      {{- if $v._derived.untrustedCA }}
-      rootCA: |
-        {{- $v._derived.caCert | nindent 6 }}
-      {{- end }}
     statusbadge.enabled: "false"
     url: argocd.{{ $v.cluster.domainSuffix }}
     users.anonymous.enabled: "false"
