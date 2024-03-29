@@ -2,7 +2,12 @@
 {{- $k := $v.apps.keycloak }}
 global:
   domain: argocd.{{ $v.cluster.domainSuffix }}
-  nodeSelector: {}
+  {{- with $v.otomi | get "nodeSelector" nil }}
+  nodeSelector:
+    {{- range $key, $val := . }}
+    {{ $key }}: {{ $val }}
+    {{- end }}
+  {{- end }}
 applicationSet:
   autoscaling:
     enabled: true
