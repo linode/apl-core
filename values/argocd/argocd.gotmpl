@@ -91,7 +91,7 @@ configs:
         - email
       {{- if $v._derived.untrustedCA }}
       rootCA: |
-        {{- $v._derived.caCert | nindent 6 }}
+        {{- $v._derived.caCert | nindent 8 }}
       {{- end }}
   secret:
     extra:
