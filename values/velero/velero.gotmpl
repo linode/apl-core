@@ -200,7 +200,7 @@ kubectl:
 # Equivalent to running the velero install with --use-node-agent flag.
 deployNodeAgent: {{ $vl.restic.enabled }}
 
-nodeAgeent:
+nodeAgent:
   podSecurityContext:
     runAsUser: 1338
     fsGroup: 1338
