@@ -12,7 +12,7 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: argocd-operator-artifacts
+  - name: argocd-artifacts
     installed: {{ $a | get "argocd.enabled" }}
     namespace: argocd
     labels:
