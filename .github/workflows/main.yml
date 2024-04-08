@@ -150,7 +150,7 @@ jobs:
           )
 
           # Update Chart.yaml and values.yaml with the new app version
-          sed -i "s/CHART_VERSION_PLACEHOLDER/$app_version/g" chart/otomi/Chart.yaml
+          sed -i "s/0.0.0-chart-version/$app_version/g" chart/otomi/Chart.yaml
           sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/otomi/Chart.yaml
 
           echo "Chart and values files updated successfully with version $app_version"

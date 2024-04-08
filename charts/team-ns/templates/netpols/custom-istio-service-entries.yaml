@@ -1,0 +1,68 @@
+{{/* Below merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+{{- $v := .Values | merge (dict) }}
+{{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
+{{- $ := . }}
+{{- if not (eq $v.teamId "admin") }}
+{{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
+{{- if $egressFilteringEnabled }}
+{{- range $n := $v.netpols }}
+{{- if eq .ruleType.type "egress" }}
+{{- $host := .ruleType.egress.domain }}
+{{- $hostName := (trimPrefix "*." $host | replace "." "-" | replace "::" "-" | replace ":" "-" | replace "/" "-" ) }}
+{{/* Service entry names need to globally unique */}}
+{{- $serviceEntryName := printf "%s-%s-%s" $v.teamId $n.name $hostName }}
+{{/* check if host is either IPv4 or IPv6 address */}}
+{{- $isIp := regexMatch "^([a-f0-9:]+:+)+[a-f0-9]+$|^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$" $host }}
+{{- if $isIp }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: {{ $serviceEntryName }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  hosts:
+    - {{ $hostName }}  # not used but still mandatory
+  addresses:
+    - {{ $host | quote }}
+  ports:
+{{- with .ruleType.egress.ports }}
+{{- range . }}
+  - number: {{ .number }}
+    name: {{ printf "%s-%s" (lower .protocol) (toString .number) }}
+    protocol: {{ .protocol }}
+{{- end }} {{/* range $port := $entry */}}
+{{- end }}
+  resolution: STATIC
+  location: MESH_EXTERNAL
+  endpoints:
+    - address: {{ $host | quote }}
+  exportTo:
+    - "."
+{{- else }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: {{ $serviceEntryName }}
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  hosts:
+  - {{ $host }}
+  ports:
+{{- with .ruleType.egress.ports }}
+{{- range . }}
+  - number: {{ .number }}
+    name: {{ printf "%s-%s" (lower .protocol) (toString .number) }}
+    protocol: {{ .protocol }}
+{{- end }} {{/* range $port := $entry */}}
+{{- end }}
+  exportTo:
+  - "."
+  location: MESH_EXTERNAL
+  resolution: DNS
+{{- end }} {{/* if isIp */}}
+{{- end }} {{/* range $n */}}
+{{- end }} {{/* if egress */}}
+{{- end }} {{/* if $egressFilteringEnabled */}}
+{{- end }} {{/* if not team-admin */}}

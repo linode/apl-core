@@ -10,6 +10,7 @@ Effective development starts with an understanding the code structure and the re
 - [Working with the team-ns chart](#working-with-the-team-ns-chart)
 - [Testing](#testing)
 - [Otomi CLI](#otomi-cli)
+- [Troubleshooting](#troubleshooting)
 
 # Navigating through code
 
@@ -324,6 +325,12 @@ To run Otomi CLI in the development mode, you must:
 
 First, run `npm install` to build all modules required for CLI.
 
+Then, install other dependencies
+
+```
+npm run install-deps
+```
+
 To create a values repository, follow the below steps:
 
 1. Indicate the path of the value repo, e.g.:
@@ -397,3 +404,21 @@ otomi validate-templates -l name=myapp
 otomi x helmfile -l name=myapp write-values
 
 ```
+
+# Troubleshooting
+
+Some cloud providers are suing custom plugins to refresh the token. Since Otomi CLI executes by default in container some plugins may not be available. In order to solve this issue you can instruct Otomi CLI to execute directly on your host.
+
+First ensure that you have all required binaries
+
+```
+npm run install-deps
+```
+
+Then instruct Otomi to not run in docker:
+
+```
+export IN_DOCKER=1
+```
+
+Next you can execute `otomi apply` or `otomi status` against your to connect with your kubernetes cluster.

@@ -210,7 +210,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   if (plainValues.policies || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
   if (plainValues.teamConfig || overwrite) {
-    const types = ['apps', 'backups', 'builds', 'jobs', 'secrets', 'services', 'workloads']
+    const types = ['apps', 'backups', 'builds', 'jobs', 'secrets', 'netpols', 'sealedsecrets', 'services', 'workloads']
     const fileMap = { secrets: 'external-secrets' }
     const teamConfig = plainValues.teamConfig ? cloneDeep(plainValues.teamConfig) : {}
     // eslint-disable-next-line @typescript-eslint/no-misused-promises

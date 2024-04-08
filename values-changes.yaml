@@ -119,3 +119,13 @@ changes:
     relocations:
       - 'teamConfig.{team}.selfService.team.downloadKubeConfig': 'teamConfig.{team}.selfService.access'
       - 'teamConfig.{team}.selfService.team.downloadDockerConfig': 'teamConfig.{team}.selfService.access'
+  - version: 19
+    deletions:
+      - 'apps.argocd.enabled'
+  - version: 20
+    networkPoliciesMigration: true
+    additions:
+      - 'teamConfig.{team}.managedMonitoring.private': true
+    deletions:
+      - 'apps.loki.storage.gcs.project'
+      - 'apps.loki.storage.gcs.instance'

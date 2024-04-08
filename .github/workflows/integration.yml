@@ -9,7 +9,7 @@ on:
       kubernetes_versions:
         description: "Kubernetes versions (JSON formatted list e.g.: ['1.27'])"
         type: string
-        default: "['1.27']"
+        default: "['1.28']"
       install_profile:
         description: Otomi installation profile
         default: full
@@ -59,7 +59,8 @@ on:
           - "['1.25']"
           - "['1.26']"
           - "['1.27']"
-        default: "['1.27']"
+          - "['1.28']"
+        default: "['1.28']"
       install_profile:
         description: Otomi installation profile
         default: minimal-with-team
@@ -269,7 +270,6 @@ jobs:
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CHART_VERSION_PLACEHOLDER/1.0.0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.SCALEWAY_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
@@ -398,7 +398,6 @@ jobs:
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CHART_VERSION_PLACEHOLDER/1.0.0/g" chart/otomi/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
