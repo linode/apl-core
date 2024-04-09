@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $a := $v.apps.argocd }}
 {{- $k := $v.apps.keycloak }}
 global:
   domain: argocd.{{ $v.cluster.domainSuffix }}
@@ -23,12 +24,16 @@ controller:
   autoscaling:
     enabled: true
   resources:
+    {{- with $a | get "resources.controller" nil }}
+      {{- toYaml .| nindent 4 }}
+    {{- else }}
     limits:
       cpu: 1
-      memory: 1Gi
+      memory: 3Gi
     requests:
       cpu: 100m
-      memory: 256M
+      memory: 1Gi
+    {{- end }}  
 dex:
   enabled: false
 notifications:
@@ -43,32 +48,50 @@ notifications:
       memory: 256M
 redis:
   resources:
+    {{- with $a | get "resources.redis" nil }}
+      {{- toYaml .| nindent 4 }}
+    {{- else }}
     limits:
       cpu: 1
       memory: 1Gi
     requests:
       cpu: 100m
       memory: 256M
+    {{- end }}
 repoServer:
   autoscaling:
     enabled: true
   resources:
+    {{- with $a | get "resources.repo" nil }}
+      {{- toYaml .| nindent 4 }}
+    {{- else }}
     limits:
       cpu: 1
       memory: 1Gi
     requests:
       cpu: 100m
       memory: 256M
+    {{- end }}  
 server:
   autoscaling:
     enabled: true
+    {{- with $a.autoscaling }}
+    maxReplicas: {{ .maxReplicas }}
+    minReplicas: {{ .minReplicas }}
+    targetCPUUtilizationPercentage: 70
+    {{- end }}
+
   resources:
+    {{- with $a | get "resources.server" nil }}
+      {{- toYaml .| nindent 4 }}
+    {{- else }}
     limits:
       cpu: 1
       memory: 1Gi
     requests:
       cpu: 100m
       memory: 256M
+    {{- end }}  
 configs:
   # General Argo CD configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
