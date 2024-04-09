@@ -63,9 +63,9 @@ spec:
         maxReplicas: {{ .maxReplicas }}
         minReplicas: {{ .minReplicas }}
         scaleTargetRef:
-          apiVersion: extensions/v1
+          apiVersion: apps/v1
           kind: Deployment
-          name: otomi-argocd
+          name: argocd-server
         targetCPUUtilizationPercentage: 70
     {{- end }}
     resources:
