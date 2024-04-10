@@ -22,7 +22,11 @@ applicationSet:
 
 controller:
   autoscaling:
-    enabled: true
+    enabled: {{ $a.autoscaling.enabled }}
+    maxReplicas: {{ $a.autoscaling.maxReplicas }}
+    minReplicas: {{ $a.autoscaling.minReplicas }}
+    targetCPUUtilizationPercentage: {{ $a.autoscaling.targetCPUUtilizationPercentage }}
+
   resources:
     {{- with $a | get "resources.controller" nil }}
       {{- toYaml .| nindent 4 }}
@@ -60,7 +64,11 @@ redis:
     {{- end }}
 repoServer:
   autoscaling:
-    enabled: true
+    enabled: {{ $a.autoscaling.enabled }}
+    maxReplicas: {{ $a.autoscaling.maxReplicas }}
+    minReplicas: {{ $a.autoscaling.minReplicas }}
+    targetCPUUtilizationPercentage: {{ $a.autoscaling.targetCPUUtilizationPercentage }}
+
   resources:
     {{- with $a | get "resources.repo" nil }}
       {{- toYaml .| nindent 4 }}
@@ -74,12 +82,10 @@ repoServer:
     {{- end }}  
 server:
   autoscaling:
-    enabled: true
-    {{- with $a.autoscaling }}
-    maxReplicas: {{ .maxReplicas }}
-    minReplicas: {{ .minReplicas }}
-    targetCPUUtilizationPercentage: 70
-    {{- end }}
+    enabled: {{ $a.autoscaling.enabled }}
+    maxReplicas: {{ $a.autoscaling.maxReplicas }}
+    minReplicas: {{ $a.autoscaling.minReplicas }}
+    targetCPUUtilizationPercentage: {{ $a.autoscaling.targetCPUUtilizationPercentage }}
 
   resources:
     {{- with $a | get "resources.server" nil }}
