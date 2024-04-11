@@ -78,6 +78,6 @@ operations:
   - version: 2.8.0
     pre:
       - upgrades/pre/upgrade-2-8-0.sh || true
-  - version: 2.10.0
+  - version: 2.8.2
     pre:
-      - upgrades/pre/upgrade-2-10-0.sh || true
+      - upgrades/pre/upgrade-2-8-2.sh || true
