@@ -132,7 +132,7 @@ configs:
 
   secret:
     extra:
-      clientSecret: {{ $k.idp.clientSecret | b64enc }}
+      oidc.clientSecret: {{ $k.idp.clientSecret | b64enc }}
   params:
     server.insecure: true # nginx terminates tls
 
