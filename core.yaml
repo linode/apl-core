@@ -144,7 +144,7 @@ adminApps:
       - svc: argocd-server
         namespace: argocd
         type: public
-        auth: true
+        # auth: true
         # removeRequestHeaders:
         #   - authorization
   - name: cert-manager
