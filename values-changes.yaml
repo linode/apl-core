@@ -129,3 +129,9 @@ changes:
     deletions:
       - 'apps.loki.storage.gcs.project'
       - 'apps.loki.storage.gcs.instance'
+  - version: 21
+    deletions:
+      - 'apps.harbor.databasePassword'
+    relocations:
+      - 'apps.harbor.database': 'databases.harbor'
+      - 'apps.harbor.resources.database': 'databases.harbor.resources'

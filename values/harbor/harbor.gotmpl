@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $h := $v.apps.harbor }}
+{{- $db := $v.databases.harbor }}
 {{- $hp := $h | get "persistence" dict }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $notaryDomain := printf "notary.%s" $v.cluster.domainSuffix }}
@@ -8,8 +9,8 @@
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 {{- $tag := $h | get "image.tag" "v2.6.4" }}
 {{/*The cloudNativeDb operator is responsible for creating the secret*/}}
-{{- $databaseExistingSecret := printf "%s-app" $h.database.name }}
-{{- $databaseHost := printf "%s-rw.harbor.svc.cluster.local" $h.database.name }}
+{{- $databaseExistingSecret := printf "%s-app" $db.name }}
+{{- $databaseHost := printf "%s-rw.harbor.svc.cluster.local" $db.name }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -64,8 +65,8 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
-  type: {{ $h.database.type }}
-  {{- if eq $h.database.type "internal" }}
+  type: {{ $db.type }}
+  {{- if eq $db.type "internal" }}
   internal:
     priorityClassName: otomi-critical
     image:
@@ -88,7 +89,7 @@ database:
             cpu: 50m
             memory: 256Mi
     resources:
-      {{- with $h | get "resources.database" nil }}
+      {{- with $db | get "resources" nil }}
       {{- toYaml . | nindent 6 }}
       {{- else }}
       limits:
@@ -98,13 +99,12 @@ database:
         cpu: 50m
         memory: 256Mi
       {{- end }}
-    password: {{ $h.databasePassword }}
   {{- else }}
   external:
     # erase default password value from the Harbor Helm chart
     password: null
-    coreDatbase: {{ $h.database.coreDatabase }}
-    username: {{ $h.database.user }}
+    coreDatbase: {{ $db.coreDatabase }}
+    username: {{ $db.user }}
     host: {{ $databaseHost }}
     existingSecret: {{ $databaseExistingSecret }}
   {{- end }}
