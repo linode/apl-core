@@ -15,7 +15,7 @@ bases:
 
 releases:
   - name: harbor-otomi-db
-    installed: {{ and ($h | get "enabled")  (or (eq $h.database.type "external")  $h.database.importHarborDb) }}
+    installed: {{ and ($h | get "enabled")  (or (eq $v.databases.harbor.type "external")  $v.databases.harbor.importHarborDb) }}
     namespace: harbor
     labels:
       pkg: harbor
