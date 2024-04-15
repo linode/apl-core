@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $p := $v.policies."disallow-host-path" }}
+{{- $p := index $v.policies "disallow-host-path" }}
 {{- if $p }}
 ---
 apiVersion: kyverno.io/v1

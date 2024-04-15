@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $p := $v.policies."disallow-capabilities" }}
+{{- $p := index $v.policies "disallow-capabilities" }}
 {{- if $p }}
 ---
 apiVersion: kyverno.io/v1
