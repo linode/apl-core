@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "disallow-capabilities") ($p.enabled) }}
+{{- $p := $v.policies."disallow-capabilities" }}
+{{- if $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -9,13 +9,13 @@ metadata:
   annotations:
     policies.kyverno.io/title: Disallow Capabilities
     policies.kyverno.io/category: baseline
-    policies.kyverno.io/severity: {{ .severity }}
+    policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
       Adding capabilities beyond those listed in the policy must be disallowed.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -39,5 +39,4 @@ spec:
               {{- with .customValues }}
               value: {{ . | toYaml | nindent 14 }}
               {{- end }}
-{{- end }}
 {{- end }}
