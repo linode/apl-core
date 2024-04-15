@@ -448,25 +448,6 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
-          opencost:
-            enabled: false
-            alerts:
-              enabled: false
-            resources:
-              exporter:
-                requests:
-                  cpu: 500m
-                  memory: 128Mi
-                limits:
-                  cpu: 1
-                  memory: 1Gi
-              ui:
-                requests:
-                  cpu: 500m
-                  memory: 128Mi
-                limits:
-                  cpu: 1
-                  memory: 1Gi
           promtail:
             enabled: false
           prometheus-blackbox-exporter: {}

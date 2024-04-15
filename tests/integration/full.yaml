@@ -38,8 +38,6 @@ apps:
     enabled: true
   minio:
     enabled: true
-  opencost:
-    enabled: true
   otel:
     enabled: true
   prometheus:

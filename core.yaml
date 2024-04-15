@@ -93,9 +93,6 @@ k8s:
     - name: operators
       disableIstioInjection: true
       disablePolicyChecks: true
-    - name: opencost
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: otomi
     - name: otomi-operator
       disableIstioInjection: true
@@ -329,15 +326,6 @@ adminApps:
         auth: true
         removeRequestHeaders:
           - authorization
-  - name: opencost
-    tags: [finops]
-    ownHost: true
-    ingress:
-      - svc: opencost
-        port: 9090
-        namespace: opencost
-        type: public
-        auth: true
   - name: otomi
     hide: true
     isShared: true
