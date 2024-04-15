@@ -144,6 +144,7 @@ adminApps:
       - svc: argocd-server
         namespace: argocd
         type: public
+        auth: true
   - name: cert-manager
     tags: [ingress, security, tls]
   - name: cnpg
