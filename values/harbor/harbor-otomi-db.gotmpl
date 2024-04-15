@@ -1,12 +1,13 @@
 {{- $v := .Values }}
-{{- $h := $v.databases.harbor }}
+{{- $hdb := $v.databases.harbor }}
 {{- $cnpg := $v.apps.cnpg }}
 {{- $sp := $cnpg.storage }}
 {{- $b := $v.platformBackups.database.harbor }}
 
-name: {{ $h.name }}
+name: {{ $hdb.name }}
 storage:
-  size: {{ $h.size }}
+  size: {{ $hdb.size }}
+instances: {{ $hdb.replicas }}
 
 {{- if $b.enabled }}
 backup:
@@ -31,16 +32,16 @@ backup:
 {{- end }}
 
 
-{{- if $h.importHarborDb }}
+{{- if $hdb.imported }}
 clusterSpec:
   bootstrap:
     initdb:
-      database: {{ $h.coreDatabase }}
-      owner: {{ $h.user }}
+      database: {{ $hdb.coreDatabase }}
+      owner: {{ $hdb.user }}
       import:
         type: microservice
         databases:
-          - {{ $h.coreDatabase }}
+          - {{ $hdb.coreDatabase }}
         source:
           externalCluster: harbor-database
   externalClusters:
@@ -48,7 +49,7 @@ clusterSpec:
     connectionParameters:
       host: harbor-database.harbor.svc.cluster.local
       user: postgres
-      dbname: {{ $h.coreDatabase }}
+      dbname: {{ $hdb.coreDatabase }}
       sslmode: disable
     password:
       name: harbor-database
@@ -57,15 +58,15 @@ clusterSpec:
 clusterSpec:  
   bootstrap:
     initdb:
-      database: {{ $h.coreDatabase }}
-      owner: {{ $h.user }}
+      database: {{ $hdb.coreDatabase }}
+      owner: {{ $hdb.user }}
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
 {{- end }}
 
 
 resources:
-  {{- with $h | get "resources" nil }}
+  {{- with $hdb | get "resources" nil }}
   {{- toYaml . | nindent 6 }}
   {{- else }}
   limits:

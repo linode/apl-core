@@ -132,6 +132,13 @@ changes:
   - version: 21
     deletions:
       - 'apps.harbor.databasePassword'
+      - 'apps.harbor.database.type'
+    additions:
+      - databases.harbor.useOtomiDB: true
+      - databases.harbor.replicas: 2
     relocations:
-      - 'apps.harbor.database': 'databases.harbor'
+      - 'apps.harbor.database.size': 'databases.harbor.size'
+      - 'apps.harbor.database.name': 'databases.harbor.name'
+      - 'apps.harbor.database.user': 'databases.harbor.user'
+      - 'apps.harbor.database.importHarborDb': 'databases.harbor.imported'
       - 'apps.harbor.resources.database': 'databases.harbor.resources'

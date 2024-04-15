@@ -4087,23 +4087,23 @@ properties:
       harbor:
         title: Harbor
         properties:
+          useOtomiDB:
+            type: boolean
+            default: false
           size:
             type: string
-          type:
-            type: string
-            description: Internal is a database provided by the community chart. The external is database provided by the cloudnative-pg.
-            enum:
-              - internal
-              - external
+          resources:
+            $ref: '#/definitions/resources'
+          replicas:
+            type: integer
+            default: 2
+          imported:
+            type: boolean
           name:
             type: string
           user:
             type: string
-          importHarborDb:
-            description: Indicate if an existing database should be importend. (Once set to true you must not change it back)
-            type: boolean
-          resources:
-            $ref: '#/definitions/resources'
+
   teamConfig:
     additionalProperties: false
     patternProperties:

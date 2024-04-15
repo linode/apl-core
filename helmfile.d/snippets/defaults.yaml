@@ -761,12 +761,13 @@ environments:
                 cpu: 50m
                 memory: 256Mi
           harbor:
-            type: external
+            useOtomiDB: true
+            imported: false
             size: '5Gi'
+            replicas: 2
             name: harbor-otomi-db
             user: harbor
             coreDatabase: registry
-            importHarborDb: false
         platformBackups:
           database:
             harbor:

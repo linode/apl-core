@@ -1,4 +1,4 @@
 databases:
     harbor:
-        type: internal
-        importHarborDb: true
+        useOtomiDB: true
+        imported: true

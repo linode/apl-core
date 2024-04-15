@@ -65,49 +65,14 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
-  type: {{ $db.type }}
-  {{- if eq $db.type "internal" }}
-  internal:
-    priorityClassName: otomi-critical
-    image:
-      tag: {{ $tag }}
-    initContainer:
-      migrator:
-        resources:
-          limits:
-            cpu: 100m
-            memory: 512Mi
-          requests:
-            cpu: 50m
-            memory: 256Mi
-      permissions:
-        resources:
-          limits:
-            cpu: 100m
-            memory: 512Mi
-          requests:
-            cpu: 50m
-            memory: 256Mi
-    resources:
-      {{- with $db | get "resources" nil }}
-      {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 100m
-        memory: 512Mi
-      requests:
-        cpu: 50m
-        memory: 256Mi
-      {{- end }}
-  {{- else }}
+  type: external
   external:
     # erase default password value from the Harbor Helm chart
     password: null
-    coreDatbase: {{ $db.coreDatabase }}
+    coreDatabase: {{ $db.coreDatabase }}
     username: {{ $db.user }}
     host: {{ $databaseHost }}
     existingSecret: {{ $databaseExistingSecret }}
-  {{- end }}
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users

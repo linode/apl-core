@@ -11,17 +11,19 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $h := $a.harbor }}
+{{- $hdb := $v.databases.harbor }}
+{{- $kdb := $v.databases.keycloak }}
 {{- $k := $a.keycloak }}
 
 releases:
   - name: harbor-otomi-db
-    installed: {{ and ($h | get "enabled")  (or (eq $v.databases.harbor.type "external")  $v.databases.harbor.importHarborDb) }}
+    installed: {{ and ($h | get "enabled")  (or $hdb.useOtomiDB  $hdb.imported) }}
     namespace: harbor
     labels:
       pkg: harbor
     <<: *otomiDb
   - name: keycloak-otomi-db
-    installed: {{ or $v.databases.keycloak.useOtomiDB  $v.databases.keycloak.imported }}
+    installed: {{ or $kdb.useOtomiDB  $kdb.imported }}
     namespace: keycloak
     labels:
       pkg: keycloak
