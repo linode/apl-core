@@ -316,9 +316,6 @@ grafana:
           datasourceUid: 'loki'
     {{- end }}
     {{- end }}
-    {{- if $v | get "azure.monitor" nil }}
-    - {{- tpl (readFile "../../helmfile.d/snippets/azure-monitor.gotmpl") $v.azure.monitor | toString | nindent 6 }}
-    {{- end }}
     {{- if $t.enabled }}
     - name: Thanos Query
       access: proxy
