@@ -119,6 +119,7 @@ k8s:
       app: vault
     - name: velero
       app: velero
+      disablePolicyChecks: true
     - name: otomi-pipelines
       app: tekton
       disableIstioInjection: true
