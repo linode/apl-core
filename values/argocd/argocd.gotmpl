@@ -109,6 +109,8 @@ configs:
     statusbadge.enabled: "false"
     url: https://argocd.{{ $v.cluster.domainSuffix }}
     users.anonymous.enabled: "false"
+    # Note that the clientSecret is not actually used
+    # as for now oauth2-proxy handles the login
     oidc.config: |
       name: Otomi
       issuer: {{ $v._derived.oidcBaseUrl }}
