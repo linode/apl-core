@@ -1269,9 +1269,7 @@ definitions:
         items:
           $ref: '#/definitions/project'
       policies:
-        type: array
-        items:
-          $ref: '#/definitions/policies'
+        type: object
       builds:
         type: array
         items:
@@ -1353,30 +1351,6 @@ definitions:
       - name
   policies:
     type: object
-    properties:
-      name:
-        description: Name of policy
-        $ref: '#/definitions/wordCharacterPattern'
-      profile:
-        description: Profile that contains this policy
-        $ref: '#/definitions/wordCharacterPattern'
-      action:
-        type: string
-        enum: ['Audit', 'Enforce']
-        default: Audit
-      description:
-        description: Description of the policy
-        type: string
-      enabled:
-        type: boolean
-      severity:
-        type: string
-        enum: ['low', 'medium', 'high']
-        default: medium
-      customValues:
-        type: array
-    required:
-      - name
   build:
     type: object
     description: Define location of code to build
