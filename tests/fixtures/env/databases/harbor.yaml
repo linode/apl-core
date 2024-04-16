@@ -1,4 +1,3 @@
 databases:
     harbor:
-        useOtomiDB: true
-        imported: true
+        replicas: 3

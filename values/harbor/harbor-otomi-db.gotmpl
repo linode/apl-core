@@ -31,39 +31,13 @@ backup:
 {{- end }}
 {{- end }}
 
-
-{{- if $hdb.imported }}
 clusterSpec:
-  bootstrap:
-    initdb:
-      database: {{ $hdb.coreDatabase }}
-      owner: {{ $hdb.user }}
-      import:
-        type: microservice
-        databases:
-          - {{ $hdb.coreDatabase }}
-        source:
-          externalCluster: harbor-database
-  externalClusters:
-  - name: harbor-database
-    connectionParameters:
-      host: harbor-database.harbor.svc.cluster.local
-      user: postgres
-      dbname: {{ $hdb.coreDatabase }}
-      sslmode: disable
-    password:
-      name: harbor-database
-      key: POSTGRES_PASSWORD
-{{- else }}
-clusterSpec:  
   bootstrap:
     initdb:
       database: {{ $hdb.coreDatabase }}
       owner: {{ $hdb.user }}
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
-{{- end }}
-
 
 resources:
   {{- with $hdb | get "resources" nil }}
