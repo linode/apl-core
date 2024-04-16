@@ -2782,9 +2782,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              otomiThanos:
-                type: boolean
-                default: false
               insecureSkipVerify:
                 type: boolean
                 default: false
@@ -2928,150 +2925,6 @@ properties:
                   - s3
                   - minioLocal
                 default: minioLocal
-      thanos:
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          query:
-            properties:
-              replicaCount:
-                description: Number of Thanos Query replicas.
-                type: integer
-                default: 1
-          receiver:
-            properties:
-              mode:
-                title: Receiver mode
-                description: Mode to run receiver in.
-                type: string
-                default: standalone
-                enum:
-                  - standalone
-                  - dual-mode
-              replicaCount:
-                description: Number of Thanos Receive replicas.
-                type: integer
-                default: 1
-              tsdbRetention:
-                type: string
-                default: 7d
-              replicationFactor:
-                type: integer
-                default: 1
-          compactor:
-            description: Resolution and Retention flags.
-            properties:
-              retentionResolutionRaw:
-                type: string
-                default: 30d
-              retentionResolution5m:
-                type: string
-                default: 30d
-              retentionResolution1h:
-                type: string
-                default: 10y
-          receiverDistributor:
-            properties:
-              enabled:
-                type: boolean
-                default: true
-          ruler:
-            properties:
-              enabled:
-                type: boolean
-                default: false
-          objstore:
-            properties:
-              storageProvider:
-                additionalProperties: false
-                properties:
-                  s3:
-                    properties:
-                      bucket:
-                        type: string
-                        description: Name of the blob container.
-                        $ref: '#/definitions/wordCharacterPattern'
-                      s3Url:
-                        description: The name (URL) of the S3 bucket
-                        $ref: '#/definitions/wordCharacterPattern'
-                      accessKeyId:
-                        type: string
-                        description: The ID of the access key
-                        $ref: '#/definitions/wordCharacterPattern'
-                      secretAccessKey:
-                        type: string
-                        description: The secret of the access key
-                        $ref: '#/definitions/wordCharacterPattern'
-                        x-secret: ''
-                    required:
-                      - bucket
-                      - s3Url
-                      - accessKeyId
-                      - secretAccessKey
-                  azureBlob:
-                    properties:
-                      accountName:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      containerName:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      accountKey:
-                        $ref: '#/definitions/wordCharacterPattern'
-                        x-secret: ''
-                    required:
-                      - accountName
-                      - containerName
-                      - accountKey
-                  type:
-                    type: string
-                    enum:
-                      - s3
-                      - azureBlob
-                      - minioLocal
-                    default: minioLocal
-          resources:
-            additionalProperties: false
-            properties:
-              query:
-                $ref: '#/definitions/resources'
-              queryFrontend:
-                $ref: '#/definitions/resources'
-              receiver:
-                $ref: '#/definitions/resources'
-              storegateway:
-                $ref: '#/definitions/resources'
-              bucketweb:
-                $ref: '#/definitions/resources'
-              compactor:
-                $ref: '#/definitions/resources'
-              receiverDistributor:
-                $ref: '#/definitions/resources'
-              ruler:
-                $ref: '#/definitions/resources'
-        persistence:
-          properties:
-            receiver:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 50Gi
-            storegateway:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 8Gi
-            compactor:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 8Gi
-            ruler:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 8Gi
       trivy:
         properties:
           _rawValues:
@@ -3116,7 +2969,7 @@ properties:
           operator:
             properties:
               replicaCount:
-                description: Number of Thanos Query replicas.
+                description: Number of replicas.
                 type: integer
                 default: 1
           resources:

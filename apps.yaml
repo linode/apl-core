@@ -340,18 +340,6 @@ appsInfo:
     dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used), Otel
     about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
     integration: Otomi installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
-  thanos:
-    title: Thanos
-    appVersion: 0.31.0
-    repo: https://github.com/thanos-io/thanos
-    maintainers: Thanos
-    relatedLinks:
-      - https://otomi.io/docs/apps/thanos
-      - https://thanos.io
-    license: Apache 2.0
-    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
-    about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
-    integration: Otomi installs and configures Thanos in a Remote Write setup. The Receiver is exposed for external Prometheus instances to upload metrics in real-time. By default Thanos Object Store is configured to use the thanos bucket of the local Minio instance. When Thanos is enabled, an extra data source is added to Grafana for Thanos Query.
   trivy:
     title: Trivy Operator
     appVersion: 0.16.4
