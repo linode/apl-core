@@ -4,7 +4,6 @@ set -eu
 
 if kubectl get crd | grep -q operators.coreos.com; then
   kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com
-  kubectl delete -f charts/operator-lifecycle-manager/crds
   kubectl delete clusterrolebindings olm-operator-binding-olm
   kubectl delete clusterrole aggregate-olm-view
   kubectl delete namespaces olm
