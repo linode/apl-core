@@ -61,13 +61,4 @@
 
   {{- end }}
 
-  {{- if $v.otomi.hasCloudLB }}
-  {{- $svcs := list }}
-  {{- range $s := $v.services }}{{ if eq $s.type $type }}{{ $svcs = append $svcs $s }}{{ end }}{{ end }}
-  {{- if gt (len $svcs) 0 }}
-{{ include "ingress" (dict "type" $type "dot" $ "provider" $v.cluster.provider "name" "external" "hasForward" false "hasAuth" false "services" $svcs) }}
-
-  {{- end }}
-  {{- end }}
-
 {{- end }}

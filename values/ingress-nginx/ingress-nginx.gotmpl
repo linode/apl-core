@@ -20,7 +20,7 @@ controller:
     pullPolicy:  {{ $n | get "image.pullPolicy" "IfNotPresent" }}
   scope:
     enabled: true
-    namespace: {{ $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
+    namespace: "istio-system"
   containerPort:
     http: 80
     https: 443
@@ -106,8 +106,8 @@ controller:
     # log-format-escape-json: true
     log-format-upstream: $proxy_protocol_addr - $remote_user [$time_local] $host "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $request_length $request_time [$proxy_upstream_name] [$proxy_alternative_upstream_name] $upstream_addr $upstream_response_length $upstream_response_time $upstream_status $req_id
     # log-format-upstream: '{"time":"$time_iso8601","remote_addr":"$proxy_protocol_addr","x_forward_for":"$proxy_add_x_forwarded_for","request_id":"$req_id","remote_user":"$remote_user","bytes_sent":$bytes_sent,"request_time":$request_time,"status":$status,"vhost":"$host","request_proto":"$server_protocol","path":"$uri","request_query":"$args","request_length":$request_length,"duration":$request_time,"method":"$request_method","http_referrer":"$http_referer","http_user_agent":"$http_user_agent"}'
-    ssl-redirect: {{ not $v.otomi.hasCloudLB }}
-    use-forwarded-headers: {{ $v.otomi.hasCloudLB }}
+    ssl-redirect: true
+    use-forwarded-headers: false
     use-proxy-protocol: true
     enable-opentelemetry: {{ $n.tracing.enabled }}
     otel-sampler: AlwaysOn
@@ -132,7 +132,7 @@ controller:
         prometheus: system
   service:
     externalTrafficPolicy: Local
-    type: {{ if $v.otomi.hasCloudLB }}{{ if eq $v.cluster.provider "azure" }}ClusterIP{{ else }}NodePort{{ end}}{{ else }}LoadBalancer{{ end }}
+    type: LoadBalancer
     omitClusterIP: true
     {{- with $ingress | get "loadBalancerIP" nil }}
     loadBalancerIP: {{ . }}
@@ -183,7 +183,7 @@ defaultBackend:
       memory: 10Mi
 
   # podAnnotations:
-  #   sidecar.istio.io/inject: {{ if $v.otomi.hasCloudLB }}"true"{{ else }}"false"{{ end }}
+  #   sidecar.istio.io/inject: "false"
 {{- if eq $v.cluster.provider "azure" }}
   nodeSelector: 
     beta.kubernetes.io/os: linux

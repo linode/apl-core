@@ -6,8 +6,6 @@ cluster:
     allowedCidrs: []
     tags: ""
     disableHttp2: false
-otomi:    
-  hasCloudLB: false
 namespace: ""
 resourceQuota:
   pods: "50"

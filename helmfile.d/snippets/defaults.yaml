@@ -800,7 +800,6 @@ environments:
           receivers:
             - none
         otomi:
-          hasCloudLB: false
           hasExternalDNS: false
           hasExternalIDP: false
           isHomeMonitored: false
