@@ -23,6 +23,7 @@ releases:
       pkg: harbor
     <<: *otomiDb
   - name: keycloak-otomi-db
+    installed: true
     namespace: keycloak
     labels:
       pkg: keycloak

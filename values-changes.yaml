@@ -80,6 +80,7 @@ changes:
       - 'apps.loki.resources.requests'
   - version: 12
     additions:
+      - databases.keycloak.useOtomiDB: false
       - databases.keycloak.imported: false
   - version: 13
     deletions:
