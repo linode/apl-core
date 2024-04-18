@@ -40,6 +40,10 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.webhooksCleanup.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}    
       {{- with .Values.webhooksCleanup.tolerations }}
       tolerations:
         {{- tpl (toYaml .) $ | nindent 8 }}

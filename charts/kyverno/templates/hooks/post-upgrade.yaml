@@ -54,6 +54,10 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.policyReportsCleanup.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}          
       {{- with .Values.policyReportsCleanup.imagePullSecrets }}
       imagePullSecrets:
         {{- tpl (toYaml .) $ | nindent 8 }}
