@@ -61,7 +61,7 @@ gitea:
       HOST: gitea-db-rw.gitea.svc.cluster.local:5432
       NAME: gitea
       USER: gitea
-      PASSWD: gitea
+      PASSWD: {{ $v.apps.gitea.adminPassword | b64enc }}
       SCHEMA: gitea
     admin:
       DISABLE_REGULAR_ORG_CREATION: false
