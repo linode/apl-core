@@ -56,6 +56,13 @@ gitea:
     username: {{ $g.adminUsername }}
     password: {{ $g.adminPassword }}
   config:
+    database:
+      DB_TYPE: postgresql
+      HOST: gitea-db-rw.gitea.svc.cluster.local:5432
+      NAME: gitea
+      USER: gitea
+      PASSWD: gitea
+      SCHEMA: gitea
     admin:
       DISABLE_REGULAR_ORG_CREATION: false
     log:
@@ -170,6 +177,7 @@ persistence:
   {{- end }}
 
 postgresql:
+  enabled: false
   # @TODO:
   image:
     tag: {{ $g | get "image.postgresql.tag" "13.5.0" }}

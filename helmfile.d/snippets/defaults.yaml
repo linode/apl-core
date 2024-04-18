@@ -767,6 +767,17 @@ environments:
               requests:
                 cpu: 50m
                 memory: 256Mi
+          gitea:
+            imported: false
+            size: '5Gi'
+            replicas: 2
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 256Mi
         platformBackups:
           database:
             harbor:

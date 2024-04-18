@@ -26,3 +26,8 @@ releases:
     labels:
       pkg: keycloak
     <<: *otomiDb
+  - name: gitea-otomi-db
+    namespace: gitea
+    labels:
+      pkg: gitea
+    <<: *otomiDb
