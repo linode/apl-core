@@ -14,9 +14,6 @@ spec:
   backoffLimit: 2
   template:
     spec:
-      metadata:
-        annotations:
-          policy.otomi.io/ignore: containerlimits
       serviceAccount: {{ template "kyverno.admission-controller.serviceAccountName" . }}
       {{- with .Values.policyReportsCleanup.podSecurityContext }}
       securityContext:
@@ -57,10 +54,6 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          resources:
-            limits:
-              cpu: 100m
-              memory: 64Mi
       {{- with .Values.policyReportsCleanup.imagePullSecrets }}
       imagePullSecrets:
         {{- tpl (toYaml .) $ | nindent 8 }}
@@ -69,7 +62,7 @@ spec:
       tolerations:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
-      {{- with .Values.policyReportsCleanup.nodeSelector | default .Values.global.nodeSelector }}
+      {{- with .Values.policyReportsCleanup.nodeSelector }}
       nodeSelector:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
