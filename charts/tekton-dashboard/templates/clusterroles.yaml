@@ -84,3 +84,25 @@ rules:
       - get
       - list
       - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "tekton-dashboard.fullname" . }}-dashboard
+  labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
+rules:
+  - apiGroups:
+      - tekton.dev
+    resources:
+      - tasks
+      - taskruns
+      - pipelines
+      - pipelineruns
+      - customruns
+    verbs:
+      - create
+      - get
+      - list
+      - watch
+      - update
+      - delete
