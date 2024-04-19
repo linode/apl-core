@@ -10,10 +10,10 @@ environments:
           argocd:
             enabled: true
             autoscaling:
-              enabled: false
+              enabled: true
               minReplicas: 1
-              maxReplicas: 3
-              targetCPUUtilizationPercentage: 50
+              maxReplicas: 5
+              targetCPUUtilizationPercentage: 70
           cert-manager:
             issuer: custom-ca
             resources:

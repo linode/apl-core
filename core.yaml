@@ -143,8 +143,6 @@ adminApps:
         namespace: argocd
         type: public
         auth: true
-        # removeRequestHeaders:
-        #   - authorization
   - name: cert-manager
     tags: [ingress, security, tls]
   - name: cnpg
