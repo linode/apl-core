@@ -40,6 +40,9 @@ clusterSpec:
         name: gitea-db-secret
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
+      postInitApplicationSQL:
+      - CREATE SCHEMA gitea
+      - GRANT ALL PRIVILEGES ON SCHEMA gitea TO gitea;
 {{- end }}
 
 instances: {{ $kdb.replicas }}
