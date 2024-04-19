@@ -57,7 +57,7 @@ gitea:
     password: {{ $g.adminPassword }}
   config:
     database:
-      DB_TYPE: postgresql
+      DB_TYPE: postgres
       HOST: gitea-db-rw.gitea.svc.cluster.local:5432
       NAME: gitea
       USER: gitea
