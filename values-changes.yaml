@@ -136,6 +136,7 @@ changes:
       - 'apps.harbor.database.importHarborDb'
       - 'apps.harbor.database.name'
       - 'apps.harbor.database.user'
+      - 'apps.harbor.database'
       - 'databases.keycloak.useOtomiDB'
     additions:
       - databases.harbor.replicas: 2

@@ -69,8 +69,8 @@ database:
     password: null
     coreDatabase: {{ $db.coreDatabase }}
     username: harbor
-    host: harbor-rw.harbor.svc.cluster.local
-    existingSecret: harbor-app
+    host: harbor-otomi-db-rw.harbor.svc.cluster.local
+    existingSecret: harbor-otomi-db-app
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users
