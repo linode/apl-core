@@ -176,7 +176,7 @@ appsInfo:
     integration: Otomi integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio Operator
-    appVersion: 1.17.4
+    appVersion: 1.20.5
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
