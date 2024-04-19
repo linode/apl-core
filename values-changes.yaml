@@ -134,11 +134,11 @@ changes:
       - 'apps.harbor.databasePassword'
       - 'apps.harbor.database.type'
       - 'apps.harbor.database.importHarborDb'
+      - 'apps.harbor.database.name'
+      - 'apps.harbor.database.user'
       - 'databases.keycloak.useOtomiDB'
     additions:
       - databases.harbor.replicas: 2
     relocations:
       - 'apps.harbor.database.size': 'databases.harbor.size'
-      - 'apps.harbor.database.name': 'databases.harbor.name'
-      - 'apps.harbor.database.user': 'databases.harbor.user'
       - 'apps.harbor.resources.database': 'databases.harbor.resources'

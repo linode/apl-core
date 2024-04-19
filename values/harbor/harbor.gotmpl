@@ -9,8 +9,6 @@
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 {{- $tag := $h | get "image.tag" "v2.6.4" }}
 {{/*The cloudNativeDb operator is responsible for creating the secret*/}}
-{{- $databaseExistingSecret := printf "%s-app" $db.name }}
-{{- $databaseHost := printf "%s-rw.harbor.svc.cluster.local" $db.name }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -70,9 +68,9 @@ database:
     # erase default password value from the Harbor Helm chart
     password: null
     coreDatabase: {{ $db.coreDatabase }}
-    username: {{ $db.user }}
-    host: {{ $databaseHost }}
-    existingSecret: {{ $databaseExistingSecret }}
+    username: harbor
+    host: harbor-rw.harbor.svc.cluster.local
+    existingSecret: harbor-app
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users

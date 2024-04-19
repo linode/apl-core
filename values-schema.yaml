@@ -4091,10 +4091,6 @@ properties:
           replicas:
             type: integer
             default: 2
-          name:
-            type: string
-          user:
-            type: string
 
   teamConfig:
     additionalProperties: false

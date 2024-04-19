@@ -762,8 +762,6 @@ environments:
           harbor:
             size: '5Gi'
             replicas: 2
-            name: harbor-otomi-db
-            user: harbor
             coreDatabase: registry
         platformBackups:
           database:

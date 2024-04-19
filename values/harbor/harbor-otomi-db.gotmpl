@@ -4,7 +4,7 @@
 {{- $sp := $cnpg.storage }}
 {{- $b := $v.platformBackups.database.harbor }}
 
-name: {{ $hdb.name }}
+name: harbor-otomi-db
 storage:
   size: {{ $hdb.size }}
 instances: {{ $hdb.replicas }}
@@ -35,7 +35,7 @@ clusterSpec:
   bootstrap:
     initdb:
       database: {{ $hdb.coreDatabase }}
-      owner: {{ $hdb.user }}
+      owner: harbor
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
 
