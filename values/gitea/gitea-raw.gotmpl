@@ -16,4 +16,4 @@ resources:
       name: gitea-db-secret
     data:
       username: "{{ "gitea" | b64enc }}"
-      password: "{{ $v.apps.gitea.adminPassword | b64enc }}"
+      password: "{{ $v.apps.gitea.postgresqlPassword | b64enc }}"

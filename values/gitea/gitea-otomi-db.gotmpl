@@ -1,13 +1,13 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.gitea }}
 {{- $cnpg := $v.apps.cnpg }}
-{{- $kdb := $v.databases.gitea }}
+{{- $gdb := $v.databases.gitea }}
 
 name: gitea-db
 storage:
-  size: {{ $kdb.size }}
+  size: {{ $gdb.size }}
 
-{{- if $kdb.imported }}
+{{- if $gdb.imported }}
 clusterSpec:
   bootstrap:
     initdb:
@@ -45,6 +45,6 @@ clusterSpec:
       - GRANT ALL PRIVILEGES ON SCHEMA gitea TO gitea;
 {{- end }}
 
-instances: {{ $kdb.replicas }}
+instances: {{ $gdb.replicas }}
 
-resources: {{- toYaml $kdb.resources | nindent 6 }}
+resources: {{- toYaml $gdb.resources | nindent 6 }}

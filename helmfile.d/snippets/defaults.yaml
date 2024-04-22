@@ -765,6 +765,7 @@ environments:
             coreDatabase: registry
           gitea:
             imported: false
+            useOtomiDB: true
             size: '5Gi'
             replicas: 2
             resources:
