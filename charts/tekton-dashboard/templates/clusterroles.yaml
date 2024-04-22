@@ -56,6 +56,7 @@ rules:
       - namespaces
       - pods
       - pods/log
+      - serviceaccounts
     verbs:
       - get
       - list
@@ -88,7 +89,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ template "tekton-dashboard.fullname" . }}-dashboard
+  name: {{ template "tekton-dashboard.fullname" . }}-resources
   labels: {{- include "tekton-dashboard.labels" . | indent 4 }}
 rules:
   - apiGroups:
