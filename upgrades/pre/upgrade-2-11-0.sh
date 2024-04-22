@@ -2,6 +2,6 @@
 
 set -eu
 
-kubectl annotate -n harbor secret/gitea-database helm.sh/resource-policy='keep' deprecated=true
-kubectl annotate -n harbor sts/gitea-database helm.sh/resource-policy='keep' deprecated=true
-kubectl annotate -n harbor svc/gitea-database helm.sh/resource-policy='keep' deprecated=true
+kubectl annotate -n gitea secret/gitea-postgresql helm.sh/resource-policy='keep' deprecated=true
+kubectl annotate -n gitea sts/gitea-postgresql helm.sh/resource-policy='keep' deprecated=true
+kubectl annotate -n gitea svc/gitea-postgresql helm.sh/resource-policy='keep' deprecated=true
