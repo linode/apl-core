@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $h := $v.apps.harbor }}
+{{- $db := $v.databases.harbor }}
 {{- $hp := $h | get "persistence" dict }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $notaryDomain := printf "notary.%s" $v.cluster.domainSuffix }}
@@ -8,8 +9,6 @@
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 {{- $tag := $h | get "image.tag" "v2.6.4" }}
 {{/*The cloudNativeDb operator is responsible for creating the secret*/}}
-{{- $databaseExistingSecret := printf "%s-app" $h.database.name }}
-{{- $databaseHost := printf "%s-rw.harbor.svc.cluster.local" $h.database.name }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -64,50 +63,14 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
-  type: {{ $h.database.type }}
-  {{- if eq $h.database.type "internal" }}
-  internal:
-    priorityClassName: otomi-critical
-    image:
-      tag: {{ $tag }}
-    initContainer:
-      migrator:
-        resources:
-          limits:
-            cpu: 100m
-            memory: 512Mi
-          requests:
-            cpu: 50m
-            memory: 256Mi
-      permissions:
-        resources:
-          limits:
-            cpu: 100m
-            memory: 512Mi
-          requests:
-            cpu: 50m
-            memory: 256Mi
-    resources:
-      {{- with $h | get "resources.database" nil }}
-      {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 100m
-        memory: 512Mi
-      requests:
-        cpu: 50m
-        memory: 256Mi
-      {{- end }}
-    password: {{ $h.databasePassword }}
-  {{- else }}
+  type: external
   external:
     # erase default password value from the Harbor Helm chart
     password: null
-    coreDatbase: {{ $h.database.coreDatabase }}
-    username: {{ $h.database.user }}
-    host: {{ $databaseHost }}
-    existingSecret: {{ $databaseExistingSecret }}
-  {{- end }}
+    coreDatabase: {{ $db.coreDatabase }}
+    username: harbor
+    host: harbor-otomi-db-rw.harbor.svc.cluster.local
+    existingSecret: harbor-otomi-db-app
   podAnnotations:
     # this exception allows the chmod fix to pass, which needs root access:
     policy.otomi.io/ignore.data-migrator: psp-allowed-users
