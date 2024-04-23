@@ -11,8 +11,6 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $h := $a.harbor }}
-{{- $hdb := $v.databases.harbor }}
-{{- $kdb := $v.databases.keycloak }}
 {{- $k := $a.keycloak }}
 
 releases:
@@ -29,6 +27,7 @@ releases:
       pkg: keycloak
     <<: *otomiDb
   - name: gitea-otomi-db
+    installed: {{ or $v.databases.gitea.useOtomiDB  $v.databases.gitea.imported }}
     namespace: gitea
     labels:
       pkg: gitea

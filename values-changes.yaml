@@ -143,3 +143,7 @@ changes:
     relocations:
       - 'apps.harbor.database.size': 'databases.harbor.size'
       - 'apps.harbor.resources.database': 'databases.harbor.resources'
+  - version: 22
+    additions:
+      - databases.gitea.useOtomiDB: false
+      - databases.gitea.imported: false

@@ -13,6 +13,8 @@ clusterSpec:
     initdb:
       database: gitea
       owner: gitea
+      secret:
+        name: gitea-db-secret
       import:
         type: microservice
         databases:
