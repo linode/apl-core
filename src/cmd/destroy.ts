@@ -29,8 +29,6 @@ const destroyAll = async () => {
   const d = terminal(`cmd:${cmdName}:destroyAll`)
   d.log('Uninstalling otomi...')
   const debugStream = { stdout: d.stream.debug, stderr: d.stream.error }
-  d.info('Removing problematic part: olm deployments...')
-  await stream(nothrow($`kubectl -n olm delete deploy --all`), debugStream)
   d.info('Removing problematic part: kiali finalizer...')
   await stream(
     nothrow($`kubectl -n kiali patch kiali kiali -p '{"metadata":{"finalizers": []}}' --type=merge`),
@@ -108,7 +106,6 @@ const destroyAll = async () => {
     'kiali.io',
     'knative.dev',
     'monitoring.coreos.com',
-    'operators.coreos.com',
     'vault.banzaicloud.com',
   ]
   const kubeCRDString: string = (await $`kubectl get crd`).stdout.trim()
@@ -124,12 +121,6 @@ const destroyAll = async () => {
     .filter(Boolean)
   d.info('Our CRDs will be removed: ', allOurCRDS)
   await Promise.allSettled(allOurCRDS.map(async (val) => stream(nothrow($`kubectl delete crd ${val}`), debugStream)))
-  d.info('Removing problematic api service: v1.packages.operators.coreos.com...')
-  await stream(
-    nothrow($`kubectl delete apiservices.apiregistration.k8s.io v1.packages.operators.coreos.com`),
-    debugStream,
-  )
-
   d.log('Uninstalled otomi!')
 }
 

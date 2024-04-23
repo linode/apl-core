@@ -62,7 +62,6 @@ const applyAll = async () => {
   writeFileSync(templateFile, templateOutput)
 
   d.info('Deploying CRDs')
-  await $`kubectl apply -f charts/operator-lifecycle-manager/crds --server-side`
   await $`kubectl apply -f charts/kube-prometheus-stack/crds --server-side`
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
   d.info('Deploying essential manifests')
