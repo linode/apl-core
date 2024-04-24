@@ -4094,6 +4094,9 @@ properties:
       gitea:
         title: gitea
         properties:
+          useOtomiDB:
+            type: boolean
+            default: false
           size:
             type: string
           resources:
@@ -4104,9 +4107,6 @@ properties:
           imported:
             type: boolean
             default: false
-          useOtomiDB:
-            type: boolean
-            default: true
   teamConfig:
     additionalProperties: false
     patternProperties:
