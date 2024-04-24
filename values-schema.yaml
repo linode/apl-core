@@ -4107,6 +4107,11 @@ properties:
           imported:
             type: boolean
             default: false
+          postgresqlPassword:
+            type: string
+            description: This password was generated and cannot be changed without manual intervention.
+            x-secret: '{{ randAlphaNum 20 }}'
+            readOnly: true
   teamConfig:
     additionalProperties: false
     patternProperties:
