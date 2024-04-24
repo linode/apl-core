@@ -65,7 +65,7 @@ gitea:
       NAME: gitea
       USER: gitea
       PASSWD: {{ $v.apps.gitea.postgresqlPassword }}
-      SCHEMA: gitea
+      SCHEMA: public
     {{- end }}
     admin:
       DISABLE_REGULAR_ORG_CREATION: false
