@@ -271,7 +271,7 @@ definitions:
       apiName:
         description:
           Exact name of cluster as created when on AWS. Optional otherwise and will be generated for UI purposes.
-          When on AWS this name is used for chart cluster-autoscaler and aws-alb-ingress-controller (enabled if otomi.hasExternalLB).
+          When on AWS this name is used for chart cluster-autoscaler.
         $ref: '#/definitions/wordCharacterPattern'
       apiServer:
         description: Used to generate KUBECONFIG for download, for local access to target cluster.
@@ -2222,63 +2222,6 @@ properties:
           enabled:
             type: boolean
             default: false
-      ingress-azure:
-        additionalProperties: false
-        description: A chart for Azure Application Gateway.
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          appgw:
-            additionalProperties: false
-            description: Application Gateway.
-            properties:
-              name:
-                description: A name of the Application Gateway.
-                type: string
-              resourceGroup:
-                description: A name of the Azure Resource Group in which Application Gateway was created.
-                type: string
-              subnetName:
-                description: A subnet of the application gateway.
-                type: string
-              subnetPrefix:
-                description: A subnet in CIDR notation.
-                examples:
-                  - 10.1.0.0/16
-                type: string
-              subscriptionId:
-                description: The Azure Subscription ID in which Application Gateway resides.
-                $ref: '#/definitions/wordCharacterPattern'
-              usePrivateIP:
-                default: false
-                description: Whether a private ip range or not.
-                type: boolean
-            required:
-              - subscriptionId
-              - resourceGroup
-              - name
-              - subnetName
-              - subnetPrefix
-          armAuth:
-            additionalProperties: false
-            description: A service Principal secret.
-            properties:
-              secretJSON:
-                description: A service Principal secret JSON key (base64 encoded).
-                type: string
-            required:
-              - secretJSON
-        allOf:
-          - anyOf:
-              - not:
-                  properties:
-                    enabled:
-                      const: true
-                  required:
-                    - enabled
-              - required:
-                  - armAuth
-                  - appgw
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
@@ -3701,10 +3644,6 @@ properties:
         required:
           - username
           - password
-      hasCloudLB:
-        default: false
-        description: "Set this to true when a cloud specific ingress controller is wanted/installed that terminates TLS and forwards traffic unencrypted. Otherwise Otomi's Nginx controller will create a loadbalancer that will take care of this."
-        type: boolean
       hasExternalDNS:
         description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
         default: false
