@@ -84,13 +84,7 @@ k8s:
       disablePolicyChecks: true
     - name: monitoring
       disableIstioInjection: true
-    - name: olm
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: opa-exporter
-      disableIstioInjection: true
-      disablePolicyChecks: true
-    - name: operators
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: otomi

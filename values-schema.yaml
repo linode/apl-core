@@ -2079,10 +2079,6 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
-          databasePassword:
-            type: string
-            description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: '{{ randAlphaNum 20 }}'
           core:
             properties:
               secret:
@@ -2183,23 +2179,6 @@ properties:
             required:
               - secret
               - credentials
-          database:
-            properties:
-              size:
-                type: string
-              type:
-                type: string
-                description: Internal is a database provided by the community chart. The external is database provided by the cloudnative-pg.
-                enum:
-                  - internal
-                  - external
-              name:
-                type: string
-              user:
-                type: string
-              importHarborDb:
-                description: Indicate if an existing database should be importend. (Once set to true you must not change it back)
-                type: boolean
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -2208,8 +2187,6 @@ properties:
               chartmuseum:
                 $ref: '#/definitions/resources'
               core:
-                $ref: '#/definitions/resources'
-              database:
                 $ref: '#/definitions/resources'
               jobservice:
                 $ref: '#/definitions/resources'
@@ -2226,8 +2203,6 @@ properties:
           secretKey:
             type: string
             x-secret: '{{ randAlpha 16 }}'
-        required:
-          - databasePassword
       httpbin:
         description: The famous httpbin application.
         properties:
@@ -4052,9 +4027,6 @@ properties:
       keycloak:
         title: Keycloak
         properties:
-          useOtomiDB:
-            type: boolean
-            default: false
           size:
             type: string
           resources:
@@ -4065,6 +4037,17 @@ properties:
           imported:
             type: boolean
             default: false
+      harbor:
+        title: Harbor
+        properties:
+          size:
+            type: string
+          resources:
+            $ref: '#/definitions/resources'
+          replicas:
+            type: integer
+            default: 2
+
   teamConfig:
     additionalProperties: false
     patternProperties:

@@ -1,9 +1,6 @@
 apps:
     harbor:
         enabled: true
-        database:
-            type: internal
-            importHarborDb: true
         persistence:
             imageChartStorage:
                 gcs:
