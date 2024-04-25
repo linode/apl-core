@@ -45,7 +45,8 @@ spec:
               - =(securityContext):
                   =(runAsGroup): ">0"
             =(initContainers):
-              - =(securityContext):
+              - (image): "!*istio/proxyv2*"
+                =(securityContext):
                   =(runAsGroup): ">0"
             containers:
               - =(securityContext):
@@ -55,7 +56,8 @@ spec:
               - securityContext:
                   runAsGroup: ">0"
             =(initContainers):
-              - securityContext:
+              - (image): "!*istio/proxyv2*"
+                securityContext:
                   runAsGroup: ">0"
             containers:
               - securityContext:

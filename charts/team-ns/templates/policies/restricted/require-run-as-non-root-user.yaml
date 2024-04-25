@@ -42,7 +42,8 @@ spec:
             - =(securityContext):
                 =(runAsUser): ">0"
             =(initContainers):
-            - =(securityContext):
+            - (image): "!*istio/proxyv2*"
+              =(securityContext):
                 =(runAsUser): ">0"
             containers:
             - =(securityContext):

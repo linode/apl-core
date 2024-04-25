@@ -49,7 +49,8 @@ spec:
                 =(seccompProfile):
                   =(type): "RuntimeDefault | Localhost"
             =(initContainers):
-            - =(securityContext):
+            - (image): "!*istio/proxyv2*"
+              =(securityContext):
                 =(seccompProfile):
                   =(type): "RuntimeDefault | Localhost"
             containers:
@@ -62,7 +63,8 @@ spec:
                 seccompProfile:
                   type: "RuntimeDefault | Localhost"
             =(initContainers):
-            - securityContext:
+            - (image): "!*istio/proxyv2*"
+              securityContext:
                 seccompProfile:
                   type: "RuntimeDefault | Localhost"
             containers:

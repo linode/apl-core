@@ -41,7 +41,8 @@ spec:
             - =(securityContext):
                 =(runAsNonRoot): true
             =(initContainers):
-            - =(securityContext):
+            - (image): "!*istio/proxyv2*"
+              =(securityContext):
                 =(runAsNonRoot): true
             containers:
             - =(securityContext):
@@ -51,7 +52,8 @@ spec:
             - securityContext:
                 runAsNonRoot: true
             =(initContainers):
-            - securityContext:
+            - (image): "!*istio/proxyv2*"
+              securityContext:
                 runAsNonRoot: true
             containers:
             - securityContext:

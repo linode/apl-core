@@ -41,7 +41,8 @@ spec:
             - securityContext:
                 allowPrivilegeEscalation: "false"
             =(initContainers):
-            - securityContext:
+            - (image): "!*istio/proxyv2*"
+              securityContext:
                 allowPrivilegeEscalation: "false"
             containers:
             - securityContext:
