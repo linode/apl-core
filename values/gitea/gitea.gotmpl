@@ -64,7 +64,7 @@ gitea:
       HOST: gitea-db-rw.gitea.svc.cluster.local:5432
       NAME: gitea
       USER: gitea
-      PASSWD: {{ $v.databases.gitea.postgresqlPassword }}
+      PASSWD: {{ $v.apps.gitea.postgresqlPassword }}
       SCHEMA: public
     {{- end }}
     admin:

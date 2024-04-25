@@ -277,18 +277,6 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   })
   await Promise.all(secretValuesPromises)
 
-  const databasesSecretValuesPromises = Object.keys((secrets.databases || {}) as Record<string, any>).map(
-    (database) => {
-      const valueObject = {
-        databases: {
-          [database]: secrets.databases[database],
-        },
-      }
-      return writeValuesToFile(`${env.ENV_DIR}/env/databases/secrets.${database}.yaml`, valueObject, overwrite)
-    },
-  )
-  await Promise.all(databasesSecretValuesPromises)
-
   d.info('All values were written to ENV_DIR')
 }
 
