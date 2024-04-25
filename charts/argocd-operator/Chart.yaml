@@ -1,6 +1,0 @@
-apiVersion: v2
-name: argocd-operator
-description: Deploys the OLM resources to start an ArgoCD operator
-type: application
-version: 0.1.0
-appVersion: "v0.3.0"

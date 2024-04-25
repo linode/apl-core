@@ -1,6 +1,0 @@
-{{- define "packageserver.package" -}}
-- packageName: packageserver
-  channels:
-  - name: alpha
-    currentCSV: packageserver.v{{ .Chart.Version }}
-{{- end -}}
