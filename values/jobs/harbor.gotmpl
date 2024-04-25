@@ -3,7 +3,6 @@
 {{- $o := $v | get "oidc" dict }}
 {{- $h := $c.harbor }}
 {{- $k := $c.keycloak }}
-{{- $ns := $v.otomi.hasCloudLB | ternary "ingress" "istio-system" }}
 {{- $harborRepo := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $teams := keys $v.teamConfig }}
 

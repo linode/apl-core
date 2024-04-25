@@ -12,41 +12,10 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: aws-alb-ingress-controller
-    installed: {{ $a | get "aws-alb-ingress-controller.enabled" }}
-    namespace: ingress
-    labels:
-      tag: ingress
-    <<: *default
-  - name: aws-alb-ingress-controller-artifacts
-    installed: {{ $a | get "aws-alb-ingress-controller.enabled" }}
-    namespace: ingress
-    labels:
-      tag: ingress
-    <<: *raw
   - name: external-dns
     installed: {{ $a | get "external-dns.enabled" }}
     namespace: external-dns
     <<: *default
-  - name: ingress-azure
-    installed: {{ $a | get "ingress-azure.enabled" }}
-    namespace: ingress
-    labels:
-      tag: ingress
-      pkg: ingress-azure
-    <<: *default
-  - name: ingress-merge
-    installed: {{ $a | get "aws-alb-ingress-controller.enabled" }}
-    namespace: ingress
-    labels:
-      tag: ingress
-    <<: *default
-  - name: job-ingress-azure
-    installed: {{ $a | get "ingress-azure.enabled" }}
-    <<: *jobs
-    labels:
-      pkg: ingress-azure
-      group: jobs
   - name: job-keycloak
     installed: true
     labels:
