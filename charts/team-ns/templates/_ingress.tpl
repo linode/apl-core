@@ -1,30 +1,11 @@
-
-{{- define "ingress.apiVersion" -}}
-{{- if semverCompare ">=1.20-0" .Capabilities.KubeVersion.GitVersion -}}
-networking.k8s.io/v1
-{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-networking.k8s.io/v1beta1
-{{- else  -}}
-extensions/v1
-{{- end }}
-{{- end -}}
-
-
 {{- define "ingress.path" }}
 - backend:
-{{- if ne (include "ingress.apiVersion" .dot) "networking.k8s.io/v1" }}
-    serviceName: {{ .svc }}
-    servicePort: {{ .port | default 80 }}
-{{- else }}
     service:
       name: {{ .svc }}
       port:
         number: {{ .port | default 80 }}
-{{- end }}
   path: {{ .path | default "/" }}
-{{- if ne (include "ingress.apiVersion" .dot) "extensions/v1beta1" }}
   pathType: {{ .pathType | default "Prefix" }}
-{{- end }}
 {{- end }}
 
 {{- define "ingress" -}}
@@ -65,23 +46,17 @@ extensions/v1
           {{- end }}
         {{- end }}
       {{- end }}
-      {{- $internetFacing := or (eq $.provider "custom") (ne $.provider "nginx") (eq $.provider "nginx") }}
-      {{- if and (eq $v.teamId "admin") (not (eq $.provider "nginx")) }}
-        {{- $routes = (merge $routes (dict (printf "auth.%s" $v.cluster.domainSuffix ) list)) }}
-      {{- end }}
       {{- if or $routes $names }}
         {{- $namesCollection := include "helm-toolkit.utils.joinListWithSep" (dict "list" $names "sep" "|") }}
 ---
 # ingress: {{ $.type }}: {{ $.name }} ({{ len $.services }})
 
 # collect unique host and service names
-apiVersion: {{ template "ingress.apiVersion" $.dot }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    {{- if $internetFacing }}
     externaldns: "true"
-    {{- end }}
     {{- if $hasTlsPass }}
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     {{- else }}
@@ -97,7 +72,7 @@ metadata:
     nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
     nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
     {{- end }}
-    {{- if and (hasKey $ingress "entrypoint") $internetFacing (ne $ingress.entrypoint "")}}
+    {{- if and (hasKey $ingress "entrypoint") (ne $ingress.entrypoint "")}}
     external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }} 
     {{- end }}
     # websocket upgrade snippet
@@ -113,7 +88,7 @@ metadata:
           proxy_cache_bypass $http_upgrade;
         }
   labels: {{- include "team-ns.chart-labels" $.dot | nindent 4 }}
-  name: {{ $.provider }}-team-{{ $v.teamId }}-{{ $ingress.className }}-{{ $.type }}-{{ $.name }}
+  name: nginx-team-{{ $v.teamId }}-{{ $ingress.className }}-{{ $.type }}-{{ $.name }}
   namespace: istio-system
 spec:
   ingressClassName: {{ $ingress.className }}
@@ -139,7 +114,7 @@ spec:
             {{- end }}
         {{- end }}
       {{- end }}
-      {{- if and (not $hasTlsPass) $internetFacing }}
+      {{- if (not $hasTlsPass) }}
   tls:
         {{- range $domain, $paths := $routes }}
     - hosts:

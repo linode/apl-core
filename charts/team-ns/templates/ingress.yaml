@@ -39,25 +39,25 @@
 
 
   {{- if gt (len $tlsPass) 0 }}
-{{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "tlspass" "hasForward" false "hasAuth" false "services" $tlsPass "tlsPass" true) }}
+{{ include "ingress" (dict "type" $type "dot" $ "name" "tlspass" "hasForward" false "hasAuth" false "services" $tlsPass "tlsPass" true) }}
   {{- end }}
 
   {{- if gt (len $auth) 0 }}
-{{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "auth" "hasForward" false "hasAuth" true "services" $auth) }}
+{{ include "ingress" (dict "type" $type "dot" $ "name" "auth" "hasForward" false "hasAuth" true "services" $auth) }}
   {{- end }}
 
   {{- if gt (len $authForward) 0 }}
-{{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "auth-forward" "hasForward" true "hasAuth" true "services" $authForward) }}
+{{ include "ingress" (dict "type" $type "dot" $ "name" "auth-forward" "hasForward" true "hasAuth" true "services" $authForward) }}
 
   {{- end }}
 
   {{- if gt (len $open) 0 }}
-{{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "open" "hasForward" false "hasAuth" false "services" $open) }}
+{{ include "ingress" (dict "type" $type "dot" $ "name" "open" "hasForward" false "hasAuth" false "services" $open) }}
 
   {{- end }}
 
   {{- if gt (len $openForward) 0 }}
-{{ include "ingress" (dict "type" $type "dot" $ "provider" "nginx" "name" "open-forward" "hasForward" true "hasAuth" false "services" $openForward) }}
+{{ include "ingress" (dict "type" $type "dot" $ "name" "open-forward" "hasForward" true "hasAuth" false "services" $openForward) }}
 
   {{- end }}
 
