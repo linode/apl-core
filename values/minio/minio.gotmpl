@@ -64,7 +64,6 @@ provisioning:
       memory: 128Mi
   buckets:
     - name: velero
-    - name: thanos
     - name: loki
     - name: harbor
     - name: tempo
@@ -81,7 +80,6 @@ provisioning:
           - s3:ListBucketMultipartUploads
           resources:
           - arn:aws:s3:::velero
-          - arn:aws:s3:::thanos
           - arn:aws:s3:::loki
           - arn:aws:s3:::harbor
           - arn:aws:s3:::tempo
@@ -95,7 +93,6 @@ provisioning:
           - s3:ListBucket
           resources:
           - arn:aws:s3:::velero
-          - arn:aws:s3:::thanos
           - arn:aws:s3:::loki
           - arn:aws:s3:::harbor
           - arn:aws:s3:::tempo
@@ -116,7 +113,6 @@ provisioning:
           - s3:GetObject
           resources:
           - arn:aws:s3:::velero/**
-          - arn:aws:s3:::thanos/**
           - arn:aws:s3:::loki/**
           - arn:aws:s3:::harbor/**
           - arn:aws:s3:::tempo/**
