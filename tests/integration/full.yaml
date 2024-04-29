@@ -54,8 +54,6 @@ apps:
     enabled: true
   tempo:
     enabled: true
-  thanos:
-    enabled: true
   trivy:
     enabled: true
   vault:
