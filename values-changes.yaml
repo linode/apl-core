@@ -129,3 +129,23 @@ changes:
     deletions:
       - 'apps.loki.storage.gcs.project'
       - 'apps.loki.storage.gcs.instance'
+  - version: 21
+    deletions:
+      - 'apps.harbor.databasePassword'
+      - 'apps.harbor.database.type'
+      - 'apps.harbor.database.importHarborDb'
+      - 'apps.harbor.database.name'
+      - 'apps.harbor.database.user'
+      - 'apps.harbor.database'
+      - 'databases.keycloak.useOtomiDB'
+    additions:
+      - databases.harbor.replicas: 2
+    relocations:
+      - 'apps.harbor.database.size': 'databases.harbor.size'
+      - 'apps.harbor.resources.database': 'databases.harbor.resources'
+  - version: 22
+    deletions:
+      - 'apps.thanos'
+      - 'apps.prometheus.remoteWrite.otomiThanos'
+      - 'apps.ingress-azure'
+      - 'otomi.hasCloudLB'

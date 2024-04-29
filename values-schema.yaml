@@ -230,7 +230,7 @@ definitions:
       apiName:
         description:
           Exact name of cluster as created when on AWS. Optional otherwise and will be generated for UI purposes.
-          When on AWS this name is used for chart cluster-autoscaler and aws-alb-ingress-controller (enabled if otomi.hasExternalLB).
+          When on AWS this name is used for chart cluster-autoscaler.
         $ref: '#/definitions/wordCharacterPattern'
       apiServer:
         description: Used to generate KUBECONFIG for download, for local access to target cluster.
@@ -2046,10 +2046,6 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
-          databasePassword:
-            type: string
-            description: Once set and deployed it cannot be changed with manual intervention.
-            x-secret: '{{ randAlphaNum 20 }}'
           core:
             properties:
               secret:
@@ -2150,23 +2146,6 @@ properties:
             required:
               - secret
               - credentials
-          database:
-            properties:
-              size:
-                type: string
-              type:
-                type: string
-                description: Internal is a database provided by the community chart. The external is database provided by the cloudnative-pg.
-                enum:
-                  - internal
-                  - external
-              name:
-                type: string
-              user:
-                type: string
-              importHarborDb:
-                description: Indicate if an existing database should be importend. (Once set to true you must not change it back)
-                type: boolean
           image:
             $ref: '#/definitions/imageSimple'
           resources:
@@ -2175,8 +2154,6 @@ properties:
               chartmuseum:
                 $ref: '#/definitions/resources'
               core:
-                $ref: '#/definitions/resources'
-              database:
                 $ref: '#/definitions/resources'
               jobservice:
                 $ref: '#/definitions/resources'
@@ -2193,71 +2170,12 @@ properties:
           secretKey:
             type: string
             x-secret: '{{ randAlpha 16 }}'
-        required:
-          - databasePassword
       httpbin:
         description: The famous httpbin application.
         properties:
           enabled:
             type: boolean
             default: false
-      ingress-azure:
-        additionalProperties: false
-        description: A chart for Azure Application Gateway.
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          appgw:
-            additionalProperties: false
-            description: Application Gateway.
-            properties:
-              name:
-                description: A name of the Application Gateway.
-                type: string
-              resourceGroup:
-                description: A name of the Azure Resource Group in which Application Gateway was created.
-                type: string
-              subnetName:
-                description: A subnet of the application gateway.
-                type: string
-              subnetPrefix:
-                description: A subnet in CIDR notation.
-                examples:
-                  - 10.1.0.0/16
-                type: string
-              subscriptionId:
-                description: The Azure Subscription ID in which Application Gateway resides.
-                $ref: '#/definitions/wordCharacterPattern'
-              usePrivateIP:
-                default: false
-                description: Whether a private ip range or not.
-                type: boolean
-            required:
-              - subscriptionId
-              - resourceGroup
-              - name
-              - subnetName
-              - subnetPrefix
-          armAuth:
-            additionalProperties: false
-            description: A service Principal secret.
-            properties:
-              secretJSON:
-                description: A service Principal secret JSON key (base64 encoded).
-                type: string
-            required:
-              - secretJSON
-        allOf:
-          - anyOf:
-              - not:
-                  properties:
-                    enabled:
-                      const: true
-                  required:
-                    - enabled
-              - required:
-                  - armAuth
-                  - appgw
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
@@ -2736,9 +2654,6 @@ properties:
               enabled:
                 type: boolean
                 default: false
-              otomiThanos:
-                type: boolean
-                default: false
               insecureSkipVerify:
                 type: boolean
                 default: false
@@ -2882,150 +2797,6 @@ properties:
                   - s3
                   - minioLocal
                 default: minioLocal
-      thanos:
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: false
-          query:
-            properties:
-              replicaCount:
-                description: Number of Thanos Query replicas.
-                type: integer
-                default: 1
-          receiver:
-            properties:
-              mode:
-                title: Receiver mode
-                description: Mode to run receiver in.
-                type: string
-                default: standalone
-                enum:
-                  - standalone
-                  - dual-mode
-              replicaCount:
-                description: Number of Thanos Receive replicas.
-                type: integer
-                default: 1
-              tsdbRetention:
-                type: string
-                default: 7d
-              replicationFactor:
-                type: integer
-                default: 1
-          compactor:
-            description: Resolution and Retention flags.
-            properties:
-              retentionResolutionRaw:
-                type: string
-                default: 30d
-              retentionResolution5m:
-                type: string
-                default: 30d
-              retentionResolution1h:
-                type: string
-                default: 10y
-          receiverDistributor:
-            properties:
-              enabled:
-                type: boolean
-                default: true
-          ruler:
-            properties:
-              enabled:
-                type: boolean
-                default: false
-          objstore:
-            properties:
-              storageProvider:
-                additionalProperties: false
-                properties:
-                  s3:
-                    properties:
-                      bucket:
-                        type: string
-                        description: Name of the blob container.
-                        $ref: '#/definitions/wordCharacterPattern'
-                      s3Url:
-                        description: The name (URL) of the S3 bucket
-                        $ref: '#/definitions/wordCharacterPattern'
-                      accessKeyId:
-                        type: string
-                        description: The ID of the access key
-                        $ref: '#/definitions/wordCharacterPattern'
-                      secretAccessKey:
-                        type: string
-                        description: The secret of the access key
-                        $ref: '#/definitions/wordCharacterPattern'
-                        x-secret: ''
-                    required:
-                      - bucket
-                      - s3Url
-                      - accessKeyId
-                      - secretAccessKey
-                  azureBlob:
-                    properties:
-                      accountName:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      containerName:
-                        $ref: '#/definitions/wordCharacterPattern'
-                      accountKey:
-                        $ref: '#/definitions/wordCharacterPattern'
-                        x-secret: ''
-                    required:
-                      - accountName
-                      - containerName
-                      - accountKey
-                  type:
-                    type: string
-                    enum:
-                      - s3
-                      - azureBlob
-                      - minioLocal
-                    default: minioLocal
-          resources:
-            additionalProperties: false
-            properties:
-              query:
-                $ref: '#/definitions/resources'
-              queryFrontend:
-                $ref: '#/definitions/resources'
-              receiver:
-                $ref: '#/definitions/resources'
-              storegateway:
-                $ref: '#/definitions/resources'
-              bucketweb:
-                $ref: '#/definitions/resources'
-              compactor:
-                $ref: '#/definitions/resources'
-              receiverDistributor:
-                $ref: '#/definitions/resources'
-              ruler:
-                $ref: '#/definitions/resources'
-        persistence:
-          properties:
-            receiver:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 50Gi
-            storegateway:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 8Gi
-            compactor:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 8Gi
-            ruler:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 8Gi
       trivy:
         properties:
           _rawValues:
@@ -3070,7 +2841,7 @@ properties:
           operator:
             properties:
               replicaCount:
-                description: Number of Thanos Query replicas.
+                description: Number of replicas.
                 type: integer
                 default: 1
           resources:
@@ -3680,10 +3451,6 @@ properties:
         required:
           - username
           - password
-      hasCloudLB:
-        default: false
-        description: "Set this to true when a cloud specific ingress controller is wanted/installed that terminates TLS and forwards traffic unencrypted. Otherwise Otomi's Nginx controller will create a loadbalancer that will take care of this."
-        type: boolean
       hasExternalDNS:
         description: Set this to true when an external dns zone is available to manage dns records. (Expects required `dns:` fields to be set.)
         default: false
@@ -4050,9 +3817,6 @@ properties:
       keycloak:
         title: Keycloak
         properties:
-          useOtomiDB:
-            type: boolean
-            default: false
           size:
             type: string
           resources:
@@ -4063,6 +3827,17 @@ properties:
           imported:
             type: boolean
             default: false
+      harbor:
+        title: Harbor
+        properties:
+          size:
+            type: string
+          resources:
+            $ref: '#/definitions/resources'
+          replicas:
+            type: integer
+            default: 2
+
   teamConfig:
     additionalProperties: false
     patternProperties:

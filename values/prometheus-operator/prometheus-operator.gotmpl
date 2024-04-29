@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- $c := $v.apps }}
 {{- $k := $v.apps.keycloak }}
-{{- $t := $v.apps.thanos }}
 {{- $o := $v | get "oidc" dict }}
 {{- $a := $v.apps | get "alertmanager" }}
 {{- $g := $v.apps | get "grafana" }}
@@ -122,10 +121,6 @@ prometheus:
       {{- end }}
       tlsConfig:
         insecureSkipVerify: {{ $p.remoteWrite.rwConfig.insecureSkipVerify }}
-      {{- if $p.remoteWrite.otomiThanos }}
-      headers:
-        cluster: "{{ $v.cluster.domainSuffix }}"
-      {{- end }}
       {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
       {{- . | nindent 6 }}
       {{- end }}
@@ -149,10 +144,6 @@ additionalPrometheusRules:
   {{- if eq $v.cluster.provider "aws" }}
   - name: cluster-autoscaler
     {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
-  {{- end }}
-  {{- if $c.thanos.enabled }}
-  - name: thanos
-    {{- readFile "rules/thanos.yaml" | nindent 4 }}
   {{- end }}
   {{- if and ($v.apps.opencost.alerts.enabled) }}
   - name: opencost
@@ -239,11 +230,6 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards
-    {{- if $t.enabled }}
-      multicluster:
-        global:
-          enabled: true
-    {{- end }}
   serviceMonitor:
     enabled: {{ $p.enabled }}
     labels:
@@ -315,18 +301,6 @@ grafana:
         lokiSearch:
           datasourceUid: 'loki'
     {{- end }}
-    {{- end }}
-    {{- if $t.enabled }}
-    - name: Thanos Query
-      access: proxy
-      basicAuth: false
-      editable: false
-      orgId: 1
-      type: prometheus
-      url: http://thanos-query-frontend.monitoring:9090
-      jsonData:
-        prometheusType: Thanos
-        timeInterval: "30s"
     {{- end }}
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
   grafana.ini: {{- $grafanaIni | nindent 4 }}

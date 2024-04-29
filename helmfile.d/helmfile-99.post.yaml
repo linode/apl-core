@@ -12,21 +12,9 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: job-certs-aws
-    installed:  {{ $a | get "aws-alb-ingress-controller.enabled" }}
-    <<: *jobs
-    labels:
-      group: jobs
-      type: cronjob
   - name: job-harbor
     installed: {{ $a | get "harbor.enabled" }}
     labels:
       pkg: harbor
       group: jobs
     <<: *jobs
-  - name: job-ingress-azure
-    installed: {{ $a | get "ingress-azure.enabled" }}
-    <<: *jobs
-    labels:
-      pkg: ingress-azure
-      group: jobs
