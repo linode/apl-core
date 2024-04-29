@@ -9,7 +9,6 @@ metadata:
     {{- include "kyverno.cleanup-controller.labels" . | nindent 4 }}
 spec:
   replicas: {{ template "kyverno.deployment.replicas" .Values.cleanupController.replicas }}
-  revisionHistoryLimit: {{ .Values.cleanupController.revisionHistoryLimit }}
   {{- with .Values.cleanupController.updateStrategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
@@ -36,7 +35,7 @@ spec:
       securityContext:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
-      {{- with .Values.cleanupController.nodeSelector | default .Values.global.nodeSelector }}
+      {{- with .Values.cleanupController.nodeSelector }}
       nodeSelector:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
@@ -90,8 +89,6 @@ spec:
             - --caSecretName={{ template "kyverno.cleanup-controller.name" . }}.{{ template "kyverno.namespace" . }}.svc.kyverno-tls-ca
             - --tlsSecretName={{ template "kyverno.cleanup-controller.name" . }}.{{ template "kyverno.namespace" . }}.svc.kyverno-tls-pair
             - --servicePort={{ .Values.cleanupController.service.port }}
-            - --cleanupServerPort={{ .Values.cleanupController.server.port }}
-            - --webhookServerPort={{ .Values.cleanupController.webhookServer.port }}
             {{- if .Values.cleanupController.tracing.enabled }}
             - --enableTracing
             - --tracingAddress={{ .Values.cleanupController.tracing.address }}
@@ -141,7 +138,7 @@ spec:
                 fieldPath: metadata.namespace
           - name: KYVERNO_SVC
             value: {{ template "kyverno.cleanup-controller.name" . }}
-          {{- with (concat .Values.global.extraEnvVars .Values.cleanupController.extraEnvVars) }}
+          {{- with .Values.cleanupController.extraEnvVars }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
           {{- with .Values.cleanupController.resources }}

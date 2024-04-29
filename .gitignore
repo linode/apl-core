@@ -16,3 +16,4 @@ workflow/
 *.new
 .envrc
 otomi.cpuprofile
+/.idea/

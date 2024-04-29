@@ -39,16 +39,16 @@ spec:
           {{- with .Values.webhooksCleanup.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
-          resources:
-            limits:
-              cpu: 100m
-              memory: 64Mi
           {{- end }}
+          {{- with .Values.webhooksCleanup.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}    
       {{- with .Values.webhooksCleanup.tolerations }}
       tolerations:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
-      {{- with .Values.webhooksCleanup.nodeSelector | default .Values.global.nodeSelector }}
+      {{- with .Values.webhooksCleanup.nodeSelector }}
       nodeSelector:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
