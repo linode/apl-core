@@ -212,47 +212,6 @@ definitions:
           - AzureChinaCloud
           - AzureUSGovernment
           - AzureGermanCloud
-      monitor:
-        additionalProperties: false
-        properties:
-          appInsightsApiKey:
-            $ref: '#/definitions/azure/definitions/clientSecret'
-            title: AppInsights api key
-            description: An Azure AppInsights client secret.
-          appInsightsAppId:
-            $ref: '#/definitions/azure/definitions/clientId'
-            title: AppInsights app id
-          azureLogAnalyticsSameAs:
-            title: LogAnalytics using same creds?
-            type: boolean
-            default: true
-          clientId:
-            $ref: '#/definitions/azure/definitions/clientId'
-          clientSecret:
-            $ref: '#/definitions/azure/definitions/clientSecret'
-          logAnalyticsClientId:
-            $ref: '#/definitions/azure/definitions/clientId'
-            title: LogAnalytics client id
-            description: An Azure client secret.
-          logAnalyticsClientSecret:
-            $ref: '#/definitions/azure/definitions/clientSecret'
-            title: LogAnalytics client secret
-            description: An Azure client secret.
-          logAnalyticsTenantId:
-            $ref: '#/definitions/azure/definitions/tenantId'
-            title: LogAnalytics tenant id
-            description: An Azure tenant id.
-          logAnalyticsDefaultWorkspace:
-            title: LogAnalytics default workspace to show
-            description: An Azure LogAnalytics workspace.
-            type: string
-          subscriptionId:
-            $ref: '#/definitions/azure/definitions/subscriptionId'
-          tenantId:
-            $ref: '#/definitions/azure/definitions/tenantId'
-        required:
-          - clientId
-          - clientSecret
       tenantId:
         title: Azure tenant id
         description: An Azure tenant id.
@@ -1175,8 +1134,6 @@ definitions:
         properties:
           shortcuts:
             $ref: '#/definitions/shortcuts'
-      azureMonitor:
-        $ref: '#/definitions/azure/definitions/monitor'
       backups:
         type: array
         items:
@@ -1679,9 +1636,6 @@ properties:
             default: false
             description: Indicates Azure Application Gateway Ingress Controller add-on is installed by AKS.
             type: boolean
-      monitor:
-        $ref: '#/definitions/azure/definitions/monitor'
-
   cloud:
     additionalProperties: true
     properties:

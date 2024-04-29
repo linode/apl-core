@@ -184,9 +184,6 @@ releases:
                   tag: 'http.path'
                 lokiSearch:
                   datasourceUid: 'loki'
-    {{- if ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
-            - {{- tpl (readFile "../helmfile.d/snippets/azure-monitor.gotmpl") ($team | get "azureMonitor" ($v | get "azure.monitor")) | toString | nindent 14 }}
-    {{- end }}
     {{- if has "msteams" ($team | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
     installed: {{ $team | get "managedMonitoring.prometheus" false }}

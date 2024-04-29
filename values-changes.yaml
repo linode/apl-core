@@ -149,3 +149,5 @@ changes:
       - 'apps.prometheus.remoteWrite.otomiThanos'
       - 'apps.ingress-azure'
       - 'otomi.hasCloudLB'
+      - 'monitor'
+      - 'azureMonitor'
