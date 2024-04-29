@@ -9,7 +9,6 @@ folders:
   - k8s-admin
   - k8s-teams
   - minio
-  - opencost
   - trivy
   - trivy-teams
   - velero

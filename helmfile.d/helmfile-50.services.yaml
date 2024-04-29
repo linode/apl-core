@@ -40,12 +40,6 @@ releases:
     labels:
       pkg: falco
     <<: *default
-  - name: opencost
-    installed: {{ $a | get "opencost.enabled" }}
-    namespace: opencost
-    labels:
-      pkg: opencost
-    <<: *default
   - name: trivy-operator
     installed: {{ $a | get "trivy.enabled" }}
     namespace: trivy-operator

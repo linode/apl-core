@@ -151,3 +151,5 @@ changes:
       - 'otomi.hasCloudLB'
       - 'monitor'
       - 'azureMonitor'
+      - 'apps.opencost'
+      - 'teams.{team}.billingAlertQuotas'
