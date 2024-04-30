@@ -1,6 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "baseBranches": ["auto-chart-update"],
+  "branchPrefix": "renovate-",
+  "dryRun": "full",
+  "username": "renovate",
+  "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+  "onboarding": false,
+  "platform": "github",
+  "repositories": ["redkubes/otomi-core"],
   "schedule": "before 5am every weekday",
   "extends": ["github>redkubes/renovate-config"],
   "helm-requirements": { "enabled": false },
