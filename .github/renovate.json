@@ -3,6 +3,8 @@
   "docker": {
     "enabled": false
   },
+  "baseBranches": ["auto-chart-update"],
+  "schedule": "before 5am every weekday",
   "extends": ["github>redkubes/renovate-config"],
   "helm-requirements": {
     "enabled": false
