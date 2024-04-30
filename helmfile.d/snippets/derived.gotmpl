@@ -87,7 +87,7 @@ environments:
             enabled: {{ $v.otomi.hasExternalDNS }}
           external-secrets:
             # may be enabled without local vault, so be sure to check for true and not just if it is set
-            enabled: {{ or (eq ($a | get "external-secrets.enabled") true) ($a | get "vault.enabled" false) }}
+            enabled: {{ $a | get "vault.enabled" false }}
           harbor:
             adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword }}
             registry:
