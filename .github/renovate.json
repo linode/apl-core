@@ -11,7 +11,7 @@
   "platform": "github",
   "repositories": ["redkubes/otomi-core"],
   "schedule": "before 5am every weekday",
-  "extends": ["github>redkubes/renovate-config"],
+  "npm": { "enabled": false },
   "helm-requirements": { "enabled": false },
   "helm-values": { "enabled": false },
   "helmfile": { "enabled": false },
