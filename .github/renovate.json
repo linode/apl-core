@@ -1,26 +1,16 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "docker": {
-    "enabled": false
-  },
   "baseBranches": ["auto-chart-update"],
   "schedule": "before 5am every weekday",
   "extends": ["github>redkubes/renovate-config"],
-  "helm-requirements": {
-    "enabled": false
-  },
-  "helm-values": {
-    "enabled": false
-  },
-  "helmfile": {
-    "enabled": false
-  },
+  "helm-requirements": { "enabled": false },
+  "helm-values": { "enabled": false },
+  "helmfile": { "enabled": false },
   "helmv3": {
     "enabled": true,
-    "registryAliases": {
-      "stable": "https://charts.helm.sh/stable"
-    },
+    "registryAliases": { "stable": "https://charts.helm.sh/stable" },
     "commitMessageTopic": "helm chart {{depName}}",
     "fileMatch": ["^chart/otomi-deps/Chart\\.yaml$"]
-  }
+  },
+  "packageRules": [{ "matchCategories": ["docker"], "enabled": false }]
 }
