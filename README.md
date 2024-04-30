@@ -135,10 +135,7 @@ Otomi offers a set of integrated Kubernetes applications (using upstream open so
 - [Kiali](https://github.com/kiali/kiali): Observe Istio service mesh relations and connections
 - [Minio](https://github.com/minio/minio): High performance Object Storage compatible with Amazon S3 cloud storage service
 - [Trivy](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit
-- [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
-- [Opencost](https://github.com/opencost/opencost): Cost monitoring for Kubernetes
-language ecosystems
 - [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-operator): Instrument, generate, collect, and export telemetry data to help you analyze your software’s performance and behavior
 

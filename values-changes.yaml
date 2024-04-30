@@ -147,3 +147,12 @@ changes:
     additions:
       - databases.gitea.useOtomiDB: false
       - databases.gitea.imported: false
+    deletions:
+      - 'apps.thanos'
+      - 'apps.prometheus.remoteWrite.otomiThanos'
+      - 'apps.ingress-azure'
+      - 'otomi.hasCloudLB'
+      - 'monitor'
+      - 'azureMonitor'
+      - 'apps.opencost'
+      - 'teams.{team}.billingAlertQuotas'

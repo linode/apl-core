@@ -441,25 +441,6 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
-          opencost:
-            enabled: false
-            alerts:
-              enabled: false
-            resources:
-              exporter:
-                requests:
-                  cpu: 500m
-                  memory: 128Mi
-                limits:
-                  cpu: 1
-                  memory: 1Gi
-              ui:
-                requests:
-                  cpu: 500m
-                  memory: 128Mi
-                limits:
-                  cpu: 1
-                  memory: 1Gi
           promtail:
             enabled: false
           prometheus-blackbox-exporter: {}
@@ -617,92 +598,6 @@ environments:
                   limits:
                       cpu: 900m
                       memory: 512Mi
-          thanos:
-            enabled: false
-            query:
-              replicaCount: 1
-            receiver:
-              mode: standalone
-              replicaCount: 1
-              tsdbRetention: 7d
-              replicationFactor: 1
-            receiverDistributor:
-              enabled: true
-            compactor:
-              retentionResolutionRaw: 30d
-              retentionResolution5m: 60d
-              retentionResolution1h: 0s
-            ruler:
-              enabled: false
-            objstore:
-              storageProvider:
-                type: minioLocal
-            resources:
-              bucketweb:
-                requests:
-                  cpu: 50m
-                  memory: 64Mi
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-              query:
-                requests:
-                  cpu: 100m
-                  memory: 256Mi
-                limits:
-                  cpu: 500m
-                  memory: 1Gi
-              queryFrontend:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: 500m
-                  memory: 512Mi
-              receiver:
-                requests:
-                  cpu: 200m
-                  memory: 512Mi
-                limits:
-                  cpu: '1'
-                  memory: 2Gi
-              receiverDistributor:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: '1'
-                  memory: 512Mi
-              storegateway:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
-              compactor:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: '1'
-                  memory: 512Mi
-              ruler:
-                requests:
-                  cpu: 100m
-                  memory: 256Mi
-                limits:
-                  cpu: 500m
-                  memory: 512Mi
-            persistence:
-              receiver:
-                size: 50Gi
-              storegateway:
-                size: 8Gi
-              compactor:
-                size: 8Gi
-              ruler:
-                size: 8Gi
           trivy:
             enabled: false
             operator:
@@ -809,7 +704,6 @@ environments:
           receivers:
             - none
         otomi:
-          hasCloudLB: false
           hasExternalDNS: false
           hasExternalIDP: false
           isHomeMonitored: false
