@@ -3,6 +3,7 @@
   "baseBranches": ["auto-chart-update"],
   "branchPrefix": "renovate-",
   "dryRun": "full",
+  "includePaths": ["chart"],
   "username": "renovate",
   "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
   "onboarding": false,
