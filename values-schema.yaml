@@ -1269,7 +1269,7 @@ definitions:
         items:
           $ref: '#/definitions/project'
       policies:
-        type: array
+        type: object
       builds:
         type: array
         items:
@@ -1350,7 +1350,7 @@ definitions:
     required:
       - name
   policies:
-    type: array
+    type: object
   build:
     type: object
     description: Define location of code to build

@@ -1,11 +1,6 @@
 {{- $v := .Values }}
-{{- $p := dict }}
-{{- range $i, $item := $v.policies }}
-  {{- if eq $item.name "disallow-host-path" }}
-    {{- $p = $item }}
-  {{- end }}
-{{- end }}
-{{- if $p.name }}
+{{- $p := index $v.policies "disallow-host-path" }}
+{{- if $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy

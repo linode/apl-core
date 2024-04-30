@@ -1,13 +1,20 @@
 teamConfig:
     dev:
         policies:
-            - action: Audit
-              description: Access to host ports allows potential snooping of network traffic
-                  and should not be allowed, or at minimum restricted to a known
-                  list. This policy ensures the `hostPort` field is unset or set
-                  to `0`.
-              enabled: true
-              id: 70eadc0d-6301-43e4-9258-0b59684b1166
-              name: disallow-host-ports
-              profile: baseline
-              severity: medium
+            disallow-capabilities:
+                description: 'Container capabilities beyond those listed in the policy must be disallowed.'
+                action: Audit
+                severity: medium
+                customValues: []
+            disallow-host-namespaces:
+                description: 'Host namespaces (Process ID namespace, Inter-Process Communication namespace, and network namespace) allow access to shared information and can be used to elevate privileges. Pods should not be allowed access to host namespaces. This policy ensures fields which make use of these host namespaces are unset or set to `false`.'
+                action: Audit
+                severity: medium
+            disallow-host-path:
+                description: 'HostPath volumes let Pods use host directories and volumes in containers. Using host resources can be used to access shared data or escalate privilegesand should not be allowed. This policy ensures no hostPath volumes are in use.'
+                action: Audit
+                severity: medium
+            disallow-host-ports:
+                description: 'Access to host ports allows potential snooping of network traffic and should not be allowed, or at minimum restricted to a known list. This policy ensures the `hostPort` field is unset or set to `0`.'
+                action: Audit
+                severity: medium
