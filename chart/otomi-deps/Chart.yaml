@@ -52,10 +52,10 @@ dependencies:
     repository: https://prometheus-community.github.io/helm-charts
   - name: metrics-server
     version: 6.8.0
-    repository: https://kubernetes-sigs.github.io/metrics-server/
+    repository: https://charts.bitnami.com/bitnami
   - name: oauth2-proxy
     version: 3.7.4
-    repository: https://oauth2-proxy.github.io/manifests
+    repository: https://charts.bitnami.com/bitnami
   - name: prometheus-blackbox-exporter
     version: 7.10.0
     repository: https://prometheus-community.github.io/helm-charts
