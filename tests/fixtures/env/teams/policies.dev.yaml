@@ -1,3 +1,13 @@
 teamConfig:
     dev:
-        policies: []
+        policies:
+            - action: Audit
+              description: Access to host ports allows potential snooping of network traffic
+                  and should not be allowed, or at minimum restricted to a known
+                  list. This policy ensures the `hostPort` field is unset or set
+                  to `0`.
+              enabled: true
+              id: 70eadc0d-6301-43e4-9258-0b59684b1166
+              name: disallow-host-ports
+              profile: baseline
+              severity: medium
