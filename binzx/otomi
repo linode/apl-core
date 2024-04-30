@@ -232,7 +232,6 @@ vars=(
   TRACE
   VERBOSITY
   VALUES_INPUT
-  VAULT_TOKEN
 )
 dump_vars "${vars[@]}"
 

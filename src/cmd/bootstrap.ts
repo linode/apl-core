@@ -25,7 +25,6 @@ const kmsMap = {
   aws: 'kms',
   azure: 'azure_keyvault',
   google: 'gcp_kms',
-  vault: 'hc_vault_transit_uri',
 }
 
 export const bootstrapSops = async (
@@ -96,9 +95,6 @@ export const bootstrapSops = async (
       } else if (provider === 'azure') {
         const v = values.kms!.sops!.azure!
         await deps.writeFile(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
-      } else if (provider === 'vault') {
-        const v = values.kms!.sops!.vault!
-        await deps.writeFile(secretsFile, `VAULT_TOKEN='${v.token}'`)
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later

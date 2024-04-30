@@ -3232,24 +3232,6 @@ properties:
                   - project
             required:
               - google
-          - properties:
-              provider:
-                type: string
-                const: vault
-              vault:
-                properties:
-                  keys:
-                    description: Comma separated list of one or two paths to keys as defined in Vault. One if used for both enc+dec. Two if one for enc, other for dec.
-                    title: Vault keys
-                    type: string
-                  token:
-                    type: string
-                    x-secret: ''
-                required:
-                  - keys
-                  - token
-            required:
-              - vault
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
@@ -3647,16 +3629,6 @@ properties:
                 default: false
               resources:
                 $ref: '#/definitions/resources'
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          vault:
-            title: Vault
-            properties:
-              enabled:
-                type: boolean
-                default: false
               ttl:
                 $ref: '#/definitions/backupTtl'
               schedule:

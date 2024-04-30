@@ -617,15 +617,6 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 512Mi
-          vault:
-            enabled: false
-            resources:
-              limits:
-                cpu: '1000m'
-                memory: 512Mi
-              requests:
-                cpu: 500m
-                memory: 256Mi
           velero:
             enabled: false
             restic:
@@ -683,8 +674,6 @@ environments:
             keycloak:
               enabled: false
             harbor:
-              enabled: false
-            vault:
               enabled: false
             argo:
               enabled: false
