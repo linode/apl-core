@@ -263,7 +263,7 @@ jobs:
             --docker-username=${{ env.GIT_USER }} \
             --docker-password='${{ secrets.NPM_TOKEN }}'
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare Otomi chart
         if: ${{ inputs.install_profile != 'no-otomi' }}
         run: |
@@ -391,7 +391,7 @@ jobs:
             --docker-username=${{ env.GIT_USER }} \
             --docker-password='${{ secrets.NPM_TOKEN }}'
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare Otomi chart
         if: ${{ inputs.install_profile != 'no-otomi' }}
         run: |
