@@ -133,7 +133,7 @@ function yq() {
 
 function yqr() {
   local all_values=$(hf_values)
-  local ret=$(echo "$all_values" | yq r - "$@")
+  local ret=$(echo "$all_values" | yq "$@" -)
   [ -z "$ret" ] && return 1
   echo $ret
 }
@@ -149,14 +149,14 @@ function get_k8s_version() {
 
 function otomi_image_tag() {
   local otomi_version=$OTOMI_VERSION
-  [ -z "$otomi_version" ] && [ -f $otomi_settings ] && otomi_version=$(yq r $otomi_settings otomi.version)
+  [ -z "$otomi_version" ] && [ -f $otomi_settings ] && otomi_version=$(yq '.otomi.version' $otomi_settings)
   [ -z "$otomi_version" ] && otomi_version=$(cat $PWD/package.json | jq -r .version)
   [ -z "$otomi_version" ] && otomi_version='main'
   echo $otomi_version
 }
 
 function customer_name() {
-  [ -f $otomi_settings ] && yq r $otomi_settings "customer.name" && return 0
+  [ -f $otomi_settings ] && yq 'customer.name' $otomi_settings && return 0
   [ -n "$CI" ] && return 0
   return 1
 }
@@ -236,7 +236,7 @@ function hf_values() {
   hf -f helmfile.tpl/helmfile-dump.yaml build |
     grep -Ev $helmfile_output_hide |
     sed -e $replace_paths_pattern |
-    yq read -P - 'renderedvalues'
+    yq '.renderedvalues' -
 }
 
 function hf_template() {
