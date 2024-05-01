@@ -19,7 +19,7 @@ metadata:
       designated list.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}    
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -38,7 +38,7 @@ spec:
             all:
             - key: "{{`{{ images.[containers, initContainers, ephemeralContainers][].*.name[] }}`}}"
               operator: AnyNotIn
-              {{- with .customValues }}
+              {{- with $p.customValues }}
               value: {{ . | toYaml | nindent 14 }}
               {{- end }}
 {{- end }}
