@@ -67,7 +67,6 @@ otomi:
           provider: aws
     globalPullSecret:
         username: otomi
-    hasCloudLB: false
     hasExternalDNS: true
     hasExternalIDP: true
     isHomeMonitored: false
@@ -127,4 +126,4 @@ status:
         deployingVersion: 0.21.0
         status: deployed
         version: 0.21.0
-version: 20
+version: 22

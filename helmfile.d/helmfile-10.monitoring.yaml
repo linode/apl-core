@@ -60,7 +60,3 @@ releases:
     installed: {{ has "msteams" ($v | get "alerts.receivers") }}
     namespace: monitoring
     <<: *default
-  - name: thanos
-    installed: {{ $a | get "thanos.enabled" }}
-    namespace: monitoring
-    <<: *default

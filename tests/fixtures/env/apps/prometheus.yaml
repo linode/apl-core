@@ -6,7 +6,6 @@ apps:
             - PrometheusOperatorListErrors
         remoteWrite:
             enabled: true
-            otomiThanos: false
             rwConfig:
                 basicAuth:
                     enabled: true
