@@ -32,7 +32,7 @@ spec:
       skipBackgroundRequests: true
       validate:
         message: >-
-          All images in this Pod must come from an authorized repository.          
+          All images in this Pod must come from an authorized repository.
         deny:
           conditions:
             all:
