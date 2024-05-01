@@ -1,4 +1,4 @@
-FROM docker.io/otomi-tools/multiarch-example:buildx-latest as ci
+FROM otomi/tools:v1.7.0 as ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -28,7 +28,7 @@ FROM ci as clean
 RUN npm prune --production
 
 #-----------------------------
-FROM docker.io/otomi-tools/multiarch-example:buildx-latest as prod
+FROM otomi/tools:v1.7.0 as prod
 
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env

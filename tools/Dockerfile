@@ -4,6 +4,14 @@ FROM ubuntu:20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+ARG TARGETPLATFORM
+ARG TARGETARCH
+ARG BUILDPLATFORM
+
+RUN apt-get update && apt-get install -y curl
+
+ARG ARCH=${TARGETARCH}
+
 # https://github.com/kubernetes/kubernetes/releases
 ARG KUBECTL_VERSION=1.26.9
 # https://github.com/helm/helm/tags
@@ -20,8 +28,8 @@ ARG GUCCI_VERSION=1.6.6
 ARG HELMFILE_VERSION=0.156.0
 # https://github.com/open-policy-agent/opa/releases
 ARG OPA_VERSION=0.50.1
-# https://github.com/instrumenta/kubeval/releases
-ARG KUBEVAL_VERSION=0.16.1
+# https://github.com/yannh/kubeconform/releases
+ARG KUBECONFORM_VERSION="v0.6.4"
 # https://github.com/open-policy-agent/conftest/releases
 ARG CONFTEST_VERSION=0.39.2
 # https://github.com/plexsystems/konstraint/releases
@@ -29,7 +37,7 @@ ARG KONSTRAINT_VERSION=0.26.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=16
 
-ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-amd64.tar.gz
+ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
 
 WORKDIR /
 
@@ -64,12 +72,21 @@ RUN apt-get update -qq \
 RUN locale-gen en_US.UTF-8
 
 # jq
-RUN curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/bin/jq && \
-  echo 'af986793a515d500ab2d35f8d2aecd656e764504b789b66d7e1a0b727a124c44  /usr/bin/jq' | sha256sum -c && \
-  chmod +x /usr/bin/jq
+#TODO check this one
+RUN jq_download_url="https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-${TARGETARCH}" && \
+    if [ "${TARGETARCH}" = "amd64" ]; then \
+        jq_expected_checksum="5942c9b0934e510ee61eb3e30273f1b3fe2590df93933a93d7c58b81d19c8ff5"; \
+    elif [ "${TARGETARCH}" = "arm64" ]; then \
+        jq_expected_checksum="4dd2d8a0661df0b22f1bb9a1f9830f06b6f3b8f7d91211a1ef5d7c4f06a8b4a5"; \
+    else \
+        echo "Unsupported TARGETARCH: ${TARGETARCH}" >&2; exit 1; \
+    fi && \
+    curl -L "${jq_download_url}" --output /usr/bin/jq && \
+    echo "${jq_expected_checksum}  /usr/bin/jq" | sha256sum -c - && \
+    chmod +x /usr/bin/jq
 
 # yq
-COPY --from=mikefarah/yq:3 /usr/bin/yq /usr/bin/yq
+COPY --from=mikefarah/yq:4 /usr/bin/yq /usr/bin/yq
 
 RUN mkdir -p /home/app
 RUN groupadd -r app &&\
@@ -81,7 +98,7 @@ WORKDIR $APP_HOME
 ENV PATH $PATH:$APP_HOME
 
 # kubectl
-ADD --checksum=sha256:98ea4a13895e54ba24f57e0d369ff6be0d3906895305d5390197069b1da12ae2 https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/amd64/kubectl .
+ADD --checksum=sha256:98ea4a13895e54ba24f57e0d369ff6be0d3906895305d5390197069b1da12ae2 https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/${TARGETARCH}/kubectl .
 RUN chmod +x kubectl
 
 # sops
@@ -90,41 +107,42 @@ RUN chmod +x sops
 
 # helm
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
-RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-amd64/helm helm && rm -rf /tmp/*
+RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-${TARGETARCH}/helm helm && rm -rf /tmp/*
 RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
 RUN echo "exec \$*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
 RUN helm plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION}
 
 # helmfile
-ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_amd64.tar.gz /tmp
-RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_amd64.tar.gz -C /tmp && mv /tmp/helmfile helmfile
+ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz /tmp
+RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz -C /tmp && mv /tmp/helmfile helmfile
 
 # gucci
-ADD https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64 gucci
+ADD https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-${TARGETARCH} gucci
 RUN chmod +x gucci
 
 # aws
 RUN pip3 install --upgrade --no-cache-dir awscli
 
 # aws-iam-authenticator
-ADD https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin/linux/amd64/aws-iam-authenticator aws-iam-authenticator
+ADD https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin/linux/${TARGETARCH}/aws-iam-authenticator aws-iam-authenticator
 RUN chmod +x aws-iam-authenticator
 
 # opa
-ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
-RUN chmod +x opa
+#ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_${TARGETARCH} opa
+#RUN chmod +x opa
 
 # kubeval
-ADD https://github.com/instrumenta/kubeval/releases/download/v${KUBEVAL_VERSION}/kubeval-linux-amd64.tar.gz /tmp
-RUN tar -zxvf /tmp/kubeval-linux-amd64.tar.gz -C /tmp && mv /tmp/kubeval kubeval
+ADD https://github.com/yannh/kubeconform/releases/download/v0.6.4/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
+RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kubeconform kubeconform
 
 # conftest
-ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp
-RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && mv /tmp/conftest conftest
+#TODO check this one
+#ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp
+#RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && mv /tmp/conftest conftest
 
 # konstraint
-ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
-RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
+#ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-${TARGETARCH} /tmp
+#RUN mv /tmp/konstraint-linux-${TARGETARCH} konstraint && chmod +x konstraint
 
 # node
 # https://github.com/nodesource/distributions
