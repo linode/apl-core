@@ -158,6 +158,6 @@ changes:
       - 'teams.{team}.billingAlertQuotas'
   - version: 23
     deletions:
-      - apps.vault
-      - kms.sops[3]
-      - platformBackups.persistentVolumes.vault
+      - 'apps.vault'
+      - 'kms.sops.vault'
+      - 'platformBackups.persistentVolumes.vault'
