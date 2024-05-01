@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "allowed-image-repos") ($p.enabled) }}
+{{- $p := index $v.policies "allowed-image-repositories" }}
+{{- if $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -41,5 +41,4 @@ spec:
               {{- with .customValues }}
               value: {{ . | toYaml | nindent 14 }}
               {{- end }}
-{{- end }}
 {{- end }}
