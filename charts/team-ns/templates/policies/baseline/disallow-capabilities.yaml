@@ -66,6 +66,11 @@ spec:
                   - SYS_CHROOT
                   - ""
           - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotEquals
+                value: "*/istio/proxyv2*"
             deny:
               conditions:
                 all:
