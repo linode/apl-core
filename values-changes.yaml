@@ -145,4 +145,19 @@ changes:
       - 'apps.harbor.resources.database': 'databases.harbor.resources'
   - version: 22
     additions:
+      - databases.gitea.useOtomiDB: false
+      - databases.gitea.imported: false
+    deletions:
+      - 'apps.thanos'
+      - 'apps.prometheus.remoteWrite.otomiThanos'
+      - 'apps.ingress-azure'
+      - 'otomi.hasCloudLB'
+      - 'monitor'
+      - 'azureMonitor'
+      - 'apps.opencost'
+      - 'teams.{team}.billingAlertQuotas'
+  - version: 23
+    additions:
       - 'teamConfig.{team}.selfService.policies': ['edit policies']
+    bulkAdditions:
+      - 'teamConfig.{team}.policies': '../../src/policies.json'
