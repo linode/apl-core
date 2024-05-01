@@ -38,19 +38,7 @@ spec:
         message: >-
           Containers must drop `ALL` capabilities.
         foreach:
-          - list: request.object.spec.initContainers[]
-            preconditions:
-              all:
-              - key: "{{`{{ element.image }}`}}"
-                operator: NotEquals
-                value: "*/istio/proxyv2*"
-            deny:
-              conditions:
-                all:
-                - key: ALL
-                  operator: AnyNotIn
-                  value: "{{`{{`}} element.securityContext.capabilities.drop[] || `[]` {{`}}`}}"
-          - list: request.object.spec.[ephemeralContainers, containers][]
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
             deny:
               conditions:
                 all:
