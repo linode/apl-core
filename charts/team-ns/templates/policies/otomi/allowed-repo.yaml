@@ -33,11 +33,30 @@ spec:
       validate:
         message: >-
           All images in this Pod must come from an authorized repository.
-        deny:
-          conditions:
-            all:
-            - key: "{{`{{ images.[containers, initContainers, ephemeralContainers][].*.name[] }}`}}"
-              operator: AnyNotIn
-              value: harbor.{{ $v.cluster.domainSuffix }}
+        foreach:
+          - list: request.object.spec.initContainers[].image
+            preconditions:
+              all:
+              - key: "{{`{{ element }}`}}"
+                operator: Equals
+                value: "*/istio/proxyv2*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element }}`}}"
+                  operator: NotEquals
+                  value: "docker.io/*"
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][].image
+            preconditions:
+              all:
+              - key: "{{`{{ element }}`}}"
+                operator: NotEquals
+                value: "*/istio/proxyv2*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element }}`}}"
+                  operator: NotEquals
+                  value: harbor.{{ $v.cluster.domainSuffix }}/*
 {{- end }}
 {{- end }}
