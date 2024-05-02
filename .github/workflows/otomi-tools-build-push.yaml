@@ -1,6 +1,13 @@
 name: Otomi Tools Build and Versioning
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build and push'
+        required: false
+        default: 'latest'
+        type: string
   push:
     branches:
       - 'main'
