@@ -35,16 +35,20 @@ spec:
           spec.initContainers[*].securityContext.allowPrivilegeEscalation,
           and spec.ephemeralContainers[*].securityContext.allowPrivilegeEscalation
           must be set to `false`.
-        pattern:
-          spec:
-            =(ephemeralContainers):
-            - securityContext:
-                allowPrivilegeEscalation: "false"
-            =(initContainers):
-            - securityContext:
-                allowPrivilegeEscalation: "false"
-            containers:
-            - securityContext:
-                allowPrivilegeEscalation: "false"
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              - key: "{{`{{ element.image }}`}}"
+                operator: AnyNotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - cgr.dev/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791
+                  - "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ not_null(element.securityContext.allowPrivilegeEscalation, 'true') }}`}}"
+                  operator: NotEquals
+                  value: false
 {{- end }}
 {{- end }}

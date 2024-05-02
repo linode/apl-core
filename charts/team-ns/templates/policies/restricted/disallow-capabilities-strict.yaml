@@ -39,6 +39,14 @@ spec:
           Containers must drop `ALL` capabilities.
         foreach:
           - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: AnyNotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - cgr.dev/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791
+                  - "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint*"
             deny:
               conditions:
                 all:
