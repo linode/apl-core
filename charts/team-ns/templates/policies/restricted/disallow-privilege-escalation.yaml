@@ -38,6 +38,7 @@ spec:
         foreach:
           - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
             preconditions:
+              all:
               - key: "{{`{{ element.image }}`}}"
                 operator: AnyNotIn
                 value:
