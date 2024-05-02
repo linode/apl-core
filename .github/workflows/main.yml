@@ -47,6 +47,7 @@ jobs:
       - name: CI tests, image build and push tag for main or branch
         uses: docker/build-push-action@v5
         with:
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}

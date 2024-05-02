@@ -69,7 +69,7 @@ jobs:
       - name: Build and tag Docker image
         if: ${{ env.NEW_VERSION != null }}
         run: |
-          docker buildx build --load -t ${{ env.NAMESPACE }}/${{ env.REPO }} -f tools/Dockerfile .
+          docker buildx build --platform linux/arm64,linux/amd64 --load -t ${{ env.NAMESPACE }}/${{ env.REPO }} -f tools/Dockerfile .
           docker tag ${{ env.NAMESPACE }}/${{ env.REPO }} ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
 
       - name: Squash image
