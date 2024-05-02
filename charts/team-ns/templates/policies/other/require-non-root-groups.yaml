@@ -37,36 +37,19 @@ spec:
           spec.initContainers[*].securityContext.runAsGroup, and
           spec.ephemeralContainers[*].securityContext.runAsGroup must be
           set to a value greater than zero.
-        anyPattern:
-        - spec:
-            =(initContainers):
-              - (image): "*istio/proxyv2*"
-                =(securityContext):
-                  runAsGroup: "0"
-        - spec:
-            securityContext:
-              runAsGroup: ">0"
-            =(ephemeralContainers):
-              - =(securityContext):
-                  =(runAsGroup): ">0"
-            =(initContainers):
-              - (image): "!*istio/proxyv2*"
-                =(securityContext):
-                  =(runAsGroup): ">0"
-            containers:
-              - =(securityContext):
-                  =(runAsGroup): ">0"
-        - spec:
-            =(ephemeralContainers):
-              - securityContext:
-                  runAsGroup: ">0"
-            =(initContainers):
-              - (image): "!*istio/proxyv2*"
-                securityContext:
-                  runAsGroup: ">0"
-            containers:
-              - securityContext:
-                  runAsGroup: ">0"
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotEquals
+                value: "*/istio/proxyv2*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element.securityContext.runAsGroup || '0' }}`}}"
+                  operator: LessThanOrEquals
+                  value: "0"
     - name: check-supplementalgroups
       match:
         any:

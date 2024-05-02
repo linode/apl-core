@@ -39,37 +39,20 @@ spec:
           spec.initContainers[*].securityContext.seccompProfile.type, and
           spec.ephemeralContainers[*].securityContext.seccompProfile.type
           must be set to `RuntimeDefault` or `Localhost`.
-        anyPattern:
-        - spec:
-            securityContext:
-              seccompProfile:
-                type: "RuntimeDefault | Localhost"
-            =(ephemeralContainers):
-            - =(securityContext):
-                =(seccompProfile):
-                  =(type): "RuntimeDefault | Localhost"
-            =(initContainers):
-            - (image): "!*istio/proxyv2*"
-              =(securityContext):
-                =(seccompProfile):
-                  =(type): "RuntimeDefault | Localhost"
-            containers:
-            - =(securityContext):
-                =(seccompProfile):
-                  =(type): "RuntimeDefault | Localhost"
-        - spec:
-            =(ephemeralContainers):
-            - securityContext:
-                seccompProfile:
-                  type: "RuntimeDefault | Localhost"
-            =(initContainers):
-            - (image): "!*istio/proxyv2*"
-              securityContext:
-                seccompProfile:
-                  type: "RuntimeDefault | Localhost"
-            containers:
-            - securityContext:
-                seccompProfile:
-                  type: "RuntimeDefault | Localhost"
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotEquals
+                value: "*/istio/proxyv2*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element.securityContext.seccompProfile.type || '' }}`}}"
+                  operator: AnyNotIn
+                  value:
+                  - RuntimeDefault
+                  - Localhost
 {{- end }}
 {{- end }}
