@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "restrict-seccomp-strict") ($p.enabled) }}
+{{- $p := index $v.policies "restrict-seccomp-strict" }}
+{{- if $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -9,7 +9,7 @@ metadata:
   annotations:
     policies.kyverno.io/title: Restrict Seccomp (Strict)
     policies.kyverno.io/category: Pod Security Standards (Restricted)
-    policies.kyverno.io/severity: {{ .severity }}
+    policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
     kyverno.io/kyverno-version: 1.6.0
     policies.kyverno.io/description: >-
@@ -20,7 +20,7 @@ metadata:
       using `anyPattern` from being persisted properly in Kubernetes 1.23.0-1.23.2.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -69,5 +69,4 @@ spec:
             - securityContext:
                 seccompProfile:
                   type: "RuntimeDefault | Localhost"
-{{- end }}
 {{- end }}

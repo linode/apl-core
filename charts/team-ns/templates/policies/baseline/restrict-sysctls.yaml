@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "restrict-sysctls") ($p.enabled) }}
+{{- $p := index $v.policies "restrict-sysctls" }}
+{{- if $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -9,7 +9,7 @@ metadata:
   annotations:
     policies.kyverno.io/title: Restrict sysctls
     policies.kyverno.io/category: Pod Security Standards (Baseline)
-    policies.kyverno.io/severity: {{ .severity }}
+    policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
     kyverno.io/kyverno-version: 1.6.0
     policies.kyverno.io/description: >-
@@ -21,7 +21,7 @@ metadata:
       a Pod.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -44,5 +44,4 @@ spec:
             =(securityContext):
               =(sysctls):
                 - =(name): "kernel.shm_rmid_forced | net.ipv4.ip_local_port_range | net.ipv4.ip_unprivileged_port_start | net.ipv4.tcp_syncookies | net.ipv4.ping_group_range"
-{{- end }}
 {{- end }}

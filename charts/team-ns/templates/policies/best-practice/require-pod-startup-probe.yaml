@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "require-pod-startup-probe") ($p.enabled) }}
+{{- $p := index $v.policies "require-pod-startup-probe" }}
+{{- if $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -10,7 +10,7 @@ metadata:
     pod-policies.kyverno.io/autogen-controllers: DaemonSet,Deployment,StatefulSet
     policies.kyverno.io/title: Require Pod Startup Probe
     policies.kyverno.io/category: best-practice
-    policies.kyverno.io/severity: medium
+    policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
       Startup probes need to be configured to correctly manage a Pod's
@@ -22,7 +22,7 @@ metadata:
       This policy validates that all containers have a livenessProbe defined.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -50,5 +50,4 @@ spec:
             - key: startupProbe
               operator: AllNotIn
               value: "{{`{{ element.keys(@)[] }}`}}"
-{{- end }}
 {{- end }}

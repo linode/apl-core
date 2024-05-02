@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "require-limits") ($p.enabled) }}
+{{- $p := index $v.policies "require-limits" }}
+{{- if $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -9,7 +9,7 @@ metadata:
   annotations:
     policies.kyverno.io/title: Require Limits
     policies.kyverno.io/category: best-practice
-    policies.kyverno.io/severity: medium
+    policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/minversion: 1.6.0
     policies.kyverno.io/description: >-
@@ -21,7 +21,7 @@ metadata:
       requests and memory limits.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -41,5 +41,4 @@ spec:
               limits:
                 memory: "?*"
                 cpu: "?*"
-{{- end }}
 {{- end }}

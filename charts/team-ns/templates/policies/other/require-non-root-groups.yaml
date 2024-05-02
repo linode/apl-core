@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "require-non-root-groups") ($p.enabled) }}
+{{- $p := index $v.policies "require-non-root-groups" }}
+{{- if $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -8,7 +8,7 @@ metadata:
   name: require-non-root-groups
   annotations:
     policies.kyverno.io/category: other
-    policies.kyverno.io/severity: {{ .severity | quote }}
+    policies.kyverno.io/severity: {{ $p.severity | quote }}
     policies.kyverno.io/minversion: 1.3.6
     kyverno.io/kyverno-version: 1.6.0
     policies.kyverno.io/subject: Pod
@@ -19,7 +19,7 @@ metadata:
       using `anyPattern` from being persisted properly in Kubernetes 1.23.0-1.23.2.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -91,5 +91,4 @@ spec:
           spec:
             =(securityContext):
               =(fsGroup): ">0"
-{{- end }}
 {{- end }}

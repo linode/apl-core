@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "restrict-sysctls") ($p.enabled) }}
+{{- $p := index $v.policies "restrict-sysctls" }}
+{{- if $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -9,7 +9,7 @@ metadata:
   annotations:
     policies.kyverno.io/title: Disallow Privilege Escalation
     policies.kyverno.io/category: Pod Security Standards (Restricted)
-    policies.kyverno.io/severity: {{ .severity }}
+    policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
     kyverno.io/kyverno-version: 1.6.0
     policies.kyverno.io/description: >-
@@ -17,7 +17,7 @@ metadata:
       This policy ensures the `allowPrivilegeEscalation` field is set to `false`.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -46,5 +46,4 @@ spec:
             containers:
             - securityContext:
                 allowPrivilegeEscalation: "false"
-{{- end }}
 {{- end }}
