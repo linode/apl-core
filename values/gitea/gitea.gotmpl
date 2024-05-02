@@ -4,6 +4,8 @@
 {{- $k := $v.apps.keycloak }}
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
+{{- $gdb := $v.databases.gitea }}
+
 nameOverride: gitea
 fullnameOverride: gitea
 
@@ -56,6 +58,15 @@ gitea:
     username: {{ $g.adminUsername }}
     password: {{ $g.adminPassword }}
   config:
+    {{- if $gdb.useOtomiDB }}
+    database:
+      DB_TYPE: postgres
+      HOST: gitea-db-rw.gitea.svc.cluster.local:5432
+      NAME: gitea
+      USER: gitea
+      PASSWD: {{ $v.apps.gitea.postgresqlPassword }}
+      SCHEMA: public
+    {{- end }}
     admin:
       DISABLE_REGULAR_ORG_CREATION: false
     log:
@@ -170,6 +181,11 @@ persistence:
   {{- end }}
 
 postgresql:
+  {{- if $gdb.useOtomiDB }}
+  enabled: false
+  {{- else }}
+  enabled: true
+  {{- end }} 
   # @TODO:
   image:
     tag: {{ $g | get "image.postgresql.tag" "13.5.0" }}

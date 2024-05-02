@@ -1,0 +1,49 @@
+{{- $v := .Values }}
+{{- $k := $v.apps.gitea }}
+{{- $cnpg := $v.apps.cnpg }}
+{{- $gdb := $v.databases.gitea }}
+
+name: gitea-db
+storage:
+  size: {{ $gdb.size }}
+
+{{- if $gdb.imported }}
+clusterSpec:
+  bootstrap:
+    initdb:
+      database: gitea
+      owner: gitea
+      secret:
+        name: gitea-db-secret
+      import:
+        type: microservice
+        databases:
+          - gitea
+        source:
+          externalCluster: gitea-postgresql
+  externalClusters:
+  - name: gitea-postgresql
+    connectionParameters:
+      host: gitea-postgresql.gitea.svc.cluster.local
+      user: gitea
+      dbname: gitea
+      sslmode: disable
+    password:
+      name: gitea-postgresql
+      key: postgresql-password
+
+{{- else }}
+clusterSpec:  
+  bootstrap:
+    initdb:
+      database: gitea
+      owner: gitea
+      secret:
+        name: gitea-db-secret
+      localeCollate: 'en_US.UTF-8'
+      localeCType: 'en_US.UTF-8'
+{{- end }}
+
+instances: {{ $gdb.replicas }}
+
+resources: {{- toYaml $gdb.resources | nindent 6 }}
