@@ -1,3 +1,20 @@
 teamConfig:
     admin:
-        policies: []
+        policies:
+            disallow-capabilities:
+                action: Audit
+                customValues: []
+                id: disallow-capabilities
+                severity: medium
+            disallow-host-namespaces:
+                action: Audit
+                id: disallow-host-namespaces
+                severity: medium
+            disallow-host-path:
+                action: Audit
+                id: disallow-host-path
+                severity: medium
+            disallow-host-ports:
+                action: Audit
+                id: disallow-host-ports
+                severity: medium
