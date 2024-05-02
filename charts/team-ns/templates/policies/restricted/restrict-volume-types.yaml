@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "restrict-volume-types" }}
-{{- if $p }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy

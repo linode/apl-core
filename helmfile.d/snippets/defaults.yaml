@@ -307,7 +307,7 @@ environments:
                   cpu: 50m
                   memory: 32Mi
           kyverno:
-            enabled: true
+            enabled: false
             mode: DevTest
             resources:
               admissionController:

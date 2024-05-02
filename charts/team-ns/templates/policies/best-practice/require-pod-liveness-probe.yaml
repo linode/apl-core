@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- $p := index $v.policies "require-pod-liveness-probe" }}
-{{- if $p }}
+{{- $p := index $v.policies "require-liveness-probe" }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
