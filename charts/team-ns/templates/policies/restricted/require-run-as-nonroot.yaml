@@ -35,6 +35,11 @@ spec:
           must be set to `true`.
         anyPattern:
         - spec:
+            =(initContainers):
+              - (image): "*istio/proxyv2*"
+                =(securityContext):
+                  runAsNonRoot: false
+        - spec:
             securityContext:
               runAsNonRoot: true
             =(ephemeralContainers):

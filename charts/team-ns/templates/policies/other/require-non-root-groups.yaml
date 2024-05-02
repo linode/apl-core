@@ -39,6 +39,11 @@ spec:
           set to a value greater than zero.
         anyPattern:
         - spec:
+            =(initContainers):
+              - (image): "*istio/proxyv2*"
+                =(securityContext):
+                  runAsGroup: "0"
+        - spec:
             securityContext:
               runAsGroup: ">0"
             =(ephemeralContainers):

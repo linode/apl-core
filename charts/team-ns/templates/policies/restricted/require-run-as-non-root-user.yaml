@@ -34,8 +34,13 @@ spec:
           spec.containers[*].securityContext.runAsUser, spec.initContainers[*].securityContext.runAsUser,
           and spec.ephemeralContainers[*].securityContext.runAsUser must be unset or
           set to a number greater than zero.
-        pattern:
-          spec:
+        anyPattern:
+        - spec:
+            =(initContainers):
+              - (image): "*istio/proxyv2*"
+                =(securityContext):
+                  runAsUser: "0"
+        - spec:
             =(securityContext):
               =(runAsUser): ">0"
             =(ephemeralContainers):
