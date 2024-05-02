@@ -1,4 +1,4 @@
-FROM clubbers/otomi-tools:multi-arch as ci
+FROM clubbers/otomi-tools:multi-arch-squashed as ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -28,7 +28,7 @@ FROM ci as clean
 RUN npm prune --production
 
 #-----------------------------
-FROM clubbers/otomi-tools:multi-arch as prod
+FROM clubbers/otomi-tools:multi-arch-squashed as prod
 
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
