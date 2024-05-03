@@ -15,7 +15,7 @@ jobs:
       - name: Self-hosted Renovate
         uses: renovatebot/github-action@v40.1.11
         env:
-          RENOVATE_PRIVATE_KEY: '${{ secrets.RENOVATE_PGP_PRIVATE_KEY }}'
+          # RENOVATE_PRIVATE_KEY: '${{ secrets.RENOVATE_PGP_PRIVATE_KEY }}'
           LOG_LEVEL: debug
         with:
           configurationFile: .github/renovate.json
