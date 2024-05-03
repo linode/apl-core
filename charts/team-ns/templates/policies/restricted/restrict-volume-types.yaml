@@ -39,7 +39,7 @@ spec:
             all:
             - key: "{{`{{ request.object.spec.volumes[].keys(@)[] || '' }}`}}"
               operator: AnyNotIn
-              {{- with $p.customValues }}
-              value: {{ . | toYaml | nindent 16 }}
+              {{- if $p.customValues }}
+              value: {{ $p.customValues | toYaml | nindent 14 }}
               {{- end }}
 {{- end }}

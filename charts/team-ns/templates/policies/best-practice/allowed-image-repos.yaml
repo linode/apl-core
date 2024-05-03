@@ -38,7 +38,7 @@ spec:
             all:
             - key: "{{`{{ images.[containers, initContainers, ephemeralContainers][].*.name[] }}`}}"
               operator: AnyNotIn
-              {{- with $p.customValues }}
-              value: {{ . | toYaml | nindent 14 }}
+              {{- if $p.customValues }}
+              value: {{ $p.customValues | toYaml | nindent 14 }}
               {{- end }}
 {{- end }}
