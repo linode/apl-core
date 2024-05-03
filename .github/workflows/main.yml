@@ -46,13 +46,17 @@ jobs:
           registry: ${{ env.CACHE_REGISTRY }}
           username: ${{ env.GIT_USER }}
           password: '${{ secrets.NPM_TOKEN }}'
-      - name: CI tests, image build and push tag for main or branch
-        uses: docker/build-push-action@v5
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: |
-            ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
+      - name: Build and tag Docker image
+        run: |
+          docker buildx build --platform linux/arm64,linux/amd64 -t ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }} .
+
+  #      - name: CI tests, image build and push tag for main or branch
+  #        uses: docker/build-push-action@v5
+  #        with:
+  #          platforms: linux/amd64,linux/arm64
+  #          push: true
+  #          tags: |
+  #            ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
   push-to-docker:
     needs: build-test-cache
