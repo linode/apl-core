@@ -1,5 +1,8 @@
 name: Renovate
 on:
+  push:
+    branches:
+      - 'auto-chart-update'
   # This lets you dispatch a renovate job with different cache options if you want to reset or disable the cache manually.
   workflow_dispatch:
 
