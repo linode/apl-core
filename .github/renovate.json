@@ -1,10 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "dryRun": "full",
-  "username": "renovate",
   "gitAuthor": "Renovate Bot <renovate.bot@redkubes.com>",
   "onboarding": false,
-  "requireConfig": "optional",
   "platform": "github",
   "repositories": ["redkubes/otomi-core"],
   "schedule": "before 5am every weekday",
