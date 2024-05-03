@@ -18,7 +18,6 @@ jobs:
           RENOVATE_PRIVATE_KEY: '${{ secrets.RENOVATE_PGP_PRIVATE_KEY }}'
           LOG_LEVEL: debug
           RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
-          GITHUB_COM_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
         with:
-          configurationFile: .github/renovate.json
+          configurationFile: .github/renovate.js
           renovate-version: full
