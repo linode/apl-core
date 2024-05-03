@@ -1,13 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "baseBranches": ["auto-chart-update"],
-  "branchPrefix": "renovate-",
   "dryRun": "full",
   "username": "renovate",
   "gitAuthor": "Renovate Bot <renovate.bot@redkubes.com>",
   "onboarding": false,
   "requireConfig": "optional",
-  "logFileLevel": "debug",
   "platform": "github",
   "repositories": ["redkubes/otomi-core"],
   "schedule": "before 5am every weekday",
@@ -18,7 +15,6 @@
   "helmv3": {
     "enabled": true,
     "registryAliases": { "stable": "https://charts.helm.sh/stable" },
-
     "commitMessageTopic": "helm chart {{depName}}",
     "fileMatch": ["^chart/otomi-deps/Chart\\.yaml$"]
   }
