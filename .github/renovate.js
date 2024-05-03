@@ -1,4 +1,4 @@
-{
+module.exports = {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "baseBranches": ["auto-chart-update"],
   "branchPrefix": "renovate-",

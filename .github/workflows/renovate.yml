@@ -14,6 +14,6 @@ jobs:
         env:
           RENOVATE_PRIVATE_KEY: '${{ secrets.RENOVATE_PGP_PRIVATE_KEY }}'
         with:
-          configurationFile: .github/renovate.json
+          configurationFile: .github/renovate.js
           renovate-version: full
           token: ${{ secrets.RENOVATE_TOKEN }}
