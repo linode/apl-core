@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "baseBranches": ["auto-chart-update"],
   "branchPrefix": "renovate-",
-  "dryRun": "full",
+  "dryRun": null,
   "includePaths": ["chart"],
   "username": "renovate",
   "gitAuthor": "Renovate Bot <renovate.bot@redkubes.com>",
@@ -19,6 +19,7 @@
   "helmv3": {
     "enabled": true,
     "registryAliases": { "stable": "https://charts.helm.sh/stable" },
+
     "commitMessageTopic": "helm chart {{depName}}",
     "fileMatch": ["^chart/otomi-deps/Chart\\.yaml$"]
   }
