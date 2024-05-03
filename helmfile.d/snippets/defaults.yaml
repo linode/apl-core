@@ -658,6 +658,19 @@ environments:
             size: '5Gi'
             replicas: 2
             coreDatabase: registry
+          gitea:
+            useOtomiDB: true
+            imported: false
+            size: '5Gi'
+            replicas: 2
+            resources:
+              limits:
+                cpu: 100m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 256Mi
+            postgresqlPassword: {{ randAlphaNum 20 }}
         platformBackups:
           database:
             harbor:
