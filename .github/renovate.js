@@ -1,7 +1,6 @@
 module.exports = {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   dryRun: 'full',
-  gitAuthor: 'Renovate Bot <renovate.bot@redkubes.com>',
   onboarding: false,
   platform: 'github',
   repositories: ['redkubes/otomi-core'],
