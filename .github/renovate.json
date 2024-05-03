@@ -7,6 +7,7 @@
   "username": "renovate",
   "gitAuthor": "Renovate Bot <renovate.bot@redkubes.com>",
   "onboarding": false,
+  "requireConfig": false,
   "logFileLevel": "debug",
   "platform": "github",
   "repositories": ["redkubes/otomi-core"],
