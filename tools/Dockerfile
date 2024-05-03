@@ -98,8 +98,10 @@ WORKDIR $APP_HOME
 ENV PATH $PATH:$APP_HOME
 
 # kubectl
-ADD --checksum=sha256:98ea4a13895e54ba24f57e0d369ff6be0d3906895305d5390197069b1da12ae2 https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/${TARGETARCH}/kubectl .
-RUN chmod +x kubectl
+RUN curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/kubectl" && \
+    curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/kubectl.sha256" && \
+    echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check && \
+    chmod +x kubectl
 
 # sops
 ADD https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux sops
