@@ -63,20 +63,9 @@ jobs:
             echo OLD_VERSION = ${OLD_VERSION}
             echo NEW_VERSION = ${NEW_VERSION}
           fi
-
+          NEW_VERSION=multi-arch
+          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
           echo "No need to bump the version. Will skip next steps."
-
-      - name: Build and tag Docker image
-        if: ${{ env.NEW_VERSION != null }}
-        run: |
-          docker buildx build --platform linux/arm64,linux/amd64 --load -t ${{ env.NAMESPACE }}/${{ env.REPO }} -f tools/Dockerfile .
-          docker tag ${{ env.NAMESPACE }}/${{ env.REPO }} ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
-
-      - name: Squash image
-        if: ${{ env.NEW_VERSION != null }}
-        run: |
-          pip3 install docker-squash
-          docker-squash otomi/tools -t ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
 
       - name: Login to GitHub Container Registry
         if: ${{ env.NEW_VERSION != null }}
@@ -85,7 +74,13 @@ jobs:
           username: 'otomi'
           password: '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
 
-      - name: Push Docker image
+      - name: Build and tag Docker image
         if: ${{ env.NEW_VERSION != null }}
         run: |
-          docker push ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
+          docker buildx build --platform linux/arm64,linux/amd64 --push -t ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }} -f tools/Dockerfile .
+
+      #      - name: Squash image
+      #        if: ${{ env.NEW_VERSION != null }}
+      #        run: |
+      #          pip3 install docker-squash
+      #          docker-squash otomi/tools -t ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
