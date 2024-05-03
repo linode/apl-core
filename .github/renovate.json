@@ -5,7 +5,7 @@
   "dryRun": "full",
   "includePaths": ["chart"],
   "username": "renovate",
-  "gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+  "gitAuthor": "Renovate Bot <renovate.bot@redkubes.com>",
   "onboarding": false,
   "logFileLevel": "debug",
   "platform": "github",

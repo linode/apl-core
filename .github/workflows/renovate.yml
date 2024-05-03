@@ -6,6 +6,8 @@ on:
 jobs:
   renovate:
     runs-on: ubuntu-latest
+    env:
+      RENOVATE_PRIVATE_KEY: '${{ secrets.RENOVATE_PGP_PRIVATE_KEY }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v4.1.4
