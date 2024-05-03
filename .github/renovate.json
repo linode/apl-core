@@ -9,6 +9,7 @@
   "repositories": ["redkubes/otomi-core"],
   "schedule": "before 5am every weekday",
   "npm": { "enabled": false },
+  "enabledManagers": ["helmv3"],
   "helm-requirements": { "enabled": false },
   "helm-values": { "enabled": false },
   "helmfile": { "enabled": false },
