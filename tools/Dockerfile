@@ -133,7 +133,7 @@ RUN chmod +x aws-iam-authenticator
 #ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_${TARGETARCH} opa
 #RUN chmod +x opa
 
-# kubeval
+# kubeconform
 ADD https://github.com/yannh/kubeconform/releases/download/v0.6.4/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kubeconform kubeconform
 
