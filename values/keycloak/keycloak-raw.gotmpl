@@ -13,3 +13,4 @@ resources:
     data:
       password: {{ .Values.otomi.adminPassword | b64enc }}
       username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
+  {{- include "../keycloak/keycloak-cm.gotmpl" . | nindent 2 }}
