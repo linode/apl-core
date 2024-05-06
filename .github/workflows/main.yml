@@ -152,9 +152,6 @@ jobs:
           npm config set update-notifier false
           npm ci --ignore-scripts && npm run compile
           ln -s ./tests/fixtures env && npm test
-          npm prune --production
-          ls
-          pwd
 
       - name: Build and push by digest
         id: build
