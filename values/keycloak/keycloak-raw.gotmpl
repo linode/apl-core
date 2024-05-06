@@ -1,3 +1,5 @@
+{{- $v := .Values }}
+{{- $o := $v | get "oidc" dict }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
 {{- $teamIds := list }}
