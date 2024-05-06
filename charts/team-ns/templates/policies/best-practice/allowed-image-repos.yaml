@@ -57,10 +57,10 @@ spec:
                 all:
                 - key: "{{`{{ element }}`}}"
                   operator: NotEquals
-                  value: harbor.{{ $v.cluster.domainSuffix }}/*          
+                  value: "harbor.{{ $v.cluster.domainSuffix }}/*"
+                {{- if $p.customValues }}
                 - key: "{{`{{ element }}`}}"
                   operator: AnyNotIn
-                  {{- if $p.customValues }}
                   value: {{ $p.customValues | toYaml | nindent 18 }}
-                  {{- end }}
+                {{- end }}
 {{- end }}

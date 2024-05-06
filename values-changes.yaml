@@ -163,7 +163,28 @@ changes:
           {
             'allowed-image-repositories': { 'action': 'Audit', 'customValues': [], 'severity': 'medium' },
             'allowed-repo': { 'action': 'Audit', 'severity': 'medium' },
-            'disallow-capabilities': { 'action': 'Audit', 'customValues': [], 'severity': 'medium' },
+            'disallow-capabilities':
+              {
+                'action': 'Audit',
+                'customValues':
+                  [
+                    'AUDIT_WRITE',
+                    'CHOWN',
+                    'DAC_OVERRIDE',
+                    'FOWNER',
+                    'FSETID',
+                    'KILL',
+                    'MKNOD',
+                    'NET_BIND_SERVICE',
+                    'SETFCAP',
+                    'SETGID',
+                    'SETPCAP',
+                    'SETUID',
+                    'SYS_CHROOT',
+                    '""',
+                  ],
+                'severity': 'medium',
+              },
             'disallow-capabilities-strict': { 'action': 'Audit', 'severity': 'medium' },
             'disallow-host-namespaces': { 'action': 'Audit', 'severity': 'medium' },
             'disallow-host-path': { 'action': 'Audit', 'severity': 'medium' },
@@ -187,5 +208,22 @@ changes:
             'restrict-seccomp': { 'action': 'Audit', 'severity': 'medium' },
             'restrict-seccomp-strict': { 'action': 'Audit', 'severity': 'medium' },
             'restrict-sysctls': { 'action': 'Audit', 'severity': 'medium' },
-            'restrict-volume-types': { 'action': 'Audit', 'customValues': [], 'severity': 'medium' },
+            'restrict-volume-types':
+              {
+                'action': 'Audit',
+                'customValues':
+                  [
+                    'name',
+                    'configMap',
+                    'csi',
+                    'downwardAPI',
+                    'emptyDir',
+                    'ephemeral',
+                    'persistentVolumeClaim',
+                    'projected',
+                    'secret',
+                    '""',
+                  ],
+                'severity': 'medium',
+              },
           }

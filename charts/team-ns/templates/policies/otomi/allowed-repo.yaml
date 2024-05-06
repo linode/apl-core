@@ -57,5 +57,5 @@ spec:
                 all:
                 - key: "{{`{{ element }}`}}"
                   operator: NotEquals
-                  value: harbor.{{ $v.cluster.domainSuffix }}/*
+                  value: "harbor.{{ $v.cluster.domainSuffix }}/*"
 {{- end }}
