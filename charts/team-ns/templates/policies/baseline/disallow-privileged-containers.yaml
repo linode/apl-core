@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "disallow-privileged-containers") ($p.enabled) }}
+{{- $p := index $v.policies "disallow-privileged-containers" }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -9,7 +9,7 @@ metadata:
   annotations:
     policies.kyverno.io/title: Disallow Privileged Containers
     policies.kyverno.io/category: Pod Security Standards (Baseline)
-    policies.kyverno.io/severity: {{ .severity }}
+    policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
     kyverno.io/kyverno-version: 1.6.0
     kyverno.io/kubernetes-version: "1.22-1.23"
@@ -18,7 +18,7 @@ metadata:
       ensures Pods do not call for privileged mode.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -44,5 +44,4 @@ spec:
             containers:
               - =(securityContext):
                   =(privileged): "false"
-{{- end }}
 {{- end }}

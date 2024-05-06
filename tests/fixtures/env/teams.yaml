@@ -9,6 +9,8 @@ teamConfig:
             access:
                 - shell
                 - downloadCertificateAuthority
+            policies:
+                - edit policies
     demo:
         alerts:
             email: {}
@@ -18,11 +20,6 @@ teamConfig:
             slack:
                 channel: aaaaa
                 channelCrit: aaaaa
-        billingAlertQuotas:
-            teamCpuMonthQuotaReached:
-                quota: 150
-            teamMemMonthQuotaReached:
-                quota: 200
         id: demo
         managedMonitoring:
             alertmanager: true
@@ -44,6 +41,8 @@ teamConfig:
                 - ingress
             team:
                 - alerts
+            policies:
+                - edit policies
     dev:
         id: dev
         managedMonitoring:
@@ -54,3 +53,5 @@ teamConfig:
             access:
                 - shell
                 - downloadCertificateAuthority
+            policies:
+                - edit policies

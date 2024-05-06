@@ -4,7 +4,6 @@
 {{- $domain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $ingress :=  $v.ingress.platformClass }}
-{{- $namespace :=  ternary "ingress" "istio-system" $v.otomi.hasCloudLB }}
 {{- $name :=  printf "nginx-team-%s-platform-public-open-forward-harbor" $v.teamId }}
 {{- $secretName := ternary "otomi-byo-wildcard-cert" "otomi-cert-manager-wildcard-cert" (eq $cm.issuer "byo-wildcard-cert") }}
 ---
@@ -27,7 +26,7 @@ metadata:
     {{- end }}
   labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
   name: {{ $name }}
-  namespace: {{ $namespace }}
+  namespace: "istio-system"
 spec:
   ingressClassName: platform
   rules:

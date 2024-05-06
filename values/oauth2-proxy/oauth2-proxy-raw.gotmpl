@@ -9,14 +9,12 @@ resources:
     kind: Ingress
     metadata:
       annotations:
-        {{- if not $v.otomi.hasCloudLB }}
         externaldns: "true"
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
-        {{- end }}
         {{- if and (eq $v.cluster.provider "custom") (hasKey $v.ingress.platformClass "entrypoint") (ne $ingress.entrypoint "") }}
         external-dns.alpha.kubernetes.io/target: {{ $v.ingress.platformClass }}
         {{- end }}
-        ingress.kubernetes.io/ssl-redirect: {{ if $v.otomi.hasCloudLB }}"false"{{ else }}"true"{{ end }}
+        ingress.kubernetes.io/ssl-redirect: "true"
         {{- if $v.apps.keycloak.enabled }}
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         {{- end }}
@@ -40,7 +38,6 @@ resources:
                   number: 80
             path: /
             pathType: Prefix
-      {{- if not $v.otomi.hasCloudLB }}
       tls: 
         {{- if eq $cm.issuer "byo-wildcard-cert" }}
         - secretName: "otomi-byo-wildcard-cert"
@@ -49,4 +46,3 @@ resources:
         {{- end }}
           hosts:
             - '{{ $domain }}'
-      {{- end }}

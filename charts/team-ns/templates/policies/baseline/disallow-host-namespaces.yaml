@@ -1,6 +1,6 @@
 {{- $v := .Values }}
-{{- range $p := $v.policies }}
-{{- if and (eq $p.name "disallow-host-namespaces") ($p.enabled) }}
+{{- $p := index $v.policies "disallow-host-namespaces" }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -9,7 +9,7 @@ metadata:
   annotations:
     policies.kyverno.io/title: Disallow Host Namespaces
     policies.kyverno.io/category: baseline
-    policies.kyverno.io/severity: {{ .severity }}
+    policies.kyverno.io/severity: {{ $p.severity }}
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
       Host namespaces (Process ID namespace, Inter-Process Communication namespace, and
@@ -18,7 +18,7 @@ metadata:
       fields which make use of these host namespaces are unset or set to `false`.
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
-  validationFailureAction: {{ .action }}
+  validationFailureAction: {{ $p.action }}
   background: true
   failurePolicy: Fail
   rules:
@@ -38,5 +38,4 @@ spec:
             =(hostPID): false
             =(hostIPC): false
             =(hostNetwork): false
-{{- end }}
 {{- end }}

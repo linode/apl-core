@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 
-{{- if $v._derived.untrustedCA }}
 resources:
+{{- if $v._derived.untrustedCA }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -9,3 +9,11 @@ resources:
     data:
       ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
 {{- end }}
+  - apiVersion: v1
+    kind: Secret
+    type: kubernetes.io/basic-auth
+    metadata:
+      name: gitea-db-secret
+    data:
+      username: "{{ "gitea" | b64enc }}"
+      password: "{{ $v.apps.gitea.postgresqlPassword | b64enc }}"
