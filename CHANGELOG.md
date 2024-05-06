@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.11.1](https://github.com/redkubes/otomi-core/compare/v2.10.0...v2.11.1) (2024-05-06)
+
+
+### Features
+
+* disable policy check for velero so restic can access hostpath ([#1581](https://github.com/redkubes/otomi-core/issues/1581)) ([796c5ed](https://github.com/redkubes/otomi-core/commit/796c5edabffad149cc368e1f474aa74f60297b97))
+* schema for harbor databases ([#1587](https://github.com/redkubes/otomi-core/issues/1587)) ([6054f4c](https://github.com/redkubes/otomi-core/commit/6054f4c81ced0c279e9362cb5a3c9c45ac51b02c))
+* updated upgrade scripts ([#1571](https://github.com/redkubes/otomi-core/issues/1571)) ([bbfd883](https://github.com/redkubes/otomi-core/commit/bbfd88303bee5cf31530b104f3e82c029fdc9bd2))
+* updating tasks version ([#1611](https://github.com/redkubes/otomi-core/issues/1611)) ([a4f4094](https://github.com/redkubes/otomi-core/commit/a4f4094774dcb0c463082b098024f9d4c9432d07))
+* upgrade istio to 1.20 ([#1590](https://github.com/redkubes/otomi-core/issues/1590)) ([337a405](https://github.com/redkubes/otomi-core/commit/337a4051b75546b09cbfe48708be196119b3b0cf))
+
+
+### Bug Fixes
+
+* argocd resource configuration ([#1580](https://github.com/redkubes/otomi-core/issues/1580)) ([cd9c84f](https://github.com/redkubes/otomi-core/commit/cd9c84fb9d992c6ee76d81d4ff1130d1d6219d49))
+* remove OLM and argocd-operator related resources ([#1586](https://github.com/redkubes/otomi-core/issues/1586)) ([b17113b](https://github.com/redkubes/otomi-core/commit/b17113b59464c3766c7002329901638e8e7c8a3f))
+* removed unused gitlab app ([#1583](https://github.com/redkubes/otomi-core/issues/1583)) ([bd167a9](https://github.com/redkubes/otomi-core/commit/bd167a9177783c47a21c0919c4686db559f1dc65))
+
+
+### Others
+
+* release branch [ci skip] ([d633145](https://github.com/redkubes/otomi-core/commit/d6331452b01a0de13d6ce47cc012c2b54cc96642))
+* versions ([b12a2b4](https://github.com/redkubes/otomi-core/commit/b12a2b421befd1cdd21383376e9a18cb3ccbd89c))
+* versions ([#1588](https://github.com/redkubes/otomi-core/issues/1588)) ([8c044e6](https://github.com/redkubes/otomi-core/commit/8c044e6f0b92aedbee76e37eaf801e706dc31103))
+
 ## [2.11.0](https://github.com/redkubes/otomi-core/compare/v2.10.0...v2.11.0) (2024-04-19)
 
 
