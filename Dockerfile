@@ -44,7 +44,7 @@ COPY --chown=app . .
 RUN npm prune --production
 
 #-----------------------------
-FROM otomi/tools:multi-arch as prod
+FROM otomi/tools:multi-arch
 
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
@@ -58,7 +58,6 @@ RUN npm config set update-notifier false
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
-COPY --chown=app dist /home/app/stack/dist
 COPY --chown=app . .
 COPY --from=clean /home/app/stack/node_modules /home/app/stack/node_modules
 
