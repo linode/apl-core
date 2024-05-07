@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "disallow-capabilities" }}
-{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p $p.customValues }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -36,7 +36,5 @@ spec:
             all:
             - key: "{{`{{ request.object.spec.[ephemeralContainers, initContainers, containers][].securityContext.capabilities.add[] }}`}}"
               operator: AnyNotIn
-              {{- if $p.customValues }}
               value: {{ $p.customValues | toYaml | nindent 14 }}
-              {{- end }}
 {{- end }}
