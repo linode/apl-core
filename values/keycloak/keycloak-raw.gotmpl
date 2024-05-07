@@ -34,7 +34,6 @@ resources:
     metadata:
       name: keycloak-cm
       namespace: {{ .Release.Namespace | quote }}
-      labels: {{- include "keycloak.labels" . | indent 4 }}
     data:
       KEYCLOAK_ADMIN: otomi-admin
       FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
