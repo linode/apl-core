@@ -150,7 +150,7 @@
     "tasks:copy-certs": "binzx/otomi task -n copyCerts",
     "test": "run-s test:ts lint validate-values validate-templates check-policies",
     "test:opa": "NODE_ENV=test binzx/otomi x opa test policies -v",
-    "test:ts": "NODE_ENV=test jest --detectOpenHandles",
+    "test:ts": "NODE_ENV=test jest",
     "test:ts-cov": "jest --coverage",
     "validate-templates": "NODE_ENV=test binzx/otomi validate-templates",
     "validate-templates:all": "set -e; i=25; while [ $i -le 28 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
