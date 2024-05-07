@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.11.2](https://github.com/redkubes/otomi-core/compare/v2.11.1...v2.11.2) (2024-05-07)
+
+
+### Features
+
+* improve query_limits configuration for loki ([#1612](https://github.com/redkubes/otomi-core/issues/1612)) ([00b5da6](https://github.com/redkubes/otomi-core/commit/00b5da69dabc300b57cdfa9dde6750dc3f52353f))
+
 ### [2.11.1](https://github.com/redkubes/otomi-core/compare/v2.10.0...v2.11.1) (2024-05-06)
 
 
