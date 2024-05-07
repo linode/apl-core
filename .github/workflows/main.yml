@@ -106,15 +106,6 @@ jobs:
           sudo npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
       - name: Checkout
         uses: actions/checkout@v4
-      # - name: CI tests, image build and push tag for main or branch
-      #   uses: whoan/docker-build-with-cache-action@v5
-      #   with:
-      #     username: ${{ env.GIT_USER }}
-      #     password: '${{ secrets.NPM_TOKEN }}'
-      #     registry: ${{ env.CACHE_REGISTRY }}
-      #     image_name: ${{ env.CACHE_REPO }}
-      #     image_tag: ${{ env.TAG }}
-      #     pull_image_and_stages: true
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -129,7 +120,7 @@ jobs:
         with:
           username: otomi
           password: ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
-      - name: Test
+      - name: CI Test
         run: |
           export NODE_ENV='test'
           export CI=true
@@ -143,31 +134,13 @@ jobs:
           ln -s ./tests/fixtures env && npm test
           npm prune --production
 
-      - name: CI tests, image build and push tag for main or branch
+      - name: image build and push tag for branch
         uses: docker/build-push-action@v5
         with:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.REPO }}:${{ env.TAG }}
-
-  #  push-to-docker:
-  #    needs: build-test-cache
-  #    if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - name: Push to docker hub
-  #        run: |
-  #          TAG=${GITHUB_REF##*/}
-  #          docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
-  #          image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
-  #          docker pull $image
-  #          docker tag $image $REPO:$TAG
-  #          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
-  #          docker push $REPO:$TAG
-  #      - name: Show me the logic
-  #        run: |
-  #          echo github.ref == ${{ github.ref }}
 
   release:
     needs: build-test-cache
