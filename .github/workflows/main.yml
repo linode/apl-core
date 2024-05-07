@@ -127,9 +127,8 @@ jobs:
       - name: Login to Github Packages
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.CACHE_REGISTRY }}
-          username: ${{ env.GIT_USER }}
-          password: '${{ secrets.NPM_TOKEN }}'
+          username: otomi
+          password: ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
       - name: Test
         run: |
           export NODE_ENV='test'
@@ -150,28 +149,28 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
+            ${{ env.REPO }}:${{ env.TAG }}
 
-  push-to-docker:
-    needs: build-test-cache
-    if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
-    runs-on: ubuntu-latest
-    steps:
-      - name: Push to docker hub
-        run: |
-          TAG=${GITHUB_REF##*/}
-          docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
-          image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
-          docker pull $image
-          docker tag $image $REPO:$TAG
-          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
-          docker push $REPO:$TAG
-      - name: Show me the logic
-        run: |
-          echo github.ref == ${{ github.ref }}
+  #  push-to-docker:
+  #    needs: build-test-cache
+  #    if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Push to docker hub
+  #        run: |
+  #          TAG=${GITHUB_REF##*/}
+  #          docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
+  #          image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
+  #          docker pull $image
+  #          docker tag $image $REPO:$TAG
+  #          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+  #          docker push $REPO:$TAG
+  #      - name: Show me the logic
+  #        run: |
+  #          echo github.ref == ${{ github.ref }}
 
   release:
-    needs: push-to-docker
+    needs: build-test-cache
     if: always() && (startsWith(github.ref, 'refs/heads/releases/') || startsWith(github.ref, 'refs/heads/main')) && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
     runs-on: ubuntu-latest
     env:
@@ -365,7 +364,7 @@ jobs:
           scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
 
   notification:
-    needs: [build-test-cache, push-to-docker, release, chart-release]
+    needs: [build-test-cache, release, chart-release]
     if: always()
     runs-on: ubuntu-latest
     steps:
