@@ -12,7 +12,22 @@
   },
   "disallow-capabilities": {
     "action": "Audit",
-    "customValues": [],
+    "customValues": [
+      "AUDIT_WRITE",
+      "CHOWN",
+      "DAC_OVERRIDE",
+      "FOWNER",
+      "FSETID",
+      "KILL",
+      "MKNOD",
+      "NET_BIND_SERVICE",
+      "SETFCAP",
+      "SETGID",
+      "SETPCAP",
+      "SETUID",
+      "SYS_CHROOT",
+      "''"
+    ],
     "id": "disallow-capabilities",
     "severity": "medium"
   },
@@ -133,7 +148,18 @@
   },
   "restrict-volume-types": {
     "action": "Audit",
-    "customValues": [],
+    "customValues": [
+      "name",
+      "configMap",
+      "csi",
+      "downwardAPI",
+      "emptyDir",
+      "ephemeral",
+      "persistentVolumeClaim",
+      "projected",
+      "secret",
+      "''"
+    ],
     "id": "restrict-volume-types",
     "severity": "medium"
   }

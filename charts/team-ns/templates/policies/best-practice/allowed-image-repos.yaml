@@ -36,9 +36,12 @@ spec:
         deny:
           conditions:
             all:
+            - key: "{{`{{ element }}`}}"
+              operator: NotEquals
+              value: "harbor.{{ $v.cluster.domainSuffix }}/*"
+            {{- if $p.customValues }}
             - key: "{{`{{ images.[containers, initContainers, ephemeralContainers][].*.name[] }}`}}"
               operator: AnyNotIn
-              {{- if $p.customValues }}
               value: {{ $p.customValues | toYaml | nindent 14 }}
-              {{- end }}
+            {{- end }}
 {{- end }}
