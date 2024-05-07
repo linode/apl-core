@@ -142,6 +142,7 @@ jobs:
           npm config set update-notifier false
           npm ci --ignore-scripts && npm run compile
           ln -s ./tests/fixtures env && npm test
+          npm prune --production
 
       - name: CI tests, image build and push tag for main or branch
         uses: docker/build-push-action@v5
