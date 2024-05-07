@@ -5,9 +5,6 @@ teamConfig:
                 action: Audit
                 customValues: []
                 severity: medium
-            allowed-repo:
-                action: Audit
-                severity: medium
             disallow-capabilities:
                 action: Audit
                 customValues:
