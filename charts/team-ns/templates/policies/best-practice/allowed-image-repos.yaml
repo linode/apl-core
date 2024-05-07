@@ -33,15 +33,17 @@ spec:
       validate:
         message: >-
           All images in this Pod must come from an authorized repository.          
-        deny:
-          conditions:
-            all:
-            - key: "{{`{{ element }}`}}"
-              operator: NotEquals
-              value: "harbor.{{ $v.cluster.domainSuffix }}/*"
-            {{- if $p.customValues }}
-            - key: "{{`{{ images.[containers, initContainers, ephemeralContainers][].*.name[] }}`}}"
-              operator: AnyNotIn
-              value: {{ $p.customValues | toYaml | nindent 14 }}
-            {{- end }}
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][].image
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element }}`}}"
+                  operator: NotEquals
+                  value: "harbor.{{ $v.cluster.domainSuffix }}/*"
+                {{- if $p.customValues }}
+                - key: "{{`{{ element }}`}}"
+                  operator: AnyNotIn
+                  value: {{ $p.customValues | toYaml | nindent 18 }}
+                {{- end }}
 {{- end }}
