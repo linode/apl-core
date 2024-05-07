@@ -1,9 +1,11 @@
 {{- $v := .Values }}
+{{- $vJson := toJson .Values }}
+{{- printf "Values: %s" $vJson }}
 {{- $o := $v | get "oidc" dict }}
 {{- $teamNames := list }}
 {{- $teamsMapping := dict }}
 {{- $teamIds := list }}
-{{- range $name, $team := omit $v.teamConfig "admin" }}
+{{- range $name, $team := omit .Values.teamConfig "admin" }}
 {{- $teamIds = append $teamIds $name }}
 {{- $teamNames = print "team-" $name | append $teamNames }}
 {{- if ($team | get "oidc.groupMapping" nil) }}
@@ -33,7 +35,7 @@ resources:
     kind: ConfigMap
     metadata:
       name: keycloak-cm
-      namespace: {{ .Release.Namespace | quote }}
+      namespace: keycloak
     data:
       KEYCLOAK_ADMIN: otomi-admin
       FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
