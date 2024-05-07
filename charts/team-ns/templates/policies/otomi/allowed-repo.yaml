@@ -29,6 +29,11 @@ spec:
         - resources:
             kinds:
               - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
       skipBackgroundRequests: true
       validate:
         message: >-

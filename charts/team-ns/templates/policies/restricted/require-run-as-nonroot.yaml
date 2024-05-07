@@ -26,6 +26,11 @@ spec:
         - resources:
             kinds:
               - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
       skipBackgroundRequests: true
       validate:
         message: >-
@@ -38,11 +43,8 @@ spec:
             preconditions:
               all:
               - key: "{{`{{ element.image }}`}}"
-                operator: AnyNotIn
-                value:
-                  - "*/istio/proxyv2*"
-                  - cgr.dev/chainguard/busybox@sha256:19f02276bf8dbdd62f069b922f10c65262cc34b710eea26ff928129a736be791
-                  - "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint*"
+                operator: NotEquals
+                value: "*/istio/proxyv2*"
             deny:
               conditions:
                 all:
