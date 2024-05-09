@@ -5,7 +5,7 @@
 
 <h3 align="center">Announcement 👇👇</h3>
 <h3 align="center">
-As of May 8 2024, Otomi has been acquired by Akamai. We believe that with Akamai’s support and resources, we can create an even more powerful Kubernetes application platform. More details will follow later this year.
+Otomi has been acquired by <a href="https://www.linode.com/otomi/">Akamai</a>. We believe that with Akamai’s support and resources, we can create an even more powerful Kubernetes application platform. More details will follow later this year.
 <br></br>
 </h3>
 
