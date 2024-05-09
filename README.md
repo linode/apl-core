@@ -1,7 +1,13 @@
 <h1 align="center">
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
-  Self-hosted DevSecOps Platform for Kubernetes
+  Self-hosted Application Platform for Kubernetes
 </h1>
+
+<h3 align="center">Announcement 👇👇</h3>
+<h3 align="center">
+As of May 8 2024, Otomi has been aquired by Akamai. We believe that with Akamai’s support and resources, we can create an even more powerful Kubernetes application platform. More details will follow later this year.
+<br></br>
+</h3>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/release-date/redkubes/otomi-core?label=latest%20release" /></a>
