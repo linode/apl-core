@@ -25,85 +25,6 @@ jobs:
           echo "TAG=$tag" >> $GITHUB_ENV
           git config --global user.email $GIT_USER@users.noreply.github.com
           git config --global user.name $GIT_USER
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl apache2-utils apt-transport-https awscli gettext git gnupg gnupg2 groff locales nano netcat openssh-server python3 python3-pip python3-setuptools rlwrap vim rsync
-          sudo locale-gen en_US.UTF-8
-
-      - name: Install kubectl
-        run: |
-          KUBECTL_VERSION="1.26.9"
-          curl -LO "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-          curl -LO "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl.sha256"
-          echo "$(cat kubectl.sha256) kubectl" | sha256sum --check
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
-
-      - name: Install helm
-        run: |
-          HELM_VERSION="3.12.3"
-          wget https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz
-          tar -zxvf helm-v${HELM_VERSION}-linux-amd64.tar.gz
-          sudo mv linux-amd64/helm /usr/local/bin/helm
-
-      - name: Install helm plugins
-        run: |
-          helm plugin install https://github.com/databus23/helm-diff --version 3.8.0
-          helm plugin install https://github.com/jkroepke/helm-secrets --version 3.15.0
-
-      - name: Install SOPS
-        run: |
-          SOPS_VERSION="3.7.3"
-          curl -L -o sops https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux
-          chmod +x sops
-          sudo mv sops /usr/local/bin/
-
-      - name: Install jq
-        run: |
-          JQ_VERSION="1.6"
-          curl -L -o jq https://github.com/stedolan/jq/releases/download/jq-${JQ_VERSION}/jq-linux64
-          chmod +x jq
-          sudo mv jq /usr/local/bin/
-
-      - name: Install yq
-        run: |
-          YQ_VERSION="v4.42.1"
-          wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O yq
-          chmod +x yq
-          sudo mv yq /usr/local/bin/
-
-      - name: Install kubeconform
-        run: |
-          KUBECONFORM_VERSION="v0.6.4"
-          curl -L -o kubeconform.tar.gz https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz
-          tar -xzf kubeconform.tar.gz
-          chmod +x kubeconform
-          sudo mv kubeconform /usr/local/bin/
-
-      - name: Install gucci
-        run: |
-          GUCCI_VERSION="1.6.6"
-          curl -L -o gucci https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64
-          chmod +x gucci
-          sudo mv gucci /usr/local/bin/
-
-      - name: Install helmfile
-        run: |
-          HELMFILE_VERSION="0.156.0"
-          curl -L -o helmfile.tar.gz "https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_amd64.tar.gz"
-          tar -xzf helmfile.tar.gz
-          chmod +x helmfile
-          sudo mv helmfile /usr/local/bin/
-
-      - name: Install Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-
-      - name: Install additional Node packages
-        run: |
-          sudo npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
       - name: Checkout
         uses: actions/checkout@v4
       - name: Docker meta
@@ -120,20 +41,6 @@ jobs:
         with:
           username: otomi
           password: ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
-      - name: CI Test
-        run: |
-          export NODE_ENV='test'
-          export CI=true
-          export ENV_DIR=$PWD
-          export IN_DOCKER='1'
-          export VERBOSITY='2'
-          export DISABLE_SYNC='1'
-          export NODE_PATH='dist'
-          npm config set update-notifier false
-          npm ci --ignore-scripts && npm run compile
-          ln -s ./tests/fixtures env && npm test
-          npm prune --production
-
       - name: image build and push tag for branch
         uses: docker/build-push-action@v5
         with:

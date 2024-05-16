@@ -4,5 +4,8 @@
 .husky
 .vscode
 /adr
+/dist
 /docs
 /env
+/node_modules
+/tools
