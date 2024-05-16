@@ -3,9 +3,32 @@ FROM ubuntu:20.04 as builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
+# https://github.com/kubernetes/kubernetes/releases
+ARG KUBECTL_VERSION=1.26.9
+# https://github.com/helm/helm/tags
+ARG HELM_VERSION=3.12.3
+# https://github.com/databus23/helm-diff/releases
+ARG HELM_DIFF_VERSION=3.8.0
+# https://github.com/jkroepke/helm-secrets/releases
+ARG HELM_SECRETS_VERSION=3.15.0
+# https://github.com/mozilla/sops/releases
+ARG SOPS_VERSION=3.7.3
+# https://github.com/noqcks/gucci/releases
+ARG GUCCI_VERSION=1.6.6
+# https://github.com/helmfile/helmfile/releases
+ARG HELMFILE_VERSION=0.156.0
+# https://github.com/open-policy-agent/opa/releases
+ARG OPA_VERSION=0.50.1
+# https://github.com/yannh/kubeconform/releases
+ARG KUBECONFORM_VERSION="v0.6.4"
+# https://github.com/open-policy-agent/conftest/releases
+ARG CONFTEST_VERSION=0.39.2
+# https://github.com/plexsystems/konstraint/releases
+ARG KONSTRAINT_VERSION=0.26.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=16
 
+ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
 WORKDIR /
 
 # Install all required packages in one layer
@@ -59,7 +82,44 @@ RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 ENV PATH $PATH:$APP_HOME
 
-# Node.js installation
+# kubectl
+RUN curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/kubectl" && \
+    curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/kubectl.sha256" && \
+    echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check && \
+    chmod +x kubectl
+
+# sops
+ADD https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux sops
+RUN chmod +x sops
+
+# helm
+ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
+RUN tar -zxvf /tmp/${HELM_FILE_NAME} -C /tmp && mv /tmp/linux-${TARGETARCH}/helm helm && rm -rf /tmp/*
+RUN helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
+RUN echo "exec \$*" > /usr/bin/sudo && chmod +x /usr/bin/sudo
+RUN helm plugin install https://github.com/jkroepke/helm-secrets --version ${HELM_SECRETS_VERSION}
+
+# helmfile
+ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz /tmp
+RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz -C /tmp && mv /tmp/helmfile helmfile
+
+# gucci
+ADD https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-${TARGETARCH} gucci
+RUN chmod +x gucci
+
+# aws
+RUN pip3 install --upgrade --no-cache-dir awscli
+
+# aws-iam-authenticator
+ADD https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.2/2021-07-05/bin/linux/${TARGETARCH}/aws-iam-authenticator aws-iam-authenticator
+RUN chmod +x aws-iam-authenticator
+
+# kubeconform
+ADD https://github.com/yannh/kubeconform/releases/download/v0.6.4/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
+RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kubeconform kubeconform
+
+# node
+# https://github.com/nodesource/distributions
 RUN set -uex && \
   mkdir -p /etc/apt/keyrings && \
   curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
@@ -69,9 +129,6 @@ RUN set -uex && \
   apt-get install nodejs -y && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
 
-# Copy binaries and scripts
-COPY tools/download-binaries.sh .
-RUN chmod +x download-binaries.sh && ./download-binaries.sh $TARGETARCH
 
 FROM ubuntu:20.04 as final
 
@@ -83,6 +140,7 @@ ENV APP_HOME=/home/app/tools
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 ENV PATH $PATH:$APP_HOME
+ENV PATH="/usr/local/bin:${PATH}"
 
 COPY --from=builder /usr/bin /usr/bin
 COPY --from=builder /home/app/tools /home/app/tools
