@@ -5,8 +5,9 @@ ENV APP_HOME=/home/app/stack
 
 RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
-
+ARG TARGETARCH
 ARG SKIP_TESTS='false'
+ARG ARCH=$TARGETARCH
 ENV NODE_ENV='test'
 ENV CI=true
 ENV ENV_DIR=$APP_HOME/env
@@ -16,20 +17,24 @@ ENV DISABLE_SYNC='1'
 ENV NODE_PATH='dist'
 ENV PATH="/usr/local/bin:$PATH"
 
+# Copy package.json and package-lock.json
+COPY --chown=app package*.json ./
 
-# Copy all source files to the container
+# Install dependencies
+RUN npm config set update-notifier false
+RUN npm ci --ignore-scripts $(if [ "$SKIP_TESTS" = 'false' ] && [ "${ARCH:-amd64}" != 'arm64' ]; then echo ''; else echo ''; fi)
+
+# Copy the rest of your application
 COPY --chown=app . .
 
-# Configure npm and conditionally run commands
-RUN npm config set update-notifier false
-RUN npm ci --ignore-scripts $(if [ "$SKIP_TESTS" = 'false' ] && [ "${TARGETARCH:-amd64}" != 'arm64' ]; then echo ''; else echo '--omit=dev'; fi) && npm run compile
-RUN if [ "$SKIP_TESTS" = 'false' ] && [ "${TARGETARCH:-amd64}" != 'arm64' ]; then \
+# Compile the application and run tests
+RUN npm run compile
+RUN if [ "$SKIP_TESTS" = 'false' ] && [ "${ARCH:-amd64}" != 'arm64' ]; then \
         ln -s $APP_HOME/tests/fixtures env && \
         npm test && \
-        npm prune --production && \
         rm env; \
     fi
-
+RUN npm prune --production
 # Switch to production
 ENV NODE_ENV=production
 
