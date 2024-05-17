@@ -22,8 +22,8 @@ COPY --chown=app . .
 
 # Configure npm and conditionally run commands
 RUN npm config set update-notifier false
-RUN npm ci --ignore-scripts $(if [ "$SKIP_TESTS" = 'false' ] && [ "${ARCH:-amd64}" != 'arm64' ]; then echo ''; else echo '--omit=dev'; fi) && npm run compile
-RUN if [ "$SKIP_TESTS" = 'false' ] && [ "${ARCH:-amd64}" != 'arm64' ]; then \
+RUN npm ci --ignore-scripts $(if [ "$SKIP_TESTS" = 'false' ] && [ "${TARGETARCH:-amd64}" != 'arm64' ]; then echo ''; else echo '--omit=dev'; fi) && npm run compile
+RUN if [ "$SKIP_TESTS" = 'false' ] && [ "${TARGETARCH:-amd64}" != 'arm64' ]; then \
         ln -s $APP_HOME/tests/fixtures env && \
         npm test && \
         npm prune --production && \
