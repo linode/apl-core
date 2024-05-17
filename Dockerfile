@@ -1,5 +1,5 @@
 # Use specific version tags where possible to ensure consistent environments.
-FROM otomi-tools:local-multi-arch as ci
+FROM otomi/tools:multi-arch as ci
 
 ENV APP_HOME=/home/app/stack
 
