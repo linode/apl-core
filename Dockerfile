@@ -1,5 +1,5 @@
 # Use specific version tags where possible to ensure consistent environments.
-FROM otomi/tools:multi-arch as ci
+FROM otomi-tools:local-multi-arch as ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -14,6 +14,8 @@ ENV IN_DOCKER='1'
 ENV VERBOSITY='2'
 ENV DISABLE_SYNC='1'
 ENV NODE_PATH='dist'
+ENV PATH="/usr/local/bin:$PATH"
+
 
 # Copy all source files to the container
 COPY --chown=app . .
@@ -34,12 +36,13 @@ ENV NODE_ENV=production
 # Using multi-arch as the final stage base image
 FROM otomi/tools:multi-arch
 
-ENV APP_HOME=/home/app/stack \
-    ENV_DIR=/home/app/stack/env \
-    IN_DOCKER=1 \
-    VERBOSITY=0 \
-    NODE_NO_WARNINGS=1 \
-    NODE_PATH=dist
+ENV APP_HOME=/home/app/stack
+ENV ENV_DIR=/home/app/stack/env
+ENV IN_DOCKER=1
+ENV VERBOSITY=0
+ENV NODE_NO_WARNINGS=1
+ENV NODE_PATH=dist
+
 
 WORKDIR $APP_HOME
 
