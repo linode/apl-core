@@ -164,5 +164,4 @@ COPY --from=builder /home/app/tools /home/app/tools
 RUN chown -R app:app /home/app
 USER app
 
-
 CMD ["/bin/bash"]
