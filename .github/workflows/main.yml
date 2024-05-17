@@ -27,30 +27,50 @@ jobs:
           git config --global user.name $GIT_USER
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY_IMAGE }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      # - name: CI tests, image build and push tag for main or branch
+      #   uses: whoan/docker-build-with-cache-action@v5
+      #   with:
+      #     username: ${{ env.GIT_USER }}
+      #     password: '${{ secrets.NPM_TOKEN }}'
+      #     registry: ${{ env.CACHE_REGISTRY }}
+      #     image_name: ${{ env.CACHE_REPO }}
+      #     image_tag: ${{ env.TAG }}
+      #     pull_image_and_stages: true
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Login to Github Packages
         uses: docker/login-action@v3
         with:
-          username: otomi
-          password: ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
-      - name: image build and push tag for branch
+          registry: ${{ env.CACHE_REGISTRY }}
+          username: ${{ env.GIT_USER }}
+          password: '${{ secrets.NPM_TOKEN }}'
+      - name: CI tests, image build and push tag for main or branch
         uses: docker/build-push-action@v5
         with:
           push: true
-          platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.REPO }}:${{ env.TAG }}
+            ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
+
+  push-to-docker:
+    needs: build-test-cache
+    if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push to docker hub
+        run: |
+          TAG=${GITHUB_REF##*/}
+          docker login -u $GIT_USER -p '${{ secrets.NPM_TOKEN }}' ghcr.io
+          image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
+          docker pull $image
+          docker tag $image $REPO:$TAG
+          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+          docker push $REPO:$TAG
+      - name: Show me the logic
+        run: |
+          echo github.ref == ${{ github.ref }}
 
   release:
-    needs: build-test-cache
+    needs: push-to-docker
     if: always() && (startsWith(github.ref, 'refs/heads/releases/') || startsWith(github.ref, 'refs/heads/main')) && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
     runs-on: ubuntu-latest
     env:
@@ -244,7 +264,7 @@ jobs:
           scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
 
   notification:
-    needs: [build-test-cache, release, chart-release]
+    needs: [build-test-cache, push-to-docker, release, chart-release]
     if: always()
     runs-on: ubuntu-latest
     steps:

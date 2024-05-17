@@ -53,7 +53,6 @@ RUN apt-get update && apt-get install -y \
     python3-setuptools \
     rlwrap \
     vim \
-    libaprutil1 \
     rsync && \
     rm -rf /var/lib/apt/lists/* && \
     locale-gen en_US.UTF-8
@@ -119,6 +118,18 @@ RUN chmod +x aws-iam-authenticator
 ADD https://github.com/yannh/kubeconform/releases/download/v0.6.4/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kubeconform kubeconform
 
+# opa -> remove when kyverno pr is merged
+ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
+RUN chmod +x opa
+
+# conftest -> remove when kyverno pr is merged
+ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp
+RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && mv /tmp/conftest conftest
+
+# konstraint -> remove when kyverno pr is merged
+ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
+RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
+
 # node
 # https://github.com/nodesource/distributions
 RUN set -uex && \
@@ -147,7 +158,6 @@ ENV PATH="/usr/local/bin:${PATH}"
 COPY --from=builder /usr/bin /usr/bin
 # Copy over node_modules (npm)
 COPY --from=builder /usr/lib /usr/lib
-COPY --from=builder /etc/alternatives /etc/alternatives
 # Copy over tools
 COPY --from=builder /home/app/tools /home/app/tools
 
