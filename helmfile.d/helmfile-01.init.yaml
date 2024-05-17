@@ -8,8 +8,8 @@ bases:
   - snippets/derived.gotmpl
 ---
 {{ readFile "snippets/templates.gotmpl" }}
-  {{- $v := .Values }}
-  {{- $a := $v.apps }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
 
 releases:
   - name: sealed-secrets
