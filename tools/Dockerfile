@@ -141,7 +141,6 @@ RUN set -uex && \
   apt-get install -y nodejs && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
 
-
 FROM ubuntu:20.04 as final
 
 RUN mkdir -p /home/app
