@@ -9,7 +9,7 @@ ARG SKIP_TESTS='false'
 ENV NODE_ENV='test'
 ENV CI=true
 ENV ENV_DIR=$APP_HOME/env
-ENV IN_DOCKER='1'
+ENV IN_DOCKER=false
 ENV VERBOSITY='2'
 ENV DISABLE_SYNC='1'
 ENV NODE_PATH='dist'
@@ -32,7 +32,7 @@ FROM otomi/tools:multi-arch as prod
 
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
-ENV IN_DOCKER='1'
+ENV IN_DOCKER=false
 ENV VERBOSITY='0'
 ENV NODE_NO_WARNINGS='1'
 ENV NODE_PATH='dist'

@@ -110,7 +110,7 @@ function _rind() {
     docker run --rm \
       $LINUX_WORKAROUND \
       -v $ENV_DIR:$ENV_DIR \
-      -e IN_DOCKER='1' \
+      -e IN_DOCKER=false \
       -e ENV_DIR=$ENV_DIR \
       $otomi_tools_image $cmd "$@"
     return $?
