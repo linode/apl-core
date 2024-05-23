@@ -1,4 +1,4 @@
-api: main
-console: main
+api: 2.9.1
+console: 2.8.2
 tasks: 2.5.0
 tools: 1.6.4
