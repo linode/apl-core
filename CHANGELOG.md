@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.11.4](https://github.com/redkubes/otomi-core/compare/v2.11.3...v2.11.4) (2024-05-23)
+
+
+### Features
+
+* updated core and api versions ([ad7760e](https://github.com/redkubes/otomi-core/commit/ad7760e8fdda734f9858ae54d4f8fa39d0c1f540))
+
 ### [2.11.3](https://github.com/redkubes/otomi-core/compare/v2.11.2...v2.11.3) (2024-05-07)
 
 
