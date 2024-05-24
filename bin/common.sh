@@ -106,7 +106,7 @@ fi
 function _rind() {
   local cmd="$1"
   shift
-  if [ $has_docker = 'true' ] && [ -z "$IN_DOCKER" ]; then
+  if [ $has_docker = 'true' ] && [ "${IN_DOCKER,,}" == "true" ]; then
     docker run --rm \
       $LINUX_WORKAROUND \
       -v $ENV_DIR:$ENV_DIR \
