@@ -49,6 +49,7 @@ on:
         type: choice
         options:
           - scaleway
+          - linode
           - digitalocean
         default: 'scaleway'
       kubernetes_versions:
