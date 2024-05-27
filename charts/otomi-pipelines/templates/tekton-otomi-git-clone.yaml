@@ -25,7 +25,7 @@ spec:
   stepTemplate:
     computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     workingDir: $(workspaces.source.path)
-    image: otomi/core:v1.0.0
+    image: otomi/core:{{ .Values.otomiVersion }}
   steps:
     - name: git-clone
       script: |
