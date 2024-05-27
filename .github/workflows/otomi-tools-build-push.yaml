@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to build and push'
+        description: 'Placeholder, this value is not yet used.'
         required: false
-        default: 'latest'
+        default: 'run'
         type: string
   push:
     branches:
@@ -70,6 +70,8 @@ jobs:
             echo OLD_VERSION = ${OLD_VERSION}
             echo NEW_VERSION = ${NEW_VERSION}
           fi
+          NEW_VERSION=multi-arch
+          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
           echo "No need to bump the version. Will skip next steps."
 
       - name: Login to GitHub Container Registry

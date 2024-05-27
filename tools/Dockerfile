@@ -158,7 +158,8 @@ COPY --from=builder /usr/bin /usr/bin
 # Copy over node_modules (npm)
 COPY --from=builder /usr/lib /usr/lib
 # Copy over tools
-COPY --from=builder /home/app/tools /home/app/tools
+COPY --from=builder $APP_HOME $APP_HOME
+COPY --from=builder $HOME/.local/share/helm/plugins $HOME/.local/share/helm/plugins
 
 RUN chown -R app:app /home/app
 USER app
