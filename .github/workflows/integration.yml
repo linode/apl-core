@@ -536,7 +536,7 @@ jobs:
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
       - name: Save kubectl config with auth token
-        run: linode-cli lke kubeconfig-view ${{ LINODE_CLUSTER_ID }}
+        run: linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }}
       - name: Get kubectl environment
         run: echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
