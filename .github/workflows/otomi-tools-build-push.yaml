@@ -53,7 +53,7 @@ jobs:
 
           if git log --format=%B -n 1 ${{ github.sha }} | grep -q "\[TOOLS\]\[MAJOR\]"; then
             # If a "[TOOLS][MAJOR]" commit is found, increment the major version by one and reset the minor and patch version to '0'.
-            NEW_VERSION="$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$1 = $1 + 1; $2 = 0; $3 = 0} {print $0}')"
+            NEW_VERSION="$(echo ${OLD_VERSION} | sed 's/^v//' | awk -F. -v OFS=. '{$1 = $1 + 1; $2 = 0; $3 = 0} {print "v"$0}')"
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
             echo OLD_VERSION = ${OLD_VERSION}
             echo NEW_VERSION = ${NEW_VERSION}
