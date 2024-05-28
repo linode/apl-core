@@ -519,7 +519,7 @@ jobs:
           # Cluster name must be no longer than 63 characters
       - name: Determine exact k8s version
         run: |
-          echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "${{ matrix.kubernetes_versions }}" '.[] | select(.k8s_version | tostring | startswith($version)) | .id') >> $GITHUB_ENV
+          echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "${{ matrix.kubernetes_versions }}" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
           linode-cli lke cluster-create \
