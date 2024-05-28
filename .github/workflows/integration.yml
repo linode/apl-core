@@ -531,7 +531,8 @@ jobs:
             --node_pools.autoscaler.enabled true \
             --node_pools.autoscaler.max 3 \
             --node_pools.autoscaler.min 3 \
-            --tags testing
+            --tags testing \
+            --no-defaults
       - name: Wait for cluster to be ready
         run: |
           echo "Waiting for the cluster to be active..."
