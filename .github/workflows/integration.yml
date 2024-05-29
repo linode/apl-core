@@ -566,7 +566,8 @@ jobs:
               
           # Set the kubectl context to use the new kubeconfig
           export KUBECONFIG="$kubeconfigPath"
-          kubectl config use-context linode
+          contextName=$(kubectl config get-contexts -o name | head -n 1)
+          kubectl config use-context "$contextName"
           echo "Kubectl context set to linode"
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
