@@ -524,7 +524,7 @@ jobs:
         run: |
           linode-cli lke cluster-create \
             --label ${{ env.LINODE_CLUSTER_NAME }} \
-            --region nl-aws \
+            --region nl-ams \
             --k8s_version ${{ env.LINODE_K8S_VERSION }} \
             --control_plane.high_availability true \
             --node_pools.type g6-dedicated-16 --node_pools.count 3 \
