@@ -558,7 +558,9 @@ jobs:
           kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode)
 
           # Save the kubeconfig to a file
+          kubeconfigDir="$HOME/.kube"
           kubeconfigPath="$HOME/.kube/kubeconfig-${{ env.LINODE_CLUSTER_NAME }}.yaml"
+          mkdir -p "$kubeconfigDir"  # Create the directory if it doesn't exist
           echo "$kubeconfig" > "$kubeconfigPath"
           echo "Kubeconfig saved to $kubeconfigPath"
               
