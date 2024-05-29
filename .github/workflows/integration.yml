@@ -555,10 +555,10 @@ jobs:
       - name: Save kubectl config with auth token and Get kubectl environment
         run: |
           # Get the kubeconfig from linode-cli
-          kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode) > $kubeconfig.yaml
+          kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode)
 
           # Save the kubeconfig to a file
-          kubeconfigPath="$HOME/.kube/linode-kubeconfig"
+          kubeconfigPath="$HOME/.kube/kubeconfig-${{ env.LINODE_CLUSTER_NAME }}.yaml"
           echo "$kubeconfig" > "$kubeconfigPath"
           echo "Kubeconfig saved to $kubeconfigPath"
               
