@@ -552,10 +552,21 @@ jobs:
             
             sleep 30
           done
-      - name: Save kubectl config with auth token
-        run: linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }}
-      - name: Get kubectl environment
-        run: echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+      - name: Save kubectl config with auth token and Get kubectl environment
+        run: |
+          # Get the kubeconfig from linode-cli
+          kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode) > $kubeconfig.yaml
+
+          # Save the kubeconfig to a file
+          kubeconfigPath="$HOME/.kube/linode-kubeconfig"
+          echo "$kubeconfig" > "$kubeconfigPath"
+          echo "Kubeconfig saved to $kubeconfigPath"
+              
+          # Set the kubectl context to use the new kubeconfig
+          export KUBECONFIG="$kubeconfigPath"
+          kubectl config use-context linode
+          echo "Kubectl context set to linode"
+          echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
         run: |
           kubectl create secret docker-registry reg-otomi-github \
