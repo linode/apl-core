@@ -542,7 +542,7 @@ jobs:
           while :; do
             rawOutput=$(linode-cli lke pools-list ${{ env.LINODE_CLUSTER_ID }} --json)
 
-            allReady=$(echo "$rawOutput" | jq -r 'map(.nodes.status == "ready") | all')
+            allReady=$(echo "$rawOutput" | jq -r 'map(.nodes | .status == "ready") | all')
             echo "All nodes ready: $allReady"
             
             if [ "$allReady" == "true" ]; then
