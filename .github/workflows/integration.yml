@@ -572,7 +572,6 @@ jobs:
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
         run: |
-          echo=$(kubectl config current-context)
           kubectl config use-context ${{ env.LINODE_CLUSTER_CONTEXT }}
           echo=$(kubectl config current-context)
           kubectl create secret docker-registry reg-otomi-github \
