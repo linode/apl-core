@@ -527,7 +527,7 @@ jobs:
             --region nl-ams \
             --k8s_version ${{ env.LINODE_K8S_VERSION }} \
             --control_plane.high_availability true \
-            --node_pools.type g6-dedicated-16 --node_pools.count 3 \
+            --node_pools.type g6-dedicated-8 --node_pools.count 3 \
             --node_pools.autoscaler.enabled true \
             --node_pools.autoscaler.max 3 \
             --node_pools.autoscaler.min 3 \
@@ -572,6 +572,9 @@ jobs:
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
         run: |
+          echo=$(kubectl config current-context)
+          kubectl config use-context ${{ env.LINODE_CLUSTER_CONTEXT }}
+          echo=$(kubectl config current-context)
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
             --docker-username=${{ env.GIT_USER }} \
