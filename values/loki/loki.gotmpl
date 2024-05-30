@@ -54,7 +54,8 @@ loki:
       reject_old_samples: true
       reject_old_samples_max_age: 168h
       max_cache_freshness_per_query: 10m
-      split_queries_by_interval: 15m
+      split_queries_by_interval: 24h
+      query_timeout: 5m
     runtime_config:
       file: /var/loki-runtime/runtime.yaml
     chunk_store_config:

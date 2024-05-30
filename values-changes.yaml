@@ -162,7 +162,6 @@ changes:
       - 'teamConfig.{team}.policies':
           {
             'allowed-image-repositories': { 'action': 'Audit', 'customValues': [], 'severity': 'medium' },
-            'allowed-repo': { 'action': 'Audit', 'severity': 'medium' },
             'disallow-capabilities':
               {
                 'action': 'Audit',
