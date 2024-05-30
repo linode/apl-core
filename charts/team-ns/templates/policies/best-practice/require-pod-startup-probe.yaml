@@ -36,7 +36,13 @@ spec:
       any:
         - resources:
             annotations:
-              tekton.dev/tags: image-build          
+              tekton.dev/tags: image-build
+        - resources:
+            annotations:
+              tekton.dev/tags: CLI, grype
+        - resources:
+            annotations:
+              tekton.dev/tags: git     
     preconditions:
       all:
       - key: "{{`{{request.operation || 'BACKGROUND'}}`}}"
