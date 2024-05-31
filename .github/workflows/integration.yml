@@ -559,7 +559,7 @@ jobs:
 
           # Save the kubeconfig to a file
           kubeconfigDir="$HOME/.kube"
-          kubeconfigPath="$HOME/.kube/config.yaml"
+          kubeconfigPath="$HOME/.kube/config"
           mkdir -p "$kubeconfigDir"  # Create the directory if it doesn't exist
           echo "$kubeconfig" > "$kubeconfigPath"
           echo "Kubeconfig saved to $kubeconfigPath"
