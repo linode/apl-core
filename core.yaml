@@ -18,8 +18,6 @@ k8s:
       disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
-    - name: external-secrets
-      disableIstioInjection: true
     - name: falco
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -169,8 +167,6 @@ adminApps:
         auth: true
   - name: external-dns
     tags: [ingress, security, tls]
-  - name: external-secrets
-    tags: [secrets, security, tls]
   - name: falco
     tags: [security]
     deps: [prometheus, grafana]

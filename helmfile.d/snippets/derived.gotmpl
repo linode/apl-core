@@ -85,8 +85,6 @@ environments:
             enabled: {{ eq $droneProvider "github" }}
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
-          external-secrets:
-            enabled: false
           harbor:
             adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword }}
             registry:

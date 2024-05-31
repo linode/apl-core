@@ -161,3 +161,4 @@ changes:
       - 'apps.vault'
       - 'kms.sops.vault'
       - 'platformBackups.persistentVolumes.vault'
+      - 'apps.exteral-secrets'

@@ -85,17 +85,6 @@ appsInfo:
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
     integration: ExternalDNS is used by Otomi to make public service domains accessible by registering them with Otomi's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then Otomi will rely on nip.io to create host names for all services.
-  external-secrets:
-    title: External Secrets Operator
-    appVersion: 0.10.2
-    repo: https://github.com/external-secrets/external-secrets
-    maintainers: External Secrets community
-    relatedLinks:
-      - https://otomi.io/docs/apps/external-secrets
-      - https://external-secrets.io
-    license: Apache 2.0
-    about: External Secrets Operator reads information from a third-party service like AWS Secrets Manager and automatically injects the values as Kubernetes Secrets.
-    integration: External Secrets is used by Otomi to allow teams to automatically sync (partial) secrets created in the packaged (Hashicorp) Vault.
   falco:
     title: Falco
     appVersion: 0.33.1

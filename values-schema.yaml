@@ -2300,13 +2300,6 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
-      external-secrets:
-        additionalProperties: false
-        properties:
-          enabled:
-            type: boolean
-          logLevel:
-            $ref: '#/definitions/logLevel'
       kube-descheduler:
         additionalProperties: false
         properties:

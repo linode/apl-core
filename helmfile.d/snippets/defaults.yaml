@@ -44,10 +44,6 @@ environments:
               username: otomi-admin
           external-dns:
             logLevel: info
-          external-secrets:
-            enabled: false
-            logLevel: info
-            pollingInterval: 60000
           falco:
             enabled: false
             falcoSidekick:
