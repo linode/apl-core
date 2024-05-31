@@ -558,8 +558,8 @@ jobs:
           kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode)
 
           # Save the kubeconfig to a file
-          kubeconfigDir="$HOME/.kube"
-          kubeconfigPath="$HOME/.kube/kubeconfig-${{ env.LINODE_CLUSTER_NAME }}.yaml"
+          kubeconfigDir="$HOME/.kube/config"
+          kubeconfigPath="$HOME/.kube/config/kubeconfig-${{ env.LINODE_CLUSTER_NAME }}.yaml"
           mkdir -p "$kubeconfigDir"  # Create the directory if it doesn't exist
           echo "$kubeconfig" > "$kubeconfigPath"
           echo "Kubeconfig saved to $kubeconfigPath"
@@ -570,7 +570,8 @@ jobs:
           kubectl config use-context "$contextName"
           echo "Kubectl context set to linode"
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
-
+      - name: Create image pull secret on test cluster
+        run: |
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
             --docker-username=${{ env.GIT_USER }} \
