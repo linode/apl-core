@@ -4,11 +4,11 @@ FROM ubuntu:20.04 as builder
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.26.9
+ARG KUBECTL_VERSION=1.28.10
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.12.3
+ARG HELM_VERSION=3.15.1
 # https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=3.8.0
+ARG HELM_DIFF_VERSION=3.9.7
 # https://github.com/jkroepke/helm-secrets/releases
 ARG HELM_SECRETS_VERSION=3.15.0
 # https://github.com/mozilla/sops/releases
@@ -16,7 +16,7 @@ ARG SOPS_VERSION=3.7.3
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.6.6
 # https://github.com/helmfile/helmfile/releases
-ARG HELMFILE_VERSION=0.156.0
+ARG HELMFILE_VERSION=0.165.0
 # https://github.com/open-policy-agent/opa/releases
 ARG OPA_VERSION=0.50.1
 # https://github.com/yannh/kubeconform/releases
@@ -39,6 +39,7 @@ RUN apt-get update && apt-get install -y \
     apt-transport-https \
     awscli \
     ca-certificates \
+    dnsutils \
     gettext \
     git \
     gnupg \
