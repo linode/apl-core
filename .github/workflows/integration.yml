@@ -61,6 +61,7 @@ on:
           - "['1.26']"
           - "['1.27']"
           - "['1.28']"
+          - "['1.29']"
         default: "['1.28']"
       install_profile:
         description: Otomi installation profile
