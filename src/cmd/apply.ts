@@ -37,9 +37,8 @@ const applyAll = async () => {
   const prevState = await getDeploymentState()
   const intitalInstall = isEmpty(prevState.version)
   const argv: HelmArguments = getParsedArgs()
-  const hfArgs = intitalInstall
-    ? ['sync', '--args', '--wait-retries=10 --qps=20']
-    : ['apply', '--args', '--wait-retries=10 --qps=20']
+  const hfCommand = intitalInstall ? 'sync' : 'apply'
+  const hfArgs = [hfCommand, '--args', '--qps=20']
 
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
