@@ -38,8 +38,8 @@ const applyAll = async () => {
   const intitalInstall = isEmpty(prevState.version)
   const argv: HelmArguments = getParsedArgs()
   const hfArgs = intitalInstall
-    ? ['sync', '--sync-args', '"--wait-retries 10 --qps 20 --disable-openapi-validation"']
-    : ['apply', '--sync-args', '"--wait-retries 10 --qps 20"']
+    ? ['sync', '--args', '"--wait-retries 10 --qps 20 --disable-openapi-validation"']
+    : ['apply', '--args', '"--wait-retries 10 --qps 20"']
 
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
