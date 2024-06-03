@@ -37,6 +37,9 @@ const applyAll = async () => {
   const prevState = await getDeploymentState()
   const intitalInstall = isEmpty(prevState.version)
   const argv: HelmArguments = getParsedArgs()
+  const hfArgs = intitalInstall
+    ? ['sync', '--sync-args', '"--wait-retries 10 --qps 20 --disable-openapi-validation"']
+    : ['apply', '--sync-args', '"--wait-retries 10 --qps 20"']
 
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
@@ -73,13 +76,11 @@ const applyAll = async () => {
       fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
-      args: ['apply'],
+      args: hfArgs,
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
   await prepareDomainSuffix()
-  // const applyLabel: string = process.env.OTOMI_DEV_APPLY_LABEL || 'stage!=prep'
-  // d.info(`Deploying charts containing label ${applyLabel}`)
 
   let labelOpts = ['']
   if (intitalInstall) {
@@ -102,7 +103,7 @@ const applyAll = async () => {
     {
       labelOpts,
       logLevel: logLevelString(),
-      args: ['apply'],
+      args: hfArgs,
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
@@ -116,7 +117,7 @@ const applyAll = async () => {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
           fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml`,
           logLevel: logLevelString(),
-          args: ['apply'],
+          args: hfArgs,
         },
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
