@@ -33,10 +33,16 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: [npm, run, operator:gitea]
           env:
-            - name: GITEA_URL
-              value: "{{ .Values.giteaOperator.giteaUrl }}"
             - name: GITEA_PASSWORD
               value: "{{ .Values.giteaOperator.giteaPassword }}"
+            - name: GITEA_URL
+              value: "{{ .Values.giteaOperator.giteaUrl }}"
+            - name: DRONE_URL
+              value: "{{ .Values.giteaOperator.droneUrl }}"
+            - name: DRONE_NAMESPACE
+              value: "{{ .Values.giteaOperator.droneNamespace }}"
+            - name: OTOMI_VALUES
+              value: "{{ .Values.giteaOperator.otomiValues }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
