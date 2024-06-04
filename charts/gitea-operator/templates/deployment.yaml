@@ -42,7 +42,7 @@ spec:
             - name: DRONE_NAMESPACE
               value: "{{ .Values.giteaOperator.droneNamespace }}"
             - name: OTOMI_VALUES
-              value: "{{ .Values.giteaOperator.otomiValues }}"
+              value: "{{ .Values.giteaOperator.otomiValues | toJson }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
