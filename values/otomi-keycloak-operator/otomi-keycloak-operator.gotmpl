@@ -15,7 +15,6 @@
 {{- end }}
 {{- $c := $v.apps }}
 {{- $cm := $c | get "cert-manager" }}
----
 {{- $o := $v.apps | get "otomi-keycloak-operator" }}
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
