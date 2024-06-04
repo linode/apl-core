@@ -46,21 +46,21 @@ resources: {{- toYaml $o.resources.operator | nindent 2 }}
       WAIT_OPTIONS: '{"retries": "200"}'
       {{- if $v.otomi.hasExternalIDP }}
       IDP_ALIAS: {{ $k.idp.alias }}
-      {{- with $o | get "usernameClaimMapper" nil }}
+      {{- with $oi | get "usernameClaimMapper" nil }}
       IDP_USERNAME_CLAIM_MAPPER: {{ . }}{{ end }}
-      {{- with $o | get "subClaimMapper" nil }}
+      {{- with $oi | get "subClaimMapper" nil }}
       IDP_SUB_CLAIM_MAPPER: {{ . }}{{ end }}
       IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
-      {{- with $o | get "adminGroupID" nil }}
+      {{- with $oi | get "adminGroupID" nil }}
       IDP_GROUP_OTOMI_ADMIN: {{ . }}{{ end }}
-      {{- with $o | get "teamAdminGroupID" nil }}
+      {{- with $oi | get "teamAdminGroupID" nil }}
       IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
-      IDP_OIDC_URL: {{ $o.issuer }}
+      IDP_OIDC_URL: {{ $oi.issuer }}
       {{- end }}
       nativeSecrets:
         KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
         KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
       {{- if $v.otomi.hasExternalIDP }}
-        IDP_CLIENT_ID: {{ $o.clientID }}
-        IDP_CLIENT_SECRET: {{ $o.clientSecret }}
+        IDP_CLIENT_ID: {{ $oi.clientID }}
+        IDP_CLIENT_SECRET: {{ $oi.clientSecret }}
       {{- end }}
