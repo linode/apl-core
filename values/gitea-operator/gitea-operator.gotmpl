@@ -1,9 +1,15 @@
 {{- $v := .Values }}
+{{- $otomiValues := dict "apps" (dict "argocd" (dict "enabled" $v.apps.argocd.enabled)) "cluster" (dict "domainSuffix" $v.cluster.domainSuffix) "teamConfig" (dict) }}
+{{- range $teamId, $team := $v.teamConfig }}
+  {{- $_ := set $otomiValues.teamConfig $teamId (dict "selfService" (dict "apps" ($team | get "selfService.apps" list))) }}
+{{- end }}
+{{- $otomiValues := $otomiValues | toJson }}
 {{- $c := $v.apps }}
 {{- $g := $c.gitea }}
 {{- $o := $v.apps | get "gitea-operator" }}
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
+
 image:
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
@@ -21,15 +27,4 @@ giteaOperator:
   giteaUrl: http://gitea-http.gitea:3000
   droneUrl: https://drone.{{ $v.cluster.domainSuffix }}
   droneNamespace: drone
-  otomiValues:
-    apps:
-      argocd:
-        enabled: {{ $v.apps.argocd.enabled }}
-    cluster:
-      domainSuffix: {{ $v.cluster.domainSuffix }}
-    teamConfig:
-      {{- range $teamId, $team := $v.teamConfig }}
-        {{ $teamId }}:
-          selfService:
-            apps: {{ $team | get "selfService.apps" list}}
-      {{- end }}
+  otomiValues: {{ $otomiValues }}
