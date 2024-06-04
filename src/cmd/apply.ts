@@ -37,8 +37,9 @@ const applyAll = async () => {
   const prevState = await getDeploymentState()
   const intitalInstall = isEmpty(prevState.version)
   const argv: HelmArguments = getParsedArgs()
-  const hfCommand = intitalInstall ? 'sync' : 'apply'
-  const hfArgs = [hfCommand, '--args', '--qps=20']
+  const hfArgs = intitalInstall
+    ? ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
+    : ['apply', '--sync-args', '--qps=20']
 
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
