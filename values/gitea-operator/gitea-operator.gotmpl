@@ -1,4 +1,6 @@
 {{- $v := .Values }}
+{{- $c := $v.apps }}
+{{- $g := $c.gitea }}
 {{- $o := $v.apps | get "gitea-operator" }}
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
@@ -12,3 +14,7 @@ imagePullSecrets:
 {{- end }}
 
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
+
+giteaOperator:
+  giteaUrl: http://gitea-http.gitea:3000
+  giteaPassword: {{ $g.adminPassword }}
