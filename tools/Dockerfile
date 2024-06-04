@@ -160,6 +160,8 @@ COPY --from=builder /usr/lib /usr/lib
 # Copy over tools
 COPY --from=builder $APP_HOME $APP_HOME
 COPY --from=builder $HOME/.local/share/helm/plugins $HOME/.local/share/helm/plugins
+# Copy over trust store
+COPY --from=builder /etc/ssl /etc/ssl
 
 RUN chown -R app:app /home/app
 USER app
