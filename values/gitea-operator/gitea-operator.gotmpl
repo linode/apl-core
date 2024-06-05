@@ -23,5 +23,6 @@ resources: {{- toYaml $o.resources.operator | nindent 2 }}
 
 giteaOperator:
   giteaPassword: {{ $g.adminPassword }}
-  giteaUrl: https://gitea.{{ $v.cluster.domainSuffix }}
+  # GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
+  giteaUrl: http://gitea-http.gitea:3000
   otomiValues: {{ $otomiValues }}
