@@ -79,6 +79,7 @@ jobs:
           username: 'otomi'
           password: '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
       - name: image build and push tag for branch
+        if: ${{ env.NEW_VERSION != null }}
         uses: docker/build-push-action@v5
         with:
           push: true
