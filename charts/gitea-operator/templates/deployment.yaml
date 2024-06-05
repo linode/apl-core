@@ -37,10 +37,6 @@ spec:
               value: "{{ .Values.giteaOperator.giteaPassword }}"
             - name: GITEA_URL
               value: "{{ .Values.giteaOperator.giteaUrl }}"
-            - name: DRONE_URL
-              value: "{{ .Values.giteaOperator.droneUrl }}"
-            - name: DRONE_NAMESPACE
-              value: "{{ .Values.giteaOperator.droneNamespace }}"
             - name: OTOMI_VALUES
               value: {{ .Values.giteaOperator.otomiValues | toJson | quote }}
           ports:
