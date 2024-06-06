@@ -38,12 +38,6 @@ spec:
             - name: GITEA_URL
               value: "{{ .Values.giteaOperator.giteaUrl }}"
             - name: OTOMI_VALUES
-              valueFrom:
-                secretKeyRef:
-                  name: OTOMI_VALUES
-                  key: value
-          nativeSecrets:
-            - name: OTOMI_VALUES
               value: {{ .Values.giteaOperator.otomiValues | toJson | quote }}
           ports:
             - name: http
