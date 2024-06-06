@@ -35,6 +35,9 @@ spec:
           - resources:
               annotations:
                 tekton.dev/tags: git
+          - resources:
+              annotations:
+                tekton.dev/tags: 'CLI, grype'
       skipBackgroundRequests: true
       validate:
         message: >-
