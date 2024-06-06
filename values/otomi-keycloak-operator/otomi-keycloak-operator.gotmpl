@@ -26,8 +26,11 @@ imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
 
-resources:
-  - apiVersion: v1
+resources: {{- toYaml $o.resources.operator | nindent 2 }}
+
+additionalResources:
+  - name: otomi-keycloak-operator-secret
+    apiVersion: v1
     kind: Secret
     metadata:
       name: keycloak-admin
@@ -35,7 +38,8 @@ resources:
     data:
       password: {{ .Values.otomi.adminPassword | b64enc }}
       username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
-  - apiVersion: v1
+  - name: otomi-keycloak-operator-cm
+    apiVersion: v1
     kind: ConfigMap
     metadata:
       name: keycloak-cm

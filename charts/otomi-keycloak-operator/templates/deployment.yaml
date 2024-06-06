@@ -38,6 +38,13 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumes:
+          - name: operator-config-kc
+            configMap:
+              name: otomi-keycloak-operator-cm
+          - name: operator-secret-kc
+            secret:
+              secretName: otomi-keycloak-operator-secret
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
