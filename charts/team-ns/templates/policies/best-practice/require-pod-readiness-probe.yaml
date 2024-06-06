@@ -39,7 +39,7 @@ spec:
               tekton.dev/tags: CLI, grype
         - resources:
             annotations:
-              tekton.dev/tags: git       
+              tekton.dev/tags: git
     preconditions:
       all:
       - key: "{{`{{request.operation || 'BACKGROUND'}}`}}"
