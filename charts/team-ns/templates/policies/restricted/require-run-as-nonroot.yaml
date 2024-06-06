@@ -31,6 +31,9 @@ spec:
           - resources:
               annotations:
                 tekton.dev/tags: image-build
+          - resources:
+              annotations:
+                tekton.dev/tags: git
       skipBackgroundRequests: true
       validate:
         message: >-
