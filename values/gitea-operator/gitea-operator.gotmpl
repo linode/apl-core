@@ -1,8 +1,10 @@
 {{- $v := .Values }}
+{{- $o := $v | get "oidc" dict }}
 {{- $otomiValues := dict "apps" (dict "argocd" (dict "enabled" $v.apps.argocd.enabled)) "cluster" (dict "domainSuffix" $v.cluster.domainSuffix) "teamConfig" (dict) }}
 {{- range $teamId, $team := $v.teamConfig }}
   {{- $_ := set $otomiValues.teamConfig $teamId (dict "selfService" (dict "apps" ($team | get "selfService.apps" list))) }}
 {{- end }}
+{{- $_ := set $otomiValues "oidc" $o }}
 {{- $otomiValues := $otomiValues | toJson }}
 {{- $c := $v.apps }}
 {{- $g := $c.gitea }}
