@@ -35,7 +35,7 @@ resources:
       namespace: otomi-keycloak-operator
     data:
       KEYCLOAK_ADMIN: otomi-admin
-      FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
+      FEAT_EXTERNAL_IDP: "{{ $v.otomi.hasExternalIDP | toString }}"
       KC_HOSTNAME_URL: https://keycloak.{{ $v.cluster.domainSuffix }}
       KC_HOSTNAME: keycloak.{{ $v.cluster.domainSuffix }}
       KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak
@@ -56,10 +56,9 @@ resources:
       IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
       IDP_OIDC_URL: {{ $oi.issuer }}
       {{- end }}
-      nativeSecrets:
-        KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
-        KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
+      KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
+      KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
       {{- if $v.otomi.hasExternalIDP }}
-        IDP_CLIENT_ID: {{ $oi.clientID }}
-        IDP_CLIENT_SECRET: {{ $oi.clientSecret }}
+      IDP_CLIENT_ID: {{ $oi.clientID }}
+      IDP_CLIENT_SECRET: {{ $oi.clientSecret }}
       {{- end }}

@@ -28,7 +28,7 @@ releases:
     labels:
       pkg: otomi-keycloak-operator
     <<: *default
-  - name: otomi-keycloak-artifacts
+  - name: otomi-keycloak-operator-artifacts
     installed: true
     namespace: otomi-keycloak-operator
     labels:
