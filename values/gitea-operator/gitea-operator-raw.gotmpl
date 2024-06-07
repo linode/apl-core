@@ -39,7 +39,7 @@ resources:
     rules:
       - apiGroups: [""]
         resources: ["configmaps"]
-        verbs: ["get", "list"]
+        verbs: ["get", "watch", "list"]
   - name: gitea-operator-configmap-reader-binding
     apiVersion: rbac.authorization.k8s.io/v1
     kind: RoleBinding
