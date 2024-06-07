@@ -35,6 +35,12 @@ releases:
     labels:
       pkg: gitea
     <<: *raw
+  - name: gitea-operator-artifacts
+    installed: true
+    namespace: gitea-operator
+    labels:
+      pkg: gitea-operator
+    <<: *raw
   - name: gitea-operator
     installed: true
     namespace: gitea-operator
