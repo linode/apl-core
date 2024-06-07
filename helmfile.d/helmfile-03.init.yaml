@@ -28,6 +28,12 @@ releases:
     labels:
       pkg: otomi-keycloak-operator
     <<: *default
+  - name: otomi-keycloak-artifacts
+    installed: true
+    namespace: otomi-keycloak-operator
+    labels:
+      pkg: otomi-keycloak-operator
+    <<: *raw
   - name: external-secrets
     installed: {{ $a | get "external-secrets.enabled" }}
     namespace: external-secrets
