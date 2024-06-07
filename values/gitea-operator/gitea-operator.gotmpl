@@ -1,17 +1,7 @@
 {{- $v := .Values }}
-{{- $o := $v | get "oidc" dict }}
-{{- $otomiValues := dict "apps" (dict "argocd" (dict "enabled" $v.apps.argocd.enabled)) "cluster" (dict "domainSuffix" $v.cluster.domainSuffix) "teamConfig" (dict) }}
-{{- range $teamId, $team := $v.teamConfig }}
-  {{- $_ := set $otomiValues.teamConfig $teamId (dict "selfService" (dict "apps" ($team | get "selfService.apps" list))) }}
-{{- end }}
-{{- $_ := set $otomiValues "oidc" $o }}
-{{- $otomiValues := $otomiValues | toJson }}
-{{- $c := $v.apps }}
-{{- $g := $c.gitea }}
 {{- $o := $v.apps | get "gitea-operator" }}
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
-
 image:
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
@@ -22,9 +12,3 @@ imagePullSecrets:
 {{- end }}
 
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
-
-giteaOperator:
-  giteaPassword: {{ $g.adminPassword }}
-  # GITEA_URL: https://gitea.{{ $v.cluster.domainSuffix }}
-  giteaUrl: http://gitea-http.gitea:3000
-  otomiValues: {{ $otomiValues }}

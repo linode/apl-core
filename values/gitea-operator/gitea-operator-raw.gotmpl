@@ -17,10 +17,10 @@ resources:
       name: gitea-operator-cm
       namespace: gitea-operator
     data:
-      GITEA_URL: http://gitea-http.gitea:3000
-      HAS_ARGOCD: "{{ $v.apps.argocd.enabled | toString }}"
-      DOMAIN_SUFFIX: "{{ $v.cluster.domainSuffix }}"
-      TEAM_CONFIG: {{ $teamConfig | toJson }}
+      giteaUrl: http://gitea-http.gitea:3000
+      hasArgocd: "{{ $v.apps.argocd.enabled | toString }}"
+      domainSuffix: "{{ $v.cluster.domainSuffix }}"
+      teamConfig: {{ $teamConfig | toJson }}
   - name: gitea-operator-secret
     apiVersion: v1
     kind: Secret
@@ -28,6 +28,5 @@ resources:
       name: gitea-admin
       namespace: gitea-operator
     data:
-      GITEA_PASSWORD: {{ $g.adminPassword | b64enc }}
-      OIDC_CONFIG: {{ $oJson | b64enc }}
-
+      giteaPassword: {{ $g.adminPassword | b64enc }}
+      oidcConfig: {{ $oJson | b64enc }}
