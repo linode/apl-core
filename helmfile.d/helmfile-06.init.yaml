@@ -33,12 +33,5 @@ releases:
     values:
       - ../values/istio-operator/istio-operator-raw.gotmpl
       - snippets/common.gotmpl
-  - name: external-secrets-artifacts
-    installed: {{ $a | get "external-secrets.enabled" }}
-    disableValidationOnInstall: true
-    namespace: external-secrets
-    labels:
-      pkg: external-secrets
-      group: secrets
-    <<: *raw
+
 

@@ -156,3 +156,9 @@ changes:
       - 'azureMonitor'
       - 'apps.opencost'
       - 'teams.{team}.billingAlertQuotas'
+  - version: 23
+    deletions:
+      - 'apps.vault'
+      - 'kms.sops.vault'
+      - 'platformBackups.persistentVolumes.vault'
+      - 'apps.exteral-secrets'

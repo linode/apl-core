@@ -211,16 +211,14 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
   if (plainValues.teamConfig || overwrite) {
     const types = ['apps', 'backups', 'builds', 'jobs', 'secrets', 'netpols', 'sealedsecrets', 'services', 'workloads']
-    const fileMap = { secrets: 'external-secrets' }
     const teamConfig = plainValues.teamConfig ? cloneDeep(plainValues.teamConfig) : {}
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     teams.forEach(async (team) => {
       const teamPromises: Promise<void>[] = []
       types.forEach((type): void => {
-        const fileType = fileMap[type] || type
         teamPromises.push(
           writeValuesToFile(
-            `${env.ENV_DIR}/env/teams/${fileType}.${team}.yaml`,
+            `${env.ENV_DIR}/env/teams/${type}.${team}.yaml`,
             {
               teamConfig: {
                 [team]: { [type]: get(plainValues, `teamConfig.${team}.${type}`, type === 'apps' ? {} : []) },
