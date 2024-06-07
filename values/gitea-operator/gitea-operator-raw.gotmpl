@@ -10,47 +10,47 @@
 {{- $teamConfig := $teamConfig | toJson }}
 
 resources:
-    - name: gitea-operator-cm
-        apiVersion: v1
-        kind: ConfigMap
-        metadata:
-            name: gitea-operator-cm
-            namespace: gitea-operator
-        data:
-            GITEA_URL: http://gitea-http.gitea:3000
-            HAS_ARGOCD: "{{ $v.apps.argocd.enabled | toString }}"
-            DOMAIN_SUFFIX: "{{ $v.cluster.domainSuffix }}"
-            TEAM_CONFIG: {{ $teamConfig | toJson }}
-    - name: gitea-operator-secret
-        apiVersion: v1
-        kind: Secret
-        metadata:
-            name: gitea-admin
-            namespace: gitea-operator
-        data:
-            GITEA_PASSWORD: {{ $g.adminPassword | b64enc }}
-            OIDC_CONFIG: {{ $oJson | b64enc }}
-    - name: configmap-reader
-        apiVersion: rbac.authorization.k8s.io/v1
-        kind: Role
-        metadata:
-            namespace: gitea-operator
-            name: configmap-reader
-        rules:
-        - apiGroups: [""]
-            resources: ["configmaps"]
-            verbs: ["get"]
-    - name: read-configmap
-        apiVersion: rbac.authorization.k8s.io/v1
-        kind: RoleBinding
-        metadata:
-            name: read-configmap
-            namespace: gitea-operator
-        roleRef:
-            apiGroup: rbac.authorization.k8s.io
-            kind: Role
-            name: configmap-reader
-        subjects:
-        - kind: ServiceAccount
-            name: gitea-operator
-            namespace: gitea-operator
+  - name: gitea-operator-cm
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: gitea-operator-cm
+      namespace: gitea-operator
+    data:
+      GITEA_URL: http://gitea-http.gitea:3000
+      HAS_ARGOCD: "{{ $v.apps.argocd.enabled | toString }}"
+      DOMAIN_SUFFIX: "{{ $v.cluster.domainSuffix }}"
+      TEAM_CONFIG: {{ $teamConfig | toJson }}
+  - name: gitea-operator-secret
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: gitea-admin
+      namespace: gitea-operator
+    data:
+      GITEA_PASSWORD: {{ $g.adminPassword | b64enc }}
+      OIDC_CONFIG: {{ $oJson | b64enc }}
+  - name: gitea-operator-configmap-reader
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      name: gitea-operator-configmap-reader
+      namespace: gitea-operator
+    rules:
+      - apiGroups: [""]
+        resources: ["configmaps"]
+        verbs: ["get", "list"]
+  - name: gitea-operator-configmap-reader-binding
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      name: gitea-operator-configmap-reader-binding
+      namespace: gitea-operator
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: gitea-operator-configmap-reader
+    subjects:
+      - kind: ServiceAccount
+        name: gitea-operator
+        namespace: gitea-operator
