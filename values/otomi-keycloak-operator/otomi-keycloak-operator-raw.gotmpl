@@ -23,7 +23,7 @@ resources:
     kind: Secret
     metadata:
       name: keycloak-admin
-      namespace: keycloak
+      namespace: otomi-keycloak-operator
     data:
       password: {{ .Values.otomi.adminPassword | b64enc }}
       username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
@@ -32,7 +32,7 @@ resources:
     kind: ConfigMap
     metadata:
       name: keycloak-cm
-      namespace: keycloak
+      namespace: otomi-keycloak-operator
     data:
       KEYCLOAK_ADMIN: otomi-admin
       FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
