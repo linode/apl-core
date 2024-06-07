@@ -1,0 +1,65 @@
+{{- $v := .Values }}
+{{- $oi := $v | get "oidc" dict }}
+{{- $teamNames := list }}
+{{- $teamsMapping := dict }}
+{{- $teamIds := list }}
+{{- range $name, $team := omit .Values.teamConfig "admin" }}
+{{- $teamIds = append $teamIds $name }}
+{{- $teamNames = print "team-" $name | append $teamNames }}
+{{- if ($team | get "oidc.groupMapping" nil) }}
+{{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping }}
+{{- end }}
+{{- end }}
+{{- $c := $v.apps }}
+{{- $cm := $c | get "cert-manager" }}
+{{- $o := $v.apps | get "otomi-keycloak-operator" }}
+{{- $version := $v.versions.tasks }}
+{{- $isSemver := regexMatch "^[0-9.]+" $version }}
+{{- $k := $c | get "keycloak" }}
+
+resources:
+  - name: otomi-keycloak-operator-secret
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: keycloak-admin
+      namespace: keycloak
+    data:
+      password: {{ .Values.otomi.adminPassword | b64enc }}
+      username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
+  - name: otomi-keycloak-operator-cm
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: keycloak-cm
+      namespace: keycloak
+    data:
+      KEYCLOAK_ADMIN: otomi-admin
+      FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
+      KC_HOSTNAME_URL: https://keycloak.{{ $v.cluster.domainSuffix }}
+      KC_HOSTNAME: keycloak.{{ $v.cluster.domainSuffix }}
+      KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak
+      KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
+      KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
+      TEAM_IDS: '{{ $teamIds | toJson }}'
+      WAIT_OPTIONS: '{"retries": "200"}'
+      {{- if $v.otomi.hasExternalIDP }}
+      IDP_ALIAS: {{ $k.idp.alias }}
+      {{- with $oi | get "usernameClaimMapper" nil }}
+      IDP_USERNAME_CLAIM_MAPPER: {{ . }}{{ end }}
+      {{- with $oi | get "subClaimMapper" nil }}
+      IDP_SUB_CLAIM_MAPPER: {{ . }}{{ end }}
+      IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
+      {{- with $oi | get "adminGroupID" nil }}
+      IDP_GROUP_OTOMI_ADMIN: {{ . }}{{ end }}
+      {{- with $oi | get "teamAdminGroupID" nil }}
+      IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
+      IDP_OIDC_URL: {{ $oi.issuer }}
+      {{- end }}
+      nativeSecrets:
+        KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
+        KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
+      {{- if $v.otomi.hasExternalIDP }}
+        IDP_CLIENT_ID: {{ $oi.clientID }}
+        IDP_CLIENT_SECRET: {{ $oi.clientSecret }}
+      {{- end }}
