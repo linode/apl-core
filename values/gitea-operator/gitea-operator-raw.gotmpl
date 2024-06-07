@@ -1,0 +1,29 @@
+{{- $v := .Values }}
+{{- $o := $v | get "oidc" dict }}
+{{- $otomiValues := dict "apps" (dict "argocd" (dict "enabled" $v.apps.argocd.enabled)) "cluster" (dict "domainSuffix" $v.cluster.domainSuffix) "teamConfig" (dict) }}
+{{- range $teamId, $team := $v.teamConfig }}
+  {{- $_ := set $otomiValues.teamConfig $teamId (dict "selfService" (dict "apps" ($team | get "selfService.apps" list))) }}
+{{- end }}
+{{- $_ := set $otomiValues "oidc" $o }}
+{{- $otomiValues := $otomiValues | toJson }}
+{{- $c := $v.apps }}
+{{- $g := $c.gitea }}
+
+resources:
+  - name: gitea-operator-cm
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: gitea-operator-cm
+      namespace: gitea-operator
+    data:
+      GITEA_URL: http://gitea-http.gitea:3000
+      OTOMI_VALUES: {{ $otomiValues | b64enc }}
+  - name: gitea-operator-secret
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: gitea-admin
+      namespace: gitea-operator
+    data:
+      GITEA_PASSWORD: {{ $g.adminPassword | b64enc }}

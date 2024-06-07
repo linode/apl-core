@@ -32,13 +32,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: [npm, run, operator:gitea]
-          env:
-            - name: GITEA_PASSWORD
-              value: "{{ .Values.giteaOperator.giteaPassword }}"
-            - name: GITEA_URL
-              value: "{{ .Values.giteaOperator.giteaUrl }}"
-            - name: OTOMI_VALUES
-              value: {{ .Values.giteaOperator.otomiValues | toJson | quote }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
