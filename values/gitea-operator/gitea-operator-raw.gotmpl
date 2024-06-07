@@ -1,13 +1,13 @@
 {{- $v := .Values }}
-{{- $o := $v | get "oidc" dict }}
-{{- $otomiValues := dict "apps" (dict "argocd" (dict "enabled" $v.apps.argocd.enabled)) "cluster" (dict "domainSuffix" $v.cluster.domainSuffix) "teamConfig" (dict) }}
-{{- range $teamId, $team := $v.teamConfig }}
-  {{- $_ := set $otomiValues.teamConfig $teamId (dict "selfService" (dict "apps" ($team | get "selfService.apps" list))) }}
-{{- end }}
-{{- $_ := set $otomiValues "oidc" $o }}
-{{- $otomiValues := $otomiValues | toJson }}
 {{- $c := $v.apps }}
 {{- $g := $c.gitea }}
+{{- $o := $v | get "oidc" dict }}
+{{- $oJson := $o | toJson }}
+{{- $teamConfig := dict }}
+{{- range $teamId, $team := $v.teamConfig }}
+  {{- $_ := set $teamConfig $teamId (dict "selfService" (dict "apps" ($team | get "selfService.apps" list))) }}
+{{- end }}
+{{- $teamConfig := $teamConfig | toJson }}
 
 resources:
   - name: gitea-operator-cm
@@ -18,7 +18,9 @@ resources:
       namespace: gitea-operator
     data:
       GITEA_URL: http://gitea-http.gitea:3000
-      OTOMI_VALUES: {{ $otomiValues | b64enc }}
+      HAS_ARGOCD: "{{ $v.apps.argocd.enabled | toString }}"
+      DOMAIN_SUFFIX: "{{ $v.cluster.domainSuffix }}"
+      TEAM_CONFIG: {{ $teamConfig | toJson }}
   - name: gitea-operator-secret
     apiVersion: v1
     kind: Secret
@@ -27,3 +29,4 @@ resources:
       namespace: gitea-operator
     data:
       GITEA_PASSWORD: {{ $g.adminPassword | b64enc }}
+      OIDC_CONFIG: {{ $oJson | b64enc }}
