@@ -30,27 +30,4 @@ resources:
     data:
       GITEA_PASSWORD: {{ $g.adminPassword | b64enc }}
       OIDC_CONFIG: {{ $oJson | b64enc }}
-  - name: gitea-operator-configmap-reader
-    apiVersion: rbac.authorization.k8s.io/v1
-    kind: Role
-    metadata:
-      name: gitea-operator-configmap-reader
-      namespace: gitea-operator
-    rules:
-      - apiGroups: [""]
-        resources: ["configmaps"]
-        verbs: ["get", "watch", "list"]
-  - name: gitea-operator-configmap-reader-binding
-    apiVersion: rbac.authorization.k8s.io/v1
-    kind: RoleBinding
-    metadata:
-      name: gitea-operator-configmap-reader-binding
-      namespace: gitea-operator
-    roleRef:
-      apiGroup: rbac.authorization.k8s.io
-      kind: Role
-      name: gitea-operator-configmap-reader
-    subjects:
-      - kind: ServiceAccount
-        name: gitea-operator
-        namespace: gitea-operator
+

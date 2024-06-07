@@ -18,6 +18,12 @@ rules:
   resources: ["namespaces"]
   verbs: ["get", "watch", "list"]
 - apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""]
   resources: ["pods/exec"]
   verbs: ["create", "get", "post"]
 ---
