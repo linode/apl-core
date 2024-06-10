@@ -56,8 +56,6 @@ apps:
     enabled: true
   trivy:
     enabled: true
-  vault:
-    enabled: true
   velero:
     enabled: true
 teamConfig:
