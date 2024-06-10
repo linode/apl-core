@@ -16,6 +16,8 @@
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 {{- $k := $c | get "keycloak" }}
+{{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
+{{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
 resources:
   - name: otomi-keycloak-operator-secret
