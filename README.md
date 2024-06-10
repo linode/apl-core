@@ -31,7 +31,7 @@ Otomi turns any Kubernetes cluster into an Application Platform to provide paved
 
 To install Otomi, make sure to have a K8s cluster running with at least:
 
-- Version `1.25`, `1.26` or `1.27`
+- Version `1.27`, `1.28` or `1.29`
 - A node pool with at least **8 vCPU** and **16GB+ RAM** (more resources might be required based on the activated capabilities)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - A default storage class configured
