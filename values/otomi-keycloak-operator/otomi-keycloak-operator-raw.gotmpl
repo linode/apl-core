@@ -25,8 +25,13 @@ resources:
       name: keycloak-admin
       namespace: otomi-keycloak-operator
     data:
-      password: {{ .Values.otomi.adminPassword | b64enc }}
-      username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
+      KEYCLOAK_ADMIN: {{ .Values.apps.keycloak.adminUsername | b64enc }}
+      KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword | b64enc }}
+      KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret | b64enc }}
+      {{- if $v.otomi.hasExternalIDP }}
+      IDP_CLIENT_ID: {{ $oi.clientID | b64enc}}
+      IDP_CLIENT_SECRET: {{ $oi.clientSecret | b64enc }}
+      {{- end }}
   - name: otomi-keycloak-operator-cm
     apiVersion: v1
     kind: ConfigMap
@@ -34,13 +39,14 @@ resources:
       name: keycloak-cm
       namespace: otomi-keycloak-operator
     data:
-      KEYCLOAK_ADMIN: otomi-admin
       FEAT_EXTERNAL_IDP: "{{ $v.otomi.hasExternalIDP | toString }}"
-      KC_HOSTNAME_URL: https://keycloak.{{ $v.cluster.domainSuffix }}
-      KC_HOSTNAME: keycloak.{{ $v.cluster.domainSuffix }}
+      KEYCLOAK_HOSTNAME_URL: https://keycloak.{{ $v.cluster.domainSuffix }}
+      KEYCLOAK_HOSTNAME: keycloak.{{ $v.cluster.domainSuffix }}
       KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak
       KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
+      KEYCLOAK_REALM: 'master'
       KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
+      REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
       TEAM_IDS: '{{ $teamIds | toJson }}'
       WAIT_OPTIONS: '{"retries": "200"}'
       {{- if $v.otomi.hasExternalIDP }}
@@ -56,9 +62,6 @@ resources:
       IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
       IDP_OIDC_URL: {{ $oi.issuer }}
       {{- end }}
-      KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
-      KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
-      {{- if $v.otomi.hasExternalIDP }}
-      IDP_CLIENT_ID: {{ $oi.clientID }}
-      IDP_CLIENT_SECRET: {{ $oi.clientSecret }}
+      {{- if not $v.otomi.hasExternalIDP }}
+      IDP_ALIAS: 'otomi-idp'
       {{- end }}
