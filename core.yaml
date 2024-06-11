@@ -18,8 +18,6 @@ k8s:
       disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
-    - name: external-secrets
-      disableIstioInjection: true
     - name: falco
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -103,8 +101,6 @@ k8s:
       disablePolicyChecks: true
     - name: sealed-secrets
       app: sealed-secrets
-    - name: vault
-      app: vault
     - name: velero
       app: velero
       disablePolicyChecks: true
@@ -168,8 +164,6 @@ adminApps:
         auth: true
   - name: external-dns
     tags: [ingress, security, tls]
-  - name: external-secrets
-    tags: [secrets, security, tls]
   - name: falco
     tags: [security]
     deps: [prometheus, grafana]
@@ -347,18 +341,6 @@ adminApps:
   - name: trivy
     tags: [security]
     deps: [prometheus, grafana]
-  - name: vault
-    tags: [secrets, security, observability]
-    deps: [external-secrets]
-    isShared: true
-    ownHost: true
-    path: /ui/vault/auth?redirect_to=%2Fvault%2Fsecrets%2Fsecret%2Flist%2Fteams%2F#NS#%2F&with=oidc
-    ingress:
-      - namespace: vault
-        svc: vault
-        port: 8200
-        type: public
-        auth: true
   - name: velero
     tags: [backup]
   - name: kyverno

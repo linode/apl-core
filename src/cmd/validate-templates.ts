@@ -163,7 +163,7 @@ export const validateTemplates = async (): Promise<void> => {
   d.info(`K8S Resource Path: ${k8sResourcesPath}`)
   d.info(`Schema location: file://${schemaOutputPath}`)
   const kubevalOutput = await nothrow(
-    $`kubeconform ${verbose} -skip ${skipKinds.join(',')} -ignore-filename-pattern ${skipFilenames.join(
+    $`kubeconform -skip ${skipKinds.join(',')} -ignore-filename-pattern ${skipFilenames.join(
       '|',
     )} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json ${k8sResourcesPath}`,
   )
@@ -200,6 +200,7 @@ export const validateTemplates = async (): Promise<void> => {
   d.info(`${chalk.redBright('TOTAL ERR')}: %s`, `${errCount} files`)
 
   if (kubevalOutput.exitCode !== 0) {
+    d.info('Kubeval output: %s', kubevalOutput.stdout)
     throw new Error(`Template validation FAILED: ${kubevalOutput.exitCode}`)
   } else d.log('Template validation SUCCESS')
 }

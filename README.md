@@ -31,7 +31,7 @@ Otomi turns any Kubernetes cluster into an Application Platform to provide paved
 
 To install Otomi, make sure to have a K8s cluster running with at least:
 
-- Version `1.25`, `1.26` or `1.27`
+- Version `1.27`, `1.28` or `1.29`
 - A node pool with at least **8 vCPU** and **16GB+ RAM** (more resources might be required based on the activated capabilities)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - A default storage class configured
@@ -105,7 +105,6 @@ Otomi offers a set of integrated Kubernetes applications (using upstream open so
 - [Grafana](https://github.com/grafana/grafana): Visualize metrics, logs, and traces from multiple sources
 - [Grafana Loki](https://github.com/grafana/loki): Collecting container application logs
 - [Harbor](https://github.com/goharbor/harbor): Container image registry with role-based access control, image scanning, and image signing
-- [HashiCorp Vault](https://github.com/hashicorp/vault): Manage Secrets and Protect Sensitive Data
 - [OPA/Gatekeeper](https://github.com/open-policy-agent/gatekeeper): Policy-based control for cloud-native environments
 - [Jaeger](https://github.com/jaegertracing/jaeger): End-to-end distributed tracing and monitor for complex distributed systems
 - [Kiali](https://github.com/kiali/kiali): Observe Istio service mesh relations and connections

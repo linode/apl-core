@@ -85,17 +85,6 @@ appsInfo:
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
     integration: ExternalDNS is used by Otomi to make public service domains accessible by registering them with Otomi's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then Otomi will rely on nip.io to create host names for all services.
-  external-secrets:
-    title: External Secrets Operator
-    appVersion: 0.10.2
-    repo: https://github.com/external-secrets/external-secrets
-    maintainers: External Secrets community
-    relatedLinks:
-      - https://otomi.io/docs/apps/external-secrets
-      - https://external-secrets.io
-    license: Apache 2.0
-    about: External Secrets Operator reads information from a third-party service like AWS Secrets Manager and automatically injects the values as Kubernetes Secrets.
-    integration: External Secrets is used by Otomi to allow teams to automatically sync (partial) secrets created in the packaged (Hashicorp) Vault.
   falco:
     title: Falco
     appVersion: 0.33.1
@@ -350,18 +339,6 @@ appsInfo:
     dependencies: Prometheus, Grafana, Loki, Tempo
     about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
     integration: OpenTelemetry Collector is used to receive telementry data from Istio Envoy access logs and export this data to Tempo.
-  vault:
-    title: Vault Operator
-    appVersion: 1.16.0
-    repo: https://github.com/hashicorp/vault
-    maintainers: HashiCorp
-    relatedLinks:
-      - https://otomi.io/docs/apps/vault
-      - https://www.vaultproject.io/
-      - https://www.vaultproject.io/docs/configuration/storage
-    license: MPL-2.0
-    about: Vault is a tool for securely accessing secrets. A secret is anything that you want to tightly control access to, such as API keys, passwords, certificates, and more. Vault provides a unified interface to any secret, while providing tight access control and recording a detailed audit log.
-    integration: Vault has been made team aware. When enabled, a space will automatically be created for each team, and only team members are allowed access. Vault is automatically configured to use Otomi's Keycloak OIDC settings for SSO. Vault runs natively on Kubernetes. To prevent data from Vault being lost during a rolling cluster upgrade, data persistence can be configured in combination with external (blob) storage.
   velero:
     title: Velero
     appVersion: 1.9.0

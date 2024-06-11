@@ -61,15 +61,3 @@ additionalServiceMonitors:
     endpoints:
       - port: metrics
   {{- end }}
-  {{- if .apps | get "vault.enabled" }}
-  - name: external-secrets
-    namespace: vault
-    selector:
-      matchLabels:
-        app.kubernetes.io/name: external-secrets
-    namespaceSelector:
-      matchNames:
-        - vault
-    endpoints:
-      - port: prometheus
-  {{- end }}
