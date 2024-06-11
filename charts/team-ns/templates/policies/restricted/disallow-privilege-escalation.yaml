@@ -51,8 +51,10 @@ spec:
             preconditions:
               all:
               - key: "{{`{{ element.image }}`}}"
-                operator: NotEquals
-                value: "*/istio/proxyv2*"
+                operator: NotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
             deny:
               conditions:
                 all:

@@ -45,24 +45,14 @@ spec:
         message: >-
           All images in this Pod must come from an authorized repository.
         foreach:
-          - list: request.object.spec.initContainers[].image
-            preconditions:
-              all:
-              - key: "{{`{{ element }}`}}"
-                operator: Equals
-                value: "*/istio/proxyv2*"
-            deny:
-              conditions:
-                all:
-                - key: "{{`{{ element }}`}}"
-                  operator: NotEquals
-                  value: "docker.io/*"
           - list: request.object.spec.[ephemeralContainers, initContainers, containers][].image
             preconditions:
               all:
               - key: "{{`{{ element }}`}}"
-                operator: NotEquals
-                value: "*/istio/proxyv2*"
+                operator: NotIn
+                value:
+                  - "docker.io/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
             deny:
               conditions:
                 all:
