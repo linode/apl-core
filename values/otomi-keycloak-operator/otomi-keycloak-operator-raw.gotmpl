@@ -34,6 +34,7 @@ resources:
     metadata:
       name: keycloak-admin
       namespace: otomi-keycloak-operator
+    {{- with .Values.configs.tls.certificates }}
     data:
       KEYCLOAK_ADMIN: {{ .Values.apps.keycloak.adminUsername | b64enc }}
       KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword | b64enc }}
