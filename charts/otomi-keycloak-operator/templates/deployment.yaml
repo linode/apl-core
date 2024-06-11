@@ -39,6 +39,9 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumes:
+          - name: tls-certs
+            configMap:
+              name: keycloak-operator-tls-certs-cm
           - name: operator-config-kc
             configMap:
               name: otomi-keycloak-operator-cm

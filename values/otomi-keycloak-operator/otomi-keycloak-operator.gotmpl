@@ -11,11 +11,12 @@ image:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
-{{ if $v._derived.untrustedCA }}
-tls:
-  certificates:
-    keycloak.{{ $v.cluster.domainSuffix }}: |
-      {{- $v._derived.caCert | nindent 8 }}
-{{ end }}
+configs:
+  {{ if $v._derived.untrustedCA }}
+  tls:
+    certificates:
+      keycloak.{{ $v.cluster.domainSuffix }}: |
+        {{- $v._derived.caCert | nindent 8 }}
+  {{ end }}
 
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
