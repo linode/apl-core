@@ -34,6 +34,18 @@ releases:
     labels:
       pkg: gitea-operator
     <<: *default
+  - name: harbor-operator
+    installed: true
+    namespace: harbor-operator
+    labels:
+      pkg: harbor-operator
+    <<: *default
+  - name: harbor-operator-artifacts
+    installed: true
+    namespace: harbor-operator
+    labels:
+      pkg: harbor-operator
+    <<: *raw
   - name: kiali-operator-artifacts
     installed: {{ $a | get "kiali.enabled" }}
     namespace: kiali
