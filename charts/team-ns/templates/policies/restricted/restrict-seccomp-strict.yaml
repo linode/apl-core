@@ -30,6 +30,17 @@ spec:
         - resources:
             kinds:
               - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
+          - resources:
+              annotations:
+                tekton.dev/tags: git
+          - resources:
+              annotations:
+                tekton.dev/tags: 'CLI, grype'
       skipBackgroundRequests: true
       validate:
         message: >-
@@ -39,34 +50,21 @@ spec:
           spec.initContainers[*].securityContext.seccompProfile.type, and
           spec.ephemeralContainers[*].securityContext.seccompProfile.type
           must be set to `RuntimeDefault` or `Localhost`.
-        anyPattern:
-        - spec:
-            securityContext:
-              seccompProfile:
-                type: "RuntimeDefault | Localhost"
-            =(ephemeralContainers):
-            - =(securityContext):
-                =(seccompProfile):
-                  =(type): "RuntimeDefault | Localhost"
-            =(initContainers):
-            - =(securityContext):
-                =(seccompProfile):
-                  =(type): "RuntimeDefault | Localhost"
-            containers:
-            - =(securityContext):
-                =(seccompProfile):
-                  =(type): "RuntimeDefault | Localhost"
-        - spec:
-            =(ephemeralContainers):
-            - securityContext:
-                seccompProfile:
-                  type: "RuntimeDefault | Localhost"
-            =(initContainers):
-            - securityContext:
-                seccompProfile:
-                  type: "RuntimeDefault | Localhost"
-            containers:
-            - securityContext:
-                seccompProfile:
-                  type: "RuntimeDefault | Localhost"
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element.securityContext.seccompProfile.type || '' }}`}}"
+                  operator: AnyNotIn
+                  value:
+                  - RuntimeDefault
+                  - Localhost
 {{- end }}

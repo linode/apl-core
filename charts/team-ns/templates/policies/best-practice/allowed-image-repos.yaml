@@ -29,12 +29,30 @@ spec:
         - resources:
             kinds:
               - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
+          - resources:
+              annotations:
+                tekton.dev/tags: CLI, grype
+          - resources:
+              annotations:
+                tekton.dev/tags: git
       skipBackgroundRequests: true
       validate:
         message: >-
-          All images in this Pod must come from an authorized repository.          
+          All images in this Pod must come from an authorized repository.
         foreach:
           - list: request.object.spec.[ephemeralContainers, initContainers, containers][].image
+            preconditions:
+              all:
+              - key: "{{`{{ element }}`}}"
+                operator: NotIn
+                value:
+                  - "docker.io/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
             deny:
               conditions:
                 all:

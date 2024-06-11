@@ -25,6 +25,17 @@ spec:
       - resources:
           kinds:
           - Pod
+    exclude:
+      any:
+        - resources:
+            annotations:
+              tekton.dev/tags: image-build
+        - resources:
+            annotations:
+              tekton.dev/tags: CLI, grype
+        - resources:
+            annotations:
+              tekton.dev/tags: git
     skipBackgroundRequests: true
     validate:
       message: "The label `otomi.io/app` is required."

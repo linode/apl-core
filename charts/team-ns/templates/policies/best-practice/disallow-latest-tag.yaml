@@ -42,6 +42,11 @@ spec:
       - resources:
           kinds:
           - Pod
+    exclude:
+      any:
+      - resources:
+          annotations:
+            policy.otomi.io/ignore: banned-image-tags
     skipBackgroundRequests: true
     validate:
       message: "Using a mutable image tag e.g. 'latest' is not allowed."

@@ -27,6 +27,17 @@ spec:
         - resources:
             kinds:
               - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
+          - resources:
+              annotations:
+                tekton.dev/tags: git
+          - resources:
+              annotations:
+                tekton.dev/tags: 'CLI, grype'
       skipBackgroundRequests: true
       validate:
         message: >-
@@ -35,15 +46,19 @@ spec:
           spec.initContainers[*].securityContext.allowPrivilegeEscalation,
           and spec.ephemeralContainers[*].securityContext.allowPrivilegeEscalation
           must be set to `false`.
-        pattern:
-          spec:
-            =(ephemeralContainers):
-            - securityContext:
-                allowPrivilegeEscalation: "false"
-            =(initContainers):
-            - securityContext:
-                allowPrivilegeEscalation: "false"
-            containers:
-            - securityContext:
-                allowPrivilegeEscalation: "false"
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ not_null(element.securityContext.allowPrivilegeEscalation, 'true') }}`}}"
+                  operator: NotEquals
+                  value: false
 {{- end }}

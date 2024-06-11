@@ -29,6 +29,17 @@ spec:
         - resources:
             kinds:
               - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
+          - resources:
+              annotations:
+                tekton.dev/tags: git
+          - resources:
+              annotations:
+                tekton.dev/tags: 'CLI, grype'
       skipBackgroundRequests: true
       validate:
         message: >-
@@ -37,29 +48,21 @@ spec:
           spec.initContainers[*].securityContext.runAsGroup, and
           spec.ephemeralContainers[*].securityContext.runAsGroup must be
           set to a value greater than zero.
-        anyPattern:
-        - spec:
-            securityContext:
-              runAsGroup: ">0"
-            =(ephemeralContainers):
-              - =(securityContext):
-                  =(runAsGroup): ">0"
-            =(initContainers):
-              - =(securityContext):
-                  =(runAsGroup): ">0"
-            containers:
-              - =(securityContext):
-                  =(runAsGroup): ">0"
-        - spec:
-            =(ephemeralContainers):
-              - securityContext:
-                  runAsGroup: ">0"
-            =(initContainers):
-              - securityContext:
-                  runAsGroup: ">0"
-            containers:
-              - securityContext:
-                  runAsGroup: ">0"
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element.securityContext.runAsGroup || '0' }}`}}"
+                  operator: LessThanOrEquals
+                  value: "0"
     - name: check-supplementalgroups
       match:
         any:

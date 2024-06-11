@@ -14,13 +14,13 @@ metadata:
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
       Startup probes need to be configured to correctly manage a Pod's
-      lifecycle during deployments, restarts, and upgrades. Sometimes, applications are temporarily unable to serve traffic. For example, an 
-      application might need to load large data or configuration files during startup, or depend on external services after startup. 
-      In such cases, you don't want to kill the application, but you don't want to send it requests either. 
-      Kubernetes provides readiness probes to detect and mitigate these situations. 
-      A pod with containers reporting that they are not ready does not receive traffic through Kubernetes Services. 
+      lifecycle during deployments, restarts, and upgrades. Sometimes, applications are temporarily unable to serve traffic. For example, an
+      application might need to load large data or configuration files during startup, or depend on external services after startup.
+      In such cases, you don't want to kill the application, but you don't want to send it requests either.
+      Kubernetes provides readiness probes to detect and mitigate these situations.
+      A pod with containers reporting that they are not ready does not receive traffic through Kubernetes Services.
       This policy validates that all containers have a livenessProbe defined.
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   validationFailureAction: {{ $p.action }}
   background: true
@@ -32,6 +32,17 @@ spec:
       - resources:
           kinds:
           - Pod
+    exclude:
+      any:
+        - resources:
+            annotations:
+              tekton.dev/tags: image-build
+        - resources:
+            annotations:
+              tekton.dev/tags: CLI, grype
+        - resources:
+            annotations:
+              tekton.dev/tags: git
     preconditions:
       all:
       - key: "{{`{{request.operation || 'BACKGROUND'}}`}}"

@@ -26,6 +26,17 @@ spec:
         - resources:
             kinds:
               - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
+          - resources:
+              annotations:
+                tekton.dev/tags: git
+          - resources:
+              annotations:
+                tekton.dev/tags: 'CLI, grype'
       skipBackgroundRequests: true
       validate:
         message: >-
@@ -33,27 +44,19 @@ spec:
           must be set to `true`, or the fields spec.containers[*].securityContext.runAsNonRoot,
           spec.initContainers[*].securityContext.runAsNonRoot, and spec.ephemeralContainers[*].securityContext.runAsNonRoot
           must be set to `true`.
-        anyPattern:
-        - spec:
-            securityContext:
-              runAsNonRoot: true
-            =(ephemeralContainers):
-            - =(securityContext):
-                =(runAsNonRoot): true
-            =(initContainers):
-            - =(securityContext):
-                =(runAsNonRoot): true
-            containers:
-            - =(securityContext):
-                =(runAsNonRoot): true
-        - spec:
-            =(ephemeralContainers):
-            - securityContext:
-                runAsNonRoot: true
-            =(initContainers):
-            - securityContext:
-                runAsNonRoot: true
-            containers:
-            - securityContext:
-                runAsNonRoot: true
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element.securityContext.runAsNonRoot || 'false' }}`}}"
+                  operator: NotEquals
+                  value: true
 {{- end }}

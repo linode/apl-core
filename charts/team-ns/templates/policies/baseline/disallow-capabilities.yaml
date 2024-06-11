@@ -25,16 +25,56 @@ spec:
         - resources:
             kinds:
               - Pod
+      preconditions:
+        all:
+        - key: "{{`{{ request.operation || 'BACKGROUND' }}`}}"
+          operator: NotEquals
+          value: DELETE              
       skipBackgroundRequests: true
       validate:
         message: >-
           Any capabilities added beyond the allowed list (AUDIT_WRITE, CHOWN, DAC_OVERRIDE, FOWNER,
           FSETID, KILL, MKNOD, NET_BIND_SERVICE, SETFCAP, SETGID, SETPCAP, SETUID, SYS_CHROOT)
           are disallowed.
-        deny:
-          conditions:
-            all:
-            - key: "{{`{{ request.object.spec.[ephemeralContainers, initContainers, containers][].securityContext.capabilities.add[] }}`}}"
-              operator: AnyNotIn
-              value: {{ $p.customValues | toYaml | nindent 14 }}
+        foreach:
+          - list: request.object.spec.initContainers[]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: Equals
+                value: "*/istio/proxyv2*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{`}} element.securityContext.capabilities.add[] || `[]` {{`}}`}}"
+                  operator: AnyNotIn
+                  value:
+                  - NET_ADMIN
+                  - NET_RAW
+                  - AUDIT_WRITE
+                  - CHOWN
+                  - DAC_OVERRIDE
+                  - FOWNER
+                  - FSETID
+                  - KILL
+                  - MKNOD
+                  - NET_BIND_SERVICE
+                  - SETFCAP
+                  - SETGID
+                  - SETPCAP
+                  - SETUID
+                  - SYS_CHROOT
+                  - ""
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotEquals
+                value: "*/istio/proxyv2*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element.securityContext.capabilities.add[] }}`}}"
+                  operator: AnyNotIn
+                  value: {{ $p.customValues | toYaml | nindent 18 }}
 {{- end }}
