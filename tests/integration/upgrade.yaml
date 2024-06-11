@@ -56,10 +56,6 @@ apps:
     enabled: true
   tempo:
     enabled: true
-  thanos:
-    enabled: true
-  vault:
-    enabled: true
 teamConfig:
   demo:
     password: somesecretvalue

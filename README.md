@@ -1,7 +1,13 @@
 <h1 align="center">
   <img src="https://otomi.io/img/otomi-logo.svg" width="224px"/><br/>
-  Self-hosted DevSecOps Platform for Kubernetes
+  Self-hosted Application Platform for Kubernetes
 </h1>
+
+<h3 align="center">Announcement 👇👇
+<br></br>
+Otomi has been acquired by <a href="https://www.linode.com/otomi/">Akamai</a>. We believe that with Akamai’s support and resources, we can create an even more powerful Kubernetes application platform. More details will follow later this year.
+<br></br>
+</h3>
 
 <p align="center">
   <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/release-date/redkubes/otomi-core?label=latest%20release" /></a>
@@ -16,38 +22,8 @@
 <p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
 <h4 align="center">
-Otomi turns any Kubernetes cluster into a DevOps Platform to provide paved roads from code to production
+Otomi turns any Kubernetes cluster into an Application Platform to provide paved roads from code to production
 </h4>
-
-## How Otomi helps
-
-**DevSecOps Teams** - With self-service, automation and visibility to let them take full-service ownership
-
-- Scan source code for vulnerabilities
-- Build OCI compliant images from application code and store them in a private registry
-- Deploy containerized workloads using a catalog with pre-filled golden path templates
-- Automatically update container images of workloads
-- Publicly expose applications
-- Get instant access to logs, metrics and traces, vulnerabilities, threads and policy violations
-- Configure network policies, response headers and CNAMEs
-- Manage secrets
-
-**Platform teams** - To setup a Kubernetes-based platform for DevOps teams and provide them a paved road to production
-
-- Create a platform profile and deploy to any Kubernetes cluster
-- Onboard DevSecOps teams in a comprehensive multi-tenant setup and allow them to take full ownership over their applications
-- Get all the required capabilities in an integrated and automated way
-- Ensure governance with security policies
-- Implement zero-trust networking
-- Change the desired state of the platform based on Configuration-as-Code
-- Support multi- and hybrid cloud scenarios
-- Prevent cloud provider lock-in
-- Implement full observability (metrics, logs, traces, alerts)
-- Create Golden path templates and offer them to teams on the platform through a catalog
-
-<!-- Check the video below to see how Otomi can be used as a self service portal for developers 
-
-[![Use Otomi as a self service portal for developers](https://img.youtube.com/vi/RI4pIVxbhS0/maxresdefault.jpg)](https://www.youtube.com/watch?v=RI4pIVxbhS0) -->
 
 ## Getting started
 
@@ -55,7 +31,7 @@ Otomi turns any Kubernetes cluster into a DevOps Platform to provide paved roads
 
 To install Otomi, make sure to have a K8s cluster running with at least:
 
-- Version `1.25`, `1.26` or `1.27`
+- Version `1.27`, `1.28` or `1.29`
 - A node pool with at least **8 vCPU** and **16GB+ RAM** (more resources might be required based on the activated capabilities)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - A default storage class configured
@@ -129,16 +105,12 @@ Otomi offers a set of integrated Kubernetes applications (using upstream open so
 - [Grafana](https://github.com/grafana/grafana): Visualize metrics, logs, and traces from multiple sources
 - [Grafana Loki](https://github.com/grafana/loki): Collecting container application logs
 - [Harbor](https://github.com/goharbor/harbor): Container image registry with role-based access control, image scanning, and image signing
-- [HashiCorp Vault](https://github.com/hashicorp/vault): Manage Secrets and Protect Sensitive Data
 - [OPA/Gatekeeper](https://github.com/open-policy-agent/gatekeeper): Policy-based control for cloud-native environments
 - [Jaeger](https://github.com/jaegertracing/jaeger): End-to-end distributed tracing and monitor for complex distributed systems
 - [Kiali](https://github.com/kiali/kiali): Observe Istio service mesh relations and connections
 - [Minio](https://github.com/minio/minio): High performance Object Storage compatible with Amazon S3 cloud storage service
 - [Trivy](https://github.com/aquasecurity/trivy-operator): Kubernetes-native security toolkit
-- [Thanos](https://github.com/thanos-io/thanos): HA Prometheus setup with long term storage capabilities
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
-- [Opencost](https://github.com/opencost/opencost): Cost monitoring for Kubernetes
-language ecosystems
 - [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-operator): Instrument, generate, collect, and export telemetry data to help you analyze your software’s performance and behavior
 

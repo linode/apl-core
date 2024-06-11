@@ -85,17 +85,6 @@ appsInfo:
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
     integration: ExternalDNS is used by Otomi to make public service domains accessible by registering them with Otomi's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then Otomi will rely on nip.io to create host names for all services.
-  external-secrets:
-    title: External Secrets Operator
-    appVersion: 0.10.2
-    repo: https://github.com/external-secrets/external-secrets
-    maintainers: External Secrets community
-    relatedLinks:
-      - https://otomi.io/docs/apps/external-secrets
-      - https://external-secrets.io
-    license: Apache 2.0
-    about: External Secrets Operator reads information from a third-party service like AWS Secrets Manager and automatically injects the values as Kubernetes Secrets.
-    integration: External Secrets is used by Otomi to allow teams to automatically sync (partial) secrets created in the packaged (Hashicorp) Vault.
   falco:
     title: Falco
     appVersion: 0.33.1
@@ -176,7 +165,7 @@ appsInfo:
     integration: Otomi integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio Operator
-    appVersion: 1.17.4
+    appVersion: 1.20.5
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -281,18 +270,6 @@ appsInfo:
     dependencies: None
     about: MinIO is a High Performance Object Storage and its API is compatible with the Amazon Web Services S3 cloud storage service.
     integration: Otomi installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in Otomi capable of using object storage for data persistence.
-  opencost:
-    title: Opencost
-    appVersion: 1.9.8
-    repo: https://github.com/opencost/opencost
-    maintainers: Opencost
-    relatedLinks:
-      - https://otomi.io/docs/apps/opencost
-      - https://www.opencost.io/
-    license: Apache 2.0
-    dependencies: None. Prometheus is adviced
-    about: OpenCost models give teams visibility into current and historical Kubernetes spend and resource allocation.
-    integration: Opencost can be activated to provide insight into cost spend for the platform and Otomi teams. The platform admin can set CPU and memory quotas for teams on the platform and receive an alert when a quota has been reached.
   prometheus:
     title: Prometheus
     appVersion: 0.65.1
@@ -340,18 +317,6 @@ appsInfo:
     dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used), Otel
     about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
     integration: Otomi installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
-  thanos:
-    title: Thanos
-    appVersion: 0.31.0
-    repo: https://github.com/thanos-io/thanos
-    maintainers: Thanos
-    relatedLinks:
-      - https://otomi.io/docs/apps/thanos
-      - https://thanos.io
-    license: Apache 2.0
-    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
-    about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
-    integration: Otomi installs and configures Thanos in a Remote Write setup. The Receiver is exposed for external Prometheus instances to upload metrics in real-time. By default Thanos Object Store is configured to use the thanos bucket of the local Minio instance. When Thanos is enabled, an extra data source is added to Grafana for Thanos Query.
   trivy:
     title: Trivy Operator
     appVersion: 0.16.4
@@ -376,18 +341,6 @@ appsInfo:
     dependencies: Prometheus, Grafana, Loki, Tempo
     about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
     integration: OpenTelemetry Collector is used to receive telementry data from Istio Envoy access logs and export this data to Tempo.
-  vault:
-    title: Vault Operator
-    appVersion: 1.16.0
-    repo: https://github.com/hashicorp/vault
-    maintainers: HashiCorp
-    relatedLinks:
-      - https://otomi.io/docs/apps/vault
-      - https://www.vaultproject.io/
-      - https://www.vaultproject.io/docs/configuration/storage
-    license: MPL-2.0
-    about: Vault is a tool for securely accessing secrets. A secret is anything that you want to tightly control access to, such as API keys, passwords, certificates, and more. Vault provides a unified interface to any secret, while providing tight access control and recording a detailed audit log.
-    integration: Vault has been made team aware. When enabled, a space will automatically be created for each team, and only team members are allowed access. Vault is automatically configured to use Otomi's Keycloak OIDC settings for SSO. Vault runs natively on Kubernetes. To prevent data from Vault being lost during a rolling cluster upgrade, data persistence can be configured in combination with external (blob) storage.
   velero:
     title: Velero
     appVersion: 1.9.0

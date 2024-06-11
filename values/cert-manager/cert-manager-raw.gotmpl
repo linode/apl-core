@@ -144,7 +144,7 @@ resources:
     kind: Secret
     metadata:
       name: otomi-byo-wildcard-cert
-      namespace: {{ if $v.otomi.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
+      namespace: istio-system
     type: kubernetes.io/tls
     data:
       tls.crt: {{ $cm.byoWildcardCert | b64enc }}
@@ -155,7 +155,7 @@ resources:
     kind: Certificate
     metadata:
       name: otomi-wildcard
-      namespace: {{ if $v.otomi.hasCloudLB }}ingress{{ else }}istio-system{{ end }}
+      namespace: istio-system
     spec:
       secretName: otomi-cert-manager-wildcard-cert
       commonName: '*.{{ $v.cluster.domainSuffix }}'

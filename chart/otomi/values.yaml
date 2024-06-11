@@ -89,7 +89,7 @@ otomi: {}
 # KMS for encrypting values
 # kms:
 #   sops:
-#   # provider can be one of aws|azure|google|vault
+#   # provider can be one of aws|azure|google
 #     provider: ''
 #     aws:
 #       keys: ''
@@ -105,8 +105,6 @@ otomi: {}
 #       keys: ''
 #       accountJson: ''
 #       project: ''
-#     vault:
-#       token: ''
 # Bring your own IDP, or leave commented out to use keycloak as IDP
 # oidc:
 #   clientID: ''

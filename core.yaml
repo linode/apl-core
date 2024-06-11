@@ -18,8 +18,6 @@ k8s:
       disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
-    - name: external-secrets
-      disableIstioInjection: true
     - name: falco
       disableIstioInjection: true
       disablePolicyChecks: true
@@ -84,16 +82,7 @@ k8s:
       disablePolicyChecks: true
     - name: monitoring
       disableIstioInjection: true
-    - name: olm
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: opa-exporter
-      disableIstioInjection: true
-      disablePolicyChecks: true
-    - name: operators
-      disableIstioInjection: true
-      disablePolicyChecks: true
-    - name: opencost
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: otomi
@@ -115,8 +104,6 @@ k8s:
       disablePolicyChecks: true
     - name: sealed-secrets
       app: sealed-secrets
-    - name: vault
-      app: vault
     - name: velero
       app: velero
       disablePolicyChecks: true
@@ -180,8 +167,6 @@ adminApps:
         auth: true
   - name: external-dns
     tags: [ingress, security, tls]
-  - name: external-secrets
-    tags: [secrets, security, tls]
   - name: falco
     tags: [security]
     deps: [prometheus, grafana]
@@ -327,15 +312,6 @@ adminApps:
         auth: true
         removeRequestHeaders:
           - authorization
-  - name: opencost
-    tags: [finops]
-    ownHost: true
-    ingress:
-      - svc: opencost
-        port: 9090
-        namespace: opencost
-        type: public
-        auth: true
   - name: otomi
     hide: true
     isShared: true
@@ -370,38 +346,9 @@ adminApps:
     path: /explore?orgId=1&left=%7B"datasource":"tempo","queries":%5B%7B"refId":"A","datasource":%7B"type":"tempo","uid":"tempo"%7D,"queryType":"clear","limit":20%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
   - name: otel
     tags: [tracing]
-  - name: thanos
-    tags: [metrics, observability]
-    ownHost: true
-    deps: [prometheus, grafana, minio]
-    ingress:
-      - svc: thanos-query-frontend
-        port: 9090
-        namespace: monitoring
-        forwardPath: true
-        type: public
-        auth: true
-      - svc: thanos-receive
-        port: 19291
-        namespace: monitoring
-        paths: [/api]
-        forwardPath: true
-        type: public
   - name: trivy
     tags: [security]
     deps: [prometheus, grafana]
-  - name: vault
-    tags: [secrets, security, observability]
-    deps: [external-secrets]
-    isShared: true
-    ownHost: true
-    path: /ui/vault/auth?redirect_to=%2Fvault%2Fsecrets%2Fsecret%2Flist%2Fteams%2F#NS#%2F&with=oidc
-    ingress:
-      - namespace: vault
-        svc: vault
-        port: 8200
-        type: public
-        auth: true
   - name: velero
     tags: [backup]
   - name: rabbitmq
