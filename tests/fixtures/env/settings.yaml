@@ -76,7 +76,7 @@ otomi:
 platformBackups:
     database:
         harbor:
-            enabled: false
+            enabled: true
             retentionPolicy: 7d
             schedule: 0 0 0 * * *
     persistentVolumes:
