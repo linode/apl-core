@@ -202,7 +202,7 @@ changes:
             'require-run-as-non-root-user': { 'action': 'Audit', 'severity': 'medium' },
             'require-run-as-nonroot': { 'action': 'Audit', 'severity': 'medium' },
             'require-startup-probe': { 'action': 'Audit', 'severity': 'medium' },
-            'required-otomi-label': { 'action': 'Audit', 'severity': 'medium' },
+            'require-labels': { 'action': 'Audit', 'severity': 'medium', 'customValues': ['otomi.io/app'] },
             'restrict-apparmor-profiles': { 'action': 'Audit', 'severity': 'medium' },
             'restrict-seccomp': { 'action': 'Audit', 'severity': 'medium' },
             'restrict-seccomp-strict': { 'action': 'Audit', 'severity': 'medium' },

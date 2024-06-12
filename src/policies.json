@@ -121,10 +121,11 @@
     "id": "require-startup-probe",
     "severity": "medium"
   },
-  "required-otomi-label": {
+  "require-labels": {
     "action": "Audit",
-    "id": "required-otomi-label",
-    "severity": "medium"
+    "id": "require-labels",
+    "severity": "medium",
+    "customValues": ["otomi.io/app"]
   },
   "restrict-apparmor-profiles": {
     "action": "Audit",

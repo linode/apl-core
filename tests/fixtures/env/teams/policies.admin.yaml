@@ -77,9 +77,11 @@ teamConfig:
             require-startup-probe:
                 action: Audit
                 severity: medium
-            required-otomi-label:
+            require-labels:
                 action: Audit
                 severity: medium
+                customValues:
+                    - 'otomi.io/app'
             restrict-apparmor-profiles:
                 action: Audit
                 severity: medium
