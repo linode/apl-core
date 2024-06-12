@@ -62,7 +62,7 @@ spec:
             deny:
               conditions:
                 all:
-                - key: "{{`{{ element.securityContext.seccompProfile.type || '' }}`}}"
+                - key: "{{`{{ element.securityContext.seccompProfile.type || request.object.spec.securityContext.seccompProfile.type || '' }}`}}"
                   operator: AnyNotIn
                   value:
                   - RuntimeDefault

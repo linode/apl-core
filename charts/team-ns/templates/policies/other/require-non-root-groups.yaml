@@ -60,7 +60,7 @@ spec:
             deny:
               conditions:
                 all:
-                - key: "{{`{{ element.securityContext.runAsGroup || '0' }}`}}"
+                - key: "{{`{{ element.securityContext.runAsGroup || request.object.spec.securityContext.runAsGroup || '0' }}`}}"
                   operator: LessThanOrEquals
                   value: "0"
     - name: check-supplementalgroups

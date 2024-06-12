@@ -56,7 +56,7 @@ spec:
             deny:
               conditions:
                 all:
-                - key: "{{`{{ element.securityContext.runAsNonRoot || 'false' }}`}}"
+                - key: "{{`{{ not_null(element.securityContext.runAsNonRoot, request.object.spec.securityContext.runAsNonRoot, 'false') }}`}}"
                   operator: NotEquals
                   value: true
 {{- end }}

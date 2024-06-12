@@ -57,7 +57,7 @@ spec:
             deny:
               conditions:
                 all:
-                - key: "{{`{{ element.securityContext.runAsUser || '0' }}`}}"
+                - key: "{{`{{ element.securityContext.runAsUser || request.object.spec.securityContext.runAsUser || '0' }}`}}"
                   operator: LessThanOrEquals
                   value: "0"
 {{- end }}
