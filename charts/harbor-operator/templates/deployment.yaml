@@ -38,13 +38,13 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumes:
-          - name: harbor-operator-cm
-            configMap:
-              name: harbor-operator-cm
-          - name: harbor-operator-secret
-            secret:
-              secretName: harbor-operator-secret
+          # volumes:
+          # - name: harbor-operator-cm
+          #   configMap:
+          #     name: harbor-operator-cm
+          # - name: harbor-operator-secret
+          #   secret:
+          #     secretName: harbor-operator-secret
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
