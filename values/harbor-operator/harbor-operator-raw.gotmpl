@@ -14,11 +14,11 @@ resources:
       name: harbor-admin
       namespace: harbor-operator
     data:
-      harborPassword:  {{ $h.adminPassword }}
-      harborUser: admin
-      oidcEndpoint: {{ $v._derived.oidcBaseUrl }}
-      oidcClientId: {{ $k.idp.clientID  }}
-      oidcClientSecret: {{ $k.idp.clientSecret }}
+      harborPassword:  {{ $h.adminPassword | b64enc }}
+      harborUser: {{ "admin" | b64enc }}
+      oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
+      oidcClientId: {{ $k.idp.clientID | b64enc }}
+      oidcClientSecret: {{ $k.idp.clientSecret | b64enc }}
   - name: harbor-operator-cm
     apiVersion: v1
     kind: ConfigMap
