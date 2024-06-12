@@ -70,16 +70,16 @@ spec:
   {{- if eq .Values.backup.type "s3" }}
   backup:
     retentionPolicy: {{ .Values.backup.retentionPolicy }}
-      barmanObjectStore:
-        destinationPath: s3://{{ .Values.backup.s3.bucket }}
-        endpointURL: {{ .Values.backup.endpointURL }}
-        s3Credentials:
-          accessKeyId:
-            name: s3-creds
-            key: S3_STORAGE_ACCOUNT
-          secretAccessKey:
-            name: s3-creds
-            key: S3_STORAGE_KEY
+    barmanObjectStore:
+      destinationPath: s3://{{ .Values.backup.s3.bucket }}
+      endpointURL: {{ .Values.backup.s3.endpointURL }}
+      s3Credentials:
+        accessKeyId:
+          name: s3-creds
+          key: S3_STORAGE_ACCOUNT
+        secretAccessKey:
+          name: s3-creds
+          key: S3_STORAGE_KEY
   {{- end }}
   {{- if eq .Values.backup.type "gcs" }}
   backup:
