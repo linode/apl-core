@@ -39,14 +39,10 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumes:
-            # TODO: Update volumes requests as needed
-          - name: tls-certs
-            configMap:
-              name: harbor-operator-tls-certs-cm
-          - name: operator-config-kc
+          - name: harbor-operator-cm
             configMap:
               name: harbor-operator-cm
-          - name: operator-secret-kc
+          - name: harbor-operator-secret
             secret:
               secretName: harbor-operator-secret
       {{- with .Values.nodeSelector }}
