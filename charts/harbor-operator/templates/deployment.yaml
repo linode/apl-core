@@ -38,13 +38,9 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          # volumes:
-          # - name: harbor-operator-cm
-          #   configMap:
-          #     name: harbor-operator-cm
-          # - name: harbor-operator-secret
-          #   secret:
-          #     secretName: harbor-operator-secret
+          volumeMounts:
+          - name: tls-certs
+            mountPath: /app/config/tls
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -57,3 +53,13 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+          - name: tls-certs
+            configMap:
+              name: harbor-operator-tls-certs-cm
+          - name: operator-config-kc
+            configMap:
+              name: harbor-operator-cm
+          - name: operator-secret-kc
+            secret:
+              secretName: harbor-operator-secret
