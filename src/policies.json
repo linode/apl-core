@@ -150,7 +150,6 @@
   "restrict-volume-types": {
     "action": "Audit",
     "customValues": [
-      "name",
       "configMap",
       "csi",
       "downwardAPI",
@@ -158,8 +157,7 @@
       "ephemeral",
       "persistentVolumeClaim",
       "projected",
-      "secret",
-      "''"
+      "secret"
     ],
     "id": "restrict-volume-types",
     "severity": "medium"

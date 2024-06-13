@@ -212,7 +212,6 @@ changes:
                 'action': 'Audit',
                 'customValues':
                   [
-                    'name',
                     'configMap',
                     'csi',
                     'downwardAPI',
@@ -221,7 +220,6 @@ changes:
                     'persistentVolumeClaim',
                     'projected',
                     'secret',
-                    '""',
                   ],
                 'severity': 'medium',
               },

@@ -97,7 +97,6 @@ teamConfig:
             restrict-volume-types:
                 action: Audit
                 customValues:
-                    - name
                     - configMap
                     - csi
                     - downwardAPI
@@ -106,5 +105,4 @@ teamConfig:
                     - persistentVolumeClaim
                     - projected
                     - secret
-                    - '""'
                 severity: medium
