@@ -31,11 +31,7 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/sh", "-c"]
-          args:
-          - |
-            export NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt
-            npm run operator:harbor
+          command: ["/bin/sh", "-c", "export NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt && npm run operator:harbor"]
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -64,12 +60,3 @@ spec:
               items:
               - key: certificates.crt
                 path: certificates.crt
-          - name: tls-certs
-            configMap:
-              name: harbor-operator-tls-certs-cm
-          - name: operator-config-kc
-            configMap:
-              name: harbor-operator-cm
-          - name: operator-secret-kc
-            secret:
-              secretName: harbor-operator-secret
