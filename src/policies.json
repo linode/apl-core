@@ -86,19 +86,9 @@
     "id": "require-limits",
     "severity": "medium"
   },
-  "require-liveness-probe": {
-    "action": "Audit",
-    "id": "require-liveness-probe",
-    "severity": "medium"
-  },
   "require-non-root-groups": {
     "action": "Audit",
     "id": "require-non-root-groups",
-    "severity": "medium"
-  },
-  "require-readiness-probe": {
-    "action": "Audit",
-    "id": "require-readiness-probe",
     "severity": "medium"
   },
   "require-requests": {
@@ -114,11 +104,6 @@
   "require-run-as-nonroot": {
     "action": "Audit",
     "id": "require-run-as-nonroot",
-    "severity": "medium"
-  },
-  "require-startup-probe": {
-    "action": "Audit",
-    "id": "require-startup-probe",
     "severity": "medium"
   },
   "require-labels": {

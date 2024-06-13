@@ -56,13 +56,7 @@ teamConfig:
             require-limits:
                 action: Audit
                 severity: medium
-            require-liveness-probe:
-                action: Audit
-                severity: medium
             require-non-root-groups:
-                action: Audit
-                severity: medium
-            require-readiness-probe:
                 action: Audit
                 severity: medium
             require-requests:
@@ -72,9 +66,6 @@ teamConfig:
                 action: Audit
                 severity: medium
             require-run-as-nonroot:
-                action: Audit
-                severity: medium
-            require-startup-probe:
                 action: Audit
                 severity: medium
             require-labels:
