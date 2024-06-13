@@ -31,7 +31,11 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: [npm, run, operator:harbor]
+          command: ["/bin/sh", "-c"]
+          args:
+          - |
+            export NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt
+            npm run operator:harbor
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -39,8 +43,8 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - name: tls-certs
-            mountPath: /app/config/tls
+          - name: node-certificates
+            mountPath: /tmp/node
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -54,6 +58,12 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+          - name: node-certificates
+            configMap:
+              name: job-harbortmpnode
+              items:
+              - key: certificates.crt
+                path: certificates.crt
           - name: tls-certs
             configMap:
               name: harbor-operator-tls-certs-cm
