@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-    name: harbor-operator-tls-certs-cm
-    namespace: harbor-operator
-{{- with .Values.configs.tls.certificates }}
-data:
-  {{- toYaml . | nindent 2 }}
-{{- end }}

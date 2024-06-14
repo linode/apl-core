@@ -32,6 +32,17 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: [npm, run, operator:harbor]
+          env:
+            - name: DEBUG
+              value: "{{ .Values.env.DEBUG }}"
+            - name: HARBOR_BASE_URL
+              value: "{{ .Values.env.HARBOR_BASE_URL }}"
+            - name: HARBOR_BASE_URL_PORT
+              value: "{{ .Values.env.HARBOR_BASE_URL_PORT }}"
+            - name: HARBOR_OPERATOR_NAMESPACE
+              value: "{{ .Values.env.HARBOR_OPERATOR_NAMESPACE }}"
+            - name: HARBOR_SYSTEM_NAMESPACE
+              value: "{{ .Values.env.HARBOR_SYSTEM_NAMESPACE }}"
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

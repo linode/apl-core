@@ -26,10 +26,7 @@ resources:
       name: harbor-operator-cm
       namespace: harbor-operator
     data:
-      debug: '*'
-      harborBaseUrl: http://harbor-core.harbor
       harborBaseRepoUrl: {{ $harborRepo }}
-      teamIds: '{{ $teams | sortAlpha | toJson }}'
       oidcAutoOnboard: "{{ $h.oidcAutoOnboard }}"
       oidcUserClaim: {{ $h.oidcUserClaim }}
       oidcGroupsClaim: groups
