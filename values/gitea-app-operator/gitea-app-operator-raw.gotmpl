@@ -10,23 +10,22 @@
 {{- $teamConfig := $teamConfig | toJson }}
 
 resources:
-  - name: gitea-operator-cm
+  - name: gitea-app-operator-cm
     apiVersion: v1
     kind: ConfigMap
     metadata:
-      name: gitea-operator-cm
-      namespace: gitea-operator
+      name: gitea-app-operator-cm
+      namespace: gitea-app
     data:
-      giteaUrl: http://gitea-http.gitea:3000
       hasArgocd: "{{ $v.apps.argocd.enabled | toString }}"
       domainSuffix: "{{ $v.cluster.domainSuffix }}"
       teamConfig: {{ $teamConfig | toJson }}
-  - name: gitea-operator-secret
+  - name: gitea-app-operator-secret
     apiVersion: v1
     kind: Secret
     metadata:
-      name: gitea-admin
-      namespace: gitea-operator
+      name: gitea-app-operator-secret
+      namespace: gitea-app
     data:
       giteaPassword: {{ $g.adminPassword | b64enc }}
       oidcConfig: {{ $oJson | b64enc }}

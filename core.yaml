@@ -27,7 +27,7 @@ k8s:
       app: gatekeeper
       disableIstioInjection: true
     - name: gitea
-    - name: gitea-operator
+    - name: gitea-app-operator
       disableIstioInjection: true
     - name: grafana
       app: grafana

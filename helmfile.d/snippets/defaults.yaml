@@ -192,7 +192,7 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
-          gitea-operator:
+          gitea-app-operator:
             resources:
               operator:
                 requests:
