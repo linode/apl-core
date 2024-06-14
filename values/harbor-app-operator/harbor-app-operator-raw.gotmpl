@@ -4,27 +4,26 @@
 {{- $h := $c.harbor }}
 {{- $k := $c.keycloak }}
 {{- $harborRepo := printf "harbor.%s" $v.cluster.domainSuffix }}
-{{- $teams := keys $v.teamConfig }}
 
 resources:
-  - name: harbor-operator-secret
+  - name: harbor-app-operator-secret
     apiVersion: v1
     kind: Secret
     metadata:
-      name: harbor-admin
-      namespace: harbor-operator
+      name: harbor-app-operator-secret
+      namespace: harbor-app
     data:
       harborPassword:  {{ $h.adminPassword | b64enc }}
       harborUser: {{ "admin" | b64enc }}
       oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
       oidcClientId: {{ $k.idp.clientID | b64enc }}
       oidcClientSecret: {{ $k.idp.clientSecret | b64enc }}
-  - name: harbor-operator-cm
+  - name: harbor-app-operator-cm
     apiVersion: v1
     kind: ConfigMap
     metadata:
-      name: harbor-operator-cm
-      namespace: harbor-operator
+      name: harbor-app-operator-cm
+      namespace: harbor-app
     data:
       harborBaseRepoUrl: {{ $harborRepo }}
       oidcAutoOnboard: "{{ $h.oidcAutoOnboard }}"

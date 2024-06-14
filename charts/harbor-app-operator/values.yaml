@@ -1,4 +1,4 @@
-# Default values for harbor-operator.
+# Default values for harbor-app-operator.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -19,7 +19,7 @@ service:
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
-  name: "harbor-operator"
+  name: "harbor-app-operator"
   annotations: {}
 
 podAnnotations: {}

@@ -437,7 +437,7 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
-          harbor-operator:
+          harbor-app-operator:
             resources:
               operator:
                 requests:

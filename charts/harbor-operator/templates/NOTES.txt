@@ -1,1 +1,0 @@
-The harbor-operator has been deployed.

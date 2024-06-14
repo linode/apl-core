@@ -2577,7 +2577,7 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
-      harbor-operator:
+      harbor-app-operator:
         additionalProperties: false
         properties:
           _rawValues:
