@@ -86,11 +86,6 @@
     "id": "require-limits",
     "severity": "medium"
   },
-  "require-non-root-groups": {
-    "action": "Audit",
-    "id": "require-non-root-groups",
-    "severity": "medium"
-  },
   "require-requests": {
     "action": "Audit",
     "id": "require-requests",

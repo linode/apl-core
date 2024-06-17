@@ -195,7 +195,6 @@ changes:
             'disallow-proc-mount': { 'action': 'Audit', 'severity': 'medium' },
             'disallow-selinux': { 'action': 'Audit', 'severity': 'medium' },
             'require-limits': { 'action': 'Audit', 'severity': 'medium' },
-            'require-non-root-groups': { 'action': 'Audit', 'severity': 'medium' },
             'require-requests': { 'action': 'Audit', 'severity': 'medium' },
             'require-run-as-non-root-user': { 'action': 'Audit', 'severity': 'medium' },
             'require-run-as-nonroot': { 'action': 'Audit', 'severity': 'medium' },

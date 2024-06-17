@@ -56,9 +56,6 @@ teamConfig:
             require-limits:
                 action: Audit
                 severity: medium
-            require-non-root-groups:
-                action: Audit
-                severity: medium
             require-requests:
                 action: Audit
                 severity: medium
