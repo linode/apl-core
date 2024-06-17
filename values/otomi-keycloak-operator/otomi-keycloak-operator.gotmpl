@@ -15,12 +15,12 @@ configs:
   {{ if $v._derived.untrustedCA }}
   tls:
     certificates:
-      keycloak.{{ $v.cluster.domainSuffix }}: |
+      certificates.crt: |
         {{- $v._derived.caCert | nindent 8 }}
   {{ end }}
 script: |
   {{- if $v._derived.untrustedCA }}
-  export NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt
+  export NODE_EXTRA_CA_CERTS=/app/config/tls/certificates.crt
   {{- end }}
 
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
