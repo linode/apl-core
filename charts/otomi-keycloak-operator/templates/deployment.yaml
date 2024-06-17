@@ -40,7 +40,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
           - name: tls-certs
-            mountPath: /app/config/tls
+            mountPath: /app/config/tls/certificates.crt
             subPath: certificates.crt
       {{- with .Values.nodeSelector }}
       nodeSelector:
