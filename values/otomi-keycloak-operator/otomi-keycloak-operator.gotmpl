@@ -18,5 +18,9 @@ configs:
       keycloak.{{ $v.cluster.domainSuffix }}: |
         {{- $v._derived.caCert | nindent 8 }}
   {{ end }}
+script: |
+  {{- if $v._derived.untrustedCA }}
+  export NODE_EXTRA_CA_CERTS=/tmp/node/certificates.crt
+  {{- end }}
 
 resources: {{- toYaml $o.resources.operator | nindent 2 }}
