@@ -31,7 +31,7 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
+          command: |
             - /bin/sh -c export NODE_EXTRA_CA_CERTS=/app/config/tls/certificates.crt
             - npm run operator:keycloak
           ports:
