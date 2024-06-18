@@ -444,7 +444,6 @@ environments:
                 cpu: 1
                 memory: 1Gi
           oauth2-proxy: {}
-          opa-exporter: {}
           oauth2-proxy-redis: {}
           otomi-api:
             editorInactivityTimeout: 1
