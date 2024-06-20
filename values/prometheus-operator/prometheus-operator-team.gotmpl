@@ -60,7 +60,7 @@ prometheus:
     resources:
       limits:
         cpu: '1'
-        memory: 4G
+        memory: 4Gi
       requests:
         cpu: 100m
         memory: 128Mi
@@ -73,7 +73,7 @@ grafana:
   resources:
     limits:
       cpu: '1'
-      memory: 4G
+      memory: 4Gi
     requests:
       cpu: 100m
       memory: 128Mi
@@ -95,7 +95,7 @@ alertmanager:
     resources:
       limits:
         cpu: 500m
-        memory: 2G
+        memory: 2Gi
       requests:
         cpu: 100m
         memory: 64Mi
