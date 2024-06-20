@@ -59,8 +59,8 @@ prometheus:
     remoteWrite: null
     resources:
       limits:
-        cpu: 200m
-        memory: 512Mi
+        cpu: '1'
+        memory: 4G
       requests:
         cpu: 100m
         memory: 128Mi
@@ -72,8 +72,8 @@ grafana:
   plugins: []
   resources:
     limits:
-      cpu: 500m
-      memory: 256Mi
+      cpu: '1'
+      memory: 4G
     requests:
       cpu: 100m
       memory: 128Mi
@@ -94,8 +94,8 @@ alertmanager:
       type: OnNamespace
     resources:
       limits:
-        cpu: 200m
-        memory: 128Mi
+        cpu: 500m
+        memory: '2G'
       requests:
         cpu: 100m
         memory: 64Mi
