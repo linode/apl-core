@@ -1,8 +1,7 @@
 {{- $v := .Values }}
 {{- $c := $v.apps }}
 {{- $g := $c.gitea }}
-{{- $o := $v | get "oidc" dict }}
-{{- $oJson := $o | toJson }}
+{{- $k := $c.keycloak }}
 {{- $teamConfig := dict }}
 {{- range $teamId, $team := $v.teamConfig }}
   {{- $_ := set $teamConfig $teamId (dict "selfService" (dict "apps" ($team | get "selfService.apps" list))) }}
@@ -28,4 +27,6 @@ resources:
       namespace: gitea-app
     data:
       giteaPassword: {{ $g.adminPassword | b64enc }}
-      oidcConfig: {{ $oJson | b64enc }}
+      oidcClientId: {{ $k.idp.clientID | b64enc }}
+      oidcClientSecret: {{ $k.idp.clientSecret | b64enc }}
+      oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
