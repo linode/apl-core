@@ -1,0 +1,70 @@
+{{- $v := .Values }}
+{{- $p := index $v.policies "restrict-seccomp-strict" }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: restrict-seccomp-strict
+  annotations:
+    policies.kyverno.io/title: Restrict Seccomp (Strict)
+    policies.kyverno.io/category: Pod Security Standards (Restricted)
+    policies.kyverno.io/severity: {{ $p.severity }}
+    policies.kyverno.io/subject: Pod
+    kyverno.io/kyverno-version: 1.6.0
+    policies.kyverno.io/description: >-
+      The seccomp profile in the Restricted group must not be explicitly set to Unconfined
+      but additionally must also not allow an unset value. This policy,
+      requiring Kubernetes v1.19 or later, ensures that seccomp is
+      set to `RuntimeDefault` or `Localhost`. A known issue prevents a policy such as this
+      using `anyPattern` from being persisted properly in Kubernetes 1.23.0-1.23.2.
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  validationFailureAction: {{ $p.action }}
+  background: true
+  failurePolicy: Fail
+  rules:
+    - name: check-seccomp-strict
+      match:
+        any:
+        - resources:
+            kinds:
+              - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
+          - resources:
+              annotations:
+                tekton.dev/tags: git
+          - resources:
+              annotations:
+                tekton.dev/tags: 'CLI, grype'
+      skipBackgroundRequests: true
+      validate:
+        message: >-
+          Use of custom Seccomp profiles is disallowed. The fields
+          spec.securityContext.seccompProfile.type,
+          spec.containers[*].securityContext.seccompProfile.type,
+          spec.initContainers[*].securityContext.seccompProfile.type, and
+          spec.ephemeralContainers[*].securityContext.seccompProfile.type
+          must be set to `RuntimeDefault` or `Localhost`.
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element.securityContext.seccompProfile.type || request.object.spec.securityContext.seccompProfile.type || '' }}`}}"
+                  operator: AnyNotIn
+                  value:
+                  - RuntimeDefault
+                  - Localhost
+{{- end }}

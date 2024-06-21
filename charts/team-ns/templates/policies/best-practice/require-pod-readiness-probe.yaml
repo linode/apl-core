@@ -1,0 +1,61 @@
+{{- $v := .Values }}
+{{- $p := index $v.policies "require-readiness-probe" }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: require-pod-readiness-probe
+  annotations:
+    pod-policies.kyverno.io/autogen-controllers: DaemonSet,Deployment,StatefulSet
+    policies.kyverno.io/title: Require Pod Readyness Probes
+    policies.kyverno.io/category: best-practice
+    policies.kyverno.io/severity: {{ $p.severity }}
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Readiness probes need to be configured to correctly manage a Pod's
+      lifecycle during deployments, restarts, and upgrades. A `readinessProbe` is used by Services
+      and Deployments to determine if the Pod is ready to receive network traffic.
+      This policy validates that all containers have a readinessProbe defined.
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
+spec:
+  validationFailureAction: {{ $p.action }}
+  background: true
+  failurePolicy: Fail
+  rules:
+  - name: validate-readiness-probe
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    exclude:
+      any:
+        - resources:
+            annotations:
+              tekton.dev/tags: image-build
+        - resources:
+            annotations:
+              tekton.dev/tags: CLI, grype
+        - resources:
+            annotations:
+              tekton.dev/tags: git
+    preconditions:
+      all:
+      - key: "{{`{{request.operation || 'BACKGROUND'}}`}}"
+        operator: AnyIn
+        value:
+        - CREATE
+        - UPDATE
+    skipBackgroundRequests: true
+    validate:
+      message: "Readiness are required for all containers."
+      foreach:
+      - list: request.object.spec.containers[]
+        deny:
+          conditions:
+            all:
+            - key: readinessProbe
+              operator: AllNotIn
+              value: "{{`{{ element.keys(@)[] }}`}}"
+{{- end }}
