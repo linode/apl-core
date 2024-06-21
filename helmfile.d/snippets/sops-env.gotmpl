@@ -19,6 +19,3 @@ GOOGLE_PROJECT: {{ . }}{{ end }}
 {{- with . | get "region" nil }}
 GOOGLE_REGION: {{ . }}{{ end }}
 {{- end }}
-{{- with . | get "vault" nil }}
-VAULT_TOKEN: {{ .token }}
-{{- end }}

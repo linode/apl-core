@@ -1,0 +1,63 @@
+{{- $v := .Values }}
+{{- $p := index $v.policies "require-run-as-non-root-user" }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: require-run-as-non-root-user
+  annotations:
+    policies.kyverno.io/title: Require Run As Non-Root User
+    policies.kyverno.io/category: Pod Security Standards (Restricted)
+    policies.kyverno.io/severity: {{ $p.severity }}
+    policies.kyverno.io/subject: Pod
+    kyverno.io/kyverno-version: 1.6.0
+    policies.kyverno.io/description: >-
+      Containers must be required to run as non-root users. This policy ensures
+      `runAsUser` is either unset or set to a number greater than zero.
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  validationFailureAction: {{ $p.action }}
+  background: true
+  failurePolicy: Fail
+  rules:
+    - name: run-as-non-root-user
+      match:
+        any:
+        - resources:
+            kinds:
+              - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
+          - resources:
+              annotations:
+                tekton.dev/tags: git
+          - resources:
+              annotations:
+                tekton.dev/tags: 'CLI, grype'
+      skipBackgroundRequests: true
+      validate:
+        message: >-
+          Running as root is not allowed. The fields spec.securityContext.runAsUser,
+          spec.containers[*].securityContext.runAsUser, spec.initContainers[*].securityContext.runAsUser,
+          and spec.ephemeralContainers[*].securityContext.runAsUser must be unset or
+          set to a number greater than zero.
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ element.securityContext.runAsUser || request.object.spec.securityContext.runAsUser || '0' }}`}}"
+                  operator: LessThanOrEquals
+                  value: "0"
+{{- end }}

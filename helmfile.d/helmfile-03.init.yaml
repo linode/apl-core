@@ -34,13 +34,6 @@ releases:
     labels:
       pkg: otomi-keycloak-operator
     <<: *raw
-  - name: external-secrets
-    installed: {{ $a | get "external-secrets.enabled" }}
-    namespace: external-secrets
-    labels:
-      pkg: external-secrets
-      group: secrets
-    <<: *default
   - name: gitea-artifacts
     installed: {{ $a | get "gitea.enabled" }}
     namespace: gitea
@@ -86,17 +79,6 @@ releases:
     labels:
       pkg: loki
     <<: *raw
-  - name: vault-operator
-    installed: {{ $a | get "vault.enabled" }}
-    namespace: vault
-    chart: ../charts/vault-operator
-    labels:
-      pkg: vault
-      group: secrets
-    values:
-      - ../values/vault-operator/vault-operator.gotmpl
-      - {{- $v.apps.vault | get "_rawValues" dict | toYaml | nindent 8 }}
-    <<: *upgrade
   - name: rabbitmq
     installed: {{ $a | get "rabbitmq.enabled" }}
     namespace: rabbitmq

@@ -8,7 +8,7 @@ Running k8s cluster (e.g.: minikube)
 1. Collect api versions
 
 ```
-kubectl api-versions > api-versions/<my-version>
+kubectl api-versions > schemas/api-versions/<my-version>
 ```
 
 # schemas/v1.XX-standalone.tar.gz

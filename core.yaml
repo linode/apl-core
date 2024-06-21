@@ -18,16 +18,11 @@ k8s:
       disablePolicyChecks: true
     - name: external-dns
       disableIstioInjection: true
-    - name: external-secrets
-      disableIstioInjection: true
     - name: falco
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: harbor
       app: harbor
-    - name: gatekeeper-system
-      app: gatekeeper
-      disableIstioInjection: true
     - name: gitea
     - name: gitea-operator
       disableIstioInjection: true
@@ -62,6 +57,9 @@ k8s:
     - name: kured
       app: kured
       disableIstioInjection: true
+    - name: kyverno
+      app: kyverno
+      disableIstioInjection: true
     - name: tekton-pipelines
       app: tekton
       disableIstioInjection: true
@@ -84,9 +82,6 @@ k8s:
       disablePolicyChecks: true
     - name: monitoring
       disableIstioInjection: true
-    - name: opa-exporter
-      disableIstioInjection: true
-      disablePolicyChecks: true
     - name: otomi
     - name: otomi-operator
       disableIstioInjection: true
@@ -106,8 +101,6 @@ k8s:
       disablePolicyChecks: true
     - name: sealed-secrets
       app: sealed-secrets
-    - name: vault
-      app: vault
     - name: velero
       app: velero
       disablePolicyChecks: true
@@ -171,13 +164,9 @@ adminApps:
         auth: true
   - name: external-dns
     tags: [ingress, security, tls]
-  - name: external-secrets
-    tags: [secrets, security, tls]
   - name: falco
     tags: [security]
     deps: [prometheus, grafana]
-  - name: gatekeeper
-    tags: [security, policies, observability]
   - name: gitea
     tags: [git]
     isShared: true
@@ -304,9 +293,6 @@ adminApps:
       - title: OWASP violations
         description: All OWASP rule violations
         path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"ingress%5C"%7D%20%7C%3D%5C"ModSecurity:%20%5C""%7D%5D
-      - title: Gatekeeper violations
-        description: Kube API violations logged by OPA gatekepeer
-        path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"gatekeeper-system%5C"%7D%20%7C%3D%5C"Policy:%20%5C""%7D%5D
   - name: minio
     tags: [storage, backup]
     ownHost: true
@@ -355,20 +341,10 @@ adminApps:
   - name: trivy
     tags: [security]
     deps: [prometheus, grafana]
-  - name: vault
-    tags: [secrets, security, observability]
-    deps: [external-secrets]
-    isShared: true
-    ownHost: true
-    path: /ui/vault/auth?redirect_to=%2Fvault%2Fsecrets%2Fsecret%2Flist%2Fteams%2F#NS#%2F&with=oidc
-    ingress:
-      - namespace: vault
-        svc: vault
-        port: 8200
-        type: public
-        auth: true
   - name: velero
     tags: [backup]
+  - name: kyverno
+    tags: [security]
   - name: rabbitmq
     tags: [messaging]
 

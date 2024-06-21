@@ -60,7 +60,3 @@ releases:
     installed: {{ has "msteams" ($v | get "alerts.receivers") }}
     namespace: monitoring
     <<: *default
-  - name: opa-exporter
-    installed: {{ $a | get "gatekeeper.enabled" }}
-    namespace: opa-exporter
-    <<: *default

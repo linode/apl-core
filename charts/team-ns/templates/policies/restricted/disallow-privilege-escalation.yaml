@@ -1,0 +1,64 @@
+{{- $v := .Values }}
+{{- $p := index $v.policies "restrict-sysctls" }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: disallow-privilege-escalation
+  annotations:
+    policies.kyverno.io/title: Disallow Privilege Escalation
+    policies.kyverno.io/category: Pod Security Standards (Restricted)
+    policies.kyverno.io/severity: {{ $p.severity }}
+    policies.kyverno.io/subject: Pod
+    kyverno.io/kyverno-version: 1.6.0
+    policies.kyverno.io/description: >-
+      Privilege escalation, such as via set-user-ID or set-group-ID file mode, should not be allowed.
+      This policy ensures the `allowPrivilegeEscalation` field is set to `false`.
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  validationFailureAction: {{ $p.action }}
+  background: true
+  failurePolicy: Fail
+  rules:
+    - name: privilege-escalation
+      match:
+        any:
+        - resources:
+            kinds:
+              - Pod
+      exclude:
+        any:
+          - resources:
+              annotations:
+                tekton.dev/tags: image-build
+          - resources:
+              annotations:
+                tekton.dev/tags: git
+          - resources:
+              annotations:
+                tekton.dev/tags: 'CLI, grype'
+      skipBackgroundRequests: true
+      validate:
+        message: >-
+          Privilege escalation is disallowed. The fields
+          spec.containers[*].securityContext.allowPrivilegeEscalation,
+          spec.initContainers[*].securityContext.allowPrivilegeEscalation,
+          and spec.ephemeralContainers[*].securityContext.allowPrivilegeEscalation
+          must be set to `false`.
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            preconditions:
+              all:
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotIn
+                value:
+                  - "*/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+            deny:
+              conditions:
+                all:
+                - key: "{{`{{ not_null(element.securityContext.allowPrivilegeEscalation, 'true') }}`}}"
+                  operator: NotEquals
+                  value: false
+{{- end }}
