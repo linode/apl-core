@@ -111,6 +111,14 @@ configs:
     users.anonymous.enabled: "false"
     # Note that the clientSecret is not actually used
     # as for now oauth2-proxy handles the login
+    resource.exclusions: |
+        - apiGroups:
+          - "*"
+          kinds:
+          - "PipelineRun"
+          - "TaskRun"
+          clusters:
+          - "*"
     oidc.config: |
       name: Otomi
       issuer: {{ $v._derived.oidcBaseUrl }}
