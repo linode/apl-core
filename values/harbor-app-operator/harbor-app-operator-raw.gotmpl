@@ -4,6 +4,11 @@
 {{- $h := $c.harbor }}
 {{- $k := $c.keycloak }}
 {{- $harborRepo := printf "harbor.%s" $v.cluster.domainSuffix }}
+{{- $teamNamespaces := list }}
+{{- range $teamId, $team := $v.teamConfig }}
+{{- $teamNamespaces = append $teamNamespaces $teamId }}
+{{- end }}
+{{- $teamNamespaces := $teamNamespaces | toJson }}
 
 resources:
   - name: harbor-app-operator-secret
@@ -32,3 +37,4 @@ resources:
       oidcName: keycloak
       oidcScope: openid
       oidcVerifyCert: '{{ not $v._derived.untrustedCA }}'
+      teamNamespaces: {{ $teamNamespaces | toJson }}
