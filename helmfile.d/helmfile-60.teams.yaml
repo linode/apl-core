@@ -261,6 +261,8 @@ releases:
             enabled: {{ $a.knative.enabled }}
           opencost:
             enabled: {{ $a.knative.enabled }}
+          cert-manager:
+            issuer:  {{ $a | get "cert-manager.issuer" }}
           istio:
             tracing:
               enabled: {{ $a.istio.tracing.enabled }}
