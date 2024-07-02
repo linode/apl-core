@@ -2538,7 +2538,7 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
-      otomi-keycloak-operator:
+      apl-keycloak-operator:
         additionalProperties: false
         properties:
           _rawValues:

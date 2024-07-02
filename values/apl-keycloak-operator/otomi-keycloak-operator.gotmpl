@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $o := $v.apps | get "otomi-keycloak-operator" }}
+{{- $o := $v.apps | get "apl-keycloak-operator" }}
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 
@@ -7,9 +7,9 @@ image:
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 
-{{- with $v.otomi | get "globalPullSecret" nil }}
+{{- with $v.apl | get "globalPullSecret" nil }}
 imagePullSecrets:
-  - name: otomi-pullsecret-global
+  - name: apl-pullsecret-global
 {{- end }}
 configs:
   {{ if $v._derived.untrustedCA }}

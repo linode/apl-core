@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include "otomi-keycloak-operator.serviceAccountName" . }}
+  name: {{ include "apl-keycloak-operator.serviceAccountName" . }}
   namespace: {{ .Release.Namespace | quote }}
 automountServiceAccountToken: true
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ include "otomi-keycloak-operator.fullname" . }}-edit-keycloak
+  name: {{ include "apl-keycloak-operator.fullname" . }}-edit-keycloak
 rules:
 - apiGroups: [""]
   resources: ["pods"]
@@ -27,13 +27,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "otomi-keycloak-operator.fullname" . }}-edit-keycloak
+  name: {{ include "apl-keycloak-operator.fullname" . }}-edit-keycloak
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
-  name: {{ include "otomi-keycloak-operator.fullname" . }}
+  name: {{ include "apl-keycloak-operator.fullname" . }}
 roleRef:
   kind: ClusterRole
-  name: {{ include "otomi-keycloak-operator.fullname" . }}-edit-keycloak
+  name: {{ include "apl-keycloak-operator.fullname" . }}-edit-keycloak
   apiGroup: rbac.authorization.k8s.io
 {{- end }}

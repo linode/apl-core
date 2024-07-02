@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "otomi-keycloak-operator.fullname" . }}
+  name: {{ include "apl-keycloak-operator.fullname" . }}
   labels:
-    {{- include "otomi-keycloak-operator.labels" . | nindent 4 }}
+    {{- include "apl-keycloak-operator.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "otomi-keycloak-operator.selectorLabels" . | nindent 6 }}
+      {{- include "apl-keycloak-operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,13 +16,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "otomi-keycloak-operator.labels" . | nindent 8 }}
+        {{- include "apl-keycloak-operator.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "otomi-keycloak-operator.serviceAccountName" . }}
+      serviceAccountName: {{ include "apl-keycloak-operator.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -68,7 +68,7 @@ spec:
               name: keycloak-operator-tls-certs-cm
           - name: operator-config-kc
             configMap:
-              name: otomi-keycloak-operator-cm
+              name: apl-keycloak-operator-cm
           - name: operator-secret-kc
             secret:
-              secretName: otomi-keycloak-operator-secret
+              secretName: apl-keycloak-operator-secret

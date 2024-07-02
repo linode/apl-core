@@ -1,1 +1,0 @@
-The otomi-keycloak-operator has been deployed.
