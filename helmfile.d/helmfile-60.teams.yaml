@@ -11,6 +11,7 @@ bases:
 {{- $a := $v.apps }}
 {{- $tc := $v.teamConfig }}
 {{- $coreTeamServices := list }}
+
 {{- range $s := $v.teamApps }}
   {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
     {{- range $ing := $s.ingress }}
@@ -245,7 +246,24 @@ releases:
       pipeline: otomi-task-teams
     values:
       - cluster: {{- $v.cluster | toYaml | nindent 10 }}
-        apps: {{- $a | toYaml | nindent 10 }}
+        apps:
+          gitea:
+            enabled: {{ $a.gitea.enabled }}
+            adminUsername: {{ $a.gitea.adminUsername }}
+            adminPassword: {{ $a.gitea.adminPassword }}
+          kyverno:
+            enabled: {{ $a.kyverno.enabled }}
+          harbor:
+            enabled: {{ $a.harbor.enabled }}
+          velero:
+            enabled: {{ $a.velero.enabled }}
+          argocd:
+            enabled: {{ $a.argocd.enabled }}
+          knative:
+            enabled: {{ $a.knative.enabled }}
+          istio:
+            tracing:
+              enabled: {{ $a.istio.tracing.enabled }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
