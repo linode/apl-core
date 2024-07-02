@@ -259,6 +259,8 @@ releases:
             enabled: {{ $a.argocd.enabled }}
           knative:
             enabled: {{ $a.knative.enabled }}
+          opencost:
+            enabled: {{ $a.knative.enabled }}
           istio:
             tracing:
               enabled: {{ $a.istio.tracing.enabled }}
