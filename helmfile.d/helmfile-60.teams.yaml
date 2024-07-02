@@ -251,8 +251,6 @@ releases:
             enabled: {{ $a.gitea.enabled }}
             adminUsername: {{ $a.gitea.adminUsername }}
             adminPassword: {{ $a.gitea.adminPassword }}
-          kyverno:
-            enabled: {{ $a.kyverno.enabled }}
           harbor:
             enabled: {{ $a.harbor.enabled }}
           velero:
@@ -264,6 +262,8 @@ releases:
           istio:
             tracing:
               enabled: {{ $a.istio.tracing.enabled }}
+          prometheus:
+            enabled: {{ $a.prometheus.enabled }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
