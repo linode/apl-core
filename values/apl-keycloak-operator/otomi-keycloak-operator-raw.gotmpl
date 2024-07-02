@@ -38,7 +38,7 @@ resources:
       KEYCLOAK_ADMIN: {{ .Values.apps.keycloak.adminUsername | b64enc }}
       KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword | b64enc }}
       KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret | b64enc }}
-      {{- if $v.apl.hasExternalIDP }}
+      {{- if $v.otomi.hasExternalIDP }}
       IDP_CLIENT_ID: {{ $oi.clientID | b64enc}}
       IDP_CLIENT_SECRET: {{ $oi.clientSecret | b64enc }}
       {{- end }}
@@ -49,7 +49,7 @@ resources:
       name: keycloak-cm
       namespace: apl-keycloak-operator
     data:
-      FEAT_EXTERNAL_IDP: "{{ $v.apl.hasExternalIDP | toString }}"
+      FEAT_EXTERNAL_IDP: "{{ $v.otomi.hasExternalIDP | toString }}"
       KEYCLOAK_HOSTNAME_URL: https://keycloak.{{ $v.cluster.domainSuffix }}
       KEYCLOAK_HOSTNAME: keycloak.{{ $v.cluster.domainSuffix }}
       KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak
@@ -59,7 +59,7 @@ resources:
       REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
       TEAM_IDS: '{{ $teamIds | toJson }}'
       WAIT_OPTIONS: '{"retries": "200"}'
-      {{- if $v.apl.hasExternalIDP }}
+      {{- if $v.otomi.hasExternalIDP }}
       IDP_ALIAS: {{ $k.idp.alias }}
       {{- with $oi | get "usernameClaimMapper" nil }}
       IDP_USERNAME_CLAIM_MAPPER: {{ . }}{{ end }}
@@ -72,6 +72,6 @@ resources:
       IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
       IDP_OIDC_URL: {{ $oi.issuer }}
       {{- end }}
-      {{- if not $v.apl.hasExternalIDP }}
+      {{- if not $v.otomi.hasExternalIDP }}
       IDP_ALIAS: 'apl-idp'
       {{- end }}
