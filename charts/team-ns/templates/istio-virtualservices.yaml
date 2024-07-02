@@ -195,6 +195,7 @@ spec:
         - port: 443
           sniHosts:
             - {{ $domain }}
+            - {{ $s.cname.domain }}
       route:
         - destination:
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
