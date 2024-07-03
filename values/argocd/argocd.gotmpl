@@ -122,6 +122,9 @@ configs:
           - "TaskRun"
           clusters:
           - "*"
+    resource.customizations.knownTypeFields.cert-manager.io_Certificate: |
+        - field: spec.duration
+          type: meta/v1/Duration
     oidc.config: |
       name: Otomi
       issuer: {{ $v._derived.oidcBaseUrl }}
