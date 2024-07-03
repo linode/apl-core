@@ -1,0 +1,17 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: PspCapabilities
+metadata:
+  name: pspcapabilities
+spec:
+  match:
+    kinds:
+    - apiGroups:
+      - ""
+      kinds:
+      - Pod
+    - apiGroups:
+      - apps
+      kinds:
+      - DaemonSet
+      - Deployment
+      - StatefulSet

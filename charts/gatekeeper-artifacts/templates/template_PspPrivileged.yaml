@@ -1,0 +1,281 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  creationTimestamp: null
+  name: pspprivileged
+spec:
+  crd:
+    spec:
+      names:
+        kind: PspPrivileged
+  targets:
+  - libs:
+    - |-
+      package lib.core
+
+      default is_gatekeeper = false
+
+      is_gatekeeper {
+        has_field(input, "review")
+        has_field(input.review, "object")
+      }
+
+      resource = input.review.object {
+        is_gatekeeper
+      }
+
+      resource = input {
+        not is_gatekeeper
+      }
+
+      review = input.review {
+        is_gatekeeper
+      }
+
+      review = {"object": resource, "kind": {"group": group, "kind": kind, "version": version}} {
+        not is_gatekeeper
+      }
+
+      parameters = input.parameters {
+        trace(sprintf("has input.parameters: %v", [input.parameters]))
+        is_gatekeeper
+      }
+
+      format(msg) = {"msg": msg}
+
+      format_with_id(msg, id) = msg_fmt {
+        msg_fmt := {
+          "msg": sprintf("%s: %s", [id, msg]),
+          "details": {"policyID": id},
+        }
+      }
+
+      apiVersion := resource.apiVersion
+
+      name := resource.metadata.name
+
+      gv := split(apiVersion, "/")
+
+      group = gv[0] {
+        contains(apiVersion, "/")
+      }
+
+      group = "core" {
+        not contains(apiVersion, "/")
+      }
+
+      version := gv[minus(count(gv), 1)]
+
+      kind := resource.kind
+
+      labels := resource.metadata.labels
+
+      annotations := resource.metadata.annotations
+
+      has_field(obj, field) {
+        not object.get(obj, field, "N_DEFINED") == "N_DEFINED"
+      }
+
+      missing_field(obj, field) {
+        obj[field] == ""
+      }
+
+      missing_field(obj, field) {
+        not has_field(obj, field)
+      }
+    - |-
+      package lib.exceptions
+
+
+      import data.lib.annotations
+      import data.lib.core
+      import data.lib.parameters
+
+      get_safe_annotation[return] {
+        all_annotations := annotations.merge_annotations()
+        trace(sprintf("all_annotations: %v", [all_annotations]))
+        policy_list := sprintf("%s,%s", [
+          object.get(all_annotations, annotations.ignoreAnnotationField, ""),
+        ])
+
+        trace(sprintf("pod ignore list: %v", [policy_list]))
+        return := split(policy_list, ",")
+      }
+
+      is_exception(policyID) {
+        get_safe_annotation[ignore_list]
+        ignore_list[_] == policyID
+      }
+
+      is_container_exception(cname, policyID) {
+        all_annotations := annotations.merge_annotations()
+        policy_list := object.get(all_annotations, annotations.get_container_ignore_field(cname), "")
+        trace(sprintf("container ignore list: %v", [policy_list]))
+        ignore_list := split(policy_list, ",")
+        ignore_list[_] == policyID
+      }
+
+      is_exception(policyID) {
+        not parameters.policy_parameters(policyID).enabled
+      }
+    - |-
+      package lib.annotations
+
+
+      import data.lib.core
+      import data.lib.pods
+
+      default ignoreAnnotationField = "policy.otomi.io/ignore"
+
+      default paramsAnnotationField = "policy.otomi.io/parameters"
+
+      default containerIgnoreAnnotationField = "policy.otomi.io/ignore.%s"
+
+      default containerParamAnnotationField = "policy.otomi.io/parameters.%s.%s"
+
+      get_container_params_field(cname, policyID) = return {
+        return := sprintf(containerParamAnnotationField, [cname, policyID])
+      }
+
+      get_container_ignore_field(cname) = return {
+        return := sprintf(containerIgnoreAnnotationField, [cname])
+      }
+
+      get_default(object, field, _default) = output {
+        core.has_field(object, field)
+        object[field] != null
+        output := object[field]
+      }
+
+      get_default(object, field, _default) = output {
+        core.has_field(object, field) == false
+        output := _default
+      }
+
+      merge_annotations = return {
+        return := object.union(get_default(core.resource.metadata, "annotations", {}), get_default(pods.pod.metadata, "annotations", {}))
+      } else = return {
+        return := get_default(pods.pod.metadata, "annotations", {})
+        return != null
+      } else = return {
+        return := get_default(core.resource.metadata, "annotations", {})
+        return != null
+      } else = return {
+        return := {}
+      }
+    - |-
+      package lib.pods
+
+      import data.lib.core
+
+      default pod = false
+
+      pod = core.resource.spec.template {
+        pod_templates := ["daemonset", "deployment", "job", "pod", "replicaset", "replicationcontroller", "statefulset"]
+        lower(core.kind) == pod_templates[_]
+      }
+
+      pod = core.resource.spec.template {
+        lower(core.apiVersion) == "serving.knative.dev/v1"
+        lower(core.kind) == "service"
+      }
+
+      pod = core.resource {
+        lower(core.kind) == "pod"
+      }
+
+      pod = core.resource.spec.jobTemplate.spec.template {
+        lower(core.kind) == "cronjob"
+      }
+
+      containers[container] {
+        keys := {"containers", "initContainers"}
+        all_containers := [c | keys[k]; c := pod.spec[k][_]]
+        container := all_containers[_]
+      }
+
+      volumes[volume] {
+        volume := pod.spec.volumes[_]
+      }
+    - |-
+      package lib.parameters
+
+
+      import data.lib.annotations
+      import data.lib.core
+
+      policy_parameters(policyID) = params {
+        trace(sprintf("core_params: %v", [{c | c = core.parameters}]))
+        core_params := {c | c = core.parameters[policyID]}
+
+        # trace(sprintf("core_params[policyID]: %v", [core_params]))
+        extra_params := {e | e = extra_parameters(policyID)}
+
+        # trace(sprintf("extra_params: %v", [extra_params]))
+        params := object.union(core.parameters[policyID], extra_parameters(policyID))
+        # trace(sprintf("policy_parameters: %v", [params]))
+      }
+
+      extra_parameters(policyID) = params {
+        all_annotations := annotations.merge_annotations()
+        policyAnnotationField := sprintf("%s.%s", [annotations.paramsAnnotationField, policyID])
+        core.has_field(all_annotations, policyAnnotationField)
+        params := json.unmarshal(all_annotations[policyAnnotationField])
+        trace(sprintf("extra_parameters: %v", [params]))
+      } else = params {
+        params := {}
+      }
+    - |-
+      package lib.security
+
+      dropped_capability(container, cap) {
+          lower(container.securityContext.capabilities.drop[_]) == lower(cap)
+      }
+
+      dropped_capability(psp, cap) {
+          lower(psp.spec.requiredDropCapabilities[_]) == lower(cap)
+      }
+
+      added_capability(container, cap) {
+          lower(container.securityContext.capabilities.add[_]) == lower(cap)
+      }
+
+      added_capability(psp, cap) {
+          lower(psp.spec.allowedCapabilities[_]) == lower(cap)
+      }
+
+      added_capability(psp, cap) {
+          lower(psp.spec.defaultAddCapabilities[_]) == lower(cap)
+      }
+    rego: |-
+      package pspprivileged
+
+      import data.lib.core
+      import data.lib.exceptions
+      import data.lib.parameters
+      import data.lib.pods
+      import data.lib.security
+
+      policyID = "psp-privileged"
+
+      violation[{"msg": msg}] {
+        not exceptions.is_exception(policyID)
+        pods.containers[container]
+        not exceptions.is_container_exception(container.name, policyID)
+        container_is_privileged(container)
+        msg := sprintf("Policy: %s - Privileged container is not allowed: %s/%s, securityContext: %v", [policyID, core.kind, core.name, container.securityContext])
+      }
+
+      container_is_privileged(container) {
+        container.securityContext.privileged
+      }
+
+      container_is_privileged(container) {
+        security.added_capability(container, "CAP_SYS_ADMIN")
+      }
+
+      container_is_privileged(container) {
+        container.securityContext.allowPrivilegeEscalation
+      }
+    target: admission.k8s.gatekeeper.sh
+status: {}

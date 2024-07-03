@@ -1,0 +1,26 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: PspHostFilesystem
+metadata:
+  name: psphostfilesystem
+spec:
+  match:
+    kinds:
+    - apiGroups:
+      - ""
+      kinds:
+      - Pod
+    - apiGroups:
+      - apps
+      kinds:
+      - DaemonSet
+      - Deployment
+      - StatefulSet
+    - apiGroups:
+      - batch
+      kinds:
+      - CronJob
+      - Job
+    - apiGroups:
+      - serving.knative.dev
+      kinds:
+      - Service
