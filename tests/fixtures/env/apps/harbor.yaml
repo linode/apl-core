@@ -8,6 +8,14 @@ apps:
                     rootdirectory: /google/demo
                 type: gcs
         core: {}
-        jobservice: {}
+        jobservice:
+            storageClass: fast
         registry:
             credentials: {}
+            storageClass: fast
+        redis:
+            storageClass: fast
+        chartmuseum:
+            storageClass: fast
+        trivy:
+            storageClass: fast

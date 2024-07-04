@@ -1986,11 +1986,17 @@ properties:
               xsrfKey:
                 type: string
                 x-secret: '{{ randAlphaNum 32 }}'
+          redis:
+            properties:
+              storageClass:
+                type: string
           jobservice:
             properties:
               secret:
                 type: string
                 x-secret: '{{ randAlphaNum 16 }}'
+              storageClass:
+                type: string
           persistence:
             additionalProperties: false
             properties:
@@ -2059,8 +2065,14 @@ properties:
                       - gcs
                       - filesystem
                     default: filesystem
+          chartmuseum:
+            properties:
+              storageClass:
+                type: string
           registry:
             properties:
+              storageClass:
+                type: string
               secret:
                 type: string
                 x-secret: '{{ randAlpha 16 }}'
@@ -2559,6 +2571,8 @@ properties:
             type: array
             items:
               type: string
+          storageClass:
+            type: string
           remoteWrite:
             properties:
               enabled:
