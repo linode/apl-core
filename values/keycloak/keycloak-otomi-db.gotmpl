@@ -2,10 +2,34 @@
 {{- $k := $v.apps.keycloak }}
 {{- $cnpg := $v.apps.cnpg }}
 {{- $kdb := $v.databases.keycloak }}
+{{- $b := $v.platformBackups.database.keycloak }}
 
 name: keycloak-db
 storage:
   size: {{ $kdb.size }}
+instances: {{ $kdb.replicas }}
+
+{{- if $b.enabled }}
+backup:
+  enabled: {{ $b.enabled }}
+  schedule: {{ $b.schedule }}
+  retentionPolicy: {{ $b.retentionPolicy }}
+  type:  {{ $sp.type }}
+{{- if eq $sp.type "azure" }}
+  azure:
+    storageAccount: {{ $sp.azure.accountName }}
+    container: {{ $sp.azure.containerName }}
+{{- end }}
+{{- if eq $sp.type "s3" }}
+  s3:
+    endpointURL: {{ $sp.s3.s3Url }}
+    bucket: {{ $sp.s3.bucket }}
+{{- end }}
+{{- if eq $sp.type "gcs" }}
+  gcs: 
+    bucket: {{ $sp.gcs.bucket }}
+{{- end }}
+{{- end }}
 
 {{- if $kdb.imported }}
 clusterSpec:
@@ -39,7 +63,5 @@ clusterSpec:
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
 {{- end }}
-
-instances: {{ $kdb.replicas }}
 
 resources: {{- toYaml $kdb.resources | nindent 6 }}

@@ -313,7 +313,7 @@ definitions:
     type: string
   backup:
     type: object
-    description: Team backups
+    description: PV backups
     properties:
       name:
         $ref: '#/definitions/wordCharacterPattern'
@@ -1134,10 +1134,6 @@ definitions:
         properties:
           shortcuts:
             $ref: '#/definitions/shortcuts'
-      backups:
-        type: array
-        items:
-          $ref: '#/definitions/backup'
       secrets:
         items:
           $ref: '#/definitions/secret'
@@ -3342,41 +3338,7 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
-      persistentVolumes:
-        type: object
-        title: PersistentVolumes backups
-        properties:
           gitea:
-            title: Gitea
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          drone:
-            title: Drone
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          keycloak:
-            title: Keycloak
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          harbor:
             title: Harbor
             properties:
               enabled:
@@ -3384,28 +3346,20 @@ properties:
                 default: false
               resources:
                 $ref: '#/definitions/resources'
-              ttl:
-                $ref: '#/definitions/backupTtl'
+              retentionPolicy:
+                $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
-          argo:
-            title: ArgoCD
+          keycloak:
+            title: Harbor
             properties:
               enabled:
                 type: boolean
                 default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          minio:
-            title: Minio
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
+              resources:
+                $ref: '#/definitions/resources'
+              retentionPolicy:
+                $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
   databases:
