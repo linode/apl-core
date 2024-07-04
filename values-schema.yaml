@@ -1990,6 +1990,10 @@ properties:
             properties:
               storageClass:
                 type: string
+          trivy:
+            properties:
+              storageClass:
+                type: string
           jobservice:
             properties:
               secret:
