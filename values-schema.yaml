@@ -245,25 +245,9 @@ definitions:
         default: otomi
       provider:
         $ref: '#/definitions/provider'
-      region:
-        description: 'An AWS region. Only required for AWS.'
-        examples:
-          - eu-central-1
     required:
       - name
       - provider
-    allOf:
-      - oneOf:
-          - properties:
-              provider:
-                enum: [aws]
-            required:
-              - apiName
-              - region
-          - not:
-              properties:
-                provider:
-                  enum: [aws]
   clusterName:
     $ref: '#/definitions/wordCharacterPattern'
     type: string
