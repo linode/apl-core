@@ -188,10 +188,6 @@ adminApps:
           - authorization
         type: public
         auth: true
-    shortcuts:
-      - title: NGINX
-        description: NGINX ingress controller metrics
-        path: /d/nginx/nginx-ingress-controller?orgId=1&refresh=5s
   - name: harbor
     tags: [security]
     isShared: true
@@ -248,10 +244,6 @@ adminApps:
         svc: keycloak-service
         type: public
         port: 8080
-    shortcuts:
-      - title: Account
-        description: Edit your account settings.
-        path: /realms/otomi/account/
   - name: kiali
     tags: [tracing, telemetry, observability]
     deps: [istio, prometheus]
@@ -286,13 +278,6 @@ adminApps:
     deps: [grafana, prometheus, minio]
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A"%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
-    shortcuts:
-      - title: Ingress logs
-        description: All logs generated in the "ingress" namespace
-        path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"ingress%5C"%7D","refId":"A"%7D%5D
-      - title: OWASP violations
-        description: All OWASP rule violations
-        path: /explore?orgId=1&left=%5B"now-1h","now","Loki",%7B"expr":"%7Bnamespace%3D%5C"ingress%5C"%7D%20%7C%3D%5C"ModSecurity:%20%5C""%7D%5D
   - name: minio
     tags: [storage, backup]
     ownHost: true
