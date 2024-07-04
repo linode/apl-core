@@ -48,7 +48,7 @@ spec:
             exec:
               command:
                 - cat
-                - /tmp/healthy
+                - /writable-tmp/healthy
             initialDelaySeconds: 10
             periodSeconds: 30
           resources:
@@ -57,6 +57,8 @@ spec:
           - name: tls-certs
             mountPath: /app/config/tls/certificates.crt
             subPath: certificates.crt
+          - name: writable-tmp
+            mountPath: /writable-tmp
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -79,3 +81,5 @@ spec:
           - name: operator-secret-kc
             secret:
               secretName: apl-keycloak-operator-secret
+          - name: writable-tmp
+            emptyDir: {}
