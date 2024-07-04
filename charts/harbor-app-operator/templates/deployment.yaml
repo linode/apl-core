@@ -47,16 +47,6 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /systeminfo
-              port: 8083
-            failureThreshold: 3
-            initialDelaySeconds: 10
-            # Allow sufficient amount of time (90 seconds = periodSeconds * failureThreshold)
-            # for the registered shutdown handlers to run to completion.
-            periodSeconds: 30
-            successThreshold: 1
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
