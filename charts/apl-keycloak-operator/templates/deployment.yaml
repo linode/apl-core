@@ -45,15 +45,12 @@ spec:
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /auth/
-              port: http
-            failureThreshold: 3
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
             initialDelaySeconds: 10
-            # Allow sufficient amount of time (90 seconds = periodSeconds * failureThreshold)
-            # for the registered shutdown handlers to run to completion.
             periodSeconds: 30
-            successThreshold: 1
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:

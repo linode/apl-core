@@ -1,4 +1,4 @@
 api: main
 console: main
-tasks: me-feat-operators
+tasks: me-fix-operator-restarting
 tools: 1.6.4
