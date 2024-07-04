@@ -33,8 +33,6 @@ environments:
               limits:
                 cpu: 1000m
                 memory: 512Mi
-          cluster-overprovisioner:
-            enabled: false
           drone:
             enabled: false
             debug: false
@@ -290,8 +288,6 @@ environments:
             enabled: false
             serving:
               replicas: 1
-          kube-descheduler:
-            enabled: false
           kured:
             enabled: false
             resources:

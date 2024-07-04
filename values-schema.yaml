@@ -227,11 +227,6 @@ definitions:
   cluster:
     additionalProperties: false
     properties:
-      apiName:
-        description:
-          Exact name of cluster as created when on AWS. Optional otherwise and will be generated for UI purposes.
-          When on AWS this name is used for chart cluster-autoscaler.
-        $ref: '#/definitions/wordCharacterPattern'
       apiServer:
         description: Used to generate KUBECONFIG for download, for local access to target cluster.
         pattern: '^https:\/\/.*'
@@ -1730,24 +1725,6 @@ properties:
             $ref: '#/definitions/resources'
           storage:
             $ref: '#/definitions/storageProvider'
-      cluster-autoscaler:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-      cluster-overprovisioner:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-          cpu:
-            $ref: '#/definitions/cpuQuantity'
-          memory:
-            $ref: '#/definitions/memoryQuantity'
       drone:
         additionalProperties: false
         properties:
@@ -2269,15 +2246,6 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
-      kube-descheduler:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: true
-            type: boolean
-          schedule:
-            default: '*/30 * * * *'
-            type: string
       kured:
         additionalProperties: false
         properties:
