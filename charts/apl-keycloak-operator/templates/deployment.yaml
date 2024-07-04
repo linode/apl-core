@@ -47,7 +47,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /live
-              port: 8080
+              port: 8084
             failureThreshold: 3
             initialDelaySeconds: 10
             # Allow sufficient amount of time (90 seconds = periodSeconds * failureThreshold)
