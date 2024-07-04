@@ -9,13 +9,13 @@ apps:
                 type: gcs
         core: {}
         jobservice:
-            storageClass: fast
+            storageClassName: fast
         registry:
             credentials: {}
-            storageClass: fast
-        redis:
-            storageClass: fast
+            storageClassName: fast
+        # redis:
+        #     storageClassName: fast
         chartmuseum:
-            storageClass: fast
+            storageClassName: fast
         trivy:
-            storageClass: fast
+            storageClassName: fast
