@@ -1134,6 +1134,10 @@ definitions:
         properties:
           shortcuts:
             $ref: '#/definitions/shortcuts'
+      backups:
+        type: array
+        items:
+          $ref: '#/definitions/backup'
       secrets:
         items:
           $ref: '#/definitions/secret'

@@ -80,19 +80,6 @@ platformBackups:
             enabled: true
             retentionPolicy: 7d
             schedule: 0 0 0 * * *
-    persistentVolumes:
-        argo:
-            enabled: false
-        drone:
-            enabled: false
-        gitea:
-            enabled: false
-        harbor:
-            enabled: false
-        keycloak:
-            enabled: false
-        minio:
-            enabled: false
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in
