@@ -7,7 +7,7 @@ on:
       - '*'
 env:
   CACHE_REGISTRY: ghcr.io
-  CACHE_REPO: redkubes/otomi-core
+  CACHE_REPO: linode/apl-core
   REPO: otomi/core
   GIT_USER: redkubesbot
 

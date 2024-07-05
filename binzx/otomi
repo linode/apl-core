@@ -97,7 +97,7 @@ if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
   script_full_path="${BASH_SOURCE[0]}"
 fi
 readonly script_full_path
-update_base="https://raw.githubusercontent.com/redkubes/otomi-core/${otomi_branch_or_tag}/binzx/otomi"
+update_base="https://raw.githubusercontent.com/linode/apl-core/${otomi_branch_or_tag}/binzx/otomi"
 
 function date_to_format() {
   date=${1:-'1970-01-01T00:00:00Z'}
@@ -164,7 +164,7 @@ check_update() {
     [[ $calling_args == *'-ni'* ]]; then
     return 0
   fi
-  last_commit_date=$(curl -s "https://api.github.com/repos/redkubes/otomi-core/commits?sha=${otomi_branch_or_tag}&path=binzx%2Fotomi&page=1&per_page=1" | grep -A5 '"committer":' | grep '"date":' | awk -F': ' '{print $2}' | tr -d '"')
+  last_commit_date=$(curl -s "https://api.github.com/repos/linode/apl-core/commits?sha=${otomi_branch_or_tag}&path=binzx%2Fotomi&page=1&per_page=1" | grep -A5 '"committer":' | grep '"date":' | awk -F': ' '{print $2}' | tr -d '"')
   last_file_change=$(date -u -r $script_full_path '+%Y-%m-%dT%H:%M:%SZ')
   last_commit_date_sec=$(date_to_format $last_commit_date)
   last_file_change_sec=$(date_to_format $last_file_change)
