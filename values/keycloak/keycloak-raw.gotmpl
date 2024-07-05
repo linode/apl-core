@@ -1,22 +1,23 @@
 {{- $v := .Values }}
-{{- $sp := $v.apps.cnpg.storage }}
+{{- $otomiAdmin := "otomi-admin" }}
+{{- $obj := $v.obj.provider }}
 
 resources:
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: custom-ca
-    data:
-      custom-ca.pem: {{ .Values._derived.caCert | b64enc }}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: keycloak-initial-admin
-      namespace: keycloak
-    data:
-      password: {{ .Values.otomi.adminPassword | b64enc }}
-      username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
-{{- if eq $sp.type "minioLocal" }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: custom-ca
+  data:
+    custom-ca.pem: {{ .Values._derived.caCert | b64enc }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: keycloak-initial-admin
+    namespace: keycloak
+  data:
+    password: {{ .Values.otomi.adminPassword | b64enc }}
+    username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
+{{- if eq $obj.type "minioLocal" }}
 - apiVersion: v1
   kind: Secret
   metadata:
@@ -25,29 +26,12 @@ resources:
     MINIO_ACCESS_KEY: "{{ $otomiAdmin | b64enc }}"
     MINIO_SECRET_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
 {{- end }}
-{{- if eq $sp.type "azure" }}
+{{- if eq $obj.type "linode" }}
 - apiVersion: v1
   kind: Secret
   metadata:
-    name: azure-creds
+    name: linode-creds
   data:
-    AZURE_STORAGE_ACCOUNT: "{{ $sp.azure.accountName | b64enc }}"
-    AZURE_STORAGE_KEY: "{{ $sp.azure.accountKey | b64enc }}"
-{{- end }}
-{{- if eq $sp.type "s3" }}
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: s3-creds
-  data:
-    S3_STORAGE_ACCOUNT: "{{ $sp.s3.accessKeyId | b64enc }}"
-    S3_STORAGE_KEY: "{{ $sp.s3.secretAccessKey | b64enc }}"
-{{- end }}
-{{- if eq $sp.type "gcs" }}
-- apiVersion: v1
-  kind: Secret
-  metadata:
-    name: gcs-creds
-  data:
-    gcsCredentials: "{{ $sp.gcs.serviceAccountKey | b64enc }}"
+    S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
+    S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
 {{- end }}

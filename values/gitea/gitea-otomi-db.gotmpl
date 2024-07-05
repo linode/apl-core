@@ -2,10 +2,30 @@
 {{- $k := $v.apps.gitea }}
 {{- $cnpg := $v.apps.cnpg }}
 {{- $gdb := $v.databases.gitea }}
+{{- $obj := $v.obj.provider }}
+{{- $bu := $v.obj.bucket }}
+{{- $b := $v.platformBackups.database.keycloak }}
 
 name: gitea-db
 storage:
   size: {{ $gdb.size }}
+instances: {{ $gdb.replicas }}
+
+{{- if $b.enabled }}
+backup:
+  enabled: {{ $b.enabled }}
+  schedule: {{ $b.schedule }}
+  retentionPolicy: {{ $b.retentionPolicy }}
+  type:  {{ $obj.type }}
+{{- if eq $obj.type "minioLocal" }}
+  minioLocal:
+    destinationPath: "s3://{{ $bu.cnpg }}"
+{{- end }}
+{{- if eq $obj.type "linode" }}
+  linode:
+    endpointURL: {{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
+{{- end }}
+{{- end }}
 
 {{- if $gdb.imported }}
 clusterSpec:
@@ -44,6 +64,14 @@ clusterSpec:
       localeCType: 'en_US.UTF-8'
 {{- end }}
 
-instances: {{ $gdb.replicas }}
-
-resources: {{- toYaml $gdb.resources | nindent 6 }}
+resources:
+  {{- with $gdb | get "resources" nil }}
+  {{- toYaml . | nindent 6 }}
+  {{- else }}
+  limits:
+    cpu: 100m
+    memory: 512Mi
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  {{- end }}

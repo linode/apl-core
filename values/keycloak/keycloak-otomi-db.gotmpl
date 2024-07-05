@@ -1,7 +1,10 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.keycloak }}
 {{- $cnpg := $v.apps.cnpg }}
+{{- $sp := $cnpg.storage }}
 {{- $kdb := $v.databases.keycloak }}
+{{- $obj := $v.obj.provider }}
+{{- $bu := $v.obj.bucket }}
 {{- $b := $v.platformBackups.database.keycloak }}
 
 name: keycloak-db
@@ -14,20 +17,14 @@ backup:
   enabled: {{ $b.enabled }}
   schedule: {{ $b.schedule }}
   retentionPolicy: {{ $b.retentionPolicy }}
-  type:  {{ $sp.type }}
-{{- if eq $sp.type "azure" }}
-  azure:
-    storageAccount: {{ $sp.azure.accountName }}
-    container: {{ $sp.azure.containerName }}
+  type:  {{ $obj.type }}
+{{- if eq $obj.type "minioLocal" }}
+  minioLocal:
+    destinationPath: "s3://{{ $bu.cnpg }}"
 {{- end }}
-{{- if eq $sp.type "s3" }}
-  s3:
-    endpointURL: {{ $sp.s3.s3Url }}
-    bucket: {{ $sp.s3.bucket }}
-{{- end }}
-{{- if eq $sp.type "gcs" }}
-  gcs: 
-    bucket: {{ $sp.gcs.bucket }}
+{{- if eq $obj.type "linode" }}
+  linode:
+    endpointURL: {{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}
 
