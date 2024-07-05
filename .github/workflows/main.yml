@@ -125,7 +125,7 @@ jobs:
         id: prepare_chart
         run: |
           # Install and update helm repo
-          helm repo add otomi https://otomi.io/otomi-core
+          helm repo add otomi https://otomi.io/apl-core
           helm repo update
 
           # Retrieve the app version from package.json
@@ -194,7 +194,7 @@ jobs:
       - name: Pulling the helm chart
         run: |
           # Install and update helm repo
-          helm repo add otomi https://otomi.io/otomi-core
+          helm repo add otomi https://otomi.io/apl-core
           helm repo update
 
           # Get latest version of otomi

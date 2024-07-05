@@ -2,12 +2,12 @@
 #####################################################################################
 ##
 ## NOTE:
-## This is a command line tool to operate on otomi-core.
+## This is a command line tool to operate on apl-core.
 ## All commands are executed in docker container.
 ## Keep this file as simple as possible:
 ## - do not depend on any external files.
 ## - do not use any non standard tooling.
-## - only Docker is needed to run otomi-core image
+## - only Docker is needed to run apl-core image
 ## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
 ##
 #####################################################################################
@@ -307,7 +307,7 @@ fi
 
 mkdir -p /tmp/otomi
 # Issue arises due to OSX not assuming UTF-8 format: https://unix.stackexchange.com/a/64905 need to set LC_ALL=C
-container_name="otomi-core-$(cat /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)"
+container_name="apl-core-$(cat /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | fold -w 6 | head -n 1)"
 
 if [ "${IN_DOCKER,,}" == "false" ]; then
   silent echo $cmd
