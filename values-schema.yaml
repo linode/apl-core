@@ -2558,6 +2558,16 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
+      harbor-app-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
 
       oltp:
         additionalProperties: false
