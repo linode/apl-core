@@ -20,10 +20,11 @@ backup:
   type:  {{ $obj.type }}
 {{- if eq $obj.type "minioLocal" }}
   minioLocal:
-    destinationPath: "s3://{{ $bu.cnpg }}"
+    destinationPath: "s3://{{ $bu.cnpg }}/keycloak"
 {{- end }}
 {{- if eq $obj.type "linode" }}
   linode:
+    destinationPath: "s3://{{ $bu.cnpg }}/keycloak"
     endpointURL: {{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}

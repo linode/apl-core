@@ -58,7 +58,7 @@ spec:
   backup:
     retentionPolicy: {{ .Values.backup.retentionPolicy }}
     barmanObjectStore:
-      destinationPath: ""
+      destinationPath: {{ .Values.backup.linode.destinationPath }}
       endpointURL: {{ .Values.backup.linode.endpointURL }}
       s3Credentials:
         accessKeyId:

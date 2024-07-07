@@ -3,7 +3,7 @@
 {{- $cnpg := $v.apps.cnpg }}
 {{- $obj := $v.obj.provider }}
 {{- $bu := $v.obj.bucket }}
-{{- $b := $v.platformBackups.database.keycloak }}
+{{- $b := $v.platformBackups.database.harbor }}
 
 name: harbor-otomi-db
 storage:
@@ -18,11 +18,12 @@ backup:
   type:  {{ $obj.type }}
 {{- if eq $obj.type "minioLocal" }}
   minioLocal:
-    destinationPath: "s3://{{ $bu.cnpg }}"
+    destinationPath: "s3://{{ $bu.cnpg }}/harbor"
 {{- end }}
 {{- if eq $obj.type "linode" }}
   linode:
-    endpointURL: {{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
+    destinationPath: "s3://{{ $bu.cnpg }}/harbor"
+    endpointURL: https://{{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}
 

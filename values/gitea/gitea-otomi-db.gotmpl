@@ -4,7 +4,7 @@
 {{- $gdb := $v.databases.gitea }}
 {{- $obj := $v.obj.provider }}
 {{- $bu := $v.obj.bucket }}
-{{- $b := $v.platformBackups.database.keycloak }}
+{{- $b := $v.platformBackups.database.gitea }}
 
 name: gitea-db
 storage:
@@ -19,10 +19,11 @@ backup:
   type:  {{ $obj.type }}
 {{- if eq $obj.type "minioLocal" }}
   minioLocal:
-    destinationPath: "s3://{{ $bu.cnpg }}"
+    destinationPath: "s3://{{ $bu.cnpg }}/gitea"
 {{- end }}
 {{- if eq $obj.type "linode" }}
   linode:
+    destinationPath: "s3://{{ $bu.cnpg }}/gitea"
     endpointURL: {{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}

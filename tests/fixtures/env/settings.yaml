@@ -84,6 +84,10 @@ platformBackups:
             enabled: true
             retentionPolicy: 7d
             schedule: 0 0 0 * * *
+        gitea:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 0 * * *
 obj:
     bucket:
         loki: loki

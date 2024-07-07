@@ -677,9 +677,16 @@ environments:
               requests:
                 cpu: 50m
                 memory: 256Mi
+        obj:
+          provider:
+            type: disabled
         platformBackups:
           database:
             harbor:
+              enabled: false
+            gitea:
+              enabled: false
+            keycloak:
               enabled: false
           persistentVolumes:
             gitea:

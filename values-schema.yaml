@@ -3046,6 +3046,7 @@ properties:
         properties:
           loki:
             type: string
+            $ref: '#/definitions/wordCharacterPattern'
             default: loki
           cnpg:
             type: string
