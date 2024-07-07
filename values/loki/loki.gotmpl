@@ -26,25 +26,26 @@ loki:
   {{- if eq $obj.type "minioLocal" "linode" }}
   storageConfig:
     boltdb_shipper:
+      active_index_directory: /loki/index
+      cache_location: /loki/index_cache
+      resync_interval: 5s
       shared_store: s3
-      active_index_directory: /var/loki/index
-      cache_location: /var/loki/cache
-      cache_ttl: 168h
-    filesystem: null
     aws:
       {{- if eq $obj.type "minioLocal" }}
       s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/{{ $bu.loki }}
+      s3forcepathstyle: true
       {{- end }}
       {{- if eq $obj.type "linode" }}
-      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $bu.loki }}
-      {{- end }}      
+      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $bu.loki }}     
       s3forcepathstyle: true
-      insecure: false
       sse_encryption: false
       http_config:
           idle_conn_timeout: 90s
-          response_header_timeout: 0s
           insecure_skip_verify: true
+      backoff_config:
+        min_period: 2s
+        max_period: 5s
+      {{- end }} 
     {{- end }}
 
 ingester:
