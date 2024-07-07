@@ -24,6 +24,15 @@ loki:
   podAnnotations:
     sidecar.istio.io/inject: "false"
   {{- if eq $obj.type "minioLocal" "linode" }}
+  schemaConfig:
+    configs:
+    - from: 2020-09-07
+      store: boltdb-shipper
+      object_store: s3
+      schema: v11
+      index:
+        prefix: loki_index_
+        period: 24h
   storageConfig:
     boltdb_shipper:
       active_index_directory: /loki/index
