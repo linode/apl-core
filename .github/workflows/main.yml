@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
-      BOT_EMAIL: ${{ env.BOT_EMAIL }}
-      BOT_USERNAME: ${{ env.BOT_USERNAME }}
+      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Set env
         run: |
