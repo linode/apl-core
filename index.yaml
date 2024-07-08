@@ -22,10 +22,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.11.5/otomi-2.11.5.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.11.5/otomi-2.11.5.tgz
     version: 2.11.5
   - apiVersion: v2
     appVersion: v2.11.4
@@ -48,10 +48,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.11.4/otomi-2.11.4.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.11.4/otomi-2.11.4.tgz
     version: 2.11.4
   - apiVersion: v2
     appVersion: v2.11.3
@@ -74,10 +74,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.11.3/otomi-2.11.3.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.11.3/otomi-2.11.3.tgz
     version: 2.11.3
   - apiVersion: v2
     appVersion: v2.11.2
@@ -100,10 +100,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.11.2/otomi-2.11.2.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.11.2/otomi-2.11.2.tgz
     version: 2.11.2
   - apiVersion: v2
     appVersion: v2.11.1
@@ -126,10 +126,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.11.1/otomi-2.11.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.11.1/otomi-2.11.1.tgz
     version: 2.11.1
   - apiVersion: v2
     appVersion: v2.11.0
@@ -152,10 +152,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.11.0/otomi-2.11.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.11.0/otomi-2.11.0.tgz
     version: 2.11.0
   - apiVersion: v2
     appVersion: v2.10.1
@@ -178,10 +178,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.10.1/otomi-2.10.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.10.1/otomi-2.10.1.tgz
     version: 2.10.1
   - apiVersion: v2
     appVersion: v2.10.0
@@ -204,10 +204,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.10.0/otomi-2.10.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.10.0/otomi-2.10.0.tgz
     version: 2.10.0
   - apiVersion: v2
     appVersion: v2.9.0
@@ -230,10 +230,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.9.0/otomi-2.9.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.9.0/otomi-2.9.0.tgz
     version: 2.9.0
   - apiVersion: v2
     appVersion: v2.8.2
@@ -256,10 +256,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.8.2/otomi-2.8.2.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.8.2/otomi-2.8.2.tgz
     version: 2.8.2
   - apiVersion: v2
     appVersion: v2.8.1
@@ -282,10 +282,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.8.1/otomi-2.8.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.8.1/otomi-2.8.1.tgz
     version: 2.8.1
   - apiVersion: v2
     appVersion: v2.8.0
@@ -308,10 +308,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.8.0/otomi-2.8.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.8.0/otomi-2.8.0.tgz
     version: 2.8.0
   - apiVersion: v2
     appVersion: v2.7.1
@@ -334,10 +334,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.7.1/otomi-2.7.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.7.1/otomi-2.7.1.tgz
     version: 2.7.1
   - apiVersion: v2
     appVersion: v2.7.0
@@ -360,10 +360,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.7.0/otomi-2.7.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.7.0/otomi-2.7.0.tgz
     version: 2.7.0
   - apiVersion: v2
     appVersion: v2.6.2
@@ -386,10 +386,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.6.2/otomi-2.6.2.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.6.2/otomi-2.6.2.tgz
     version: 2.6.2
   - apiVersion: v2
     appVersion: v2.6.1
@@ -412,10 +412,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.6.1/otomi-2.6.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.6.1/otomi-2.6.1.tgz
     version: 2.6.1
   - apiVersion: v2
     appVersion: v2.6.0
@@ -438,10 +438,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.6.0/otomi-2.6.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.6.0/otomi-2.6.0.tgz
     version: 2.6.0
   - apiVersion: v2
     appVersion: v2.5.0
@@ -464,10 +464,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.5.0/otomi-2.5.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.5.0/otomi-2.5.0.tgz
     version: 2.5.0
   - apiVersion: v2
     appVersion: v2.4.0
@@ -490,10 +490,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.4.0/otomi-2.4.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.4.0/otomi-2.4.0.tgz
     version: 2.4.0
   - apiVersion: v2
     appVersion: v2.3.1
@@ -516,10 +516,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.3.1/otomi-2.3.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.3.1/otomi-2.3.1.tgz
     version: 2.3.1
   - apiVersion: v2
     appVersion: v2.3.0
@@ -542,10 +542,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.3.0/otomi-2.3.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.3.0/otomi-2.3.0.tgz
     version: 2.3.0
   - apiVersion: v2
     appVersion: v2.2.0
@@ -568,10 +568,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.2.0/otomi-2.2.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.2.0/otomi-2.2.0.tgz
     version: 2.2.0
   - apiVersion: v2
     appVersion: v2.1.1
@@ -594,10 +594,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.1.1/otomi-2.1.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.1.1/otomi-2.1.1.tgz
     version: 2.1.1
   - apiVersion: v2
     appVersion: v2.1.0
@@ -620,10 +620,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.1.0/otomi-2.1.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.1.0/otomi-2.1.0.tgz
     version: 2.1.0
   - apiVersion: v2
     appVersion: v2.0.9
@@ -646,10 +646,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.0.9/otomi-2.0.9.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.0.9/otomi-2.0.9.tgz
     version: 2.0.9
   - apiVersion: v2
     appVersion: v2.0.8
@@ -672,10 +672,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.0.8/otomi-2.0.8.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.0.8/otomi-2.0.8.tgz
     version: 2.0.8
   - apiVersion: v2
     appVersion: v2.0.7
@@ -698,10 +698,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.0.7/otomi-2.0.7.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.0.7/otomi-2.0.7.tgz
     version: 2.0.7
   - apiVersion: v2
     appVersion: v2.0.6
@@ -724,10 +724,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.0.6/otomi-2.0.6.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.0.6/otomi-2.0.6.tgz
     version: 2.0.6
   - apiVersion: v2
     appVersion: v2.0.5
@@ -750,10 +750,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.0.5/otomi-2.0.5.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.0.5/otomi-2.0.5.tgz
     version: 2.0.5
   - apiVersion: v2
     appVersion: v2.0.4
@@ -776,10 +776,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.0.4/otomi-2.0.4.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.0.4/otomi-2.0.4.tgz
     version: 2.0.4
   - apiVersion: v2
     appVersion: v2.0.3
@@ -802,10 +802,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.0.3/otomi-2.0.3.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.0.3/otomi-2.0.3.tgz
     version: 2.0.3
   - apiVersion: v2
     appVersion: v2.0.2
@@ -828,10 +828,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.0.2/otomi-2.0.2.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.0.2/otomi-2.0.2.tgz
     version: 2.0.2
   - apiVersion: v2
     appVersion: v2.0.1
@@ -854,10 +854,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-v2.0.1/otomi-v2.0.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-v2.0.1/otomi-v2.0.1.tgz
     version: 2.0.1
   - apiVersion: v2
     appVersion: 2.0.0
@@ -880,10 +880,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-2.0.0/otomi-2.0.0.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-2.0.0/otomi-2.0.0.tgz
     version: 2.0.0
   - apiVersion: v2
     appVersion: v1.1.3
@@ -906,10 +906,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-1.0.5/otomi-1.0.5.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-1.0.5/otomi-1.0.5.tgz
     version: 1.0.5
   - apiVersion: v2
     appVersion: v1.1.2
@@ -932,10 +932,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-1.0.4/otomi-1.0.4.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-1.0.4/otomi-1.0.4.tgz
     version: 1.0.4
   - apiVersion: v2
     appVersion: v1.1.1
@@ -958,10 +958,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-1.0.3/otomi-1.0.3.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-1.0.3/otomi-1.0.3.tgz
     version: 1.0.3
   - apiVersion: v2
     appVersion: v1.1.0
@@ -984,10 +984,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-1.0.2/otomi-1.0.2.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-1.0.2/otomi-1.0.2.tgz
     version: 1.0.2
   - apiVersion: v2
     appVersion: v1.0.2
@@ -1010,10 +1010,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-1.0.1/otomi-1.0.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-1.0.1/otomi-1.0.1.tgz
     version: 1.0.1
   - apiVersion: v2
     appVersion: v0.26.13
@@ -1036,10 +1036,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.61/otomi-0.5.61.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.61/otomi-0.5.61.tgz
     version: 0.5.61
   - apiVersion: v2
     appVersion: v0.26.12
@@ -1062,10 +1062,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.60/otomi-0.5.60.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.60/otomi-0.5.60.tgz
     version: 0.5.60
   - apiVersion: v2
     appVersion: v0.26.11
@@ -1088,10 +1088,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.59/otomi-0.5.59.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.59/otomi-0.5.59.tgz
     version: 0.5.59
   - apiVersion: v2
     appVersion: v0.26.10
@@ -1114,10 +1114,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.58/otomi-0.5.58.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.58/otomi-0.5.58.tgz
     version: 0.5.58
   - apiVersion: v2
     appVersion: v0.26.9
@@ -1140,10 +1140,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.57/otomi-0.5.57.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.57/otomi-0.5.57.tgz
     version: 0.5.57
   - apiVersion: v2
     appVersion: v0.26.3
@@ -1166,10 +1166,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.56/otomi-0.5.56.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.56/otomi-0.5.56.tgz
     version: 0.5.56
   - apiVersion: v2
     appVersion: v1.0.0
@@ -1192,10 +1192,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.55/otomi-0.5.55.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.55/otomi-0.5.55.tgz
     version: 0.5.55
   - apiVersion: v2
     appVersion: v0.26.2
@@ -1218,10 +1218,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.54/otomi-0.5.54.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.54/otomi-0.5.54.tgz
     version: 0.5.54
   - apiVersion: v2
     appVersion: v0.26.1
@@ -1244,10 +1244,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.53/otomi-0.5.53.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.53/otomi-0.5.53.tgz
     version: 0.5.53
   - apiVersion: v2
     appVersion: v0.26.0
@@ -1270,10 +1270,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.52/otomi-0.5.52.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.52/otomi-0.5.52.tgz
     version: 0.5.52
   - apiVersion: v2
     appVersion: v0.25.0
@@ -1296,10 +1296,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.51/otomi-0.5.51.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.51/otomi-0.5.51.tgz
     version: 0.5.51
   - apiVersion: v2
     appVersion: v0.26.0
@@ -1322,10 +1322,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.50/otomi-0.5.50.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.50/otomi-0.5.50.tgz
     version: 0.5.50
   - apiVersion: v2
     appVersion: v0.24.1
@@ -1348,10 +1348,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.49/otomi-0.5.49.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.49/otomi-0.5.49.tgz
     version: 0.5.49
   - apiVersion: v2
     appVersion: v0.24.0
@@ -1374,10 +1374,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.48/otomi-0.5.48.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.48/otomi-0.5.48.tgz
     version: 0.5.48
   - apiVersion: v2
     appVersion: v0.22.3
@@ -1400,10 +1400,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.47/otomi-0.5.47.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.47/otomi-0.5.47.tgz
     version: 0.5.47
   - apiVersion: v2
     appVersion: v0.22.2
@@ -1426,10 +1426,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.46/otomi-0.5.46.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.46/otomi-0.5.46.tgz
     version: 0.5.46
   - apiVersion: v2
     appVersion: v0.22.1
@@ -1452,10 +1452,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.45/otomi-0.5.45.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.45/otomi-0.5.45.tgz
     version: 0.5.45
   - apiVersion: v2
     appVersion: v0.22.0
@@ -1478,10 +1478,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.44/otomi-0.5.44.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.44/otomi-0.5.44.tgz
     version: 0.5.44
   - apiVersion: v2
     appVersion: v0.21.6
@@ -1504,10 +1504,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.43/otomi-0.5.43.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.43/otomi-0.5.43.tgz
     version: 0.5.43
   - apiVersion: v2
     appVersion: v0.21.5
@@ -1530,10 +1530,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.42/otomi-0.5.42.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.42/otomi-0.5.42.tgz
     version: 0.5.42
   - apiVersion: v2
     appVersion: v0.21.4
@@ -1556,10 +1556,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.41/otomi-0.5.41.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.41/otomi-0.5.41.tgz
     version: 0.5.41
   - apiVersion: v2
     appVersion: v0.21.3
@@ -1582,10 +1582,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.40/otomi-0.5.40.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.40/otomi-0.5.40.tgz
     version: 0.5.40
   - apiVersion: v2
     appVersion: v0.21.2
@@ -1608,10 +1608,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.39/otomi-0.5.39.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.39/otomi-0.5.39.tgz
     version: 0.5.39
   - apiVersion: v2
     appVersion: v0.21.1
@@ -1634,10 +1634,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.38/otomi-0.5.38.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.38/otomi-0.5.38.tgz
     version: 0.5.38
   - apiVersion: v2
     appVersion: v0.21.0
@@ -1660,10 +1660,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.37/otomi-0.5.37.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.37/otomi-0.5.37.tgz
     version: 0.5.37
   - apiVersion: v2
     appVersion: v0.20.4
@@ -1686,10 +1686,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.36/otomi-0.5.36.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.36/otomi-0.5.36.tgz
     version: 0.5.36
   - apiVersion: v2
     appVersion: v0.20.3
@@ -1712,10 +1712,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.35/otomi-0.5.35.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.35/otomi-0.5.35.tgz
     version: 0.5.35
   - apiVersion: v2
     appVersion: v0.20.2
@@ -1738,10 +1738,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.34/otomi-0.5.34.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.34/otomi-0.5.34.tgz
     version: 0.5.34
   - apiVersion: v2
     appVersion: v0.20.1
@@ -1764,10 +1764,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.33/otomi-0.5.33.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.33/otomi-0.5.33.tgz
     version: 0.5.33
   - apiVersion: v2
     appVersion: v0.20.0
@@ -1790,10 +1790,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.32/otomi-0.5.32.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.32/otomi-0.5.32.tgz
     version: 0.5.32
   - apiVersion: v2
     appVersion: v0.19.1
@@ -1816,10 +1816,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.31/otomi-0.5.31.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.31/otomi-0.5.31.tgz
     version: 0.5.31
   - apiVersion: v2
     appVersion: v0.19.0
@@ -1842,10 +1842,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.30/otomi-0.5.30.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.30/otomi-0.5.30.tgz
     version: 0.5.30
   - apiVersion: v2
     appVersion: v0.18.1
@@ -1868,10 +1868,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.29/otomi-0.5.29.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.29/otomi-0.5.29.tgz
     version: 0.5.29
   - apiVersion: v2
     appVersion: v0.18.0
@@ -1894,10 +1894,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.28/otomi-0.5.28.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.28/otomi-0.5.28.tgz
     version: 0.5.28
   - apiVersion: v2
     appVersion: v0.17.1
@@ -1920,10 +1920,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.27/otomi-0.5.27.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.27/otomi-0.5.27.tgz
     version: 0.5.27
   - apiVersion: v2
     appVersion: v0.16.21
@@ -1946,10 +1946,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.26/otomi-0.5.26.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.26/otomi-0.5.26.tgz
     version: 0.5.26
   - apiVersion: v2
     appVersion: v0.16.20
@@ -1972,10 +1972,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.25/otomi-0.5.25.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.25/otomi-0.5.25.tgz
     version: 0.5.25
   - apiVersion: v2
     appVersion: v0.16.19
@@ -1998,10 +1998,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.24/otomi-0.5.24.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.24/otomi-0.5.24.tgz
     version: 0.5.24
   - apiVersion: v2
     appVersion: v0.16.18
@@ -2024,10 +2024,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.23/otomi-0.5.23.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.23/otomi-0.5.23.tgz
     version: 0.5.23
   - apiVersion: v2
     appVersion: v0.16.17
@@ -2050,10 +2050,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.22/otomi-0.5.22.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.22/otomi-0.5.22.tgz
     version: 0.5.22
   - apiVersion: v2
     appVersion: v0.16.16
@@ -2076,10 +2076,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.21/otomi-0.5.21.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.21/otomi-0.5.21.tgz
     version: 0.5.21
   - apiVersion: v2
     appVersion: v0.16.15
@@ -2102,10 +2102,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.20/otomi-0.5.20.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.20/otomi-0.5.20.tgz
     version: 0.5.20
   - apiVersion: v2
     appVersion: v0.16.14
@@ -2128,10 +2128,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.19/otomi-0.5.19.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.19/otomi-0.5.19.tgz
     version: 0.5.19
   - apiVersion: v2
     appVersion: v0.16.13
@@ -2154,10 +2154,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.18/otomi-0.5.18.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.18/otomi-0.5.18.tgz
     version: 0.5.18
   - apiVersion: v2
     appVersion: v0.16.12
@@ -2180,10 +2180,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.17/otomi-0.5.17.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.17/otomi-0.5.17.tgz
     version: 0.5.17
   - apiVersion: v2
     appVersion: v0.16.11
@@ -2206,10 +2206,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.16/otomi-0.5.16.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.16/otomi-0.5.16.tgz
     version: 0.5.16
   - apiVersion: v2
     appVersion: v0.16.10
@@ -2232,10 +2232,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.15/otomi-0.5.15.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.15/otomi-0.5.15.tgz
     version: 0.5.15
   - apiVersion: v2
     appVersion: v0.16.9
@@ -2258,10 +2258,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.14/otomi-0.5.14.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.14/otomi-0.5.14.tgz
     version: 0.5.14
   - apiVersion: v2
     appVersion: v0.16.8
@@ -2284,10 +2284,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.13/otomi-0.5.13.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.13/otomi-0.5.13.tgz
     version: 0.5.13
   - apiVersion: v2
     appVersion: v0.16.7
@@ -2310,10 +2310,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.11/otomi-0.5.11.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.11/otomi-0.5.11.tgz
     version: 0.5.12
   - apiVersion: v2
     appVersion: v0.16.7
@@ -2336,10 +2336,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.10/otomi-0.5.10.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.10/otomi-0.5.10.tgz
     version: 0.5.10
   - apiVersion: v2
     appVersion: v0.16.7
@@ -2362,10 +2362,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.9/otomi-0.5.9.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.9/otomi-0.5.9.tgz
     version: 0.5.9
   - apiVersion: v2
     appVersion: v0.16.6
@@ -2388,10 +2388,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.8/otomi-0.5.8.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.8/otomi-0.5.8.tgz
     version: 0.5.8
   - apiVersion: v2
     appVersion: v0.16.5
@@ -2414,10 +2414,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.7/otomi-0.5.7.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.7/otomi-0.5.7.tgz
     version: 0.5.7
   - apiVersion: v2
     appVersion: v0.16.4
@@ -2440,10 +2440,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.6/otomi-0.5.6.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.6/otomi-0.5.6.tgz
     version: 0.5.6
   - apiVersion: v2
     appVersion: v0.16.3
@@ -2466,10 +2466,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.5/otomi-0.5.5.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.5/otomi-0.5.5.tgz
     version: 0.5.5
   - apiVersion: v2
     appVersion: v0.16.2
@@ -2492,10 +2492,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.4/otomi-0.5.4.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.4/otomi-0.5.4.tgz
     version: 0.5.4
   - apiVersion: v2
     appVersion: v0.16.1
@@ -2518,10 +2518,10 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.3/otomi-0.5.3.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.3/otomi-0.5.3.tgz
     version: 0.5.3
   - apiVersion: v2
     appVersion: v0.24.2
@@ -2544,9 +2544,9 @@ entries:
     - tracing
     name: otomi
     sources:
-    - https://github.com/redkubes/otomi-core
+    - https://github.com/linode/apl-core
     type: application
     urls:
-    - https://github.com/redkubes/otomi-core/releases/download/otomi-0.5.1/otomi-0.5.1.tgz
+    - https://github.com/linode/apl-core/releases/download/otomi-0.5.1/otomi-0.5.1.tgz
     version: 0.5.1
 generated: "2024-06-20T13:37:03.79942657Z"
