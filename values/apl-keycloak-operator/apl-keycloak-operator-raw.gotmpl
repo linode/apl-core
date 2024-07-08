@@ -20,14 +20,6 @@
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
 resources:
-{{- if $v._derived.untrustedCA }}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: custom-ca
-    data:
-      custom-ca-certificates.crt: {{ .Values._derived.caCert | b64enc }}
-{{- end }}
   - name: apl-keycloak-operator-secret
     apiVersion: v1
     kind: Secret

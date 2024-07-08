@@ -11,16 +11,16 @@ kind: ClusterRole
 metadata:
   name: {{ include "apl-keycloak-operator.fullname" . }}-edit-keycloak
 rules:
-- apiGroups: [""]
+- apiGroups: ["apl-keycloak-operator"]
   resources: ["pods"]
   verbs: ["get", "watch", "list"]
-- apiGroups: [""]
+- apiGroups: ["apl-keycloak-operator"]
   resources: ["namespaces"]
   verbs: ["get", "watch", "list"]
-- apiGroups: [""]
+- apiGroups: ["apl-keycloak-operator"]
   resources: ["configmaps"]
   verbs: ["get", "watch", "list"]
-- apiGroups: [""]
+- apiGroups: ["apl-keycloak-operator"]
   resources: ["secrets"]
   verbs: ["get", "watch", "list"]
 ---

@@ -31,7 +31,7 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if and .Values.configs (hasKey .Values.configs "tls") (hasKey .Values.configs.tls "certificates") }}
+          {{- if and .Values.configs (not (empty .Values.configs.tls.certificates)) }}
           command: ['/bin/sh', '-c']
           args: ['export NODE_EXTRA_CA_CERTS=/app/config/tls/certificates.crt && npm run operator:keycloak']
           env:
@@ -40,10 +40,6 @@ spec:
           {{- else }}
           command: ['npm', 'run', 'operator:keycloak']
           {{- end }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
