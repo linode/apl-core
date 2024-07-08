@@ -122,7 +122,7 @@ jobs:
         id: prepare_chart
         run: |
           # Install and update helm repo
-          helm repo add otomi https://otomi.io/apl-core
+          helm repo add apl https://linode.github.io/apl-core
           helm repo update
 
           # Retrieve the app version from package.json
@@ -147,18 +147,18 @@ jobs:
           )
 
           # Update Chart.yaml and values.yaml with the new app version
-          sed -i "s/0.0.0-chart-version/$app_version/g" chart/otomi/Chart.yaml
-          sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/otomi/Chart.yaml
+          sed -i "s/0.0.0-chart-version/$app_version/g" chart/apl/Chart.yaml
+          sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/apl/Chart.yaml
 
           echo "Chart and values files updated successfully with version $app_version"
 
           # Copy readme from repo into the charts and add tpl/chart-values.md
-          cp README.md chart/otomi/
-          printf "\n\n" >>chart/otomi/README.md
-          cat tpl/chart-values.md >>chart/otomi/README.md
+          cp README.md chart/apl/
+          printf "\n\n" >>chart/apl/README.md
+          cat tpl/chart-values.md >>chart/apl/README.md
 
           # Generate schema
-          npx js-yaml values-schema.yaml > chart/otomi/values.schema.json
+          npx js-yaml values-schema.yaml > chart/apl/values.schema.json
 
           # Set the global id for git as it seems needed by the next step when a custom image is used
           git config --global user.email ${{ env.BOT_EMAIL }}
@@ -191,7 +191,7 @@ jobs:
       - name: Pulling the helm chart
         run: |
           # Install and update helm repo
-          helm repo add otomi https://otomi.io/apl-core
+          helm repo add apl https://linode.github.io/apl-core
           helm repo update
 
           # Get latest version of otomi
