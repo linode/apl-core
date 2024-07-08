@@ -283,8 +283,8 @@ jobs:
         run: |
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
-            --docker-username=${{ env.GIT_USER }} \
-            --docker-password='${{ secrets.NPM_TOKEN }}'
+            --docker-username=${{ env.BOT_USERNAME }} \
+            --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
         uses: actions/checkout@v4
       - name: Prepare Otomi chart
@@ -411,8 +411,8 @@ jobs:
         run: |
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
-            --docker-username=${{ env.GIT_USER }} \
-            --docker-password='${{ secrets.NPM_TOKEN }}'
+            --docker-username=${{ env.BOT_USERNAME }} \
+            --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
         uses: actions/checkout@v4
       - name: Prepare Otomi chart
@@ -572,8 +572,8 @@ jobs:
         run: |
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
-            --docker-username=${{ env.GIT_USER }} \
-            --docker-password='${{ secrets.NPM_TOKEN }}'
+            --docker-username=${{ env.BOT_USERNAME }} \
+            --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
         uses: actions/checkout@v4
       - name: Prepare Otomi chart
