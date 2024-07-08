@@ -10,16 +10,16 @@ Otomi has been acquired by <a href="https://www.linode.com/otomi/">Akamai</a>. W
 </h3>
 
 <p align="center">
-  <a href="https://github.com/redkubes/otomi-core/releases/"><img alt="Releases" src="https://img.shields.io/github/release-date/redkubes/otomi-core?label=latest%20release" /></a>
-  <a href="https://img.shields.io/github//redkubes/otomi-core/actions/workflows/main.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/redkubes/otomi-core/main.yml" /></a>
-  <a href="https://img.shields.io/github/last-commit/redkubes/otomi-core"><img alt="Last commit" src="https://img.shields.io/github/last-commit/redkubes/otomi-core" /></a>
+  <a href="https://github.com/linode/apl-core/releases/"><img alt="Releases" src="https://img.shields.io/github/release-date/linode/apl-core?label=latest%20release" /></a>
+  <a href="https://img.shields.io/github//linode/apl-core/actions/workflows/main.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/linode/apl-core/main.yml" /></a>
+  <a href="https://img.shields.io/github/last-commit/linode/apl-core"><img alt="Last commit" src="https://img.shields.io/github/last-commit/linode/apl-core" /></a>
   <a href="https://img.shields.io/crates/l/ap"><img alt="License" src="https://img.shields.io/crates/l/ap" /></a>
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
   <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
   <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/badge/slack--channel-blue?logo=slack"></a>
 </p>
 
-<p align="center"><img src="https://github.com/redkubes/otomi-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
+<p align="center"><img src="https://github.com/linode/apl-core/blob/main/docs/img/otomi-console.png/?raw=true" width="100%" align="center" alt="Otomi integrated applications"></p>
 
 <h4 align="center">
 Otomi turns any Kubernetes cluster into an Application Platform to provide paved roads from code to production
@@ -37,12 +37,12 @@ To install Otomi, make sure to have a K8s cluster running with at least:
 - A default storage class configured
 - When using the `custom` provider, make sure the K8s LoadBalancer Service created by `Otomi` can obtain an external IP (using a cloud load balancer or MetalLB)
 
-> **_NOTE:_**  Install Otomi with DNS to unlock it's full potential. Check [otomi.io](https://otomi.io) for more info.
+> **_NOTE:_** Install Otomi with DNS to unlock it's full potential. Check [otomi.io](https://otomi.io) for more info.
 
 Add the Helm repository:
 
 ```bash
-helm repo add otomi https://otomi.io/otomi-core
+helm repo add otomi https://otomi.io/apl-core
 helm repo update
 ```
 
@@ -135,7 +135,7 @@ Otomi open source consists out of the following projects:
 - Otomi Core (this project): The heart of Otomi
 - [Otomi Tasks](https://github.com/redkubes/otomi-tasks): Autonomous jobs orchestrated by Otomi Core
 - [Otomi Clients](https://github.com/redkubes/otomi-clients): Factory to build and publish openapi clients used in by otomi-tasks
-- [Otomi Charts](https://github.com/redkubes/otomi-charts): Quickstart Helm templates offered in the Catalog
+- [Otomi Charts](https://github.com/linode/apl-charts): Quickstart Helm templates offered in the Catalog
 
 ## Documentation
 
@@ -147,15 +147,15 @@ If you wish to contribute please read our [Contributor Code of Conduct](https://
 
 If you want to say **thank you** or/and support the active development of Otomi:
 
-- [Star](https://github.com/redkubes/otomi-core) the Otomi project on Github
+- [Star](https://github.com/linode/apl-core) the Otomi project on Github
 - Feel free to write articles about the project on [dev.to](https://dev.to/), [medium](https://medium.com/) or on your personal blog and share your experiences
 
 This project exists thanks to all the people who have contributed
 
-<a href="https://github.com/redkubes/otomi-core/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=redkubes/otomi-core" />
+<a href="https://github.com/linode/apl-core/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=linode/apl-core" />
 </a>
 
 ## License
 
-Otomi is licensed under the [Apache 2.0 License](https://github.com/redkubes/otomi-core/blob/main/LICENSE).
+Otomi is licensed under the [Apache 2.0 License](https://github.com/linode/apl-core/blob/main/LICENSE).
