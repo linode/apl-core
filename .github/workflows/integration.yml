@@ -125,7 +125,7 @@ env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: redkubes/otomi-core
   REPO: otomi/core
-  GIT_USER: redkubesbot
+  GIT_USER: svcAPLBot
   SCALEWAY_NODE_TYPE: PRO2-M
   SCALEWAY_NODE_POOL_MIN_SIZE: 3
   SCALEWAY_VPC_ID: e1019b0c-7c7d-49ef-86e4-b02f55b2e0d3
