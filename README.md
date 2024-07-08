@@ -31,7 +31,12 @@ To install APL, make sure to have a Kubernetes cluster running with at least:
 - A default storage class configured
 - When using the `custom` provider, make sure the K8s LoadBalancer Service created by APL can obtain an external IP (using a cloud load balancer or MetalLB)
 
-> **_NOTE:_** Install APL with DNS to unlock it's full potential. Check [here](https://otomi.io) for more info.
+> [!NOTE]  
+> The transition from Otomi to APL is still in progress. Installing APL will use the latest Otomi release (v2.11.5).
+
+> [!TIP]  
+> Install APL with DNS to unlock it's full potential. Check [here](https://otomi.io) for more info.
+
 
 Add the Helm repository:
 
