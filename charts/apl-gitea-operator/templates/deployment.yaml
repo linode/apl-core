@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "gitea-app-operator.fullname" . }}
+  name: {{ include "apl-gitea-operator.fullname" . }}
   labels:
-    {{- include "gitea-app-operator.labels" . | nindent 4 }}
+    {{- include "apl-gitea-operator.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "gitea-app-operator.selectorLabels" . | nindent 6 }}
+      {{- include "apl-gitea-operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,13 +16,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "gitea-app-operator.selectorLabels" . | nindent 8 }}
+        {{- include "apl-gitea-operator.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "gitea-app-operator.serviceAccountName" . }}
+      serviceAccountName: {{ include "apl-gitea-operator.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

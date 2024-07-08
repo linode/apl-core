@@ -9,22 +9,22 @@
 {{- $teamConfig := $teamConfig | toJson }}
 
 resources:
-  - name: gitea-app-operator-cm
+  - name: apl-gitea-operator-cm
     apiVersion: v1
     kind: ConfigMap
     metadata:
-      name: gitea-app-operator-cm
-      namespace: gitea-app
+      name: apl-gitea-operator-cm
+      namespace: apl-gitea-operator
     data:
       hasArgocd: "{{ $v.apps.argocd.enabled | toString }}"
       domainSuffix: "{{ $v.cluster.domainSuffix }}"
       teamConfig: {{ $teamConfig | toJson }}
-  - name: gitea-app-operator-secret
+  - name: apl-gitea-operator-secret
     apiVersion: v1
     kind: Secret
     metadata:
-      name: gitea-app-operator-secret
-      namespace: gitea-app
+      name: apl-gitea-operator-secret
+      namespace: apl-gitea-operator
     data:
       giteaPassword: {{ $g.adminPassword | b64enc }}
       oidcClientId: {{ $k.idp.clientID | b64enc }}
