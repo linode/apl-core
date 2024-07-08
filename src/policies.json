@@ -1,0 +1,145 @@
+{
+  "allowed-image-repositories": {
+    "action": "Audit",
+    "customValues": [],
+    "id": "allowed-image-repositories",
+    "severity": "medium"
+  },
+  "allowed-repo": {
+    "action": "Audit",
+    "id": "allowed-repo",
+    "severity": "medium"
+  },
+  "disallow-capabilities": {
+    "action": "Audit",
+    "customValues": [
+      "AUDIT_WRITE",
+      "CHOWN",
+      "DAC_OVERRIDE",
+      "FOWNER",
+      "FSETID",
+      "KILL",
+      "MKNOD",
+      "NET_BIND_SERVICE",
+      "SETFCAP",
+      "SETGID",
+      "SETPCAP",
+      "SETUID",
+      "SYS_CHROOT",
+      "''"
+    ],
+    "id": "disallow-capabilities",
+    "severity": "medium"
+  },
+  "disallow-capabilities-strict": {
+    "action": "Audit",
+    "id": "disallow-capabilities-strict",
+    "severity": "medium"
+  },
+  "disallow-host-namespaces": {
+    "action": "Audit",
+    "id": "disallow-host-namespaces",
+    "severity": "medium"
+  },
+  "disallow-host-path": {
+    "action": "Audit",
+    "id": "disallow-host-path",
+    "severity": "medium"
+  },
+  "disallow-host-ports": {
+    "action": "Audit",
+    "id": "disallow-host-ports",
+    "severity": "medium"
+  },
+  "disallow-host-process": {
+    "action": "Audit",
+    "id": "disallow-host-process",
+    "severity": "medium"
+  },
+  "disallow-latest-tag": {
+    "action": "Audit",
+    "id": "disallow-latest-tag",
+    "severity": "medium"
+  },
+  "disallow-privilege-escalation": {
+    "action": "Audit",
+    "id": "disallow-privilege-escalation",
+    "severity": "medium"
+  },
+  "disallow-privileged-containers": {
+    "action": "Audit",
+    "id": "disallow-privileged-containers",
+    "severity": "medium"
+  },
+  "disallow-proc-mount": {
+    "action": "Audit",
+    "id": "disallow-proc-mount",
+    "severity": "medium"
+  },
+  "disallow-selinux": {
+    "action": "Audit",
+    "id": "disallow-selinux",
+    "severity": "medium"
+  },
+  "require-limits": {
+    "action": "Audit",
+    "id": "require-limits",
+    "severity": "medium"
+  },
+  "require-requests": {
+    "action": "Audit",
+    "id": "require-requests",
+    "severity": "medium"
+  },
+  "require-run-as-non-root-user": {
+    "action": "Audit",
+    "id": "require-run-as-non-root-user",
+    "severity": "medium"
+  },
+  "require-run-as-nonroot": {
+    "action": "Audit",
+    "id": "require-run-as-nonroot",
+    "severity": "medium"
+  },
+  "require-labels": {
+    "action": "Audit",
+    "id": "require-labels",
+    "severity": "medium",
+    "customValues": ["otomi.io/app"]
+  },
+  "restrict-apparmor-profiles": {
+    "action": "Audit",
+    "id": "restrict-apparmor-profiles",
+    "severity": "medium"
+  },
+  "restrict-seccomp": {
+    "action": "Audit",
+    "id": "restrict-seccomp",
+    "severity": "medium"
+  },
+  "restrict-seccomp-strict": {
+    "action": "Audit",
+    "id": "restrict-seccomp-strict",
+    "severity": "medium"
+  },
+  "restrict-sysctls": {
+    "action": "Audit",
+    "id": "restrict-sysctls",
+    "severity": "medium"
+  },
+  "restrict-volume-types": {
+    "action": "Audit",
+    "customValues": [
+      "configMap",
+      "csi",
+      "downwardAPI",
+      "emptyDir",
+      "ephemeral",
+      "persistentVolumeClaim",
+      "projected",
+      "secret"
+    ],
+    "id": "restrict-volume-types",
+    "severity": "medium"
+  }
+}

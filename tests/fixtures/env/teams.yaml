@@ -9,6 +9,8 @@ teamConfig:
             access:
                 - shell
                 - downloadCertificateAuthority
+            policies:
+                - edit policies
     demo:
         alerts:
             email: {}
@@ -39,6 +41,8 @@ teamConfig:
                 - ingress
             team:
                 - alerts
+            policies:
+                - edit policies
     dev:
         id: dev
         managedMonitoring:
@@ -49,3 +53,5 @@ teamConfig:
             access:
                 - shell
                 - downloadCertificateAuthority
+            policies:
+                - edit policies

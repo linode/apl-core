@@ -42,6 +42,9 @@ interface Change {
     [mutation: string]: string
   }>
   fileAdditions?: Array<string>
+  bulkAdditions?: Array<{
+    [mutation: string]: string
+  }>
   networkPoliciesMigration?: boolean
 }
 
@@ -276,6 +279,12 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
+const bulkAddition = (path: string, values: any, filePath: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const val = require(filePath)
+  setAtPath(path, values, val)
+}
+
 /**
  * Applies changes from configuration.
  *
@@ -306,6 +315,7 @@ export const applyChanges = async (
   for (const c of changes) {
     c.deletions?.forEach((entry) => unsetAtPath(entry, values))
     c.additions?.forEach((entry: any) => each(entry, (val, path) => setAtPath(path, values, val)))
+    c.bulkAdditions?.forEach((entry) => each(entry, (filePath, path) => bulkAddition(path, values, filePath)))
     c.relocations?.forEach((entry) => each(entry, (newName, oldName) => moveGivenJsonPath(values, oldName, newName)))
     if (c.mutations)
       // 'for const of' is used here to allow await in loop
