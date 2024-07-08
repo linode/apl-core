@@ -327,7 +327,7 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
-          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml
             --values values.yaml \
@@ -455,7 +455,7 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
-          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml
             --values values.yaml \
@@ -616,7 +616,7 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
-          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml
             --values values.yaml \
