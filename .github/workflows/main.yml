@@ -51,6 +51,7 @@ jobs:
     steps:
       - name: Push to docker hub
         run: |
+          set -u
           TAG=${GITHUB_REF##*/}
           docker login ghcr.io -u $BOT_USERNAME -p ${{ secrets.BOT_TOKEN }}
           image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
