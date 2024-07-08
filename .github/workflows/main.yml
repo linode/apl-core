@@ -16,14 +16,16 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
+      BOT_EMAIL: ${{ env.BOT_EMAIL }}
+      BOT_USERNAME: ${{ env.BOT_USERNAME }}
     steps:
       - name: Set env
         run: |
           tag=${GITHUB_REF##*/}
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> $GITHUB_ENV
-          git config --global user.email ${{ env.BOT_EMAIL }}
-          git config --global user.name ${{ env.BOT_USERNAME }}
+          git config --global user.email $BOT_EMAIL
+          git config --global user.name $BOT_USERNAME
 
       - name: Checkout
         uses: actions/checkout@v4
