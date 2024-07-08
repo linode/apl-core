@@ -133,6 +133,8 @@ env:
   DIGITALOCEAN_NODE_POOL_MIN_SIZE: 3
   CHECK_CONTEXT: continuous-integration/integration-test
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
 
 jobs:
   preprocess-input:
