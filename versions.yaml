@@ -1,4 +1,4 @@
 api: main
-console: apps-linode-styling
+console: main
 tasks: fc-feat-gitea-operator
 tools: 1.6.4

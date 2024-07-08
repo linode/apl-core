@@ -19,4 +19,4 @@ keywords:
   - metrics
   - tracing
 sources:
-  - https://github.com/redkubes/otomi-core
+  - https://github.com/linode/apl-core

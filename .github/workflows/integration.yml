@@ -123,7 +123,7 @@ on:
         default: 'yes'
 env:
   CACHE_REGISTRY: ghcr.io
-  CACHE_REPO: redkubes/otomi-core
+  CACHE_REPO: linode/apl-core
   REPO: otomi/core
   GIT_USER: svcAPLBot
   SCALEWAY_NODE_TYPE: PRO2-M
