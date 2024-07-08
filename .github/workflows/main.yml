@@ -52,11 +52,11 @@ jobs:
       - name: Push to docker hub
         run: |
           TAG=${GITHUB_REF##*/}
-          echo ${{ secrets.BOT_TOKEN }} | docker login ghcr.io -u $BOT_USERNAME --password-stdin
+          docker login ghcr.io -u $BOT_USERNAME -p ${{ secrets.BOT_TOKEN }}
           image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
           docker pull $image
           docker tag $image $REPO:$TAG
-          echo ${{ secrets.DOCKERHUB_OTOMI_TOKEN }} | docker login ghcr.io -u otomi --password-stdin
+          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
           docker push $REPO:$TAG
       - name: Show me the logic
         run: |
