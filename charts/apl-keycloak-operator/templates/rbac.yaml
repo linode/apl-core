@@ -11,16 +11,16 @@ kind: ClusterRole
 metadata:
   name: {{ include "apl-keycloak-operator.fullname" . }}-edit-keycloak
 rules:
-- apiGroups: ["apl-keycloak-operator"]
+# Allows the operator to read pod information. This is necessary for monitoring pod statuses and gathering logs for debugging.
+- apiGroups: [""]
   resources: ["pods"]
   verbs: ["get", "watch", "list"]
-- apiGroups: ["apl-keycloak-operator"]
-  resources: ["namespaces"]
-  verbs: ["get", "watch", "list"]
-- apiGroups: ["apl-keycloak-operator"]
+# Enables the operator to manage ConfigMaps. This is essential for reading configuration data that the operator might need to function correctly.
+- apiGroups: [""]
   resources: ["configmaps"]
   verbs: ["get", "watch", "list"]
-- apiGroups: ["apl-keycloak-operator"]
+# Grants access to secrets. This is crucial for the operator to access sensitive information such as credentials, which might be stored in secrets.
+- apiGroups: [""]
   resources: ["secrets"]
   verbs: ["get", "watch", "list"]
 ---
