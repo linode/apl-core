@@ -28,6 +28,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ include "apl-keycloak-operator.fullname" . }}-edit-keycloak
+  namespace: "apl-keycloak-operator"
 subjects:
 - kind: ServiceAccount
   namespace: {{ .Release.Namespace }}
