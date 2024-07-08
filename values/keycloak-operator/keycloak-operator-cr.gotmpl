@@ -1,5 +1,5 @@
-{{- $pinnedConsoleVersion := "v1.4.0" }}
 {{- $v := .Values }}
+{{- $pinnedConsoleVersion := $v.versions.console }}
 {{- $k := $v | get "apps.keycloak" }}
 
 apiVersion: k8s.keycloak.org/v2alpha1
