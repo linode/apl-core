@@ -2644,6 +2644,8 @@ properties:
                 $ref: '#/definitions/resources'
               memcached:
                 $ref: '#/definitions/resources'
+              metricsGenerator:
+                $ref: '#/definitions/resources'
           autoscaling:
             properties:
               ingester:
@@ -3077,7 +3079,7 @@ properties:
                   external-dns:
                     title: YAML for external-dns.
                     type: object
-                    description: 'The provider config as provided here: https://github.com/redkubes/otomi-core/blob/main/charts/external-dns/values.yaml'
+                    description: 'The provider config as provided here: https://github.com/linode/apl-core/blob/main/charts/external-dns/values.yaml'
                   cert-manager:
                     title: YAML for cert-manager.
                     type: object
