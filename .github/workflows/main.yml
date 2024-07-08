@@ -41,7 +41,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          args: --SKIP_TESTS='true'
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
