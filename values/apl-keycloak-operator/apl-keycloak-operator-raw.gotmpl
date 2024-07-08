@@ -24,7 +24,7 @@ resources:
     apiVersion: v1
     kind: Secret
     metadata:
-      name: keycloak-admin
+      name: apl-keycloak-operator-secret
       namespace: apl-keycloak-operator
     data:
       KEYCLOAK_ADMIN: {{ .Values.apps.keycloak.adminUsername | b64enc }}
@@ -38,7 +38,7 @@ resources:
     apiVersion: v1
     kind: ConfigMap
     metadata:
-      name: keycloak-cm
+      name: apl-keycloak-operator-cm
       namespace: apl-keycloak-operator
     data:
       FEAT_EXTERNAL_IDP: "{{ $v.otomi.hasExternalIDP | toString }}"
