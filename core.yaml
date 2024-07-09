@@ -23,8 +23,10 @@ k8s:
       disablePolicyChecks: true
     - name: harbor
       app: harbor
+    - name: apl-harbor-operator
+      disableIstioInjection: true
     - name: gitea
-    - name: gitea-operator
+    - name: apl-gitea-operator
       disableIstioInjection: true
     - name: grafana
       app: grafana

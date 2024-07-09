@@ -181,15 +181,6 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
-          gitea-operator:
-            resources:
-              operator:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
           grafana:
             enabled: false
           harbor:
@@ -449,6 +440,33 @@ environments:
             editorInactivityTimeout: 1
           otomi-console: {}
           otomi-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+          apl-harbor-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+          apl-gitea-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+          apl-keycloak-operator:
             resources:
               operator:
                 requests:
