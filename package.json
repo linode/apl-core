@@ -130,7 +130,7 @@
     "eslint:fix": "eslint --fix --ext ts .",
     "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",
     "format:fix": "prettier --write \"**/*.{json,md,yml,yaml}\"",
-    "gen:chart-schema": "js-yaml values-schema.yaml > chart/otomi/values.schema.json",
+    "gen:chart-schema": "js-yaml values-schema.yaml > chart/apl/values.schema.json",
     "lint": "run-p spellcheck lint:hf lint:ts lint:types",
     "lint-staged": "lint-staged",
     "lint:fix": "prettier --write tests/**/*.yaml --write '.values/env/**/*.yaml' && npm run lint:ts:fix",
