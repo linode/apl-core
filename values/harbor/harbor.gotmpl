@@ -220,7 +220,7 @@ persistence:
       region: {{ $obj.linode.region }}
       secure: true
       v4auth: true
-      chunksize: "5242880"  
+      chunksize: "1572864"  
       {{- end }}
     {{- else }}
     type: filesystem
