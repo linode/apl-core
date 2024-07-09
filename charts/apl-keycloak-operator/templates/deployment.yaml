@@ -60,7 +60,7 @@ spec:
       {{- end }}
       volumes:
           - name: tls-certs
-            configMap:
+            secret:
               name: keycloak-operator-tls-certs-cm
           - name: operator-config-kc
             configMap:
