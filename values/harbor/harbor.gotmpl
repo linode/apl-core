@@ -215,9 +215,12 @@ persistence:
       {{- if eq $obj.type "linode" }}
       bucket: {{ $bu.harbor }}
       regionendpoint: https://{{ $obj.linode.region }}.linodeobjects.com
-      accesskey: {{ $obj.linode.accessKeyId }}                      
+      accesskey: {{ $obj.linode.accessKeyId }}               
       secretkey: {{ $obj.linode.secretAccessKey }}
-      region: {{ $obj.linode.region }}                   
+      region: {{ $obj.linode.region }}
+      secure: true
+      v4auth: true
+      chunksize: "5242880"  
       {{- end }}
     {{- else }}
     type: filesystem
@@ -279,11 +282,11 @@ registry:
         {{- toYaml . | nindent 6 }}
       {{- else }}
       limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
         cpu: 100m
         memory: 128Mi
-      requests:
-        cpu: 50m
-        memory: 64Mi
       {{- end }}
   controller:
     image:
