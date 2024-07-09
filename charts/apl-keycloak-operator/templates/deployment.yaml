@@ -31,12 +31,12 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if and .Values.configs (not (empty .Values.configs.tls.certificates)) }}
+          {{- if and .Values.configs (not (empty .Values.configs.tls.certificates.caCert)) }}
           command: ['/bin/sh', '-c']
-          args: ['export NODE_EXTRA_CA_CERTS=/app/config/tls/certificates.crt && npm run operator:keycloak']
+          args: ['export NODE_EXTRA_CA_CERTS=/app/config/tls/certificates/caCert.crt && npm run operator:keycloak']
           env:
           - name: NODE_EXTRA_CA_CERTS
-            value: "/app/config/tls/certificates.crt"
+            value: "/app/config/tls/certificates/caCert"
           {{- else }}
           command: ['npm', 'run', 'operator:keycloak']
           {{- end }}
@@ -61,7 +61,7 @@ spec:
       volumes:
           - name: tls-certs
             secret:
-              name: keycloak-operator-tls-certs-cm
+              secretName: keycloak-operator-tls-certs-cm
           - name: operator-config-kc
             configMap:
               name: apl-keycloak-operator-cm
