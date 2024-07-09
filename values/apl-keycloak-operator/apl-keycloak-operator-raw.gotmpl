@@ -20,8 +20,7 @@
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
 resources:
-  - name: apl-keycloak-operator-secret
-    apiVersion: v1
+  - apiVersion: v1
     kind: Secret
     metadata:
       name: apl-keycloak-operator-secret
@@ -34,8 +33,7 @@ resources:
       IDP_CLIENT_ID: {{ $oi.clientID | b64enc}}
       IDP_CLIENT_SECRET: {{ $oi.clientSecret | b64enc }}
       {{- end }}
-  - name: apl-keycloak-operator-cm
-    apiVersion: v1
+  - apiVersion: v1
     kind: ConfigMap
     metadata:
       name: apl-keycloak-operator-cm
