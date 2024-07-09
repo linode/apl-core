@@ -218,9 +218,10 @@ persistence:
       accesskey: {{ $obj.linode.accessKeyId }}               
       secretkey: {{ $obj.linode.secretAccessKey }}
       region: {{ $obj.linode.region }}
+      encrypt: false
       secure: true
       v4auth: true
-      chunksize: "1572864"  
+      chunksize: "5242880"
       {{- end }}
     {{- else }}
     type: filesystem
