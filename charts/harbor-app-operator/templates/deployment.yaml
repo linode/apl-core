@@ -43,10 +43,6 @@ spec:
               value: "{{ .Values.env.HARBOR_OPERATOR_NAMESPACE }}"
             - name: HARBOR_SYSTEM_NAMESPACE
               value: "{{ .Values.env.HARBOR_SYSTEM_NAMESPACE }}"
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
