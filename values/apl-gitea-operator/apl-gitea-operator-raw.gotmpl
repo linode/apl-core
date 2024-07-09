@@ -9,8 +9,7 @@
 {{- $teamConfig := $teamConfig | toJson }}
 
 resources:
-  - name: apl-gitea-operator-cm
-    apiVersion: v1
+  - apiVersion: v1
     kind: ConfigMap
     metadata:
       name: apl-gitea-operator-cm
@@ -19,8 +18,7 @@ resources:
       hasArgocd: "{{ $v.apps.argocd.enabled | toString }}"
       domainSuffix: "{{ $v.cluster.domainSuffix }}"
       teamConfig: {{ $teamConfig | toJson }}
-  - name: apl-gitea-operator-secret
-    apiVersion: v1
+  - apiVersion: v1
     kind: Secret
     metadata:
       name: apl-gitea-operator-secret
