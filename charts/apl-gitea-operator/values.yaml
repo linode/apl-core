@@ -13,8 +13,6 @@ image:
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
-service:
-  port: 8080
 
 # Service Account requires access to gitea pod to edit the oauth through CLI commands
 serviceAccount:
