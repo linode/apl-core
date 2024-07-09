@@ -69,10 +69,10 @@ spec:
   {{- end }}
   {{- if eq .Values.backup.type "s3" }}
   backup:
-  retentionPolicy: {{ .Values.backup.retentionPolicy }}
+    retentionPolicy: {{ .Values.backup.retentionPolicy }}
     barmanObjectStore:
       destinationPath: s3://{{ .Values.backup.s3.bucket }}
-      endpointURL: {{ .Values.backup.endpointURL }}
+      endpointURL: {{ .Values.backup.s3.endpointURL }}
       s3Credentials:
         accessKeyId:
           name: s3-creds

@@ -9,3 +9,5 @@ teamConfig:
             access:
                 - shell
                 - downloadCertificateAuthority
+            policies:
+                - edit policies

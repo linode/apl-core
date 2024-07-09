@@ -44,10 +44,6 @@ environments:
               username: otomi-admin
           external-dns:
             logLevel: info
-          external-secrets:
-            enabled: false
-            logLevel: info
-            pollingInterval: 60000
           falco:
             enabled: false
             falcoSidekick:
@@ -59,7 +55,6 @@ environments:
                   - macro: k8s_containers
                     condition: (
                         container.image.repository in (
-                          docker.io/openpolicyagent/gatekeeper,
                           docker.io/velero/velero,
                           docker.io/weaveworks/kured,
                           k8s.gcr.io/kube-state-metrics/kube-state-metrics,
@@ -183,16 +178,6 @@ environments:
                 limits:
                   cpu: 50m
                   memory: 32Mi
-          gatekeeper:
-            enabled: false
-            auditFromCache: false
-            auditInterval: 60
-            constraintViolationsLimit: 20
-            disableValidatingWebhook: true
-            emitAdmissionEvents: false
-            emitAuditEvents: false
-            logLevel: INFO
-            replicas: 2
           gitea:
             enabled: true
             adminUsername: otomi-admin
@@ -317,6 +302,38 @@ environments:
                 limits:
                   cpu: 50m
                   memory: 32Mi
+          kyverno:
+            enabled: false
+            mode: DevTest
+            resources:
+              admissionController:
+                requests:
+                  cpu: 200m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 512Mi
+              cleanupController:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 512Mi
+              backgroundController:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 512Mi
+              reportsController:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: 1
+                  memory: 512Mi
           tekton:
             resources:
               dashboard:
@@ -427,7 +444,6 @@ environments:
                 cpu: 1
                 memory: 1Gi
           oauth2-proxy: {}
-          opa-exporter: {}
           oauth2-proxy-redis: {}
           otomi-api:
             editorInactivityTimeout: 1
@@ -585,19 +601,19 @@ environments:
             enabled: false
             resources:
               clusterOperator:
-                  requests:
-                      cpu: 100m
-                      memory: 128Mi
-                  limits:
-                      cpu: 900m
-                      memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 900m
+                  memory: 512Mi
               msgTopologyOperator:
-                  requests:
-                      cpu: 100m
-                      memory: 128Mi
-                  limits:
-                      cpu: 900m
-                      memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 900m
+                  memory: 512Mi
           trivy:
             enabled: false
             operator:
@@ -617,15 +633,6 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 512Mi
-          vault:
-            enabled: false
-            resources:
-              limits:
-                cpu: '1000m'
-                memory: 512Mi
-              requests:
-                cpu: 500m
-                memory: 256Mi
           velero:
             enabled: false
             restic:
@@ -670,7 +677,6 @@ environments:
               requests:
                 cpu: 50m
                 memory: 256Mi
-            postgresqlPassword: {{ randAlphaNum 20 }}
         platformBackups:
           database:
             harbor:
@@ -683,8 +689,6 @@ environments:
             keycloak:
               enabled: false
             harbor:
-              enabled: false
-            vault:
               enabled: false
             argo:
               enabled: false

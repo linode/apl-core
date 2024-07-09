@@ -1,0 +1,116 @@
+# Default values for Otomi.
+# This is a YAML-formatted file.
+# Declare variables to be passed into chart templates.
+
+cluster: {}
+
+  ## Needs to be set when hasExternalDNS is set to true
+  ##
+  # domainSuffix: ''
+
+  ## Set the name of your cluster
+  ## 
+  # name: 'dev'
+
+  ## Set provider
+  ## Can be one of aws|azure|google|digitalocean|ovh|vultr|scaleway|civo|custom
+  ## Choose 'custom' for Minikube and any other K8s cluster.
+  ##
+  # provider: 'custom'
+
+  ## Set the owner of the cluster
+  ## Can be the name of your organization. Will be set to 'otomi' if left empty
+  ##
+  # owner: ''
+
+otomi: {}
+
+  ## Set the admin password
+  ## Will be automatically generated if not filled-in
+  # adminPassword: ''
+
+  ## Set hasExternalDNS to true when using an external DNS zone. 
+  ## Otherwise a '*.nip.io' domain will be created.
+  # hasExternalDNS: false
+
+  ## Set hasExternalIDP to true,when you bring your own IDP such as Azure AD. 
+  ## When set to false Keycloak will become the IDP.
+  ## When set to true, also fill in the 'oidc:' settings below.
+  # hasExternalIDP: false
+
+  ## Set the version of Otomi
+  ## By default the image tag is set to .Chart.AppVersion
+  # version: main
+
+## Optional configuration
+# apps:
+#   cert-manager:
+    ## Set issuer 
+    ## Use a custom-ca (for BYO CA or auto-generated CA) or letsencrypt. 
+    ## When using letsencrypt, also fill in 'dns'.
+    # issuer: custom-ca
+    ## Set when using BYO CA. 
+    ## If not filled in, a CA will be auto generated
+    # customRootCA:
+    # customRootCAKey:
+    ## Set when issuer is letsencrypt
+    # email: ''
+    # stage: staging # defaults to 'production' when commented out
+
+## External dns zone configuration
+# dns:
+#   domainFilters: []
+#   zoneIdFilters: []
+#   provider:
+#     # choose your DNS provider: aws|azure|google|digitalocean|civo|cloudflare|other
+#     aws:
+#       # credentials are optional for explicit access with an iam role
+#       # (if no metadata exists with implicit role access to manage dns)
+#       credentials:
+#         secretKey: '' 
+#         accessKey: ''
+#       # region is always needed
+#       region: eu-central-1
+#       # optional ARN, may be set explicitly if no metadata can be accessed
+#       role: '' 
+#     azure:
+#       aadClientId: ''
+#       aadClientSecret: ''
+#       tenantId: '' # optional
+#       subscriptionId: '' # optional
+#     google:
+#       serviceAccountKey: ''
+#       project: ''
+#     digitalocean:
+#       apiToken: ''
+#       apiSecret: ''
+#       email: ''
+#       proxied: # true|false (default is true)
+# KMS for encrypting values
+# kms:
+#   sops:
+#   # provider can be one of aws|azure|google
+#     provider: ''
+#     aws:
+#       keys: ''
+#       accessKey: ''
+#       secretKey: ''
+#       region: ''
+#     azure:
+#       keys: ''
+#       tenantID: ''
+#       clientID: ''
+#       clientSecret: ''
+#     google:
+#       keys: ''
+#       accountJson: ''
+#       project: ''
+# Bring your own IDP, or leave commented out to use keycloak as IDP
+# oidc:
+#   clientID: ''
+#   clientSecret: ''
+#   issuer: ''
+#   # IDP group id used to identify global admin
+#   adminGroupID: ''
+#   # IDP group id used to identify team admin
+#   teamAdminGroupID: ''

@@ -1,0 +1,22 @@
+apiVersion: v2
+name: apl
+description: A Helm chart for installing otomi in Kubernetes
+home: https://otomi.io/
+icon: https://otomi.io/img/otomi-logo.svg
+type: application
+version: 0.0.0-chart-version
+appVersion: APP_VERSION_PLACEHOLDER
+keywords:
+  - otomi
+  - otomi.io
+  - container-management
+  - cicd
+  - multi-tenancy
+  - continuous-delivery
+  - continuous-deployment
+  - continuous-integration
+  - observability
+  - metrics
+  - tracing
+sources:
+  - https://github.com/linode/apl-core

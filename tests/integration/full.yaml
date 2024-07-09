@@ -13,9 +13,6 @@ apps:
     enabled: true
   cert-manager:
     issuer: custom-ca
-  gatekeeper:
-    enabled: true
-    disableValidatingWebhook: false
   grafana:
     enabled: true
   harbor:
@@ -55,8 +52,6 @@ apps:
   tempo:
     enabled: true
   trivy:
-    enabled: true
-  vault:
     enabled: true
   velero:
     enabled: true
