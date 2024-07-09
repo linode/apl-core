@@ -790,20 +790,6 @@ definitions:
       - limits
       - requests
     title: Pod resources
-  shortcuts:
-    type: array
-    items:
-      additionalProperties: false
-      properties:
-        title:
-          type: string
-          description: Title for the shortcut
-        description:
-          type: string
-          description: A short description about the target of this shortcut.
-        path:
-          $ref: '#/definitions/path'
-      type: object
   unixOwnerIdRange:
     type: object
     additionalProperties: false
@@ -1131,9 +1117,6 @@ definitions:
         $ref: '#/definitions/alerts'
       apps:
         type: object
-        properties:
-          shortcuts:
-            $ref: '#/definitions/shortcuts'
       backups:
         type: array
         items:
