@@ -39,10 +39,6 @@ spec:
               value: "{{ .Values.env.GITEA_URL_PORT }}"
             - name: GITEA_OPERATOR_NAMESPACE
               value: "{{ .Values.env.GITEA_OPERATOR_NAMESPACE }}"
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
