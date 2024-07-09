@@ -11,8 +11,7 @@
 {{- $teamNamespaces := $teamNamespaces | toJson }}
 
 resources:
-  - name: apl-harbor-operator-secret
-    apiVersion: v1
+  - apiVersion: v1
     kind: Secret
     metadata:
       name: apl-harbor-operator-secret
@@ -23,8 +22,7 @@ resources:
       oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
       oidcClientId: {{ $k.idp.clientID | b64enc }}
       oidcClientSecret: {{ $k.idp.clientSecret | b64enc }}
-  - name: apl-harbor-operator-cm
-    apiVersion: v1
+  - apiVersion: v1
     kind: ConfigMap
     metadata:
       name: apl-harbor-operator-cm
