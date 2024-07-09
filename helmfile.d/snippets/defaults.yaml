@@ -181,7 +181,7 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
-          gitea-operator:
+          apl-gitea-operator:
             resources:
               operator:
                 requests:
