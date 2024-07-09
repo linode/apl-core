@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "harbor-app-operator.name" -}}
+{{- define "apl-harbor-operator.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "harbor-app-operator.fullname" -}}
+{{- define "apl-harbor-operator.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "harbor-app-operator.chart" -}}
+{{- define "apl-harbor-operator.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "harbor-app-operator.labels" -}}
-helm.sh/chart: {{ include "harbor-app-operator.chart" . }}
-{{ include "harbor-app-operator.selectorLabels" . }}
+{{- define "apl-harbor-operator.labels" -}}
+helm.sh/chart: {{ include "apl-harbor-operator.chart" . }}
+{{ include "apl-harbor-operator.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "harbor-app-operator.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "harbor-app-operator.name" . }}
+{{- define "apl-harbor-operator.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "apl-harbor-operator.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "harbor-app-operator.serviceAccountName" -}}
+{{- define "apl-harbor-operator.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "harbor-app-operator.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "apl-harbor-operator.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

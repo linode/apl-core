@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "harbor-app-operator.fullname" . }}
+  name: {{ include "apl-harbor-operator.fullname" . }}
   labels:
-    {{- include "harbor-app-operator.labels" . | nindent 4 }}
+    {{- include "apl-harbor-operator.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      {{- include "harbor-app-operator.selectorLabels" . | nindent 6 }}
+      {{- include "apl-harbor-operator.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,13 +16,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "harbor-app-operator.labels" . | nindent 8 }}
+        {{- include "apl-harbor-operator.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "harbor-app-operator.serviceAccountName" . }}
+      serviceAccountName: {{ include "apl-harbor-operator.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

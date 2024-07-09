@@ -11,24 +11,24 @@
 {{- $teamNamespaces := $teamNamespaces | toJson }}
 
 resources:
-  - name: harbor-app-operator-secret
+  - name: apl-harbor-operator-secret
     apiVersion: v1
     kind: Secret
     metadata:
-      name: harbor-app-operator-secret
-      namespace: harbor-app
+      name: apl-harbor-operator-secret
+      namespace: apl-harbor-operator
     data:
       harborPassword:  {{ $h.adminPassword | b64enc }}
       harborUser: {{ "admin" | b64enc }}
       oidcEndpoint: {{ $v._derived.oidcBaseUrl | b64enc }}
       oidcClientId: {{ $k.idp.clientID | b64enc }}
       oidcClientSecret: {{ $k.idp.clientSecret | b64enc }}
-  - name: harbor-app-operator-cm
+  - name: apl-harbor-operator-cm
     apiVersion: v1
     kind: ConfigMap
     metadata:
-      name: harbor-app-operator-cm
-      namespace: harbor-app
+      name: apl-harbor-operator-cm
+      namespace: apl-harbor-operator
     data:
       harborBaseRepoUrl: {{ $harborRepo }}
       oidcAutoOnboard: "{{ $h.oidcAutoOnboard }}"
