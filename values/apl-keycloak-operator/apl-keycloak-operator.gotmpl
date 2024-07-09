@@ -14,8 +14,7 @@ imagePullSecrets:
 configs:
   {{ if $v._derived.untrustedCA }}
   tls:
-    certificates:
-      certificates.crt: |
+    certificates: |
         {{- $v._derived.caCert | nindent 8 }}
   {{ end }}
 script: |
