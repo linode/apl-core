@@ -251,3 +251,7 @@ changes:
       - 'teamConfig.{team}.apps.rabbitmq.shortcuts'
       - 'teamConfig.{team}.apps.sealed-secrets.shortcuts'
       - 'teamConfig.{team}.apps.tempo.shortcuts'
+  - version: 25
+    deletions:
+      - 'ingress.platformClass.loadBalancerRG'
+      - 'ingress.platformClass.loadBalancerSubnet'
