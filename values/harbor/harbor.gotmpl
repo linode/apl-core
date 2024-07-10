@@ -131,7 +131,6 @@ notary:
 
 persistence:
   enabled: true
-  # resourcePolicy: 'keep'
   persistentVolumeClaim:
     registry:
       # Use the existing PVC which must be created manually before bound,
@@ -221,7 +220,11 @@ persistence:
       encrypt: false
       secure: true
       v4auth: true
-      chunksize: "5242880"
+      # By bumping the `multipartcopythresholdsize` option to 5GiB (up from its default
+      # of 32Mib), Distribution will only initiate an asynchronous server-side COPY
+      # operation once the blob is 5GiB in size. This effectively means there will be no
+      # more 403 Forbidden errors from Object Storage unless a layer/blob is > 5GiB in size
+      multipartcopythresholdsize: "5368709120"
       {{- end }}
     {{- else }}
     type: filesystem
