@@ -42,10 +42,12 @@ spec:
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- if and .Values.configs (not (empty .Values.configs.tls.certificates)) }}
           volumeMounts:
           - name: tls-certs
             mountPath: /app/config/tls/certificate.crt
             subPath: certificate.crt
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -59,9 +61,11 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+          {{- if and .Values.configs (not (empty .Values.configs.tls.certificates)) }}
           - name: tls-certs
             secret:
               secretName: keycloak-operator-tls-certs-cm
+          {{- end }}
           - name: operator-config-kc
             configMap:
               name: apl-keycloak-operator-cm
