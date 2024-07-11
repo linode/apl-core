@@ -65,7 +65,7 @@ otomi:
     additionalClusters:
         - domainSuffix: demo.eks.otomi.cloud
           name: demo
-          provider: aws
+          provider: custom
     globalPullSecret:
         username: otomi
     hasExternalDNS: true
