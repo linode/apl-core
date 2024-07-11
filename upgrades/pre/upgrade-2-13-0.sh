@@ -18,3 +18,7 @@ if [[ $(helm status -n gitea-operator gitea-operator 2>/dev/null) ]]; then
   helm uninstall -n gitea-operator gitea-operator
   kubectl delete ns gitea-operator
 fi
+
+if [[ $(kubectl get applications.argoproj.io gitea-operator-gitea-operator -n argocd 2>/dev/null) ]]; then
+  kubectl delete applications.argoproj.io gitea-operator-gitea-operator -n argocd
+fi
