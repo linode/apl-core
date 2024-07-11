@@ -92,7 +92,7 @@ configuration:
 
 
 credentials:
-{{- if eq $v.cluster.provider "linode" }}
+{{- with $v.platformBackups.persistentVolumes | get "linodeApiToken" nil }}
   extraEnvVars:
     LINODE_TOKEN: linode_token
 {{- end }}
@@ -108,7 +108,7 @@ credentials:
       aws_access_key_id=otomi-admin
       aws_secret_access_key={{ $v.otomi.adminPassword }}
 {{- end }}
-{{- if eq $v.cluster.provider "linode" }}
+{{- with $v.platformBackups.persistentVolumes | get "linodeApiToken" nil }}
     linode_token: {{ $v.platformBackups.persistentVolumes.linodeApiToken }}
 {{- end }}
 
