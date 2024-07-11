@@ -57,10 +57,10 @@ podSecurityContext:
 configuration:
 # Use restic for File System Backups instead of kopia
   uploaderType: restic
-  defaultBackupStorageLocation: otomi
+  defaultBackupStorageLocation: apl
   {{- if eq $obj.type "minioLocal" }}
   backupStorageLocation:
-  - name: default
+  - name: apl
     provider: aws
     default: true
     bucket: {{ $bu.velero}}   
@@ -72,7 +72,7 @@ configuration:
   {{- end }}
   {{- if eq $obj.type "linode" }}
   backupStorageLocation:
-  - name: default
+  - name: apl
     provider: aws
     default: true
     bucket: {{ $bu.velero }} 
@@ -83,7 +83,7 @@ configuration:
   {{- end }}
   {{- if eq $v.cluster.provider "linode" }}
   volumeSnapshotLocation:
-  - name: default
+  - name: apl
     provider: linode.com/velero
   {{- end }}
   # if set Velero will back up all pod volumes using Restic with the exception of service account tokens, secrets, config maps and hostpath volumes
