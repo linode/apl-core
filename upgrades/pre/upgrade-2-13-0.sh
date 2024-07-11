@@ -2,16 +2,8 @@
 
 set -eu
 
-if [[ $(kubectl get job gitea-prepare -n maintenance 2>/dev/null) ]]; then
-  kubectl delete job gitea-prepare -n maintenance
-fi
-
-if [[ $(kubectl get job harbor -n maintenance 2>/dev/null) ]]; then
-  kubectl delete job harbor -n maintenance
-fi
-
-if [[ $(kubectl get job keycloak -n maintenance 2>/dev/null) ]]; then
-  kubectl delete job keycloak -n maintenance
+if [[ $(kubectl get applications.argoproj.io gitea-operator-gitea-operator -n argocd 2>/dev/null) ]]; then
+  kubectl delete applications.argoproj.io gitea-operator-gitea-operator -n argocd
 fi
 
 if [[ $(helm status -n gitea-operator gitea-operator 2>/dev/null) ]]; then
@@ -19,6 +11,14 @@ if [[ $(helm status -n gitea-operator gitea-operator 2>/dev/null) ]]; then
   kubectl delete ns gitea-operator
 fi
 
-if [[ $(kubectl get applications.argoproj.io gitea-operator-gitea-operator -n argocd 2>/dev/null) ]]; then
-  kubectl delete applications.argoproj.io gitea-operator-gitea-operator -n argocd
+if [[ $(helm status -n maintenance job-gitea-prepare 2>/dev/null) ]]; then
+  helm uninstall -n maintenance job-gitea-prepare
+fi
+
+if [[ $(helm status -n maintenance job-harbor 2>/dev/null) ]]; then
+  helm uninstall -n maintenance job-harbor
+fi
+
+if [[ $(helm status -n maintenance job-keycloak 2>/dev/null) ]]; then
+  helm uninstall -n maintenance job-keycloak
 fi
