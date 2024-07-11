@@ -84,9 +84,9 @@ operations:
   - version: 2.12.0
     pre:
       - upgrades/pre/upgrade-2-12-0.sh || true
-  - version: dev
-    pre:
-      - upgrades/pre/upgrade-2-13-0.sh || true
   - version: 3.0.0
     pre:
       - upgrades/pre/upgrade-3-0-0.sh || true
+  - version: dev
+    pre:
+      - upgrades/pre/upgrade-2-13-0.sh || true
