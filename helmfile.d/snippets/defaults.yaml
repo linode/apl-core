@@ -701,7 +701,9 @@ environments:
               enabled: false
             minio:
               enabled: false
-        cluster: {}
+        cluster:
+          provider: linode
+          name: apl
         dns:
           domainFilters: []
           zoneIdFilters: []

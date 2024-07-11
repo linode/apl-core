@@ -712,17 +712,9 @@ definitions:
     type: string
     description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube, kind) or onprem installs.
     enum:
-      - aws
-      - azure
-      - digitalocean
-      - google
       - custom
-      - kind
       - linode
-      - ovh
-      - vultr
-      - scaleway
-      - civo
+    default: linode
   redisChart:
     properties:
       _rawValues:
@@ -2527,80 +2519,6 @@ properties:
             enabled:
               type: boolean
               default: false
-          cloud:
-            properties:
-              azure:
-                additionalProperties: false
-                description: Azure
-                properties:
-                  resourceGroup:
-                    description: The resource group of the worker nodes (VM's and disks)
-                    $ref: '#/definitions/wordCharacterPattern'
-                  environment:
-                    title: Azure environment
-                    type: string
-                    enum:
-                      - AzurePublicCloud
-                      - AzureChinaCloud
-                      - AzureUSGovernment
-                      - AzureGermanCloud
-                    default: AzurePublicCloud
-                  tenantId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  subscriptionId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  aadClientId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  aadClientSecret:
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-                required:
-                  - tenantId
-                  - subscriptionId
-                  - aadClientId
-                  - aadClientSecret
-                  - resourceGroup
-                  - environment
-              aws:
-                additionalProperties: false
-                description: Amazon Web Services
-                properties:
-                  region:
-                    type: string
-                    description: The AWS region where the cluster is running.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  accessKeyId:
-                    type: string
-                    description: The ID of the access key
-                    $ref: '#/definitions/wordCharacterPattern'
-                  secretAccessKey:
-                    type: string
-                    description: The secret of the access key
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-              google:
-                additionalProperties: false
-                description: Google Cloud Platform
-                properties:
-                  serviceAccount:
-                    type: string
-                    description: The IAM account with permissions to manage snapshot resources in the GCP Project.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  project:
-                    type: string
-                    description: The name of the GCP project.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  saKeyJson:
-                    type: string
-                    x-secret: ''
-              type:
-                type: string
-                enum:
-                  - aws
-                  - azure
-                  - google
-                  - custom
-                default: custom
           logLevel:
             description: Set log-level for the Velero pod.
             default: info
@@ -3042,6 +2960,16 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+      persistentVolumes:
+        type: object
+        description: Credentials to create persistent volume snapshots in Linode.
+        additionalProperties: false
+        properties:
+          linodeApiToken:
+            type: string
+            description: Linode API Token
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
   obj:
     properties:
       bucket:

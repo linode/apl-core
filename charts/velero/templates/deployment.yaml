@@ -233,7 +233,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: {{ include "velero.secretName" $ }}
-                  key: {{ default "none" $key }}
+                  key: {{ default "none" $value }}
           {{- end }}
           {{- end }}
           {{- if .Values.lifecycle }}

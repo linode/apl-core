@@ -1,6 +1,5 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
-{{- $cp := $vl.cloud }}
 {{- $obj := $v.obj.provider }}
 {{- $bu := $v.obj.bucket }}
 
@@ -15,7 +14,7 @@ metrics:
     additionalLabels:
       prometheus: system
 
-{{- if eq $cp.type "custom" }}
+{{- if eq $v.cluster.provider "custom" }}
 snapshotsEnabled: false
 {{- end }}
 
@@ -23,19 +22,6 @@ upgradeCRDs: false
 cleanUpCRDs: false
 
 initContainers:
-  - name: velero-plugin-for-azure
-    image: velero/velero-plugin-for-microsoft-azure:v1.8.2
-    imagePullPolicy: IfNotPresent
-    resources:
-      requests:
-        cpu: 50m
-        memory: 32Mi
-      limits:
-        cpu: 100m
-        memory: 512Mi
-    volumeMounts:
-      - mountPath: /target
-        name: plugins
   - name: velero-plugin-for-aws
     image: velero/velero-plugin-for-aws:v1.8.2
     imagePullPolicy: IfNotPresent
@@ -49,8 +35,9 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
-  - name: velero-plugin-for-gcp
-    image: velero/velero-plugin-for-gcp:v1.8.2
+{{- if eq $v.cluster.provider "linode" }}
+  - name: velero-plugin-for-linode
+    image: displague/velero-plugin-linode:v0.0.1
     imagePullPolicy: IfNotPresent
     resources:
       requests:
@@ -58,10 +45,11 @@ initContainers:
         memory: 32Mi
       limits:
         cpu: 100m
-        memory: 32Mi
+        memory: 512Mi
     volumeMounts:
       - mountPath: /target
         name: plugins
+{{- end }}
 
 podSecurityContext:
   runAsUser: 1000
@@ -72,7 +60,7 @@ configuration:
   defaultBackupStorageLocation: otomi
   {{- if eq $obj.type "minioLocal" }}
   backupStorageLocation:
-  - name: otomi
+  - name: default
     provider: aws
     default: true
     bucket: {{ $bu.velero}}   
@@ -84,7 +72,7 @@ configuration:
   {{- end }}
   {{- if eq $obj.type "linode" }}
   backupStorageLocation:
-  - name: otomi
+  - name: default
     provider: aws
     default: true
     bucket: {{ $bu.velero }} 
@@ -93,50 +81,23 @@ configuration:
       region: {{ $obj.linode.region }}
       s3ForcePathStyle: true
   {{- end }}
-  {{- if eq $cp.type "azure" }}
+  {{- if eq $v.cluster.provider "linode" }}
   volumeSnapshotLocation:
-  - name: otomi
-    provider: azure
-    config:
-      resourceGroup: {{ $cp.azure.resourceGroup }}
-  {{- end }}
-  {{- if eq $cp.type "aws" }}
-  volumeSnapshotLocation:
-  - name: otomi
-    provider: aws
-    config:
-      region: {{ $cp.aws.region }}
-  {{- end }}
-  {{- if eq $cp.type "google" }}
-  volumeSnapshotLocation:
-  - name: otomi
-    provider: gcp
-    config:
-      project: {{ $cp.google.project }}
+  - name: default
+    provider: linode.com/velero
   {{- end }}
   # if set Velero will back up all pod volumes using Restic with the exception of service account tokens, secrets, config maps and hostpath volumes
   defaultVolumesToRestic: {{ $vl.restic.enabled }}
   logLevel: {{ $vl.logLevel }}
 
+
 credentials:
+{{- if eq $v.cluster.provider "linode" }}
+  extraEnvVars:
+    LINODE_TOKEN: linode_token
+{{- end }}
   secretContents:
     cloud: |
-{{- if eq $cp.type "azure" }}
-      AZURE_RESOURCE_GROUP={{ $cp.azure.resourceGroup }}
-      AZURE_CLOUD_NAME={{ $cp.azure.environment }}
-      AZURE_SUBSCRIPTION_ID={{ $cp.azure.subscriptionId }}
-      AZURE_TENANT_ID={{ $cp.azure.tenantId }}
-      AZURE_CLIENT_ID={{ $cp.azure.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $cp.azure.aadClientSecret }}
-{{- end }}
-{{- if eq $cp.type "aws" }}
-      [default]
-      aws_access_key_id={{ $cp.s3.accessKeyId }}
-      aws_secret_access_key={{ $cp.s3.secretAccessKey }}
-{{- end }}
-{{- if eq $cp.type "google" }}
-      '{{ $cp.google.saKeyJson }}'
-{{- end }}
 {{- if eq $obj.type "linode" }}
       [default]
       aws_access_key_id={{ $obj.linode.accessKeyId }}
@@ -146,6 +107,9 @@ credentials:
       [default]
       aws_access_key_id=otomi-admin
       aws_secret_access_key={{ $v.otomi.adminPassword }}
+{{- end }}
+{{- if eq $v.cluster.provider "linode" }}
+    linode_token: {{ $v.platformBackups.persistentVolumes.linodeApiToken }}
 {{- end }}
 
 kubectl:
