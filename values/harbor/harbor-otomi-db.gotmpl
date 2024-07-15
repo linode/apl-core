@@ -10,6 +10,7 @@ storage:
   size: {{ $hdb.size }}
 instances: {{ $hdb.replicas }}
 
+{{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:
   enabled: {{ $b.enabled }}
@@ -24,6 +25,7 @@ backup:
   linode:
     destinationPath: "s3://{{ $bu.cnpg }}/harbor"
     endpointURL: https://{{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
+{{- end }}
 {{- end }}
 {{- end }}
 

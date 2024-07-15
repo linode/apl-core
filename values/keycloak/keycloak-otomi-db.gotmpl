@@ -12,6 +12,7 @@ storage:
   size: {{ $kdb.size }}
 instances: {{ $kdb.replicas }}
 
+{{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:
   enabled: {{ $b.enabled }}
@@ -26,6 +27,7 @@ backup:
   linode:
     destinationPath: "s3://{{ $bu.cnpg }}/keycloak"
     endpointURL: {{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
+{{- end }}
 {{- end }}
 {{- end }}
 
