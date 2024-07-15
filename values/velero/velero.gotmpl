@@ -2,6 +2,7 @@
 {{- $vl := $v.apps.velero }}
 {{- $obj := $v.obj.provider }}
 {{- $bu := $v.obj.bucket }}
+{{- $b := $v.platformBackups.persistentVolumes }}
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
 
@@ -134,3 +135,20 @@ nodeAgent:
   podSecurityContext:
     runAsUser: 1338
     fsGroup: 1338
+
+{{- if $b.gitea.enabled }}
+schedules:
+  gitea:
+    disabled: false
+    schedule: {{ $b.gitea.schedule }}
+    useOwnerReferencesInBackup: false
+    template:
+      ttl: {{ $b.gitea.ttl }}
+      includedNamespaces:
+      - gitea
+      includedResources:
+      - pv
+      - pvc
+      includeClusterResources: true
+      storageLocation: apl
+{{- end }}

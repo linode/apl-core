@@ -2962,7 +2962,7 @@ properties:
                 $ref: '#/definitions/backupSchedule'
       persistentVolumes:
         type: object
-        description: Credentials to create persistent volume snapshots in Linode.
+        description: Create backups of persistent volumes
         additionalProperties: false
         properties:
           linodeApiToken:
@@ -2970,6 +2970,16 @@ properties:
             description: Linode API Token
             $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
+          gitea:
+            title: Gitea
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              ttl:
+                $ref: '#/definitions/backupTtl'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
   obj:
     properties:
       bucket:
