@@ -928,11 +928,6 @@ definitions:
             type: boolean
           workload:
             $ref: '#/definitions/labelsAnnotations'
-      certArn:
-        description: Only available on AWS when an external LB is configured. The cert ARN will be registered on the load balancer for SSL termination.
-        example: arn:aws:acm:eu-central-1:xxx:certificate/xxx
-        pattern: 'arn:aws(-cn|-us-gov)?:acm:\S+:\d+:\w+\/\S+'
-        type: string
       trafficControl:
         title: Traffic Control
         description: Split traffic between multiple services (blue/green, canary)

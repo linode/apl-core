@@ -32,12 +32,9 @@
       {{- if ne ($s | get "certName" "") "" }}
         {{- $_ := set $domInfo "certName" $s.certName }}
       {{- end }}
-      {{- if ne ($s | get "certArn" "") "" }}
-        {{- $_ := set $domInfo "certArn" $s.certArn }}
-      {{- end }}
     {{- end }}
   {{- end }}
 {{- end }}
 {{- $authDomain := print "auth." $v.cluster.domainSuffix }}
-{{- $_ := set $domains $authDomain (dict "hasCert" false "certArn" "" "certName" "") }}
+{{- $_ := set $domains $authDomain (dict "hasCert" false "certName" "") }}
 {{ $domains | toYaml }}
