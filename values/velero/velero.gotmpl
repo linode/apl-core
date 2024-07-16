@@ -95,7 +95,7 @@ configuration:
 credentials:
 {{- with $v.platformBackups.persistentVolumes | get "linodeApiToken" nil }}
   extraEnvVars:
-    LINODE_TOKEN: linode_token
+    linode_token: {{ $v.platformBackups.persistentVolumes.linodeApiToken }}
 {{- end }}
   secretContents:
     cloud: |
@@ -108,9 +108,6 @@ credentials:
       [default]
       aws_access_key_id=otomi-admin
       aws_secret_access_key={{ $v.otomi.adminPassword }}
-{{- end }}
-{{- with $v.platformBackups.persistentVolumes | get "linodeApiToken" nil }}
-    linode_token: {{ $v.platformBackups.persistentVolumes.linodeApiToken }}
 {{- end }}
 
 kubectl:
