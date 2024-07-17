@@ -4,7 +4,6 @@ apps:
         disabledRules:
             - InfoInhibitor
             - PrometheusOperatorListErrors
-        storageClassName: fast
         remoteWrite:
             enabled: true
             rwConfig:

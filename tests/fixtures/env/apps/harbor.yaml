@@ -8,7 +8,5 @@ apps:
                     rootdirectory: /google/demo
                 type: gcs
         core: {}
-        jobservice:
-            storageClassName: fast
         registry:
             credentials: {}
