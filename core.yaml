@@ -89,9 +89,6 @@ k8s:
     - name: otomi
     - name: otomi-operator
       disableIstioInjection: true
-    - name: cluster-overprovisioner
-      app: cluster-overprovisioner
-      disableIstioInjection: true
     - name: rabbitmq
       app: rabbitmq
       disableIstioInjection: true
