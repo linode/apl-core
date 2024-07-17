@@ -33,8 +33,6 @@ environments:
               limits:
                 cpu: 1000m
                 memory: 512Mi
-          cluster-overprovisioner:
-            enabled: false
           drone:
             enabled: false
             debug: false
@@ -181,15 +179,6 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
-          gitea-operator:
-            resources:
-              operator:
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
           grafana:
             enabled: false
           harbor:
@@ -290,8 +279,6 @@ environments:
             enabled: false
             serving:
               replicas: 1
-          kube-descheduler:
-            enabled: false
           kured:
             enabled: false
             resources:
@@ -449,6 +436,33 @@ environments:
             editorInactivityTimeout: 1
           otomi-console: {}
           otomi-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+          apl-harbor-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+          apl-gitea-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+          apl-keycloak-operator:
             resources:
               operator:
                 requests:
@@ -723,7 +737,7 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes: (and think more?)
-        version: 22
+        version: 24
         letsencryptRootCA: |
           -----BEGIN CERTIFICATE-----
           MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm

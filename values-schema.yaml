@@ -227,11 +227,6 @@ definitions:
   cluster:
     additionalProperties: false
     properties:
-      apiName:
-        description:
-          Exact name of cluster as created when on AWS. Optional otherwise and will be generated for UI purposes.
-          When on AWS this name is used for chart cluster-autoscaler.
-        $ref: '#/definitions/wordCharacterPattern'
       apiServer:
         description: Used to generate KUBECONFIG for download, for local access to target cluster.
         pattern: '^https:\/\/.*'
@@ -250,25 +245,9 @@ definitions:
         default: otomi
       provider:
         $ref: '#/definitions/provider'
-      region:
-        description: 'An AWS region. Only required for AWS.'
-        examples:
-          - eu-central-1
     required:
       - name
       - provider
-    allOf:
-      - oneOf:
-          - properties:
-              provider:
-                enum: [aws]
-            required:
-              - apiName
-              - region
-          - not:
-              properties:
-                provider:
-                  enum: [aws]
   clusterName:
     $ref: '#/definitions/wordCharacterPattern'
     type: string
@@ -782,20 +761,6 @@ definitions:
       - limits
       - requests
     title: Pod resources
-  shortcuts:
-    type: array
-    items:
-      additionalProperties: false
-      properties:
-        title:
-          type: string
-          description: Title for the shortcut
-        description:
-          type: string
-          description: A short description about the target of this shortcut.
-        path:
-          $ref: '#/definitions/path'
-      type: object
   unixOwnerIdRange:
     type: object
     additionalProperties: false
@@ -1123,9 +1088,6 @@ definitions:
         $ref: '#/definitions/alerts'
       apps:
         type: object
-        properties:
-          shortcuts:
-            $ref: '#/definitions/shortcuts'
       backups:
         type: array
         items:
@@ -1612,24 +1574,8 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-      cluster-autoscaler:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-      cluster-overprovisioner:
-        additionalProperties: false
-        properties:
-          _rawValues:
-            $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-          cpu:
-            $ref: '#/definitions/cpuQuantity'
-          memory:
-            $ref: '#/definitions/memoryQuantity'
+          storage:
+            $ref: '#/definitions/storageProvider'
       drone:
         additionalProperties: false
         properties:
@@ -2083,15 +2029,6 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
-      kube-descheduler:
-        additionalProperties: false
-        properties:
-          enabled:
-            default: true
-            type: boolean
-          schedule:
-            default: '*/30 * * * *'
-            type: string
       kured:
         additionalProperties: false
         properties:
@@ -2300,6 +2237,36 @@ properties:
                       - password
         type: object
       otomi-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+      apl-harbor-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+      apl-gitea-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+      apl-keycloak-operator:
         additionalProperties: false
         properties:
           _rawValues:
