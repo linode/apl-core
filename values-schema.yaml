@@ -1953,21 +1953,11 @@ properties:
               xsrfKey:
                 type: string
                 x-secret: '{{ randAlphaNum 32 }}'
-          redis:
-            properties:
-              storageClassName:
-                type: string
-          trivy:
-            properties:
-              storageClassName:
-                type: string
           jobservice:
             properties:
               secret:
                 type: string
                 x-secret: '{{ randAlphaNum 16 }}'
-              storageClassName:
-                type: string
           persistence:
             additionalProperties: false
             properties:
@@ -2036,14 +2026,8 @@ properties:
                       - gcs
                       - filesystem
                     default: filesystem
-          chartmuseum:
-            properties:
-              storageClassName:
-                type: string
           registry:
             properties:
-              storageClassName:
-                type: string
               secret:
                 type: string
                 x-secret: '{{ randAlpha 16 }}'
@@ -2572,8 +2556,6 @@ properties:
             type: array
             items:
               type: string
-          storageClassName:
-            type: string
           remoteWrite:
             properties:
               enabled:

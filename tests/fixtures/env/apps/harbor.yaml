@@ -12,10 +12,3 @@ apps:
             storageClassName: fast
         registry:
             credentials: {}
-            storageClassName: fast
-        # redis:
-        #     storageClassName: fast
-        chartmuseum:
-            storageClassName: fast
-        trivy:
-            storageClassName: fast

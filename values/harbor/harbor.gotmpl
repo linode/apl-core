@@ -136,25 +136,16 @@ persistence:
       # Use the existing PVC which must be created manually before bound,
       # and specify the 'subPath' if the PVC is shared with other components
       existingClaim: ''
-      {{- with $h| get "registry.storageClassName" nil }}
-      storageClass: {{ $h | get "registry.storageClassName" }}
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 10Gi
     chartmuseum:
       existingClaim: ''
-      {{- with $h| get "chartmuseum.storageClassName" nil }}
-      storageClass: {{ $h | get "chartmuseum.storageClassName" }}
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 5Gi
     jobservice:
       existingClaim: ''
-      {{- with $h| get "jobservice.storageClassName" nil }}
-      storageClass: {{ $h | get "jobservice.storageClassName" }}
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
@@ -169,17 +160,11 @@ persistence:
     # be ignored
     redis:
       existingClaim: ''
-      {{- with $h| get "redis.storageClassName" nil }}
-      storageClass: {{ $h | get "redis.storageClassName" }}
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
       existingClaim: ''
-      {{- with $h| get "trivy.storageClassName" nil }}
-      storageClass: {{ $h | get "trivy.storageClassName" }}
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 5Gi
