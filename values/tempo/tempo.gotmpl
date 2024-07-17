@@ -66,6 +66,7 @@ metricsGenerator:
       remote_write:
        - url: http://po-prometheus.monitoring:9090/api/v1/write
 
+{{- if eq $obj.type "minioLocal" "linode" }}
 storage:
   trace:
     backend: s3
@@ -84,6 +85,7 @@ storage:
       access_key: {{ $obj.linode.accessKeyId }}                      
       secret_key: {{ $obj.linode.secretAccessKey }}                           
     {{- end }}
+{{- end }}
 
 traces:
   otlp:

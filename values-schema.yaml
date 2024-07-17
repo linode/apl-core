@@ -2982,28 +2982,6 @@ properties:
                 $ref: '#/definitions/backupSchedule'
   obj:
     properties:
-      bucket:
-        properties:
-          loki:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: loki
-          cnpg:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: cnpg
-          velero:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: velero
-          harbor:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: harbor
-          tempo:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: tempo
       provider:
         properties:
           linode:
@@ -3032,6 +3010,7 @@ properties:
               - linode
               - disabled
             default: disabled
+
   databases:
     properties:
       keycloak:

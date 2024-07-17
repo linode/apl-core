@@ -23,7 +23,6 @@ serviceMonitor:
 loki:
   podAnnotations:
     sidecar.istio.io/inject: "false"
-  {{- if eq $obj.type "minioLocal" "linode" }}
   schemaConfig:
     configs:
     - from: 2020-09-07
@@ -33,6 +32,7 @@ loki:
       index:
         prefix: loki_index_
         period: 24h
+  {{- if eq $obj.type "minioLocal" "linode" }}
   storageConfig:
     boltdb_shipper:
       active_index_directory: /var/loki/index
@@ -55,7 +55,7 @@ loki:
         min_period: 2s
         max_period: 5s
       {{- end }} 
-    {{- end }}
+  {{- end }}
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
