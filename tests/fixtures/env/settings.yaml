@@ -100,11 +100,11 @@ obj:
         tempo: tempo
     provider:
         # type: minioLocal
-        # linode:
-        #     region: nl-ams-1
-        #     accessKeyId: someaccessKeyId
-        # type: linode
-        type: disabled
+        linode:
+            region: nl-ams-1
+            accessKeyId: someaccessKeyId
+        type: linode
+        # type: disabled
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in
