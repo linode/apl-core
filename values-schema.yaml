@@ -1574,8 +1574,6 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-          storage:
-            $ref: '#/definitions/storageProvider'
       drone:
         additionalProperties: false
         properties:
