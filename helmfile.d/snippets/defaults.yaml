@@ -691,24 +691,29 @@ environments:
               requests:
                 cpu: 50m
                 memory: 256Mi
+        obj:
+          provider:
+            type: disabled
+          bucket:
+              loki: loki
+              cnpg: cnpg
+              velero: velero
+              harbor: harbor
+              tempo: tempo
         platformBackups:
           database:
             harbor:
               enabled: false
-          persistentVolumes:
             gitea:
-              enabled: false
-            drone:
               enabled: false
             keycloak:
               enabled: false
-            harbor:
+          persistentVolumes:
+            gitea:
               enabled: false
-            argo:
-              enabled: false
-            minio:
-              enabled: false
-        cluster: {}
+        cluster:
+          provider: linode
+          name: apl
         dns:
           domainFilters: []
           zoneIdFilters: []

@@ -1,4 +1,4 @@
-api: main
-console: main
-tasks: main
+api: sr-storage-backup-refactor
+console: sr-storage-backup-refactor
+tasks: 2.5.0
 tools: 1.6.4

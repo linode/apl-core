@@ -1,7 +1,8 @@
 {{- $v := .Values }}
 {{- $hdb := $v.databases.harbor }}
 {{- $cnpg := $v.apps.cnpg }}
-{{- $sp := $cnpg.storage }}
+{{- $obj := $v.obj.provider }}
+{{- $bu := $v.obj.bucket }}
 {{- $b := $v.platformBackups.database.harbor }}
 
 name: harbor-otomi-db
@@ -9,25 +10,22 @@ storage:
   size: {{ $hdb.size }}
 instances: {{ $hdb.replicas }}
 
+{{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:
   enabled: {{ $b.enabled }}
   schedule: {{ $b.schedule }}
   retentionPolicy: {{ $b.retentionPolicy }}
-  type:  {{ $sp.type }}
-{{- if eq $sp.type "azure" }}
-  azure:
-    storageAccount: {{ $sp.azure.accountName }}
-    container: {{ $sp.azure.containerName }}
+  type:  {{ $obj.type }}
+{{- if eq $obj.type "minioLocal" }}
+  minioLocal:
+    destinationPath: "s3://{{ $bu.cnpg }}/harbor"
 {{- end }}
-{{- if eq $sp.type "s3" }}
-  s3:
-    endpointURL: {{ $sp.s3.s3Url }}
-    bucket: {{ $sp.s3.bucket }}
+{{- if eq $obj.type "linode" }}
+  linode:
+    destinationPath: "s3://{{ $bu.cnpg }}/harbor"
+    endpointURL: https://{{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
-{{- if eq $sp.type "gcs" }}
-  gcs: 
-    bucket: {{ $sp.gcs.bucket }}
 {{- end }}
 {{- end }}
 

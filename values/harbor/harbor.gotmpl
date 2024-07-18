@@ -1,7 +1,8 @@
 {{- $v := .Values }}
 {{- $h := $v.apps.harbor }}
 {{- $db := $v.databases.harbor }}
-{{- $hp := $h | get "persistence" dict }}
+{{- $obj := $v.obj.provider }}
+{{- $bu := $v.obj.bucket }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $notaryDomain := printf "notary.%s" $v.cluster.domainSuffix }}
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
@@ -130,7 +131,6 @@ notary:
 
 persistence:
   enabled: true
-  # resourcePolicy: 'keep'
   persistentVolumeClaim:
     registry:
       # Use the existing PVC which must be created manually before bound,
@@ -167,16 +167,38 @@ persistence:
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
-      size: 5Gi
-  # Define which storage backend is used for registry and chartmuseum to store
-  # images and charts. Refer to
-  # https://github.com/docker/distribution/blob/master/docs/configuration.md#storage
-  # for the detail.
+      size: 5Gi   
   imageChartStorage:
-    {{ $imageChartStorageType := $hp | get "imageChartStorage.type" "filesystem" }}
-    type: {{ $imageChartStorageType }}
-    {{- if ne $imageChartStorageType "filesystem" }}
-    {{ $imageChartStorageType }}: {{- toYaml ($hp.imageChartStorage | get $imageChartStorageType) | nindent 6 }}
+    {{- if eq $obj.type "minioLocal" "linode" }}
+    disableredirect: true
+    type: s3
+    s3:
+      {{- if eq $obj.type "minioLocal" }}
+      bucket: harbor
+      region: us-east-1
+      regionendpoint: http://minio.minio.svc.cluster.local:9000
+      accesskey: otomi-admin                          
+      secretkey: {{ $v.otomi.adminPassword }}                            
+      secure: false
+      v4auth: true
+      {{- end }}
+      {{- if eq $obj.type "linode" }}
+      bucket: {{ $bu.harbor }}
+      regionendpoint: https://{{ $obj.linode.region }}.linodeobjects.com
+      accesskey: {{ $obj.linode.accessKeyId }}               
+      secretkey: {{ $obj.linode.secretAccessKey }}
+      region: {{ $obj.linode.region }}
+      encrypt: false
+      secure: true
+      v4auth: true
+      # By bumping the `multipartcopythresholdsize` option to 5GiB (up from its default
+      # of 32Mib), Distribution will only initiate an asynchronous server-side COPY
+      # operation once the blob is 5GiB in size. This effectively means there will be no
+      # more 403 Forbidden errors from Object Storage unless a layer/blob is > 5GiB in size
+      multipartcopythresholdsize: "5368709120"
+      {{- end }}
+    {{- else }}
+    type: filesystem
     {{- end }}
 
 postgresql:
@@ -235,11 +257,11 @@ registry:
         {{- toYaml . | nindent 6 }}
       {{- else }}
       limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
         cpu: 100m
         memory: 128Mi
-      requests:
-        cpu: 50m
-        memory: 64Mi
       {{- end }}
   controller:
     image:
