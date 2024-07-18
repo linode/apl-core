@@ -32,8 +32,6 @@ apps:
     enabled: true
   knative:
     enabled: true
-  kube-descheduler:
-    enabled: true
   kured:
     enabled: true
   loki:
