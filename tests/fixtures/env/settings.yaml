@@ -15,10 +15,6 @@ azure:
     resourceGroup: somevalue
     subscriptionId: somevalue
     tenantId: somevalue
-cloud:
-    skipStorageClasses:
-        - std
-        - std-immediate
 dns:
     domainFilters:
         - otomi.cloud

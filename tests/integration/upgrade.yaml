@@ -46,8 +46,6 @@ apps:
     enabled: true
   redis-shared:
     enabled: false
-  snapshot-controller:
-    enabled: true
   sealed-secrets:
     enabled: true
   rabbitmq:

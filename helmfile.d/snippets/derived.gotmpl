@@ -21,7 +21,6 @@
 {{- $domainSuffix := $v | get "cluster.domainSuffix" nil }}
 {{- $provider := $v.cluster.provider }}
 {{- $droneProvider := $a.drone.sourceControl.provider }}
-{{- $isManaged := has $provider (list "aws" "azure" "google") }}
 {{- $issuer := $cm | get "issuer" "" }}
 {{- $untrustedCA := or (eq $issuer "custom-ca") (and (eq $issuer "letsencrypt") (eq ($cm | get "stage" "") "staging")) }}
 {{- $giteaUrl := printf "https://gitea.%s" $domainSuffix }}
@@ -52,7 +51,6 @@ environments:
             {{- else }}
               {{- $cm.customRootCA | nindent 12 }}
             {{- end }}
-          supportedCloud: {{ has $provider (list "aws" "azure" "google") }}
           untrustedCA: {{ $untrustedCA }}
           oidcBaseUrl: {{ $oidcBaseUrl }}
           oidcBaseUrlBackchannel: {{ $oidcBaseUrlBackchannel}}
@@ -63,8 +61,6 @@ environments:
         apps:
           argocd:
             enabled: true
-          aws-ebs-csi-driver:
-            enabled: false
           cert-manager:
             enabled: true
             {{- if and (eq $issuer "letsencrypt") (not (hasKey $cm "stage")) }}
@@ -99,9 +95,6 @@ environments:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean" "linode")) }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
-          snapshot-controller:
-            # TODO: upgrade snapshot-controller from piraeus-charts/snapshot-controller and toggle below:
-            enabled: false
         ingress:
           classes:
           - {{- $v.ingress.platformClass | toYaml | nindent 12 }}
