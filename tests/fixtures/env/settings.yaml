@@ -61,7 +61,7 @@ otomi:
     additionalClusters:
         - domainSuffix: demo.eks.otomi.cloud
           name: demo
-          provider: aws
+          provider: custom
     globalPullSecret:
         username: otomi
     hasExternalDNS: true
@@ -76,19 +76,31 @@ platformBackups:
             enabled: true
             retentionPolicy: 7d
             schedule: 0 0 0 * * *
+        keycloak:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 0 * * *
+        gitea:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 0 * * *
     persistentVolumes:
-        argo:
-            enabled: false
-        drone:
-            enabled: false
         gitea:
             enabled: false
-        harbor:
-            enabled: false
-        keycloak:
-            enabled: false
-        minio:
-            enabled: false
+obj:
+    bucket:
+        loki: loki
+        cnpg: cnpg
+        velero: velero
+        harbor: harbor
+        tempo: tempo
+    provider:
+        # type: minioLocal
+        linode:
+            region: nl-ams-1
+            accessKeyId: someaccessKeyId
+        type: linode
+        # type: disabled
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in

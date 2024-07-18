@@ -292,7 +292,7 @@ definitions:
     type: string
   backup:
     type: object
-    description: Team backups
+    description: PV backups
     properties:
       name:
         $ref: '#/definitions/wordCharacterPattern'
@@ -691,17 +691,9 @@ definitions:
     type: string
     description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube, kind) or onprem installs.
     enum:
-      - aws
-      - azure
-      - digitalocean
-      - google
       - custom
-      - kind
       - linode
-      - ovh
-      - vultr
-      - scaleway
-      - civo
+    default: linode
   redisChart:
     properties:
       _rawValues:
@@ -1462,114 +1454,6 @@ definitions:
     required:
       - name
       - url
-  storageProvider:
-    type: object
-    title: Storage provider
-    description: Select the preferred provider for storing database backups.
-    oneOf:
-      - title: Local Minio
-        type: object
-        description: Select to use the in-cluster Minio instance.
-        properties:
-          type:
-            type: string
-            enum:
-              - minioLocal
-            default: minioLocal
-      - title: Azure Blob
-        type: object
-        x-hideTitle: true
-        properties:
-          azure:
-            type: object
-            description: Select to store in Azure Blob storage.
-            title: Azure blob (container) storage
-            properties:
-              accountKey:
-                type: string
-                x-secret: ''
-              accountName:
-                type: string
-              containerName:
-                type: string
-            required:
-              - accountKey
-              - accountName
-              - containerName
-          type:
-            type: string
-            enum:
-              - azure
-            default: azure
-        required:
-          - azure
-          - type
-      - title: S3
-        type: object
-        x-hideTitle: true
-        properties:
-          s3:
-            type: object
-            title: S3
-            description: Select to store in AWS S3 or S3 compatible blob storage.
-            properties:
-              bucket:
-                type: string
-                description: The name of the bucket.
-                $ref: '#/definitions/wordCharacterPattern'
-              s3Url:
-                type: string
-                description: The full S3 URL.
-                $ref: '#/definitions/wordCharacterPattern'
-              accessKeyId:
-                type: string
-                description: The ID of the access key. Optional if cloud provider is AWS.
-                $ref: '#/definitions/wordCharacterPattern'
-              secretAccessKey:
-                type: string
-                description: The secret of the access key. Optional if cloud provider is AWS.
-                $ref: '#/definitions/wordCharacterPattern'
-                x-secret: ''
-            required:
-              - bucket
-              - s3Url
-              - accessKeyId
-              - secretAccessKey
-          type:
-            type: string
-            enum:
-              - s3
-            default: s3
-        required:
-          - s3
-          - type
-      - title: gcs
-        type: object
-        x-hideTitle: true
-        properties:
-          gcs:
-            type: object
-            title: Google Cloud Storage
-            description: Select to store backups in Google Cloud Storage.
-            properties:
-              bucket:
-                type: string
-                description: Name of the bucket.
-                $ref: '#/definitions/wordCharacterPattern'
-              serviceAccountKey:
-                $ref: '#/definitions/google/definitions/accountJson'
-                description: A service account key in json format for authentication.
-            required:
-              - bucket
-              - serviceAccountKey
-          type:
-            type: string
-            enum:
-              - gcs
-            default: gcs
-        required:
-          - gcs
-          - type
 
 properties:
   alerts:
@@ -1674,8 +1558,6 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
-          storage:
-            $ref: '#/definitions/storageProvider'
       drone:
         additionalProperties: false
         properties:
@@ -1919,74 +1801,6 @@ properties:
               secret:
                 type: string
                 x-secret: '{{ randAlphaNum 16 }}'
-          persistence:
-            additionalProperties: false
-            properties:
-              imageChartStorage:
-                additionalProperties: false
-                description: For reference go to https://github.com/distribution/distribution/blob/main/docs/configuration.md#storage
-                properties:
-                  s3:
-                    additionalProperties: false
-                    properties:
-                      accesskey:
-                        $ref: '#/definitions/aws/definitions/accessKey'
-                      secretkey:
-                        $ref: '#/definitions/aws/definitions/secretKey'
-                      region:
-                        $ref: '#/definitions/aws/definitions/region'
-                      regionendpoint:
-                        type: string
-                      bucket:
-                        type: string
-                      encrypt:
-                        type: boolean
-                      keyid:
-                        type: string
-                      secure:
-                        type: boolean
-                      v4auth:
-                        type: boolean
-                      chunksize:
-                        type: integer
-                      multipartcopychunksize:
-                        type: integer
-                      multipartcopymaxconcurrency:
-                        type: integer
-                      multipartcopythresholdsize:
-                        type: integer
-                      rootdirectory:
-                        type: string
-                  azure:
-                    additionalProperties: false
-                    properties:
-                      accountname:
-                        type: string
-                      accountkey:
-                        type: string
-                        x-secret: ''
-                      container:
-                        type: string
-                      realm:
-                        type: string
-                  gcs:
-                    additionalProperties: false
-                    properties:
-                      bucket:
-                        type: string
-                      encodedkey:
-                        type: string
-                        x-secret: ''
-                      rootdirectory:
-                        type: string
-                  type:
-                    type: string
-                    enum:
-                      - s3
-                      - azure
-                      - gcs
-                      - filesystem
-                    default: filesystem
           registry:
             properties:
               secret:
@@ -2294,49 +2108,6 @@ properties:
                 type: string
             required:
               - duration
-          storage:
-            description: 'Chunk storage'
-            properties:
-              azure:
-                properties:
-                  accountName:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  containerName:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  accountKey:
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-              s3:
-                properties:
-                  useInstanceRole:
-                    type: boolean
-                    default: false
-                  bucket:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  s3Url:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  accessKeyId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  secretAccessKey:
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-                  region:
-                    $ref: '#/definitions/wordCharacterPattern'
-              gcs:
-                properties:
-                  bucket:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  serviceAccount:
-                    $ref: '#/definitions/wordCharacterPattern'
-              type:
-                type: string
-                enum:
-                  - azure
-                  - s3
-                  - gcs
-                  - minioLocal
-                  - filesystem
-                default: minioLocal
           v11StartDate:
             description: Set this to a date just after deployment in case of an upgrade. (Otomi started at v9 with filesystem.)
             title: Schema v11 start date
@@ -2629,35 +2400,6 @@ properties:
                   size:
                     default: 10Gi
                     $ref: '#/definitions/size'
-          storage:
-            properties:
-              azure:
-                properties:
-                  accountName:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  containerName:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  accountKey:
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-              s3:
-                properties:
-                  bucket:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  s3Url:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  accessKeyId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  secretAccessKey:
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-              type:
-                type: string
-                enum:
-                  - azure
-                  - s3
-                  - minioLocal
-                default: minioLocal
       trivy:
         properties:
           _rawValues:
@@ -2726,156 +2468,6 @@ properties:
             enabled:
               type: boolean
               default: false
-          cloud:
-            properties:
-              azure:
-                additionalProperties: false
-                description: Azure
-                properties:
-                  resourceGroup:
-                    description: The resource group of the worker nodes (VM's and disks)
-                    $ref: '#/definitions/wordCharacterPattern'
-                  environment:
-                    title: Azure environment
-                    type: string
-                    enum:
-                      - AzurePublicCloud
-                      - AzureChinaCloud
-                      - AzureUSGovernment
-                      - AzureGermanCloud
-                    default: AzurePublicCloud
-                  tenantId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  subscriptionId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  aadClientId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  aadClientSecret:
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-                required:
-                  - tenantId
-                  - subscriptionId
-                  - aadClientId
-                  - aadClientSecret
-                  - resourceGroup
-                  - environment
-              aws:
-                additionalProperties: false
-                description: Amazon Web Services
-                properties:
-                  region:
-                    type: string
-                    description: The AWS region where the cluster is running.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  accessKeyId:
-                    type: string
-                    description: The ID of the access key
-                    $ref: '#/definitions/wordCharacterPattern'
-                  secretAccessKey:
-                    type: string
-                    description: The secret of the access key
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-              google:
-                additionalProperties: false
-                description: Google Cloud Platform
-                properties:
-                  serviceAccount:
-                    type: string
-                    description: The IAM account with permissions to manage snapshot resources in the GCP Project.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  project:
-                    type: string
-                    description: The name of the GCP project.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  saKeyJson:
-                    type: string
-                    x-secret: ''
-              type:
-                type: string
-                enum:
-                  - aws
-                  - azure
-                  - google
-                  - custom
-                default: custom
-          storage:
-            properties:
-              azureBlob:
-                additionalProperties: false
-                properties:
-                  storageAccount:
-                    type: string
-                    description: The used Azure storage account
-                    $ref: '#/definitions/wordCharacterPattern'
-                  resourceGroup:
-                    type: string
-                    description: The resource group of the storage account
-                    $ref: '#/definitions/wordCharacterPattern'
-                  bucket:
-                    type: string
-                    description: Name of the blob container.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  tenantId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  subscriptionId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  aadClientId:
-                    $ref: '#/definitions/wordCharacterPattern'
-                  aadClientSecret:
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-                required:
-                  - resourceGroup
-                  - storageAccount
-                  - bucket
-              s3:
-                additionalProperties: false
-                properties:
-                  bucket:
-                    type: string
-                    description: Name of the blob container.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  s3Url:
-                    description: The name (URL) of the S3 bucket
-                    $ref: '#/definitions/wordCharacterPattern'
-                  accessKeyId:
-                    type: string
-                    description: The ID of the access key
-                    $ref: '#/definitions/wordCharacterPattern'
-                  secretAccessKey:
-                    type: string
-                    description: The secret of the access key
-                    $ref: '#/definitions/wordCharacterPattern'
-                    x-secret: ''
-                required:
-                  - bucket
-                  - s3Url
-              gcs:
-                additionalProperties: false
-                properties:
-                  bucket:
-                    type: string
-                    description: Name of the bucket.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  serviceAccount:
-                    description: The name of the GCP service account to use.
-                    $ref: '#/definitions/wordCharacterPattern'
-                  saKeyJson:
-                    type: string
-                    x-secret: ''
-                required:
-                  - bucket
-                  - serviceAccount
-              type:
-                type: string
-                enum:
-                  - azureBlob
-                  - s3
-                  - gcs
-                  - minioLocal
-                default: minioLocal
           logLevel:
             description: Set log-level for the Velero pod.
             default: info
@@ -3293,10 +2885,40 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+          gitea:
+            title: Gitea
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+              retentionPolicy:
+                $ref: '#/definitions/backupRetentionPolicy'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
+          keycloak:
+            title: Keycloak
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+              retentionPolicy:
+                $ref: '#/definitions/backupRetentionPolicy'
+              schedule:
+                $ref: '#/definitions/backupSchedule'
       persistentVolumes:
         type: object
-        title: PersistentVolumes backups
+        description: Create backups of persistent volumes
+        additionalProperties: false
         properties:
+          linodeApiToken:
+            type: string
+            description: Linode API Token
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
           gitea:
             title: Gitea
             properties:
@@ -3307,58 +2929,37 @@ properties:
                 $ref: '#/definitions/backupTtl'
               schedule:
                 $ref: '#/definitions/backupSchedule'
-          drone:
-            title: Drone
+  obj:
+    properties:
+      provider:
+        properties:
+          linode:
+            additionalProperties: false
             properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          keycloak:
-            title: Keycloak
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          harbor:
-            title: Harbor
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              resources:
-                $ref: '#/definitions/resources'
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          argo:
-            title: ArgoCD
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
-          minio:
-            title: Minio
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
+              region:
+                description: The region of the bucket
+                $ref: '#/definitions/wordCharacterPattern'
+              accessKeyId:
+                type: string
+                description: The ID of the access key
+                $ref: '#/definitions/wordCharacterPattern'
+              secretAccessKey:
+                type: string
+                description: The secret of the access key
+                $ref: '#/definitions/wordCharacterPattern'
+                x-secret: ''
+            required:
+              - region
+              - accessKeyId
+              - secretAccessKey
+          type:
+            type: string
+            enum:
+              - minioLocal
+              - linode
+              - disabled
+            default: disabled
+
   databases:
     properties:
       keycloak:

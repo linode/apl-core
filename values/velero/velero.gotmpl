@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
+{{- $obj := $v.obj.provider }}
+{{- $bu := $v.obj.bucket }}
 {{- $b := $v.platformBackups.persistentVolumes }}
-{{- $cp := $vl.cloud }}
-{{- $sp := $vl.storage }}
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
 
@@ -15,29 +15,14 @@ metrics:
     additionalLabels:
       prometheus: system
 
-{{- if eq $cp.type "custom" }}
+{{- if eq $v.cluster.provider "custom" }}
 snapshotsEnabled: false
 {{- end }}
 
 upgradeCRDs: false
 cleanUpCRDs: false
 
-
-
 initContainers:
-  - name: velero-plugin-for-azure
-    image: velero/velero-plugin-for-microsoft-azure:v1.8.2
-    imagePullPolicy: IfNotPresent
-    resources:
-      requests:
-        cpu: 50m
-        memory: 32Mi
-      limits:
-        cpu: 100m
-        memory: 512Mi
-    volumeMounts:
-      - mountPath: /target
-        name: plugins
   - name: velero-plugin-for-aws
     image: velero/velero-plugin-for-aws:v1.8.2
     imagePullPolicy: IfNotPresent
@@ -51,8 +36,9 @@ initContainers:
     volumeMounts:
       - mountPath: /target
         name: plugins
-  - name: velero-plugin-for-gcp
-    image: velero/velero-plugin-for-gcp:v1.8.2
+{{- if eq $v.cluster.provider "linode" }}
+  - name: velero-plugin-for-linode
+    image: displague/velero-plugin-linode:v0.0.1
     imagePullPolicy: IfNotPresent
     resources:
       requests:
@@ -60,10 +46,11 @@ initContainers:
         memory: 32Mi
       limits:
         cpu: 100m
-        memory: 32Mi
+        memory: 512Mi
     volumeMounts:
       - mountPath: /target
         name: plugins
+{{- end }}
 
 podSecurityContext:
   runAsUser: 1000
@@ -71,115 +58,56 @@ podSecurityContext:
 configuration:
 # Use restic for File System Backups instead of kopia
   uploaderType: restic
-  defaultBackupStorageLocation: otomi
-
-  {{- if eq $sp.type "azureBlob" }}
+  defaultBackupStorageLocation: apl
+  {{- if eq $obj.type "minioLocal" }}
   backupStorageLocation:
-  - name: otomi
-    provider: azure
-    default: true
-    bucket: {{ $sp.azureBlob.bucket }}
-    config:
-      storageAccount: {{ $sp.azureBlob.storageAccount }}
-      resourceGroup: {{ $sp.azureBlob.resourceGroup }}
-  {{- end }}
-  {{- if eq $sp.type "s3" }}
-  backupStorageLocation:
-  - name: otomi
+  - name: apl-minio
     provider: aws
     default: true
-    bucket: {{ $sp.s3.bucket }}
-    config:
-      s3Url: {{ $sp.s3.s3Url }}
-      region: {{ $cp.aws.region }}
-  {{- end }}
-  {{- if eq $sp.type "minioLocal" }}
-  backupStorageLocation:
-  - name: otomi
-    provider: aws
-    default: true
-    bucket: velero   
+    bucket: {{ $bu.velero}}   
     config:
       s3Url: http://minio.minio.svc.cluster.local:9000
       publicUrl: http://minio.minio.svc.cluster.local:9000
       region: minio
       s3ForcePathStyle: true
   {{- end }}
-  {{- if eq $sp.type "gcs" }}
+  {{- if eq $obj.type "linode" }}
   backupStorageLocation:
-  - name: otomi
-    provider: gcp
-    default: true
-    bucket: {{ $sp.gcs.bucket }}   
-    config:
-      serviceAccount: {{ $sp.gcs.serviceAccount }}
-  {{- end }}
-
-  {{- if eq $cp.type "azure" }}
-  volumeSnapshotLocation:
-  - name: otomi
-    provider: azure
-    config:
-      resourceGroup: {{ $cp.azure.resourceGroup }}
-  {{- end }}
-  
-  {{- if eq $cp.type "aws" }}
-  volumeSnapshotLocation:
-  - name: otomi
+  - name: apl-linode
     provider: aws
+    default: true
+    bucket: {{ $bu.velero }} 
     config:
-      region: {{ $cp.aws.region }}
+      s3Url: https://{{ $obj.linode.region }}.linodeobjects.com
+      region: {{ $obj.linode.region }}
+      s3ForcePathStyle: true
   {{- end }}
-
-  {{- if eq $cp.type "google" }}
+  {{- if eq $v.cluster.provider "linode" }}
   volumeSnapshotLocation:
-  - name: otomi
-    provider: gcp
-    config:
-      project: {{ $cp.google.project }}
+  - name: apl-linode
+    provider: linode.com/velero
   {{- end }}
-
   # if set Velero will back up all pod volumes using Restic with the exception of service account tokens, secrets, config maps and hostpath volumes
   defaultVolumesToRestic: {{ $vl.restic.enabled }}
   logLevel: {{ $vl.logLevel }}
 
+
 credentials:
+{{- with $v.platformBackups.persistentVolumes | get "linodeApiToken" nil }}
+  extraEnvVars:
+    linode_token: {{ $v.platformBackups.persistentVolumes.linodeApiToken }}
+{{- end }}
   secretContents:
     cloud: |
-{{- if eq $cp.type "azure" }}
-      AZURE_RESOURCE_GROUP={{ $cp.azure.resourceGroup }}
-      AZURE_CLOUD_NAME={{ $cp.azure.environment }}
-      AZURE_SUBSCRIPTION_ID={{ $cp.azure.subscriptionId }}
-      AZURE_TENANT_ID={{ $cp.azure.tenantId }}
-      AZURE_CLIENT_ID={{ $cp.azure.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $cp.azure.aadClientSecret }}
+{{- if eq $obj.type "linode" }}
+      [default]
+      aws_access_key_id={{ $obj.linode.accessKeyId }}
+      aws_secret_access_key={{ $obj.linode.secretAccessKey }}
 {{- end }}
-{{- if and (eq $sp.type "azureBlob") (not (eq $cp.type "azure")) }}
-      AZURE_SUBSCRIPTION_ID={{ $sp.azureBlob.subscriptionId }}
-      AZURE_TENANT_ID={{ $sp.azureBlob.tenantId }}
-      AZURE_CLIENT_ID={{ $sp.azureBlob.aadClientId }}
-      AZURE_CLIENT_SECRET={{ $sp.azureBlob.aadClientSecret }}
-{{- end }}
-{{- if eq $sp.type "minioLocal" }}
+{{- if eq $obj.type "minioLocal" }}
       [default]
       aws_access_key_id=otomi-admin
       aws_secret_access_key={{ $v.otomi.adminPassword }}
-{{- end }}
-{{- if eq $cp.type "aws" }}
-      [default]
-      aws_access_key_id={{ $cp.s3.accessKeyId }}
-      aws_secret_access_key={{ $cp.s3.secretAccessKey }}
-{{- end }}
-{{- if and (eq $sp.type "s3") (not (eq $cp.type "aws")) }}
-      [default]
-      aws_access_key_id={{ $sp.s3.accessKeyId }}
-      aws_secret_access_key={{ $sp.s3.secretAccessKey }}
-{{- end }}
-{{- if eq $cp.type "google" }}
-      '{{ $cp.google.saKeyJson }}'
-{{- end }}
-{{- if and (eq $sp.type "gcs") (not (eq $cp.type "google")) }}
-      '{{ $sp.gcs.saKeyJson }}'
 {{- end }}
 
 kubectl:
@@ -205,8 +133,8 @@ nodeAgent:
     runAsUser: 1338
     fsGroup: 1338
 
-schedules:
 {{- if $b.gitea.enabled }}
+schedules:
   gitea:
     disabled: false
     schedule: {{ $b.gitea.schedule }}
@@ -219,80 +147,5 @@ schedules:
       - pv
       - pvc
       includeClusterResources: true
-      storageLocation: otomi
-{{- end }}
-{{- if $b.keycloak.enabled }} 
-  keycloak:
-    disabled: false
-    schedule: {{ $b.keycloak.schedule }}
-    useOwnerReferencesInBackup: false
-    template:
-      ttl: {{ $b.keycloak.ttl }}
-      includedNamespaces:
-      - keycloak
-      includedResources:
-      - pv
-      - pvc
-      includeClusterResources: true
-      storageLocation: otomi
-{{- end }}
-{{- if $b.drone.enabled }} 
-  drone:
-    disabled: false
-    schedule: {{ $b.drone.schedule }}
-    useOwnerReferencesInBackup: false
-    template:
-      ttl: {{ $b.drone.ttl }}
-      includedNamespaces:
-      - drone
-      includedResources:
-      - pv
-      - pvc
-      includeClusterResources: true
-      storageLocation: otomi
-{{- end }}
-{{- if $b.harbor.enabled }} 
-  harbor:
-    disabled: false
-    schedule: {{ $b.harbor.schedule }}
-    useOwnerReferencesInBackup: false
-    template:
-      ttl: {{ $b.harbor.ttl }}
-      includedNamespaces:
-      - harbor
-      includedResources:
-      - pv
-      - pvc
-      includeClusterResources: true
-      storageLocation: otomi
-{{- end }}
-{{- if $b.argo.enabled }}
-  argocd:
-    disabled: false
-    schedule: {{ $b.argo.schedule }}
-    useOwnerReferencesInBackup: false
-    template:
-      ttl: {{ $b.argo.ttl }}
-      includedNamespaces:
-      - argocd
-      includedResources:
-      - pv
-      - pvc
-      includeClusterResources: true
-      storageLocation: otomi
-{{- end }}
-{{- if $b.minio.enabled }}
-  minio:
-    disabled: false
-    schedule: {{ $b.minio.schedule }}
-    useOwnerReferencesInBackup: false
-    template:
-      ttl: {{ $b.kubeapps.ttl }}
-      includedNamespaces:
-      - minio
-      includedResources:
-      - pv
-      - pvc
-      includeClusterResources: true
-      storageLocation: otomi
+      storageLocation: apl
 {{- end }}

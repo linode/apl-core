@@ -4,4 +4,4 @@ cluster:
     k8sContext: otomi-eks-demo
     name: demo
     owner: redkubes
-    provider: azure
+    provider: linode

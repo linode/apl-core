@@ -7,9 +7,3 @@ apps:
             requests:
                 cpu: 100m
                 memory: 200Mi
-        storage:
-            s3:
-                accessKeyId: 2C2F1864-3ADB-4D06-8F77-C82CAB6F0415
-                bucket: databases/
-                s3Url: https://nl-ams-1.linodeobjects.com
-            type: s3

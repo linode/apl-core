@@ -67,7 +67,7 @@ provisioning:
     - name: loki
     - name: harbor
     - name: tempo
-    - name: database
+    - name: cnpg
   policies:
     - name: otomi-apps
       statements:
@@ -83,8 +83,7 @@ provisioning:
           - arn:aws:s3:::loki
           - arn:aws:s3:::harbor
           - arn:aws:s3:::tempo
-          - arn:aws:s3:::harbor 
-          - arn:aws:s3:::database
+          - arn:aws:s3:::cnpg
         - effect: Allow
           principal:
             AWS:
@@ -96,7 +95,7 @@ provisioning:
           - arn:aws:s3:::loki
           - arn:aws:s3:::harbor
           - arn:aws:s3:::tempo
-          - arn:aws:s3:::database
+          - arn:aws:s3:::cnpg
           condition:
             StringEquals:
               s3:prefix:
@@ -116,4 +115,4 @@ provisioning:
           - arn:aws:s3:::loki/**
           - arn:aws:s3:::harbor/**
           - arn:aws:s3:::tempo/**
-          - arn:aws:s3:::database/**
+          - arn:aws:s3:::cnpg/**
