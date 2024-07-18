@@ -8,6 +8,5 @@ apps:
                     rootdirectory: /google/demo
                 type: gcs
         core: {}
-        jobservice: {}
         registry:
             credentials: {}

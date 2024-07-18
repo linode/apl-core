@@ -12,12 +12,14 @@ imagePullSecrets:
   - name: apl-pullsecret-global
 {{- end }}
 configs:
-  {{ if $v._derived.untrustedCA }}
   tls:
     certificates:
+    {{ if $v._derived.untrustedCA }}
       caCert: |
         {{- $v._derived.caCert | nindent 8 }}
-  {{ end }}
+    {{- else }}
+      {}
+{{ end }}
 script: |
   {{- if $v._derived.untrustedCA }}
   export NODE_EXTRA_CA_CERTS=/app/config/tls/certificates.crt
