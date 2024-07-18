@@ -72,14 +72,13 @@ describe('Bootstrapping values', () => {
     const res = await getStoredClusterSecrets(deps)
     expect(res).toEqual(undefined)
   })
-  it('should set apiName, k8sContext and owner if needed', async () => {
+  it('should set k8sContext and owner if needed', async () => {
     deps.processValues.mockReturnValue(values)
     deps.hfValues.mockReturnValue(values)
     await bootstrap(deps)
     expect(deps.writeValues).toHaveBeenCalledWith(
       expect.objectContaining({
         cluster: expect.objectContaining({
-          apiName: expect.any(String),
           k8sContext: expect.any(String),
           owner: expect.any(String),
         }),
