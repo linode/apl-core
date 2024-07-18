@@ -136,46 +136,23 @@ persistence:
       # Use the existing PVC which must be created manually before bound,
       # and specify the 'subPath' if the PVC is shared with other components
       existingClaim: ''
-      # Specify the 'storageClass' used to provision the volume. Or the default
-      # StorageClass will be used(the default).
-      # Set it to '-' to disable dynamic provisioning
-      {{- if $v._derived.supportedCloud }}
-      storageClass: fast
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 10Gi
     chartmuseum:
       existingClaim: ''
-      {{- if $v._derived.supportedCloud }}
-      storageClass: fast
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
-      {{- if eq $v.cluster.provider "vultr" }}
-      size: 10Gi
-      {{- else }}
       size: 5Gi
-      {{- end }}
     jobservice:
       existingClaim: ''
-      {{- if $v._derived.supportedCloud }}
-      storageClass: fast-immediate
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
-      {{- if eq $v.cluster.provider "vultr" }}
-      size: 10Gi
-      {{- else }}
       size: 1Gi
-      {{- end }}
     # If external database is used, the following settings for database will
     # be ignored
     database:
       existingClaim: ''
-      {{- if $v._derived.supportedCloud }}
-      storageClass: fast
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
@@ -183,17 +160,11 @@ persistence:
     # be ignored
     redis:
       existingClaim: ''
-      {{- if $v._derived.supportedCloud }}
-      storageClass: fast
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
       existingClaim: ''
-      {{- if $v._derived.supportedCloud }}
-      storageClass: fast
-      {{- end }}
       subPath: ''
       accessMode: ReadWriteOnce
       size: 5Gi   

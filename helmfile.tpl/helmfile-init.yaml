@@ -19,14 +19,6 @@ releases:
     labels:
       init: true
     <<: *default
-  - name: cloud
-    installed: true
-    namespace: kube-system
-    labels:
-      init: true
-    chart: ../charts/raw
-    values:
-    - ../values/cloud/cloud-raw.gotmpl
   - name: k8s
     installed: true
     labels:

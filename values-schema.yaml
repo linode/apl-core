@@ -1473,22 +1473,6 @@ properties:
             default: false
             description: Indicates Azure Application Gateway Ingress Controller add-on is installed by AKS.
             type: boolean
-  cloud:
-    additionalProperties: true
-    properties:
-      skipStorageClasses:
-        description: |
-          List of storage classes to exclude from deployment, to avoid k8s errors due to patching not allowed.
-          This is a rather hacky way to circumvent the patching problem, going against idempotency, but we need it.
-          Without it we can't add new storageclasses to a cluster upgrading otomi.
-        type: array
-        items:
-          type: string
-          enum:
-            - std
-            - std-immediate
-            - fast
-            - fast-immediate
   apps:
     additionalProperties: true
     properties:
