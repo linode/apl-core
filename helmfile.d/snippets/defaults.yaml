@@ -694,12 +694,6 @@ environments:
         obj:
           provider:
             type: disabled
-          bucket:
-              loki: loki
-              cnpg: cnpg
-              velero: velero
-              harbor: harbor
-              tempo: tempo
         platformBackups:
           database:
             harbor:

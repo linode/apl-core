@@ -2,7 +2,7 @@
 {{- $h := $v.apps.harbor }}
 {{- $db := $v.databases.harbor }}
 {{- $obj := $v.obj.provider }}
-{{- $bu := $v.obj.bucket }}
+{{- $bu := $v.obj.buckets }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $notaryDomain := printf "notary.%s" $v.cluster.domainSuffix }}
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}

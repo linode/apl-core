@@ -88,7 +88,7 @@ platformBackups:
         gitea:
             enabled: false
 obj:
-    bucket:
+    buckets:
         loki: loki
         cnpg: cnpg
         velero: velero

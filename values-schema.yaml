@@ -2959,7 +2959,28 @@ properties:
               - linode
               - disabled
             default: disabled
-
+      buckets:
+        properties:
+          loki:
+            type: string
+            $ref: '#/definitions/wordCharacterPattern'
+            default: loki
+          cnpg:
+            type: string
+            $ref: '#/definitions/wordCharacterPattern'
+            default: cnpg
+          velero:
+            type: string
+            $ref: '#/definitions/wordCharacterPattern'
+            default: velero
+          harbor:
+            type: string
+            $ref: '#/definitions/wordCharacterPattern'
+            default: harbor
+          tempo:
+            type: string
+            $ref: '#/definitions/wordCharacterPattern'
+            default: tempo
   databases:
     properties:
       keycloak:
