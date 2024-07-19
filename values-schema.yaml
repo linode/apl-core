@@ -463,17 +463,11 @@ definitions:
         title: Load balancer IP address
         description: A static IP address assigned to a load balancer
         type: string
-      loadBalancerRG:
-        title: Load balancer Azure resource group
-        type: string
-      loadBalancerSubnet:
-        title: Load balancer Azure subnet
-        type: string
-        description: Specify subnet provider for load balancer IP address (applies to private network only)
       sourceIpAddressFiltering:
         title: Source IP address filtering
         type: string
         description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
+
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
@@ -689,7 +683,7 @@ definitions:
     type: integer
   provider:
     type: string
-    description: Enter the cloud provider of this cluster. Choose 'custom' for laptop install (minikube, kind) or onprem installs.
+    description: Enter the cloud provider of the cluster.
     enum:
       - custom
       - linode
@@ -913,11 +907,6 @@ definitions:
             type: boolean
           workload:
             $ref: '#/definitions/labelsAnnotations'
-      certArn:
-        description: Only available on AWS when an external LB is configured. The cert ARN will be registered on the load balancer for SSL termination.
-        example: arn:aws:acm:eu-central-1:xxx:certificate/xxx
-        pattern: 'arn:aws(-cn|-us-gov)?:acm:\S+:\d+:\w+\/\S+'
-        type: string
       trafficControl:
         title: Traffic Control
         description: Split traffic between multiple services (blue/green, canary)

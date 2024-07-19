@@ -18,3 +18,7 @@ apps:
             requests:
                 cpu: 100m
                 memory: 192Mi
+        service:
+            annotations:
+                - key: service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol
+                  value: true

@@ -255,6 +255,10 @@ changes:
     deletions:
       - 'ingress.platformClass.loadBalancerRG'
       - 'ingress.platformClass.loadBalancerSubnet'
+      - 'teamConfig.{team}.apps.tempo.shortcuts'
+      - 'teamConfig.{team}.apps.tempo.shortcuts'
+      - 'ingress.platformClass.loadBalancerRG'
+      - 'ingress.platformClass.loadBalancerSubnet'
       - 'azure.monitor'
       - 'cluster.apiName'
       - 'cluster.region'
