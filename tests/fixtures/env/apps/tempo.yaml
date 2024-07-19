@@ -1,12 +1,6 @@
 apps:
     tempo:
         enabled: true
-        storage:
-            type: minioLocal
-            # azure:
-            #     accountName: account_name
-            #     containerName: container_name
-            #     accountKey: shshsheyeywywiqwioqw
         autoscaling:
             ingester:
                 enabled: true

@@ -34,12 +34,4 @@ releases:
     installed: {{ $a | get "kured.enabled" }}
     namespace: kube-system
     <<: *default
-  - name: kube-descheduler
-    installed: {{ $a | get "kube-descheduler.enabled" }}
-    namespace: kube-system
-    <<: *default
-  - name: cluster-overprovisioner
-    installed: {{ $a | get "cluster-overprovisioner.enabled" }}
-    namespace: cluster-overprovisioner
-    <<: *default
 

@@ -1,6 +1,7 @@
 {{- $v := .Values -}}
 {{- $l:= $v.apps.loki }}
-{{- $st := $l.storage }}
+{{- $obj := $v.obj.provider }}
+{{- $bu := $v.obj.buckets }}
 
 nameOverride: loki
 
@@ -22,167 +23,39 @@ serviceMonitor:
 loki:
   podAnnotations:
     sidecar.istio.io/inject: "false"
-  config: |-
-    auth_enabled: true
-    server:
-      http_listen_port: 3100
-    common:
-      compactor_address: http://loki-compactor.monitoring:3100
-    distributor:
-      ring:
-        kvstore:
-          store: memberlist
-    memberlist:
-      join_members:
-        - loki-memberlist
-    ingester:
-      lifecycler:
-        ring:
-          kvstore:
-            store: memberlist
-          replication_factor: 1
-      chunk_idle_period: 30m
-      chunk_block_size: 262144
-      chunk_encoding: snappy
-      chunk_retain_period: 1m
-      max_transfer_retries: 0
-      wal:
-        dir: /var/loki/wal
-        replay_memory_ceiling: 512MB
-    limits_config:
-      enforce_metric_name: false
-      reject_old_samples: true
-      reject_old_samples_max_age: 168h
-      max_cache_freshness_per_query: 10m
-      split_queries_by_interval: 24h
-      query_timeout: 5m
-    runtime_config:
-      file: /var/loki-runtime/runtime.yaml
-    chunk_store_config:
-      max_look_back_period: 0s
-    table_manager:
-      retention_deletes_enabled: false
-      retention_period: 0s
-    query_range:
-      align_queries_with_step: true
-      max_retries: 5
-      cache_results: true
-      results_cache:
-        cache:
-          embedded_cache:
-            enabled: true
-            ttl: 24h
-    frontend_worker:
-       frontend_address: loki-query-frontend-headless.monitoring:9095
-    frontend:
-      log_queries_longer_than: 5s
-      compress_responses: true
-      tail_proxy_url: http://loki-querier.monitoring:3100
-    compactor:
-      {{- if eq $st.type "s3" }}
+  schemaConfig:
+    configs:
+    - from: 2020-09-07
+      store: boltdb-shipper
+      object_store: s3
+      schema: v11
+      index:
+        prefix: loki_index_
+        period: 24h
+  {{- if eq $obj.type "minioLocal" "linode" }}
+  storageConfig:
+    boltdb_shipper:
+      active_index_directory: /var/loki/index
+      cache_location: /var/loki/index_cache
+      resync_interval: 5s
       shared_store: s3
+    aws:
+      {{- if eq $obj.type "minioLocal" }}
+      s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/{{ $bu.loki }}
+      s3forcepathstyle: true
       {{- end }}
-      {{- if eq $st.type "minioLocal" }}
-      shared_store: s3
-      {{- end }}
-      {{- if eq $st.type "azure" }}
-      shared_store: azure
-      {{- end }}
-      {{- if eq $st.type "gcs" }}
-      shared_store: gcs
-      {{- end }}
-      working_directory: /loki/compactor
-      compaction_interval: 5m
-    ruler:
-      storage:
-        type: local
-        local:
-          directory: /etc/loki/rules
-      ring:
-        kvstore:
-          store: memberlist
-      rule_path: /tmp/loki/scratch
-      alertmanager_url: https://alertmanager.xx
-      external_url: https://alertmanager.xx
-    schema_config:
-      configs:
-      - from: {{ $l | get "v11StartDate" "2023-01-01" }}
-        store: boltdb-shipper
-        {{- if eq $st.type "minioLocal" }}
-        object_store: s3
-        {{- end }}
-        {{- if eq $st.type "s3" }}
-        object_store: s3
-        {{- end }}
-        {{- if eq $st.type "azure" }}
-        object_store: azure
-        {{- end }}
-        {{- if eq $st.type "gcs" }}
-        object_store: gcs
-        {{- end }}
-        schema: v11
-        index:
-          prefix: index_
-          period: 24h
-    storage_config:
-      boltdb_shipper:
-        {{- if eq $st.type "minioLocal" }}
-        shared_store: s3
-        {{- end }}
-        {{- if eq $st.type "s3" }}
-        shared_store: s3
-        {{- end }}
-        {{- if eq $st.type "azure" }}
-        shared_store: azure
-        {{- end }}
-        {{- if eq $st.type "gcs" }}
-        shared_store: gcs
-        {{- end }}
-        {{- if eq $st.type "filesystem" }}
-        shared_store: filesystem
-        {{- end }}
-        active_index_directory: /var/loki/index
-        cache_location: /var/loki/cache
-        cache_ttl: 168h
-      {{- if eq $st.type "gcs" }}
-      gcs:
-        bucket_name: {{ $st.gcs.bucket }}   
-      {{- end }}
-      {{- if eq $st.type "filesystem" }}
-      filesystem:
-        directory: "/var/loki/chunks"
-      {{- else }}
-      filesystem: null
-      {{- end }}
-      {{- if eq $st.type "minioLocal" }}
-      aws:
-        s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/loki
-        s3forcepathstyle: true
-      {{- end }}
-      {{- if eq $st.type "s3" }}
-      {{- if $st.s3.useInstanceRole }}
-      aws:
-        s3: s3://{{ $st.s3.region }}/{{ $st.s3.bucket }}
-        dynamodb:
-          dynamodb_url: dynamodb://{{ $st.s3.region }}    
-      {{- else }}
-      aws:
-        s3: s3://{{ $st.s3.accessKeyId }}:{{ $st.s3.secretAccessKey }}@{{ $st.s3.s3Url }}/{{ $st.s3.bucket }}
-        s3forcepathstyle: true
-      {{- end }}
-      {{- end }}
-      {{- if eq $st.type "azure" }}
-      azure:
-        account_name: {{ $st.azure.accountName }}
-        account_key: {{ $st.azure.accountKey }}
-        container_name: {{ $st.azure.containerName }}
-      {{- end }}
-
-{{- if and (eq $st.type "gcs") $st.gcs.serviceAccount }}
-serviceAccount:
-  annotations:
-    iam.gke.io/gcp-service-account: {{ $st.gcs.serviceAccount }}
-{{- end }}
+      {{- if eq $obj.type "linode" }}
+      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $bu.loki }}     
+      s3forcepathstyle: true
+      sse_encryption: false
+      http_config:
+          idle_conn_timeout: 90s
+          insecure_skip_verify: true
+      backoff_config:
+        min_period: 2s
+        max_period: 5s
+      {{- end }} 
+  {{- end }}
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
@@ -195,14 +68,6 @@ ingester:
     maxReplicas: {{ $l.autoscaling.ingester.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $l.autoscaling.ingester.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.ingester.targetMemoryUtilizationPercentage }}
-  {{- if eq $st.type "filesystem" }}
-  persistence:
-    enabled: true
-    claims:
-      - name: data
-        size: {{ $l.persistence.ingester.size }}
-        storageClass: null
-  {{- end }}
 
 gateway:
   resources: {{- $l.resources.gateway | toYaml | nindent 4 }}
@@ -223,12 +88,6 @@ querier:
     maxReplicas: {{ $l.autoscaling.querier.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $l.autoscaling.querier.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.querier.targetMemoryUtilizationPercentage }}
-  {{- if eq $st.type "filesystem" }}
-  persistence:
-    enabled: true
-    size: {{ $l.persistence.querier.size }}
-    storageClass: null
-  {{- end }}
 
 distributor:
   resources: {{- $l.resources.distributor | toYaml | nindent 4 }}
