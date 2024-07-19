@@ -58,6 +58,7 @@ metadata:
   annotations:
     externaldns: "true"
     {{- if eq $v.cluster.provider "linode" }}
+    # Check Linode Api documentation for allowed values in seconds: https://developers-linode.netlify.app/api/v4/domains
     external-dns.alpha.kubernetes.io/ttl: "1h"
     {{- end }}
     {{- if $hasTlsPass }}
