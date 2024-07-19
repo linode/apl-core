@@ -271,3 +271,5 @@ changes:
       - 'platformBackups.persistentVolumes.drone'
       - 'platformBackups.persistentVolumes.harbor'
       - 'platformBackups.persistentVolumes.keycloak'
+    relocations:
+      - 'obj.bucket': 'obj.buckets'
