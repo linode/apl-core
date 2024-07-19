@@ -57,6 +57,7 @@ kind: Ingress
 metadata:
   annotations:
     externaldns: "true"
+    external-dns.alpha.kubernetes.io/ttl: "1h"
     {{- if $hasTlsPass }}
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
     {{- else }}

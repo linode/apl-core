@@ -10,6 +10,7 @@ resources:
     metadata:
       annotations:
         externaldns: "true"
+        external-dns.alpha.kubernetes.io/ttl: "1h"
         nginx.ingress.kubernetes.io/ssl-redirect: "true"
         {{- if and (eq $v.cluster.provider "custom") (hasKey $v.ingress.platformClass "entrypoint") (ne $ingress.entrypoint "") }}
         external-dns.alpha.kubernetes.io/target: {{ $v.ingress.platformClass }}
