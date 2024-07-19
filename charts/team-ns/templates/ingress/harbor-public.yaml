@@ -12,7 +12,9 @@ kind: Ingress
 metadata:
   annotations:
     externaldns: "true"
+    {{- if eq $v.cluster.provider "linode" }}
     external-dns.alpha.kubernetes.io/ttl: "1h"
+    {{- end }}
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
     nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
     nginx.ingress.kubernetes.io/enable-modsecurity: "false"
