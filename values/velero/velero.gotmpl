@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
 {{- $obj := $v.obj.provider }}
-{{- $bu := $v.obj.bucket }}
+{{- $bu := $v.obj.buckets }}
 {{- $b := $v.platformBackups.persistentVolumes }}
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
