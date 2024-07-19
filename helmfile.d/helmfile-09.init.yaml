@@ -14,10 +14,6 @@ bases:
 {{- $k := $a.keycloak }}
 
 releases:
-  - name: cluster-autoscaler
-    installed: {{ $a | get "cluster-autoscaler.enabled" }}
-    namespace: kube-system
-    <<: *default
   - name: knative-serving
     installed: {{ $a | get "knative.enabled" }}
     namespace: knative-serving

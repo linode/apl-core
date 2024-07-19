@@ -27,8 +27,6 @@ apps:
     enabled: true
   knative:
     enabled: false
-  kube-descheduler:
-    enabled: true
   kured:
     enabled: true
   loki:
@@ -43,8 +41,6 @@ apps:
     enabled: true
   redis-shared:
     enabled: false
-  snapshot-controller:
-    enabled: true
   sealed-secrets:
     enabled: true
   rabbitmq:

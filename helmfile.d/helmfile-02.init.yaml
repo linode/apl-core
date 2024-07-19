@@ -12,25 +12,9 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: snapshot-controller
-    installed: {{ $a | get "snapshot-controller.enabled" }}
-    namespace: kube-system
-    labels:
-      init: true
-      pkg: csi
-      provider: aws 
-    <<: *default
   - name: metrics-server
     installed: {{ $a | get "metrics-server.enabled" }}
     namespace: kube-system
-    <<: *default
-  - name: aws-ebs-csi-driver
-    installed: {{ $a | get "aws-ebs-csi-driver.enabled" }}
-    namespace: kube-system
-    labels:
-      init: true
-      pkg: csi
-      provider: aws 
     <<: *default
   - name: ingress-nginx-artifacts
     installed: true
