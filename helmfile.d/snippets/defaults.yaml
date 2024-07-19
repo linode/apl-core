@@ -694,7 +694,7 @@ environments:
         obj:
           provider:
             type: disabled
-          bucket:
+          buckets:
               loki: loki
               cnpg: cnpg
               velero: velero

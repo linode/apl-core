@@ -88,12 +88,12 @@ platformBackups:
         gitea:
             enabled: false
 obj:
-    bucket:
-        loki: loki
-        cnpg: cnpg
-        velero: velero
-        harbor: harbor
-        tempo: tempo
+    buckets:
+        loki: my-clusterid-loki
+        cnpg: my-clusterid-cnpg
+        velero: my-clusterid-velero
+        harbor: my-clusterid-harbor
+        tempo: my-clusterid-tempo
     provider:
         # type: minioLocal
         linode:
