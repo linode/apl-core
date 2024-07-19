@@ -57,7 +57,7 @@ kind: Ingress
 metadata:
   annotations:
     externaldns: "true"
-    {{- if eq $v.cluster.provider "linode" }}
+    {{- if and $v.dns.provider (and $v.dns.provider.linode) }}
     # Check Linode Api documentation for allowed values in seconds: https://developers-linode.netlify.app/api/v4/domains
     external-dns.alpha.kubernetes.io/ttl: "1h"
     {{- end }}
