@@ -1,4 +1,6 @@
 {{- $v := .Values }}
+{{- $dns := $v | get "dns" dict }}
+{{- $p := $dns | get "provider" dict }}
 {{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $name := $domain | replace "." "-" }}
@@ -10,7 +12,7 @@ resources:
     metadata:
       annotations:
         externaldns: "true"
-        {{- if and $v.dns.provider (and $v.dns.provider.linode) }}
+        {{- if $p.linode }}
         # Check Linode Api documentation for allowed values in seconds: https://developers-linode.netlify.app/api/v4/domains
         external-dns.alpha.kubernetes.io/ttl: "1h"
         {{- end }}
