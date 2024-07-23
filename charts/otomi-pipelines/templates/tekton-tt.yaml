@@ -19,6 +19,8 @@ spec:
       kind: PipelineRun
       metadata:
         generateName: $(tt.params.commitId)-
+        annotations:
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
       spec:
         taskRunTemplate:
           serviceAccountName: otomi-tekton-tasks-sa
