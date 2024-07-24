@@ -2,7 +2,7 @@
 {{- $a := $v.apps }}
 {{- $k := $a | get "keycloak" dict }}
 {{- $o := $v | get "oidc" dict }}
-
+{{- $obj := $v.obj.provider }}
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $versions := (readFile "../versions.yaml" | fromYaml) }}
 {{- $pkgVersion := (readFile "../package.json") | regexFind "\"version\": \"([0-9.]+)\"" | regexFind "[0-9]+.[0-9]+.[0-9]+" }}
