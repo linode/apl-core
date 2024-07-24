@@ -700,6 +700,7 @@ environments:
               velero: velero
               harbor: harbor
               tempo: tempo
+              gitea: gitea
         platformBackups:
           database:
             harbor:

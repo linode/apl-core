@@ -5,6 +5,8 @@
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $gdb := $v.databases.gitea }}
+{{- $obj := $v.obj.provider }}
+{{- $bu := $v.obj.buckets }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -113,6 +115,28 @@ gitea:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
       DISABLE_SSH: true
+    {{- if eq $obj.type "minioLocal" "linode" }}
+    storage:
+      STORAGE_TYPE: minio
+      {{- if eq $obj.type "minioLocal" }}
+      MINIO_ENDPOINT: minio.minio.svc.cluster.local:9000
+      MINIO_ACCESS_KEY_ID: otomi-admin
+      MINIO_SECRET_ACCESS_KEY: {{ $v.otomi.adminPassword }}
+      MINIO_BUCKET: {{ $bu.gitea }}
+      MINIO_LOCATION: us-east-1
+      MINIO_USE_SSL: false
+      {{- end }}
+      {{- if eq $obj.type "linode" }}
+      MINIO_ENDPOINT: https://{{ $obj.linode.region }}.linodeobjects.com
+      MINIO_ACCESS_KEY_ID: {{ $obj.linode.accessKeyId }}
+      MINIO_SECRET_ACCESS_KEY: {{ $obj.linode.secretAccessKey }}
+      MINIO_BUCKET: {{ $bu.gitea }}
+      MINIO_LOCATION: {{ $obj.linode.region }}
+      MINIO_USE_SSL: true
+      {{- end }}
+      MINIO_INSECURE_SKIP_VERIFY: false
+      SERVE_DIRECT: true
+    {{- end }}
     
   metrics:
     enabled: true

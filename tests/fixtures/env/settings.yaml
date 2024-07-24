@@ -94,12 +94,13 @@ obj:
         velero: my-clusterid-velero
         harbor: my-clusterid-harbor
         tempo: my-clusterid-tempo
+        gitea: my-clusterid-gitea
     provider:
-        # type: minioLocal
-        linode:
-            region: nl-ams-1
-            accessKeyId: someaccessKeyId
-        type: linode
+        type: minioLocal
+        # linode:
+        #     region: nl-ams-1
+        #     accessKeyId: someaccessKeyId
+        # type: linode
         # type: disabled
 smtp:
     auth_username: no-reply@doma.in
