@@ -87,10 +87,10 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   } catch (e) {
     d.debug(e)
     d.info('Remote does not exist yet. Expecting first commit to come later.')
-  } finally {
-    // finally write back the new values without overwriting existing values
-    await writeValues(values)
   }
+  // finally write back the new values without overwriting existing values
+  d.info('Write default values to env repo')
+  await writeValues(values)
   if (!(await pathExists(`${env.ENV_DIR}/.git`))) {
     d.info('Initializing values git repo.')
     await $`git init .`
