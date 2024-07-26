@@ -77,7 +77,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     }
     // we know we have commits, so we replace ENV_DIR with the clone files and overwrite with new values
     // so first get the new values without secrets (as those exist already)
-    const newValues = (await hfValues({ filesOnly: true })) as Record<string, any>
+    // const newValues = (await hfValues({ filesOnly: true })) as Record<string, any>
     cd(env.ENV_DIR)
     // then sync the clone back to ENV_DIR
     const flags = '-rl' // recursive, preserve symlinks and groups (all we can do without superuser privs)
@@ -85,7 +85,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     // decrypt the freshly cloned repo
     await decrypt()
     // finally write back the new values without overwriting existing values
-    await writeValues(newValues)
+    await writeValues(values)
   } catch (e) {
     d.debug(e)
     d.info('Remote does not exist yet. Expecting first commit to come later.')
