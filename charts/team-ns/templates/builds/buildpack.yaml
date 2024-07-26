@@ -95,6 +95,7 @@ spec:
           {{- include "team-ns.chart-labels" $ | nindent 10 }}
         annotations:
           sidecar.istio.io/inject: "false"
+          argocd.argoproj.io/compare-options: IgnoreExtraneous
       spec:
         pipelineRef:
           name: buildpacks-build-{{ .name }}
@@ -133,6 +134,7 @@ metadata:
   name: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
   annotations:
     sidecar.istio.io/inject: "false"
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   pipelineRef:
