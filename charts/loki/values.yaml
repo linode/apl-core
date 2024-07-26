@@ -82,7 +82,7 @@ loki:
   # -- Config file contents for Loki
   # @default -- See values.yaml
   config: |
-    auth_enabled: false
+    auth_enabled: true
 
     server:
       {{- toYaml .Values.loki.server | nindent 6 }}
