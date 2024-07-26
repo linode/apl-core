@@ -84,11 +84,12 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await $`rsync ${flags} ${env.ENV_DIR}/ /tmp/xx/ && rm -rf .[!.]* * && rsync ${flags} --exclude="." /tmp/xx/ ${env.ENV_DIR}/`
     // decrypt the freshly cloned repo
     await decrypt()
-    // finally write back the new values without overwriting existing values
-    await writeValues(values)
   } catch (e) {
     d.debug(e)
     d.info('Remote does not exist yet. Expecting first commit to come later.')
+  } finally {
+    // finally write back the new values without overwriting existing values
+    await writeValues(values)
   }
   if (!(await pathExists(`${env.ENV_DIR}/.git`))) {
     d.info('Initializing values git repo.')
