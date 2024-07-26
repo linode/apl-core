@@ -1,7 +1,8 @@
 {{- $v := .Values }}
 {{- $p := $v.apps | get "prometheus" }}
-{{- if $p | get "remoteWrite.rwConfig.basicAuth.enabled" false }}
+{{- if or ($p | get "remoteWrite.rwConfig.basicAuth.enabled" false) ($p | get "thanosSidecar" false) }}
 resources:
+  {{- if $p | get "remoteWrite.rwConfig.basicAuth.enabled" false }}
   - apiVersion: v1
     kind: Secret
     metadata:
@@ -11,4 +12,14 @@ resources:
     data:
       username: {{ $p.remoteWrite.rwConfig.basicAuth.username | b64enc }}
       password: {{ $p.remoteWrite.rwConfig.basicAuth.password | b64enc }}
+  {{- end }}
+  {{- if $p | get "thanosSidecar" false }}
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app: prometheus
+      name: thanos-objectstore
+    thanos.yaml: {{ tpl (readFile "thanos-minio-config.gotmpl") (dict "adminPassword" $v.otomi.adminPassword) | b64enc }}
+  {{- end }}
 {{- end }}

@@ -1,0 +1,7 @@
+type: s3                                                                                                                                                                                                           │
+config:
+  endpoint: minio.minio.svc.cluster.local:9000
+  bucket: prometheus
+  access_key: otomi-admin
+  secret_key: {{ .adminPassword }}
+  insecure: true

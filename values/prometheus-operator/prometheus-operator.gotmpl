@@ -52,6 +52,10 @@ commonLabels:
   prometheus: system
 prometheus:
   enabled: {{ $p.enabled }}
+  thanosService:
+    enabled: {{ $p.thanosSidecar }}
+  thanosServiceMonitor:
+    enabled: {{ $p.thanosSidecar }}
   prometheusSpec:
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}Selector:
@@ -80,6 +84,19 @@ prometheus:
         cpu: '3'
         memory: 3Gi
       {{- end }}
+    {{- if $p.thanosSidecar }}
+    thanos:
+      objectStorageConfig:
+        name: thanos-objectstore
+        key: data
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: '1'
+          memory: 1Gi  
+    {{- end }}
     priorityClassName: otomi-critical
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"
