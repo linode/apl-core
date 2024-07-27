@@ -53,9 +53,9 @@ commonLabels:
 prometheus:
   enabled: {{ $p.enabled }}
   thanosService:
-    enabled: {{ $p.thanosSidecar }}
+    enabled: {{ $p.thanosEnabled }}
   thanosServiceMonitor:
-    enabled: {{ $p.thanosSidecar }}
+    enabled: {{ $p.thanosEnabled }}
   prometheusSpec:
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}Selector:
@@ -84,18 +84,19 @@ prometheus:
         cpu: '3'
         memory: 3Gi
       {{- end }}
-    {{- if $p.thanosSidecar }}
+    {{- if $p.thanosEnabled }}
     thanos:
       objectStorageConfig:
         name: thanos-objectstore
-        key: data
+        key: thanos.yaml
       resources:
         requests:
           cpu: 100m
           memory: 128Mi
         limits:
           cpu: '1'
-          memory: 1Gi  
+          memory: 1Gi 
+    replicaExternalLabelName: "__replica__" 
     {{- end }}
     priorityClassName: otomi-critical
     externalLabels:
@@ -252,7 +253,18 @@ grafana:
       basicAuthUser: otomi-admin
       secureJsonData:
         basicAuthPassword: {{ $v.apps.loki.adminPassword }}
-
+    {{- if $p.thanosEnabled }}
+    - name: Thanos Query
+      access: proxy
+      basicAuth: false
+      editable: false
+      orgId: 1
+      type: prometheus
+      url: http://thanos-query.monitoring:9090
+      jsonData:
+        prometheusType: Thanos
+        timeInterval: "30s"
+    {{- end }}
     {{- if $c.tempo.enabled }}
       jsonData:
         derivedFields:
