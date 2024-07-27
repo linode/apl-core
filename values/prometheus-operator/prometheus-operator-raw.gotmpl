@@ -22,10 +22,10 @@ resources:
         app: prometheus
       name: thanos-objectstore
     {{- if eq $obj.type "minioLocal" }}
-    thanos.yaml: {{ tpl (readFile "thanos-minio-config.gotmpl") (dict "adminPassword" $v.otomi.adminPassword) | b64enc }}
+    objstore.yml: {{ tpl (readFile "thanos-minio-config.gotmpl") (dict "adminPassword" $v.otomi.adminPassword) | b64enc }}
     {{- end }}
     {{- if eq $obj.type "linode" }}
-    thanos.yaml: {{ tpl (readFile "thanos-linode-config.gotmpl") (dict "accessKeyId" $obj.linode.accessKeyId "secretAccessKey" $obj.linode.secretAccessKey "region" $obj.linode.region ) | b64enc }}
+    objstore.yml: {{ tpl (readFile "thanos-linode-config.gotmpl") (dict "accessKeyId" $obj.linode.accessKeyId "secretAccessKey" $obj.linode.secretAccessKey "region" $obj.linode.region ) | b64enc }}
     {{- end }}
   {{- end }}
 {{- end }}
