@@ -69,7 +69,6 @@ apps:
                 limits:
                     cpu: 900m
                     memory: 512Mi
-
         persistence:
             ingester:
                 size: 10Gi

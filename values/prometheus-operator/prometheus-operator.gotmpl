@@ -100,7 +100,7 @@ prometheus:
     {{- end }}
     priorityClassName: otomi-critical
     externalLabels:
-      cluster: "{{ $v.cluster.domainSuffix }}"
+      cluster: "prometheus-platform.{{ $v.cluster.domainSuffix }}"
     retention: {{ $p | get "retention" "1d" }}
     retentionSize: {{ $p | get "retentionSize" }}
     storageSpec:
@@ -253,9 +253,11 @@ grafana:
       basicAuthUser: otomi-admin
       secureJsonData:
         basicAuthPassword: {{ $v.apps.loki.adminPassword }}
+    {{- end }}
     {{- if $p.thanosEnabled }}
     - name: Thanos Query
       access: proxy
+      isDefault: true
       basicAuth: false
       editable: false
       orgId: 1
@@ -263,7 +265,7 @@ grafana:
       url: http://thanos-query.monitoring:9090
       jsonData:
         prometheusType: Thanos
-        timeInterval: "30s"
+        timeInterval: "60s"
     {{- end }}
     {{- if $c.tempo.enabled }}
       jsonData:
@@ -312,7 +314,6 @@ grafana:
         httpMethod: GET
         lokiSearch:
           datasourceUid: 'loki'
-    {{- end }}
     {{- end }}
   adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
   grafana.ini: {{- $grafanaIni | nindent 4 }}

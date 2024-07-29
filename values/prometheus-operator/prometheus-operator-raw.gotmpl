@@ -21,11 +21,12 @@ resources:
       labels:
         app: prometheus
       name: thanos-objectstore
-    {{- if eq $obj.type "minioLocal" }}
-    objstore.yml: {{ tpl (readFile "thanos-minio-config.gotmpl") (dict "adminPassword" $v.otomi.adminPassword) | b64enc }}
-    {{- end }}
-    {{- if eq $obj.type "linode" }}
-    objstore.yml: {{ tpl (readFile "thanos-linode-config.gotmpl") (dict "accessKeyId" $obj.linode.accessKeyId "secretAccessKey" $obj.linode.secretAccessKey "region" $obj.linode.region ) | b64enc }}
-    {{- end }}
+    data:
+      {{- if eq $obj.type "minioLocal" }}
+      objstore.yml: {{ tpl (readFile "thanos-minio-config.gotmpl") (dict "adminPassword" $v.otomi.adminPassword) | b64enc }}
+      {{- end }}
+      {{- if eq $obj.type "linode" }}
+      objstore.yml: {{ tpl (readFile "thanos-linode-config.gotmpl") (dict "accessKeyId" $obj.linode.accessKeyId "secretAccessKey" $obj.linode.secretAccessKey "region" $obj.linode.region ) | b64enc }}
+      {{- end }}
   {{- end }}
 {{- end }}
