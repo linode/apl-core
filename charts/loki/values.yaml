@@ -79,10 +79,13 @@ loki:
   server:
     # -- HTTP server listen port
     http_listen_port: 3100
+  # Enables authentication through the X-Scope-OrgID header, which must be present
+  # if true. If false, the OrgID will always be set to 'fake'
+  auth_enabled: false
   # -- Config file contents for Loki
   # @default -- See values.yaml
   config: |
-    auth_enabled: true
+    auth_enabled: {{ .Values.loki.auth_enabled }}
 
     server:
       {{- toYaml .Values.loki.server | nindent 6 }}
