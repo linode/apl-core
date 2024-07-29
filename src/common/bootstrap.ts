@@ -87,9 +87,10 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     d.debug(e)
     d.info('Remote does not exist yet. Expecting first commit to come later.')
   } finally {
+    const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
     // finally write back the new values without overwriting existing values
     d.info('Write default values to env repo')
-    await writeValues(values)
+    await writeValues(defaultValues)
   }
 
   if (!(await pathExists(`${env.ENV_DIR}/.git`))) {

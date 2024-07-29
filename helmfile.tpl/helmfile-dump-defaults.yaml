@@ -1,0 +1,14 @@
+# this release file is used to dump the final values used by helmfile
+bases:
+  - ../helmfile.d/snippets/defaults.yaml
+---
+bases:
+  - ../helmfile.d/snippets/env.gotmpl
+---
+{{- $v := .Values }}
+
+releases:
+  - name: dump
+    # Never change 'installed' flag to true as you do not want to see release being deployed
+    installed: false
+    chart: ../charts/raw
