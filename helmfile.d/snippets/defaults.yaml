@@ -24,8 +24,6 @@ environments:
                 cpu: 200m
                 memory: 384Mi
           cnpg:
-            storage:
-              type: minioLocal
             resources:
               requests:
                 cpu: 100m
@@ -44,9 +42,6 @@ environments:
             logLevel: info
           falco:
             enabled: false
-            falcoSidekick:
-              replicas: 1
-              minPrio: informational
             _rawValues:
               customRules:
                 otomi-rules.yaml: >-
@@ -298,28 +293,28 @@ environments:
                   cpu: 200m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: '1'
                   memory: 512Mi
               cleanupController:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: '1'
                   memory: 512Mi
               backgroundController:
                 requests:
                   cpu: 50m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: '1'
                   memory: 512Mi
               reportsController:
                 requests:
                   cpu: 50m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: '1'
                   memory: 512Mi
           tekton:
             resources:
@@ -332,8 +327,6 @@ environments:
                   memory: 64Mi
           loki:
             enabled: false
-            storage:
-              type: minioLocal
             resources:
               compactor:
                 requests:
@@ -428,7 +421,7 @@ environments:
                 cpu: 500m
                 memory: 128Mi
               limits:
-                cpu: 1
+                cpu: '1'
                 memory: 1Gi
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
@@ -535,8 +528,6 @@ environments:
                   memory: 1024Mi
           tempo:
             enabled: false
-            storage:
-              type: minioLocal
             resources:
               compactor:
                 requests:
@@ -651,10 +642,6 @@ environments:
             enabled: false
             restic:
               enabled: false
-            cloud:
-              type: custom
-            storage:
-              type: minioLocal
             logLevel: info
             resources:
               requests:
@@ -722,7 +709,6 @@ environments:
             className: platform
             network: public
           classes: []
-        oidc: {}
         alerts:
           receivers:
             - none

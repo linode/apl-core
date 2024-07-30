@@ -211,7 +211,7 @@ export const processValues = async (
     storedSecrets = {}
     if ((await deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true }))?.cluster?.provider) {
       await deps.decrypt()
-      originalInput = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
+      originalInput = (await deps.hfValues({ defaultValues: true })) as Record<string, any>
     }
   }
   // generate all secrets (does not diff against previous so generates all new secrets every time)
