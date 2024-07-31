@@ -96,6 +96,7 @@ environments:
             enabled: {{ eq $obj.type "minioLocal" }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
+        oidc: {}
         ingress:
           classes:
           - {{- $v.ingress.platformClass | toYaml | nindent 12 }}
