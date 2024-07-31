@@ -1,0 +1,3 @@
+apps:
+    kured:
+        enabled: false

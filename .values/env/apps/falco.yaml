@@ -1,0 +1,96 @@
+apps:
+    falco:
+        enabled: false
+        _rawValues:
+            customRules:
+                otomi-rules.yaml: >-
+                    - macro: k8s_containers
+                      condition: (
+                          container.image.repository in (
+                            docker.io/velero/velero,
+                            docker.io/weaveworks/kured,
+                            k8s.gcr.io/kube-state-metrics/kube-state-metrics,
+                            quay.io/jetstack/cert-manager-cainjector,
+                            quay.io/jetstack/cert-manager-controller,
+                            quay.io/jetstack/cert-manager-webhook,
+                            quay.io/prometheus-operator/prometheus-operator,
+                            quay.io/prometheus/prometheus,
+                            quay.io/kiwigrid/k8s-sidecar,
+                            docker.io/otomi/core,
+                            docker.io/otomi/tasks,
+                            docker.io/otomi/api,
+                            docker.io/drone/drone-runner-kube,
+                            docker.io/grafana/promtail,
+                            gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
+                            quay.io/argoprojlabs/argocd-image-updater
+                          ) or (k8s.ns.name = "kube-system")
+                            or (k8s.ns.name = "ingress")
+                        )
+                    - macro: user_known_write_below_etc_activities
+                      condition: (
+                          (container.image.repository = docker.io/goharbor/harbor-core and proc.name = cp) or
+                          (container.image.repository = docker.io/goharbor/harbor-registryctl and proc.name = cp) or
+                          (container.image.repository = docker.io/goharbor/registry-photon and proc.name = cp) or
+                          (container.image.repository = docker.io/goharbor/trivy-adapter-photon and proc.name = cp)
+                        )
+                    - macro: user_sensitive_mount_containers
+                      condition: (
+                          container.image.repository in (
+                            quay.io/prometheus/node-exporter
+                          )
+                        )
+                    - macro: user_trusted_containers
+                      condition: (
+                          container.image.repository in (
+                            docker.io/drone/drone-runner-kube,
+                            docker.io/otomi/api,
+                            docker.io/otomi/tasks
+                          )
+                        )
+                    - macro: user_known_package_manager_in_container
+                      condition: (
+                          container.image.repository in (
+                            docker.io/otomi/tasks
+                          )
+                        )
+                    - macro: user_known_k8s_client_container
+                      condition: (
+                          container.image.repository in (
+                            docker.io/otomi/tasks,
+                            ocker.io/otomi/core
+                          ) or (k8s.ns.name = "drone-pipelines")
+                        )
+                    - macro: user_known_non_sudo_setuid_conditions
+                      condition: (
+                          container.image.repository in (
+                            docker.io/otomi/tasks,
+                            docker.io/otomi/api,
+                            docker.io/otomi/console,
+                            docker.io/gitea/gitea,
+                            docker.io/grafana/grafana
+                          ) or (k8s.ns.name = "ingress")
+                            or (k8s.ns.name = "keycloak")
+                        )
+                    - macro: excessively_capable_container
+                      condition: (
+                          container.image.repository in (
+                            docker.io/otomi/console,
+                            docker.io/otomi/api
+                          ) or (k8s.ns.name = "keycloak")
+                        )
+                    - macro: user_known_write_below_root_activities
+                      condition: (
+                          k8s.ns.name = "drone-pipelines"
+                        )
+                    - macro: user_known_network_tool_activities
+                      condition: (
+                          container.image.repository in (
+                            docker.io/gitea/gitea
+                          ) or (k8s.ns.name = "keycloak")  
+                        )
+                    - macro: user_known_create_files_below_dev_activities
+                      condition: (
+                          container.image.repository in (
+                            quay.io/operatorhubio/catalog
+                          )
+                        )
