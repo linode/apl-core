@@ -38,7 +38,7 @@ done
 
 echo "#########################################################"
 echo "#"
-echo "#  Above YAML documents comparison produced by dyff tool."
+echo "# Above YAML documents diff produced by dyff tool."
 echo "# You can also select two directories in VSCode $targetDirA and $targetDirB and right click and select the 'Compare selected folders' option"
 echo "#"
 echo "#########################################################"
