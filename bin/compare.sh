@@ -2,7 +2,7 @@ set -ue
 
 export ENV_DIR=$PWD/tests/fixtures
 
-readonly templateArgs="-l name=loki"
+readonly templateArgs="$@"
 readonly currentBranch=$(git rev-parse --abbrev-ref HEAD)
 readonly compareBranch='main'
 
