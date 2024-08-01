@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $a := $v.apps.argocd }}
 resources:
 {{- if $v._derived.untrustedCA }}
   - apiVersion: v1
@@ -189,13 +190,7 @@ resources:
                 port: 8080
               initialDelaySeconds: 3
               periodSeconds: 30
-            resources:
-              limits:
-                memory: 500Mi
-                cpu: 500m
-              requests:
-                memory: 50Mi
-                cpu: 50m
+            resources: {{- $a.resources.imageUpdater | toYaml | nindent 14 }}
             volumeMounts:
             - mountPath: /app/config
               name: image-updater-conf

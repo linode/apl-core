@@ -1485,8 +1485,19 @@ properties:
           enabled:
             type: boolean
             default: true
+          applicationSet:
+            replicas:
+              default: 1
+              type: integer
+          controller:
+            replicas:
+              default: 1
+              type: integer
           autoscaling:
-            $ref: '#/definitions/autoscalingEnabled'
+            repoServer:
+              $ref: '#/definitions/autoscalingEnabled'
+            server:
+              $ref: '#/definitions/autoscalingEnabled'
           resources:
             additionalProperties: false
             properties:
@@ -1497,6 +1508,12 @@ properties:
               repo:
                 $ref: '#/definitions/resources'
               redis:
+                $ref: '#/definitions/resources'
+              applicationSet:
+                $ref: '#/definitions/resources'
+              notifications:
+                $ref: '#/definitions/resources'
+              imageUpdater:
                 $ref: '#/definitions/resources'
       cert-manager:
         additionalProperties: false
