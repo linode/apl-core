@@ -1,5 +1,7 @@
 set -ue
 
+# Usage: bin/compare.sh -l name=loki
+
 export ENV_DIR=$PWD/tests/fixtures
 
 readonly templateArgs="$@"
