@@ -9,95 +9,42 @@ global:
     {{ $key }}: {{ $val }}
     {{- end }}
   {{- end }}
+# ApplicationSet Controller
 applicationSet:
-  autoscaling:
-    enabled: true
-  resources:
-    limits:
-      cpu: '500m'
-      memory: 1Gi
-    requests:
-      cpu: 100m
-      memory: 256M
+  replicas: {{ $a.applicationSet.replicas }} 
+  resources: {{- $a.resources.applicationSet | toYaml | nindent 4 }}
 
+# Application Controller
 controller:
-  autoscaling:
-    enabled: {{ $a.autoscaling.enabled }}
-    maxReplicas: {{ $a.autoscaling.maxReplicas }}
-    minReplicas: {{ $a.autoscaling.minReplicas }}
-    targetCPUUtilizationPercentage: {{ $a.autoscaling.targetCPUUtilizationPercentage }}
+  replicas: {{ $a.controller.replicas }} 
+  resources: {{- $a.resources.controller | toYaml | nindent 4 }}
 
-  resources:
-    {{- with $a | get "resources.controller" nil }}
-      {{- toYaml .| nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 1
-      memory: 2Gi
-    requests:
-      cpu: 100m
-      memory: 1Gi
-    {{- end }}  
 dex:
   enabled: false
+
 notifications:
-  # -- Enable notifications controller
   enabled: true
-  resources:
-    limits:
-      cpu: 1
-      memory: 1Gi
-    requests:
-      cpu: 100m
-      memory: 256M
+  resources: {{- $a.resources.notifications | toYaml | nindent 4 }}
+
 redis:
-  resources:
-    {{- with $a | get "resources.redis" nil }}
-      {{- toYaml .| nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 1
-      memory: 1Gi
-    requests:
-      cpu: 100m
-      memory: 256M
-    {{- end }}
+  resources: {{- $a.resources.redis | toYaml | nindent 4 }}
+
 repoServer:
   autoscaling:
-    enabled: {{ $a.autoscaling.enabled }}
-    maxReplicas: {{ $a.autoscaling.maxReplicas }}
-    minReplicas: {{ $a.autoscaling.minReplicas }}
-    targetCPUUtilizationPercentage: {{ $a.autoscaling.targetCPUUtilizationPercentage }}
+    enabled: {{ $a.autoscaling.repoServer.enabled }}
+    maxReplicas: {{ $a.autoscaling.repoServer.maxReplicas }}
+    minReplicas: {{ $a.autoscaling.repoServer.minReplicas }}
+    targetMemoryUtilizationPercentage: {{ $a.autoscaling.repoServer.targetMemoryUtilizationPercentage }}
+  resources: {{- $a.resources.repo | toYaml | nindent 4 }}
 
-  resources:
-    {{- with $a | get "resources.repo" nil }}
-      {{- toYaml .| nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 1
-      memory: 1Gi
-    requests:
-      cpu: 100m
-      memory: 256M
-    {{- end }}  
 server:
   autoscaling:
-    enabled: {{ $a.autoscaling.enabled }}
-    maxReplicas: {{ $a.autoscaling.maxReplicas }}
-    minReplicas: {{ $a.autoscaling.minReplicas }}
-    targetCPUUtilizationPercentage: {{ $a.autoscaling.targetCPUUtilizationPercentage }}
+    enabled: {{ $a.autoscaling.server.enabled }}
+    maxReplicas: {{ $a.autoscaling.server.maxReplicas }}
+    minReplicas: {{ $a.autoscaling.server.minReplicas }}
+    targetMemoryUtilizationPercentage: {{ $a.autoscaling.server.targetMemoryUtilizationPercentage }}
+  resources: {{- $a.resources.server | toYaml | nindent 4 }}
 
-  resources:
-    {{- with $a | get "resources.server" nil }}
-      {{- toYaml .| nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 1
-      memory: 1Gi
-    requests:
-      cpu: 100m
-      memory: 256M
-    {{- end }}  
 configs:
   # General Argo CD configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml

@@ -1,3 +1,64 @@
 apps:
     argocd:
         enabled: true
+        autoscaling:
+            repoServer:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 5
+                targetMemoryUtilizationPercentage: 70
+            server:
+                enabled: true
+                minReplicas: 1
+                maxReplicas: 5
+                targetMemoryUtilizationPercentage: 70
+        resources:
+            controller:
+                requests:
+                    cpu: 500m
+                    memory: 1Gi
+                limits:
+                    cpu: '2'
+                    memory: 2Gi
+            server:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 50m
+                    memory: 256M
+            repo:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 100m
+                    memory: 512M
+            redis:
+                requests:
+                    cpu: 50m
+                    memory: 64Mi
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+            applicationSet:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 100m
+                    memory: 256M
+            notifications:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 100m
+                    memory: 64M
+            imageUpdater:
+                limits:
+                    memory: 1Gi
+                    cpu: '1'
+                requests:
+                    memory: 50Mi
+                    cpu: 50m
