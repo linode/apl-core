@@ -2,6 +2,7 @@
 {{- $l:= $v.apps.loki }}
 {{- $obj := $v.obj.provider }}
 {{- $bu := $v.obj.buckets }}
+{{- $useObjectStorage := eq $obj.type "minioLocal" "linode" }}
 
 nameOverride: loki
 
@@ -33,7 +34,7 @@ loki:
       index:
         prefix: loki_index_
         period: 24h
-  {{- if eq $obj.type "minioLocal" "linode" }}
+  {{- if $useObjectStorage }}
   storageConfig:
     boltdb_shipper:
       active_index_directory: /var/loki/index
@@ -57,6 +58,13 @@ loki:
         max_period: 5s
       {{- end }} 
   {{- end }}
+
+  structuredConfig:
+    auth_enabled: true
+    {{- if $useObjectStorage }}
+    compactor:
+      shared_store: s3
+    {{- end }}
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}

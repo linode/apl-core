@@ -79,13 +79,10 @@ loki:
   server:
     # -- HTTP server listen port
     http_listen_port: 3100
-  # Enables authentication through the X-Scope-OrgID header, which must be present
-  # if true. If false, the OrgID will always be set to 'fake'
-  auth_enabled: false
   # -- Config file contents for Loki
   # @default -- See values.yaml
   config: |
-    auth_enabled: {{ .Values.loki.auth_enabled }}
+    auth_enabled: false
 
     server:
       {{- toYaml .Values.loki.server | nindent 6 }}
@@ -198,11 +195,19 @@ loki:
       tail_proxy_url: http://{{ include "loki.querierFullname" . }}:3100
 
     compactor:
-      {{- if eq .Values.loki.storageConfig.boltdb_shipper.shared_store "s3" }}
-      shared_store: s3
-      {{- else }}
       shared_store: filesystem
-      {{- end }}
+
+    ruler:
+      storage:
+        type: local
+        local:
+          directory: /etc/loki/rules
+      ring:
+        kvstore:
+          store: memberlist
+      rule_path: /tmp/loki/scratch
+      alertmanager_url: https://alertmanager.xx
+      external_url: https://alertmanager.xx
 
   # -- Check https://grafana.com/docs/loki/latest/configuration/#schema_config for more info on how to configure schemas
   schemaConfig:
