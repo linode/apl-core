@@ -42,8 +42,10 @@ export const setIdentity = async (username, password, email) => {
  */
 export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
+  // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
   const argv = getParsedArgs()
+  // use case for nip.io when we are waiting for LoadBalancerIP address do derive the domainSuffix
   if (!values?.cluster?.domainSuffix && !argv.destroy) return // too early, commit will handle it
   if (!values?.cluster?.domainSuffix && argv.destroy) {
     // we couldn't find the domainSuffix in the values, so create it

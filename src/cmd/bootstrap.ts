@@ -365,7 +365,9 @@ export const bootstrap = async (
   await deps.migrate()
   const originalValues = await deps.processValues()
   // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
+
   if (!originalValues) {
+    // FIXME what is the use case to enter this
     d.log('A new values repo has been created. For next steps follow documentation at https://otomi.io')
     return
   }
