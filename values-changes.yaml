@@ -275,6 +275,6 @@ changes:
       - 'platformBackups.persistentVolumes.drone'
       - 'platformBackups.persistentVolumes.harbor'
       - 'platformBackups.persistentVolumes.keycloak'
-  - version: 25
+  - version: 26
     deletions:
       - 'teamConfig.{team}.jobs'
