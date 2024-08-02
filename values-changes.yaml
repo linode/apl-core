@@ -277,4 +277,4 @@ changes:
       - 'platformBackups.persistentVolumes.keycloak'
   - version: 26
     relocations:
-      'apps.metrics-server.apiServer.enabled': 'apps.metrics-server.apiServer.create'
+      - 'apps.metrics-server.apiServer.enabled': 'apps.metrics-server.apiServer.create'
