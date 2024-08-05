@@ -211,7 +211,7 @@ export const processValues = async (
     storedSecrets = {}
     if ((await deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true }))?.cluster?.provider) {
       await deps.decrypt()
-      originalInput = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
+      originalInput = (await deps.hfValues({ defaultValues: true })) as Record<string, any>
     }
   }
   // generate all secrets (does not diff against previous so generates all new secrets every time)
@@ -365,7 +365,9 @@ export const bootstrap = async (
   await deps.migrate()
   const originalValues = await deps.processValues()
   // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
+
   if (!originalValues) {
+    // FIXME what is the use case to enter this
     d.log('A new values repo has been created. For next steps follow documentation at https://otomi.io')
     return
   }

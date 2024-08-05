@@ -3,6 +3,7 @@ cluster:
   name: 'dev'
   provider: custom
   k8sContext: CONTEXT_PLACEHOLDER
+  domainSuffix: my.localhost
 otomi:
   version: 'main'
 apps:

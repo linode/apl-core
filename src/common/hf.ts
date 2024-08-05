@@ -73,9 +73,10 @@ export interface ValuesArgs {
   withWorkloadValues?: boolean
   excludeSecrets?: boolean
   envDir?: string
+  defaultValues?: boolean
 }
 export const hfValues = async (
-  { filesOnly = false, excludeSecrets = false, withWorkloadValues = false }: ValuesArgs = {},
+  { filesOnly = false, excludeSecrets = false, withWorkloadValues = false, defaultValues = false }: ValuesArgs = {},
   envDir: string = env.ENV_DIR,
 ): Promise<Record<string, any> | undefined> => {
   const d = terminal('common:hf:hfValues')
@@ -88,6 +89,12 @@ export const hfValues = async (
   if (filesOnly)
     output = await hf(
       { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' },
+      undefined,
+      envDir,
+    )
+  else if (defaultValues)
+    output = await hf(
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-defaults.yaml`, args: 'build' },
       undefined,
       envDir,
     )
