@@ -6,12 +6,10 @@ apps:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 5
-                targetMemoryUtilizationPercentage: 70
             server:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 5
-                targetMemoryUtilizationPercentage: 70
         resources:
             controller:
                 requests:
