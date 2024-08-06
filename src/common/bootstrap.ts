@@ -42,8 +42,10 @@ export const setIdentity = async (username, password, email) => {
  */
 export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
+  // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
   const argv = getParsedArgs()
+  // use case for nip.io when we are waiting for LoadBalancerIP address do derive the domainSuffix
   if (!values?.cluster?.domainSuffix && !argv.destroy) return // too early, commit will handle it
   if (!values?.cluster?.domainSuffix && argv.destroy) {
     // we couldn't find the domainSuffix in the values, so create it
@@ -77,31 +79,41 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     }
     // we know we have commits, so we replace ENV_DIR with the clone files and overwrite with new values
     // so first get the new values without secrets (as those exist already)
-    const newValues = (await hfValues({ filesOnly: true })) as Record<string, any>
     cd(env.ENV_DIR)
     // then sync the clone back to ENV_DIR
     const flags = '-rl' // recursive, preserve symlinks and groups (all we can do without superuser privs)
     await $`rsync ${flags} ${env.ENV_DIR}/ /tmp/xx/ && rm -rf .[!.]* * && rsync ${flags} --exclude="." /tmp/xx/ ${env.ENV_DIR}/`
     // decrypt the freshly cloned repo
     await decrypt()
-    // finally write back the new values without overwriting existing values
-    await writeValues(newValues)
   } catch (e) {
     d.debug(e)
     d.info('Remote does not exist yet. Expecting first commit to come later.')
+  } finally {
+    const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+    // finally write back the new values without overwriting existing values
+    d.info('Write default values to env repo')
+    await writeValues(defaultValues)
   }
+
   if (!(await pathExists(`${env.ENV_DIR}/.git`))) {
     d.info('Initializing values git repo.')
     await $`git init .`
   }
-  if (isCli) await copyFile(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
-  else await nothrow($`git config --global --add safe.directory ${env.ENV_DIR}`)
+
+  if (isCli) {
+    await copyFile(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
+  } else {
+    await nothrow($`git config --global --add safe.directory ${env.ENV_DIR}`)
+  }
+
   await setIdentity(username, password, email)
+
   if (!hasCommits) {
     await nothrow($`git checkout -b ${branch}`)
     await nothrow($`git remote add origin ${remote}`)
   }
-  if (await pathExists(`${env.ENV_DIR}/.sops.yaml`))
+  if (await pathExists(`${env.ENV_DIR}/.sops.yaml`)) {
     await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+  }
   d.log(`Done bootstrapping git`)
 }

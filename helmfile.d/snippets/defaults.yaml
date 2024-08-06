@@ -12,60 +12,62 @@ environments:
             applicationSet:
               replicas: 1
             controller:
-              replicas: 1        
+              replicas: 1
             autoscaling:
               repoServer:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 5
+                targetCPUUtilizationPercentage: 70
                 targetMemoryUtilizationPercentage: 70
               server:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 70
+                targetMemoryUtilizationPercentage: 70
             resources:
               controller:
                 requests:
                   cpu: 500m
                   memory: 1Gi
                 limits:
-                  cpu: 2
+                  cpu: "2"
                   memory: 2Gi            
               server:
                 requests:
                   cpu: 50m
                   memory: 256M
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               repo:
                 requests:
                   cpu: 100m
                   memory: 512M
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               redis:
                 requests:
                   cpu: 50m
                   memory: 64Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               applicationSet:
                 requests:
                   cpu: 100m
                   memory: 256M
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               notifications:
                 requests:
                   cpu: 100m
                   memory: 64M
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               imageUpdater:
                 requests:
@@ -73,7 +75,7 @@ environments:
                   cpu: 50m
                 limits:
                   memory: 1Gi
-                  cpu: 1
+                  cpu: "1"
           cert-manager:
             issuer: custom-ca
             resources:
@@ -84,8 +86,6 @@ environments:
                 cpu: 200m
                 memory: 384Mi
           cnpg:
-            storage:
-              type: minioLocal
             resources:
               requests:
                 cpu: 100m
@@ -104,9 +104,6 @@ environments:
             logLevel: info
           falco:
             enabled: false
-            falcoSidekick:
-              replicas: 1
-              minPrio: informational
             _rawValues:
               customRules:
                 otomi-rules.yaml: >-
@@ -358,28 +355,28 @@ environments:
                   cpu: 200m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: '1'
                   memory: 512Mi
               cleanupController:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: '1'
                   memory: 512Mi
               backgroundController:
                 requests:
                   cpu: 50m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: '1'
                   memory: 512Mi
               reportsController:
                 requests:
                   cpu: 50m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: '1'
                   memory: 512Mi
           tekton:
             resources:
@@ -392,8 +389,6 @@ environments:
                   memory: 64Mi
           loki:
             enabled: false
-            storage:
-              type: minioLocal
             resources:
               compactor:
                 requests:
@@ -488,7 +483,7 @@ environments:
                 cpu: 500m
                 memory: 128Mi
               limits:
-                cpu: 1
+                cpu: '1'
                 memory: 1Gi
           oauth2-proxy: {}
           oauth2-proxy-redis: {}
@@ -595,8 +590,6 @@ environments:
                   memory: 1024Mi
           tempo:
             enabled: false
-            storage:
-              type: minioLocal
             resources:
               compactor:
                 requests:
@@ -711,10 +704,6 @@ environments:
             enabled: false
             restic:
               enabled: false
-            cloud:
-              type: custom
-            storage:
-              type: minioLocal
             logLevel: info
             resources:
               requests:
@@ -782,7 +771,6 @@ environments:
             className: platform
             network: public
           classes: []
-        oidc: {}
         alerts:
           receivers:
             - none
@@ -797,69 +785,4 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes: (and think more?)
-        version: 25
-        letsencryptRootCA: |
-          -----BEGIN CERTIFICATE-----
-          MIIFmDCCA4CgAwIBAgIQU9C87nMpOIFKYpfvOHFHFDANBgkqhkiG9w0BAQsFADBm
-          MQswCQYDVQQGEwJVUzEzMDEGA1UEChMqKFNUQUdJTkcpIEludGVybmV0IFNlY3Vy
-          aXR5IFJlc2VhcmNoIEdyb3VwMSIwIAYDVQQDExkoU1RBR0lORykgUHJldGVuZCBQ
-          ZWFyIFgxMB4XDTE1MDYwNDExMDQzOFoXDTM1MDYwNDExMDQzOFowZjELMAkGA1UE
-          BhMCVVMxMzAxBgNVBAoTKihTVEFHSU5HKSBJbnRlcm5ldCBTZWN1cml0eSBSZXNl
-          YXJjaCBHcm91cDEiMCAGA1UEAxMZKFNUQUdJTkcpIFByZXRlbmQgUGVhciBYMTCC
-          AiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBALbagEdDTa1QgGBWSYkyMhsc
-          ZXENOBaVRTMX1hceJENgsL0Ma49D3MilI4KS38mtkmdF6cPWnL++fgehT0FbRHZg
-          jOEr8UAN4jH6omjrbTD++VZneTsMVaGamQmDdFl5g1gYaigkkmx8OiCO68a4QXg4
-          wSyn6iDipKP8utsE+x1E28SA75HOYqpdrk4HGxuULvlr03wZGTIf/oRt2/c+dYmD
-          oaJhge+GOrLAEQByO7+8+vzOwpNAPEx6LW+crEEZ7eBXih6VP19sTGy3yfqK5tPt
-          TdXXCOQMKAp+gCj/VByhmIr+0iNDC540gtvV303WpcbwnkkLYC0Ft2cYUyHtkstO
-          fRcRO+K2cZozoSwVPyB8/J9RpcRK3jgnX9lujfwA/pAbP0J2UPQFxmWFRQnFjaq6
-          rkqbNEBgLy+kFL1NEsRbvFbKrRi5bYy2lNms2NJPZvdNQbT/2dBZKmJqxHkxCuOQ
-          FjhJQNeO+Njm1Z1iATS/3rts2yZlqXKsxQUzN6vNbD8KnXRMEeOXUYvbV4lqfCf8
-          mS14WEbSiMy87GB5S9ucSV1XUrlTG5UGcMSZOBcEUpisRPEmQWUOTWIoDQ5FOia/
-          GI+Ki523r2ruEmbmG37EBSBXdxIdndqrjy+QVAmCebyDx9eVEGOIpn26bW5LKeru
-          mJxa/CFBaKi4bRvmdJRLAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMB
-          Af8EBTADAQH/MB0GA1UdDgQWBBS182Xy/rAKkh/7PH3zRKCsYyXDFDANBgkqhkiG
-          9w0BAQsFAAOCAgEAncDZNytDbrrVe68UT6py1lfF2h6Tm2p8ro42i87WWyP2LK8Y
-          nLHC0hvNfWeWmjZQYBQfGC5c7aQRezak+tHLdmrNKHkn5kn+9E9LCjCaEsyIIn2j
-          qdHlAkepu/C3KnNtVx5tW07e5bvIjJScwkCDbP3akWQixPpRFAsnP+ULx7k0aO1x
-          qAeaAhQ2rgo1F58hcflgqKTXnpPM02intVfiVVkX5GXpJjK5EoQtLceyGOrkxlM/
-          sTPq4UrnypmsqSagWV3HcUlYtDinc+nukFk6eR4XkzXBbwKajl0YjztfrCIHOn5Q
-          CJL6TERVDbM/aAPly8kJ1sWGLuvvWYzMYgLzDul//rUF10gEMWaXVZV51KpS9DY/
-          5CunuvCXmEQJHo7kGcViT7sETn6Jz9KOhvYcXkJ7po6d93A/jy4GKPIPnsKKNEmR
-          xUuXY4xRdh45tMJnLTUDdC9FIU0flTeO9/vNpVA8OPU1i14vCz+MU8KX1bV3GXm/
-          fxlB7VBBjX9v5oUep0o/j68R/iDlCOM4VVfRa8gX6T2FU7fNdatvGro7uQzIvWof
-          gN9WUwCbEMBy/YhBSrXycKA8crgGg3x1mIsopn88JKwmMBa68oS7EHM9w7C4y71M
-          7DiA+/9Qdp9RBWJpTS9i/mDnJg1xvo8Xz49mrrgfmcAXTCJqXi24NatI3Oc=
-          -----END CERTIFICATE-----
-        letsencryptCA: |
-          -----BEGIN CERTIFICATE-----
-          MIIFWzCCA0OgAwIBAgIQTfQrldHumzpMLrM7jRBd1jANBgkqhkiG9w0BAQsFADBm
-          MQswCQYDVQQGEwJVUzEzMDEGA1UEChMqKFNUQUdJTkcpIEludGVybmV0IFNlY3Vy
-          aXR5IFJlc2VhcmNoIEdyb3VwMSIwIAYDVQQDExkoU1RBR0lORykgUHJldGVuZCBQ
-          ZWFyIFgxMB4XDTIwMDkwNDAwMDAwMFoXDTI1MDkxNTE2MDAwMFowWTELMAkGA1UE
-          BhMCVVMxIDAeBgNVBAoTFyhTVEFHSU5HKSBMZXQncyBFbmNyeXB0MSgwJgYDVQQD
-          Ex8oU1RBR0lORykgQXJ0aWZpY2lhbCBBcHJpY290IFIzMIIBIjANBgkqhkiG9w0B
-          AQEFAAOCAQ8AMIIBCgKCAQEAu6TR8+74b46mOE1FUwBrvxzEYLck3iasmKrcQkb+
-          gy/z9Jy7QNIAl0B9pVKp4YU76JwxF5DOZZhi7vK7SbCkK6FbHlyU5BiDYIxbbfvO
-          L/jVGqdsSjNaJQTg3C3XrJja/HA4WCFEMVoT2wDZm8ABC1N+IQe7Q6FEqc8NwmTS
-          nmmRQm4TQvr06DP+zgFK/MNubxWWDSbSKKTH5im5j2fZfg+j/tM1bGaczFWw8/lS
-          nukyn5J2L+NJYnclzkXoh9nMFnyPmVbfyDPOc4Y25aTzVoeBKXa/cZ5MM+WddjdL
-          biWvm19f1sYn1aRaAIrkppv7kkn83vcth8XCG39qC2ZvaQIDAQABo4IBEDCCAQww
-          DgYDVR0PAQH/BAQDAgGGMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATAS
-          BgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBTecnpI3zHDplDfn4Uj31c3S10u
-          ZTAfBgNVHSMEGDAWgBS182Xy/rAKkh/7PH3zRKCsYyXDFDA2BggrBgEFBQcBAQQq
-          MCgwJgYIKwYBBQUHMAKGGmh0dHA6Ly9zdGcteDEuaS5sZW5jci5vcmcvMCsGA1Ud
-          HwQkMCIwIKAeoByGGmh0dHA6Ly9zdGcteDEuYy5sZW5jci5vcmcvMCIGA1UdIAQb
-          MBkwCAYGZ4EMAQIBMA0GCysGAQQBgt8TAQEBMA0GCSqGSIb3DQEBCwUAA4ICAQCN
-          DLam9yN0EFxxn/3p+ruWO6n/9goCAM5PT6cC6fkjMs4uas6UGXJjr5j7PoTQf3C1
-          vuxiIGRJC6qxV7yc6U0X+w0Mj85sHI5DnQVWN5+D1er7mp13JJA0xbAbHa3Rlczn
-          y2Q82XKui8WHuWra0gb2KLpfboYj1Ghgkhr3gau83pC/WQ8HfkwcvSwhIYqTqxoZ
-          Uq8HIf3M82qS9aKOZE0CEmSyR1zZqQxJUT7emOUapkUN9poJ9zGc+FgRZvdro0XB
-          yphWXDaqMYph0DxW/10ig5j4xmmNDjCRmqIKsKoWA52wBTKKXK1na2ty/lW5dhtA
-          xkz5rVZFd4sgS4J0O+zm6d5GRkWsNJ4knotGXl8vtS3X40KXeb3A5+/3p0qaD215
-          Xq8oSNORfB2oI1kQuyEAJ5xvPTdfwRlyRG3lFYodrRg6poUBD/8fNTXMtzydpRgy
-          zUQZh/18F6B/iW6cbiRN9r2Hkh05Om+q0/6w0DdZe+8YrNpfhSObr/1eVZbKGMIY
-          qKmyZbBNu5ysENIK5MPc14mUeKmFjpN840VR5zunoU52lqpLDua/qIM8idk86xGW
-          xx2ml43DO/Ya/tVZVok0mO0TUjzJIfPqyvr455IsIut4RlCR9Iq0EDTve2/ZwCuG
-          hSjpTUFGSiQrR2JK2Evp+o6AETUkBCO1aw0PpQBPDQ==
-          -----END CERTIFICATE-----
+        version: 26
