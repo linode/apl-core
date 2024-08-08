@@ -276,8 +276,8 @@ changes:
       - 'platformBackups.persistentVolumes.harbor'
       - 'platformBackups.persistentVolumes.keycloak'
   - version: 26
-    deletions:
-      - 'teamConfig.{team}.jobs'
-  - version: 27
     relocations:
       - 'apps.metrics-server.apiServer.enabled': 'apps.metrics-server.apiServer.create'
+  - version: 27
+    deletions:
+      - 'teamConfig.{team}.jobs'
