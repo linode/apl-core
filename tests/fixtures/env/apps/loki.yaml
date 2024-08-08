@@ -83,10 +83,4 @@ apps:
         retention:
             duration: 24h
             period: 24h
-        storage:
-            s3:
-                bucket: my-bucket
-                region: west-eu
-                useInstanceRole: true
-            type: s3
         v11StartDate: 2021-05-13

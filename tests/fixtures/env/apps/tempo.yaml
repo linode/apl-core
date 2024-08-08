@@ -1,12 +1,6 @@
 apps:
     tempo:
         enabled: true
-        storage:
-            type: minioLocal
-            # azure:
-            #     accountName: account_name
-            #     containerName: container_name
-            #     accountKey: shshsheyeywywiqwioqw
         autoscaling:
             ingester:
                 enabled: true
@@ -75,6 +69,14 @@ apps:
                 limits:
                     cpu: 900m
                     memory: 512Mi
+            metricsGenerator:
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+
         persistence:
             ingester:
                 size: 10Gi

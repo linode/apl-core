@@ -1,9 +1,7 @@
 cluster:
-    apiName: eks_otomi-cloud_eu-central-1_otomi-eks-demo
     apiServer: https://1.1.1.1:8443
-    domainSuffix: demo.eks.otomi.cloud
-    k8sContext: otomi-eks-demo
+    domainSuffix: dev.linode-apl.net
+    k8sContext: linode-dev
     name: demo
-    owner: redkubes
-    provider: azure
-    region: eu-central-1
+    owner: akamai
+    provider: linode

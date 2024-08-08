@@ -25,7 +25,6 @@ const kmsMap = {
   aws: 'kms',
   azure: 'azure_keyvault',
   google: 'gcp_kms',
-  vault: 'hc_vault_transit_uri',
 }
 
 export const bootstrapSops = async (
@@ -96,9 +95,6 @@ export const bootstrapSops = async (
       } else if (provider === 'azure') {
         const v = values.kms!.sops!.azure!
         await deps.writeFile(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
-      } else if (provider === 'vault') {
-        const v = values.kms!.sops!.vault!
-        await deps.writeFile(secretsFile, `VAULT_TOKEN='${v.token}'`)
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later
@@ -120,7 +116,7 @@ export const copySchema = async (deps = { terminal, rootDir, env, isCore, loadYa
     // for validation of .values/env/* files we also generate a schema here:
     // deps.outputFile(devOnlyPath, trimmedVS)
     await deps.copyFile(sourcePath, devOnlyPath)
-    d.debug(`Stored loose YAML schema for otomi-core devs at: ${devOnlyPath}`)
+    d.debug(`Stored loose YAML schema for apl-core devs at: ${devOnlyPath}`)
   }
 }
 
@@ -215,7 +211,7 @@ export const processValues = async (
     storedSecrets = {}
     if ((await deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true }))?.cluster?.provider) {
       await deps.decrypt()
-      originalInput = (await deps.hfValues({ filesOnly: true })) as Record<string, any>
+      originalInput = (await deps.hfValues({ defaultValues: true })) as Record<string, any>
     }
   }
   // generate all secrets (does not diff against previous so generates all new secrets every time)
@@ -369,25 +365,23 @@ export const bootstrap = async (
   await deps.migrate()
   const originalValues = await deps.processValues()
   // exit early if `isCli` and `ENV_DIR` were empty, and let the user provide valid values first:
+
   if (!originalValues) {
+    // FIXME what is the use case to enter this
     d.log('A new values repo has been created. For next steps follow documentation at https://otomi.io')
     return
   }
   const finalValues = (await deps.hfValues()) as Record<string, any>
   const {
-    cluster: { apiName, k8sContext, name, owner, provider },
+    cluster: { k8sContext, name, owner, provider },
   } = finalValues
   // we can derive defaults for the following values
   // that we want to end up in the files, so the api can access them
-  if (!k8sContext || !apiName || !owner) {
+  if (!k8sContext || !owner) {
     const add: Record<string, any> = { cluster: {} }
     const engine = providerMap(provider as string)
-    const defaultOwner = 'otomi'
+    const defaultOwner = 'apl'
     const defaultName = `${owner || defaultOwner}-${engine}-${name}`
-    if (!apiName) {
-      d.info(`No value for cluster.apiName found, providing default one: ${defaultName}`)
-      add.cluster.apiName = defaultName
-    }
     if (!k8sContext) {
       d.info(`No value for cluster.k8sContext found, providing default one: ${defaultName}`)
       add.cluster.k8sContext = defaultName

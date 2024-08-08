@@ -2,7 +2,7 @@ teamConfig:
     demo:
         services:
             - auth: true
-              domain: hello.team-demo.demo.eks.otomi.cloud
+              domain: hello.team-demo.dev.linode-apl.net
               headers:
                   response:
                       set:
@@ -26,7 +26,7 @@ teamConfig:
                   enabled: true
                   weightV1: 70
                   weightV2: 30
-            - domain: tlspass.eks.dev.otomi.cloud
+            - domain: tlspass.dev.linode-apl.net
               id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
               ksvc:
                   predeployed: true

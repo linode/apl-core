@@ -65,10 +65,6 @@ controller:
     maxReplicas: {{ $n.autoscaling.maxReplicas }}
     targetCPUUtilizationPercentage: 60
     targetMemoryUtilizationPercentage: 75
-{{- if eq $v.cluster.provider "azure" }}
-  nodeSelector: 
-    beta.kubernetes.io/os: linux
-{{- end }}
   priorityClassName: otomi-critical
   extraArgs:
     v: 3
@@ -139,34 +135,11 @@ controller:
     {{- end }}
     annotations:
       dummy: 'true'
-      {{- with $ingress | get "service.annotations" nil }}
-      {{ toYaml . | indent 6 }}
+    {{- with $n | get "service.annotations" nil }}
+      {{- range . }}
+      {{ .key }}: "{{ .value }}"
       {{- end }}
-      {{- if eq $v.cluster.provider "azure" }}
-      {{- with $ingress | get "loadBalancerRG" nil }}
-      service.beta.kubernetes.io/azure-load-balancer-resource-group: {{ . }}
-      {{- end }}
-      {{- if $privateNetwork }}
-      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-        {{- with $ingress | get "loadBalancerIP" nil }}
-      service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "{{ . }}"
-        {{- end }}
-      {{- end }}
-      {{- end }} {{/* if eq $v.cluster.provider "azure" */}}
-      {{- if eq $v.cluster.provider "aws" }}
-      service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: '*'
-      {{- if $privateNetwork }}
-      service.beta.kubernetes.io/aws-load-balancer-internal: true
-      {{- end }}
-      {{- if eq $v.cluster.provider "digitalocean" }}
-      service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: true
-      {{- end }}
-      {{- end }} {{/* if eq $v.cluster.provider "aws" */}}
-      {{- if eq $v.cluster.provider "google" }}
-      {{- if $privateNetwork }}
-      networking.gke.io/load-balancer-type: "Internal"
-      {{- end }}
-      {{- end }} {{/* if eq $v.cluster.provider "google" */}}
+    {{- end }}
   publishService:
     enabled: true
 

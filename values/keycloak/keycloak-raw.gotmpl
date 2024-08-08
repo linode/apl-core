@@ -1,15 +1,37 @@
+{{- $v := .Values }}
+{{- $otomiAdmin := "otomi-admin" }}
+{{- $obj := $v.obj.provider }}
+
 resources:
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: custom-ca
-    data:
-      custom-ca.pem: {{ .Values._derived.caCert | b64enc }}
-  - apiVersion: v1
-    kind: Secret
-    metadata:
-      name: keycloak-initial-admin
-      namespace: keycloak
-    data:
-      password: {{ .Values.otomi.adminPassword | b64enc }}
-      username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: custom-ca
+  data:
+    custom-ca.pem: {{ .Values._derived.caCert | b64enc }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: keycloak-initial-admin
+    namespace: keycloak
+  data:
+    password: {{ .Values.otomi.adminPassword | b64enc }}
+    username: {{ .Values.apps.keycloak.adminUsername | b64enc }}
+{{- if eq $obj.type "minioLocal" }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: minio-creds
+  data:
+    MINIO_ACCESS_KEY: "{{ $otomiAdmin | b64enc }}"
+    MINIO_SECRET_KEY: "{{ $v.otomi.adminPassword | b64enc }}"
+{{- end }}
+{{- if eq $obj.type "linode" }}
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: linode-creds
+  data:
+    S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
+    S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
+{{- end }}

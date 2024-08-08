@@ -19,7 +19,6 @@ clusterAffinity:
     topologyKey: kubernetes.io/hostname
     podAntiAffinityType: preferred
 
-
 # Example for backups: 
 # clusterBackup:
 #   backup:
@@ -33,8 +32,6 @@ clusterAffinity:
 #         secretAccessKey:
 #           name: minio-creds
 #           key: MINIO_SECRET_KEY
-
-
 
 clusterSpec:
   bootstrap:
@@ -51,11 +48,7 @@ backup:
   backupOwnerReference: none
   retentionPolicy: 7d
   type: minioLocal
-  azure:
-    storageAccount: ""
-    container: ""
-  s3:
-    endpointURL: ""
-    bucket: ""
-  gcs: 
-    bucket: ""
+  minioLocal:
+    destinationPath: ""
+  linode:
+    destinationPath: ""

@@ -106,7 +106,6 @@ const destroyAll = async () => {
     'kiali.io',
     'knative.dev',
     'monitoring.coreos.com',
-    'vault.banzaicloud.com',
   ]
   const kubeCRDString: string = (await $`kubectl get crd`).stdout.trim()
   const kubeCRDS: string[] = kubeCRDString.split('\n')

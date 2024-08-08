@@ -218,9 +218,6 @@ releases:
         team: {{ $teamId }}
         folders:
           - k8s-teams
-          {{- if $v.apps.gatekeeper.enabled }}
-          - gatekeeper-teams
-          {{- end }}
           {{- if $v.apps.falco.enabled }}
           - falco-teams
           {{- end }}
@@ -247,6 +244,7 @@ releases:
         oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
         domain: {{ $domain }}
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
+        dns: {{- $v.dns | toYaml | nindent 10 }}
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
         teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}

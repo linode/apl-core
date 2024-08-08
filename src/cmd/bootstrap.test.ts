@@ -72,14 +72,13 @@ describe('Bootstrapping values', () => {
     const res = await getStoredClusterSecrets(deps)
     expect(res).toEqual(undefined)
   })
-  it('should set apiName, k8sContext and owner if needed', async () => {
+  it('should set k8sContext and owner if needed', async () => {
     deps.processValues.mockReturnValue(values)
     deps.hfValues.mockReturnValue(values)
     await bootstrap(deps)
     expect(deps.writeValues).toHaveBeenCalledWith(
       expect.objectContaining({
         cluster: expect.objectContaining({
-          apiName: expect.any(String),
           k8sContext: expect.any(String),
           owner: expect.any(String),
         }),
@@ -301,7 +300,7 @@ describe('Bootstrapping values', () => {
       it('should retrieve previous user input when cluster provider is set', async () => {
         deps.loadYaml.mockReturnValue({ ...values, cluster: { provider: 'set' } })
         await processValues(deps)
-        expect(deps.hfValues).toHaveBeenCalledWith({ filesOnly: true })
+        expect(deps.hfValues).toHaveBeenCalledWith({ defaultValues: true })
       })
       it('should not validate values when starting empty', async () => {
         deps.hfValues.mockReturnValue(undefined)

@@ -5,7 +5,7 @@ on:
       cloud_provider:
         description: Provider where Otomi will be installed
         type: string
-        default: scaleway
+        default: linode
       kubernetes_versions:
         description: "Kubernetes versions (JSON formatted list e.g.: ['1.27'])"
         type: string
@@ -49,18 +49,16 @@ on:
         type: choice
         options:
           - scaleway
-          - digitalocean
-        default: 'scaleway'
+          - linode
+        default: 'linode'
       kubernetes_versions:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.24']"
-          - "['1.25']"
-          - "['1.26']"
           - "['1.27']"
           - "['1.28']"
-        default: "['1.28']"
+          - "['1.29']"
+        default: "['1.29']"
       install_profile:
         description: Otomi installation profile
         default: minimal-with-team
@@ -124,16 +122,16 @@ on:
         default: 'yes'
 env:
   CACHE_REGISTRY: ghcr.io
-  CACHE_REPO: redkubes/otomi-core
+  CACHE_REPO: linode/apl-core
   REPO: otomi/core
-  GIT_USER: redkubesbot
+  GIT_USER: svcAPLBot
   SCALEWAY_NODE_TYPE: PRO2-M
   SCALEWAY_NODE_POOL_MIN_SIZE: 3
   SCALEWAY_VPC_ID: e1019b0c-7c7d-49ef-86e4-b02f55b2e0d3
-  DIGITALOCEAN_NODE_SIZE: s-8vcpu-16gb
-  DIGITALOCEAN_NODE_POOL_MIN_SIZE: 3
   CHECK_CONTEXT: continuous-integration/integration-test
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
 
 jobs:
   preprocess-input:
@@ -176,24 +174,24 @@ jobs:
           echo $versions
           echo "versions=$versions" >> $GITHUB_OUTPUT
 
-  preprocess-digitalocean-input:
+  preprocess-linode-input:
     needs: preprocess-input
-    if: ${{ inputs.cloud_provider == 'digitalocean' }}
-    name: Preprocess input variables for digital ocean
+    if: ${{ inputs.cloud_provider == 'linode' }}
+    name: Preprocess input variables for linode
     runs-on: ubuntu-latest
     outputs:
       kubernetes_versions: ${{ steps.k8s-versions.outputs.versions }}
     steps:
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
+      - name: Install the Linode CLI
+        uses: linode/action-linode-cli@v1
         with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          token: ${{ secrets.LINODE_TOKEN }}
       - id: k8s-versions
         name: Process k8s version input
         run: |
           if [ -z '${{ inputs.kubernetes_versions }}' ]; then
-            echo "Kubernetes versions not specified, determine DO supported versions"
-            versions=`doctl kubernetes options versions -o json | jq -ce 'map(.kubernetes_versions)'`
+            echo "Kubernetes versions not specified, determine Linode supported versions"
+            versions=`linode-cli lke versions-list --json | jq -ce '.[] | .id'`
           else
             versions='${{ inputs.kubernetes_versions }}'
           fi
@@ -260,16 +258,16 @@ jobs:
         run: |
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
-            --docker-username=${{ env.GIT_USER }} \
-            --docker-password='${{ secrets.NPM_TOKEN }}'
+            --docker-username=${{ env.BOT_USERNAME }} \
+            --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare Otomi chart
         if: ${{ inputs.install_profile != 'no-otomi' }}
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
+          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/apl/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.SCALEWAY_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
@@ -302,7 +300,7 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
-          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml
             --values values.yaml \
@@ -339,66 +337,93 @@ jobs:
           SLACK_TITLE: Scheduled integration tests
           SLACK_USERNAME: RedKubesBot
 
-  run-integration-test-digitalocean:
-    if: ${{ inputs.cloud_provider == 'digitalocean' }}
-    name: Run integration test on digitalocean cluster
-    needs: preprocess-digitalocean-input
+  run-integration-test-linode:
+    if: ${{ inputs.cloud_provider == 'linode' }}
+    name: Run integration test on linode cluster
+    needs: preprocess-linode-input
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        kubernetes_versions: ${{ fromJSON(needs.preprocess-digitalocean-input.outputs.kubernetes_versions) }}
+        kubernetes_versions: ${{ fromJSON(needs.preprocess-linode-input.outputs.kubernetes_versions) }}
       max-parallel: 5
     steps:
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
+      - name: Install the Linode CLI
+        uses: linode/action-linode-cli@v1
         with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          token: ${{ secrets.LINODE_TOKEN }}
       - name: Set k8s cluster name
         run: |
-          echo "DIGITALOCEAN_CLUSTER_NAME=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')-$(TZ='GMT-2' date +'%m-%d-%H-%M')" >> $GITHUB_ENV
+          echo "LINODE_CLUSTER_NAME=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')-$(TZ='GMT-2' date +'%m-%d-%H-%M')" >> $GITHUB_ENV
           # Cluster name must be no longer than 63 characters
       - name: Determine exact k8s version
         run: |
-          echo "DIGITALOCEAN_K8S_VERSION=$(doctl kubernetes options versions -o json | jq -r '.[] | select(.kubernetes_version | startswith("${{ matrix.kubernetes_versions }}")) | .slug')" >> $GITHUB_ENV
-
-      - name: Get default VPC for region
-        run: |
-          echo DIGITALOCEAN_VPC_UUID=`doctl vpcs list -o json | jq -re 'map(select((.region == "ams3") and .default)) | .[0] | .id'` >> $GITHUB_ENV
+          echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "${{ matrix.kubernetes_versions }}" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
-          doctl kubernetes cluster create ${{ env.DIGITALOCEAN_CLUSTER_NAME }} \
-            --tag source:github \
-            --ha \
-            --maintenance-window any=03:00 \
-            --region ams3 \
-            --vpc-uuid ${{ env.DIGITALOCEAN_VPC_UUID }} \
-            --node-pool "name=int-test-${{ strategy.job-index }}-${{ env.COMMIT_ID }};size=${{ env.DIGITALOCEAN_NODE_SIZE }};tag=integration-test;auto-scale=true;min-nodes=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};max-nodes=5;count=${{ env.DIGITALOCEAN_NODE_POOL_MIN_SIZE }};" \
-            --version ${{ env.DIGITALOCEAN_K8S_VERSION }} \
-            --wait
+          linode-cli lke cluster-create \
+            --label ${{ env.LINODE_CLUSTER_NAME }} \
+            --region nl-ams \
+            --k8s_version ${{ env.LINODE_K8S_VERSION }} \
+            --control_plane.high_availability true \
+            --node_pools.type g6-dedicated-8 --node_pools.count 3 \
+            --node_pools.autoscaler.enabled true \
+            --node_pools.autoscaler.max 3 \
+            --node_pools.autoscaler.min 3 \
+            --tags testing \
+            --no-defaults
       - name: Retrieve cluster id
-        run: echo DIGITALOCEAN_CLUSTER_ID=`doctl kubernetes cluster get ${{ env.DIGITALOCEAN_CLUSTER_NAME }} --format ID --no-header` >> $GITHUB_ENV
-      - name: Assign the cluster to the project
-        run: doctl projects resources assign ${{ secrets.DIGITALOCEAN_PROJECT }} --resource=do:kubernetes:${{ env.DIGITALOCEAN_CLUSTER_ID }}
-      - name: Save kubectl config with auth token
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 36000 ${{ env.DIGITALOCEAN_CLUSTER_NAME }}
-      - name: Get kubectl environment
-        run: echo DIGITALOCEAN_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
+        run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
+      - name: Wait for cluster to be ready
+        run: |
+          echo "Waiting for the cluster to be active..."
+
+          while :; do
+            rawOutput=$(linode-cli lke pools-list ${{ env.LINODE_CLUSTER_ID }} --json)
+
+            allReady=$(echo "$rawOutput" | jq -r 'map(.nodes | .status == "ready") | all')
+            echo "All nodes ready: $allReady"
+            
+            if [ "$allReady" == "true" ]; then
+              echo "Cluster is ready"
+              break
+            fi
+            
+            sleep 30
+          done
+      - name: Save kubectl config with auth token and Get kubectl environment and create docker secret
+        run: |
+          # Get the kubeconfig from linode-cli
+          kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode)
+
+          # Save the kubeconfig to a file
+          kubeconfigDir="$HOME/.kube"
+          kubeconfigPath="$HOME/.kube/config"
+          mkdir -p "$kubeconfigDir"  # Create the directory if it doesn't exist
+          echo "$kubeconfig" > "$kubeconfigPath"
+          echo "Kubeconfig saved to $kubeconfigPath"
+              
+          # Set the kubectl context to use the new kubeconfig
+          export KUBECONFIG="$kubeconfigPath"
+          contextName=$(kubectl config get-contexts -o name | head -n 1)
+          kubectl config use-context "$contextName"
+          echo "Kubectl context set to linode"
+          echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
         run: |
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
-            --docker-username=${{ env.GIT_USER }} \
-            --docker-password='${{ secrets.NPM_TOKEN }}'
+            --docker-username=${{ env.BOT_USERNAME }} \
+            --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Prepare Otomi chart
         if: ${{ inputs.install_profile != 'no-otomi' }}
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/otomi/Chart.yaml
-          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.DIGITALOCEAN_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/apl/Chart.yaml
+          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.LINODE_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
 
@@ -430,7 +455,7 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
-          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/otomi \
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml
             --values values.yaml \
@@ -460,8 +485,8 @@ jobs:
       - name: Remove the test cluster
         if: always()
         run: |
-          [[ "${{ inputs.cluster_persistence }}" == "preserve" ]] && echo "The cluster ${{ env.DIGITALOCEAN_CLUSTER_NAME }} will NOT be destroyed!!" && exit 0
-          doctl kubernetes cluster delete ${{ env.DIGITALOCEAN_CLUSTER_NAME }} -f --dangerous
+          [[ "${{ inputs.cluster_persistence }}" == "preserve" ]] && echo "The cluster ${{ env.LINODE_CLUSTER_NAME }} will NOT be destroyed!!" && exit 0
+          linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2

@@ -88,9 +88,6 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          {{- if $v._derived.supportedCloud }}
-          storageClassName: fast
-          {{- end }}
           resources:
             requests:
               storage: {{ $p | get "storageSize" }}
