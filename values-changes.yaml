@@ -281,3 +281,5 @@ changes:
   - version: 27
     deletions:
       - 'teamConfig.{team}.jobs'
+    fileDeletions:
+      - env/teams/jobs.{team}.yaml
