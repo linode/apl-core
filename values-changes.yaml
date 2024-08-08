@@ -278,3 +278,6 @@ changes:
   - version: 26
     deletions:
       - 'teamConfig.{team}.jobs'
+  - version: 27
+    relocations:
+      - 'apps.metrics-server.apiServer.enabled': 'apps.metrics-server.apiServer.create'

@@ -1792,6 +1792,10 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
+          oidcAutoOnboard:
+            type: boolean
+          oidcUserClaim:
+            type: string
           core:
             properties:
               secret:
@@ -1946,6 +1950,8 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
+          adminUsername:
+            type: string
           theme:
             type: string
             default: otomi
@@ -2129,7 +2135,7 @@ properties:
           apiServer:
             additionalProperties: false
             properties:
-              enabled:
+              create:
                 type: boolean
                 default: true
           extraArgs:
