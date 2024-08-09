@@ -1,23 +1,19 @@
 name: Renovate
+
 on:
-  push:
-    branches:
-      - 'auto-chart-update'
-  # This lets you dispatch a renovate job with different cache options if you want to reset or disable the cache manually.
-  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 2 * * *' # Runs every day at 02:00 UTC
+  workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
   renovate:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4.1.4
-      - name: Self-hosted Renovate
-        uses: renovatebot/github-action@v40.1.11
-        env:
-          RENOVATE_PRIVATE_KEY: '${{ secrets.RENOVATE_PGP_PRIVATE_KEY }}'
-          LOG_LEVEL: debug
-          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Renovate
+        uses: renovatebot/github-action@v40.0.0
         with:
-          configurationFile: .github/renovate.js
-          renovate-version: full
+          token: ${{ secrets.GITHUB_TOKEN }}
