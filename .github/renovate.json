@@ -1,0 +1,16 @@
+{
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "matchManagers": ["helmv3"],
+      "enabled": true,
+      "groupName": "Helm v3 Chart Dependencies",
+      "automerge": false,
+      "schedule": ["at any time"]
+    }
+  ],
+  "helmv3": {
+    "fileMatch": ["chart/otomi-deps/Chart.yaml"],
+    "enabledManagers": ["helmv3"]
+  }
+}
