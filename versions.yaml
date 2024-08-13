@@ -1,4 +1,4 @@
-api: main
-console: main
+api: dvk-simplify-app-values
+console: dvk-simplify-app-values
 tasks: 3.0.0
 tools: 1.6.4
