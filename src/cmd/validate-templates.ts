@@ -136,23 +136,7 @@ export const validateTemplates = async (): Promise<void> => {
   const argv: HelmArguments = getParsedArgs()
   await setup(argv)
   await processCrdWrapper(argv)
-  const constraintKinds = [
-    'PspAllowedRepos',
-    'BannedImageTags',
-    'ContainerLimits',
-    'PspAllowedUsers',
-    'PspHostFilesystem',
-    'PspHostNetworkingPorts',
-    'PspPrivileged',
-    'PspApparmor',
-    'PspCapabilities',
-    'PspForbiddenSysctls',
-    'PspHostSecurity',
-    'PspSeccomp',
-    'PspSelinux',
-  ]
-  // TODO: revisit these excluded resources and see it they exist now (from original sh script)
-  const skipKinds = ['CustomResourceDefinition', ...constraintKinds]
+  const skipKinds = ['CustomResourceDefinition']
   const skipFilenames = ['crd']
 
   d.log('Validating resources')
@@ -166,13 +150,13 @@ export const validateTemplates = async (): Promise<void> => {
   d.info(
     `Running command: kubeconform -skip ${skipKinds.join(
       ',',
-    )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${k8sResourcesPath}`,
+    )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${verbose} ${k8sResourcesPath}`,
   )
 
   const kubeconformOutput = await nothrow(
     $`kubeconform -skip ${skipKinds.join(
       ',',
-    )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${k8sResourcesPath}`,
+    )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${verbose} ${k8sResourcesPath}`,
   )
 
   if (kubeconformOutput.exitCode !== 0) {
