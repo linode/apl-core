@@ -7,6 +7,7 @@ environments:
         apps:
           alertmanager:
             enabled: false
+            _rawValues: {}
           argocd:
             enabled: true
             applicationSet:
@@ -33,7 +34,7 @@ environments:
                   memory: 1Gi
                 limits:
                   cpu: "2"
-                  memory: 2Gi            
+                  memory: 2Gi
               server:
                 requests:
                   cpu: 50m
@@ -76,6 +77,7 @@ environments:
                 limits:
                   memory: 1Gi
                   cpu: "1"
+            _rawValues: {}
           cert-manager:
             issuer: custom-ca
             resources:
@@ -85,6 +87,7 @@ environments:
               limits:
                 cpu: 200m
                 memory: 384Mi
+            _rawValues: {}
           cnpg:
             resources:
               requests:
@@ -93,6 +96,7 @@ environments:
               limits:
                 cpu: 1000m
                 memory: 512Mi
+            _rawValues: {}
           drone:
             enabled: false
             debug: false
@@ -236,12 +240,14 @@ environments:
           gitea:
             enabled: true
             adminUsername: otomi-admin
+            _rawValues: {}
           grafana:
             enabled: false
+            _rawValues: {}
           harbor:
             enabled: false
             oidcAutoOnboard: true
-            oidcUserClaim: 'email'
+            oidcUserClaim: email
             registry:
               credentials:
                 username: otomi-admin
@@ -253,8 +259,10 @@ environments:
                 limits:
                   cpu: 400m
                   memory: 512Mi
+            _rawValues: {}
           httpbin:
             enabled: false
+            _rawValues: {}
           ingress-nginx:
             enabled: true
             autoscaling:
@@ -273,12 +281,13 @@ environments:
                 maxReplicas: 10
             tracing:
               enabled: false
-              samplingRatio: '0.01'
+              samplingRatio: "0.01"
+            _rawValues: {}
           istio:
             enabled: true
             tracing:
               enabled: false
-              samplingRatio: '0.01'
+              samplingRatio: "0.01"
             autoscaling:
               egressgateway:
                 minReplicas: 2
@@ -291,8 +300,10 @@ environments:
                 maxReplicas: 10
             egressGateway:
               enabled: false
+            _rawValues: {}
           jaeger:
             enabled: false
+            _rawValues: {}
           keycloak:
             enabled: true
             adminUsername: otomi-admin
@@ -315,6 +326,7 @@ environments:
             idp:
               alias: otomi-idp
               clientID: otomi
+            _rawValues: {}
           kiali:
             enabled: false
             resources:
@@ -332,10 +344,12 @@ environments:
                 limits:
                   cpu: 2000m
                   memory: 1Gi
+            _rawValues: {}
           knative:
             enabled: false
             serving:
               replicas: 1
+            _rawValues: {}
           kured:
             enabled: false
             resources:
@@ -346,6 +360,7 @@ environments:
                 limits:
                   cpu: 50m
                   memory: 32Mi
+            _rawValues: {}
           kyverno:
             enabled: false
             mode: DevTest
@@ -355,29 +370,30 @@ environments:
                   cpu: 200m
                   memory: 128Mi
                 limits:
-                  cpu: '1'
+                  cpu: "1"
                   memory: 512Mi
               cleanupController:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: '1'
+                  cpu: "1"
                   memory: 512Mi
               backgroundController:
                 requests:
                   cpu: 50m
                   memory: 128Mi
                 limits:
-                  cpu: '1'
+                  cpu: "1"
                   memory: 512Mi
               reportsController:
                 requests:
                   cpu: 50m
                   memory: 128Mi
                 limits:
-                  cpu: '1'
+                  cpu: "1"
                   memory: 512Mi
+            _rawValues: {}
           tekton:
             resources:
               dashboard:
@@ -387,6 +403,7 @@ environments:
                 requests:
                   cpu: 10m
                   memory: 64Mi
+            _rawValues: {}
           loki:
             enabled: false
             resources:
@@ -468,9 +485,11 @@ environments:
                 maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
+            _rawValues: {}
           metrics-server:
             apiServer:
               create: true
+            _rawValues: {}
           minio:
             enabled: false
             provisioning:
@@ -483,13 +502,18 @@ environments:
                 cpu: 500m
                 memory: 128Mi
               limits:
-                cpu: '1'
+                cpu: "1"
                 memory: 1Gi
-          oauth2-proxy: {}
-          oauth2-proxy-redis: {}
+            _rawValues: {}
+          oauth2-proxy:
+            _rawValues: {}
+          oauth2-proxy-redis:
+            _rawValues: {}
           otomi-api:
             editorInactivityTimeout: 1
-          otomi-console: {}
+            _rawValues: {}
+          otomi-console:
+            _rawValues: {}
           otomi-operator:
             resources:
               operator:
@@ -499,6 +523,7 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
+            _rawValues: {}
           apl-harbor-operator:
             resources:
               operator:
@@ -508,6 +533,7 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
+            _rawValues: {}
           apl-gitea-operator:
             resources:
               operator:
@@ -517,6 +543,7 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
+            _rawValues: {}
           apl-keycloak-operator:
             resources:
               operator:
@@ -526,9 +553,12 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
+            _rawValues: {}
           promtail:
             enabled: false
-          prometheus-blackbox-exporter: {}
+            _rawValues: {}
+          prometheus-blackbox-exporter:
+            _rawValues: {}
           prometheus:
             enabled: false
             disabledRules:
@@ -541,8 +571,10 @@ environments:
             scrapeInterval: 60s
             retentionSize: 4GB
             storageSize: 5Gi
+            _rawValues: {}
           redis-shared:
             enabled: false
+            _rawValues: {}
           otel:
             enabled: false
             collector:
@@ -578,6 +610,7 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 128Mi
+            _rawValues: {}
           sealed-secrets:
             enabled: true
             resources:
@@ -588,6 +621,7 @@ environments:
                 limits:
                   cpu: 2000m
                   memory: 1024Mi
+            _rawValues: {}
           tempo:
             enabled: false
             resources:
@@ -664,6 +698,7 @@ environments:
                 maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
+            _rawValues: {}
           rabbitmq:
             enabled: false
             resources:
@@ -681,6 +716,7 @@ environments:
                 limits:
                   cpu: 900m
                   memory: 512Mi
+            _rawValues: {}
           trivy:
             enabled: false
             operator:
@@ -700,6 +736,7 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 512Mi
+            _rawValues: {}
           velero:
             enabled: false
             restic:
@@ -712,10 +749,11 @@ environments:
               limits:
                 cpu: 1000m
                 memory: 512Mi
+            _rawValues: {}
         databases:
           keycloak:
             imported: false
-            size: '5Gi'
+            size: 5Gi
             replicas: 2
             resources:
               limits:
@@ -725,13 +763,13 @@ environments:
                 cpu: 50m
                 memory: 256Mi
           harbor:
-            size: '5Gi'
+            size: 5Gi
             replicas: 2
             coreDatabase: registry
           gitea:
             useOtomiDB: true
             imported: false
-            size: '5Gi'
+            size: 5Gi
             replicas: 2
             resources:
               limits:
@@ -744,11 +782,11 @@ environments:
           provider:
             type: disabled
           buckets:
-              loki: loki
-              cnpg: cnpg
-              velero: velero
-              harbor: harbor
-              tempo: tempo
+            loki: loki
+            cnpg: cnpg
+            velero: velero
+            harbor: harbor
+            tempo: tempo
         platformBackups:
           database:
             harbor:
