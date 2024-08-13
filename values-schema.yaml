@@ -1858,6 +1858,8 @@ properties:
           enabled:
             type: boolean
             default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
@@ -2010,6 +2012,8 @@ properties:
       knative:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: true
@@ -2432,6 +2436,8 @@ properties:
                 $ref: '#/definitions/resources'
       otel:
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false
