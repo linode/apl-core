@@ -8,7 +8,6 @@ environments:
           alertmanager:
             enabled: false
           argocd:
-            enabled: true
             applicationSet:
               replicas: 1
             controller:
@@ -234,7 +233,6 @@ environments:
                   cpu: 50m
                   memory: 32Mi
           gitea:
-            enabled: true
             adminUsername: otomi-admin
           grafana:
             enabled: false
@@ -256,7 +254,6 @@ environments:
           httpbin:
             enabled: false
           ingress-nginx:
-            enabled: true
             autoscaling:
               enabled: true
               minReplicas: 2
@@ -275,7 +272,6 @@ environments:
               enabled: false
               samplingRatio: '0.01'
           istio:
-            enabled: true
             tracing:
               enabled: false
               samplingRatio: '0.01'
@@ -294,7 +290,6 @@ environments:
           jaeger:
             enabled: false
           keycloak:
-            enabled: true
             adminUsername: otomi-admin
             theme: otomi
             resources:
@@ -579,7 +574,6 @@ environments:
                   cpu: 500m
                   memory: 128Mi
           sealed-secrets:
-            enabled: true
             resources:
               operator:
                 requests:

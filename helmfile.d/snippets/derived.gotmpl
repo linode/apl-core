@@ -177,17 +177,24 @@ environments:
               credentials:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
           gitea:
+            enabled: true
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+          ingress-nginx:
+            enabled: true
+          istio:
+            enabled: true
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean" "linode")) }}
           minio:
             enabled: {{ eq $obj.type "minioLocal" }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
+          sealed-secrets:
+            enabled: true
         oidc: {}
         ingress:
           classes:
