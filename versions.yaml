@@ -1,4 +1,4 @@
-api: main
+api: linode-dockerhub-apl-api
 console: main
 tasks: 3.0.0
 tools: 1.6.4
