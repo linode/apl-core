@@ -5,9 +5,10 @@
 {{- $skipScript := . | get "skipScript" false }}
 {{- $task := . | get "task" nil }}
 {{- $type := . | get "type" "job" }}
+{{- $repositoryPrefix := default "otomi" (. | get "repositoryPrefix") }}
 image:
   registry: docker.io
-  repository: otomi/{{ .item }}
+  repository: {{ $repositoryPrefix }}/{{ .item }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 {{ if $v._derived.untrustedCA }}
