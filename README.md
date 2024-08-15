@@ -25,7 +25,7 @@
 
 To install APL, make sure to have a Kubernetes cluster running with at least:
 
-- Version `1.27`, `1.28` or `1.29`
+- Version `1.28`, `1.29` or `1.30`
 - A node pool with at least **8 vCPU** and **16GB+ RAM** (more resources might be required based on the activated capabilities)
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - A default storage class configured
@@ -36,7 +36,6 @@ To install APL, make sure to have a Kubernetes cluster running with at least:
 
 > [!TIP]  
 > Install APL with DNS to unlock it's full potential. Check [here](https://otomi.io) for more info.
-
 
 Add the Helm repository:
 
