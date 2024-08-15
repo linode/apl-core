@@ -123,7 +123,7 @@ environments:
                           quay.io/prometheus/prometheus,
                           quay.io/kiwigrid/k8s-sidecar,
                           docker.io/otomi/core,
-                          docker.io/otomi/tasks,
+                          docker.io/linode/apl-tasks,
                           docker.io/otomi/api,
                           docker.io/drone/drone-runner-kube,
                           docker.io/grafana/promtail,
@@ -150,26 +150,26 @@ environments:
                         container.image.repository in (
                           docker.io/drone/drone-runner-kube,
                           docker.io/otomi/api,
-                          docker.io/otomi/tasks
+                          docker.io/linode/apl-tasks
                         )
                       )
                   - macro: user_known_package_manager_in_container
                     condition: (
                         container.image.repository in (
-                          docker.io/otomi/tasks
+                          docker.io/linode/apl-tasks
                         )
                       )
                   - macro: user_known_k8s_client_container
                     condition: (
                         container.image.repository in (
-                          docker.io/otomi/tasks,
+                          docker.io/linode/apl-tasks,
                           ocker.io/otomi/core
                         ) or (k8s.ns.name = "drone-pipelines")
                       )
                   - macro: user_known_non_sudo_setuid_conditions
                     condition: (
                         container.image.repository in (
-                          docker.io/otomi/tasks,
+                          docker.io/linode/apl-tasks,
                           docker.io/otomi/api,
                           docker.io/otomi/console,
                           docker.io/gitea/gitea,
