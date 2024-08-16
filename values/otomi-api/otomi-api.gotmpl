@@ -24,7 +24,7 @@ resources:
     memory: 256Mi
 {{- end }}
 
-{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipScript" true) }}
+{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "repositoryPrefix" "linode/apl-" "item" "api" "v" $v "skipScript" true) }}
 
 secrets:
   GIT_USER: otomi-admin
