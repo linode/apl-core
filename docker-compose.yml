@@ -3,7 +3,7 @@ version: '3.4'
 services:
   api:
     container_name: api
-    image: otomi/api:${API_TAG:-latest}
+    image: linode/apl-api:${API_TAG:-latest}
     user: ${USER_ID}:${GROUP_ID}
     expose:
       - 8080
@@ -42,7 +42,7 @@ services:
       GCLOUD_SERVICE_KEY: ${GCLOUD_SERVICE_KEY}
 
   web:
-    image: otomi/console:${WEB_TAG:-latest}
+    image: linode/apl-console:${WEB_TAG:-latest}
     container_name: web
     expose:
       - 80
