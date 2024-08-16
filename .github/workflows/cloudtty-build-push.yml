@@ -6,8 +6,10 @@ on:
       - 'main'
 
 env:
-  NAMESPACE: otomi
-  REPO: tty
+  NAMESPACE: linode
+  REPO: apl-tty
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
+  DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
 
 jobs:
   build-and-version:
@@ -68,14 +70,14 @@ jobs:
         if: ${{ env.NEW_VERSION != null }}
         run: |
           pip3 install docker-squash
-          docker-squash otomi/tty -t ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
+          docker-squash ${{ env.NAMESPACE }}/${{ env.REPO }} -t ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
 
       - name: Login to GitHub Container Registry
         if: ${{ env.NEW_VERSION != null }}
         uses: docker/login-action@v3
         with:
-          username: 'otomi'
-          password: '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
+          username: '$DOCKER_USERNAME'
+          password: '$DOCKER_PASSWORD'
 
       - name: Push Docker image
         if: ${{ env.NEW_VERSION != null }}
