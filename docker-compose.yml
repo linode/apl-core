@@ -42,7 +42,7 @@ services:
       GCLOUD_SERVICE_KEY: ${GCLOUD_SERVICE_KEY}
 
   web:
-    image: otomi/console:${WEB_TAG:-latest}
+    image: linode/apl-console:${WEB_TAG:-latest}
     container_name: web
     expose:
       - 80

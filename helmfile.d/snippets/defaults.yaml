@@ -171,7 +171,7 @@ environments:
                         container.image.repository in (
                           docker.io/otomi/tasks,
                           docker.io/otomi/api,
-                          docker.io/otomi/console,
+                          docker.io/linode/apl-console,
                           docker.io/gitea/gitea,
                           docker.io/grafana/grafana
                         ) or (k8s.ns.name = "ingress")
@@ -180,7 +180,7 @@ environments:
                   - macro: excessively_capable_container
                     condition: (
                         container.image.repository in (
-                          docker.io/otomi/console,
+                          docker.io/linode/apl-console,
                           docker.io/otomi/api
                         ) or (k8s.ns.name = "keycloak")
                       )
