@@ -7,7 +7,7 @@ priorityClassName: "otomi-critical"
 replicaCount: 1
 image:
   registry: docker.io
-  repository: otomi/api
+  repository: linode/apl-api
   tag: 0.1.1
   pullPolicy: IfNotPresent
 
