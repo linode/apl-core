@@ -3,7 +3,7 @@ name: CloudTTY Build and Versioning
 on:
   push:
     branches:
-      - 'main'
+      - 'linode-dockerhub-apl-tty'
 
 env:
   NAMESPACE: linode
