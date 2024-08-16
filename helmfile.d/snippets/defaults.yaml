@@ -124,7 +124,7 @@ environments:
                           quay.io/kiwigrid/k8s-sidecar,
                           docker.io/otomi/core,
                           docker.io/otomi/tasks,
-                          docker.io/otomi/api,
+                          docker.io/linode/apl-api,
                           docker.io/drone/drone-runner-kube,
                           docker.io/grafana/promtail,
                           gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
@@ -149,7 +149,7 @@ environments:
                     condition: (
                         container.image.repository in (
                           docker.io/drone/drone-runner-kube,
-                          docker.io/otomi/api,
+                          docker.io/linode/apl-api,
                           docker.io/otomi/tasks
                         )
                       )
@@ -170,7 +170,7 @@ environments:
                     condition: (
                         container.image.repository in (
                           docker.io/otomi/tasks,
-                          docker.io/otomi/api,
+                          docker.io/linode/apl-api,
                           docker.io/linode/apl-console,
                           docker.io/gitea/gitea,
                           docker.io/grafana/grafana
@@ -181,7 +181,7 @@ environments:
                     condition: (
                         container.image.repository in (
                           docker.io/linode/apl-console,
-                          docker.io/otomi/api
+                          docker.io/linode/apl-api
                         ) or (k8s.ns.name = "keycloak")
                       )
                   - macro: user_known_write_below_root_activities
