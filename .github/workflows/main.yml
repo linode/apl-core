@@ -113,7 +113,7 @@ jobs:
     if: always() && contains(needs.release.result, 'success') && !github.event.act
     runs-on: ubuntu-latest
     container:
-      image: otomi/tools:v1.4.20
+      image: linode/apl-tools:v2.4.0
       options: --user 0
     steps:
       - name: Checkout

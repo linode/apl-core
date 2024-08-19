@@ -25,8 +25,8 @@ Get familiar with the `schemas/Readme.md` file
 
 - [ ] Kubectl [version skew](https://kubernetes.io/releases/version-skew-policy/#kubectl) from is compatible with all three supported k8s versions
 - [ ] Helm [version skew](https://helm.sh/docs/topics/version_skew/#supported-version-skew) from is compatible with all three supported k8s versions
-- [ ] A new otomi/tools version is published
-- [ ] The otomi/tools version is used by the otomi/core image
+- [ ] A new linode/apl-tools version is published
+- [ ] The linode/apl-tools version is used by the otomi/core image
 
 **.github/workflows**
 

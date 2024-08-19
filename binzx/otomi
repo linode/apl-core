@@ -8,7 +8,7 @@
 ## - do not depend on any external files.
 ## - do not use any non standard tooling.
 ## - only Docker is needed to run apl-core image
-## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
+## If you need to use any extra binaries then most probably you want to add them to the linode/apl-tools image.
 ##
 #####################################################################################
 # shellcheck disable=SC2128
