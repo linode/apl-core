@@ -10,7 +10,7 @@ on:
         type: string
   push:
     branches:
-      - 'main'
+      - 'linode-dockerhub-apl-tools'
 
 env:
   NAMESPACE: linode
