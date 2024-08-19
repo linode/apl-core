@@ -8,7 +8,9 @@ on:
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: linode/apl-core
-  REPO: otomi/core
+  REPO: linode/apl-core
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
+  DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
 
 jobs:
   build-test-cache:
@@ -60,7 +62,7 @@ jobs:
           image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
           docker pull $image
           docker tag $image $REPO:$TAG
-          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push $REPO:$TAG
       - name: Show me the logic
         run: |
@@ -83,7 +85,7 @@ jobs:
         id: git_tag
         run: |
           TAG=${GITHUB_REF##*/}
-          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker pull $REPO:$TAG
           docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
