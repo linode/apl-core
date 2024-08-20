@@ -56,7 +56,7 @@ core:
   {{ readFile "../../apps.yaml" | nindent 2}}
 
 tools:
-  {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipScript" true) | nindent 2 }}
+  {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "repositoryPrefix" "linode/apl-" "item" "core" "v" $v "skipScript" true) | nindent 2 }}
   resources:
   {{- with $o | get "resources.tools" nil }}
     {{- toYaml . | nindent 4 }}
