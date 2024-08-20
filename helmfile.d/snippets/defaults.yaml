@@ -18,14 +18,14 @@ environments:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 5
-                targetCPUUtilizationPercentage: 70
-                targetMemoryUtilizationPercentage: 70
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
               server:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 5
-                targetCPUUtilizationPercentage: 70
-                targetMemoryUtilizationPercentage: 70
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
             resources:
               controller:
                 requests:
@@ -36,8 +36,8 @@ environments:
                   memory: 2Gi
               server:
                 requests:
-                  cpu: 50m
-                  memory: 256M
+                  cpu: 100m
+                  memory: 512M
                 limits:
                   cpu: "1"
                   memory: 1Gi
