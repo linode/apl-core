@@ -12,12 +12,12 @@ readonly compareBranch='main'
 targetDirA="tmp/${currentBranch}"
 targetDirB="tmp/${compareBranch}"
 
-# we remove previously rendered manifests so they are not mixed up with newly rendered
-rm -rf $targetDirB
 export NODE_ENV=test
 helmfile template $templateArgs --output-dir-template="../$targetDirA/{{.Release.Namespace}}-{{.Release.Name }}"
 
 git checkout $compareBranch
+# we remove previously rendered manifests so they are not mixed up with newly rendered
+rm -rf $targetDirB
 helmfile template $templateArgs --output-dir-template="../$targetDirB/{{.Release.Namespace}}-{{.Release.Name}}"
 git checkout $currentBranch
 
