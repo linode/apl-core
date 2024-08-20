@@ -11,7 +11,6 @@ set -e
 
 echo "$diff_output" | while read -r line; do
   # Check if the line indicates a difference
-  echo $line
   if [[ $line == *" and "* ]]; then
     # Extract the paths using cut
     first_path=$(echo $line | cut -d' ' -f2)
