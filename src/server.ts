@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
+import $RefParser from '@apidevtools/json-schema-ref-parser'
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { bootstrapSops } from 'src/cmd/bootstrap'
@@ -6,6 +7,7 @@ import { validateValues } from 'src/cmd/validate-values'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { hfValues } from './common/hf'
+import { loadYaml, rootDir } from './common/utils'
 import { objectToYaml } from './common/values'
 
 const d = terminal('server')
@@ -78,6 +80,13 @@ app.get('/otomi/values', async (req: Request, res: Response) => {
     d.error(error)
     res.status(status).send(error)
   }
+})
+
+app.get('/apl/schema', async (req: Request, res: Response) => {
+  const schema = await loadYaml(`${rootDir}/values-schema.yaml`)
+  const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
+  res.setHeader('Content-type', 'application/json')
+  res.status(200).send(derefSchema)
 })
 
 export const startServer = (): void => {
