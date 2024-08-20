@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   registry: docker.io
-  repository: otomi/console
+  repository: linode/apl-console
   tag: latest
   pullPolicy: IfNotPresent
 

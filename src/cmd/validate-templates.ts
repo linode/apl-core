@@ -136,24 +136,8 @@ export const validateTemplates = async (): Promise<void> => {
   const argv: HelmArguments = getParsedArgs()
   await setup(argv)
   await processCrdWrapper(argv)
-  const constraintKinds = [
-    'PspAllowedRepos',
-    'BannedImageTags',
-    'ContainerLimits',
-    'PspAllowedUsers',
-    'PspHostFilesystem',
-    'PspHostNetworkingPorts',
-    'PspPrivileged',
-    'PspApparmor',
-    'PspCapabilities',
-    'PspForbiddenSysctls',
-    'PspHostSecurity',
-    'PspSeccomp',
-    'PspSelinux',
-  ]
-  // TODO: revisit these excluded resources and see it they exist now (from original sh script)
-  const skipKinds = ['CustomResourceDefinition', ...constraintKinds]
-  const skipFilenames = ['crd', 'constraint', 'knative-operator', 'buildpack', 'docker', 'git-clone', 'kaniko']
+  const skipKinds = ['CustomResourceDefinition']
+  const skipFilenames = ['crd']
 
   d.log('Validating resources')
   const verbose = argv.verbose ? ['-verbose'] : []
@@ -162,47 +146,33 @@ export const validateTemplates = async (): Promise<void> => {
   d.info(`Skip Filenames: ${skipFilenames.join(', ')}`)
   d.info(`K8S Resource Path: ${k8sResourcesPath}`)
   d.info(`Schema location: file://${schemaOutputPath}`)
-  const kubevalOutput = await nothrow(
-    $`kubeconform -skip ${skipKinds.join(',')} -ignore-filename-pattern ${skipFilenames.join(
-      '|',
-    )} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json ${k8sResourcesPath}`,
+  const skipPatterns = skipFilenames.flatMap((filename) => ['-ignore-filename-pattern', filename])
+  d.info(
+    `Running command: kubeconform -skip ${skipKinds.join(
+      ',',
+    )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${verbose} ${k8sResourcesPath}`,
   )
 
-  let passCount = 0
-  let warnCount = 0
-  let errCount = 0
-  let prev = ''
-  ;`${kubevalOutput.stdout}\n${kubevalOutput.stderr}`.split('\n').forEach((x) => {
-    if (x === '') return
-    const [left, right] = x.split(' - ')
-    const k = left ? left.trim() : ''
-    const v = right ? right.trim() : ''
-    switch (k) {
-      case 'PASS':
-        passCount += 1
-        break
-      case 'WARN':
-        warnCount += 1
-        d.warn(`${chalk.yellowBright('WARN')}: %s`, v)
-        break
-      case 'ERR':
-        errCount += 1
-        d.error(`${chalk.redBright('INFO')}: %s`, prev)
-        d.error(`${chalk.redBright('ERR')}: %s`, v)
-        break
-      default:
-        break
-    }
-    prev = x
-  })
-  d.info(`${chalk.greenBright('TOTAL PASS')}: %s`, `${passCount} files`)
-  d.info(`${chalk.yellowBright('TOTAL WARN')}: %s`, `${warnCount} files`)
-  d.info(`${chalk.redBright('TOTAL ERR')}: %s`, `${errCount} files`)
+  const kubeconformOutput = await nothrow(
+    $`kubeconform -skip ${skipKinds.join(
+      ',',
+    )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${verbose} ${k8sResourcesPath}`,
+  )
 
-  if (kubevalOutput.exitCode !== 0) {
-    d.info('Kubeval output: %s', kubevalOutput.stdout)
-    throw new Error(`Template validation FAILED: ${kubevalOutput.exitCode}`)
-  } else d.log('Template validation SUCCESS')
+  if (kubeconformOutput.exitCode !== 0) {
+    d.info('Kubeconform output: %s', kubeconformOutput.toString())
+    throw new Error(`Template validation FAILED: ${kubeconformOutput.exitCode}`)
+  }
+
+  const parsedOutput = JSON.parse(kubeconformOutput.stdout)
+  const { valid, invalid, errors, skipped } = parsedOutput.summary
+
+  d.info(`${chalk.greenBright('TOTAL PASS')}: %s`, `${valid} files`)
+  d.info(`${chalk.magentaBright('TOTAL SKIP')}: %s`, `${skipped} files`)
+  d.info(`${chalk.yellowBright('TOTAL WARN')}: %s`, `${invalid} files`)
+  d.info(`${chalk.redBright('TOTAL ERR')}: %s`, `${errors} files`)
+
+  d.log('Template validation SUCCESS')
 }
 
 export const module = {

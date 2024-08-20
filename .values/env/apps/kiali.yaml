@@ -1,3 +1,0 @@
-apps:
-    kiali:
-        enabled: false

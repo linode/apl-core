@@ -1088,8 +1088,6 @@ definitions:
       id:
         $ref: '#/definitions/idName'
         description: Must be the same as the name.
-      jobs:
-        $ref: '#/definitions/jobs'
       limitRange:
         description: 'Kubernetes limit range. As is.'
         properties:
@@ -1485,8 +1483,19 @@ properties:
           enabled:
             type: boolean
             default: true
+          applicationSet:
+            replicas:
+              default: 1
+              type: integer
+          controller:
+            replicas:
+              default: 1
+              type: integer
           autoscaling:
-            $ref: '#/definitions/autoscalingEnabled'
+            repoServer:
+              $ref: '#/definitions/autoscalingEnabled'
+            server:
+              $ref: '#/definitions/autoscalingEnabled'
           resources:
             additionalProperties: false
             properties:
@@ -1497,6 +1506,12 @@ properties:
               repo:
                 $ref: '#/definitions/resources'
               redis:
+                $ref: '#/definitions/resources'
+              applicationSet:
+                $ref: '#/definitions/resources'
+              notifications:
+                $ref: '#/definitions/resources'
+              imageUpdater:
                 $ref: '#/definitions/resources'
       cert-manager:
         additionalProperties: false
@@ -1777,6 +1792,10 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
+          oidcAutoOnboard:
+            type: boolean
+          oidcUserClaim:
+            type: string
           core:
             properties:
               secret:
@@ -1839,6 +1858,8 @@ properties:
           enabled:
             type: boolean
             default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
@@ -1931,6 +1952,8 @@ properties:
           adminPassword:
             type: string
             x-secret: ''
+          adminUsername:
+            type: string
           theme:
             type: string
             default: otomi
@@ -1989,6 +2012,8 @@ properties:
       knative:
         additionalProperties: false
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: true
@@ -2160,7 +2185,7 @@ properties:
           apiServer:
             additionalProperties: false
             properties:
-              enabled:
+              create:
                 type: boolean
                 default: true
           extraArgs:
@@ -2458,6 +2483,8 @@ properties:
                 $ref: '#/definitions/resources'
       otel:
         properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
           enabled:
             type: boolean
             default: false

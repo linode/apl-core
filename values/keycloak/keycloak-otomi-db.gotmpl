@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.keycloak }}
 {{- $cnpg := $v.apps.cnpg }}
-{{- $sp := $cnpg.storage }}
 {{- $kdb := $v.databases.keycloak }}
 {{- $obj := $v.obj.provider }}
 {{- $bu := $v.obj.buckets }}
@@ -26,7 +25,7 @@ backup:
 {{- if eq $obj.type "linode" }}
   linode:
     destinationPath: "s3://{{ $bu.cnpg }}/keycloak"
-    endpointURL: {{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
+    endpointURL: https://{{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}
 {{- end }}

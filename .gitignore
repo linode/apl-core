@@ -17,3 +17,4 @@ workflow/
 .envrc
 otomi.cpuprofile
 /.idea/
+tmp
