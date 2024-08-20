@@ -90,7 +90,7 @@ else
 fi
 otomi_branch_or_tag=${OTOMI_TAG:-$otomi_version}
 otomi_version_used=${OTOMI_TAG:-$otomi_version}
-readonly otomi_tools_image="otomi/core:${otomi_version_used}"
+readonly otomi_tools_image="linode/apl-core:${otomi_version_used}"
 
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then
