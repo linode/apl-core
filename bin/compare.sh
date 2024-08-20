@@ -21,7 +21,8 @@ rm -rf $targetDirB
 helmfile template $templateArgs --output-dir-template="../$targetDirB/{{.Release.Namespace}}-{{.Release.Name}}"
 git checkout $currentBranch
 
-bin/dyff.sh $targetDirA $targetDirB
+# order of arguments matters so new chanages are green color
+bin/dyff.sh $targetDirB $targetDirA
 
 echo "#########################################################"
 echo "#"
