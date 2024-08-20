@@ -45,7 +45,7 @@ function err() {
 # skip parsing args for some commands
 caller=${1#./}
 if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
-  getopt --test >/dev/null && exit 1
+  ! getopt --test >/dev/null
   if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     err '`getopt --test` failed in this environment.'
     exit 1
@@ -53,7 +53,7 @@ if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
 
   OPTIONS=dtvsp:f:l:
   LONGOPTS=debug,trace,verbose,skip-cleanup,profile:,file:,label:
-  PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@") && exit 1
+  ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
   if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
     exit 1
   fi
