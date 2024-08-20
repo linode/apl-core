@@ -3,9 +3,11 @@ cluster:
   name: 'dev'
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
-  isMultitenant: true
   version: 'OTOMI_VERSION_PLACEHOLDER'
   adminPassword: welcomeotomi
+obj:
+  provider:
+    type: minioLocal
 apps:
   alertmanager:
     enabled: true
