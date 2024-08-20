@@ -33,7 +33,7 @@ spec:
       serviceAccountName: {{ include "wait-for.serviceAccountName" . }}
       containers:
         - name: wait-for
-          image: {{ printf "otomi/tasks:%s" $tag }}
+          image: {{ printf "linode/apl-tasks:%s" $tag }}
           resources:
             limits:
               cpu: 200m
