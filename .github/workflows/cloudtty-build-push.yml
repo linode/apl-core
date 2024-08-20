@@ -6,8 +6,8 @@ on:
       - 'main'
 
 env:
-  NAMESPACE: otomi
-  REPO: tty
+  NAMESPACE: linode
+  REPO: apl-tty
 
 jobs:
   build-and-version:
@@ -28,7 +28,7 @@ jobs:
 
           set -e
 
-          # # Set the first image version to '0.1.0' if the repo does  not exists.
+          # # Set the first image version to '0.1.0' if the repo does not exists.
           # if ! curl -s -L --fail "https://hub.docker.com/v2/repositories/${{ env.NAMESPACE }}/${{ env.REPO }}"; then echo "NEW_VERSION=0.1.0" >> $GITHUB_ENV && exit 0; fi
 
           # Get data for latest 10 versions of the image and filter the ones matching our semver pattern. Set the OLD_VERSION environment variable to the latest version.
@@ -68,14 +68,14 @@ jobs:
         if: ${{ env.NEW_VERSION != null }}
         run: |
           pip3 install docker-squash
-          docker-squash otomi/tty -t ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
+          docker-squash ${{ env.NAMESPACE }}/${{ env.REPO }} -t ${{ env.NAMESPACE }}/${{ env.REPO }}:${{ env.NEW_VERSION }}
 
       - name: Login to GitHub Container Registry
         if: ${{ env.NEW_VERSION != null }}
         uses: docker/login-action@v3
         with:
-          username: 'otomi'
-          password: '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
+          username: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
 
       - name: Push Docker image
         if: ${{ env.NEW_VERSION != null }}
