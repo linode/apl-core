@@ -13,9 +13,11 @@ echo "$diff_output" | while read -r line; do
   # Check if the line indicates a difference
   if [[ $line == *" and "* ]]; then
     # Extract the paths using cut
-    echo $line
     first_path=$(echo $line | cut -d' ' -f2)
     second_path=$(echo $line | cut -d' ' -f4)
+
+    [ ! -f $second_path ] && echo "New file added: $first_path" && continue
+    [ ! -f $first_path ] && echo "Old file deleted: $second_path" && continue
 
     # Use dyff to compare the files
     dyff between "$first_path" "$second_path" --omit-header \
