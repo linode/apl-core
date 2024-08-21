@@ -1,7 +1,6 @@
 apps:
     prometheus:
         enabled: true
-        thanosEnabled: true
         disabledRules:
             - InfoInhibitor
             - PrometheusOperatorListErrors

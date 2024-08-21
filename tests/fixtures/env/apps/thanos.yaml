@@ -1,5 +1,6 @@
 apps:
     thanos:
+        enabled: true
         query:
             replicaCount: 1
         compactor:

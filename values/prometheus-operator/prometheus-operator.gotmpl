@@ -5,6 +5,7 @@
 {{- $a := $v.apps | get "alertmanager" }}
 {{- $g := $v.apps | get "grafana" }}
 {{- $p := $v.apps | get "prometheus" }}
+{{- $t := $v.apps | get "thanos" }}
 {{- $hasKeycloak := $k.enabled }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
@@ -53,9 +54,9 @@ commonLabels:
 prometheus:
   enabled: {{ $p.enabled }}
   thanosService:
-    enabled: {{ $p.thanosEnabled }}
+    enabled: {{ $t.enabled }}
   thanosServiceMonitor:
-    enabled: {{ $p.thanosEnabled }}
+    enabled: {{ $t.enabled }}
   prometheusSpec:
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}Selector:
@@ -84,7 +85,7 @@ prometheus:
         cpu: '3'
         memory: 3Gi
       {{- end }}
-    {{- if $p.thanosEnabled }}
+    {{- if $t.enabled }}
     thanos:
       objectStorageConfig:
         name: thanos-objectstore
@@ -150,15 +151,11 @@ prometheus:
     {{- range $m := (tpl (readFile "service-monitors.gotmpl") $v | fromYaml) | get "additionalServiceMonitors" }}
     - {{- toYaml $m | nindent 6 }}
     {{- end }}
-{{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") }}  
+{{ if not $v.otomi.isMultitenant }}  
 additionalPrometheusRules:
   {{- if not $v.otomi.isMultitenant }}
   - name: blackbox
     {{- readFile "rules/blackbox.yaml" | nindent 4 }}
-  {{- end }}
-  {{- if eq $v.cluster.provider "aws" }}
-  - name: cluster-autoscaler
-    {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
   {{- end }}
 {{- end }}
 alertmanager:
@@ -231,6 +228,10 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards
+    {{- if $t.enabled }}
+    datasources:
+      isDefaultDatasource: false
+    {{- end }}
   serviceMonitor:
     enabled: {{ $p.enabled }}
     labels:
@@ -254,7 +255,7 @@ grafana:
       secureJsonData:
         basicAuthPassword: {{ $v.apps.loki.adminPassword }}
     {{- end }}
-    {{- if $p.thanosEnabled }}
+    {{- if $t.enabled }}
     - name: Thanos Query
       access: proxy
       isDefault: true

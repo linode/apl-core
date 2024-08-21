@@ -1,7 +1,8 @@
 {{- $v := .Values }}
 {{- $p := $v.apps | get "prometheus" }}
+{{- $t := $v.apps | get "thanos" }}
 {{- $obj := $v.obj.provider }}
-{{- if or ($p | get "remoteWrite.rwConfig.basicAuth.enabled" false) ($p | get "thanosEnabled" false) }}
+{{- if or ($p | get "remoteWrite.rwConfig.basicAuth.enabled" false) ($t | get "enabled" false) }}
 resources:
   {{- if $p | get "remoteWrite.rwConfig.basicAuth.enabled" false }}
   - apiVersion: v1
@@ -14,7 +15,7 @@ resources:
       username: {{ $p.remoteWrite.rwConfig.basicAuth.username | b64enc }}
       password: {{ $p.remoteWrite.rwConfig.basicAuth.password | b64enc }}
   {{- end }}
-  {{- if $p | get "thanosEnabled" false }}
+  {{- if $t | get "enabled" false }}
   - apiVersion: v1
     kind: Secret
     metadata:

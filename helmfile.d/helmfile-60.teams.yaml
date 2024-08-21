@@ -121,7 +121,8 @@ releases:
               label: release
               labelValue: grafana-dashboards-{{ $teamId }}
           additionalDataSources:
-            - name: Prometheus-platform
+            {{- if not $v.apps.thanos.enabled }}
+            - name: Prometheus Platform
               editable: false
               uid: prometheus-platform
               type: prometheus
@@ -129,7 +130,8 @@ releases:
               url: http://po-prometheus.monitoring:9090
               jsonData:
                 httpMethod: GET
-            {{- if $v.apps.prometheus.thanosEnabled }}
+            {{- end }}
+            {{- if $v.apps.thanos.enabled }}
             - name: Thanos Query
               access: proxy
               isDefault: true

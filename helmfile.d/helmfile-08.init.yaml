@@ -31,7 +31,7 @@ releases:
       - grafana: {{- $a | get "grafana._rawValues" dict | toYaml | nindent 10 }}
     <<: *upgrade
   - name: thanos
-    installed: {{ $a | get "prometheus.thanosEnabled" }}
+    installed: {{ $a | get "thanos.enabled" }}
     namespace: monitoring
     labels:
       pkg: thanos

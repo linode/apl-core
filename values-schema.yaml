@@ -687,6 +687,7 @@ definitions:
     enum:
       - custom
       - linode
+      - apl
     default: linode
   redisChart:
     properties:
@@ -2333,9 +2334,6 @@ properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           enabled:
-            type: boolean
-            default: false
-          thanosEnabled:
             type: boolean
             default: false
           disabledRules:
