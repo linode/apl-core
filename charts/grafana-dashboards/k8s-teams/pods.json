@@ -440,17 +440,13 @@
   "templating": {
     "list": [
       {
-        "current": {
-          "text": "Prometheus-platform",
-          "value": "Prometheus-platform"
-        },
         "hide": 0,
         "label": null,
         "name": "datasource",
         "options": [],
         "query": "prometheus",
         "refresh": 1,
-        "regex": "",
+        "regex": "/^default/",
         "type": "datasource"
       },
       {

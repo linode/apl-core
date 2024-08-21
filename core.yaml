@@ -333,6 +333,8 @@ adminApps:
     tags: [security]
   - name: rabbitmq
     tags: [messaging]
+  - name: thanos
+    tags: [metrics, observability]
 
 teamApps:
   - name: alertmanager

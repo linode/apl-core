@@ -30,10 +30,7 @@
   "panels": [
     {
       "collapsed": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -44,10 +41,7 @@
       "panels": [],
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "refId": "A"
         }
       ],
@@ -725,10 +719,7 @@
     },
     {
       "collapsed": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
+      "datasource": "$datasource",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -739,10 +730,7 @@
       "panels": [],
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
+          "datasource": "$datasource",
           "refId": "A"
         }
       ],
@@ -1238,11 +1226,6 @@
   "templating": {
     "list": [
       {
-        "current": {
-          "selected": false,
-          "text": "Prometheus-platform",
-          "value": "Prometheus-platform"
-        },
         "hide": 0,
         "includeAll": false,
         "multi": false,
@@ -1251,21 +1234,14 @@
         "query": "prometheus",
         "queryValue": "",
         "refresh": 1,
-        "regex": "",
+        "regex": "/^default/",
         "skipUrlSync": false,
         "type": "datasource"
       },
       {
         "allValue": ".*",
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "$datasource"
-        },
+        "current": {},
+        "datasource": "$datasource",
         "definition": "label_values(kube_node_info, cluster)",
         "hide": 2,
         "includeAll": true,
@@ -1277,7 +1253,7 @@
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
-        "regex": "/(.*team\\-titan.*)/",
+        "regex": "/(.*team\\-#TEAM#.*)/",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
@@ -1296,10 +1272,7 @@
             "$__all"
           ]
         },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "$datasource"
-        },
+        "datasource": "$datasource",
         "definition": "label_values(kube_pod_info{cluster=~\"$cluster\"}, node)",
         "hide": 2,
         "includeAll": true,

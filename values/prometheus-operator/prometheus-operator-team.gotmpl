@@ -64,6 +64,17 @@ prometheus:
       requests:
         cpu: 100m
         memory: 128Mi
+    thanos:
+      objectStorageConfig:
+        name: copy-thanos-objectstore
+        key: objstore.yml
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: '1'
+          memory: 1Gi 
 additionalPrometheusRules: null
 grafana:
   serviceMonitor:
