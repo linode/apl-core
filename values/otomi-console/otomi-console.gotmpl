@@ -15,7 +15,7 @@ resources:
     memory: 128Mi
   {{- end }}
 
-{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "repositoryPrefix" "linode/apl-" "item" "console" "v" $v "skipScript" true ) }}
+{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "console" "v" $v "skipScript" true ) }}
 
 env:
   API_BASE_URL: /api
