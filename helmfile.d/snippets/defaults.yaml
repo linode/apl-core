@@ -721,6 +721,7 @@ environments:
                 limits:
                   cpu: 900m
                   memory: 512Mi
+            _rawValues: {}
           rabbitmq:
             enabled: false
             resources:

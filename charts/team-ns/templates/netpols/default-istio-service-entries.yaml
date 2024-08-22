@@ -2,6 +2,8 @@
 {{- $v := .Values | merge (dict) }}
 {{/* Above merge is a workaround for: https://github.com/helm/helm/issues/9266 */}}
 {{- $ := . }}
+{{- $prometheus := dig "managedMonitoring" "prometheus" false $v }}
+{{- $thanos := dig "apps" "thanos" "enabled" false $v }}
 {{- if (eq $v.teamId "admin") }}
 ---
 apiVersion: networking.istio.io/v1alpha3
@@ -12,6 +14,23 @@ metadata:
 spec:
   hosts:
     - {{ trimPrefix "https://" .Values.apps.keycloak.address }}
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS
+  location: MESH_EXTERNAL
+  resolution: DNS
+{{- end }}
+{{- if and ($prometheus) ($thanos) (eq .Values.obj.provider.type "linode" ) }}
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: obj-linode
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  hosts:
+    - {{ .Values.obj.provider.linode.region }}.linodeobjects.com
   ports:
     - number: 443
       name: https

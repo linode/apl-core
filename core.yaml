@@ -311,7 +311,6 @@ adminApps:
       - svc: po-prometheus
         port: 9090
         namespace: monitoring
-        # namespace: prometheus
         type: public
         auth: true
   - name: sealed-secrets
@@ -335,6 +334,13 @@ adminApps:
     tags: [messaging]
   - name: thanos
     tags: [metrics, observability]
+    ownHost: true
+    ingress:
+      - svc: thanos-query
+        port: 9090
+        namespace: monitoring
+        type: public
+        auth: true
 
 teamApps:
   - name: alertmanager

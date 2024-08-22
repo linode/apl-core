@@ -2095,18 +2095,18 @@ properties:
                 $ref: '#/definitions/resources'
               compactor:
                 $ref: '#/definitions/resources'
-        persistence:
-          properties:
-            storegateway:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 10Gi
-            compactor:
-              properties:
-                size:
-                  $ref: '#/definitions/size'
-                  default: 10Gi
+          persistence:
+            properties:
+              storegateway:
+                properties:
+                  size:
+                    $ref: '#/definitions/size'
+                    default: 10Gi
+              compactor:
+                properties:
+                  size:
+                    $ref: '#/definitions/size'
+                    default: 10Gi
       loki:
         additionalProperties: false
         properties:

@@ -1,4 +1,4 @@
-api: main
-console: main
-tasks: 3.0.0
+api: sr-feat-thanos-sidecar
+console: sr-feat-thanos-sidecar
+tasks: me-feat-monitoring-secrets
 tools: 1.6.4
