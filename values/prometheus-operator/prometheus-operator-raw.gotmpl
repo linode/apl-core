@@ -2,6 +2,7 @@
 {{- $p := $v.apps | get "prometheus" }}
 {{- $t := $v.apps | get "thanos" }}
 {{- $obj := $v.obj.provider }}
+{{- $b := $v.obj.buckets }}
 {{- if or ($p | get "remoteWrite.rwConfig.basicAuth.enabled" false) ($t | get "enabled" false) }}
 resources:
   {{- if $p | get "remoteWrite.rwConfig.basicAuth.enabled" false }}
@@ -27,7 +28,7 @@ resources:
       objstore.yml: {{ tpl (readFile "thanos-minio-config.gotmpl") (dict "adminPassword" $v.otomi.adminPassword) | b64enc }}
       {{- end }}
       {{- if eq $obj.type "linode" }}
-      objstore.yml: {{ tpl (readFile "thanos-linode-config.gotmpl") (dict "accessKeyId" $obj.linode.accessKeyId "secretAccessKey" $obj.linode.secretAccessKey "region" $obj.linode.region ) | b64enc }}
+      objstore.yml: {{ tpl (readFile "thanos-linode-config.gotmpl") (dict "accessKeyId" $obj.linode.accessKeyId "secretAccessKey" $obj.linode.secretAccessKey "region" $obj.linode.region "bucket" $b.thanos) | b64enc }}
       {{- end }}
   {{- end }}
 {{- end }}
