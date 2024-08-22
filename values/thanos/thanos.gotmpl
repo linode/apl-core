@@ -16,6 +16,10 @@ query:
   stores:
     - "thanos-storegateway:10901"
     - "dnssrv+_grpc._tcp.thanos-storegateway.monitoring.svc"
+    {{- range $id, $team := $v.teamConfig }}
+    - "{{ $id }}-po-thanos-discovery.team-{{ $id }}.svc.cluster.local.:10901"
+    {{- end }}
+    
   resources: {{- $t.resources.query | toYaml | nindent 4 }}
   extraFlags:
     - "--query.auto-downsampling"
