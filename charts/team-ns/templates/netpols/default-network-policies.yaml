@@ -60,6 +60,13 @@ spec:
     - from:
         - namespaceSelector:
             matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/component: query
+    - from:
+        - namespaceSelector:
+            matchLabels:
               name: tekton-pipelines
 {{- if $alertmng }}
 ---
