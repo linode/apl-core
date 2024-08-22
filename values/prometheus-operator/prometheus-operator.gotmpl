@@ -97,11 +97,12 @@ prometheus:
         limits:
           cpu: '1'
           memory: 1Gi 
-    replicaExternalLabelName: "__replica__" 
+    replicaExternalLabelName: "__replica__"
     {{- end }}
     priorityClassName: otomi-critical
     externalLabels:
       cluster: "prometheus-platform.{{ $v.cluster.domainSuffix }}"
+      replica: "platform"
     retention: {{ $p | get "retention" "1d" }}
     retentionSize: {{ $p | get "retentionSize" }}
     storageSpec:
