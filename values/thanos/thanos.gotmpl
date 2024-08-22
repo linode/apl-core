@@ -14,10 +14,11 @@ query:
     sidecarsService: prometheus-operated
     sidecarsNamespace: monitoring
   stores:
-    {{- range $id, $team := $v.teamConfig }}
+  {{- range $id, $team := $v.teamConfig }}
+    {{- if not (eq $id "admin") }}
     - "{{ $id }}-po-thanos-discovery.team-{{ $id }}.svc.cluster.local.:10901"
     {{- end }}
-    
+  {{- end }}
   resources: {{- $t.resources.query | toYaml | nindent 4 }}
   extraFlags:
     - "--query.auto-downsampling"
