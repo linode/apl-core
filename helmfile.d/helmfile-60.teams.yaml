@@ -81,7 +81,6 @@ releases:
                 otomi.io/app: prometheus-team-{{ $teamId }}
             externalLabels:
               cluster: "prometheus-{{ $teamId }}.{{ $domain }}"
-              replica: "{{ $teamId }}"
             externalUrl: "https://prometheus-{{ $teamId }}.{{ $domain }}"
             {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
             {{ $selType }}NamespaceSelector:
