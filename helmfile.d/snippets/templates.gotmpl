@@ -39,18 +39,6 @@ templates:
     values:
       - ../values/{{ .Release.Name | replace "-cr" "" }}/{{ .Release.Name }}.gotmpl
       - snippets/common.gotmpl
-  jobs: &jobs
-    namespace: maintenance
-    chart: ../charts/jobs
-    hooks:
-      - events: [presync]
-        showlogs: true
-        command: ../bin/job-presync.sh
-        args:
-          - '{{ .Release.Name }}'
-          - OnSpecChange
-    values:
-      - ../values/jobs/{{ .Release.Name | replace "job-" "" }}.gotmpl
   wait: &wait
     chart: ../charts/wait-for
     hooks:
