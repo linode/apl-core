@@ -17,6 +17,7 @@ releases:
     namespace: argocd
     labels:
       pkg: argocd
+      app: core
     <<: *raw
   - name: istio-operator
     installed: true

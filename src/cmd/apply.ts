@@ -85,8 +85,8 @@ const applyAll = async () => {
   let labelOpts = ['']
   if (intitalInstall) {
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
-    // The 'tag!=teams' does not include team-ns-admin release name.
-    labelOpts = ['tag!=teams']
+    // Only install the core apps
+    labelOpts = ['app=core']
     await hf(
       {
         labelOpts,
