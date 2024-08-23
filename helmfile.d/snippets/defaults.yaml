@@ -719,14 +719,14 @@ environments:
               operator:
                 requests:
                   cpu: 100m
-                  memory: 64Mi
+                  memory: 256Mi
                 limits:
-                  cpu: 500m
-                  memory: 512Mi
+                  cpu: "1"
+                  memory: 1Gi
               trivy:
                 requests:
                   cpu: 100m
-                  memory: 64M
+                  memory: 128M
                 limits:
                   cpu: 500m
                   memory: 512Mi
