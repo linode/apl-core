@@ -74,17 +74,7 @@ prometheus:
     podMetadata:
       annotations:
         sidecar.istio.io/inject: "true"
-    resources:
-      {{- with $p | get "resources.prometheus" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      requests:
-        cpu: 100m
-        memory: 512Mi
-      limits:
-        cpu: '3'
-        memory: 3Gi
-      {{- end }}
+    resources: {{- $p.resources.prometheus | toYaml | nindent 4 }}
     {{- if $t.enabled }}
     thanos:
       objectStorageConfig:
