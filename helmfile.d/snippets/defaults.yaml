@@ -565,7 +565,30 @@ environments:
             replicas: 1
             scrapeInterval: 60s
             retentionSize: 4GB
+            retention: 1d
             storageSize: 5Gi
+            resources:
+              prometheus:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              kube-state-metrics:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              node-exporter:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
             _rawValues: {}
           redis-shared:
             enabled: false
@@ -705,22 +728,22 @@ environments:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 900m
-                  memory: 512Mi
+                  cpu: 1
+                  memory: 1Gi
               compactor:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 900m
-                  memory: 512Mi
+                  cpu: 1
+                  memory: 1Gi
               storegateway:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 900m
-                  memory: 512Mi
+                  cpu: 1
+                  memory: 1Gi
             _rawValues: {}
           rabbitmq:
             enabled: false

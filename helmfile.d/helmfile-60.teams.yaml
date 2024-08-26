@@ -114,36 +114,21 @@ releases:
               root_url: https://grafana-{{ $teamId }}.{{ $domain }}
           sidecar:
             datasources:
-              defaultDatasourceEnabled: {{ $team | get "managedMonitoring.prometheus" false }}
-              uid: Prometheus-team
+              isDefaultDatasource: false
             dashboards:
               enabled: true
               label: release
               labelValue: grafana-dashboards-{{ $teamId }}
           additionalDataSources:
-            {{- if not $v.apps.thanos.enabled }}
             - name: Prometheus Platform
               editable: false
               uid: prometheus-platform
+              isDefault: true
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
               jsonData:
                 httpMethod: GET
-            {{- end }}
-            {{- if $v.apps.thanos.enabled }}
-            - name: Thanos Query
-              access: proxy
-              isDefault: true
-              basicAuth: false
-              editable: false
-              orgId: 1
-              type: prometheus
-              url: http://thanos-query.monitoring:9090
-              jsonData:
-                prometheusType: Thanos
-                timeInterval: "60s"
-            {{- end }}
             {{- if $v.apps.loki.enabled }}
             - name: Loki
               editable: false
