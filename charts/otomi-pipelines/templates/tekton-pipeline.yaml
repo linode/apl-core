@@ -18,7 +18,7 @@ spec:
     - name: otomi-git-clone
       params:
         - name: repoUrl
-          value: '$(params.repoUrl)'
+          value: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git/'
         - name: commitMessage
           value: '$(params.commitMessage)'
         - name: giteaCredentialsSecretName
@@ -34,7 +34,7 @@ spec:
     - name: otomi-task
       params:
         - name: repoUrl
-          value: '$(params.repoUrl)'
+          value: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git/'
         - name: OTOMI_VERSION
           value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
         - name: CI
@@ -61,7 +61,7 @@ spec:
     - name: otomi-task-teams
       params:
         - name: repoUrl
-          value: '$(params.repoUrl)'
+          value: 'http://gitea-http.gitea.svc.cluster.local:3000/otomi/values.git/'
         - name: OTOMI_VERSION
           value: $(tasks.otomi-git-clone.results.OTOMI_VERSION)
         - name: CI
