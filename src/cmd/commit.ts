@@ -109,12 +109,16 @@ export const printWelcomeMessage = async (): Promise<void> => {
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak
   const message = `
-    ########################################################################################################################################
-    #
-    #  To start using APL, go to https://console.${values.cluster.domainSuffix} and sign in to the web console
-    #  with username "${credentials.adminUsername}" and password "${credentials.adminPassword}".
-    #
-    ########################################################################################################################################`
+  ########################################################################################################################################
+  #
+  #  Core apps installation complete! ArgoCD will now deploy the remaining applications. 
+  #  To monitor the progress, run: kubectl get applications -A
+  #  Once ArgoCD finishes, you can start using APL. Visit: https://console.${values.cluster.domainSuffix}
+  #  Sign in to the web console with the following credentials:
+  #    - Username: "${credentials.adminUsername}"
+  #    - Password: "${credentials.adminPassword}"
+  #
+  ########################################################################################################################################`
   d.info(message)
 }
 
