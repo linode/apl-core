@@ -99,6 +99,7 @@ configs:
       oidc.clientSecret: {{ $k.idp.clientSecret }}
   params:
     server.insecure: true # nginx terminates tls
+    controller.diff.server.side: "true"
 
   rbac:
     policy.csv: |
