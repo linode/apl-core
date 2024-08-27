@@ -32,7 +32,7 @@ spec:
   stepTemplate:
     computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     workingDir: $(workspaces.source.path)
-    image: otomi/core:{{ .Values.otomiVersion }}
+    image: linode/apl-core:{{ .Values.otomiVersion }}
   steps:
     - name: git-clone
       computeResources: {}

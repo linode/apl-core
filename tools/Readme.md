@@ -1,11 +1,11 @@
-# Building otomi/tools container image
+# Building linode/apl-tools container image
 
 ```
-docker build . -f Dockerfile -t otomi/tools:<TAG>
+docker build . -f Dockerfile -t linode/apl-tools:<TAG>
 ```
 
-# Building otomi/tools-db container image
+# Building linode/apl-tools-db container image
 
 ```
-docker build . -f Dockerfile-db -t otomi/tools-db:<TAG>
+docker build . -f Dockerfile-db -t linode/apl-tools-db:<TAG>
 ```

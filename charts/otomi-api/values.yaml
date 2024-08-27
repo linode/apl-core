@@ -102,7 +102,7 @@ core: {}
 tools:
   image:
     registry: docker.io
-    repository: otomi/core
+    repository: linode/apl-core
     tag: latest
     pullPolicy: IfNotPresent
 
