@@ -30,6 +30,7 @@ releases:
     chart: ../charts/redis
     labels:
       pkg: oauth2-proxy
+      app: core
     values:
       - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
       - snippets/common.gotmpl

@@ -24,6 +24,7 @@ releases:
     namespace: istio-operator
     labels:
       pkg: istio
+      app: core
     <<: *default
   - name: keycloak-artifacts
     installed: true

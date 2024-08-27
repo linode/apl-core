@@ -40,6 +40,7 @@ releases:
     labels:
       tag: ingress
       pkg: oauth2-proxy
+      app: core
     <<: *default
   - name: oauth2-proxy-artifacts
     # TODO: remove oauth dependency
@@ -48,6 +49,7 @@ releases:
     labels:
       tag: ingress
       pkg: oauth2-proxy
+      app: core
     <<: *raw
   - name: otomi-api
     installed: true
