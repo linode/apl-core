@@ -33,7 +33,7 @@ environments:
                   memory: 1Gi
                 limits:
                   cpu: "2"
-                  memory: 2Gi
+                  memory: 4Gi
               server:
                 requests:
                   cpu: 100m
