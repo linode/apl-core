@@ -141,9 +141,7 @@ spec:
         {{- end }}
   {{- else }}
   volumeClaimTemplates:
-    - apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
+    - metadata:
         {{- with .Values.ingester.persistence.annotations }}
         annotations:
           {{- toYaml . | nindent 10 }}
