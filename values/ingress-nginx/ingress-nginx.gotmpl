@@ -29,18 +29,7 @@ controller:
     patch:
       priorityClassName: otomi-critical
   useComponentLabel: true
-  # set fixed allocation with limits same as requests
-  resources:
-    {{- if (hasKey $n "resources") }}
-      {{- $n.resources | toYaml | nindent 4 }}
-    {{- else }}
-    limits:
-        cpu: 2
-        memory: 1.5Gi
-    requests:
-        cpu: 200m
-        memory: 512Mi
-    {{- end }}
+  resources: {{- $n.resources | toYaml | nindent 4 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-privileged
   opentelemetry:
@@ -154,13 +143,6 @@ defaultBackend:
     requests:
       cpu: 10m
       memory: 10Mi
-
-  # podAnnotations:
-  #   sidecar.istio.io/inject: "false"
-{{- if eq $v.cluster.provider "azure" }}
-  nodeSelector: 
-    beta.kubernetes.io/os: linux
-{{- end }}
   service:
     omitClusterIP: true
 rbac:
