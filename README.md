@@ -13,7 +13,7 @@
 </p>
 <p align="center">
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
-  <a href="http://otomi.io/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website otomi.io"></a>
+  <a href="https://apl-docs.net/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website apl-docs.net"></a>
   <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/badge/slack--channel-blue?logo=slack"></a>
 </p>
 
@@ -35,7 +35,7 @@ To install APL, make sure to have a Kubernetes cluster running with at least:
 > The transition from Otomi to APL is still in progress. Installing APL will use the latest Otomi release (v2.11.5).
 
 > [!TIP]  
-> Install APL with DNS to unlock it's full potential. Check [here](https://otomi.io) for more info.
+> Install APL with DNS to unlock it's full potential. Check [here](https://apl-docs.net) for more info.
 
 
 Add the Helm repository:
@@ -53,7 +53,7 @@ helm install apl apl/otomi \
 --set cluster.provider=$PROVIDER # use 'linode' for LKE or 'custom' for any other cloud/infrastructure
 ```
 
-When the installer job is completed, follow the [activation steps](https://otomi.io/docs/get-started/activation).
+When the installer job is completed, follow the [activation steps](https://apl-docs.net/docs/get-started/activation).
 
 ## Integrations
 
@@ -93,7 +93,7 @@ When the installer job is completed, follow the [activation steps](https://otomi
 
 ## Documentation
 
-Check out [otomi.io](https://otomi.io) for more detailed documentation.
+Check out [apl-docs.net](https://apl-docs.net) for more detailed documentation.
 
 ## License
 

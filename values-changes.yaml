@@ -283,3 +283,6 @@ changes:
       - 'teamConfig.{team}.jobs'
     fileDeletions:
       - env/teams/jobs.{team}.yaml
+  - version: 28
+    deletions:
+      - 'apps.cnpg.storage'
