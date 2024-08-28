@@ -25,7 +25,7 @@ services:
 
   tools:
     container_name: tools
-    image: otomi/core:${TOOLS_TAG:-latest}
+    image: linode/apl-core:${TOOLS_TAG:-latest}
     user: ${USER_ID}:${GROUP_ID}
     command: npm run compile && node --no-warnings ./dist/src/otomi.js -- server
     depends_on:
