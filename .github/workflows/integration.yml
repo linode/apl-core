@@ -7,9 +7,9 @@ on:
         type: string
         default: linode
       kubernetes_versions:
-        description: "Kubernetes versions (JSON formatted list e.g.: ['1.27'])"
+        description: "Kubernetes versions (JSON formatted list e.g.: ['1.28'])"
         type: string
-        default: "['1.28']"
+        default: "['1.30']"
       install_profile:
         description: Otomi installation profile
         default: full
@@ -55,10 +55,10 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.27']"
           - "['1.28']"
           - "['1.29']"
-        default: "['1.29']"
+          - "['1.30']"
+        default: "['1.30']"
       install_profile:
         description: Otomi installation profile
         default: minimal-with-team
@@ -123,7 +123,7 @@ on:
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: linode/apl-core
-  REPO: otomi/core
+  REPO: linode/apl-core
   GIT_USER: svcAPLBot
   SCALEWAY_NODE_TYPE: PRO2-M
   SCALEWAY_NODE_POOL_MIN_SIZE: 3

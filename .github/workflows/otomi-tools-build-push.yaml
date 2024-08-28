@@ -1,4 +1,4 @@
-name: Otomi Tools Build and Versioning
+name: APL Tools Build and Versioning
 
 on:
   workflow_dispatch:
@@ -13,8 +13,8 @@ on:
       - 'main'
 
 env:
-  NAMESPACE: otomi
-  REPO: tools
+  NAMESPACE: linode
+  REPO: apl-tools
 
 jobs:
   build-and-version:
@@ -76,8 +76,8 @@ jobs:
         if: ${{ env.NEW_VERSION != null }}
         uses: docker/login-action@v3
         with:
-          username: 'otomi'
-          password: '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}'
+          username: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
       - name: image build and push tag for branch
         if: ${{ env.NEW_VERSION != null }}
         uses: docker/build-push-action@v5

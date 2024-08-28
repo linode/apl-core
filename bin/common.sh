@@ -18,7 +18,7 @@ LOG_LEVEL='--log-level warn'
 
 # Common vars
 readonly otomi_settings="$ENV_DIR/env/settings.yaml"
-readonly otomi_tools_image="otomi/core:latest"
+readonly otomi_tools_image="linode/apl-core:latest"
 [ $(uname -s) == 'Linux' ] && readonly LINUX_WORKAROUND='--user=root:root'
 
 # Mutliple files vars

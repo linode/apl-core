@@ -29,7 +29,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: destroy
-          image: otomi/core:{{ $version }}
+          image: linode/apl-core:{{ $version }}
           imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
           securityContext:
             allowPrivilegeEscalation: false
