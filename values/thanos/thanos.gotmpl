@@ -3,6 +3,8 @@
 {{- $obj := $v.obj.provider }}
 {{- $bu := $v.obj.buckets }}
 
+commonAnnotations:
+  argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
 ## @section Thanos Query parameters
 query:
   enabled: true
@@ -44,8 +46,6 @@ storegateway:
   enabled: true
   persistence:
     size: {{ $t.persistence.storegateway.size }}
-    annotations:
-      argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
   resources: {{- $t.resources.storegateway | toYaml | nindent 4 }}
 
 ## @section Thanos Receive parameters
