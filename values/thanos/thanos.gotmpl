@@ -41,11 +41,11 @@ compactor:
 
 ## @section Thanos Store Gateway parameters
 storegateway:
-  podAnnotations:
-    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
   enabled: true
   persistence:
     size: {{ $t.persistence.storegateway.size }}
+    annotations:
+      argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
   resources: {{- $t.resources.storegateway | toYaml | nindent 4 }}
 
 ## @section Thanos Receive parameters
