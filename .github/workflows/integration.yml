@@ -7,9 +7,9 @@ on:
         type: string
         default: linode
       kubernetes_versions:
-        description: "Kubernetes versions (JSON formatted list e.g.: ['1.27'])"
+        description: "Kubernetes versions (JSON formatted list e.g.: ['1.28'])"
         type: string
-        default: "['1.28']"
+        default: "['1.29']"
       install_profile:
         description: Otomi installation profile
         default: full
