@@ -3,8 +3,6 @@
 {{- $obj := $v.obj.provider }}
 {{- $bu := $v.obj.buckets }}
 
-commonAnnotations:
-  argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
 ## @section Thanos Query parameters
 query:
   enabled: true
