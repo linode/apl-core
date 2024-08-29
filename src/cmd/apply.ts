@@ -14,7 +14,7 @@ import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { applyAsApps } from './apply-as-apps'
-import { cloneOtomiChartsInGitea, commit, printWelcomeMessage } from './commit'
+import { cloneOtomiChartsInGitea, commit, printWelcomeMessage, retryCheckingForPipelinerun } from './commit'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -120,6 +120,7 @@ const applyAll = async () => {
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
       await cloneOtomiChartsInGitea()
+      await retryCheckingForPipelinerun()
       await printWelcomeMessage()
     }
   }
