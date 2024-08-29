@@ -82,5 +82,12 @@ spec:
         if git diff --name-only HEAD~1 | grep -v "env/teams/"; then
           echo -n "1" > $(results.TRIGGER_PLATFORM_PIPELINE.path)
         fi
+
+        # Allows to trigger pipeline without making any change in the values repo
+        if [[ ! $COMMIT_MESSAGE == "[apl-trigger]" ]]; then
+            echo -n "1" > $(results.TRIGGER_PLATFORM_PIPELINE.path)
+            echo -n "1" > $(results.TRIGGER_TEAMS_PIPELINE.path)
+        fi
+
       args:
         - '$(params["commitMessage"])'
