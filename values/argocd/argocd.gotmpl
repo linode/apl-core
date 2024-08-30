@@ -13,11 +13,23 @@ global:
 applicationSet:
   replicas: {{ $a.applicationSet.replicas }} 
   resources: {{- $a.resources.applicationSet | toYaml | nindent 4 }}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 
 # Application Controller
 controller:
   replicas: {{ $a.controller.replicas }} 
   resources: {{- $a.resources.controller | toYaml | nindent 4 }}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 
 dex:
   enabled: false
@@ -37,6 +49,12 @@ repoServer:
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.repoServer.targetMemoryUtilizationPercentage }}
     targetCPUUtilizationPercentage: {{ $a.autoscaling.repoServer.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.repo | toYaml | nindent 4 }}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 
 server:
   autoscaling:
@@ -46,6 +64,12 @@ server:
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.server.targetMemoryUtilizationPercentage }}
     targetCPUUtilizationPercentage: {{ $a.autoscaling.server.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.server | toYaml | nindent 4 }}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 
 configs:
   # General Argo CD configuration
