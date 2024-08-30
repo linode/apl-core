@@ -54,8 +54,8 @@ spec:
         export fullRepoUrl=$(params["repoUrl"])
         echo $fullRepoUrl
 
-        # Removing the proto part ('https://')
-        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+        # Removing the proto part ('http://')
+        export url=$(echo $fullRepoUrl|sed 's/http\:\/\///')
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
