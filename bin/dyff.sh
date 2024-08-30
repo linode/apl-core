@@ -20,7 +20,7 @@ echo "$diff_output" | while read -r line; do
     [ ! -f $first_path ] && echo "Old file deleted: $second_path" && continue
 
     # Use dyff to compare the files
-    dyff between "$first_path" "$second_path" --omit-header \
+    dyff between "$second_path" "$first_path" --omit-header \
       --exclude "data.tls.key" --exclude "/data/ca.crt" --exclude "/data/tls.crt" --exclude "/data/tls.key" \
       --exclude-regexp "/checksum" --exclude-regexp "/webhooks.*"
   fi
