@@ -57,6 +57,7 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
             'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
           }
         : {},
+      finalizers: ['resources-finalizer.argocd.argoproj.io'],
     },
     spec: {
       syncPolicy: {
