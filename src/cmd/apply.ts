@@ -14,7 +14,7 @@ import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { applyAsApps } from './apply-as-apps'
-import { cloneOtomiChartsInGitea, commit, printWelcomeMessage } from './commit'
+import { cloneOtomiChartsInGitea, commit, printWelcomeMessage, retryCheckingForPipelinerun } from './commit'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -85,8 +85,8 @@ const applyAll = async () => {
   let labelOpts = ['']
   if (intitalInstall) {
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
-    // The 'tag!=teams' does not include team-ns-admin release name.
-    labelOpts = ['tag!=teams']
+    // Only install the core apps
+    labelOpts = ['app=core']
     await hf(
       {
         labelOpts,
@@ -120,6 +120,7 @@ const applyAll = async () => {
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
       await cloneOtomiChartsInGitea()
+      await retryCheckingForPipelinerun()
       await printWelcomeMessage()
     }
   }

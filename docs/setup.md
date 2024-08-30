@@ -1,6 +1,6 @@
 # Setting up your development environment
 
-We invite you to first look at the code and file structure. It also helps to have read the docs on using the CLI at [otomi.io](https://otomi.io/docs/cli/working-with).
+We invite you to first look at the code and file structure. It also helps to have read the docs on using the CLI at [otomi.io](https://apl-docs.net/docs/cli/working-with).
 
 You will notice that we use some tooling to enforce consistent commits and releases:
 
