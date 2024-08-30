@@ -276,9 +276,20 @@ environments:
                 enabled: true
                 minReplicas: 2
                 maxReplicas: 10
+            service:
+              annotations: {}
             tracing:
               enabled: false
               samplingRatio: "0.01"
+            maxBodySize: 1024m
+            maxBodySizeBytes: 1073741824
+            resources:
+              requests:
+                cpu: 200m
+                memory: 512Mi
+              limits:
+                cpu: 2
+                memory: 2Gi
             _rawValues: {}
           istio:
             tracing:
