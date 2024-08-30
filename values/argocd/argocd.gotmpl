@@ -35,6 +35,7 @@ repoServer:
     maxReplicas: {{ $a.autoscaling.repoServer.maxReplicas }}
     minReplicas: {{ $a.autoscaling.repoServer.minReplicas }}
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.repoServer.targetMemoryUtilizationPercentage }}
+    targetCPUUtilizationPercentage: {{ $a.autoscaling.repoServer.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.repo | toYaml | nindent 4 }}
 
 server:
@@ -43,6 +44,7 @@ server:
     maxReplicas: {{ $a.autoscaling.server.maxReplicas }}
     minReplicas: {{ $a.autoscaling.server.minReplicas }}
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.server.targetMemoryUtilizationPercentage }}
+    targetCPUUtilizationPercentage: {{ $a.autoscaling.server.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.server | toYaml | nindent 4 }}
 
 configs:
@@ -97,6 +99,10 @@ configs:
       oidc.clientSecret: {{ $k.idp.clientSecret }}
   params:
     server.insecure: true # nginx terminates tls
+    # -- Number of application status processors
+    controller.status.processors: 10
+    # -- Number of application operation processors
+    controller.operation.processors: 5
 
   rbac:
     policy.csv: |

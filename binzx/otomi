@@ -8,7 +8,7 @@
 ## - do not depend on any external files.
 ## - do not use any non standard tooling.
 ## - only Docker is needed to run apl-core image
-## If you need to use any extra binaries then most probably you want to add them to the otomi/tools image.
+## If you need to use any extra binaries then most probably you want to add them to the linode/apl-tools image.
 ##
 #####################################################################################
 # shellcheck disable=SC2128
@@ -90,7 +90,7 @@ else
 fi
 otomi_branch_or_tag=${OTOMI_TAG:-$otomi_version}
 otomi_version_used=${OTOMI_TAG:-$otomi_version}
-readonly otomi_tools_image="otomi/core:${otomi_version_used}"
+readonly otomi_tools_image="linode/apl-core:${otomi_version_used}"
 
 script_full_path="$base_dir/${BASH_SOURCE[0]##*/}"
 if [[ ${BASH_SOURCE[0]} == '/'* ]]; then

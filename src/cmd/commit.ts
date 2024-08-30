@@ -12,6 +12,8 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
+import { CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
+import retry from 'async-retry'
 
 const cmdName = getFilename(__filename)
 
@@ -104,17 +106,57 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   d.info('Cloned apl-charts in Gitea')
 }
 
+export async function retryCheckingForPipelinerun() {
+  const d = terminal(`cmd:${cmdName}:apply`)
+  await retry(
+    async () => {
+      await checkIfPipelineRunExists()
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  ).catch((e) => {
+    d.error('Error retrieving PipelineRuns:', e)
+    throw e
+  })
+}
+
+export async function checkIfPipelineRunExists(): Promise<void> {
+  const d = terminal(`cmd:${cmdName}:pipelinerun`)
+  const kc = new KubeConfig()
+  kc.loadFromDefault()
+  const customObjectsApi = kc.makeApiClient(CustomObjectsApi)
+
+  const response = await customObjectsApi.listNamespacedCustomObject(
+    'tekton.dev',
+    'v1beta1',
+    'otomi-pipelines',
+    'pipelineruns',
+  )
+
+  const pipelineRuns = (response.body as { items: any[] }).items
+  if (pipelineRuns.length === 0) {
+    d.info(`No Tekton pipeline runs found, triggering a new one...`)
+    await $`git commit --allow-empty -m "[apl-trigger]"`
+    await $`git push`
+    throw new Error('PipelineRun not found in otomi-pipelines namespace')
+  }
+  d.info(`There is a Tekton PipelineRuns continuing...`)
+}
+
 export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak
   const message = `
-    ########################################################################################################################################
-    #
-    #  To start using APL, go to https://console.${values.cluster.domainSuffix} and sign in to the web console
-    #  with username "${credentials.adminUsername}" and password "${credentials.adminPassword}".
-    #
-    ########################################################################################################################################`
+  ########################################################################################################################################
+  #
+  #  Core apps installation complete! ArgoCD will now deploy the remaining applications. 
+  #  To monitor the progress, run: kubectl get applications -A
+  #  Once ArgoCD finishes, you can start using APL. Visit: https://console.${values.cluster.domainSuffix}
+  #  Sign in to the web console with the following credentials:
+  #    - Username: "${credentials.adminUsername}"
+  #    - Password: "${credentials.adminPassword}"
+  #
+  ########################################################################################################################################`
   d.info(message)
 }
 

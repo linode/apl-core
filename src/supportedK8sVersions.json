@@ -1,1 +1,1 @@
-{ "supportedK8sVersions": ["1.27", "1.28", "1.29"] }
+{ "supportedK8sVersions": ["1.28", "1.29", "1.30"] }

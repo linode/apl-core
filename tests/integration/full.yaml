@@ -50,7 +50,7 @@ apps:
   trivy:
     enabled: true
   velero:
-    enabled: true
+    enabled: false
 teamConfig:
   demo:
     password: somesecretvalue

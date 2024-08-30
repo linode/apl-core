@@ -1,8 +1,8 @@
 # syntax=docker/dockerfile:1.6
 # The above is needed for the "--checksum" aurgument to work in the ADD instruction
 
-# Using ubuntu:latest base image
-FROM ubuntu:latest
+# Using ubuntu:noble base image
+FROM ubuntu:jammy
 
 # Installing curl, vim, wget, tmux ttyd and bash-completion
 RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget less tmux bash-completion 

@@ -18,14 +18,14 @@ environments:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 5
-                targetCPUUtilizationPercentage: 70
-                targetMemoryUtilizationPercentage: 70
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
               server:
                 enabled: true
                 minReplicas: 1
                 maxReplicas: 5
-                targetCPUUtilizationPercentage: 70
-                targetMemoryUtilizationPercentage: 70
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
             resources:
               controller:
                 requests:
@@ -36,8 +36,8 @@ environments:
                   memory: 2Gi
               server:
                 requests:
-                  cpu: 50m
-                  memory: 256M
+                  cpu: 100m
+                  memory: 512M
                 limits:
                   cpu: "1"
                   memory: 1Gi
@@ -122,7 +122,7 @@ environments:
                           quay.io/prometheus-operator/prometheus-operator,
                           quay.io/prometheus/prometheus,
                           quay.io/kiwigrid/k8s-sidecar,
-                          docker.io/otomi/core,
+                          docker.io/linode/apl-core,
                           docker.io/linode/apl-tasks,
                           docker.io/linode/apl-api,
                           docker.io/drone/drone-runner-kube,
@@ -163,7 +163,7 @@ environments:
                     condition: (
                         container.image.repository in (
                           docker.io/linode/apl-tasks,
-                          ocker.io/otomi/core
+                          docker.io/linode/apl-core
                         ) or (k8s.ns.name = "drone-pipelines")
                       )
                   - macro: user_known_non_sudo_setuid_conditions
@@ -719,14 +719,14 @@ environments:
               operator:
                 requests:
                   cpu: 100m
-                  memory: 64Mi
+                  memory: 256Mi
                 limits:
-                  cpu: 500m
-                  memory: 512Mi
+                  cpu: "1"
+                  memory: 1Gi
               trivy:
                 requests:
                   cpu: 100m
-                  memory: 64M
+                  memory: 128M
                 limits:
                   cpu: 500m
                   memory: 512Mi
@@ -816,5 +816,5 @@ environments:
           enabled: false
           upgrade:
             version: main
-        # TODO: update this when schema version changes: (and think more?)
-        version: 27
+        # TODO: update this when schema version changes
+        version: 28
