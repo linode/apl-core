@@ -89,14 +89,14 @@ environments:
             labels:
               otomi.io/app: ce1
             hosts:
-              - https://otomi.io
+              - https://apl-docs.net
               - https://116.203.255.68
               - https://httpbin.org/headers
           - namespace: team-a2
             labels:
               otomi.io/app: ce1
             hosts:
-              - https://otomi.io
+              - https://apl-docs.net
               - https://116.203.255.68
               - https://httpbin.org/headers
 releases:

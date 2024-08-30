@@ -827,5 +827,5 @@ environments:
           enabled: false
           upgrade:
             version: main
-        # TODO: update this when schema version changes: (and think more?)
-        version: 27
+        # TODO: update this when schema version changes
+        version: 28

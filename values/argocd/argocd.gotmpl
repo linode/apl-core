@@ -99,6 +99,10 @@ configs:
       oidc.clientSecret: {{ $k.idp.clientSecret }}
   params:
     server.insecure: true # nginx terminates tls
+    # -- Number of application status processors
+    controller.status.processors: 10
+    # -- Number of application operation processors
+    controller.operation.processors: 5
 
   rbac:
     policy.csv: |

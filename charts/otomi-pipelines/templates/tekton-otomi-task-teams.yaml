@@ -57,7 +57,7 @@ spec:
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
-        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
+        git clone -c http.sslVerify=false --depth 1 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- else}}
         git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- end }}
