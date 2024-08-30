@@ -54,14 +54,14 @@ spec:
         export fullRepoUrl=$(params["repoUrl"])
         echo $fullRepoUrl
 
-        # Removing the proto part ('https://')
-        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+        # Removing the proto part ('http://')
+        export url=$(echo $fullRepoUrl|sed 's/http\:\/\///')
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
         git clone -c http.sslVerify=false --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- else }}
-        git clone --depth 2 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        git clone --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- end }}
 
         # Checking if the next steps should run or skipped 
