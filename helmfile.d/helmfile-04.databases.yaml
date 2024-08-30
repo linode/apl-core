@@ -31,4 +31,5 @@ releases:
     namespace: gitea
     labels:
       pkg: gitea
+      app: core
     <<: *otomiDb
