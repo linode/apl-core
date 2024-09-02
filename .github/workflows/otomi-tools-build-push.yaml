@@ -10,7 +10,7 @@ on:
         type: string
   push:
     branches:
-      - 'fc-feat-values-enc'
+      - 'main'
 
 env:
   NAMESPACE: linode
