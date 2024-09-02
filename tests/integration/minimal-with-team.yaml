@@ -14,6 +14,11 @@ apps:
     enabled: true
   sealed-secrets:
     enabled: true
+kms:
+  sops:
+    provider: age
+    age:
+      keys: age1j8kah8r24ex0p36qjuzy6hvlkum9hyqlxr77v0fr5qsuv447x3fqjr97d2
 teamConfig:
   demo:
     password: somesecretvalue
