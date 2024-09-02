@@ -15,8 +15,8 @@ export interface Arguments extends BasicArguments {
 EventEmitter.defaultMaxListeners = 20
 
 enum CryptType {
-  ENCRYPT = 'helm secrets enc',
-  DECRYPT = 'helm secrets dec',
+  ENCRYPT = 'sops -e --input-type=yaml --output-type=yaml',
+  DECRYPT = 'sops -d --input-type=yaml --output-type=yaml',
   ROTATE = 'sops --input-type=yaml --output-type=yaml -i -r',
 }
 
@@ -60,7 +60,11 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
       d.debug(`${crypt.cmd} ${file}`)
-      const result = $`${crypt.cmd.split(' ')} ${file}`
+      const isEncrypt = crypt.cmd === CryptType.ENCRYPT
+      const command = crypt.cmd.split(' ')
+      const inputFile = `${file}${isEncrypt ? '.dec' : ''}`
+      const outputFile = `${file}${!isEncrypt ? '.dec' : ''}`
+      const result = $`${command} ${inputFile} > ${outputFile}`
       return result.then(async (res) => {
         if (crypt.post) await crypt.post(file)
         return res
@@ -175,7 +179,8 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
         d.debug('encTS.mtime: ', encTS.mtime)
         d.debug('decTS.mtime: ', decTS.mtime)
         const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
-        if (timeDiff > 1) {
+        const test = true
+        if (test) {
           d.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
           return true
         }

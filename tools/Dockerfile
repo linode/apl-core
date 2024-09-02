@@ -13,6 +13,8 @@ ARG HELM_DIFF_VERSION=3.9.7
 ARG HELM_SECRETS_VERSION=3.15.0
 # https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=3.7.3
+# https://github.com/FiloSottile/age/releases
+ARG AGE_VERSION=1.2.0
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.6.6
 # https://github.com/helmfile/helmfile/releases
@@ -91,6 +93,12 @@ RUN curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/
 # sops
 ADD https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux sops
 RUN chmod +x sops
+
+# age
+ADD https://github.com/FiloSottile/age/releases/download/v${AGE_VERSION}/age-v${AGE_VERSION}-linux-amd64.tar.gz age.tar.gz
+RUN tar -xzf age.tar.gz && \
+  chmod +x age/age age/age-keygen && \
+  rm -rf age.tar.gz
 
 # helm
 ADD https://get.helm.sh/${HELM_FILE_NAME} /tmp
