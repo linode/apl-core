@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 import { pathExists } from 'fs-extra'
 import { readFile, stat, utimes, writeFile } from 'fs/promises'
+import yaml from 'js-yaml'
 import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
@@ -55,12 +56,27 @@ type CR = {
   post?: (file: string) => Promise<void>
 }
 
+const checkSopsField = async (filePath: string): Promise<boolean> => {
+  try {
+    const fileContent = await readFile(filePath, 'utf8')
+    const yamlContent = yaml.load(fileContent)
+    return typeof yamlContent === 'object' && yamlContent !== null && 'sops' in yamlContent
+  } catch (error) {
+    console.error('Error reading or parsing file:', error)
+    return false
+  }
+}
+
 const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOutput | undefined)[]> => {
   const d = terminal(`common:crypt:processFileChunk`)
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
       d.debug(`${crypt.cmd} ${file}`)
       const isEncrypt = crypt.cmd === CryptType.ENCRYPT
+      const hasSopsField = await checkSopsField(file)
+      if (isEncrypt && !hasSopsField) {
+        await $`mv ${file} ${file}.dec`
+      }
       const command = crypt.cmd.split(' ')
       const inputFile = `${file}${isEncrypt ? '.dec' : ''}`
       const outputFile = `${file}${!isEncrypt ? '.dec' : ''}`

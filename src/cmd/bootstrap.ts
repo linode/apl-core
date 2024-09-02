@@ -79,8 +79,8 @@ export const bootstrapSops = async (
       const publicKey = match ? match[0] : null
       if (publicKey) {
         obj.keys = publicKey
-        const keyPathExists = await deps.pathExists(`/home/app/stack`)
-        if (keyPathExists) await deps.writeFile(`/home/app/stack/keys.txt`, res?.stdout, 'utf-8')
+        const keyFilePath = env.SOPS_AGE_KEY_FILE
+        await deps.writeFile(keyFilePath, res?.stdout, 'utf-8')
       } else {
         throw new Error('Public key not found in the output')
       }
