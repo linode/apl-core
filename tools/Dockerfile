@@ -76,7 +76,7 @@ RUN jq_download_url="https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-
 COPY --from=mikefarah/yq:4 /usr/bin/yq /usr/bin/yq
 
 RUN mkdir -p /home/app
-RUN groupadd -r app &&\
+RUN groupadd -r app && \
   useradd -r -g app -d /home/app -s /sbin/nologin -c "Docker image user" app
 ENV HOME=/home/app
 ENV APP_HOME=/home/app/tools
@@ -96,8 +96,8 @@ RUN chmod +x sops
 
 # age
 ADD https://github.com/FiloSottile/age/releases/download/v${AGE_VERSION}/age-v${AGE_VERSION}-linux-amd64.tar.gz age.tar.gz
-RUN tar -xzf age.tar.gz && \
-  chmod +x age/age age/age-keygen && \
+RUN tar -zxvf age.tar.gz age/age age/age-keygen --strip-components=1 && \
+  chmod +x age age-keygen && \
   rm -rf age.tar.gz
 
 # helm
