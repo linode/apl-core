@@ -25,6 +25,7 @@ const kmsMap = {
   aws: 'kms',
   azure: 'azure_keyvault',
   google: 'gcp_kms',
+  age: 'age',
 }
 
 export const bootstrapSops = async (
@@ -59,6 +60,35 @@ export const bootstrapSops = async (
   const obj = {
     provider: kmsProvider,
     keys: kmsKeys,
+  }
+
+  const generateAgeKey = async () => {
+    try {
+      const result = await $`age-keygen`
+      return result
+    } catch (error) {
+      console.error('Error generating age key:', error)
+      throw error
+    }
+  }
+
+  if (provider === 'age') {
+    try {
+      const res = await generateAgeKey()
+      const match = res?.stdout?.match(/age[0-9a-z]+/)
+      const publicKey = match ? match[0] : null
+      if (publicKey) {
+        obj.keys = publicKey
+        const keyPathExists = await deps.pathExists(`/home/app/stack`)
+        if (keyPathExists) await deps.writeFile(`/home/app/stack/keys.txt`, res?.stdout, 'utf-8')
+      } else {
+        throw new Error('Public key not found in the output')
+      }
+      obj.provider = 'age'
+    } catch (error) {
+      console.error('Error generating age key:', error)
+      throw error
+    }
   }
 
   const exists = await deps.pathExists(targetPath)
