@@ -40,7 +40,7 @@ spec:
     - name: VERBOSE
       value: '1'
     - name: SOPS_AGE_KEY_FILE
-      value: '/tmp/otomi/values/main/keys.txt'
+      value: '/home/app/stack/env/keys.txt'
   steps:
     - name: git-clone
       computeResources: {}
