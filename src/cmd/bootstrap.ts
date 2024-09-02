@@ -80,7 +80,15 @@ export const bootstrapSops = async (
       if (publicKey) {
         obj.keys = publicKey
         const keyFilePath = env.SOPS_AGE_KEY_FILE
-        await deps.writeFile(keyFilePath, res?.stdout, 'utf-8')
+        try {
+          await deps.writeFile(keyFilePath, res?.stdout, 'utf-8')
+        } catch (error) {
+          if (error.code === 'ENOENT') {
+            console.log(`File does not exist: ${keyFilePath}`)
+          } else {
+            console.error(`Error accessing or writing to file: ${keyFilePath}`, error)
+          }
+        }
       } else {
         throw new Error('Public key not found in the output')
       }
