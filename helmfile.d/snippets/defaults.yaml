@@ -786,12 +786,6 @@ environments:
         obj:
           provider:
             type: disabled
-          buckets:
-            loki: loki
-            cnpg: cnpg
-            velero: velero
-            harbor: harbor
-            tempo: tempo
         platformBackups:
           database:
             harbor:
@@ -799,9 +793,6 @@ environments:
             gitea:
               enabled: false
             keycloak:
-              enabled: false
-          persistentVolumes:
-            gitea:
               enabled: false
         cluster:
           provider: linode

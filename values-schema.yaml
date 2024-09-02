@@ -2921,22 +2921,11 @@ properties:
             description: Linode API Token
             $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
-          gitea:
-            title: Gitea
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
   obj:
     properties:
       provider:
         properties:
           linode:
-            additionalProperties: false
             properties:
               region:
                 description: The region of the bucket
@@ -2950,6 +2939,28 @@ properties:
                 description: The secret of the access key
                 $ref: '#/definitions/wordCharacterPattern'
                 x-secret: ''
+              buckets:
+                properties:
+                  loki:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: loki
+                  cnpg:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: cnpg
+                  velero:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: velero
+                  harbor:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: harbor
+                  tempo:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: tempo
             required:
               - region
               - accessKeyId
@@ -2961,28 +2972,6 @@ properties:
               - linode
               - disabled
             default: disabled
-      buckets:
-        properties:
-          loki:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: loki
-          cnpg:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: cnpg
-          velero:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: velero
-          harbor:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: harbor
-          tempo:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: tempo
   databases:
     properties:
       keycloak:

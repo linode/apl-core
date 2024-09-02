@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- $vl := $v.apps.velero }}
 {{- $obj := $v.obj.provider }}
-{{- $bu := $v.obj.buckets }}
 {{- $b := $v.platformBackups.persistentVolumes }}
 
 resources: {{- $vl.resources | toYaml | nindent 2 }}
@@ -64,7 +63,7 @@ configuration:
   - name: apl-minio
     provider: aws
     default: true
-    bucket: {{ $bu.velero}}   
+    bucket: velero  
     config:
       s3Url: http://minio.minio.svc.cluster.local:9000
       publicUrl: http://minio.minio.svc.cluster.local:9000
@@ -76,7 +75,7 @@ configuration:
   - name: apl-linode
     provider: aws
     default: true
-    bucket: {{ $bu.velero }} 
+    bucket: {{ $obj.linode.buckets.velero }} 
     config:
       s3Url: https://{{ $obj.linode.region }}.linodeobjects.com
       region: {{ $obj.linode.region }}
@@ -132,20 +131,3 @@ nodeAgent:
   podSecurityContext:
     runAsUser: 1338
     fsGroup: 1338
-
-{{- if $b.gitea.enabled }}
-schedules:
-  gitea:
-    disabled: false
-    schedule: {{ $b.gitea.schedule }}
-    useOwnerReferencesInBackup: false
-    template:
-      ttl: {{ $b.gitea.ttl }}
-      includedNamespaces:
-      - gitea
-      includedResources:
-      - pv
-      - pvc
-      includeClusterResources: true
-      storageLocation: apl
-{{- end }}
