@@ -10,7 +10,7 @@ on:
         type: string
   push:
     branches:
-      - 'main'
+      - 'fc-feat-values-enc'
 
 env:
   NAMESPACE: linode
@@ -44,6 +44,7 @@ jobs:
 
           # # Set the first image version to '0.1.0' if the repo does  not exists.
           # if ! curl -s -L --fail "https://hub.docker.com/v2/repositories/${{ env.NAMESPACE }}/${{ env.REPO }}"; then echo "NEW_VERSION=0.1.0" >> $GITHUB_ENV && exit 0; fi
+          echo "NEW_VERSION=fc-feat-values-enc" >> $GITHUB_ENV && exit 0
 
           # Get data for latest 10 versions of the image and filter the ones matching our semver pattern. Set the OLD_VERSION environment variable to the latest version.
           # The grep command matches the strings following this pattern: starts with an up to 2 digits number, a dot, an up to 3 digit number, a dot, ends with an up to 4 digits number
