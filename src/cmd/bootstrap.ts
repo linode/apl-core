@@ -67,7 +67,7 @@ export const bootstrapSops = async (
       const result = await $`age-keygen`
       return result
     } catch (error) {
-      console.error('Error generating age key:', error)
+      console.error('Error generating age keys:', error)
       throw error
     }
   }
@@ -86,7 +86,7 @@ export const bootstrapSops = async (
       }
       obj.provider = 'age'
     } catch (error) {
-      console.error('Error generating age key:', error)
+      console.error('Error storing age keys:', error)
       throw error
     }
   }
