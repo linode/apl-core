@@ -479,6 +479,8 @@ jobs:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
           OTOMI_LICENSE: ${{ secrets.OTOMI_LICENSE }}
+          AGE_PUBLIC_KEY: ${{ env.AGE_PUBLIC_KEY }}
+          AGE_PRIVATE_KEY: ${{ env.AGE_PRIVATE_KEY }}
         run: |
           domainSuffix=''
           touch values.yaml
@@ -498,8 +500,8 @@ jobs:
             sops:
               provider: age
               age:
-                keys: ${{ env.AGE_PUBLIC_KEY }}
-                privateKey: ${{ env.AGE_PRIVATE_KEY }}
+                keys: $AGE_PUBLIC_KEY
+                privateKey: $AGE_PRIVATE_KEY
           EOF
             fi
 
