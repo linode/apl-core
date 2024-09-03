@@ -79,9 +79,10 @@ export const bootstrapSops = async (
       const publicKey = match ? match[0] : null
       if (publicKey) {
         obj.keys = publicKey
-        const keyFilePath = `${env.ENV_DIR}/keys.txt`
+        const keyFilePath = `${envDir}/keys.txt`
         try {
           await deps.writeFile(keyFilePath, res?.stdout, 'utf-8')
+          d.log(`Age SOPS keys is written to: ${keyFilePath}`)
         } catch (error) {
           if (error.code === 'ENOENT') {
             console.log(`File does not exist: ${keyFilePath}`)
