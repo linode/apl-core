@@ -79,7 +79,7 @@ export const bootstrapSops = async (
       const publicKey = match ? match[0] : null
       if (publicKey) {
         obj.keys = publicKey
-        const keyFilePath = env.SOPS_AGE_KEY_FILE
+        const keyFilePath = `${env.ENV_DIR}/keys.txt`
         try {
           await deps.writeFile(keyFilePath, res?.stdout, 'utf-8')
         } catch (error) {

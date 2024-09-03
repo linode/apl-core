@@ -23,7 +23,7 @@ export const cliEnvSpec = {
   CI: ciBool({ default: false }),
   DISABLE_SYNC: bool({ default: false, desc: 'will disable contacting the cluster as found in kube context' }),
   ENV_DIR: str({ default: `${process.cwd()}/env` }),
-  SOPS_AGE_KEY_FILE: str({ default: `/home/app/stack/keys.txt` }),
+  SOPS_AGE_KEY_FILE: str({ default: `${process.cwd()}/env/keys.txt` }),
   GCLOUD_SERVICE_KEY: json({ default: undefined }),
   IN_DOCKER: bool({ default: false }),
   KUBE_VERSION_OVERRIDE: str({ default: undefined }),
