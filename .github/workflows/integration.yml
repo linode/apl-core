@@ -156,6 +156,9 @@ jobs:
     if: ${{ inputs.kms == 'age' }}
     name: Generate age keys
     runs-on: ubuntu-latest
+    outputs:
+      agepublickey: ${{ steps.generate_keys.outputs.AGE_PUBLIC_KEY }}
+      ageprivatekey: ${{ steps.generate_keys.outputs.AGE_PRIVATE_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -479,8 +482,6 @@ jobs:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
           OTOMI_LICENSE: ${{ secrets.OTOMI_LICENSE }}
-          AGE_PUBLIC_KEY: ${{ env.AGE_PUBLIC_KEY }}
-          AGE_PRIVATE_KEY: ${{ env.AGE_PRIVATE_KEY }}
         run: |
           domainSuffix=''
           touch values.yaml
@@ -500,8 +501,8 @@ jobs:
             sops:
               provider: age
               age:
-                keys: $AGE_PUBLIC_KEY
-                privateKey: $AGE_PRIVATE_KEY
+                keys: ${{ fromJSON(needs.preprocess-generate-age-keys.outputs.agepublickey) }}
+                privateKey: ${{ fromJSON(needs.preprocess-generate-age-keys.outputs.ageprivatekey) }}
           EOF
             fi
 
