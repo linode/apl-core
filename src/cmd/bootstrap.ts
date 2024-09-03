@@ -55,7 +55,7 @@ export const bootstrapSops = async (
 
   const templatePath = `${rootDir}/tpl/.sops.yaml.gotmpl`
   const kmsProvider = kmsMap[provider] as string
-  const kmsKeys = settingsVals.kms.sops[provider].keys as string
+  const kmsKeys = settingsVals.kms.sops[provider]?.keys as string
 
   const obj = {
     provider: kmsProvider,
@@ -75,7 +75,7 @@ export const bootstrapSops = async (
   if (provider === 'age') {
     obj.provider = 'age'
     const vPublicKey = kmsKeys
-    const vPrivateKey = settingsVals.kms.sops[provider].privateKey as string
+    const vPrivateKey = settingsVals.kms.sops[provider]?.privateKey as string
     if (vPublicKey && vPrivateKey) {
       obj.keys = vPublicKey
       process.env.SOPS_AGE_KEY = vPrivateKey
