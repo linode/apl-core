@@ -72,44 +72,18 @@ export const bootstrapSops = async (
     }
   }
 
-  const copyAgeKey = async (keyFilePath) => {
-    try {
-      await $`mkdir -p /home/app/.config/sops/age`
-      d.log(`Home config age dir created`)
-      await $`cp ${keyFilePath} /home/app/.config/sops/age/keys.txt`
-      d.log(`Age keys copied to home config dir`)
-    } catch (error) {
-      d.log('Error copying age keys:', error)
-    }
-  }
-
   if (provider === 'age') {
     try {
       const res = await generateAgeKey()
-      console.log('generateAgeKey res:', res)
+      d.log('generateAgeKey res:', res)
       const match = res?.stdout?.match(/age[0-9a-z]+/)
-      const publicKey = match ? match[0] : null
+      const publicKey = match ? match[0] : ''
+      const matchPrivateKey = res?.stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
+      const privateKey = matchPrivateKey ? matchPrivateKey[0] : ''
       if (publicKey) {
         obj.keys = publicKey
-        const keyFilePath = `${envDir}/keys.txt`
-        try {
-          const exists = await deps.pathExists(keyFilePath)
-          if (!exists) {
-            await deps.writeFile(keyFilePath, res?.stdout, 'utf-8')
-            d.log(`Age SOPS keys is written to: ${keyFilePath}`)
-          } else {
-            d.log(`Age SOPS keys already exists at: ${keyFilePath}`)
-          }
-          process.env.SOPS_AGE_KEY_FILE = keyFilePath
-          console.log('env', env)
-          await copyAgeKey(keyFilePath)
-        } catch (error) {
-          if (error.code === 'ENOENT') {
-            console.log(`File does not exist: ${keyFilePath}`)
-          } else {
-            console.error(`Error accessing or writing to file: ${keyFilePath}`, error)
-          }
-        }
+        process.env.SOPS_AGE_KEY = privateKey
+        console.log('env', env)
       } else {
         throw new Error('Public key not found in the output')
       }
@@ -155,6 +129,8 @@ export const bootstrapSops = async (
       } else if (provider === 'azure') {
         const v = values.kms!.sops!.azure!
         await deps.writeFile(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
+      } else if (provider === 'age') {
+        process.env.SOPS_AGE_KEY_TEST = 'AGE-SECRET-KEY-TEST'
       }
       try {
         const secrets = await deps.readFile(secretsFile, 'utf-8')

@@ -1,7 +1,6 @@
 import { EventEmitter } from 'events'
 import { pathExists } from 'fs-extra'
 import { readFile, stat, utimes, writeFile } from 'fs/promises'
-import yaml from 'js-yaml'
 import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
@@ -16,8 +15,8 @@ export interface Arguments extends BasicArguments {
 EventEmitter.defaultMaxListeners = 20
 
 enum CryptType {
-  ENCRYPT = 'sops -e --input-type=yaml --output-type=yaml',
-  DECRYPT = 'sops -d --input-type=yaml --output-type=yaml',
+  ENCRYPT = 'helm secrets enc',
+  DECRYPT = 'helm secrets dec',
   ROTATE = 'sops --input-type=yaml --output-type=yaml -i -r',
 }
 
@@ -56,31 +55,12 @@ type CR = {
   post?: (file: string) => Promise<void>
 }
 
-const checkSopsField = async (filePath: string): Promise<boolean> => {
-  try {
-    const fileContent = await readFile(filePath, 'utf8')
-    const yamlContent = yaml.load(fileContent)
-    return typeof yamlContent === 'object' && yamlContent !== null && 'sops' in yamlContent
-  } catch (error) {
-    console.error('Error reading or parsing file:', error)
-    return false
-  }
-}
-
 const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOutput | undefined)[]> => {
   const d = terminal(`common:crypt:processFileChunk`)
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
       d.debug(`${crypt.cmd} ${file}`)
-      const isEncrypt = crypt.cmd === CryptType.ENCRYPT
-      const hasSopsField = await checkSopsField(file)
-      if (isEncrypt && !hasSopsField) {
-        await $`mv ${file} ${file}.dec`
-      }
-      const command = crypt.cmd.split(' ')
-      const inputFile = `${file}${isEncrypt ? '.dec' : ''}`
-      const outputFile = `${file}${!isEncrypt ? '.dec' : ''}`
-      const result = $`${command} ${inputFile} > ${outputFile}`
+      const result = $`${crypt.cmd.split(' ')} ${file}`
       return result.then(async (res) => {
         if (crypt.post) await crypt.post(file)
         return res
