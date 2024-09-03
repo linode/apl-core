@@ -151,8 +151,39 @@ jobs:
           echo 'oidc: ${{ inputs.oidc }}'
           echo 'certificate: ${{ inputs.certificate }}'
 
-  preprocess-scaleway-input:
+  preprocess-generate-age-keys:
     needs: preprocess-input
+    if: ${{ inputs.kms == 'age' }}
+    name: Generate age keys
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install age
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y age
+      - name: Generate AGE keys
+        id: generate_keys
+        run: |
+          # Generate the AGE keypair
+          KEY_OUTPUT=$(age-keygen)
+          echo "$KEY_OUTPUT"
+          # Extract the public key and private key from the output
+          AGE_PUBLIC_KEY=$(echo "$KEY_OUTPUT" | grep -o 'public key: .*' | cut -d ' ' -f 3)
+          AGE_PRIVATE_KEY=$(echo "$KEY_OUTPUT" | grep -v 'public key:' | grep 'AGE-SECRET-KEY')
+          # Set the public and private keys as outputs
+          echo "AGE_PUBLIC_KEY=$AGE_PUBLIC_KEY" >> $GITHUB_ENV
+          echo "AGE_PRIVATE_KEY=$AGE_PRIVATE_KEY" >> $GITHUB_ENV
+      - name: Print keys (for debugging purposes)
+        run: |
+          echo "Public Key: ${{ env.AGE_PUBLIC_KEY }}"
+          echo "Private Key: ${{ env.AGE_PRIVATE_KEY }}"
+
+  preprocess-scaleway-input:
+    needs:
+      - preprocess-input
+      - preprocess-generate-age-keys
     if: ${{ inputs.cloud_provider == 'scaleway' }}
     name: Preprocess input variables for scaleway
     runs-on: ubuntu-latest
@@ -176,7 +207,9 @@ jobs:
           echo "versions=$versions" >> $GITHUB_OUTPUT
 
   preprocess-linode-input:
-    needs: preprocess-input
+    needs:
+      - preprocess-input
+      - preprocess-generate-age-keys
     if: ${{ inputs.cloud_provider == 'linode' }}
     name: Preprocess input variables for linode
     runs-on: ubuntu-latest
@@ -455,6 +488,17 @@ jobs:
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
+
+          if [[ '${{ inputs.kms }}' == 'age' ]]; then
+            cat <<-EOF >> values.yaml
+            kms:
+              sops:
+                provider: age
+                age:
+                  keys: "${{ env.AGE_PUBLIC_KEY }}"
+                  privateKey: "${{ env.AGE_PRIVATE_KEY }}"
+            EOF
+          fi
 
           install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
