@@ -39,6 +39,8 @@ spec:
       value: /home/app/stack/env
     - name: VERBOSE
       value: '2'
+    - name: SOPS_AGE_KEY_FILE
+      value: '/home/app/stack/env/keys.txt'
   steps:
     - name: git-clone
       computeResources: {}

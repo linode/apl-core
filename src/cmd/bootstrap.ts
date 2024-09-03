@@ -139,6 +139,7 @@ export const bootstrapSops = async (
     if (isCli || env.OTOMI_DEV) {
       // first time so we know we have values
       const secretsFile = `${env.ENV_DIR}/.secrets`
+      d.log(`Creating secrets file: ${secretsFile}`)
       if (provider === 'google') {
         // and we also assume the correct values are given by using '!' (we want to err when not set)
         const serviceKeyJson = JSON.parse(values.kms!.sops!.google!.accountJson as string)
@@ -154,6 +155,12 @@ export const bootstrapSops = async (
       } else if (provider === 'azure') {
         const v = values.kms!.sops!.azure!
         await deps.writeFile(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
+      }
+      try {
+        const secrets = await deps.readFile(secretsFile, 'utf-8')
+        d.log('Secrets file content:', secrets)
+      } catch (error) {
+        d.log('Error reading secrets file:', error)
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later
