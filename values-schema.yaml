@@ -1480,9 +1480,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: true
           applicationSet:
             replicas:
               default: 1
@@ -1734,8 +1731,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
           adminPassword:
             type: string
             x-secret: ''
@@ -1867,9 +1862,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            default: true
-            type: boolean
           tracing:
             description: Configure Istio for tracing. Requires Otel Collector to be enabled.
             propterties:
@@ -1934,9 +1926,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: true
           idp:
             additionalProperties: false
             properties:
@@ -2043,9 +2032,6 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-          enabled:
-            type: boolean
-            default: true
           resources:
             properties:
               operator:
