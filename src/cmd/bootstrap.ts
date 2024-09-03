@@ -72,6 +72,17 @@ export const bootstrapSops = async (
     }
   }
 
+  const copyAgeKey = async (keyFilePath) => {
+    try {
+      await $`mkdir -p /home/app/.config/sops/age`
+      d.log(`Home config age dir created`)
+      await $`cp ${keyFilePath} /home/app/.config/sops/age/keys.txt`
+      d.log(`Age keys copied to home config dir`)
+    } catch (error) {
+      d.log('Error copying age keys:', error)
+    }
+  }
+
   if (provider === 'age') {
     try {
       const res = await generateAgeKey()
@@ -85,6 +96,7 @@ export const bootstrapSops = async (
           d.log(`Age SOPS keys is written to: ${keyFilePath}`)
           process.env.SOPS_AGE_KEY_FILE = keyFilePath
           console.log('env', env)
+          await copyAgeKey(keyFilePath)
         } catch (error) {
           if (error.code === 'ENOENT') {
             console.log(`File does not exist: ${keyFilePath}`)
