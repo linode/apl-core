@@ -10,12 +10,6 @@ apps:
     enabled: true
   harbor:
     enabled: true
-kms:
-  sops:
-    provider: age
-    age:
-      keys: ''
-      privateKey: ''
 teamConfig:
   demo:
     password: somesecretvalue

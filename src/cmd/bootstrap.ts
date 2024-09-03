@@ -61,6 +61,13 @@ export const bootstrapSops = async (
     provider: kmsProvider,
     keys: kmsKeys,
   }
+  d.log(`
+    ================================================================
+    obj: ${JSON.stringify(obj)}
+    provider: ${provider}
+    sops: ${JSON.stringify(settingsVals.kms.sops[provider])}
+    ================================================================
+    `)
 
   const generateAgeKey = async () => {
     try {

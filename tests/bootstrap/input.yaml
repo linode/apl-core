@@ -7,9 +7,3 @@ otomi:
 apps:
   metrics-server:
     enabled: false
-kms:
-  sops:
-    provider: age
-    age:
-      keys: ''
-      privateKey: ''
