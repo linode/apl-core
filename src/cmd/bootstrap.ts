@@ -86,14 +86,20 @@ export const bootstrapSops = async (
   if (provider === 'age') {
     try {
       const res = await generateAgeKey()
+      console.log('generateAgeKey res:', res)
       const match = res?.stdout?.match(/age[0-9a-z]+/)
       const publicKey = match ? match[0] : null
       if (publicKey) {
         obj.keys = publicKey
         const keyFilePath = `${envDir}/keys.txt`
         try {
-          await deps.writeFile(keyFilePath, res?.stdout, 'utf-8')
-          d.log(`Age SOPS keys is written to: ${keyFilePath}`)
+          const exists = await deps.pathExists(keyFilePath)
+          if (!exists) {
+            await deps.writeFile(keyFilePath, res?.stdout, 'utf-8')
+            d.log(`Age SOPS keys is written to: ${keyFilePath}`)
+          } else {
+            d.log(`Age SOPS keys already exists at: ${keyFilePath}`)
+          }
           process.env.SOPS_AGE_KEY_FILE = keyFilePath
           console.log('env', env)
           await copyAgeKey(keyFilePath)
