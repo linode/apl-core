@@ -25,7 +25,7 @@ on:
       kms:
         type: string
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
-        default: az_kms
+        default: age
       generate_password:
         type: string
         description: Should a unique password be generated?
@@ -88,9 +88,10 @@ on:
         type: choice
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
         options:
+          - age
           - no_kms
           - az_kms
-        default: az_kms
+        default: age
       generate_password:
         type: choice
         description: Should a unique password be generated?

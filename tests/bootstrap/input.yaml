@@ -11,4 +11,5 @@ kms:
   sops:
     provider: age
     age:
-      keys: age1j8kah8r24ex0p36qjuzy6hvlkum9hyqlxr77v0fr5qsuv447x3fqjr97d2
+      keys: age15tfp3q7zt26d83xgw66ttcfcejsw4xcuq6xqnnz0htgtrhqznfaqm03pvp
+      privateKey: AGE-SECRET-KEY-10XTEPFPC7NYQLQ0HXRP00K3EYH8PYXUZ3DFEA4MVPD8J8P6A8KZQ4CLK6S

@@ -13,7 +13,7 @@ AWS_SECRET_ACCESS_KEY: {{ .secretKey }}
 AWS_REGION: {{ . }}{{ end }}
 {{- end }}
 {{- with . | get "age" nil }}
-  SOPS_AGE_KEY: {{ "TEST_AGE_KEY_SOPS_ENV" | b64enc }}
+  SOPS_AGE_KEY: {{ .privateKey | b64enc }}
 {{- end }}
 {{- with . | get "google" nil }}
 GCLOUD_SERVICE_KEY: '{{ .accountJson | replace "\n" "" }}'

@@ -73,24 +73,33 @@ export const bootstrapSops = async (
   }
 
   if (provider === 'age') {
-    try {
-      const res = await generateAgeKey()
-      d.log('generateAgeKey res:', res)
-      const match = res?.stdout?.match(/age[0-9a-z]+/)
-      const publicKey = match ? match[0] : ''
-      const matchPrivateKey = res?.stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
-      const privateKey = matchPrivateKey ? matchPrivateKey[0] : ''
-      if (publicKey) {
-        obj.keys = publicKey
-        process.env.SOPS_AGE_KEY = privateKey
-        console.log('env', env)
-      } else {
-        throw new Error('Public key not found in the output')
+    obj.provider = 'age'
+    const vPublicKey = kmsKeys
+    const vPrivateKey = settingsVals.kms.sops[provider].privateKey as string
+    if (vPublicKey && vPrivateKey) {
+      obj.keys = vPublicKey
+      process.env.SOPS_AGE_KEY = vPrivateKey
+      console.log('vPrivateKey', vPrivateKey)
+      d.log('env', process.env)
+    } else {
+      try {
+        const res = await generateAgeKey()
+        d.log('generateAgeKey res:', res)
+        const match = res?.stdout?.match(/age[0-9a-z]+/)
+        const publicKey = match ? match[0] : ''
+        const matchPrivateKey = res?.stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
+        const privateKey = matchPrivateKey ? matchPrivateKey[0] : ''
+        if (publicKey) {
+          obj.keys = publicKey
+          process.env.SOPS_AGE_KEY = privateKey
+          console.log('env', process.env)
+        } else {
+          throw new Error('Public key not found in the output')
+        }
+      } catch (error) {
+        console.error('Error storing age keys:', error)
+        throw error
       }
-      obj.provider = 'age'
-    } catch (error) {
-      console.error('Error storing age keys:', error)
-      throw error
     }
   }
 

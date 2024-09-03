@@ -2755,8 +2755,11 @@ properties:
                     description: Comma separated list of one or two paths to keys as defined in age. One if used for both enc+dec. Two if one for enc, other for dec.
                     title: Age keys
                     type: string
+                  privateKey:
+                    type: string
                 required:
                   - keys
+                  - privateKey
             required:
               - age
   oidc:
