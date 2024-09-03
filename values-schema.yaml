@@ -2746,6 +2746,8 @@ properties:
                 required:
                   - keys
                   - privateKey
+            required:
+              - age
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
