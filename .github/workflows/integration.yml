@@ -491,14 +491,17 @@ jobs:
 
           if [[ '${{ inputs.kms }}' == 'age' ]]; then
             cat <<EOF >> values.yaml
-          kms:
-            sops:
-              provider: age
-              age:
-                keys: "${{ env.AGE_PUBLIC_KEY }}"
-                privateKey: "${{ env.AGE_PRIVATE_KEY }}"
-          EOF
-            fi
+            kms:
+              sops:
+                provider: age
+                age:
+                  keys: ${{ env.AGE_PUBLIC_KEY }}
+                  privateKey: ${{ env.AGE_PRIVATE_KEY }}
+            EOF
+          fi
+
+          echo "Contents of values.yaml:"
+          cat values.yaml
 
           install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
