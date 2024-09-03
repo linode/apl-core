@@ -483,28 +483,28 @@ jobs:
           domainSuffix=''
           touch values.yaml
           [[ '${{ inputs.license }}' == 'yes' ]] && echo "$OTOMI_LICENSE" >> values.yaml
-          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
+          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix="--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net"
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
           if [[ '${{ inputs.kms }}' == 'age' ]]; then
-            cat <<-EOF >> values.yaml
-            kms:
-              sops:
-                provider: age
-                age:
-                  keys: "${{ env.AGE_PUBLIC_KEY }}"
-                  privateKey: "${{ env.AGE_PRIVATE_KEY }}"
-            EOF
-          fi
+            cat <<EOF >> values.yaml
+          kms:
+            sops:
+              provider: age
+              age:
+                keys: "${{ env.AGE_PUBLIC_KEY }}"
+                privateKey: "${{ env.AGE_PRIVATE_KEY }}"
+          EOF
+            fi
 
           install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
-            --values values-container-registry.yaml
+            --values values-container-registry.yaml \
             --values values.yaml \
-            --set cluster.provider=${{ inputs.cloud_provider }}
+            --set cluster.provider=${{ inputs.cloud_provider }} \
             $domainSuffix"
 
           [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
