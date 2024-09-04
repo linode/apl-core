@@ -50,6 +50,19 @@ resources:
         solvers:
           - selector: {}
             dns01:
+              {{- with $p | get "akamai" nil }}
+              akamai:
+                serviceConsumerDomain: {{ .host }}
+                accessTokenSecretRef:
+                  name: {{ template "external-dns.secretName" . }}
+                  key: akamai_access_token
+                clientTokenSecretRef:
+                  name: {{ template "external-dns.secretName" . }}
+                  key: akamai_client_token
+                clientSecretSecretRef:
+                  name: {{ template "external-dns.secretName" . }}
+                  key: akamai_client_secret
+              {{- end }}
               {{- with $p | get "aws" nil }}
               route53:
                 {{- with . | get "credentials.accessKey" nil }}
