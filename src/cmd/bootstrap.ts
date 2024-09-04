@@ -87,7 +87,7 @@ export const bootstrapSops = async (
       const matchPublic = stdout?.match(/age[0-9a-z]+/)
       publicKey = matchPublic ? matchPublic[0] : ''
       const settings = { ...settingsVals, kms: { sops: { age: { publicKey } } } }
-      await deps.writeFile(settingsFile, JSON.stringify(settings))
+      // await deps.writeFile(settingsFile, JSON.stringify(settings))
 
       const matchPrivat = stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
       privateKey = matchPrivat ? matchPrivat[0] : ''
@@ -95,7 +95,7 @@ export const bootstrapSops = async (
       d.log('Private key 1:', privateKey)
       d.log('env1:', process.env)
       const secretSettings = { ...secretsSettingsVals, kms: { sops: { age: { privateKey } } } }
-      await deps.writeFile(secretsSettingsFile, JSON.stringify(secretSettings))
+      // await deps.writeFile(secretsSettingsFile, JSON.stringify(secretSettings))
     }
     obj.keys = publicKey
     d.log('Public key:', publicKey)
