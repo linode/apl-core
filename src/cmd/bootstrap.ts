@@ -93,6 +93,7 @@ export const bootstrapSops = async (
       privateKey = matchPrivat ? matchPrivat[0] : ''
       process.env.SOPS_AGE_KEY = privateKey
       d.log('Private key 1:', privateKey)
+      d.log('env1:', process.env)
       const secretSettings = { ...secretsSettingsVals, kms: { sops: { age: { privateKey } } } }
       await deps.writeFile(secretsSettingsFile, JSON.stringify(secretSettings))
     }
@@ -100,6 +101,7 @@ export const bootstrapSops = async (
     d.log('Public key:', publicKey)
     process.env.SOPS_AGE_KEY = privateKey
     d.log('Private key 2:', privateKey)
+    d.log('env2:', process.env)
   }
 
   d.log('OBJ:', obj)
