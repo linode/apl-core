@@ -152,7 +152,6 @@ jobs:
           echo 'certificate: ${{ inputs.certificate }}'
 
   preprocess-generate-age-keys:
-    needs: preprocess-input
     if: ${{ inputs.kms == 'age' }}
     name: Generate age keys
     runs-on: ubuntu-latest
@@ -176,9 +175,7 @@ jobs:
           echo "::set-output name=age_private_key::$age_private_key"
 
   preprocess-scaleway-input:
-    needs:
-      - preprocess-input
-      - preprocess-generate-age-keys
+    needs: preprocess-input
     if: ${{ inputs.cloud_provider == 'scaleway' }}
     name: Preprocess input variables for scaleway
     runs-on: ubuntu-latest
@@ -202,9 +199,7 @@ jobs:
           echo "versions=$versions" >> $GITHUB_OUTPUT
 
   preprocess-linode-input:
-    needs:
-      - preprocess-input
-      - preprocess-generate-age-keys
+    needs: preprocess-input
     if: ${{ inputs.cloud_provider == 'linode' }}
     name: Preprocess input variables for linode
     runs-on: ubuntu-latest
