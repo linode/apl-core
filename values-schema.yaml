@@ -2574,18 +2574,6 @@ properties:
                   - apiToken
             required:
               - digitalocean
-          - title: Civo Cloud
-            additionalProperties: false
-            properties:
-              civo:
-                properties:
-                  apiToken:
-                    type: string
-                    x-secret: ''
-                required:
-                  - apiToken
-            required:
-              - civo
           - title: Linode
             additionalProperties: false
             properties:
