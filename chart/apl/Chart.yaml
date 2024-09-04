@@ -5,7 +5,7 @@ home: https://apl-docs.net/
 icon: https://apl-docs.net/img/otomi-logo.svg
 type: application
 version: 0.0.0-chart-version
-appVersion: 1.0
+appVersion: APP_VERSION_PLACEHOLDER
 keywords:
   - linode
   - lke
