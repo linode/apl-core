@@ -8,15 +8,6 @@ definitions:
   alerts:
     additionalProperties: false
     properties:
-      drone:
-        items:
-          enum:
-            - slack
-            - msteams
-            - opsgenie
-          type: string
-        type: array
-        uniqueItems: true
       email:
         additionalProperties: false
         properties:
