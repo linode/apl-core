@@ -47,6 +47,8 @@ export const bootstrapSops = async (
   const targetPath = `${envDir}/.sops.yaml`
   const settingsFile = `${envDir}/env/settings.yaml`
   const settingsVals = (await deps.loadYaml(settingsFile)) as Record<string, any>
+  const secretsSettingsFile = `${envDir}/env/secrets.settings.yaml`
+  const secretsSettingsVals = (await deps.loadYaml(secretsSettingsFile)) as Record<string, any>
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) {
     d.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
@@ -55,16 +57,41 @@ export const bootstrapSops = async (
 
   const templatePath = `${rootDir}/tpl/.sops.yaml.gotmpl`
   const kmsProvider = kmsMap[provider] as string
-  const kmsKeys = settingsVals.kms.sops[provider].keys as string
+  const kmsKeys = settingsVals.kms.sops[provider]?.keys as string
 
   const obj = {
     provider: kmsProvider,
     keys: kmsKeys,
   }
 
+  const generateAgeKey = async () => {
+    try {
+      const result = await $`age-keygen`
+      return result
+    } catch (error) {
+      d.error('Error generating age keys:', error)
+      throw error
+    }
+  }
+
   if (provider === 'age') {
-    obj.provider = 'age'
-    const privateKey = settingsVals.kms.sops[provider].privateKey as string
+    let { publicKey } = settingsVals?.kms?.sops?.age ?? {}
+    let { privateKey } = secretsSettingsVals?.kms?.sops?.age ?? {}
+    if (!publicKey || !privateKey) {
+      d.log('Generating age key pair')
+      const { stdout } = await generateAgeKey()
+
+      const matchPublic = stdout?.match(/age[0-9a-z]+/)
+      publicKey = matchPublic ? matchPublic[0] : ''
+      const settings = { ...settingsVals, kms: { sops: { age: { publicKey } } } }
+      await deps.writeFile(settingsFile, JSON.stringify(settings))
+
+      const matchPrivat = stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
+      privateKey = matchPrivat ? matchPrivat[0] : ''
+      const secretSettings = { ...secretsSettingsVals, kms: { sops: { age: { privateKey } } } }
+      await deps.writeFile(secretsSettingsFile, JSON.stringify(secretSettings))
+    }
+    obj.keys = publicKey
     process.env.SOPS_AGE_KEY = privateKey
   }
 

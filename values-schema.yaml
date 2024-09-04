@@ -2737,17 +2737,11 @@ properties:
                 const: age
               age:
                 properties:
-                  keys:
-                    description: Comma separated list of one or two paths to keys as defined in age. One if used for both enc+dec. Two if one for enc, other for dec.
-                    title: Age keys
+                  publicKey:
                     type: string
                   privateKey:
                     type: string
-                required:
-                  - keys
-                  - privateKey
-            required:
-              - age
+                    x-secret: ''
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'

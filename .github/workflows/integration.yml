@@ -151,30 +151,6 @@ jobs:
           echo 'oidc: ${{ inputs.oidc }}'
           echo 'certificate: ${{ inputs.certificate }}'
 
-  preprocess-generate-age-keys:
-    name: Generate age keys
-    runs-on: ubuntu-latest
-    outputs:
-      age_public_key: ${{ steps.generate_keys.outputs.age_public_key }}
-      age_private_key: ${{ steps.generate_keys.outputs.age_private_key }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Install age
-        if: ${{ inputs.kms == 'age' }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y age
-      - name: Generate AGE keys
-        if: ${{ inputs.kms == 'age' }}
-        id: generate_keys
-        run: |
-          KEY_OUTPUT=$(age-keygen)
-          age_public_key=$(echo "$KEY_OUTPUT" | grep -o 'public key: .*' | cut -d ' ' -f 3)
-          age_private_key=$(echo "$KEY_OUTPUT" | grep -v 'public key:' | grep 'AGE-SECRET-KEY')
-          echo "::set-output name=age_public_key::$age_public_key"
-          echo "::set-output name=age_private_key::$age_private_key"
-
   preprocess-scaleway-input:
     needs: preprocess-input
     if: ${{ inputs.cloud_provider == 'scaleway' }}
@@ -226,9 +202,7 @@ jobs:
   run-integration-test-scaleway:
     if: ${{ inputs.cloud_provider == 'scaleway' }}
     name: Run integration test on scaleway cluster
-    needs:
-      - preprocess-generate-age-keys
-      - preprocess-scaleway-input
+    needs: preprocess-scaleway-input
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -328,15 +302,10 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
           if [[ '${{ inputs.kms }}' == 'age' ]]; then
-            echo "::add-mask::${{ needs.preprocess-generate-age-keys.outputs.age_public_key }}"
-            echo "::add-mask::${{ needs.preprocess-generate-age-keys.outputs.age_private_key }}"
             cat <<EOF >> values.yaml
           kms:
             sops:
               provider: age
-              age:
-                keys: "${{ needs.preprocess-generate-age-keys.outputs.age_public_key }}"
-                privateKey: "${{ needs.preprocess-generate-age-keys.outputs.age_private_key }}"
           EOF
             fi
 
@@ -380,9 +349,7 @@ jobs:
   run-integration-test-linode:
     if: ${{ inputs.cloud_provider == 'linode' }}
     name: Run integration test on linode cluster
-    needs:
-      - preprocess-generate-age-keys
-      - preprocess-linode-input
+    needs: preprocess-linode-input
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -498,15 +465,10 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
           if [[ '${{ inputs.kms }}' == 'age' ]]; then
-            echo "::add-mask::${{ needs.preprocess-generate-age-keys.outputs.age_public_key }}"
-            echo "::add-mask::${{ needs.preprocess-generate-age-keys.outputs.age_private_key }}"
             cat <<EOF >> values.yaml
           kms:
             sops:
               provider: age
-              age:
-                keys: "${{ needs.preprocess-generate-age-keys.outputs.age_public_key }}"
-                privateKey: "${{ needs.preprocess-generate-age-keys.outputs.age_private_key }}"
           EOF
             fi
 
