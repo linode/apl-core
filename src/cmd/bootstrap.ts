@@ -55,59 +55,17 @@ export const bootstrapSops = async (
 
   const templatePath = `${rootDir}/tpl/.sops.yaml.gotmpl`
   const kmsProvider = kmsMap[provider] as string
-  const kmsKeys = settingsVals.kms.sops[provider]?.keys as string
+  const kmsKeys = settingsVals.kms.sops[provider].keys as string
 
   const obj = {
     provider: kmsProvider,
     keys: kmsKeys,
   }
-  d.log(`
-    ================================================================
-    obj: ${JSON.stringify(obj)}
-    provider: ${provider}
-    sops: ${JSON.stringify(settingsVals.kms.sops[provider])}
-    ================================================================
-    `)
-
-  const generateAgeKey = async () => {
-    try {
-      const result = await $`age-keygen`
-      return result
-    } catch (error) {
-      console.error('Error generating age keys:', error)
-      throw error
-    }
-  }
 
   if (provider === 'age') {
     obj.provider = 'age'
-    const vPublicKey = kmsKeys
-    const vPrivateKey = settingsVals.kms.sops[provider]?.privateKey as string
-    if (vPublicKey && vPrivateKey) {
-      obj.keys = vPublicKey
-      process.env.SOPS_AGE_KEY = vPrivateKey
-      console.log('vPrivateKey', vPrivateKey)
-      d.log('env', process.env)
-    } else {
-      try {
-        const res = await generateAgeKey()
-        d.log('generateAgeKey res:', res)
-        const match = res?.stdout?.match(/age[0-9a-z]+/)
-        const publicKey = match ? match[0] : ''
-        const matchPrivateKey = res?.stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
-        const privateKey = matchPrivateKey ? matchPrivateKey[0] : ''
-        if (publicKey) {
-          obj.keys = publicKey
-          process.env.SOPS_AGE_KEY = privateKey
-          console.log('env', process.env)
-        } else {
-          throw new Error('Public key not found in the output')
-        }
-      } catch (error) {
-        console.error('Error storing age keys:', error)
-        throw error
-      }
-    }
+    const privateKey = settingsVals.kms.sops[provider].privateKey as string
+    process.env.SOPS_AGE_KEY = privateKey
   }
 
   const exists = await deps.pathExists(targetPath)
@@ -146,13 +104,9 @@ export const bootstrapSops = async (
         const v = values.kms!.sops!.azure!
         await deps.writeFile(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
       } else if (provider === 'age') {
-        process.env.SOPS_AGE_KEY_TEST = 'AGE-SECRET-KEY-TEST'
-      }
-      try {
-        const secrets = await deps.readFile(secretsFile, 'utf-8')
-        d.log('Secrets file content:', secrets)
-      } catch (error) {
-        d.log('Error reading secrets file:', error)
+        const { privateKey } = values.kms!.sops!.age!
+        process.env.SOPS_AGE_KEY = privateKey
+        await deps.writeFile(secretsFile, `SOPS_AGE_KEY=${privateKey}`)
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later

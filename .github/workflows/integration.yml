@@ -521,9 +521,6 @@ jobs:
 
           helm install $install_args
 
-      - name: Show values.yaml
-        run: cat values.yaml
-
       - name: Gather k8s events on failure
         if: failure()
         run: |
