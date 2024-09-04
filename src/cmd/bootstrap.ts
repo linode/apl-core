@@ -76,10 +76,13 @@ export const bootstrapSops = async (
 
   if (provider === 'age') {
     let { publicKey } = settingsVals?.kms?.sops?.age ?? {}
+    d.log('Public key init:', publicKey)
     let { privateKey } = secretsSettingsVals?.kms?.sops?.age ?? {}
+    d.log('Private key init:', privateKey)
     if (!publicKey || !privateKey) {
       d.log('Generating age key pair')
       const { stdout } = await generateAgeKey()
+      d.log('STDOUT:', JSON.stringify(stdout))
 
       const matchPublic = stdout?.match(/age[0-9a-z]+/)
       publicKey = matchPublic ? matchPublic[0] : ''
@@ -88,12 +91,18 @@ export const bootstrapSops = async (
 
       const matchPrivat = stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
       privateKey = matchPrivat ? matchPrivat[0] : ''
+      process.env.SOPS_AGE_KEY = privateKey
+      d.log('Private key 1:', privateKey)
       const secretSettings = { ...secretsSettingsVals, kms: { sops: { age: { privateKey } } } }
       await deps.writeFile(secretsSettingsFile, JSON.stringify(secretSettings))
     }
     obj.keys = publicKey
+    d.log('Public key:', publicKey)
     process.env.SOPS_AGE_KEY = privateKey
+    d.log('Private key 2:', privateKey)
   }
+
+  d.log('OBJ:', obj)
 
   const exists = await deps.pathExists(targetPath)
   // we can just get the values the first time because those are unencrypted
