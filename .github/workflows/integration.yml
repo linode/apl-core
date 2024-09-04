@@ -157,8 +157,8 @@ jobs:
     name: Generate age keys
     runs-on: ubuntu-latest
     outputs:
-      age_private_key: ${{ steps.generate_keys.outputs.age_private_key }}
       age_public_key: ${{ steps.generate_keys.outputs.age_public_key }}
+      age_private_key: ${{ steps.generate_keys.outputs.age_private_key }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -169,19 +169,11 @@ jobs:
       - name: Generate AGE keys
         id: generate_keys
         run: |
-          # Generate the AGE keypair
           KEY_OUTPUT=$(age-keygen)
-          echo "$KEY_OUTPUT"
-          # Extract the public key and private key from the output
           age_public_key=$(echo "$KEY_OUTPUT" | grep -o 'public key: .*' | cut -d ' ' -f 3)
           age_private_key=$(echo "$KEY_OUTPUT" | grep -v 'public key:' | grep 'AGE-SECRET-KEY')
-          # Set the public and private keys as outputs
           echo "::set-output name=age_public_key::$age_public_key"
           echo "::set-output name=age_private_key::$age_private_key"
-      - name: Print keys (for debugging purposes)
-        run: |
-          echo "Public Key: ${{ steps.generate_keys.outputs.age_public_key }}"
-          echo "Private Key: ${{ steps.generate_keys.outputs.age_private_key }}"
 
   preprocess-scaleway-input:
     needs:
@@ -238,7 +230,9 @@ jobs:
   run-integration-test-scaleway:
     if: ${{ inputs.cloud_provider == 'scaleway' }}
     name: Run integration test on scaleway cluster
-    needs: preprocess-scaleway-input
+    needs:
+      - preprocess-generate-age-keys
+      - preprocess-scaleway-input
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -336,6 +330,19 @@ jobs:
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
+
+          if [[ '${{ inputs.kms }}' == 'age' ]]; then
+            echo "::add-mask::${{ needs.preprocess-generate-age-keys.outputs.age_public_key }}"
+            echo "::add-mask::${{ needs.preprocess-generate-age-keys.outputs.age_private_key }}"
+            cat <<EOF >> values.yaml
+          kms:
+            sops:
+              provider: age
+              age:
+                keys: "${{ needs.preprocess-generate-age-keys.outputs.age_public_key }}"
+                privateKey: "${{ needs.preprocess-generate-age-keys.outputs.age_private_key }}"
+          EOF
+            fi
 
           install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
@@ -495,13 +502,15 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
 
           if [[ '${{ inputs.kms }}' == 'age' ]]; then
+            echo "::add-mask::${{ needs.preprocess-generate-age-keys.outputs.age_public_key }}"
+            echo "::add-mask::${{ needs.preprocess-generate-age-keys.outputs.age_private_key }}"
             cat <<EOF >> values.yaml
           kms:
             sops:
               provider: age
               age:
-                keys: ${{ needs.preprocess-generate-age-keys.outputs.age_public_key }}
-                privateKey: ${{ needs.preprocess-generate-age-keys.outputs.age_private_key }}
+                keys: "${{ needs.preprocess-generate-age-keys.outputs.age_public_key }}"
+                privateKey: "${{ needs.preprocess-generate-age-keys.outputs.age_private_key }}"
           EOF
             fi
 
