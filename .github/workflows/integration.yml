@@ -152,7 +152,6 @@ jobs:
           echo 'certificate: ${{ inputs.certificate }}'
 
   preprocess-generate-age-keys:
-    if: ${{ inputs.kms == 'age' }}
     name: Generate age keys
     runs-on: ubuntu-latest
     outputs:
@@ -162,10 +161,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Install age
+        if: ${{ inputs.kms == 'age' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y age
       - name: Generate AGE keys
+        if: ${{ inputs.kms == 'age' }}
         id: generate_keys
         run: |
           KEY_OUTPUT=$(age-keygen)
