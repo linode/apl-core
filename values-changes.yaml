@@ -286,3 +286,5 @@ changes:
   - version: 28
     deletions:
       - 'apps.cnpg.storage'
+      - 'obj.buckets'
+      - 'platformBackups.persistentVolumes.gitea'
