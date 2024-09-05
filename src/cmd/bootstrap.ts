@@ -73,7 +73,19 @@ export const bootstrapSops = async (
   }
 
   if (provider === 'age') {
+    const { SOPS_AGE_KEY } = process.env
     let { publicKey, privateKey } = settingsVals?.kms?.sops?.age ?? {}
+    if (SOPS_AGE_KEY) {
+      obj.keys = publicKey
+      d.log(`
+        =================================================================
+        Using age key pair from environment
+        Public Key: ${publicKey}
+        Private Key: ${SOPS_AGE_KEY}
+        =================================================================
+        `)
+      return
+    }
     if (!publicKey || !privateKey) {
       d.log('Generating age key pair')
       const { stdout } = await generateAgeKey()
