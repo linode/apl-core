@@ -47,8 +47,6 @@ export const bootstrapSops = async (
   const targetPath = `${envDir}/.sops.yaml`
   const settingsFile = `${envDir}/env/settings.yaml`
   const settingsVals = (await deps.loadYaml(settingsFile)) as Record<string, any>
-  const secretsSettingsFile = `${envDir}/env/secrets.settings.yaml`
-  const secretsSettingsVals = (await deps.loadYaml(secretsSettingsFile)) as Record<string, any>
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) {
     d.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
@@ -75,8 +73,7 @@ export const bootstrapSops = async (
   }
 
   if (provider === 'age') {
-    let { publicKey } = settingsVals?.kms?.sops?.age ?? {}
-    let { privateKey } = secretsSettingsVals?.kms?.sops?.age ?? {}
+    let { publicKey, privateKey } = settingsVals?.kms?.sops?.age ?? {}
     if (!publicKey || !privateKey) {
       d.log('Generating age key pair')
       const { stdout } = await generateAgeKey()
