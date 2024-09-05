@@ -287,3 +287,4 @@ changes:
     deletions:
       - 'apps.cnpg.storage'
       - 'otomi.isHomeMonitored'
+      - 'home'
