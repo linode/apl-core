@@ -289,3 +289,4 @@ changes:
       - 'alerts.drone'
       - 'otomi.isHomeMonitored'
       - 'home'
+      - 'dns.provider.civo'
