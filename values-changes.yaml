@@ -286,5 +286,7 @@ changes:
   - version: 28
     deletions:
       - 'apps.cnpg.storage'
+      - 'alerts.drone'
       - 'otomi.isHomeMonitored'
       - 'home'
+      - 'dns.provider.civo'

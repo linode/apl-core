@@ -8,15 +8,6 @@ definitions:
   alerts:
     additionalProperties: false
     properties:
-      drone:
-        items:
-          enum:
-            - slack
-            - msteams
-            - opsgenie
-          type: string
-        type: array
-        uniqueItems: true
       email:
         additionalProperties: false
         properties:
@@ -2574,18 +2565,6 @@ properties:
                   - apiToken
             required:
               - digitalocean
-          - title: Civo Cloud
-            additionalProperties: false
-            properties:
-              civo:
-                properties:
-                  apiToken:
-                    type: string
-                    x-secret: ''
-                required:
-                  - apiToken
-            required:
-              - civo
           - title: Linode
             additionalProperties: false
             properties:
