@@ -77,6 +77,11 @@ export const bootstrapSops = async (
     if (!publicKey || !privateKey) {
       d.log('Generating age key pair')
       const { stdout } = await generateAgeKey()
+      d.log(`
+        =================================================================
+        ${stdout}
+        =================================================================
+        `)
       const matchPublic = stdout?.match(/age[0-9a-z]+/)
       publicKey = matchPublic ? matchPublic[0] : ''
       const matchPrivate = stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
