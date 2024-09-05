@@ -24,13 +24,6 @@ dns:
     zoneIdFilters: []
 e2e:
     enabled: false
-home:
-    email: {}
-    receivers:
-        - slack
-    slack:
-        channel: mon-otomi
-        channelCrit: mon-otomi-crit
 ingress:
     classes:
         - className: private
@@ -78,7 +71,6 @@ otomi:
         username: otomi
     hasExternalDNS: true
     hasExternalIDP: true
-    isHomeMonitored: false
     nodeSelector:
         otomi: otomi-sys
     version: main

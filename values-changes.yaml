@@ -288,3 +288,7 @@ changes:
       - 'apps.cnpg.storage'
       - 'obj.buckets'
       - 'platformBackups.persistentVolumes.gitea'
+      - 'alerts.drone'
+      - 'otomi.isHomeMonitored'
+      - 'home'
+      - 'dns.provider.civo'
