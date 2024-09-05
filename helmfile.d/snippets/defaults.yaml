@@ -820,7 +820,6 @@ environments:
         otomi:
           hasExternalDNS: false
           hasExternalIDP: false
-          isHomeMonitored: false
           isMultitenant: true
           nodeSelector: {}
         e2e:

@@ -2653,8 +2653,6 @@ properties:
       entrypoint:
         $ref: '#/definitions/ipV4Address'
         description: Optional. A public IP address that will override (loadbalancer) ip used for registering hosts. This allows for access to private clusters.
-  home:
-    $ref: '#/definitions/alerts'
   files:
     type: object
     description: 'Custom values for the workload chart.'
@@ -2808,10 +2806,6 @@ properties:
       hasExternalIDP:
         default: false
         description: Set this to true when bringing your own external IDP such as Azure AD. (Expects required `oidc:` fields to be set.)
-        type: boolean
-      isHomeMonitored:
-        default: false
-        description: Whether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
         type: boolean
       isMultitenant:
         default: true
