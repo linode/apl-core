@@ -4,3 +4,9 @@ cluster:
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
   version: 'OTOMI_VERSION_PLACEHOLDER'
+kms:
+  sops:
+    provider: age
+    age:
+      publicKey: 'age1h6uadzqymfl0y7ztfxgm77kagw9djpwaaj7897skml3pt0wnsatqdars7u'
+      privateKey: 'AGE-SECRET-KEY-1KEDVL28EPUYL9E3QMVV0GC8S8JETZM57SVWAY0X38F50ZUXF8GZS535KH5'
