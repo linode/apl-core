@@ -87,9 +87,11 @@ export const bootstrapSops = async (
 
       const ageKeys = { kms: { sops: { age: { publicKey, privateKey } } } }
       await writeValues(ageKeys)
+      await deps.writeFile(`${env.ENV_DIR}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
     }
     obj.keys = publicKey
     process.env.SOPS_AGE_KEY = privateKey
+    d.log('env:', process.env)
   }
 
   const exists = await deps.pathExists(targetPath)
