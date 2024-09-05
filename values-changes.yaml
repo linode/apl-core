@@ -287,3 +287,5 @@ changes:
     deletions:
       - 'apps.cnpg.storage'
       - 'alerts.drone'
+      - 'otomi.isHomeMonitored'
+      - 'home'
