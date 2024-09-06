@@ -75,6 +75,10 @@ export const bootstrapSops = async (
   if (provider === 'age') {
     const { SOPS_AGE_KEY } = process.env
     let { publicKey, privateKey } = settingsVals?.kms?.sops?.age ?? {}
+    d.log('publicKey:', publicKey)
+    d.log('privateKey:', privateKey)
+    const secrets = (await deps.loadYaml(`${envDir}/env/secrets.settings.yaml`)) as Record<string, any>
+    d.log('secrets', secrets)
     if (SOPS_AGE_KEY) {
       obj.keys = publicKey
       d.log('Skipping age key generation, using existing key')
