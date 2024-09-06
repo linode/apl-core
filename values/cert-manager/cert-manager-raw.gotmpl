@@ -21,8 +21,6 @@ resources:
       secret: "{{ $p.aws.credentials.secretKey | b64enc }}"
       {{- else if hasKey $p "digitalocean" }}
       secret: "{{ $p.digitalocean.apiToken | b64enc }}"
-      {{- else if hasKey $p "civo" }}
-      secret: "{{ $p.civo.apiToken | b64enc }}"
       {{- else if hasKey $p "cloudflare" }}
       secret: "{{ $p.cloudflare.apiToken | b64enc }}"
       {{- else if hasKey $p "linode" }}
@@ -111,14 +109,6 @@ resources:
                 tokenSecretRef:
                   key: secret
                   name: external-dns
-              {{- end }}
-              {{- with $p | get "civo" nil }}
-              webhook:
-                solverName: "civo"
-                groupName: civo.webhook.okteto.com
-                config:
-                  secretKey: secret
-                  secretName: external-dns
               {{- end }}
               {{- with $p | get "linode" nil }}
               webhook:
