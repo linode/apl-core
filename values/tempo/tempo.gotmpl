@@ -1,7 +1,6 @@
 {{- $v := .Values -}}
 {{- $t:= $v.apps.tempo }}
 {{- $obj := $v.obj.provider }}
-{{- $bu := $v.obj.buckets }}
 
 
 fullnameOverride: tempo
@@ -80,7 +79,7 @@ storage:
     {{- end }}
     {{- if eq $obj.type "linode" }}
     s3:
-      bucket: {{ $bu.tempo }}
+      bucket: {{ $obj.linode.buckets.tempo }}
       endpoint: {{ $obj.linode.region }}.linodeobjects.com
       access_key: {{ $obj.linode.accessKeyId }}                      
       secret_key: {{ $obj.linode.secretAccessKey }}                           
