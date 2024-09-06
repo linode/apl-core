@@ -2670,6 +2670,19 @@ properties:
           - properties:
               provider:
                 type: string
+                const: age
+              age:
+                properties:
+                  publicKey:
+                    type: string
+                  privateKey:
+                    type: string
+                    x-secret: ''
+            required:
+              - provider
+          - properties:
+              provider:
+                type: string
                 const: aws
               aws:
                 properties:
@@ -2731,19 +2744,6 @@ properties:
                   - project
             required:
               - google
-          - properties:
-              provider:
-                type: string
-                const: age
-              age:
-                properties:
-                  publicKey:
-                    type: string
-                  privateKey:
-                    type: string
-                    x-secret: ''
-            required:
-              - provider
   oidc:
     additionalProperties: false
     description: 'Holds many parts used in different locations. Please see keycloak, grafana, istio and oauth-proxy as those are all consuming (parts of) these settings.'
