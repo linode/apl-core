@@ -175,7 +175,8 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
         d.debug('encTS.mtime: ', encTS.mtime)
         d.debug('decTS.mtime: ', decTS.mtime)
         const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
-        if (timeDiff > 1) {
+        const test = true
+        if (timeDiff > 1 || test) {
           d.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
           return true
         }
