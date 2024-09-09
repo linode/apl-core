@@ -2,7 +2,6 @@
 {{- $h := $v.apps.harbor }}
 {{- $db := $v.databases.harbor }}
 {{- $obj := $v.obj.provider }}
-{{- $bu := $v.obj.buckets }}
 {{- $harborDomain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $notaryDomain := printf "notary.%s" $v.cluster.domainSuffix }}
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
@@ -183,7 +182,7 @@ persistence:
       v4auth: true
       {{- end }}
       {{- if eq $obj.type "linode" }}
-      bucket: {{ $bu.harbor }}
+      bucket: {{ $obj.linode.buckets.harbor }}
       regionendpoint: https://{{ $obj.linode.region }}.linodeobjects.com
       accesskey: {{ $obj.linode.accessKeyId }}               
       secretkey: {{ $obj.linode.secretAccessKey }}

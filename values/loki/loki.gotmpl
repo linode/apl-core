@@ -1,7 +1,6 @@
 {{- $v := .Values -}}
 {{- $l:= $v.apps.loki }}
 {{- $obj := $v.obj.provider }}
-{{- $bu := $v.obj.buckets }}
 {{- $useObjectStorage := eq $obj.type "minioLocal" "linode" }}
 
 nameOverride: loki
@@ -51,11 +50,11 @@ loki:
     {{- if $useObjectStorage }}
     aws:
       {{- if eq $obj.type "minioLocal" }}
-      s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/{{ $bu.loki }}
+      s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/loki
       s3forcepathstyle: true
       {{- end }}
       {{- if eq $obj.type "linode" }}
-      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $bu.loki }}     
+      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}     
       s3forcepathstyle: true
       sse_encryption: false
       http_config:
