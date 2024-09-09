@@ -47,6 +47,7 @@ export const bootstrapSops = async (
   const targetPath = `${envDir}/.sops.yaml`
   const settingsFile = `${envDir}/env/settings.yaml`
   const settingsVals = (await deps.loadYaml(settingsFile)) as Record<string, any>
+  const secretsSettingsFile = `${envDir}/env/secrets.settings.yaml`
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) {
     d.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
@@ -62,43 +63,26 @@ export const bootstrapSops = async (
     keys: kmsKeys,
   }
 
-  const generateAgeKey = async () => {
-    try {
-      const result = await $`age-keygen`
-      return result
-    } catch (error) {
-      d.error('Error generating age keys:', error)
-      throw error
-    }
-  }
-
   if (provider === 'age') {
-    const { SOPS_AGE_KEY } = process.env
-    let { publicKey, privateKey } = settingsVals?.kms?.sops?.age ?? {}
-    d.log('publicKey:', publicKey)
-    d.log('privateKey:', privateKey)
-    const secrets = (await deps.loadYaml(`${envDir}/env/secrets.settings.yaml`)) as Record<string, any>
-    d.log('secrets', secrets)
-    if (SOPS_AGE_KEY) {
-      obj.keys = publicKey
-      d.log('Skipping age key generation, using existing key')
-      return
-    }
-    if (!publicKey || !privateKey) {
-      d.log('Generating age key pair')
-      const { stdout } = await generateAgeKey()
-      const matchPublic = stdout?.match(/age[0-9a-z]+/)
-      publicKey = matchPublic ? matchPublic[0] : ''
-      const matchPrivate = stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
-      privateKey = matchPrivate ? matchPrivate[0] : ''
-
-      const ageKeys = { kms: { sops: { age: { publicKey, privateKey } } } }
-      await writeValues(ageKeys)
-      await deps.writeFile(`${env.ENV_DIR}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
+    const { publicKey } = settingsVals?.kms?.sops?.age ?? {}
+    let privateKey = ''
+    const isSecretsDecrypted = await deps.pathExists(`${secretsSettingsFile}.dec`)
+    if (!isSecretsDecrypted) {
+      const encryptedSettings = (await deps.loadYaml(secretsSettingsFile)) as Record<string, any>
+      const encPrivateKey = encryptedSettings?.kms?.sops?.age?.privateKey
+      if (!encPrivateKey.startsWith('ENC')) {
+        privateKey = encPrivateKey
+      }
+    } else {
+      const decryptedSettings = (await deps.loadYaml(`${secretsSettingsFile}.dec`)) as Record<string, any>
+      privateKey = decryptedSettings?.kms?.sops?.age?.privateKey
     }
     obj.keys = publicKey
     process.env.SOPS_AGE_KEY = privateKey
-    d.log('env:', process.env)
+    await deps.writeFile(`${env.ENV_DIR}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
+    d.log('publicKey:', publicKey)
+    d.log('privateKey:', privateKey)
+    d.log('SOPS_AGE_KEY', process.env.SOPS_AGE_KEY)
   }
 
   const exists = await deps.pathExists(targetPath)
@@ -181,6 +165,36 @@ export const getStoredClusterSecrets = async (
   return undefined
 }
 
+export const generateAgeKeys = async () => {
+  const d = terminal(`cmd:${cmdName}:generateAgeKeys`)
+  try {
+    const result = await $`age-keygen`
+    const { stdout } = result
+    const matchPublic = stdout?.match(/age[0-9a-z]+/)
+    const publicKey = matchPublic ? matchPublic[0] : ''
+    const matchPrivate = stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
+    const privateKey = matchPrivate ? matchPrivate[0] : ''
+    const ageKeys = { publicKey, privateKey }
+    d.log('ageKeys', ageKeys)
+    return ageKeys
+  } catch (error) {
+    d.log('Error generating age keys:', error)
+    throw error
+  }
+}
+
+export const getKmsValues = async (originalValues: any) => {
+  const kms = originalValues?.kms
+  if (!kms) return {}
+  const provider = kms?.sops?.provider
+  if (!provider) return {}
+  if (provider !== 'age') return { kms }
+  const age = kms?.sops?.age
+  if (age?.publicKey && age?.privateKey) return { kms }
+  const ageKeys = await generateAgeKeys()
+  return { kms: { sops: { age: ageKeys } } }
+}
+
 export const copyBasicFiles = async (
   deps = { copy, copyFile, copySchema, mkdir, pathExists, terminal },
 ): Promise<void> => {
@@ -244,11 +258,13 @@ export const processValues = async (
   const { ENV_DIR, VALUES_INPUT } = env
   let originalInput: Record<string, any> | undefined
   let storedSecrets: Record<string, any> | undefined
+  let kmsValues: Record<string, any> | undefined
   if (deps.isChart) {
     d.log(`Loading app values from ${VALUES_INPUT}`)
     const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
     storedSecrets = (await deps.getStoredClusterSecrets()) || {}
-    originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
+    kmsValues = await getKmsValues(originalValues)
+    originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues), cloneDeep(kmsValues))
     await deps.writeValues(originalInput)
   } else {
     d.log(`Loading repo values from ${ENV_DIR}`)
