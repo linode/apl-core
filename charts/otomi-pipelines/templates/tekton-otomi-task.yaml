@@ -61,13 +61,6 @@ spec:
         {{- else}}
         git clone --depth 1 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- end }}
-    - name: initwait
-      computeResources: {}
-      command:
-        - '/bin/bash'
-      args:
-        - '-c'
-        - 'sleep 300'
     - name: bootstrap
       computeResources: {}
       command:
@@ -82,13 +75,6 @@ spec:
       args:
         - '-c'
         - 'binzx/otomi validate-values'
-    - name: wait
-      computeResources: {}
-      command:
-        - '/bin/bash'
-      args:
-        - '-c'
-        - 'sleep 300'
     - name: apply
       computeResources: {}
       script: |
