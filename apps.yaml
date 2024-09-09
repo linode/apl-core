@@ -303,7 +303,6 @@ appsInfo:
     license: Apache 2.0
     about: Sealed Secrets is a Kubernetes Custom Resource Definition Controller which allows you to store even sensitive information in Git repositories.
     integration: APL uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
-    isBeta: true
   tempo:
     title: Tempo
     appVersion: 2.1.1
