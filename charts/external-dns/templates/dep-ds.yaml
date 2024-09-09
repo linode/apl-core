@@ -311,14 +311,14 @@ spec:
             - name: EXTERNAL_DNS_AKAMAI_SERVICECONSUMERDOMAIN
               value: {{ .Values.akamai.host }}
             {{- end }}
-            {{- if .Values.akamai.accessToken }}
+            {{- if or (.Values.akamai.accessToken) (.Values.akamai.secretName) }}
             - name: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: {{ template "external-dns.secretName" . }}
                   key: akamai_access_token
             {{- end }}
-            {{- if .Values.akamai.clientToken }}
+            {{- if or (.Values.akamai.clientToken) (.Values.akamai.secretName) }}
             - name: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
               valueFrom:
                 secretKeyRef:

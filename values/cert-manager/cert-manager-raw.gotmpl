@@ -54,13 +54,13 @@ resources:
               akamai:
                 serviceConsumerDomain: {{ .host }}
                 accessTokenSecretRef:
-                  name: {{ template "external-dns.secretName" . }}
+                  name: {{ . | get "secretName" "external-dns" }}
                   key: akamai_access_token
                 clientTokenSecretRef:
-                  name: {{ template "external-dns.secretName" . }}
+                  name: {{ . | get "secretName" "external-dns" }}
                   key: akamai_client_token
                 clientSecretSecretRef:
-                  name: {{ template "external-dns.secretName" . }}
+                  name: {{ . | get "secretName" "external-dns" }}
                   key: akamai_client_secret
               {{- end }}
               {{- with $p | get "aws" nil }}
