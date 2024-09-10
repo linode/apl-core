@@ -80,6 +80,7 @@ export const bootstrapSops = async (
     obj.keys = publicKey
     if (privateKey && !process.env.SOPS_AGE_KEY) {
       process.env.SOPS_AGE_KEY = privateKey
+      await deps.writeFile(`${env.ENV_DIR}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
     }
   }
 
