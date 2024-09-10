@@ -78,7 +78,9 @@ export const bootstrapSops = async (
       privateKey = decryptedSettings?.kms?.sops?.age?.privateKey
     }
     obj.keys = publicKey
-    process.env.SOPS_AGE_KEY = privateKey
+    if (privateKey && !process.env.SOPS_AGE_KEY) {
+      process.env.SOPS_AGE_KEY = privateKey
+    }
   }
 
   const exists = await deps.pathExists(targetPath)
