@@ -79,10 +79,6 @@ export const bootstrapSops = async (
     }
     obj.keys = publicKey
     process.env.SOPS_AGE_KEY = privateKey
-    await deps.writeFile(`${env.ENV_DIR}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
-    d.log('publicKey:', publicKey)
-    d.log('privateKey:', privateKey)
-    d.log('SOPS_AGE_KEY', process.env.SOPS_AGE_KEY)
   }
 
   const exists = await deps.pathExists(targetPath)
@@ -165,17 +161,17 @@ export const getStoredClusterSecrets = async (
   return undefined
 }
 
-export const generateAgeKeys = async () => {
-  const d = terminal(`cmd:${cmdName}:generateAgeKeys`)
+export const generateAgeKeys = async (deps = { $, terminal }) => {
+  const d = deps.terminal(`cmd:${cmdName}:generateAgeKeys`)
   try {
-    const result = await $`age-keygen`
+    d.info('Generating age keys')
+    const result = await deps.$`age-keygen`
     const { stdout } = result
     const matchPublic = stdout?.match(/age[0-9a-z]+/)
     const publicKey = matchPublic ? matchPublic[0] : ''
     const matchPrivate = stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
     const privateKey = matchPrivate ? matchPrivate[0] : ''
     const ageKeys = { publicKey, privateKey }
-    d.log('ageKeys', ageKeys)
     return ageKeys
   } catch (error) {
     d.log('Error generating age keys:', error)
@@ -183,16 +179,16 @@ export const generateAgeKeys = async () => {
   }
 }
 
-export const getKmsValues = async (originalValues: any) => {
+export const getKmsValues = async (originalValues: any, deps = { generateAgeKeys }) => {
   const kms = originalValues?.kms
-  if (!kms) return {}
+  if (!kms) return undefined
   const provider = kms?.sops?.provider
   if (!provider) return {}
   if (provider !== 'age') return { kms }
   const age = kms?.sops?.age
   if (age?.publicKey && age?.privateKey) return { kms }
-  const ageKeys = await generateAgeKeys()
-  return { kms: { sops: { age: ageKeys } } }
+  const ageKeys = await deps.generateAgeKeys()
+  return { kms: { sops: { provider: 'age', age: ageKeys } } }
 }
 
 export const copyBasicFiles = async (
@@ -245,6 +241,7 @@ export const processValues = async (
     loadYaml,
     decrypt,
     getStoredClusterSecrets,
+    getKmsValues,
     writeValues,
     pathExists,
     hfValues,
@@ -263,7 +260,7 @@ export const processValues = async (
     d.log(`Loading app values from ${VALUES_INPUT}`)
     const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
     storedSecrets = (await deps.getStoredClusterSecrets()) || {}
-    kmsValues = await getKmsValues(originalValues)
+    kmsValues = (await deps.getKmsValues(originalValues)) || {}
     originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues), cloneDeep(kmsValues))
     await deps.writeValues(originalInput)
   } else {
