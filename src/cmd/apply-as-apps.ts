@@ -43,6 +43,17 @@ const getAppName = (release: HelmRelease): string => {
 }
 
 const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>, otomiVersion) => {
+  const releases = [
+    'tempo',
+    'thanos',
+    'cert-manager',
+    'cloudnative-pg',
+    'prometheus-operator',
+    'tekton-pipelines',
+    'tekton-triggers',
+  ]
+  const releaseNameMatches = releases.includes(release.name) || /^nginx-.*/.test(release.name)
+
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
@@ -52,7 +63,7 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
         'otomi.io/app': 'managed',
       },
       namespace: 'argocd',
-      annotations: ['tempo', 'thanos'].includes(release.name)
+      annotations: releaseNameMatches
         ? {
             'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
           }
