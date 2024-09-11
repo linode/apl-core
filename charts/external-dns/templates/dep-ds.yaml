@@ -311,19 +311,13 @@ spec:
             - name: EXTERNAL_DNS_AKAMAI_SERVICECONSUMERDOMAIN
               value: {{ .Values.akamai.host }}
             {{- end }}
-            {{- if or (.Values.akamai.accessToken) (.Values.akamai.secretName) }}
+            {{- if .Values.akamai.accessToken }}
             - name: EXTERNAL_DNS_AKAMAI_ACCESS_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "external-dns.secretName" . }}
-                  key: akamai_access_token
+              value: {{ .Values.akamai.accessToken }}
             {{- end }}
-            {{- if or (.Values.akamai.clientToken) (.Values.akamai.secretName) }}
+            {{- if .Values.akamai.clientToken }}
             - name: EXTERNAL_DNS_AKAMAI_CLIENT_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "external-dns.secretName" . }}
-                  key: akamai_client_token
+              value: {{ .Values.akamai.clientToken }}
             {{- end }}
             {{- if or (.Values.akamai.clientSecret) (.Values.akamai.secretName) }}
             - name: EXTERNAL_DNS_AKAMAI_CLIENT_SECRET
