@@ -380,8 +380,7 @@ environments:
                     cpu: "1"
                     memory: 1Gi
             resources:
-              egressGateway:
-                resources:
+              egressgateway:
                   requests:
                     cpu: 100m
                     memory: 128Mi
@@ -389,7 +388,6 @@ environments:
                     cpu: "1"
                     memory: 256Mi
               ingressgateway:
-                resources:
                   requests:
                     cpu: 100m
                     memory: 128Mi
@@ -397,7 +395,6 @@ environments:
                     cpu: "1"
                     memory: 256Mi
               pilot:
-                resources:
                   requests:
                     cpu: 100m
                     memory: 128Mi
