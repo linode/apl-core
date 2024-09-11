@@ -51,6 +51,8 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
     'prometheus-operator',
     'tekton-pipelines',
     'tekton-triggers',
+    'jaeger-operator',
+    'otel-operator',
   ]
   const releaseNameMatches = releases.includes(release.name) || /^nginx-.*/.test(release.name)
 
