@@ -46,35 +46,35 @@ environments:
                   cpu: 100m
                   memory: 512M
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               repo:
                 requests:
                   cpu: 100m
                   memory: 512M
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               redis:
                 requests:
                   cpu: 50m
                   memory: 64Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               applicationSet:
                 requests:
                   cpu: 100m
                   memory: 256M
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               notifications:
                 requests:
                   cpu: 100m
                   memory: 64M
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               imageUpdater:
                 requests:
@@ -82,7 +82,7 @@ environments:
                   cpu: 50m
                 limits:
                   memory: 1Gi
-                  cpu: 1
+                  cpu: "1"
             _rawValues: {}
           cert-manager:
             issuer: custom-ca
@@ -91,7 +91,7 @@ environments:
                 cpu: 50m
                 memory: 64Mi
               limits:
-                cpu: 1
+                cpu: "1"
                 memory: 512Mi
             _rawValues: {}
           cnpg:
@@ -100,7 +100,7 @@ environments:
                 cpu: 100m
                 memory: 128Mi
               limits:
-                cpu: 1
+                cpu: "1"
                 memory: 1Gi
             _rawValues: {}
           drone:
@@ -213,7 +213,7 @@ environments:
                   cpu: 100m
                   memory: 512Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               falcoCtlFollow:
                 requests:
@@ -351,7 +351,7 @@ environments:
                 cpu: 200m
                 memory: 512Mi
               limits:
-                cpu: 2
+                cpu: "2"
                 memory: 2Gi
             _rawValues: {}
           istio:
@@ -377,7 +377,7 @@ environments:
                     cpu: 20m
                     memory: 128Mi
                   limits:
-                    cpu: 1
+                    cpu: "1"
                     memory: 1Gi
             resources:
               egressGateway:
@@ -386,7 +386,7 @@ environments:
                     cpu: 100m
                     memory: 128Mi
                   limits:
-                    cpu: 1
+                    cpu: "1"
                     memory: 256Mi
               ingressgateway:
                 resources:
@@ -394,7 +394,7 @@ environments:
                     cpu: 100m
                     memory: 128Mi
                   limits:
-                    cpu: 1
+                    cpu: "1"
                     memory: 256Mi
               pilot:
                 resources:
@@ -402,7 +402,7 @@ environments:
                     cpu: 100m
                     memory: 128Mi
                   limits:
-                    cpu: 2
+                    cpu: "2"
                     memory: 2Gi
             _rawValues: {}
           jaeger:
@@ -417,14 +417,14 @@ environments:
                   cpu: 200m
                   memory: 512Mi
                 limits:
-                  cpu: 2
+                  cpu: "2"
                   memory: 2Gi
               operator:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 512Mi
             idp:
               alias: otomi-idp
@@ -438,14 +438,14 @@ environments:
                   cpu: 200m
                   memory: 256Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               operator:
                 requests:
-                  cpu: 1
+                  cpu: "1"
                   memory: 512Mi
                 limits:
-                  cpu: 2
+                  cpu: "2"
                   memory: 1Gi
             _rawValues: {}
           knative:
@@ -473,28 +473,28 @@ environments:
                   cpu: 200m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 512Mi
               cleanupController:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 512Mi
               backgroundController:
                 requests:
                   cpu: 50m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 512Mi
               reportsController:
                 requests:
                   cpu: 50m
                   memory: 128Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 512Mi
             _rawValues: {}
           tekton:
@@ -605,7 +605,7 @@ environments:
                 cpu: 500m
                 memory: 128Mi
               limits:
-                cpu: 1
+                cpu: "1"
                 memory: 1Gi
             _rawValues: {}
           oauth2-proxy:
@@ -744,7 +744,7 @@ environments:
                   cpu: 50m
                   memory: 64Mi
                 limits:
-                  cpu: 2
+                  cpu: "2"
                   memory: 1Gi
             _rawValues: {}
           tempo:
@@ -852,14 +852,14 @@ environments:
                   cpu: 100m
                   memory: 256Mi
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1Gi
               trivy:
                 requests:
                   cpu: 100m
                   memory: 128M
                 limits:
-                  cpu: 1
+                  cpu: "1"
                   memory: 1G
             _rawValues: {}
           velero:
@@ -872,7 +872,7 @@ environments:
                 cpu: 500m
                 memory: 128Mi
               limits:
-                cpu: 1
+                cpu: "1"
                 memory: 512Mi
             _rawValues: {}
         databases:
