@@ -28,13 +28,6 @@ spec:
   resources:
     {{- with .Values.resources }}
     {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 100m
-      memory: 512Mi
-    requests:
-      cpu: 50m
-      memory: 256Mi
     {{- end }}
   {{- with .Values.clusterAffinity }}
   {{- toYaml . | nindent 2 }}
