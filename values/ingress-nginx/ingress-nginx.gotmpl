@@ -5,7 +5,6 @@
 {{/* appDefaults - each ingress-nginx Helm realse will use default values defined in defaults.yaml in app.ingress-nginx context*/}}
 {{- $appDefaults := $v | get "apps.ingress-nginx" }}
 {{- $n := deepCopy $appDefaults | merge $app }}
-{{- $privateNetwork := eq "private" ($ingress | get "network" "public")  }}
 
 nameOverride: {{ .Release.Name }}
 

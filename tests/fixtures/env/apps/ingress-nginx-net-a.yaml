@@ -9,6 +9,10 @@ apps:
                     modsecurity-snippet: |
                         SecRuleRemoveById 911101
         maxBodySize: 1024m
+        service:
+            annotations:
+                - key: service.beta.kubernetes.io/azure-load-balancer-internal
+                  value: 'true'
         modsecurity:
             enabled: true
         resources:

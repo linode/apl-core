@@ -448,7 +448,6 @@ definitions:
         type: string
         enum:
           - public
-          - private
         default: public
       loadBalancerIP:
         title: Load balancer IP address

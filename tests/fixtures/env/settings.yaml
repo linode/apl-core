@@ -26,14 +26,9 @@ e2e:
     enabled: false
 ingress:
     classes:
-        - className: private
-          entrypoint: ''
-          loadBalancerSubnet: subnet
-          network: private
         - className: net-a
           entrypoint: ''
           loadBalancerIP: 11.0.0.1
-          loadBalancerRG: myrg
           network: public
           sourceIpAddressFiltering: 10.0.0.0/24
     platformClass:
