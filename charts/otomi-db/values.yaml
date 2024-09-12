@@ -11,6 +11,8 @@ walStorage:
   storageClass: ""
   size: 5Gi
 
+resources: {}
+
 monitoring: true
 
 clusterAffinity:
