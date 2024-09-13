@@ -919,7 +919,6 @@ environments:
         ingress:
           platformClass:
             className: platform
-            network: public
           classes: []
         alerts:
           receivers:
