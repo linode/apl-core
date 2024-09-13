@@ -334,14 +334,6 @@ environments:
               enabled: false
               block: false
               owasp: true
-            private:
-              enabled: false
-              autoscaling:
-                enabled: true
-                minReplicas: 2
-                maxReplicas: 10
-            service:
-              annotations: {}
             tracing:
               enabled: false
               samplingRatio: "0.01"
@@ -928,7 +920,6 @@ environments:
         ingress:
           platformClass:
             className: platform
-            network: public
           classes: []
         alerts:
           receivers:
