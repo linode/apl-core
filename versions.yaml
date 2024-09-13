@@ -1,4 +1,4 @@
 api: main
-console: main
+console: dvk-keycloak-tab-name
 tasks: main
 tools: 2.4.0
