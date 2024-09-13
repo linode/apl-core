@@ -333,8 +333,6 @@ environments:
               enabled: false
               block: false
               owasp: true
-            service:
-              annotations: {}
             tracing:
               enabled: false
               samplingRatio: "0.01"

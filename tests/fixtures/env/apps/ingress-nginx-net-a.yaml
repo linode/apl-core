@@ -12,7 +12,7 @@ apps:
         service:
             annotations:
                 - key: service.beta.kubernetes.io/azure-load-balancer-internal
-                  value: 'true'
+                  value: true
         modsecurity:
             enabled: true
         resources:

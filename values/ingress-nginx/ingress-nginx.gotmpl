@@ -123,11 +123,11 @@ controller:
     {{- end }}
     annotations:
       dummy: 'true'
-    {{- with $n | get "service.annotations" nil }}
+    {{- with $ingress | get "annotations" nil }}
       {{- range . }}
       {{ .key }}: "{{ .value }}"
       {{- end }}
-    {{- end }}
+    {{- end }}   
   publishService:
     enabled: true
 
