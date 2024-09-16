@@ -1692,6 +1692,8 @@ properties:
           logLevel:
             type: string
             default: 'info'
+          resources:
+            $ref: '#/definitions/resources'
       falco:
         additionalProperties: false
         properties:
@@ -2572,7 +2574,7 @@ properties:
             properties:
               linode:
                 properties:
-                  apiKey:
+                  apiToken:
                     type: string
                     x-secret: ''
                 required:
