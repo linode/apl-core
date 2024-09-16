@@ -136,6 +136,34 @@ definitions:
       targetMemoryUtilizationPercentage:
         type: integer
         default: 80
+  akamai:
+    definitions:
+      dns:
+        properties:
+          host:
+            title: Akamai API host
+            description: Akamai Edgegrid API server
+            $ref: '#/definitions/wordCharacterPattern'
+          accessToken:
+            title: Akamai access token
+            description: Akamai Edgegrid API access token
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
+          clientToken:
+            title: Akamai client token
+            description: Akamai Edgegrid API client token
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
+          clientSecret:
+            title: Akamai client secret
+            description: Akamai Edgegrid API client secret
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
+        required:
+          - host
+          - accessToken
+          - clientToken
+          - clientSecret
   aws:
     definitions:
       accessKey:
@@ -2503,6 +2531,13 @@ properties:
       provider:
         description: The DNS provider managing the domains.
         oneOf:
+          - title: Akamai EdgeDNS
+            additionalProperties: false
+            properties:
+              akamai:
+                $ref: '#/definitions/akamai/definitions/dns'
+            required:
+              - akamai
           - title: AWS
             description: Uses credentials when either a pair of id+key or a secret name is provided. Assumes node role otherwise.
             additionalProperties: false
