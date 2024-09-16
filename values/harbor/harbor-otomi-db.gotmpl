@@ -36,14 +36,4 @@ clusterSpec:
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
 
-resources:
-  {{- with $hdb | get "resources" nil }}
-  {{- toYaml . | nindent 6 }}
-  {{- else }}
-  limits:
-    cpu: 100m
-    memory: 512Mi
-  requests:
-    cpu: 50m
-    memory: 256Mi
-  {{- end }}
+resources: {{- toYaml $hdb.resources | nindent 2 }}

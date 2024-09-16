@@ -476,7 +476,6 @@ definitions:
         type: string
         enum:
           - public
-          - private
         default: public
       loadBalancerIP:
         title: Load balancer IP address
@@ -486,7 +485,10 @@ definitions:
         title: Source IP address filtering
         type: string
         description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
-
+      annotations:
+        properties:
+          annotations:
+            $ref: '#/definitions/annotations'
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
@@ -1718,6 +1720,8 @@ properties:
           logLevel:
             type: string
             default: 'info'
+          resources:
+            $ref: '#/definitions/resources'
       falco:
         additionalProperties: false
         properties:
@@ -2605,7 +2609,7 @@ properties:
             properties:
               linode:
                 properties:
-                  apiKey:
+                  apiToken:
                     type: string
                     x-secret: ''
                 required:
