@@ -114,6 +114,7 @@ environments:
             logLevel: info
           falco:
             enabled: false
+            driver: ebpf
             _rawValues:
               customRules:
                 otomi-rules.yaml: >-
