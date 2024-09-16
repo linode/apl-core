@@ -66,14 +66,4 @@ clusterSpec:
       localeCType: 'en_US.UTF-8'
 {{- end }}
 
-resources:
-  {{- with $gdb | get "resources" nil }}
-  {{- toYaml . | nindent 6 }}
-  {{- else }}
-  limits:
-    cpu: 100m
-    memory: 512Mi
-  requests:
-    cpu: 50m
-    memory: 256Mi
-  {{- end }}
+resources: {{- toYaml $gdb.resources | nindent 2 }}
