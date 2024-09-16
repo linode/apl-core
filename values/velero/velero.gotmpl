@@ -60,7 +60,7 @@ configuration:
   defaultBackupStorageLocation: apl
   {{- if eq $obj.type "minioLocal" }}
   backupStorageLocation:
-  - name: apl-minio
+  - name: apl
     provider: aws
     default: true
     bucket: velero  
@@ -72,7 +72,7 @@ configuration:
   {{- end }}
   {{- if eq $obj.type "linode" }}
   backupStorageLocation:
-  - name: apl-linode
+  - name: apl
     provider: aws
     default: true
     bucket: {{ $obj.linode.buckets.velero }} 
@@ -83,7 +83,7 @@ configuration:
   {{- end }}
   {{- if eq $v.cluster.provider "linode" }}
   volumeSnapshotLocation:
-  - name: apl-linode
+  - name: apl
     provider: linode.com/velero
   {{- end }}
   # if set Velero will back up all pod volumes using Restic with the exception of service account tokens, secrets, config maps and hostpath volumes
