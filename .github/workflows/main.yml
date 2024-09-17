@@ -10,6 +10,8 @@ env:
   CACHE_REPO: redkubes/otomi-core
   REPO: otomi/core
   GIT_USER: redkubesbot
+  BOT_USERNAME: svcAPLBot
+
 
 jobs:
   build-test-cache:
