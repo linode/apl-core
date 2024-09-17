@@ -14,7 +14,6 @@
 <p align="center">
   <a href="https://img.shields.io/badge/contributions-welcome-orange.svg"><img alt="Contributions" src="https://img.shields.io/badge/contributions-welcome-orange.svg" /></a>
   <a href="https://apl-docs.net/"><img src="https://img.shields.io/website-up-down-green-red/http/shields.io.svg" alt="Website apl-docs.net"></a>
-  <a href="https://join.slack.com/t/otomi/shared_invite/zt-1axa4vima-E~LHN36nbLR~ay5r5pGq9A"><img src="https://img.shields.io/badge/slack--channel-blue?logo=slack"></a>
 </p>
 
 <p align="center"><img src="https://github.com/linode/apl-core/blob/main/docs/img/apl-console.png/?raw=true" width="100%" align="center" alt="APL Console"></p>
@@ -23,19 +22,16 @@
 
 ### Helm
 
-To install APL, make sure to have a Kubernetes cluster running with at least:
+To install Application Platform for LKE, make sure to have a Kubernetes cluster running with at least:
 
 - Version `1.28`, `1.29` or `1.30`
-- A node pool with at least **8 vCPU** and **16GB+ RAM** (more resources might be required based on the activated capabilities)
+- A node pool with **8 vCPU** and **24GB RAM**
 - Calico CNI installed (or any other CNI that supports K8s network policies)
 - A default storage class configured
 - When using the `custom` provider, make sure the K8s LoadBalancer Service created by APL can obtain an external IP (using a cloud load balancer or MetalLB)
 
-> [!NOTE]  
-> The transition from Otomi to APL is still in progress. Installing APL will use the latest Otomi release (v2.11.5).
-
-> [!TIP]  
-> Install APL with DNS to unlock it's full potential. Check [here](https://apl-docs.net) for more info.
+> [TIP]  
+> Install APL with DNS to unlock it's full potential. Check [here](https://apl-docs.net/docs/get-started/installation/dns) for more information.
 
 Add the Helm repository:
 
@@ -47,16 +43,18 @@ helm repo update
 and then install the Helm chart:
 
 ```bash
-helm install apl apl/otomi \
+helm install apl apl/apl \
 --set cluster.name=$CLUSTERNAME \
 --set cluster.provider=$PROVIDER # use 'linode' for LKE or 'custom' for any other cloud/infrastructure
 ```
 
-When the installer job is completed, follow the [activation steps](https://apl-docs.net/docs/get-started/activation).
+When the installer job is completed, follow the [post installation steps](https://apl-docs.net/docs/get-started/installation/post-installation-steps).
 
 ## Integrations
 
-**Core Applications (that are always installed):**
+**Core Applications**
+
+Get instant access to the following pre-configured Kubernetes Apps:
 
 - [Istio](https://github.com/istio/istio): The service mesh framework with end-to-end transit encryption
 - [Argo CD](https://github.com/argoproj/argo-cd): Declarative Continuous Deployment
@@ -69,16 +67,18 @@ When the installer job is completed, follow the [activation steps](https://apl-d
 - [Tekton dashboard](https://github.com/tektoncd/dashboard): Web-based UI for Tekton Pipelines and Tekton Triggers
 - [Gitea](https://github.com/go-gitea/gitea): Self-hosted Git service
 - [Cloudnative-pg](https://github.com/cloudnative-pg/cloudnative-pg): Open source operator designed to manage PostgreSQL workloads
+- [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets): Encrypt your Secret into a SealedSecret, which is safe to store - even inside a public repository
 
-**Optional Applications (that you can activate to compose your ideal platform):**
+**Optional Applications**
+
+One-click actication of the following Kubernetes Apps:
 
 - [Velero](https://github.com/vmware-tanzu/velero): Back up and restore your Kubernetes cluster resources and persistent volumes
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
-- [Drone](https://github.com/harness/drone): Continuous integration platform built on Docker
 - [Prometheus](https://github.com/prometheus/prometheus): Collecting container application metrics
 - [Grafana](https://github.com/grafana/grafana): Visualize metrics, logs, and traces from multiple sources
 - [Grafana Loki](https://github.com/grafana/loki): Collecting container application logs
-- [Harbor](https://github.com/goharbor/harbor): Container image registry with role-based access control, image scanning, and image signing
+- [Harbor](https://github.com/goharbor/harbor): Container image registry with role-based access control and image scanning
 - [Kyverno](https://github.com/kyverno/kyverno): Kubernetes native policy management
 - [Jaeger](https://github.com/jaegertracing/jaeger): End-to-end distributed tracing and monitor for complex distributed systems
 - [Kiali](https://github.com/kiali/kiali): Observe Istio service mesh relations and connections
@@ -87,8 +87,6 @@ When the installer job is completed, follow the [activation steps](https://apl-d
 - [Falco](https://github.com/falcosecurity/falco): Cloud Native Runtime Security
 - [Grafana Tempo](https://github.com/grafana/tempo): High-scale distributed tracing backend
 - [OpenTelemetry](https://github.com/open-telemetry/opentelemetry-operator): Instrument, generate, collect, and export telemetry data to help you analyze your software’s performance and behavior
-- [Paketo build packs](https://github.com/paketo-buildpacks): Cloud Native Buildpack implementations for popular programming
-- [Kaniko](https://github.com/GoogleContainerTools/kaniko): Build container images from a Dockerfile
 
 ## Documentation
 
