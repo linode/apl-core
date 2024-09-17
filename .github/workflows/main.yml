@@ -46,7 +46,7 @@ jobs:
         with:
           push: true
           tags: |
-            ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
+            ${{ env.CACHE_REPO }}:${{ env.TAG }}
 
   push-to-docker:
     needs: build-test-cache
