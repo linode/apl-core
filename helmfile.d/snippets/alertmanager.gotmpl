@@ -1,16 +1,14 @@
 {{- $receivers := .instance | get "alerts.receivers" (.root | get "alerts.receivers" (list "slack")) }}
 {{- $suffix := (true | ternary "" ".monitoring.svc.cluster.local") }}
-{{- $homeReceivers := .root | get "home.receivers" (list "slack") }}
-{{- $isHomeMonitored:= .root | get "otomi.isHomeMonitored" }}
 global:
-{{- if or (has "slack" $receivers ) (and $isHomeMonitored (has "slack" $homeReceivers)) }}
+{{- if (has "slack" $receivers ) }}
   slack_api_url: {{ .instance | get "alerts.slack.url" (.root | get "alerts.slack.url" (.root | get "home.slack.url" nil)) }}
 {{- end }}
-{{- if or (has "opsgenie" $receivers ) (and $isHomeMonitored (has "opsgenie" $homeReceivers)) }}
+{{- if (has "opsgenie" $receivers ) }}
   opsgenie_api_key: {{ .instance | get "alerts.opsgenie.apiKey" (.root | get "alerts.opsgenie.apiKey" (.root | get "home.opsgenie.apiKey" nil)) }}
   opsgenie_api_url: {{ .instance | get "alerts.opsgenie.url" (.root | get "alerts.opsgenie.url" (.root | get "home.opsgenie.url" nil)) }}
 {{- end }}
-{{- if or (has "email" $receivers) (and $isHomeMonitored (has "email" $homeReceivers))  }}
+{{- if or (has "email" $receivers) }}
   smtp_smarthost: {{ .root | get "smtp.smarthost" }}
   smtp_hello: {{ .root | get "smtp.hello" .root.cluster.domainSuffix }}
   smtp_from: {{ .root | get "smtp.from" (print "alerts@" .root.cluster.domainSuffix) }}
@@ -51,16 +49,6 @@ route:
       {{- else }}
       receiver: critical
       {{- end }}
-    {{- if $isHomeMonitored }}
-      continue: true
-    - match:
-        severity: critical
-      {{- if (has "none" $receivers ) }}
-      receiver: "null"
-      {{- else }}
-      receiver: critical-home
-      {{- end }}
-    {{- end }}
 receivers:
   - name: "null"
 {{- if not (has "none" $receivers ) }}
@@ -114,36 +102,6 @@ receivers:
     {{- end }}
   {{- if has "email" $receivers }}
   {{- $criticalTo := .instance | get "alerts.email.critical" (.root | get "alerts.email.critical" nil) }}
-    {{- if $criticalTo }}
-    email_configs:
-      - to: {{ $criticalTo }}
-        send_resolved: true
-    {{- end }}
-  {{- end }}
-{{- end }}
-
-{{- if $isHomeMonitored }}
-  - name: critical-home
-  {{- $receivers := .root.home | get "receivers" }}
-    # sending criticals also to home to be aware of issues
-  {{- if has "slack" $receivers  }}
-    slack_configs:
-      - channel: "#{{ .root | get "home.slack.channelCrit" "mon-otomi-crit" }}"
-        {{- .slackTpl | nindent 8 }}
-  {{- end }}
-  {{- if has "opsgenie" $receivers  }}
-    opsgenie_configs:
-      - priority: "P1"
-        send_resolved: true
-        {{- .opsgenieTpl | nindent 8 }}
-  {{- end }}
-  {{- if has "msteams" $receivers  }}
-    webhook_configs:
-      - url: "http://prometheus-msteams.monitoring.svc.cluster.local:800/high_priority_channel"
-        send_resolved: true
-  {{- end }}
-  {{- if has "email" $receivers  }}
-    {{- $criticalTo := .root | get "home.email.critical" nil }}
     {{- if $criticalTo }}
     email_configs:
       - to: {{ $criticalTo }}

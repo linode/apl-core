@@ -8,15 +8,6 @@ definitions:
   alerts:
     additionalProperties: false
     properties:
-      drone:
-        items:
-          enum:
-            - slack
-            - msteams
-            - opsgenie
-          type: string
-        type: array
-        uniqueItems: true
       email:
         additionalProperties: false
         properties:
@@ -145,6 +136,34 @@ definitions:
       targetMemoryUtilizationPercentage:
         type: integer
         default: 80
+  akamai:
+    definitions:
+      dns:
+        properties:
+          host:
+            title: Akamai API host
+            description: Akamai Edgegrid API server
+            $ref: '#/definitions/wordCharacterPattern'
+          accessToken:
+            title: Akamai access token
+            description: Akamai Edgegrid API access token
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
+          clientToken:
+            title: Akamai client token
+            description: Akamai Edgegrid API client token
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
+          clientSecret:
+            title: Akamai client secret
+            description: Akamai Edgegrid API client secret
+            $ref: '#/definitions/wordCharacterPattern'
+            x-secret: ''
+        required:
+          - host
+          - accessToken
+          - clientToken
+          - clientSecret
   aws:
     definitions:
       accessKey:
@@ -457,7 +476,6 @@ definitions:
         type: string
         enum:
           - public
-          - private
         default: public
       loadBalancerIP:
         title: Load balancer IP address
@@ -467,7 +485,10 @@ definitions:
         title: Source IP address filtering
         type: string
         description: 'Whitelist source IP address ranges. The value is a comma separated list of CIDRs, e.g. 10.0.0.0/24,172.10.0.1'
-
+      annotations:
+        properties:
+          annotations:
+            $ref: '#/definitions/annotations'
   ipV4Address:
     type: string
     pattern: ^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$
@@ -1699,6 +1720,8 @@ properties:
           logLevel:
             type: string
             default: 'info'
+          resources:
+            $ref: '#/definitions/resources'
       falco:
         additionalProperties: false
         properties:
@@ -2508,6 +2531,13 @@ properties:
       provider:
         description: The DNS provider managing the domains.
         oneOf:
+          - title: Akamai EdgeDNS
+            additionalProperties: false
+            properties:
+              akamai:
+                $ref: '#/definitions/akamai/definitions/dns'
+            required:
+              - akamai
           - title: AWS
             description: Uses credentials when either a pair of id+key or a secret name is provided. Assumes node role otherwise.
             additionalProperties: false
@@ -2574,24 +2604,12 @@ properties:
                   - apiToken
             required:
               - digitalocean
-          - title: Civo Cloud
-            additionalProperties: false
-            properties:
-              civo:
-                properties:
-                  apiToken:
-                    type: string
-                    x-secret: ''
-                required:
-                  - apiToken
-            required:
-              - civo
           - title: Linode
             additionalProperties: false
             properties:
               linode:
                 properties:
-                  apiKey:
+                  apiToken:
                     type: string
                     x-secret: ''
                 required:
@@ -2653,8 +2671,6 @@ properties:
       entrypoint:
         $ref: '#/definitions/ipV4Address'
         description: Optional. A public IP address that will override (loadbalancer) ip used for registering hosts. This allows for access to private clusters.
-  home:
-    $ref: '#/definitions/alerts'
   files:
     type: object
     description: 'Custom values for the workload chart.'
@@ -2809,10 +2825,6 @@ properties:
         default: false
         description: Set this to true when bringing your own external IDP such as Azure AD. (Expects required `oidc:` fields to be set.)
         type: boolean
-      isHomeMonitored:
-        default: false
-        description: Whether this cluster is home monitored (like when under a Premium SLA). Sends criticals home.
-        type: boolean
       isMultitenant:
         default: true
         description: Whether to separate team metrics and logs. Disabling this lets everybody be admin and see everything.
@@ -2921,22 +2933,11 @@ properties:
             description: Linode API Token
             $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
-          gitea:
-            title: Gitea
-            properties:
-              enabled:
-                type: boolean
-                default: false
-              ttl:
-                $ref: '#/definitions/backupTtl'
-              schedule:
-                $ref: '#/definitions/backupSchedule'
   obj:
     properties:
       provider:
         properties:
           linode:
-            additionalProperties: false
             properties:
               region:
                 description: The region of the bucket
@@ -2950,6 +2951,28 @@ properties:
                 description: The secret of the access key
                 $ref: '#/definitions/wordCharacterPattern'
                 x-secret: ''
+              buckets:
+                properties:
+                  loki:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: loki
+                  cnpg:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: cnpg
+                  velero:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: velero
+                  harbor:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: harbor
+                  tempo:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: tempo
             required:
               - region
               - accessKeyId
@@ -2961,28 +2984,6 @@ properties:
               - linode
               - disabled
             default: disabled
-      buckets:
-        properties:
-          loki:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: loki
-          cnpg:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: cnpg
-          velero:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: velero
-          harbor:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: harbor
-          tempo:
-            type: string
-            $ref: '#/definitions/wordCharacterPattern'
-            default: tempo
   databases:
     properties:
       keycloak:

@@ -44,13 +44,7 @@ podSecurityContext:
 
 priorityClassName: otomi-critical
 
-resources:
-  limits:
-    cpu: 100m
-    memory: 128Mi
-  requests:
-    memory: 64Mi
-    cpu: 10m
+resources: {{- $externalDns.resources | toYaml | nindent 4 }}
 
 metrics:
   enabled: true
