@@ -40,7 +40,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to Docker
-        run: docker login ghcr.io ${{ env.CACHE_REGISTRY }} -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+        run: docker login ghcr.io -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
       - name: CI tests, image build and push tag for main or branch
         uses: docker/build-push-action@v3
         with:
