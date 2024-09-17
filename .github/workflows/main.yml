@@ -7,7 +7,7 @@ on:
       - '*'
 env:
   CACHE_REGISTRY: ghcr.io
-  CACHE_REPO: redkubes/otomi-core
+  CACHE_REPO: otomi/core
   REPO: otomi/core
   GIT_USER: redkubesbot
   BOT_USERNAME: svcAPLBot
@@ -46,7 +46,7 @@ jobs:
         with:
           push: true
           tags: |
-            ${{ env.CACHE_REPO }}:${{ env.TAG }}
+            ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
   push-to-docker:
     needs: build-test-cache
