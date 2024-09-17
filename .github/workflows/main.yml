@@ -59,8 +59,9 @@ jobs:
     steps:
       - name: Push to docker hub
         run: |
+          set -u
           TAG=${GITHUB_REF##*/}
-          docker login -u otomi -p '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}' ghcr.io
+          docker login ghcr.io -u $BOT_USERNAME -p ${{ secrets.BOT_TOKEN }}
           image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
           docker pull $image
           docker tag $image $REPO:$TAG
@@ -96,10 +97,10 @@ jobs:
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag
           docker push $REPO:$release_tag
-          docker login -u otomi -p '${{ secrets.DOCKERHUB_OTOMI_TOKEN }}' ghcr.io
+          docker login ghcr.io -u $BOT_USERNAME -p ${{ secrets.BOT_TOKEN }}
           docker tag $REPO:$TAG $CACHE_REGISTRY/$CACHE_REPO:$release_tag
           docker push $CACHE_REGISTRY/$CACHE_REPO:$release_tag
-          echo "machine github.com login otomi password ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}" > ~/.netrc
+          echo "machine github.com login $BOT_USERNAME password ${{ secrets.BOT_TOKEN }}" > ~/.netrc
           git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags
           #Cut the CHANGELOG.md file up to the first occurence of the "### \[[0-9]*" (meaning three #, a space,a square bracket and any number after it)
           sed -n '/### \[[0-9]*/q;p' CHANGELOG.md > NEW_CHANGELOG.md
