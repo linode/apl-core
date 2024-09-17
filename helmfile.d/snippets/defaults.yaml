@@ -660,7 +660,7 @@ environments:
                   memory: 128Mi
                 limits:
                   cpu: 200m
-                  memory: 256Mi
+                  memory: 512Mi
             _rawValues: {}
           apl-keycloak-operator:
             resources:
