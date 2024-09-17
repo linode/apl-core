@@ -42,7 +42,7 @@ export const createK8sSecret = async (
   d.debug(`kubectl create secret output: \n ${result.stdout}`)
 }
 
-const isResourcePresent = async (kind: string, name: string, namespace: string): Promise<boolean> => {
+export const isResourcePresent = async (kind: string, name: string, namespace: string): Promise<boolean> => {
   try {
     const resGet = await $`kubectl -n ${namespace} get ${kind} ${name}`
     return resGet.exitCode === 0
