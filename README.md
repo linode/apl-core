@@ -71,7 +71,7 @@ Get instant access to the following pre-configured Kubernetes Apps:
 
 **Optional Applications**
 
-One-click actication of the following Kubernetes Apps:
+One-click activation of the following Kubernetes Apps:
 
 - [Velero](https://github.com/vmware-tanzu/velero): Back up and restore your Kubernetes cluster resources and persistent volumes
 - [Knative](https://github.com/knative/serving): Deploy and manage serverless workloads
