@@ -112,6 +112,14 @@ environments:
               username: otomi-admin
           external-dns:
             logLevel: info
+            resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
+              requests:
+                memory: 64Mi
+                cpu: 10m
+              
           falco:
             enabled: false
             driver: ebpf
