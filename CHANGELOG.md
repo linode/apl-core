@@ -9,6 +9,11 @@ All notable changes to this project will be documented in this file. See [standa
 
 * updated api to 2.9.2 patch ([8d45557](https://github.com/redkubes/otomi-core/commit/8d4555777e4567a59a04ecb4e21a570a5f5215d3))
 
+
+### Others
+
+* **release:** 2.11.6 ([975f50e](https://github.com/redkubes/otomi-core/commit/975f50e4da048cd657a21be8709169a2493e52ee))
+
 ### [2.11.5](https://github.com/redkubes/otomi-core/compare/v2.11.4...v2.11.5) (2024-06-20)
 
 
