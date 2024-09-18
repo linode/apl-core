@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Others
 
+* **release:** 2.11.6 ([5d0eae2](https://github.com/redkubes/otomi-core/commit/5d0eae201b9286a4326a590be805818c26454624))
 * **release:** 2.11.6 ([975f50e](https://github.com/redkubes/otomi-core/commit/975f50e4da048cd657a21be8709169a2493e52ee))
 
 ### [2.11.5](https://github.com/redkubes/otomi-core/compare/v2.11.4...v2.11.5) (2024-06-20)
