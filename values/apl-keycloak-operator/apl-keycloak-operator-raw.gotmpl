@@ -18,9 +18,12 @@
 {{- $k := $c | get "keycloak" }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
-{{- $users := dict }}
+{{- $users := list }}
 {{- range $teamId, $team := $v.teamConfig }}
-  {{- $_ := set $users $teamId (dict "users" ($team | get "users" list)) }}
+  {{- range ($team | get "users" list) }}
+    {{- $teamUser := . | merge (dict "teamId" $teamId) }}
+    {{- $users = append $users $teamUser }}
+  {{- end }}
 {{- end }}
 {{- $users := $users | toJson }}
 

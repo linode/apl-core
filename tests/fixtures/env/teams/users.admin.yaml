@@ -1,3 +1,5 @@
 teamConfig:
     admin:
-        users: []
+        users:
+            - email: adminuser1@mail.com
+              name: adminuser1
