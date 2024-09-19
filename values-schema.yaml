@@ -1170,6 +1170,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
+      users:
+        type: array
+        items:
+          $ref: '#/definitions/user'
       projects:
         type: array
         items:
@@ -1246,6 +1250,18 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
+  user:
+    type: object
+    description: A user can be a team member or an admin.
+    properties:
+      name:
+        description: Name of the user
+        $ref: '#/definitions/wordCharacterPattern'
+      email:
+        $ref: '#/definitions/email'
+    required:
+      - name
+      - email
   project:
     type: object
     description: A single project can represent application's build, workload and service.

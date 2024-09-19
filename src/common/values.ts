@@ -220,6 +220,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
       'services',
       'workloads',
       'policies',
+      'users',
     ]
     const teamConfig = plainValues.teamConfig ? cloneDeep(plainValues.teamConfig) : {}
     // eslint-disable-next-line @typescript-eslint/no-misused-promises

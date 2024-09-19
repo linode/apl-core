@@ -1,0 +1,5 @@
+teamConfig:
+    demo:
+        users:
+            - email: demouser1@mail.com
+              name: demouser1

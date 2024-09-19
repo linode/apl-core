@@ -18,6 +18,11 @@
 {{- $k := $c | get "keycloak" }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+{{- $users := dict }}
+{{- range $teamId, $team := $v.teamConfig }}
+  {{- $_ := set $users $teamId (dict "users" ($team | get "users" list)) }}
+{{- end }}
+{{- $users := $users | toJson }}
 
 resources:
   - apiVersion: v1
@@ -29,6 +34,7 @@ resources:
       KEYCLOAK_ADMIN: {{ .Values.apps.keycloak.adminUsername | b64enc }}
       KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword | b64enc }}
       KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret | b64enc }}
+      USERS: {{ $users | b64enc }}
       {{- if $v.otomi.hasExternalIDP }}
       IDP_CLIENT_ID: {{ $oi.clientID | b64enc}}
       IDP_CLIENT_SECRET: {{ $oi.clientSecret | b64enc }}
