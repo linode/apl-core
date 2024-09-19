@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/linode/apl-core/compare/v3.0.0-rc.1...v3.0.0) (2024-09-19)
+
+
+### Bug Fixes
+
+* v3 readme ([#1722](https://github.com/linode/apl-core/issues/1722)) ([086072d](https://github.com/linode/apl-core/commit/086072dae6825f796658d79f04ab875e5231b035))
+
 ## [3.0.0-rc.1](https://github.com/linode/apl-core/compare/v2.11.0...v3.0.0-rc.1) (2024-09-19)
 
 
