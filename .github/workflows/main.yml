@@ -119,6 +119,10 @@ jobs:
     container:
       image: linode/apl-tools:v2.4.0
       options: --user 0
+    env:
+      COMMIT_MSG: ${{ github.event.head_commit.message }}
+      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
