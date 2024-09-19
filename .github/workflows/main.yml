@@ -171,6 +171,9 @@ jobs:
           # Set the global id for git as it seems needed by the next step when a custom image is used
           git config --global user.email ${{ env.BOT_EMAIL }}
           git config --global user.name ${{ env.BOT_USERNAME }}
+      #TODO: Use the same user id on the container as in the runner to avoid the "dubious ownership" error
+      - name: Mark repository as safe for Git
+        run: git config --global --add safe.directory /__w/apl-core/apl-core
       - name: Create and publish otomi chart release
         id: chart_release
         uses: helm/chart-releaser-action@v1.6.0
