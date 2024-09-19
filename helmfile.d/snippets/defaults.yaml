@@ -126,11 +126,20 @@ environments:
             _rawValues:
               customRules:
                 otomi-rules.yaml: >-
+                  - macro: protected_shell_spawner
+                    condition: (
+                        container.image.repository in (
+                          ghcr.io/cloudnative-pg
+                        )
+                      )
                   - macro: k8s_containers
                     condition: (
                         container.image.repository in (
                           docker.io/velero/velero,
                           docker.io/weaveworks/kured,
+                          ghcr.io/aquasecurity/trivy-operator,
+                          quay.io/argoproj/argocd,
+                          quay.io/keycloak/keycloak-operator,
                           k8s.gcr.io/kube-state-metrics/kube-state-metrics,
                           quay.io/jetstack/cert-manager-cainjector,
                           quay.io/jetstack/cert-manager-controller,
@@ -144,9 +153,17 @@ environments:
                           docker.io/drone/drone-runner-kube,
                           docker.io/grafana/promtail,
                           gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
-                          quay.io/argoprojlabs/argocd-image-updater
+                          quay.io/argoprojlabs/argocd-image-updater,
+                          gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink,
+                          docker.io/bitnami/sealed-secrets-controller,
+                          ghcr.io/cloudnative-pg/postgresql,
+                          jaegertracing/jaeger-operator
                         ) or (k8s.ns.name = "kube-system")
                           or (k8s.ns.name = "ingress")
+                          or (k8s.ns.name = "kyverno")
+                          or (k8s.ns.name = "cnpg-system")
+                          or (k8s.ns.name = "tekton-pipelines")
+                          or (k8s.ns.name = "falco")
                       )
                   - macro: user_known_write_below_etc_activities
                     condition: (
@@ -643,7 +660,7 @@ environments:
                   memory: 128Mi
                 limits:
                   cpu: 200m
-                  memory: 256Mi
+                  memory: 512Mi
             _rawValues: {}
           apl-keycloak-operator:
             resources:
