@@ -3,3 +3,5 @@ teamConfig:
         users:
             - email: demouser1@mail.com
               name: demouser1
+              firstName: demo
+              lastName: user1

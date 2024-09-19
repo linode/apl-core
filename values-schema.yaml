@@ -1259,9 +1259,15 @@ definitions:
         $ref: '#/definitions/wordCharacterPattern'
       email:
         $ref: '#/definitions/email'
+      firstName:
+        type: string
+      lastName:
+        type: string
     required:
       - name
       - email
+      - firstName
+      - lastName
   project:
     type: object
     description: A single project can represent application's build, workload and service.
