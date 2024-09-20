@@ -143,6 +143,7 @@ resources:
         volumeMounts:
           - name: backup
             mountPath: /backup
+            readOnly: true
         securityContext:
           runAsNonRoot: true
           runAsUser: 1000
@@ -176,8 +177,8 @@ resources:
                   - /bin/sh
                   - -ec
                   - >-
-                    kubectl exec gitea-0 -- /bin/sh -c "cd /backup && gitea dump --type tar.bz2" && 
-                    kubectl exec gitea-rclone -- /bin/sh -c "rclone copy /backup gitea:/$BUCKET_NAME && rclone sync --min-age $RETENTION_TIME /backup gitea:/$BUCKET_NAME && find /backup -type f -ctime +1 -delete"'
+                    kubectl exec gitea-0 -- /bin/sh -c "cd /backup && find . -type f -ctime +1 -delete && gitea dump --type tar.bz2" && 
+                    kubectl exec gitea-rclone -- /bin/sh -c "rclone copy /backup gitea:/$BUCKET_NAME && rclone sync --min-age $RETENTION_TIME /backup gitea:/$BUCKET_NAME"
                 resources:
                   limits:
                     cpu: 250m
