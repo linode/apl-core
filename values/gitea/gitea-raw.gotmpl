@@ -88,73 +88,6 @@ resources:
     kind: Role 
     name: backup-operator
     apiGroup: rbac.authorization.k8s.io
-- apiVersion: v1
-  kind: Pod
-  metadata:
-    name: gitea-rclone
-  spec:
-    containers:
-      - image: bitnami/rclone:latest
-        name: rclone
-        command: ["/bin/sh", "-ec", "trap : TERM INT; sleep infinity & wait"]
-        resources:
-          limits:
-            cpu: 250m
-            memory: 256Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
-        env:
-          - name: RCLONE_CONFIG_GITEA_TYPE
-            value: s3
-          {{- if eq $obj.type "minioLocal" }}
-          - name: RCLONE_CONFIG_GITEA_PROVIDER
-            value: Minio
-          - name: RCLONE_CONFIG_GITEA_ENDPOINT
-            value: http://minio:9000
-          - name: RCLONE_CONFIG_GITEA_ACCESS_KEY_ID
-            valueFrom:
-              secretKeyRef:
-                name: minio-creds
-                key: MINIO_ACCESS_KEY
-          - name: RCLONE_CONFIG_GITEA_SECRET_ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                name: minio-creds
-                key: MINIO_SECRET_KEY          
-          {{- else if eq $obj.type "linode" }}
-          - name: RCLONE_CONFIG_GITEA_PROVIDER
-            value: Linode
-          - name: RCLONE_CONFIG_GITEA_ENDPOINT
-            value: {{ $obj.linode.region }}.linodeobjects.com
-          - name: RCLONE_CONFIG_GITEA_ACCESS_KEY_ID
-            valueFrom:
-              secretKeyRef:
-                name: linode-creds
-                key: S3_STORAGE_ACCOUNT
-          - name: RCLONE_CONFIG_GITEA_SECRET_ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                name: linode-creds
-                key: S3_STORAGE_KEY
-          {{- end }}
-          - name: BUCKET_NAME
-            value: {{ $giteaBucketName }}
-        volumeMounts:
-          - name: backup
-            mountPath: /backup
-            readOnly: true
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 1000
-          runAsGroup: 1000
-    restartPolicy: Never
-    volumes:
-      - name: backup
-        persistentVolumeClaim:
-          claimName: gitea-backup
-    securityContext:
-      fsGroup: 1000
 - apiVersion: batch/v1
   kind: CronJob
   metadata:
@@ -177,8 +110,19 @@ resources:
                   - /bin/sh
                   - -ec
                   - >-
-                    kubectl exec gitea-0 -- /bin/sh -c "cd /backup && find . -type f -ctime +1 -delete && gitea dump --type tar.bz2" && 
-                    kubectl exec gitea-rclone -- /bin/sh -c "rclone copy /backup gitea:/$BUCKET_NAME && rclone sync --min-age $RETENTION_TIME /backup gitea:/$BUCKET_NAME"
+                    kubectl exec gitea-0 -- /bin/sh -ec "
+                    if [ ! -f '/backup/.bin/rclone' ]; then
+                      mkdir -p /backup/.bin &&
+                      cd /backup/.bin &&
+                      curl -OfsS https://downloads.rclone.org/v1.68.0/rclone-v1.68.0-linux-amd64.zip &&
+                      unzip -j rclone-v1.68.0-linux-amd64                      
+                    fi &&
+                    cd /backup &&
+                    gitea dump --type tar.bz2 &&
+                    echo '02fa617857a5723a670867a5b1f83b81c898124cd349f2e1fd235f5cf1a99bce  .bin/rclone' | sha256sum -c - &&
+                    .bin/rclone copy /backup gitea:/$BUCKET_NAME &&
+                    .bin/rclone sync --min-age $RETENTION_TIME /backup gitea:/$BUCKET_NAME &&
+                    find . -type f -ctime +1 -delete"
                 resources:
                   limits:
                     cpu: 250m

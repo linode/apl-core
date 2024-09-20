@@ -5,6 +5,13 @@
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $gdb := $v.databases.gitea }}
+{{- $obj := $v.obj.provider }}
+{{- $giteaBucketName := "" }}
+{{- if eq $obj.type "minioLocal" }}
+{{- $giteaBucketName = "gitea" }}
+{{- else if eq $obj.type "linode" }}
+{{- $giteaBucketName = $obj.linode.buckets | get "gitea" nil }}
+{{- end }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -129,6 +136,44 @@ init:
     requests:
       cpu: 100m
       memory: 128Mi
+
+statefulset:
+  env:
+    - name: RCLONE_CONFIG_GITEA_TYPE
+      value: s3
+    {{- if eq $obj.type "minioLocal" }}
+    - name: RCLONE_CONFIG_GITEA_PROVIDER
+      value: Minio
+    - name: RCLONE_CONFIG_GITEA_ENDPOINT
+      value: http://minio:9000
+    - name: RCLONE_CONFIG_GITEA_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: minio-creds
+          key: MINIO_ACCESS_KEY
+    - name: RCLONE_CONFIG_GITEA_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: minio-creds
+          key: MINIO_SECRET_KEY          
+    {{- else if eq $obj.type "linode" }}
+    - name: RCLONE_CONFIG_GITEA_PROVIDER
+      value: Linode
+    - name: RCLONE_CONFIG_GITEA_ENDPOINT
+      value: {{ $obj.linode.region }}.linodeobjects.com
+    - name: RCLONE_CONFIG_GITEA_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: linode-creds
+          key: S3_STORAGE_ACCOUNT
+    - name: RCLONE_CONFIG_GITEA_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: linode-creds
+          key: S3_STORAGE_KEY
+    {{- end }}
+    - name: BUCKET_NAME
+      value: {{ $giteaBucketName }}  
 
 memcached:
   # @TODO:
