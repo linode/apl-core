@@ -19,63 +19,6 @@ nodeExporter:
 prometheusOperator:
   enabled: false
 
-defaultRules:
-  create: true
-  rules:
-    alertmanager: false
-    configReloaders: false
-    etcd: false
-    general: true
-    k8s: false
-    kubeApiserver: false
-    kubeApiserverAvailability: false
-    kubeApiserverBurnrate: true
-    kubeApiserverHistogram: false
-    kubeApiserverSlos: false
-    kubelet: false
-    kubePrometheusGeneral: false
-    kubePrometheusNodeRecording: false
-    kubeProxy: false
-    kubernetesApps: false
-    kubernetesResources: false
-    kubernetesStorage: false
-    kubernetesSystem: false
-    kubeScheduler: false
-    kubeStateMetrics: false
-    network: false
-    node: false
-    nodeExporterAlerting: false
-    nodeExporterRecording: false
-    prometheus: false
-    prometheusOperator: false
-
-prometheus:
-  serviceMonitor:
-    selfMonitor: false
-  additionalServiceMonitors: null
-  prometheusSpec:
-    enableAdminAPI: false
-    replicas: 1
-    remoteWrite: null
-    resources:
-      limits:
-        cpu: '1'
-        memory: 4Gi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-    thanos:
-      objectStorageConfig:
-        name: copy-thanos-objectstore
-        key: objstore.yml
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-        limits:
-          cpu: '1'
-          memory: 1Gi 
-additionalPrometheusRules: null
 grafana:
   serviceMonitor:
     enabled: false
@@ -96,7 +39,6 @@ grafana:
       requests:
         cpu: 50m
         memory: 50Mi
-
 alertmanager:
   serviceMonitor:
     selfMonitor: false

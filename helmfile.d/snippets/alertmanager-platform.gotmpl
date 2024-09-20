@@ -5,8 +5,8 @@ global:
   slack_api_url: {{ .instance | get "alerts.slack.url" (.root | get "alerts.slack.url" (.root | get "home.slack.url" nil)) }}
 {{- end }}
 {{- if (has "opsgenie" $receivers ) }}
-  opsgenie_api_key: {{ .instance | get "alerts.opsgenie.apiKey" (.root | get "alerts.opsgenie.apiKey" (.root | get "home.opsgenie.apiKey" nil)) }}
-  opsgenie_api_url: {{ .instance | get "alerts.opsgenie.url" (.root | get "alerts.opsgenie.url" (.root | get "home.opsgenie.url" nil)) }}
+  opsgenie_api_key: {{ .instance | get "alerts.opsgenie.apiKey" (.root | get "alerts.opsgenie.apiKey") }}
+  opsgenie_api_url: {{ .instance | get "alerts.opsgenie.url" (.root | get "alerts.opsgenie.url") }}
 {{- end }}
 {{- if or (has "email" $receivers) }}
   smtp_smarthost: {{ .root | get "smtp.smarthost" }}
@@ -33,18 +33,9 @@ route:
       {{- else }}
       receiver: default
       {{- end }}
-    {{- if eq .root.cluster.provider "azure" }}
-    - match:
-        alertname: KubeAPILatencyHigh
-      {{- if (has "none" $receivers ) }}
-      receiver: "null"
-      {{- else }}
-      receiver: default
-      {{- end }}
-    {{- end }}
     - match:
         severity: critical
-      {{- if (has "none" $receivers ) }}
+      {{- if (has "none" $receivers) }}
       receiver: "null"
       {{- else }}
       receiver: critical

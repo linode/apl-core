@@ -1,0 +1,106 @@
+{{- $receivers := .instance | get "alerts.receivers" (.root | get "alerts.receivers" (list "slack")) }}
+{{- $team := .instance | get "managedMonitoring" }}
+{{- $suffix := (true | ternary "" ".monitoring.svc.cluster.local") }}
+global:
+{{- if (has "slack" $receivers ) }}
+  slack_api_url: {{ .instance | get "alerts.slack.url" (.root | get "alerts.slack.url" (.root | get "home.slack.url" nil)) }}
+{{- end }}
+{{- if (has "opsgenie" $receivers ) }}
+  opsgenie_api_key: {{ .instance | get "alerts.opsgenie.apiKey" (.root | get "alerts.opsgenie.apiKey") }}
+  opsgenie_api_url: {{ .instance | get "alerts.opsgenie.url" (.root | get "alerts.opsgenie.url") }}
+{{- end }}
+{{- if or (has "email" $receivers) }}
+  smtp_smarthost: {{ .root | get "smtp.smarthost" }}
+  smtp_hello: {{ .root | get "smtp.hello" .root.cluster.domainSuffix }}
+  smtp_from: {{ .root | get "smtp.from" (print "alerts@" .root.cluster.domainSuffix) }}
+  smtp_auth_username: {{ .root | get "smtp.auth_username" nil }}
+  smtp_auth_password: {{ .root | get "smtp.auth_password" nil }}
+  smtp_auth_secret: {{ .root | get "smtp.auth_secret" nil }}
+  smtp_auth_identity: {{ .root | get "smtp.auth_identity" nil }}
+{{- end }}
+route:
+  receiver: "null"
+  group_by: [alertname]
+  group_interval: {{ .instance | get "alerts.groupInterval" (.root | get "alerts.groupInterval" "5m") }}
+  repeat_interval: {{ .instance | get "alerts.repeatInterval" (.root | get "alerts.repeatInterval" "3h") }}
+  routes:
+    - match:
+        alertname: Watchdog
+      receiver: "null"
+    - match:
+        alertname: CPUThrottlingHigh
+      {{- if (has "none" $receivers ) }}
+      receiver: "null"
+      {{- else }}
+      receiver: default
+      {{- end }}
+    - matchers:
+        severity: critical
+        {{- if $team }}
+        namespace: "team-{{ .instance | get "id" }}"
+        {{- end }}
+      {{- if (has "none" $receivers ) }}
+      receiver: "null"
+      {{- else }}
+      receiver: critical
+      {{- end }}
+receivers:
+  - name: "null"
+{{- if not (has "none" $receivers ) }}
+  - name: default
+    {{- if has "slack" $receivers  }}
+    slack_configs:
+      - channel: "#{{ .instance | get "alerts.slack.channel" (.root | get "alerts.slack.channel" "mon-otomi") }}"
+        send_resolved: true
+        {{- .slackTpl | nindent 8 }}
+    {{- end }}
+    {{- if has "opsgenie" $receivers  }}
+    opsgenie_configs:
+      - priority: "P2"
+        send_resolved: true
+        responders: {{- .instance | get "alerts.opsgenie.responders" (.root | get "alerts.opsgenie.responders" nil) | toYaml | nindent 10 }}
+        {{- .opsgenieTpl | nindent 8 }}
+    {{- end }}
+    {{- if has "msteams" $receivers }}
+    webhook_configs:
+      - url: "http://prometheus-msteams{{ $suffix }}:2000/low_priority_channel"
+        send_resolved: true
+    {{- end }}
+  {{- if has "email" $receivers }}
+  {{- $nonCriticalTo := .instance | get "alerts.email.nonCritical" (.root | get "alerts.email.nonCritical") }}
+    {{- if $nonCriticalTo }}
+    email_configs:
+      - to: {{ $nonCriticalTo }}
+        send_resolved: true
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- if not (has "none" $receivers ) }}
+  - name: critical
+    {{- if has "slack" $receivers  }}
+    slack_configs:
+      - channel: "#{{ .instance | get "alerts.slack.channelCrit" (.root | get "alerts.slack.channelCrit" "mon-otomi-crit") }}"
+        {{- .slackTpl | nindent 8 }}
+    {{- end }}
+    {{- if has "opsgenie" $receivers  }}
+    opsgenie_configs:
+      - priority: "P1"
+        send_resolved: true
+        responders: {{- .instance | get "alerts.opsgenie.responders" (.root | get "alerts.opsgenie.responders" nil) | toYaml | nindent 10 }}
+        {{- .opsgenieTpl | nindent 8 }}
+    {{- end }}
+    {{- if has "msteams" $receivers }}
+    webhook_configs:
+      - url: "http://prometheus-msteams{{ $suffix }}:800/high_priority_channel"
+        send_resolved: true
+    {{- end }}
+  {{- if has "email" $receivers }}
+  {{- $criticalTo := .instance | get "alerts.email.critical" (.root | get "alerts.email.critical" nil) }}
+    {{- if $criticalTo }}
+    email_configs:
+      - to: {{ $criticalTo }}
+        send_resolved: true
+    {{- end }}
+  {{- end }}
+{{- end }}

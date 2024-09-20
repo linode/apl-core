@@ -28,7 +28,6 @@ releases:
   {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
   {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
-  {{- $azure := $team | get "azure" dict }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -40,7 +39,7 @@ releases:
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
   - name: prometheus-{{ $teamId }}
-    installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.prometheus" false) ($team | get "managedMonitoring.alertmanager" false) }}
+    installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
@@ -61,47 +60,11 @@ releases:
               annotations:
                 sidecar.istio.io/inject: "true"
               labels:
-                prometheus: team-{{ $teamId }}
+                prometheus: system
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
-          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
-        defaultRules:
-          appNamespacesTarget: team-{{ $teamId }}
-          rules:
-            general: {{ $team | get "managedMonitoring.prometheus" false }}
-        commonLabels:
-          prometheus: team-{{ $teamId }}
+          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         prometheus:
-          enabled: {{ $team | get "managedMonitoring.prometheus" false }}
-          namespaceOverride: null # team-{{ $teamId }}
-          prometheusSpec:
-            podMetadata:
-              annotations:
-                traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
-              labels:
-                otomi.io/app: prometheus-team-{{ $teamId }}
-            externalLabels:
-              cluster: "prometheus-{{ $teamId }}.{{ $domain }}"
-            externalUrl: "https://prometheus-{{ $teamId }}.{{ $domain }}"
-            {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
-            {{ $selType }}NamespaceSelector:
-              matchExpressions:
-                - key: name
-                  operator: In
-                  values:
-                    - team-{{ $teamId }}
-            {{ $selType }}Selector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-            {{- end }}
-    {{- if gt (len .services) 0 }}
-            additionalScrapeConfigs:
-          {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
-    {{- end }}
-        {{- if $team | get "managedMonitoring.prometheus" false }}
-        additionalPrometheusRules:
-          - name: blackbox
-            {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
-        {{- end }}    
+          enabled: false 
         grafana:
           enabled: {{ $team | get "managedMonitoring.grafana" false }}
           namespaceOverride: null # team-{{ $teamId }}
@@ -205,7 +168,7 @@ releases:
               {{- end }}
     {{- if has "msteams" ($team | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: {{ $team | get "managedMonitoring.prometheus" false }}
+    installed: true
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -240,13 +203,9 @@ releases:
           {{- if $v.apps.falco.enabled }}
           - falco-teams
           {{- end }}
-          {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
-          - azure
-          {{- end }}
           {{- if $v.apps.trivy.enabled }}
           - trivy-teams
           {{- end }}
-
   - name: team-ns-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}

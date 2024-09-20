@@ -1147,9 +1147,6 @@ definitions:
           grafana:
             type: boolean
             default: true
-          prometheus:
-            type: boolean
-            default: false
           alertmanager:
             type: boolean
             default: false
@@ -3018,6 +3015,10 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: tempo
+                  thanos:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: thanos
             required:
               - region
               - accessKeyId

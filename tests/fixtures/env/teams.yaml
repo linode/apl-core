@@ -4,7 +4,6 @@ teamConfig:
         managedMonitoring:
             alertmanager: true
             grafana: true
-            prometheus: true
         selfService:
             access:
                 - shell
@@ -24,7 +23,6 @@ teamConfig:
         managedMonitoring:
             alertmanager: true
             grafana: true
-            prometheus: true
         networkPolicy:
             egressPublic: true
             ingressPrivate: false
@@ -48,7 +46,6 @@ teamConfig:
         managedMonitoring:
             alertmanager: true
             grafana: true
-            prometheus: true
         selfService:
             access:
                 - shell
