@@ -52,6 +52,7 @@ obj:
                 loki: my-clusterid-loki
                 tempo: my-clusterid-tempo
                 velero: my-clusterid-velero
+                thanos: my-clusterid-thanos
         type: linode
 oidc:
     adminGroupID: someAdminGroupID
