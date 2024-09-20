@@ -17,12 +17,14 @@ releases:
     namespace: argocd
     labels:
       pkg: argocd
+      app: core
     <<: *raw
   - name: istio-operator
     installed: true
     namespace: istio-operator
     labels:
       pkg: istio
+      app: core
     <<: *default
   - name: keycloak-artifacts
     installed: true

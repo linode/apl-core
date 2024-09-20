@@ -7,6 +7,13 @@ environments:
         apps:
           alertmanager:
             enabled: false
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 256Mi
             _rawValues: {}
           argocd:
             applicationSet:
@@ -84,17 +91,17 @@ environments:
                 cpu: 50m
                 memory: 64Mi
               limits:
-                cpu: 200m
-                memory: 384Mi
+                cpu: "1"
+                memory: 512Mi
             _rawValues: {}
           cnpg:
             resources:
               requests:
                 cpu: 100m
-                memory: 100Mi
+                memory: 128Mi
               limits:
-                cpu: 1000m
-                memory: 512Mi
+                cpu: "1"
+                memory: 1Gi
             _rawValues: {}
           drone:
             enabled: false
@@ -105,16 +112,34 @@ environments:
               username: otomi-admin
           external-dns:
             logLevel: info
+            resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
+              requests:
+                memory: 64Mi
+                cpu: 10m
+              
           falco:
             enabled: false
+            driver: ebpf
             _rawValues:
               customRules:
                 otomi-rules.yaml: >-
+                  - macro: protected_shell_spawner
+                    condition: (
+                        container.image.repository in (
+                          ghcr.io/cloudnative-pg
+                        )
+                      )
                   - macro: k8s_containers
                     condition: (
                         container.image.repository in (
                           docker.io/velero/velero,
                           docker.io/weaveworks/kured,
+                          ghcr.io/aquasecurity/trivy-operator,
+                          quay.io/argoproj/argocd,
+                          quay.io/keycloak/keycloak-operator,
                           k8s.gcr.io/kube-state-metrics/kube-state-metrics,
                           quay.io/jetstack/cert-manager-cainjector,
                           quay.io/jetstack/cert-manager-controller,
@@ -128,9 +153,17 @@ environments:
                           docker.io/drone/drone-runner-kube,
                           docker.io/grafana/promtail,
                           gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
-                          quay.io/argoprojlabs/argocd-image-updater
+                          quay.io/argoprojlabs/argocd-image-updater,
+                          gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink,
+                          docker.io/bitnami/sealed-secrets-controller,
+                          ghcr.io/cloudnative-pg/postgresql,
+                          jaegertracing/jaeger-operator
                         ) or (k8s.ns.name = "kube-system")
                           or (k8s.ns.name = "ingress")
+                          or (k8s.ns.name = "kyverno")
+                          or (k8s.ns.name = "cnpg-system")
+                          or (k8s.ns.name = "tekton-pipelines")
+                          or (k8s.ns.name = "falco")
                       )
                   - macro: user_known_write_below_etc_activities
                     condition: (
@@ -206,8 +239,8 @@ environments:
                   cpu: 100m
                   memory: 512Mi
                 limits:
-                  cpu: 1000m
-                  memory: 1024Mi
+                  cpu: "1"
+                  memory: 1Gi
               falcoCtlFollow:
                 requests:
                   cpu: 20m
@@ -241,6 +274,13 @@ environments:
             _rawValues: {}
           grafana:
             enabled: false
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 256Mi
             _rawValues: {}
           harbor:
             enabled: false
@@ -250,12 +290,61 @@ environments:
               credentials:
                 username: otomi-admin
             resources:
+              chartmuseum:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              core:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              jobservice:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              portal:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              redis:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              registry:
+                requests:
+                  cpu: 100m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              registry-controller:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
               trivy:
                 requests:
                   cpu: 200m
-                  memory: 256Mi
+                  memory: 128Mi
                 limits:
-                  cpu: 400m
+                  cpu: 500m
                   memory: 512Mi
             _rawValues: {}
           httpbin:
@@ -270,15 +359,18 @@ environments:
               enabled: false
               block: false
               owasp: true
-            private:
-              enabled: false
-              autoscaling:
-                enabled: true
-                minReplicas: 2
-                maxReplicas: 10
             tracing:
               enabled: false
               samplingRatio: "0.01"
+            maxBodySize: 1024m
+            maxBodySizeBytes: 1073741824
+            resources:
+              requests:
+                cpu: 200m
+                memory: 512Mi
+              limits:
+                cpu: "2"
+                memory: 2Gi
             _rawValues: {}
           istio:
             tracing:
@@ -296,6 +388,37 @@ environments:
                 maxReplicas: 10
             egressGateway:
               enabled: false
+            global:
+              proxy:
+                resources:
+                  requests:
+                    cpu: 20m
+                    memory: 128Mi
+                  limits:
+                    cpu: "1"
+                    memory: 1Gi
+            resources:
+              egressgateway:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi
+                  limits:
+                    cpu: "1"
+                    memory: 256Mi
+              ingressgateway:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi
+                  limits:
+                    cpu: "1"
+                    memory: 256Mi
+              pilot:
+                  requests:
+                    cpu: 100m
+                    memory: 128Mi
+                  limits:
+                    cpu: "2"
+                    memory: 2Gi
             _rawValues: {}
           jaeger:
             enabled: false
@@ -309,14 +432,14 @@ environments:
                   cpu: 200m
                   memory: 512Mi
                 limits:
-                  cpu: 2000m
-                  memory: 1Gi
+                  cpu: "2"
+                  memory: 2Gi
               operator:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 1000m
+                  cpu: "1"
                   memory: 512Mi
             idp:
               alias: otomi-idp
@@ -330,14 +453,14 @@ environments:
                   cpu: 200m
                   memory: 256Mi
                 limits:
-                  cpu: 500m
+                  cpu: "1"
                   memory: 1Gi
               operator:
                 requests:
-                  cpu: 1000m
+                  cpu: "1"
                   memory: 512Mi
                 limits:
-                  cpu: 2000m
+                  cpu: "2"
                   memory: 1Gi
             _rawValues: {}
           knative:
@@ -537,7 +660,7 @@ environments:
                   memory: 128Mi
                 limits:
                   cpu: 200m
-                  memory: 256Mi
+                  memory: 512Mi
             _rawValues: {}
           apl-keycloak-operator:
             resources:
@@ -564,6 +687,7 @@ environments:
                 insecureSkipVerify: false
             replicas: 1
             scrapeInterval: 60s
+            retention: 120h
             retentionSize: 4GB
             retention: 1d
             storageSize: 5Gi
@@ -573,22 +697,22 @@ environments:
                   cpu: 100m
                   memory: 512Mi
                 limits:
-                  cpu: 3
+                  cpu: '3'
                   memory: 3Gi
               kube-state-metrics:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 500m
-                  memory: 512Mi
+                  cpu: 200m
+                  memory: 256Mi
               node-exporter:
                 requests:
                   cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 500m
-                  memory: 512Mi
+                  memory: 256Mi
             _rawValues: {}
           redis-shared:
             enabled: false
@@ -610,14 +734,14 @@ environments:
               collector:
                 requests:
                   cpu: 100m
-                  memory: 64Mi
+                  memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               manager:
                 requests:
                   cpu: 50m
-                  memory: 16Mi
+                  memory: 32Mi
                 limits:
                   cpu: 200m
                   memory: 512Mi
@@ -636,8 +760,8 @@ environments:
                   cpu: 50m
                   memory: 64Mi
                 limits:
-                  cpu: 2000m
-                  memory: 1024Mi
+                  cpu: "2"
+                  memory: 1Gi
             _rawValues: {}
           tempo:
             enabled: false
@@ -669,6 +793,13 @@ environments:
                   memory: 64Mi
                 limits:
                   cpu: 200m
+                  memory: 1Gi
+              metricsGenerator:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
                   memory: 256Mi
               distributor:
                 requests:
@@ -690,6 +821,10 @@ environments:
             autoscaling:
               ingester:
                 enabled: false
+                minReplicas: 1
+                maxReplicas: 3
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
               querier:
                 enabled: false
                 minReplicas: 1
@@ -780,8 +915,8 @@ environments:
                   cpu: 100m
                   memory: 128M
                 limits:
-                  cpu: 500m
-                  memory: 512Mi
+                  cpu: "1"
+                  memory: 1G
             _rawValues: {}
           velero:
             enabled: false
@@ -793,7 +928,7 @@ environments:
                 cpu: 500m
                 memory: 128Mi
               limits:
-                cpu: 1000m
+                cpu: "1"
                 memory: 512Mi
             _rawValues: {}
         databases:
@@ -803,7 +938,7 @@ environments:
             replicas: 2
             resources:
               limits:
-                cpu: 100m
+                cpu: 500m
                 memory: 512Mi
               requests:
                 cpu: 50m
@@ -812,6 +947,13 @@ environments:
             size: 5Gi
             replicas: 2
             coreDatabase: registry
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+              requests:
+                cpu: 50m
+                memory: 256Mi
           gitea:
             useOtomiDB: true
             imported: false
@@ -819,7 +961,7 @@ environments:
             replicas: 2
             resources:
               limits:
-                cpu: 100m
+                cpu: 500m
                 memory: 512Mi
               requests:
                 cpu: 50m
@@ -827,12 +969,6 @@ environments:
         obj:
           provider:
             type: disabled
-          buckets:
-            loki: loki
-            cnpg: cnpg
-            velero: velero
-            harbor: harbor
-            tempo: tempo
         platformBackups:
           database:
             harbor:
@@ -840,9 +976,6 @@ environments:
             gitea:
               enabled: false
             keycloak:
-              enabled: false
-          persistentVolumes:
-            gitea:
               enabled: false
         cluster:
           provider: linode
@@ -853,7 +986,6 @@ environments:
         ingress:
           platformClass:
             className: platform
-            network: public
           classes: []
         alerts:
           receivers:
@@ -861,12 +993,11 @@ environments:
         otomi:
           hasExternalDNS: false
           hasExternalIDP: false
-          isHomeMonitored: false
           isMultitenant: true
           nodeSelector: {}
         e2e:
           enabled: false
           upgrade:
             version: main
-        # TODO: update this when schema version changes: (and think more?)
-        version: 27
+        # TODO: update this when schema version changes
+        version: 28

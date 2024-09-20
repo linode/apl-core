@@ -5,7 +5,7 @@ appsInfo:
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
-      - https://otomi.io/docs/apps/alertmanager
+      - https://apl-docs.net/docs/apps/alertmanager
       - https://prometheus.io/docs/alerting/latest/alertmanager]
     license: Apache 2.0
     dependencies: Prometheus
@@ -17,7 +17,7 @@ appsInfo:
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
-      - https://otomi.io/docs/apps/argocd
+      - https://apl-docs.net/docs/apps/argocd
       - https://argo-cd.readthedocs.io
     license: Apache 2.0
     dependencies: None
@@ -29,7 +29,7 @@ appsInfo:
     repo: https://github.com/cert-manager/cert-manager
     maintainers: The Linux Foundation
     relatedLinks:
-      - https://otomi.io/docs/apps/certmanager
+      - https://apl-docs.net/docs/apps/certmanager
       - https://cert-manager.io/
     license: Apache 2.0
     about: Cert-manager adds certificates and certificate issuers as resource types in Kubernetes clusters, and simplifies the process of obtaining, renewing and using those certificates. It can issue certificates from a variety of supported sources, including Let's Encrypt, HashiCorp Vault, and Venafi as well as private PKI, and it ensures certificates remain valid and up to date, attempting to renew certificates at an appropriate time before expiry.
@@ -51,7 +51,7 @@ appsInfo:
     repo: https://github.com/harness/drone
     maintainers: Harness
     relatedLinks:
-      - https://otomi.io/docs/apps/drone
+      - https://apl-docs.net/docs/apps/drone
       - https://www.drone.io/
     license: Apache 2.0
     about: Drone is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
@@ -80,7 +80,7 @@ appsInfo:
     repo: https://github.com/kubernetes-sigs/external-dns
     maintainers: Kubernetes SIGs
     relatedLinks:
-      - https://otomi.io/docs/apps/external-dns
+      - https://apl-docs.net/docs/apps/external-dns
       - https://kubernetes-sigs.github.io/external-dns/v0.12.2/
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
@@ -91,7 +91,7 @@ appsInfo:
     repo: https://github.com/falcosecurity/falco
     maintainers: The Falco Authors
     relatedLinks:
-      - https://otomi.io/docs/apps/falco
+      - https://apl-docs.net/docs/apps/falco
       - https://falco.org/docs
     license: Apache 2.0
     dependencies: None. Prometheus and Grafana are adviced
@@ -103,18 +103,18 @@ appsInfo:
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
-      - https://otomi.io/docs/apps/gitea
+      - https://apl-docs.net/docs/apps/gitea
       - https://docs.gitea.io/en-us/
     license: MIT
     about: Gitea is a painless self-hosted Git service. It is similar to GitHub, Bitbucket, and GitLab. Gitea is a fork of Gogs. See the Gitea Announcement blog post to read about the justification for a fork.
-    integration: APL uses Gitea as its default repository APL configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in APL. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, APL will automatically create a Gitops repository for each Team in Gitea.
+    integration: APL uses Gitea as its default repository for APL configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in APL. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, APL will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
     appVersion: 9.5.2
     repo: https://github.com/grafana/grafana
     maintainers: Grafana Labs
     relatedLinks:
-      - https://otomi.io/docs/apps/grafana
+      - https://apl-docs.net/docs/apps/grafana
       - https://grafana.com/docs/grafana/latest/
     license: AGPL-3.0
     dependencies: Prometheus
@@ -126,7 +126,7 @@ appsInfo:
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
-      - https://otomi.io/docs/apps/harbor
+      - https://apl-docs.net/docs/apps/harbor
       - https://goharbor.io/docs/2.6.0/
     license: Apache 2.0
     dependencies: None
@@ -147,7 +147,7 @@ appsInfo:
     appVersion: 1.7.1
     repo: https://github.com/kubernetes/ingress-nginx
     maintainers: NGINX
-    relatedLinks: ['https://otomi.io/docs/apps/ingress-nginx', 'https://docs.nginx.com/nginx-ingress-controller/']
+    relatedLinks: ['https://apl-docs.net/docs/apps/ingress-nginx', 'https://docs.nginx.com/nginx-ingress-controller/']
     license: Apache 2.0
     about: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
     integration: APL integrated ingress-nginx into an advanced ingress architecture.
@@ -157,7 +157,7 @@ appsInfo:
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
-      - https://otomi.io/docs/apps/istio
+      - https://apl-docs.net/docs/apps/istio
       - https://istio.io/
     license: Apache 2.0
     about: Istio is an open platform for providing a uniform way to integrate microservices, manage traffic flow across microservices, enforce policies and aggregate telemetry data. Istio's control plane provides an abstraction layer over the underlying cluster management platform.
@@ -169,7 +169,7 @@ appsInfo:
     repo: https://github.com/jaegertracing/jaeger
     maintainers: CNCF
     relatedLinks:
-      - https://otomi.io/docs/apps/jaeger
+      - https://apl-docs.net/docs/apps/jaeger
       - https://www.jaegertracing.io/docs/1.37/
     license: Apache 2.0
     about: Jaeger is a distributed tracing platform. It can be used for monitoring microservices-based distributed systems. As on-the-ground microservice practitioners are quickly realizing, the majority of operational problems that arise when moving to a distributed architecture are ultimately grounded in networking and observability. It is simply an orders of magnitude larger problem to network and debug a set of intertwined distributed services versus a single monolithic application.
@@ -180,7 +180,7 @@ appsInfo:
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
-      - https://otomi.io/docs/apps/keycloak
+      - https://apl-docs.net/docs/apps/keycloak
       - https://www.keycloak.org/documentation.html
     license: Apache 2.0
     about: Keycloak is an Open Source Identity and Access Management solution for modern Applications and Services.
@@ -203,7 +203,7 @@ appsInfo:
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
-      - https://otomi.io/docs/apps/knative
+      - https://apl-docs.net/docs/apps/knative
       - https://knative.dev/docs/serving/
     license: Apache 2.0
     about: Knative Serving builds on Kubernetes to support deploying and serving of applications and functions as serverless containers. Serving is easy to get started with and scales to support advanced scenarios.
@@ -214,7 +214,7 @@ appsInfo:
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
-      - https://otomi.io/docs/apps/kyverno
+      - https://apl-docs.net/docs/apps/kyverno
       - https://kyverno.io/docs/kyverno-policies/
     license: Apache 2.0
     about: Kyverno is a policy engine designed for Kubernetes. It can validate, mutate, and generate configurations using admission controls and background scans. Kyverno policies are Kubernetes resources and do not require learning a new language.
@@ -224,7 +224,7 @@ appsInfo:
     repo: https://github.com/kubereboot/kured
     maintainers: Kured project
     relatedLinks:
-      - https://otomi.io/docs/apps/kured
+      - https://apl-docs.net/docs/apps/kured
       - https://kured.dev/
     license: Apache 2.0
     about: Kured (KUbernetes REboot Daemon) is a Kubernetes daemonset that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS.
@@ -235,7 +235,7 @@ appsInfo:
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:
-      - https://otomi.io/docs/apps/tekton
+      - https://apl-docs.net/docs/apps/tekton
       - https://github.com/tektoncd/pipeline/blob/main/docs/README.md
       - https://github.com/tektoncd/catalog/tree/main/task/buildpacks/0.6
       - https://github.com/tektoncd/catalog/tree/main/task/git-clone/0.9
@@ -250,7 +250,7 @@ appsInfo:
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
-      - https://otomi.io/docs/apps/loki
+      - https://apl-docs.net/docs/apps/loki
       - https://grafana.com/docs/loki/latest/
     license: AGPL-3.0
     dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
@@ -262,7 +262,7 @@ appsInfo:
     repo: https://github.com/minio/minio
     maintainers: Minio
     relatedLinks:
-      - https://otomi.io/docs/apps/minio
+      - https://apl-docs.net/docs/apps/minio
       - https://minio.io/
     license: Apache 2.0
     dependencies: None
@@ -274,7 +274,7 @@ appsInfo:
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
-      - https://otomi.io/docs/apps/prometheus
+      - https://apl-docs.net/docs/apps/prometheus
       - https://prometheus.io/
     license: Apache 2.0
     about: Prometheus is a systems and service monitoring system. It collects metrics from configured targets at given intervals, evaluates rule expressions, displays the results, and can trigger alerts when specified conditions are observed.
@@ -298,12 +298,11 @@ appsInfo:
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
-      - https://otomi.io/docs/apps/sealed-secrets
+      - https://apl-docs.net/docs/apps/sealed-secrets
       - https://github.com/bitnami-labs/sealed-secrets/tree/main/docs
     license: Apache 2.0
     about: Sealed Secrets is a Kubernetes Custom Resource Definition Controller which allows you to store even sensitive information in Git repositories.
     integration: APL uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
-    isBeta: true
   tempo:
     title: Tempo
     appVersion: 2.1.1
@@ -333,7 +332,7 @@ appsInfo:
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:
-      - https://otomi.io/docs/apps/trivy-operator
+      - https://apl-docs.net/docs/apps/trivy-operator
       - https://aquasecurity.github.io/trivy-operator/v0.16.4/
     license: Apache 2.0
     dependencies: Prometheus, Grafana
@@ -345,7 +344,7 @@ appsInfo:
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:
-      - https://otomi.io/docs/apps/otel
+      - https://apl-docs.net/docs/apps/otel
       - https://opentelemetry.io/docs/collector/
     license: AGPL-3.0
     dependencies: Prometheus, Grafana, Loki, Tempo
@@ -357,7 +356,7 @@ appsInfo:
     repo: https://github.com/vmware-tanzu/velero
     maintainers: VMware Tanzu
     relatedLinks:
-      - https://otomi.io/docs/apps/velero
+      - https://apl-docs.net/docs/apps/velero
       - https://velero.io/docs/v1.9/
       - https://velero.io/docs/main/restic/
     license: Apache 2.0

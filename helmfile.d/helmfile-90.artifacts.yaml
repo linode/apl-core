@@ -17,6 +17,7 @@ releases:
     namespace: istio-system
     labels:
       pkg: istio
+      app: core
     chart: ../charts/raw
     values:
       - ../values/raw/istio-raw.gotmpl

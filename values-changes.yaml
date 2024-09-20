@@ -283,3 +283,12 @@ changes:
       - 'teamConfig.{team}.jobs'
     fileDeletions:
       - env/teams/jobs.{team}.yaml
+  - version: 28
+    deletions:
+      - 'apps.cnpg.storage'
+      - 'obj.buckets'
+      - 'platformBackups.persistentVolumes.gitea'
+      - 'alerts.drone'
+      - 'otomi.isHomeMonitored'
+      - 'home'
+      - 'dns.provider.civo'

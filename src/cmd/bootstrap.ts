@@ -368,7 +368,7 @@ export const bootstrap = async (
 
   if (!originalValues) {
     // FIXME what is the use case to enter this
-    d.log('A new values repo has been created. For next steps follow documentation at https://otomi.io')
+    d.log('A new values repo has been created. For next steps follow documentation at https://apl-docs.net')
     return
   }
   const finalValues = (await deps.hfValues()) as Record<string, any>

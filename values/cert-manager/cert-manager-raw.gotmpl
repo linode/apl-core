@@ -13,6 +13,10 @@ resources:
     data:
       {{- if hasKey $p "google" }}
       secret: "{{ $p.google.serviceAccountKey | b64enc }}"
+      {{- else if hasKey $p "akamai" }}
+      access_token: {{ $p.akamai.accessToken | b64enc | quote }}
+      client_token: {{ $p.akamai.clientToken | b64enc | quote }}
+      client_secret: {{ $p.akamai.clientSecret | b64enc | quote }}
       {{- else if hasKey $p "azure-private-dns" }}
       secret: "{{ $p | get "azure-private-dns.aadClientSecret" | b64enc }}"
       {{- else if hasKey $p "azure" }}
@@ -21,8 +25,6 @@ resources:
       secret: "{{ $p.aws.credentials.secretKey | b64enc }}"
       {{- else if hasKey $p "digitalocean" }}
       secret: "{{ $p.digitalocean.apiToken | b64enc }}"
-      {{- else if hasKey $p "civo" }}
-      secret: "{{ $p.civo.apiToken | b64enc }}"
       {{- else if hasKey $p "cloudflare" }}
       secret: "{{ $p.cloudflare.apiToken | b64enc }}"
       {{- else if hasKey $p "linode" }}
@@ -50,6 +52,19 @@ resources:
         solvers:
           - selector: {}
             dns01:
+              {{- with $p | get "akamai" nil }}
+              akamai:
+                serviceConsumerDomain: {{ .host }}
+                accessTokenSecretRef:
+                  name: external-dns
+                  key: access_token
+                clientTokenSecretRef:
+                  name: external-dns
+                  key: client_token
+                clientSecretSecretRef:
+                  name: external-dns
+                  key: client_secret
+              {{- end }}
               {{- with $p | get "aws" nil }}
               route53:
                 {{- with . | get "credentials.accessKey" nil }}
@@ -111,14 +126,6 @@ resources:
                 tokenSecretRef:
                   key: secret
                   name: external-dns
-              {{- end }}
-              {{- with $p | get "civo" nil }}
-              webhook:
-                solverName: "civo"
-                groupName: civo.webhook.okteto.com
-                config:
-                  secretKey: secret
-                  secretName: external-dns
               {{- end }}
               {{- with $p | get "linode" nil }}
               webhook:

@@ -52,6 +52,9 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
         'otomi.io/app': 'managed',
       },
       namespace: 'argocd',
+      annotations: {
+        'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+      },
     },
     spec: {
       syncPolicy: {
