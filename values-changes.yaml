@@ -292,3 +292,6 @@ changes:
       - 'otomi.isHomeMonitored'
       - 'home'
       - 'dns.provider.civo'
+  - version: 29
+    additions:
+      - platformBackups.gitea.enabled: false

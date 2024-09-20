@@ -6,9 +6,9 @@
 {{- if eq $obj.type "minioLocal" }}
 {{- $giteaBucketName = "gitea" }}
 {{- else if eq $obj.type "linode" }}
-{{- $giteaBucketName = $obj.linode.buckets.gitea }}
+{{- $giteaBucketName = $obj.linode.buckets | get "gitea" nil }}
 {{- end }}
-{{- $giteaBackupConfig := $v.platformBackups | get "gitea" }}
+{{- $giteaBackupConfig := $v.platformBackups.gitea }}
 
 resources:
 {{- if $v._derived.untrustedCA }}
@@ -61,7 +61,7 @@ resources:
         {{- else }}
         storage: 1Gi
         {{- end }}
-{{- if and $giteaBackupConfig ($giteaBackupConfig | get "enabled") $giteaBucketName }}
+{{- if and $giteaBackupConfig.enabled $giteaBucketName }}
 - apiVersion: v1
   kind: ServiceAccount
   metadata:
@@ -159,7 +159,7 @@ resources:
   metadata:
     name: gitea-backup-job
   spec:
-    schedule: {{ default ($giteaBackupConfig | get "schedule") "1 0 * * *" }}
+    schedule: {{ $giteaBackupConfig.schedule }}
     concurrencyPolicy: Forbid
     jobTemplate:
       spec:
@@ -189,7 +189,7 @@ resources:
                   - name: BUCKET_NAME
                     value: {{ $giteaBucketName }}
                   - name: RETENTION_TIME
-                    value: {{ default ($giteaBackupConfig | get "retentionPolicy") "7d" }}
+                    value: {{ $giteaBackupConfig.retentionPolicy }}
                 securityContext:
                   runAsNonRoot: true
                   runAsUser: 65535
