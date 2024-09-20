@@ -2458,6 +2458,8 @@ properties:
                 $ref: '#/definitions/autoscalingEnabled'
               queryFrontend:
                 $ref: '#/definitions/autoscalingEnabled'
+              metricsGenerator:
+                $ref: '#/definitions/resources'
           persistence:
             properties:
               ingester:

@@ -24,11 +24,13 @@ route:
   group_interval: {{ .instance | get "alerts.groupInterval" (.root | get "alerts.groupInterval" "5m") }}
   repeat_interval: {{ .instance | get "alerts.repeatInterval" (.root | get "alerts.repeatInterval" "3h") }}
   routes:
-    - match:
+    - matchers:
         alertname: Watchdog
+        namespace: "team-{{ .instance | get "id" }}"
       receiver: "null"
-    - match:
+    - matchers:
         alertname: CPUThrottlingHigh
+        namespace: "team-{{ .instance | get "id" }}"
       {{- if (has "none" $receivers ) }}
       receiver: "null"
       {{- else }}
@@ -36,9 +38,7 @@ route:
       {{- end }}
     - matchers:
         severity: critical
-        {{- if $team }}
         namespace: "team-{{ .instance | get "id" }}"
-        {{- end }}
       {{- if (has "none" $receivers ) }}
       receiver: "null"
       {{- else }}
