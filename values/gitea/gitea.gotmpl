@@ -220,12 +220,19 @@ postgresql:
       additionalLabels:
         prometheus: system
 
-{{- if $v._derived.untrustedCA }}
 extraVolumeMounts:
+  - name: backup
+    mountPath: /backup
+{{- if $v._derived.untrustedCA }}
   - name: custom-ca
     mountPath: /etc/ssl/certs/ca-certificates.crt
     subPath: ca-certificates.crt
+{{- end }}
 extraVolumes:
+  - name: backup
+    persistentVolumeClaim:
+      claimName: gitea-backup
+{{- if $v._derived.untrustedCA }}
   - name: custom-ca
     secret:
       secretName: custom-ca
