@@ -9,7 +9,7 @@ metadata:
   name: team-{{ $v.teamId }}-backup-{{ .name }}
   namespace: velero
 spec:
-  schedule: {{ .schedule }}
+  schedule: {{ .schedule | quote }}
   template:
     includedNamespaces:
     - team-{{ $v.teamId }}
