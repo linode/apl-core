@@ -93,7 +93,7 @@ resources:
   metadata:
     name: gitea-backup-job
   spec:
-    schedule: {{ $giteaBackupConfig.schedule }}
+    schedule: {{ $giteaBackupConfig.schedule | quote }}
     concurrencyPolicy: Forbid
     jobTemplate:
       spec:
