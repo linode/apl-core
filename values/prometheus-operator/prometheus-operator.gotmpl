@@ -70,6 +70,18 @@ prometheus:
       annotations:
         sidecar.istio.io/inject: "true"
     resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
+    # all team alert managers that will get alerts
+    alertingEndpoints:
+      - name: alertmanager-po-alertmanager-0 
+        namespace: monitoring
+        port: http
+        scheme: http
+        apiVersion: v2
+      - name: alertmanager-labs-po-alertmanager-0
+        namespace: team-labs
+        port: http
+        scheme: http
+        apiVersion: v2
     priorityClassName: otomi-critical
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"

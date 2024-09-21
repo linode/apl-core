@@ -90,8 +90,8 @@ alertmanager:
   serviceMonitor:
     selfMonitor: false
   alertmanagerSpec:
-    alertmanagerConfigMatcherStrategy:
-      type: OnNamespace
+    # alertmanagerConfigMatcherStrategy:
+    #   type: OnNamespace
     resources:
       limits:
         cpu: 500m

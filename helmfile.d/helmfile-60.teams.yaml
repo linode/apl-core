@@ -40,7 +40,7 @@ releases:
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
   - name: prometheus-{{ $teamId }}
-    installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.prometheus" false) ($team | get "managedMonitoring.alertmanager" false) }}
+    installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
@@ -71,7 +71,7 @@ releases:
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
-          enabled: {{ $team | get "managedMonitoring.prometheus" false }}
+          enabled: false
           namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec:
             podMetadata:
@@ -93,10 +93,10 @@ releases:
               matchLabels:
                 prometheus: team-{{ $teamId }}
             {{- end }}
-    {{- if gt (len .services) 0 }}
+            {{- if gt (len .services) 0 }}
             additionalScrapeConfigs:
           {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
-    {{- end }}
+            {{- end }}
         {{- if $team | get "managedMonitoring.prometheus" false }}
         additionalPrometheusRules:
           - name: blackbox
