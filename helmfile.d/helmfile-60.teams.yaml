@@ -61,47 +61,26 @@ releases:
               annotations:
                 sidecar.istio.io/inject: "true"
               labels:
-                prometheus: team-{{ $teamId }}
+                prometheus: system
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
-          appNamespacesTarget: team-{{ $teamId }}
           rules:
-            general: {{ $team | get "managedMonitoring.prometheus" false }}
+            general: false
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
           enabled: false
           namespaceOverride: null # team-{{ $teamId }}
-          prometheusSpec:
-            podMetadata:
-              annotations:
-                traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
-              labels:
-                otomi.io/app: prometheus-team-{{ $teamId }}
-            externalLabels:
-              cluster: "prometheus-{{ $teamId }}.{{ $domain }}"
-            externalUrl: "https://prometheus-{{ $teamId }}.{{ $domain }}"
-            {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
-            {{ $selType }}NamespaceSelector:
-              matchExpressions:
-                - key: name
-                  operator: In
-                  values:
-                    - team-{{ $teamId }}
-            {{ $selType }}Selector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-            {{- end }}
-            {{- if gt (len .services) 0 }}
-            additionalScrapeConfigs:
-          {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
-            {{- end }}
-        {{- if $team | get "managedMonitoring.prometheus" false }}
-        additionalPrometheusRules:
-          - name: blackbox
-            {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
-        {{- end }}    
+          prometheusSpec: {}
+            # podMetadata:
+            #   annotations:
+            #     traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
+            #   labels:
+            #     otomi.io/app: prometheus-team-{{ $teamId }}
+            # externalLabels:
+            #   cluster: "prometheus-{{ $teamId }}.{{ $domain }}"
+            # externalUrl: "https://prometheus-{{ $teamId }}.{{ $domain }}"
         grafana:
           enabled: {{ $team | get "managedMonitoring.grafana" false }}
           namespaceOverride: null # team-{{ $teamId }}
@@ -114,8 +93,7 @@ releases:
               root_url: https://grafana-{{ $teamId }}.{{ $domain }}
           sidecar:
             datasources:
-              defaultDatasourceEnabled: {{ $team | get "managedMonitoring.prometheus" false }}
-              uid: Prometheus-team
+              defaultDatasourceEnabled: false
             dashboards:
               enabled: true
               label: release
@@ -124,6 +102,7 @@ releases:
             - name: Prometheus-platform
               editable: false
               uid: prometheus-platform
+              isDefault: true
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
@@ -186,7 +165,7 @@ releases:
                   datasourceUid: 'loki'
     {{- if has "msteams" ($team | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: {{ $team | get "managedMonitoring.prometheus" false }}
+    installed: {{ $team | get "managedMonitoring.alertmanager" false }}
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -227,7 +206,6 @@ releases:
           {{- if $v.apps.trivy.enabled }}
           - trivy-teams
           {{- end }}
-
   - name: team-ns-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -249,7 +227,7 @@ releases:
         teamId: {{ $teamId }}
         teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if and ($team | get "managedMonitoring.prometheus" false) (gt (len $teamServices) 0) }}
+  {{- if (gt (len $teamServices) 0) }}
       - name: blackbox
         svc: prometheus-blackbox-exporter
         port: 9115

@@ -24,19 +24,19 @@ route:
   repeat_interval: {{ .instance | get "alerts.repeatInterval" (.root | get "alerts.repeatInterval" "3h") }}
   routes:
     - matchers:
-        alertname: Watchdog
+        - alertname="Watchdog"
       receiver: "null"
     - matchers:
-        alertname: CPUThrottlingHigh
-        namespace: team-labs
+        - alertname="CPUThrottlingHigh"
+        - namespace="team-{{ .instance | get "id" }}"
       {{- if (has "none" $receivers ) }}
       receiver: "null"
       {{- else }}
       receiver: default
       {{- end }}
     - matchers:
-        severity: critical
-        namespace: team-labs
+        - severity="critical"
+        - namespace="team-{{ .instance | get "id" }}"
       {{- if (has "none" $receivers ) }}
       receiver: "null"
       {{- else }}

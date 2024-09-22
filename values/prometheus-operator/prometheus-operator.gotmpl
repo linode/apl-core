@@ -72,16 +72,18 @@ prometheus:
     resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
     # all team alert managers that will get alerts
     alertingEndpoints:
-      - name: alertmanager-po-alertmanager-0 
-        namespace: monitoring
-        port: http
-        scheme: http
-        apiVersion: v2
-      - name: alertmanager-labs-po-alertmanager-0
-        namespace: team-labs
-        port: http
-        scheme: http
-        apiVersion: v2
+    - name: po-alertmanager 
+      namespace: monitoring
+      port: http-web
+      scheme: http
+      apiVersion: v2
+    {{- range $id, $team := $v.teamConfig }}
+    - name: '{{ $id }}-po-alertmanager'
+      namespace: 'team-{{ $id }}'
+      port: http-web
+      scheme: http
+      apiVersion: v2
+    {{- end }}    
     priorityClassName: otomi-critical
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"
@@ -98,7 +100,7 @@ prometheus:
     {{- if $c.tempo.enabled }}
     enableRemoteWriteReceiver: true
     {{- end }}
-{{- if and (not $v.otomi.isMultitenant) $hasServices }}
+{{- if $hasServices }}
     additionalScrapeConfigs:
   {{- range $teamId, $team := $v.teamConfig }}
     {{- $teamServices := ($team | get "services" list) }}
@@ -134,17 +136,9 @@ prometheus:
     {{- range $m := (tpl (readFile "service-monitors.gotmpl") $v | fromYaml) | get "additionalServiceMonitors" }}
     - {{- toYaml $m | nindent 6 }}
     {{- end }}
-{{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") }}  
 additionalPrometheusRules:
-  {{- if not $v.otomi.isMultitenant }}
   - name: blackbox
     {{- readFile "rules/blackbox.yaml" | nindent 4 }}
-  {{- end }}
-  {{- if eq $v.cluster.provider "aws" }}
-  - name: cluster-autoscaler
-    {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
-  {{- end }}
-{{- end }}
 alertmanager:
   enabled: {{ $a.enabled }}
   alertmanagerSpec:
