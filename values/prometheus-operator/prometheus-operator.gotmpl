@@ -100,15 +100,15 @@ prometheus:
     {{- if $c.tempo.enabled }}
     enableRemoteWriteReceiver: true
     {{- end }}
-{{- if $hasServices }}
+    {{- if $hasServices }}
     additionalScrapeConfigs:
-  {{- range $teamId, $team := $v.teamConfig }}
+    {{- range $teamId, $team := $v.teamConfig }}
     {{- $teamServices := ($team | get "services" list) }}
-    {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
+    {{- $domain := $v.cluster.domainSuffix }}
     {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
-  {{- end }}
-{{- end }}
-{{- if $p.remoteWrite.enabled }}
+    {{- end }}
+    {{- end }}
+    {{- if $p.remoteWrite.enabled }}
     remoteWrite:
     - url: "{{ $p.remoteWrite.rwConfig.target }}"
       {{- if $p.remoteWrite.rwConfig.basicAuth.enabled }}
@@ -125,7 +125,7 @@ prometheus:
       {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
       {{- . | nindent 6 }}
       {{- end }}
-{{- end }}
+    {{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
     - {{- toYaml $m | nindent 6 }}
