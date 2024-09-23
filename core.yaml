@@ -357,14 +357,6 @@ teamApps:
   - name: loki
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A","expr":"","queryType":"range","datasource":%7B"type":"loki","uid":"loki"%7D%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
-  - name: prometheus
-    ownHost: true
-    ingress:
-      - svc: po-prometheus
-        hasPrefix: true
-        port: 9090
-        type: public
-        auth: true
   - name: tekton
     ownHost: true
     ingress:
