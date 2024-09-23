@@ -28,7 +28,7 @@ controller:
     patch:
       priorityClassName: otomi-critical
   useComponentLabel: true
-  resources: {{- $n.resources | toYaml | nindent 4 }}
+  resources: {{- $n.resources.controller | toYaml | nindent 4 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-privileged
   opentelemetry:
@@ -38,13 +38,7 @@ controller:
       runAsGroup: 65534
       runAsNonRoot: true
       allowPrivilegeEscalation: false
-    resources:
-      requests:
-        cpu: 100m
-        memory: 65Mi
-      limits:
-        cpu: 500m
-        memory: 256Mi
+    resources: {{- $n.resources.opentelemetry | toYaml | nindent 6 }}
   replicaCount: 2
   minAvailable: 1
   autoscaling:
@@ -135,13 +129,7 @@ defaultBackend:
   enabled: true
   useComponentLabel: true
   priorityClassName: otomi-critical
-  resources:
-    limits:
-      cpu: 20m
-      memory: 20Mi
-    requests:
-      cpu: 10m
-      memory: 10Mi
+  resources: {{- $n.resources.defaultBackend | toYaml | nindent 4 }}
   service:
     omitClusterIP: true
 rbac:

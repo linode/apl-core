@@ -139,13 +139,7 @@ queryFrontend:
       - name: auth
         containerPort: 3101
         protocol: TCP
-    resources:
-      limits:
-        cpu: 100m
-        memory: 32Mi
-      requests:
-        cpu: 50m
-        memory: 16Mi
+    resources: {{- $l.resources.reverseProxy | toYaml | nindent 6 }}
     volumeMounts:
       - name: reverse-proxy-auth-config
         mountPath: /etc/reverse-proxy-conf
