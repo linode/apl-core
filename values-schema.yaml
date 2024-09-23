@@ -2686,6 +2686,19 @@ properties:
           - properties:
               provider:
                 type: string
+                const: age
+              age:
+                properties:
+                  publicKey:
+                    type: string
+                  privateKey:
+                    type: string
+                    x-secret: ''
+            required:
+              - provider
+          - properties:
+              provider:
+                type: string
                 const: aws
               aws:
                 properties:

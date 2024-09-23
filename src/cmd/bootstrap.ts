@@ -25,6 +25,7 @@ const kmsMap = {
   aws: 'kms',
   azure: 'azure_keyvault',
   google: 'gcp_kms',
+  age: 'age',
 }
 
 export const bootstrapSops = async (
@@ -46,6 +47,7 @@ export const bootstrapSops = async (
   const targetPath = `${envDir}/.sops.yaml`
   const settingsFile = `${envDir}/env/settings.yaml`
   const settingsVals = (await deps.loadYaml(settingsFile)) as Record<string, any>
+  const secretsSettingsFile = `${envDir}/env/secrets.settings.yaml`
   const provider: string | undefined = settingsVals?.kms?.sops?.provider
   if (!provider) {
     d.warn('No sops information given. Assuming no sops enc/decryption needed. Be careful!')
@@ -54,11 +56,32 @@ export const bootstrapSops = async (
 
   const templatePath = `${rootDir}/tpl/.sops.yaml.gotmpl`
   const kmsProvider = kmsMap[provider] as string
-  const kmsKeys = settingsVals.kms.sops[provider].keys as string
+  const kmsKeys = settingsVals.kms.sops[provider]?.keys as string
 
   const obj = {
     provider: kmsProvider,
     keys: kmsKeys,
+  }
+
+  if (provider === 'age') {
+    const { publicKey } = settingsVals?.kms?.sops?.age ?? {}
+    let privateKey = ''
+    const isSecretsDecrypted = await deps.pathExists(`${secretsSettingsFile}.dec`)
+    if (!isSecretsDecrypted) {
+      const encryptedSettings = (await deps.loadYaml(secretsSettingsFile)) as Record<string, any>
+      const encPrivateKey = encryptedSettings?.kms?.sops?.age?.privateKey
+      if (!encPrivateKey.startsWith('ENC')) {
+        privateKey = encPrivateKey
+      }
+    } else {
+      const decryptedSettings = (await deps.loadYaml(`${secretsSettingsFile}.dec`)) as Record<string, any>
+      privateKey = decryptedSettings?.kms?.sops?.age?.privateKey
+    }
+    obj.keys = publicKey
+    if (privateKey && !process.env.SOPS_AGE_KEY) {
+      process.env.SOPS_AGE_KEY = privateKey
+      await deps.writeFile(`${env.ENV_DIR}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
+    }
   }
 
   const exists = await deps.pathExists(targetPath)
@@ -80,6 +103,7 @@ export const bootstrapSops = async (
     if (isCli || env.OTOMI_DEV) {
       // first time so we know we have values
       const secretsFile = `${env.ENV_DIR}/.secrets`
+      d.log(`Creating secrets file: ${secretsFile}`)
       if (provider === 'google') {
         // and we also assume the correct values are given by using '!' (we want to err when not set)
         const serviceKeyJson = JSON.parse(values.kms!.sops!.google!.accountJson as string)
@@ -95,6 +119,10 @@ export const bootstrapSops = async (
       } else if (provider === 'azure') {
         const v = values.kms!.sops!.azure!
         await deps.writeFile(secretsFile, `AZURE_CLIENT_ID='${v.clientId}'\nAZURE_CLIENT_SECRET=${v.clientSecret}`)
+      } else if (provider === 'age') {
+        const { privateKey } = values.kms!.sops!.age!
+        process.env.SOPS_AGE_KEY = privateKey
+        await deps.writeFile(secretsFile, `SOPS_AGE_KEY=${privateKey}`)
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later
@@ -134,6 +162,36 @@ export const getStoredClusterSecrets = async (
     return kubeSecretObject
   }
   return undefined
+}
+
+export const generateAgeKeys = async (deps = { $, terminal }) => {
+  const d = deps.terminal(`cmd:${cmdName}:generateAgeKeys`)
+  try {
+    d.info('Generating age keys')
+    const result = await deps.$`age-keygen`
+    const { stdout } = result
+    const matchPublic = stdout?.match(/age[0-9a-z]+/)
+    const publicKey = matchPublic ? matchPublic[0] : ''
+    const matchPrivate = stdout?.match(/AGE-SECRET-KEY-[0-9A-Z]+/)
+    const privateKey = matchPrivate ? matchPrivate[0] : ''
+    const ageKeys = { publicKey, privateKey }
+    return ageKeys
+  } catch (error) {
+    d.log('Error generating age keys:', error)
+    throw error
+  }
+}
+
+export const getKmsValues = async (originalValues: any, deps = { generateAgeKeys }) => {
+  const kms = originalValues?.kms
+  if (!kms) return undefined
+  const provider = kms?.sops?.provider
+  if (!provider) return {}
+  if (provider !== 'age') return { kms }
+  const age = kms?.sops?.age
+  if (age?.publicKey && age?.privateKey) return { kms }
+  const ageKeys = await deps.generateAgeKeys()
+  return { kms: { sops: { provider: 'age', age: ageKeys } } }
 }
 
 export const copyBasicFiles = async (
@@ -186,6 +244,7 @@ export const processValues = async (
     loadYaml,
     decrypt,
     getStoredClusterSecrets,
+    getKmsValues,
     writeValues,
     pathExists,
     hfValues,
@@ -199,11 +258,13 @@ export const processValues = async (
   const { ENV_DIR, VALUES_INPUT } = env
   let originalInput: Record<string, any> | undefined
   let storedSecrets: Record<string, any> | undefined
+  let kmsValues: Record<string, any> | undefined
   if (deps.isChart) {
     d.log(`Loading app values from ${VALUES_INPUT}`)
     const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
     storedSecrets = (await deps.getStoredClusterSecrets()) || {}
-    originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
+    kmsValues = (await deps.getKmsValues(originalValues)) || {}
+    originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues), cloneDeep(kmsValues))
     await deps.writeValues(originalInput)
   } else {
     d.log(`Loading repo values from ${ENV_DIR}`)

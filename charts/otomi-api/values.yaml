@@ -115,6 +115,7 @@ tools:
     #   memory: 100Mi
 
   secrets:
+    SOPS_AGE_KEY: ''
     GCLOUD_SERVICE_KEY: ''
     AZURE_TENANT_ID: ''
     AZURE_CLIENT_ID: ''
