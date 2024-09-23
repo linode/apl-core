@@ -1,13 +1,6 @@
 {{- $v := .Values }}
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
-
-{{- $giteaBucketName := "" }}
-{{- if eq $obj.type "minioLocal" }}
-{{- $giteaBucketName = "gitea" }}
-{{- else if eq $obj.type "linode" }}
-{{- $giteaBucketName = $obj.linode.buckets | get "gitea" nil }}
-{{- end }}
 {{- $giteaBackupConfig := $v.platformBackups.gitea }}
 
 resources:
@@ -61,7 +54,7 @@ resources:
         {{- else }}
         storage: 1Gi
         {{- end }}
-{{- if and $giteaBackupConfig.enabled $giteaBucketName }}
+{{- if $giteaBackupConfig.enabled }}
 - apiVersion: v1
   kind: ServiceAccount
   metadata:
@@ -120,9 +113,9 @@ resources:
                     cd /backup &&
                     gitea dump --type tar.bz2 &&
                     echo '02fa617857a5723a670867a5b1f83b81c898124cd349f2e1fd235f5cf1a99bce  .bin/rclone' | sha256sum -c - &&
-                    .bin/rclone copy /backup gitea:/$BUCKET_NAME &&
-                    .bin/rclone sync --min-age $RETENTION_TIME /backup gitea:/$BUCKET_NAME &&
-                    find . -type f -ctime +1 -delete"
+                    .bin/rclone copy /backup gitea:/\$BUCKET_NAME &&
+                    .bin/rclone sync --min-age $RETENTION_TIME /backup gitea:/\$BUCKET_NAME &&
+                    find . -type f -iname '*.tar.bz2' -ctime +1 -delete"
                 resources:
                   limits:
                     cpu: 250m
@@ -131,8 +124,6 @@ resources:
                     cpu: 100m
                     memory: 128Mi
                 env:
-                  - name: BUCKET_NAME
-                    value: {{ $giteaBucketName }}
                   - name: RETENTION_TIME
                     value: {{ $giteaBackupConfig.retentionPolicy }}
                 securityContext:
