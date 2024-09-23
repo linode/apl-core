@@ -22,10 +22,14 @@
 {{- range $url := $registry }}
       - https://{{ $url }}
 {{- end }}
+      labels:
+        namespace: team-{{ .teamId }}
   relabel_configs:
     - source_labels: [__address__]
       target_label: __param_target
     - source_labels: [__param_target]
       target_label: instance
+    - source_labels: [__meta_kubernetes_namespace]
+      target_label: namespace
     - target_label: __address__
       replacement: prometheus-blackbox-exporter.monitoring:9115

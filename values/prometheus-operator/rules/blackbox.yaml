@@ -8,4 +8,4 @@ groups:
           severity: critical
         annotations:
           description: 'Could not reach {{ $labels.instance }} during last 1 minute'
-          summary: 'Targer {{ $labels.instance }} is down'
+          summary: 'Target {{ $labels.instance }} is down'
