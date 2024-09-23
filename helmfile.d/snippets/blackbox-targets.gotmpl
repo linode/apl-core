@@ -14,7 +14,7 @@
 {{- end }}
 - job_name: probe-services-{{ .teamId }}
   metrics_path: /probe
-  scrape_interval: 10m
+  scrape_interval: 1m
   params:
     module: [http_2xx]  # Look for a HTTP 200 response.
   static_configs:
@@ -29,7 +29,3 @@
       target_label: instance
     - target_label: __address__
       replacement: prometheus-blackbox-exporter.monitoring:9115
-
-
-# outcome now: https://petclinic.team-labs.labs.try-apl.net/
-# outcome should be: https://petclinic-labs.labs.try-apl.net/

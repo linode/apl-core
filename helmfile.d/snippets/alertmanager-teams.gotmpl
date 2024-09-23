@@ -42,6 +42,14 @@ route:
       {{- else }}
       receiver: critical
       {{- end }}
+    - matchers:
+        - severity="critical"
+        - job="probe-services-{{ .instance | get "id" }}"
+      {{- if (has "none" $receivers ) }}
+      receiver: "null"
+      {{- else }}
+      receiver: critical
+      {{- end }}
 receivers:
   - name: "null"
 {{- if not (has "none" $receivers ) }}
