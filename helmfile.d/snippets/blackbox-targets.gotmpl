@@ -2,8 +2,8 @@
 {{- range $s := .services }}
   {{- $type := $s.type | default "auth" }}
   {{- if and (eq $type "public") (not ($s | get "ksvc.scaleToZero" false)) }}
-    {{- $host := (printf "%s-%s" $s.name $.teamId)) }}
-    {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.host $.domain)) }}
+    {{- $host := (printf "%s-%s" $s.name $.teamId) }}
+    {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $host $.domain)) }}
     {{- $paths:= $s | get "paths" list }}
     {{- $path := ternary "/" (first $paths) (empty $paths) }}
     {{- $url := printf "%s%s" $svcDomain $path }}
