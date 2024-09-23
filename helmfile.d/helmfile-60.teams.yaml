@@ -71,16 +71,7 @@ releases:
           prometheus: team-{{ $teamId }}
         prometheus:
           enabled: false
-          namespaceOverride: null # team-{{ $teamId }}
           prometheusSpec: {}
-            # podMetadata:
-            #   annotations:
-            #     traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
-            #   labels:
-            #     otomi.io/app: prometheus-team-{{ $teamId }}
-            # externalLabels:
-            #   cluster: "prometheus-{{ $teamId }}.{{ $domain }}"
-            # externalUrl: "https://prometheus-{{ $teamId }}.{{ $domain }}"
         grafana:
           enabled: {{ $team | get "managedMonitoring.grafana" false }}
           namespaceOverride: null # team-{{ $teamId }}
