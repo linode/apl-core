@@ -152,6 +152,7 @@ spec:
       spec:
         accessModes:
         - ReadWriteOnce
+        storageClassName: linode-block-storage
         resources:
           requests:
             storage: 1Gi
