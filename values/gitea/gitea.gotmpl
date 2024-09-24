@@ -145,7 +145,7 @@ statefulset:
     - name: RCLONE_CONFIG_GITEA_PROVIDER
       value: Minio
     - name: RCLONE_CONFIG_GITEA_ENDPOINT
-      value: http://minio:9000
+      value: http://minio.minio.svc.cluster.local:9000
     - name: RCLONE_CONFIG_GITEA_ACCESS_KEY_ID
       valueFrom:
         secretKeyRef:
