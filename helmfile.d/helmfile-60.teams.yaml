@@ -93,12 +93,29 @@ releases:
             - name: Prometheus-platform
               editable: false
               uid: prometheus-platform
+              {{- if $v.apps.thanos.enabled }}
+              isDefault: false
+              {{- else }}
               isDefault: true
+              {{- end }}
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
               jsonData:
                 httpMethod: GET
+            {{- if $v.apps.thanos.enabled }}
+            - name: Thanos Query
+              access: proxy
+              isDefault: true
+              basicAuth: false
+              editable: false
+              orgId: 1
+              type: prometheus
+              url: http://thanos-query.monitoring:9090
+              jsonData:
+                prometheusType: Thanos
+                timeInterval: "60s"
+            {{- end }}
             - name: Loki
               editable: false
               uid: loki

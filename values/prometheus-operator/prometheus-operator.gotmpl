@@ -71,7 +71,7 @@ prometheus:
     resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
     # all team alert managers that will get alerts
     alertingEndpoints:
-    - name: po-alertmanager-blabla
+    - name: po-alertmanager
       namespace: monitoring
       port: http-web
       scheme: http
@@ -184,7 +184,7 @@ grafana:
       labelValue: grafana-dashboards
     {{- if $t.enabled }}  
     datasources:
-      defaultDatasourceEnabled: false
+      isDefaultDatasource: false
     {{- end }}
   serviceMonitor:
     enabled: {{ $p.enabled }}
