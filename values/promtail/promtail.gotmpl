@@ -1,20 +1,10 @@
 {{- $v := .Values }}
-{{- $promtail := $v.apps.promtail }}
+{{- $p := $v.apps.promtail }}
 {{- $l := $v.apps | get "loki" }}
 
 nameOverride: promtail
 
-resources:
-  {{- if (hasKey $promtail "resources") }}
-    {{- $promtail.resources | toYaml | nindent 2 }}
-  {{- else }}
-  requests:
-    cpu: 100m
-    memory: 256Mi
-  limits:
-    cpu: 500m
-    memory: 384Mi
-  {{- end }}
+resources: {{- $p.resources | toYaml | nindent 4 }}
 
 serviceMonitor:
   enabled: true

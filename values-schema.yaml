@@ -460,7 +460,12 @@ definitions:
           pullPolicy:
             $ref: '#/definitions/imagePullPolicy'
       resources:
-        $ref: '#/definitions/resources'
+        controller:
+          $ref: '#/definitions/resources'
+        opentelemetry:
+          $ref: '#/definitions/resources'
+        defaultBackend:
+          $ref: '#/definitions/resources'
       service:
         properties:
           annotations:
@@ -1776,9 +1781,13 @@ properties:
             properties:
               gitea:
                 $ref: '#/definitions/resources'
+              init:
+                $ref: '#/definitions/resources'
               postgresql:
                 $ref: '#/definitions/resources'
               memcached:
+                $ref: '#/definitions/resources'
+              memcachedMetrics:
                 $ref: '#/definitions/resources'
       grafana:
         additionalProperties: false
@@ -1794,7 +1803,12 @@ properties:
           image:
             $ref: '#/definitions/imageSimple'
           resources:
-            $ref: '#/definitions/resources'
+            grafana:
+              $ref: '#/definitions/resources'
+            sidecar:
+              $ref: '#/definitions/resources'
+            downloadDashboards:
+              $ref: '#/definitions/resources'
       harbor:
         additionalProperties: false
         properties:
@@ -1863,7 +1877,7 @@ properties:
                 $ref: '#/definitions/resources'
               registry:
                 $ref: '#/definitions/resources'
-              registry-controller:
+              registryController:
                 $ref: '#/definitions/resources'
               trivy:
                 $ref: '#/definitions/resources'
@@ -1942,6 +1956,17 @@ properties:
           enabled:
             type: boolean
             default: false
+          resources:
+            operator:
+              $ref: '#/definitions/resources'
+            agent:
+              $ref: '#/definitions/resources'
+            collector:
+              $ref: '#/definitions/resources'
+            ingester:
+              $ref: '#/definitions/resources'
+            jaeger:
+              $ref: '#/definitions/resources'
           _rawValues:
             $ref: '#/definitions/rawValues'
       keycloak:
@@ -2138,6 +2163,8 @@ properties:
                 $ref: '#/definitions/resources'
               queryFrontend:
                 $ref: '#/definitions/resources'
+              reverseProxy:
+                $ref: '#/definitions/resources'
           autoscaling:
             properties:
               ingester:
@@ -2273,6 +2300,8 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
         allOf:
           - anyOf:
               - not:
@@ -2398,12 +2427,24 @@ properties:
                 $ref: '#/definitions/imageSimple'
           resources:
             properties:
+              prometheusOperator:
+                $ref: '#/definitions/resources'
               prometheus:
                 $ref: '#/definitions/resources'
               kube-state-metrics:
                 $ref: '#/definitions/resources'
               node-exporter:
                 $ref: '#/definitions/resources'
+      promtail:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          resources:
+            $ref: '#/definitions/resources'
       rabbitmq:
         additionalProperties: false
         properties:
@@ -2992,6 +3033,22 @@ properties:
             description: Linode API Token
             $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
+      gitea:
+        type: object
+        title: Gitea
+        description: Enable application-level backup of Gitea repositories and database
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          resources:
+            $ref: '#/definitions/resources'
+          retentionPolicy:
+            $ref: '#/definitions/backupRetentionPolicy'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+
   obj:
     properties:
       provider:
@@ -3036,6 +3093,10 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: tempo
+                  gitea:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: gitea
             required:
               - region
               - accessKeyId

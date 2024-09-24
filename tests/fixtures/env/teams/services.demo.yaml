@@ -2,7 +2,7 @@ teamConfig:
     demo:
         services:
             - auth: true
-              domain: hello.team-demo.dev.linode-apl.net
+              domain: hello-demo.dev.linode-apl.net
               headers:
                   response:
                       set:

@@ -243,10 +243,10 @@ environments:
                   memory: 1Gi
               falcoCtlFollow:
                 requests:
-                  cpu: 20m
+                  cpu: 100m
                   memory: 16Mi
                 limits:
-                  cpu: 50m
+                  cpu: 500m
                   memory: 32Mi
               falcoCtlInstall:
                 requests:
@@ -264,23 +264,67 @@ environments:
                   memory: 256Mi
               falcoExporter:
                 requests:
-                  cpu: 20m
+                  cpu: 100m
                   memory: 16Mi
                 limits:
-                  cpu: 50m
+                  cpu: 500m
                   memory: 32Mi
           gitea:
             adminUsername: otomi-admin
             _rawValues: {}
+            resources:
+              gitea:
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+              memcached:
+                limits:
+                  cpu: 250m
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+              memcachedMetrics:
+                limits:
+                  cpu: 200m
+                  memory: 128M
+                requests:
+                  cpu: 50m
+                  memory: 64M
+              init:
+                limits:
+                  cpu: 400m
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
           grafana:
             enabled: false
             resources:
-              requests:
-                cpu: 100m
-                memory: 128Mi
-              limits:
-                cpu: 500m
-                memory: 256Mi
+              grafana:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              downloadDashboards:
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+                requests:
+                  cpu: 200m
+                  memory: 128Mi
+              sidecar:
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+                requests:
+                  cpu: 200m
+                  memory: 128Mi                
             _rawValues: {}
           harbor:
             enabled: false
@@ -332,7 +376,7 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 256Mi
-              registry-controller:
+              registryController:
                 requests:
                   cpu: 100m
                   memory: 256Mi
@@ -365,12 +409,27 @@ environments:
             maxBodySize: 1024m
             maxBodySizeBytes: 1073741824
             resources:
-              requests:
-                cpu: 200m
-                memory: 512Mi
-              limits:
-                cpu: "2"
-                memory: 2Gi
+              controller:
+                requests:
+                  cpu: 200m
+                  memory: 512Mi
+                limits:
+                  cpu: "2"
+                  memory: 2Gi
+              opentelemetry:
+                requests:
+                  cpu: 100m
+                  memory: 65Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              defaultBackend:
+                limits:
+                  cpu: 20m
+                  memory: 20Mi
+                requests:
+                  cpu: 10m
+                  memory: 10Mi
             _rawValues: {}
           istio:
             tracing:
@@ -422,6 +481,42 @@ environments:
             _rawValues: {}
           jaeger:
             enabled: false
+            resources:
+              operator:
+                limits:
+                  cpu: 500m
+                  memory: 128Mi
+                requests:
+                  cpu: 100m
+                  memory: 32Mi
+              agent:
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+              collector:
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+              ingester:
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+              jaeger:
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
             _rawValues: {}
           keycloak:
             adminUsername: otomi-admin
@@ -567,6 +662,13 @@ environments:
                 limits:
                   cpu: 200m
                   memory: 256Mi
+              reverseProxy:
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+                requests:
+                  cpu: 50m
+                  memory: 16Mi                
             persistence:
               ingester:
                 size: 20Gi
@@ -630,8 +732,30 @@ environments:
           otomi-api:
             editorInactivityTimeout: 1
             _rawValues: {}
+            resources:
+              api:
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+              tools:
+                limits:
+                  cpu: 600m
+                  memory: 512Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
           otomi-console:
             _rawValues: {}
+            resources:
+              limits:
+                cpu: 400m
+                memory: 256Mi
+              requests:
+                cpu: 50m
+                memory: 128Mi
           otomi-operator:
             resources:
               operator:
@@ -646,34 +770,41 @@ environments:
             resources:
               operator:
                 requests:
-                  cpu: 100m
+                  cpu: 200m
                   memory: 128Mi
                 limits:
-                  cpu: 200m
-                  memory: 256Mi
+                  cpu: "1"
+                  memory: 512Mi
             _rawValues: {}
           apl-gitea-operator:
             resources:
               operator:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
-                limits:
                   cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
                   memory: 512Mi
             _rawValues: {}
           apl-keycloak-operator:
             resources:
               operator:
                 requests:
-                  cpu: 100m
+                  cpu: 200m
                   memory: 128Mi
                 limits:
-                  cpu: 200m
-                  memory: 256Mi
+                  cpu: "1"
+                  memory: 512Mi
             _rawValues: {}
           promtail:
             enabled: false
+            resources:
+              requests:
+                cpu: 200m
+                memory: 256Mi
+              limits:
+                cpu: "1"
+                memory: 512Mi
             _rawValues: {}
           prometheus-blackbox-exporter:
             _rawValues: {}
@@ -691,6 +822,13 @@ environments:
             retentionSize: 4GB
             storageSize: 5Gi
             resources:
+              prometheusOperator:
+                limits:
+                  cpu: 400m
+                  memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
               prometheus:
                 requests:
                   cpu: 100m
@@ -937,10 +1075,10 @@ environments:
             replicas: 2
             resources:
               limits:
-                cpu: 500m
-                memory: 512Mi
+                cpu: "1"
+                memory: 1Gi
               requests:
-                cpu: 50m
+                cpu: 200m
                 memory: 256Mi
           harbor:
             size: 5Gi
@@ -948,10 +1086,10 @@ environments:
             coreDatabase: registry
             resources:
               limits:
-                cpu: 500m
-                memory: 512Mi
+                cpu: "1"
+                memory: 1Gi
               requests:
-                cpu: 50m
+                cpu: 200m
                 memory: 256Mi
           gitea:
             useOtomiDB: true
@@ -960,10 +1098,10 @@ environments:
             replicas: 2
             resources:
               limits:
-                cpu: 500m
-                memory: 512Mi
+                cpu: "1"
+                memory: 1Gi
               requests:
-                cpu: 50m
+                cpu: 200m
                 memory: 256Mi
         obj:
           provider:
@@ -976,6 +1114,8 @@ environments:
               enabled: false
             keycloak:
               enabled: false
+          gitea:
+            enabled: false
         cluster:
           provider: linode
           name: apl
