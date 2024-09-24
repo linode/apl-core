@@ -2,4 +2,4 @@ The Otomi installer was successfully deployed on the cluster.
 
 Please inspect the output of the installer job ({{ .Release.Namespace }}/{{ include "otomi.fullname" . }}) for any feedback or errors.
 
-Also visit otomi.io for further instructions and reference documentation.
+Also visit https://apl-docs.net for further instructions and reference documentation.
