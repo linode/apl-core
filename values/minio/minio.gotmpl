@@ -3,6 +3,7 @@
 {{- $k := $v.apps.keycloak }}
 {{- $minioDomain := printf "minio.%s" $v.cluster.domainSuffix }}
 {{- $rootCASecretName := "root-ca" }}
+{{- $bucketNames := list "cnpg" "gitea" "harbor" "loki" "tempo" "velero" -}}
 
 mode: standalone
 auth:
@@ -63,11 +64,9 @@ provisioning:
       cpu: 200m
       memory: 128Mi
   buckets:
-    - name: velero
-    - name: loki
-    - name: harbor
-    - name: tempo
-    - name: cnpg
+  {{- range $bucketNames }}
+    - name: {{ . }}
+  {{- end }}
   policies:
     - name: otomi-apps
       statements:
@@ -79,11 +78,9 @@ provisioning:
           - s3:GetBucketLocation
           - s3:ListBucketMultipartUploads
           resources:
-          - arn:aws:s3:::velero
-          - arn:aws:s3:::loki
-          - arn:aws:s3:::harbor
-          - arn:aws:s3:::tempo
-          - arn:aws:s3:::cnpg
+          {{- range $bucketNames }}
+          - arn:aws:s3:::{{ . }}
+          {{- end }}
         - effect: Allow
           principal:
             AWS:
@@ -91,11 +88,9 @@ provisioning:
           actions:
           - s3:ListBucket
           resources:
-          - arn:aws:s3:::velero
-          - arn:aws:s3:::loki
-          - arn:aws:s3:::harbor
-          - arn:aws:s3:::tempo
-          - arn:aws:s3:::cnpg
+          {{- range $bucketNames }}
+          - arn:aws:s3:::{{ . }}
+          {{- end }}
           condition:
             StringEquals:
               s3:prefix:
@@ -111,8 +106,6 @@ provisioning:
           - s3:DeleteObject
           - s3:GetObject
           resources:
-          - arn:aws:s3:::velero/**
-          - arn:aws:s3:::loki/**
-          - arn:aws:s3:::harbor/**
-          - arn:aws:s3:::tempo/**
-          - arn:aws:s3:::cnpg/**
+          {{- range $bucketNames }}
+          - arn:aws:s3:::{{ . }}/**
+          {{- end }}

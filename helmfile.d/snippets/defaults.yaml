@@ -1078,6 +1078,8 @@ environments:
               enabled: false
             keycloak:
               enabled: false
+          gitea:
+            enabled: false
         cluster:
           provider: linode
           name: apl
