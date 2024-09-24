@@ -113,12 +113,13 @@ resources:
                       unzip -oj rclone.zip
                     fi &&
                     cd /backup &&
+                    echo 'Creating backup...' &&
                     gitea dump --type tar.bz2 &&
                     echo '5d20f5562609695b565d696980bbee91ec0503ed946410eb2e6024a8b6850ebd5b587d5c71488f471012ea39e6bf440d843840165e8ac75cd0ec737defa2a749  .bin/rclone' | sha512sum -c - &&
                     echo 'Uploading to object storage...' &&
-                    .bin/rclone copy /backup gitea:/\$BUCKET_NAME &&
+                    .bin/rclone copy --exclude '\.*/**' /backup gitea:/\$BUCKET_NAME &&
                     echo 'Removing old backups from object storage...' &&
-                    .bin/rclone sync --min-age $RETENTION_TIME /backup gitea:/\$BUCKET_NAME &&
+                    .bin/rclone sync --min-age $RETENTION_TIME --exclude '\.*/**' /backup gitea:/\$BUCKET_NAME &&
                     echo 'Cleaning up local backups...' &&
                     find . -type f -iname '*.tar.bz2' -ctime +1 -delete"
                 resources:
