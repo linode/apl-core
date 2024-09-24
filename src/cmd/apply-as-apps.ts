@@ -107,7 +107,7 @@ const removeApplication = async (release: HelmRelease): Promise<void> => {
       await setFinalizers(name)
     }
     const resDelete = await $`kubectl -n argocd delete application ${name}`
-    d.info(resDelete.stdout.toString())
+    d.info(resDelete.stdout.toString().trim())
   } catch (e) {
     d.error(`Failed to delete application ${name}: ${e.message}`)
   }
