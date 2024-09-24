@@ -2059,6 +2059,52 @@ properties:
             properties:
               operator:
                 $ref: '#/definitions/resources'
+      thanos:
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            type: boolean
+            default: false
+          query:
+            properties:
+              replicaCount:
+                description: Number of Thanos Query replicas.
+                type: integer
+                default: 1
+          compactor:
+            description: Resolution and Retention flags.
+            properties:
+              retentionResolutionRaw:
+                type: string
+                default: 30d
+              retentionResolution5m:
+                type: string
+                default: 30d
+              retentionResolution1h:
+                type: string
+                default: 10y
+          resources:
+            additionalProperties: false
+            properties:
+              query:
+                $ref: '#/definitions/resources'
+              storegateway:
+                $ref: '#/definitions/resources'
+              compactor:
+                $ref: '#/definitions/resources'
+          persistence:
+            properties:
+              storegateway:
+                properties:
+                  size:
+                    $ref: '#/definitions/size'
+                    default: 10Gi
+              compactor:
+                properties:
+                  size:
+                    $ref: '#/definitions/size'
+                    default: 10Gi
       tekton:
         additionalProperties: false
         properties:
@@ -2982,6 +3028,10 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: harbor
+                  thanos:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: tempo
                   tempo:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
