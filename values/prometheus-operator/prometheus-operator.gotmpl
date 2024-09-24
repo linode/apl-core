@@ -71,13 +71,13 @@ prometheus:
     resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
     # all team alert managers that will get alerts
     alertingEndpoints:
-    - name: po-alertmanager 
+    - name: po-alertmanager-blabla
       namespace: monitoring
       port: http-web
       scheme: http
       apiVersion: v2
     {{- range $id, $team := $v.teamConfig }}
-    {{- if $v.teamConfig.managedMonitoring.alertmanager }}
+    {{- if ($v.teamConfig | get "managedMonitoring" "alertmanager") }}
     - name: '{{ $id }}-po-alertmanager'
       namespace: 'team-{{ $id }}'
       port: http-web
