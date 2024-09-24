@@ -940,6 +940,8 @@ environments:
               enabled: false
             keycloak:
               enabled: false
+          gitea:
+            enabled: false
         cluster:
           provider: linode
           name: apl
@@ -963,4 +965,4 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes
-        version: 28
+        version: 29
