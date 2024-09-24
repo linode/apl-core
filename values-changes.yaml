@@ -294,6 +294,7 @@ changes:
       - 'dns.provider.civo'
   - version: 29
     relocations:
-      - 'teamConfig.{team}.managedMonitoring.prometheus'
       - 'apps.harbor.resources.registry-controller': 'apps.harbor.resources.registryController'
       - 'apps.ingress-nginx.resources': 'apps.ingress-nginx.resources.controller'
+    deletions:
+      - 'teamConfig.{team}.managedMonitoring.prometheus'
