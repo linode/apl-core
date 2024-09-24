@@ -292,7 +292,7 @@ changes:
       - 'otomi.isHomeMonitored'
       - 'home'
       - 'dns.provider.civo'
-  - version: 27
+  - version: 29
     relocations:
       - 'apps.harbor.resources.registry-controller': 'apps.harbor.resources.registryController'
       - 'apps.ingress-nginx.resources': 'apps.ingress-nginx.resources.controller'
