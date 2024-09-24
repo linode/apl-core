@@ -292,3 +292,6 @@ changes:
       - 'otomi.isHomeMonitored'
       - 'home'
       - 'dns.provider.civo'
+  - version: 28
+    deletions:
+      - 'teamConfig.{team}.managedMonitoring.prometheus'
