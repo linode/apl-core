@@ -13,7 +13,7 @@ instances: {{ $hdb.replicas }}
 {{- if $b.enabled }}
 backup:
   enabled: {{ $b.enabled }}
-  schedule: {{ $b.schedule }}
+  schedule: {{ $b.schedule | quote }}
   retentionPolicy: {{ $b.retentionPolicy }}
   type:  {{ $obj.type }}
 {{- if eq $obj.type "minioLocal" }}

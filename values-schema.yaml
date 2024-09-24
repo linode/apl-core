@@ -2987,6 +2987,22 @@ properties:
             description: Linode API Token
             $ref: '#/definitions/wordCharacterPattern'
             x-secret: ''
+      gitea:
+        type: object
+        title: Gitea
+        description: Enable application-level backup of Gitea repositories and database
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          resources:
+            $ref: '#/definitions/resources'
+          retentionPolicy:
+            $ref: '#/definitions/backupRetentionPolicy'
+          schedule:
+            $ref: '#/definitions/backupSchedule'
+
   obj:
     properties:
       provider:
@@ -3027,6 +3043,10 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: tempo
+                  gitea:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: gitea
             required:
               - region
               - accessKeyId
