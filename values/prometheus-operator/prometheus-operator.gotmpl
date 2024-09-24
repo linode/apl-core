@@ -33,13 +33,7 @@ defaultRules:
     {{ . }}: true
     {{- end }}
 prometheusOperator:
-  resources:
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
+  resources: {{- $p.resources.prometheusOperator | toYaml | nindent 4 }}
   admissionWebhooks:
     enabled: true
     certManager:
@@ -164,13 +158,7 @@ grafana:
   namespaceOverride: grafana
   defaultDashboardsTimezone: browser
   downloadDashboards:
-    resources:
-      limits:
-        cpu: 100m
-        memory: 100Mi
-      requests:
-        cpu: 50m
-        memory: 50Mi
+    resources: {{- $g.resources.downloadDashboards | toYaml | nindent 6 }}
   image:
     {{- with $g | get "image.tag" nil }}
     tag: {{ . }}
@@ -178,13 +166,7 @@ grafana:
     pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
   resources: {{- $g.resources | toYaml | nindent 4 }}
   sidecar:
-    resources:
-      limits:
-        cpu: 100m
-        memory: 100Mi
-      requests:
-        cpu: 50m
-        memory: 50Mi
+    resources: {{- $g.resources.sidecar | toYaml | nindent 6 }}
     dashboards:
       enabled: true
       label: release

@@ -18,17 +18,8 @@ podDns:
     nameservers:
       - "8.8.4.4"
       - "8.8.8.8"
-resources:
-  {{ with $g | get "resources.gitea" nil }}
-    {{- toYaml . | nindent 2 }}
-  {{- else }}
-  limits:
-    cpu: 1
-    memory: 1Gi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  {{- end }}
+
+resources: {{- $g.resources.gitea | toYaml | nindent 2 }}
 
 securityContext:
   allowPrivilegeEscalation: false
@@ -122,39 +113,17 @@ gitea:
         prometheus: system
 
 init:
-  resources:
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
+  resources: {{- $g.resources.init | toYaml | nindent 4 }}
 
 memcached:
   # @TODO:
   image:
     tag: {{ $g | get "image.memcached.tag" "1.6.12" }}
     pullPolicy:  {{ $g | get "image.memcached.pullPolicy" "IfNotPresent" }}
-  resources:
-    {{ with $g | get "resources.memcached" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 250m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    {{- end }}
+  resources: {{- $g.resources.memcached| toYaml | nindent 4 }}
   metrics:
     enabled: true
-    resources:
-      limits:
-        cpu: 200m
-        memory: 128M
-      requests:
-        cpu: 50m
-        memory: 64M
+    resources: {{- $g.resources.memcachedMetrics| toYaml | nindent 6 }}
     securityContext:
       enabled: true
     serviceMonitor:
@@ -184,11 +153,7 @@ postgresql:
     image:
       tag: 0.10.0
   persistence:
-    {{- if eq $v.cluster.provider "vultr" }}
-    size: 10Gi
-    {{- else }}
     size: 1Gi
-    {{- end }}
   global:
     postgresql:
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}

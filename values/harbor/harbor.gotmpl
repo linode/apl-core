@@ -28,17 +28,7 @@ chartmuseum:
     tag: {{ $tag }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
-  resources:
-    {{- with $h | get "resources.chartmuseum" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    requests:
-      cpu: 100m 
-      memory: 128Mi
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    {{- end }}
+  resources: {{- $h.resources.chartmuseum | toYaml | nindent 6 }}
 
 core:
   secretName: harbor-token-service-ca
@@ -47,17 +37,7 @@ core:
     tag: {{ $tag }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
-  resources:
-    {{- with $h | get "resources.core" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 100m
-      memory: 512Mi
-    requests:
-      cpu: 50m
-      memory: 256Mi
-    {{- end }}
+  resources: {{- $h.resources.core | toYaml | nindent 4 }}
   secret: {{ $h | get "core.secret" nil }}
   # secretName: {{ $harborSecretName }}
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
@@ -97,17 +77,7 @@ jobservice:
     - stdout
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
-  resources:
-    {{- with $h | get "resources.jobservice" nil }}
-    {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 100m
-      memory: 512Mi
-    requests:
-      cpu: 50m
-      memory: 256Mi
-    {{- end }}
+  resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
   secret: {{ $h | get "jobservice.secret" nil }}
 
 metrics:
@@ -208,17 +178,7 @@ portal:
   priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
-  resources:
-    {{- with $h | get "resources.portal" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    requests:
-      cpu: 100m 
-      memory: 128Mi
-    {{- end }}
+  resources: {{- $h.resources.portal | toYaml | nindent 4 }}
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
 
@@ -230,17 +190,7 @@ redis:
   podAnnotations:
     policy.otomi.io/ignore: psp-allowed-users
   internal:
-    resources:
-      {{- with $h | get "resources.redis" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 400m
-        memory: 256Mi
-      requests:
-        cpu: 100m 
-        memory: 128Mi
-      {{- end }}
+    resources: {{- $h.resources.redis | toYaml | nindent 6 }}
 
 registry:
   priorityClassName: otomi-critical
@@ -251,31 +201,11 @@ registry:
   registry:
     image:
       tag: {{ $tag }}
-    resources:
-      {{- with $h | get "resources.registry" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 1000m
-        memory: 1Gi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      {{- end }}
+    resources: {{- $h.resources.registry | toYaml | nindent 6 }}
   controller:
     image:
       tag: {{ $tag }}
-    resources:
-      {{- with $h | get "resources.registry-controller" nil }}
-        {{- toYaml . | nindent 6 }}
-      {{- else }}
-      limits:
-        cpu: 100m
-        memory: 512Mi
-      requests:
-        cpu: 50m
-        memory: 256Mi
-      {{- end }}
+    resources: {{- $h.resources.registryController | toYaml | nindent 6 }}
   relativeurls: false
   credentials:
     username: {{ $h.registry.credentials.username }}
