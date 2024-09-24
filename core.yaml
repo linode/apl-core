@@ -337,6 +337,7 @@ adminApps:
 teamApps:
   - name: alertmanager
     ownHost: true
+    path: /#/alerts?silenced=false&inhibited=false&active=true&filter=%7Bnamespace%3D"team-#TEAM#"%7D
     ingress:
       - svc: po-alertmanager
         hasPrefix: true
