@@ -3,7 +3,7 @@
 {{- $k := $v.apps.keycloak }}
 {{- $minioDomain := printf "minio.%s" $v.cluster.domainSuffix }}
 {{- $rootCASecretName := "root-ca" }}
-{{- $bucketNames := list "cnpg" "gitea" "harbor" "loki" "tempo" "velero" -}}
+{{- $bucketNames := list "cnpg" "gitea" "harbor" "loki" "tempo" "velero" "thanos" -}}
 
 mode: standalone
 auth:

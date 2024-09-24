@@ -818,7 +818,7 @@ environments:
                 insecureSkipVerify: false
             replicas: 1
             scrapeInterval: 60s
-            retention: 120h
+            retention: 15d
             retentionSize: 4GB
             storageSize: 5Gi
             resources:
