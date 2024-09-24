@@ -12,17 +12,7 @@
 replicaCount: 1
 clusterDomainSuffix: {{ $v.cluster.domainSuffix }}
 
-resources:
-{{- with $o | get "resources.api" nil }}
-  {{- toYaml . | nindent 2 }}
-{{- else }}
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  requests:
-    cpu: 100m
-    memory: 256Mi
-{{- end }}
+resources: {{- $o.resources.api | toYaml | nindent 2 }}
 
 {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "api" "v" $v "skipScript" true) }}
 
@@ -57,17 +47,7 @@ core:
 
 tools:
   {{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "core" "v" $v "skipScript" true) | nindent 2 }}
-  resources:
-  {{- with $o | get "resources.tools" nil }}
-    {{- toYaml . | nindent 4 }}
-  {{- else }}
-    limits:
-      cpu: 600m
-      memory: 512Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  {{- end }}
+  resources: {{- $o.resources.tools | toYaml | nindent 4 }}
   env:
     DEBUG: '*'
     VERBOSITY: '1'
