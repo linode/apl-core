@@ -2254,8 +2254,8 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
-        resources:
-          $ref: '#/definitions/resources'
+          resources:
+            $ref: '#/definitions/resources'
         allOf:
           - anyOf:
               - not:
