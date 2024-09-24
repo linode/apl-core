@@ -61,15 +61,15 @@ grafana:
       memory: 4Gi
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 384Mi
   sidecar:
     resources:
       limits:
-        cpu: 100m
-        memory: 100Mi
+        cpu: 500m
+        memory: 256Mi
       requests:
-        cpu: 50m
-        memory: 50Mi
+        cpu: 100m
+        memory: 128Mi
 
 alertmanager:
   serviceMonitor:

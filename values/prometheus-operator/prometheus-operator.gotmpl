@@ -164,7 +164,7 @@ grafana:
     tag: {{ . }}
     {{- end }}
     pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
-  resources: {{- $g.resources | toYaml | nindent 4 }}
+  resources: {{- $g.resources.grafana | toYaml | nindent 4 }}
   sidecar:
     resources: {{- $g.resources.sidecar | toYaml | nindent 6 }}
     dashboards:
