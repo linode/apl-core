@@ -20,12 +20,12 @@ prometheusOperator:
   enabled: false
 
 defaultRules:
-  create: true
+  create: false
   rules:
     alertmanager: false
     configReloaders: false
     etcd: false
-    general: true
+    general: false
     k8s: false
     kubeApiserver: false
     kubeApiserverAvailability: false
@@ -49,21 +49,6 @@ defaultRules:
     prometheus: false
     prometheusOperator: false
 
-prometheus:
-  serviceMonitor:
-    selfMonitor: false
-  additionalServiceMonitors: null
-  prometheusSpec:
-    enableAdminAPI: false
-    replicas: 1
-    remoteWrite: null
-    resources:
-      limits:
-        cpu: '1'
-        memory: 4Gi
-      requests:
-        cpu: 100m
-        memory: 128Mi
 additionalPrometheusRules: null
 grafana:
   serviceMonitor:
@@ -76,22 +61,22 @@ grafana:
       memory: 4Gi
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 384Mi
   sidecar:
     resources:
       limits:
-        cpu: 100m
-        memory: 100Mi
+        cpu: 500m
+        memory: 256Mi
       requests:
-        cpu: 50m
-        memory: 50Mi
+        cpu: 100m
+        memory: 128Mi
 
 alertmanager:
   serviceMonitor:
     selfMonitor: false
   alertmanagerSpec:
-    alertmanagerConfigMatcherStrategy:
-      type: OnNamespace
+    # alertmanagerConfigMatcherStrategy:
+    #   type: OnNamespace
     resources:
       limits:
         cpu: 500m

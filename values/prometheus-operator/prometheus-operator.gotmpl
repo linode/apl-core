@@ -64,6 +64,20 @@ prometheus:
       annotations:
         sidecar.istio.io/inject: "true"
     resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
+    # all team alert managers that will get alerts
+    alertingEndpoints:
+    - name: po-alertmanager 
+      namespace: monitoring
+      port: http-web
+      scheme: http
+      apiVersion: v2
+    {{- range $id, $team := $v.teamConfig }}
+    - name: '{{ $id }}-po-alertmanager'
+      namespace: 'team-{{ $id }}'
+      port: http-web
+      scheme: http
+      apiVersion: v2
+    {{- end }}    
     priorityClassName: otomi-critical
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"
@@ -80,15 +94,15 @@ prometheus:
     {{- if $c.tempo.enabled }}
     enableRemoteWriteReceiver: true
     {{- end }}
-{{- if and (not $v.otomi.isMultitenant) $hasServices }}
+    {{- if $hasServices }}
     additionalScrapeConfigs:
-  {{- range $teamId, $team := $v.teamConfig }}
+    {{- range $teamId, $team := $v.teamConfig }}
     {{- $teamServices := ($team | get "services" list) }}
-    {{- $domain := printf "team-%s.%s" $teamId $v.cluster.domainSuffix }}
+    {{- $domain := $v.cluster.domainSuffix }}
     {{- tpl (readFile "../../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "services" $teamServices "domain" $domain) | nindent 6 }}
-  {{- end }}
-{{- end }}
-{{- if $p.remoteWrite.enabled }}
+    {{- end }}
+    {{- end }}
+    {{- if $p.remoteWrite.enabled }}
     remoteWrite:
     - url: "{{ $p.remoteWrite.rwConfig.target }}"
       {{- if $p.remoteWrite.rwConfig.basicAuth.enabled }}
@@ -105,7 +119,7 @@ prometheus:
       {{- with $p | get "remoteWrite.rwConfig.customConfig" nil }}
       {{- . | nindent 6 }}
       {{- end }}
-{{- end }}
+    {{- end }}
   additionalPodMonitors:
     {{- range $m := (tpl (readFile "pod-monitors.gotmpl") $v | fromYaml) | get "additionalPodMonitors" }}
     - {{- toYaml $m | nindent 6 }}
@@ -116,17 +130,9 @@ prometheus:
     {{- range $m := (tpl (readFile "service-monitors.gotmpl") $v | fromYaml) | get "additionalServiceMonitors" }}
     - {{- toYaml $m | nindent 6 }}
     {{- end }}
-{{ if or (not $v.otomi.isMultitenant) (eq $v.cluster.provider "aws") }}  
 additionalPrometheusRules:
-  {{- if not $v.otomi.isMultitenant }}
   - name: blackbox
     {{- readFile "rules/blackbox.yaml" | nindent 4 }}
-  {{- end }}
-  {{- if eq $v.cluster.provider "aws" }}
-  - name: cluster-autoscaler
-    {{- readFile "rules/cluster-autoscaler.yaml" | nindent 4 }}
-  {{- end }}
-{{- end }}
 alertmanager:
   enabled: {{ $a.enabled }}
   alertmanagerSpec:
@@ -158,7 +164,7 @@ grafana:
     tag: {{ . }}
     {{- end }}
     pullPolicy: {{ $g | get "image.pullPolicy" "IfNotPresent" }}
-  resources: {{- $g.resources | toYaml | nindent 4 }}
+  resources: {{- $g.resources.grafana | toYaml | nindent 4 }}
   sidecar:
     resources: {{- $g.resources.sidecar | toYaml | nindent 6 }}
     dashboards:

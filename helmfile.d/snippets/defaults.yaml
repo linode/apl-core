@@ -314,17 +314,17 @@ environments:
               downloadDashboards:
                 limits:
                   cpu: 500m
-                  memory: 100Mi
+                  memory: 256Mi
                 requests:
                   cpu: 200m
-                  memory: 50Mi
+                  memory: 128Mi
               sidecar:
                 limits:
                   cpu: 500m
-                  memory: 100Mi
+                  memory: 256Mi
                 requests:
                   cpu: 200m
-                  memory: 50Mi                
+                  memory: 128Mi                
             _rawValues: {}
           harbor:
             enabled: false
@@ -781,7 +781,7 @@ environments:
               operator:
                 requests:
                   cpu: 200m
-                  memory: 128Mi
+                  memory: 256Mi
                 limits:
                   cpu: "1"
                   memory: 512Mi
