@@ -57,7 +57,7 @@ prometheus:
       objectStorageConfig:
         name: thanos-objectstore
         key: objstore.yml
-    {{- if $t.enabled }}
+    {{- end }}
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}Selector:
       matchLabels:
@@ -94,6 +94,7 @@ prometheus:
     priorityClassName: otomi-critical
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"
+    replicaExternalLabelName: __replica__
     {{- if $t.enabled }}
     retention: 6h
     {{- else }}
