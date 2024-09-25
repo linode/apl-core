@@ -1,7 +1,7 @@
 type: s3
 config:
   endpoint: {{ .region }}.linodeobjects.com
-  bucket: {{ .bucket }}
+  bucket: {{ .buckets.thanos }}
   access_key: {{ .accessKeyId }}
   secret_key: {{ .secretAccessKey }}
   insecure: false

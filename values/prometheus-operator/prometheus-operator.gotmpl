@@ -52,6 +52,12 @@ prometheus:
   thanosServiceMonitor:
     enabled: {{ $t.enabled }}
   prometheusSpec:
+    {{- if $t.enabled }}
+    thanos:
+      objectStorageConfig:
+        name: thanos-objectstore
+        key: objstore.yml
+    {{- if $t.enabled }}
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}Selector:
       matchLabels:
