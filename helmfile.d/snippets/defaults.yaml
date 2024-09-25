@@ -87,12 +87,34 @@ environments:
           cert-manager:
             issuer: custom-ca
             resources:
-              requests:
-                cpu: 50m
-                memory: 64Mi
-              limits:
-                cpu: "1"
-                memory: 512Mi
+              certManager:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+              startupapicheck:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 384Mi
+              cainjector:
+                requests:
+                  cpu: 50m
+                  memory: 384Mi
+                limits:
+                  cpu: 200m
+                  memory: 1Gi
+              webhook:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 256Mi                              
             _rawValues: {}
           cnpg:
             resources:
@@ -236,18 +258,18 @@ environments:
             resources:
               falco:
                 requests:
-                  cpu: 100m
+                  cpu: 300m
                   memory: 512Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               falcoCtlFollow:
                 requests:
-                  cpu: 100m
-                  memory: 16Mi
+                  cpu: 300m
+                  memory: 128Mi
                 limits:
                   cpu: 500m
-                  memory: 32Mi
+                  memory: 256Mi
               falcoCtlInstall:
                 requests:
                   cpu: 100m
@@ -265,10 +287,10 @@ environments:
               falcoExporter:
                 requests:
                   cpu: 100m
-                  memory: 16Mi
+                  memory: 128Mi
                 limits:
                   cpu: 500m
-                  memory: 32Mi
+                  memory: 512Mi
           gitea:
             adminUsername: otomi-admin
             _rawValues: {}
@@ -488,7 +510,7 @@ environments:
                   memory: 128Mi
                 requests:
                   cpu: 100m
-                  memory: 32Mi
+                  memory: 128Mi
               agent:
                 limits:
                   cpu: 100m
@@ -513,10 +535,10 @@ environments:
               jaeger:
                 limits:
                   cpu: "1"
-                  memory: 512Mi
+                  memory: 2Gi
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 200m
+                  memory: 384Mi
             _rawValues: {}
           keycloak:
             adminUsername: otomi-admin
@@ -742,11 +764,11 @@ environments:
                   memory: 256Mi
               tools:
                 limits:
-                  cpu: 600m
-                  memory: 512Mi
+                  cpu: "1"
+                  memory: 1Gi
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 300m
+                  memory: 256Mi
           otomi-console:
             _rawValues: {}
             resources:
@@ -906,24 +928,24 @@ environments:
               compactor:
                 requests:
                   cpu: 100m
-                  memory: 256Mi
+                  memory: 384Mi
                 limits:
                   cpu: 500m
                   memory: 1Gi
               ingester:
                 requests:
                   cpu: 100m
-                  memory: 256Mi
+                  memory: 768Mi
                 limits:
                   cpu: 500m
-                  memory: 1Gi
+                  memory: 2Gi
               memcached:
                 requests:
                   cpu: 50m
-                  memory: 64Mi
+                  memory: 128Mi
                 limits:
                   cpu: 200m
-                  memory: 256Mi
+                  memory: 512Mi
               querier:
                 requests:
                   cpu: 50m
@@ -934,24 +956,24 @@ environments:
               metricsGenerator:
                 requests:
                   cpu: 50m
-                  memory: 64Mi
+                  memory: 256Mi
                 limits:
                   cpu: 200m
-                  memory: 256Mi
+                  memory: 1Gi
               distributor:
                 requests:
                   cpu: 50m
-                  memory: 64Mi
+                  memory: 384Mi
                 limits:
                   cpu: 200m
-                  memory: 256Mi
+                  memory: 1Gi
               queryFrontend:
                 requests:
                   cpu: 50m
-                  memory: 64Mi
+                  memory: 128Mi
                 limits:
                   cpu: 200m
-                  memory: 256Mi
+                  memory: 1Gi
             persistence:
               ingester:
                 size: 10Gi
