@@ -1,4 +1,4 @@
 api: APL-132-prometheus-ha
-console: main
+console: APL-132-prometheus-ha
 tasks: 3.2.0
 tools: 2.6.0
