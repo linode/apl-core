@@ -296,5 +296,6 @@ changes:
     relocations:
       - 'apps.harbor.resources.registry-controller': 'apps.harbor.resources.registryController'
       - 'apps.ingress-nginx.resources': 'apps.ingress-nginx.resources.controller'
+      - 'apps.cert-manager.resources': 'apps.cert-manager.resources.certManager'
     deletions:
       - 'teamConfig.{team}.managedMonitoring.prometheus'
