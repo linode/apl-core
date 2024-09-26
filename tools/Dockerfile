@@ -4,7 +4,7 @@ FROM ubuntu:20.04 as builder
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.30.4
+ARG KUBECTL_VERSION=1.31.1
 # https://github.com/helm/helm/tags
 ARG HELM_VERSION=3.16.1
 # https://github.com/databus23/helm-diff/releases
