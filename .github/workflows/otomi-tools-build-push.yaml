@@ -39,7 +39,7 @@ jobs:
       - name: Determine version
         id: determine-version
         run: |
-          echo NEW_VERSION = "apl-36_tools-update"
+          echo "NEW_VERSION=apl-36_tools-update" >> $GITHUB_ENV
           # set -e
 
           # # # Set the first image version to '0.1.0' if the repo does  not exists.
