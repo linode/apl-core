@@ -227,9 +227,13 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
     teams.forEach(async (team) => {
       const teamPromises: Promise<void>[] = []
       types.forEach((type): void => {
+        const filePath =
+          type === 'users'
+            ? `${env.ENV_DIR}/env/teams/secrets.${type}.${team}.yaml`
+            : `${env.ENV_DIR}/env/teams/${type}.${team}.yaml`
         teamPromises.push(
           writeValuesToFile(
-            `${env.ENV_DIR}/env/teams/${type}.${team}.yaml`,
+            filePath,
             {
               teamConfig: {
                 [team]: {

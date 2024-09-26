@@ -1259,20 +1259,32 @@ definitions:
     type: object
     description: A user can be a team member or an admin.
     properties:
-      name:
+      username:
         description: Name of the user
         $ref: '#/definitions/wordCharacterPattern'
+        x-secret: ''
       email:
         $ref: '#/definitions/email'
+        x-secret: ''
       firstName:
         type: string
+        x-secret: ''
       lastName:
         type: string
+        x-secret: ''
+      isPlatformAdmin:
+        type: boolean
+        x-secret: ''
+      isTeamAdmin:
+        type: boolean
+        x-secret: ''
     required:
       - name
       - email
       - firstName
       - lastName
+      - isPlatformAdmin
+      - isTeamAdmin
   project:
     type: object
     description: A single project can represent application's build, workload and service.
