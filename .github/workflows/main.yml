@@ -117,7 +117,7 @@ jobs:
     if: always() && contains(needs.release.result, 'success') && !github.event.act
     runs-on: ubuntu-latest
     container:
-      image: linode/apl-tools:v2.4.0
+      image: linode/apl-tools:apl-36_tools-update
       options: --user 0
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
