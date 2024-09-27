@@ -1278,6 +1278,11 @@ definitions:
       isTeamAdmin:
         type: boolean
         x-secret: ''
+      teams:
+        type: array
+        items:
+          type: string
+          x-secret: ''
     required:
       - name
       - email
@@ -1285,6 +1290,7 @@ definitions:
       - lastName
       - isPlatformAdmin
       - isTeamAdmin
+      - teams
   project:
     type: object
     description: A single project can represent application's build, workload and service.
