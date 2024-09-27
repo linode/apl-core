@@ -100,7 +100,6 @@ const destroyAll = async () => {
     'appgw.ingress.k8s.io',
     'cert-manager.io',
     'externalsecrets.kubernetes-client.io',
-    'gatekeeper.sh',
     'istio.io',
     'jaegers.jaegertracing.io',
     'kiali.io',
