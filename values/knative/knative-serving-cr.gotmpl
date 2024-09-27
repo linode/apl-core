@@ -17,7 +17,7 @@ spec:
     defaults:
       revision-timeout-seconds: "300"  # 5 minutes
       enable-service-links: "false"
-      domain-template: "{{`{{.Name}}`}}-{{`{{trimPrefix "-" .Namespace}}`}}.{{`{{.Domain}}`}}" # What is the value of the Namespace?
+      domain-template: "{{`{{.Name}}`}}-{{`{{.Namespace}}`}}.{{`{{.Domain}}`}}" # What is the value of the Namespace?
     autoscaler:
       stable-window: 600s
       scale-to-zero-grace-period: 60s
