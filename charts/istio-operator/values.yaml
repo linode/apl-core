@@ -1,5 +1,6 @@
-hub: docker.io/istio
-tag: 1.20.5
+defaults:
+  hub: gcr.io/istio-testing
+  tag: latest
 
 # ImagePullSecrets for operator ServiceAccount, list of secrets in the same namespace
 # used to pull operator image. Must be set for any cluster configured with private docker registry.
