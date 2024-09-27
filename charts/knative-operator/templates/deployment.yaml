@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: knative-operator
-  namespace: knative-operator
+  namespace: default
   labels:
     app.kubernetes.io/name: knative-operator
     app.kubernetes.io/version: "1.15.5"

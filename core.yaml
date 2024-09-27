@@ -54,10 +54,6 @@ k8s:
     - name: kiali-operator
       app: kiali
       disableIstioInjection: true
-    - name: knative-operator
-      app: knative
-      disablePolicyChecks: true
-      disableIstioInjection: true
     - name: knative-serving
       app: knative
       disablePolicyChecks: true

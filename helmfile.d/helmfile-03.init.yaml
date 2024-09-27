@@ -91,7 +91,7 @@ releases:
     <<: *upgrade
   - name: knative-operator
     installed: {{ $a | get "knative.enabled" }}
-    namespace: knative-operator
+    namespace: default
     labels:
       init: true
       pkg: knative
