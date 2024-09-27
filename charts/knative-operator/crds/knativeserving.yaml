@@ -6532,5 +6532,5 @@ spec:
         - name: Image
           type: string
           jsonPath: .spec.image
-
 ---
+
