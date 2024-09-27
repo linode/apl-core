@@ -2,7 +2,8 @@
 {{- range $s := .services }}
   {{- $type := $s.type | default "auth" }}
   {{- if and (eq $type "public") (not ($s | get "ksvc.scaleToZero" false)) }}
-    {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $s.name $.domain)) }}
+    {{- $host := (printf "%s-%s" $s.name $.teamId) }}
+    {{- $svcDomain := ($s | get "domain" (printf "%s.%s" $host $.domain)) }}
     {{- $paths:= $s | get "paths" list }}
     {{- $path := ternary "/" (first $paths) (empty $paths) }}
     {{- $url := printf "%s%s" $svcDomain $path }}
@@ -13,7 +14,7 @@
 {{- end }}
 - job_name: probe-services-{{ .teamId }}
   metrics_path: /probe
-  scrape_interval: 10m
+  scrape_interval: 1m
   params:
     module: [http_2xx]  # Look for a HTTP 200 response.
   static_configs:
@@ -21,6 +22,8 @@
 {{- range $url := $registry }}
       - https://{{ $url }}
 {{- end }}
+      labels:
+        namespace: team-{{ .teamId }}
   relabel_configs:
     - source_labels: [__address__]
       target_label: __param_target
