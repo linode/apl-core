@@ -63,7 +63,6 @@ export const commands: CommandModule[] = [
   applyE2eModule,
   bashModule,
   bootstrapModule,
-  checkPoliciesModule,
   commitModule,
   decryptModule,
   destroyModule,
