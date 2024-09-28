@@ -5,7 +5,7 @@ metadata:
   name: knative-serving
   namespace: knative-serving
 spec:
-  version: "1.9"
+  version: "1.15"
   {{- if $v._derived.untrustedCA }}
   controller-custom-certs:
     name: certs
@@ -17,7 +17,7 @@ spec:
     defaults:
       revision-timeout-seconds: "300"  # 5 minutes
       enable-service-links: "false"
-      domain-template: "{{`{{.Name}}`}}-{{`{{.Namespace}}`}}.{{`{{.Domain}}`}}" # What is the value of the Namespace?
+      domain-template: "{{`{{.Name}}`}}-{{`{{.Namespace}}`}}.{{`{{.Domain}}`}}"
     autoscaler:
       stable-window: 600s
       scale-to-zero-grace-period: 60s

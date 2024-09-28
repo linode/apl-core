@@ -1,21 +1,18 @@
-apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  namespace: default
-  name: knative-operator-webhook
+  name: knative-serving-activator
+  namespace: knative-serving
   labels:
-    app.kubernetes.io/version: "1.15.5"
-    app.kubernetes.io/name: knative-operator
+    serving.knative.dev/controller: "true"
+    app.kubernetes.io/version: "1.15.2"
+    app.kubernetes.io/name: knative-serving
 rules:
-  - apiGroups:
-      - ""
-    resources:
-      - "secrets"
-    verbs:
-      - "get"
-      - "create"
-      - "update"
-      - "list"
-      - "watch"
-      - "patch"
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+    resourceNames: ["routing-serving-certs", "knative-serving-certs"]
 ---
