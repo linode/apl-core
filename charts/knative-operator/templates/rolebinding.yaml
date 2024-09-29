@@ -1,18 +1,17 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: knative-serving-activator
-  namespace: knative-serving
+  namespace: knative-operator
+  name: operator-webhook
   labels:
-    app.kubernetes.io/component: activator
-    app.kubernetes.io/name: knative-serving
-    app.kubernetes.io/version: "1.15.2"
+    app.kubernetes.io/version: "1.15.5"
+    app.kubernetes.io/name: knative-operator
 subjects:
   - kind: ServiceAccount
-    name: activator
-    namespace: knative-serving
+    name: operator-webhook
+    namespace: knative-operator
 roleRef:
   kind: Role
-  name: knative-serving-activator
+  name: knative-operator-webhook
   apiGroup: rbac.authorization.k8s.io
 ---
