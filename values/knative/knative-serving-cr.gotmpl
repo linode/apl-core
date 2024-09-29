@@ -24,13 +24,11 @@ spec:
       scale-to-zero-grace-period: 60s
     deployment:
       registriesSkippingTagResolving: "ko.local,dev.local,docker.io,index.docker.io,gcr.io,azurecr.io"
-    logging:
-      loglevel.controller: debug
     domain:
       {{ $v.cluster.domainSuffix }}: ''
     istio:
       gateway.knative-serving.knative-ingress-gateway: istio-ingressgateway-public.istio-system.svc.cluster.local
-    kubernetes:
+    features:
       podspec-securitycontext: enabled
   ingress:
     istio: 
