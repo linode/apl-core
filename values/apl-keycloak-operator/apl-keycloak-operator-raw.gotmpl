@@ -65,8 +65,10 @@ resources:
       {{- with $oi | get "subClaimMapper" nil }}
       IDP_SUB_CLAIM_MAPPER: {{ . }}{{ end }}
       IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
-      {{- with $oi | get "adminGroupID" nil }}
-      IDP_GROUP_apl_ADMIN: {{ . }}{{ end }}
+      {{- with $oi | get "platformAdminGroupID" nil }}
+      IDP_GROUP_PLATFORM_ADMIN: {{ . }}{{ end }}
+      {{- with $oi | get "allTeamsAdminGroupID" nil }}
+      IDP_GROUP_ALL_TEAMS_ADMIN: {{ . }}{{ end }}
       {{- with $oi | get "teamAdminGroupID" nil }}
       IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
       IDP_OIDC_URL: {{ $oi.issuer }}

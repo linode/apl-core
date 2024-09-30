@@ -2859,7 +2859,9 @@ properties:
       clientSecret:
         type: string
         x-secret: ''
-      adminGroupID:
+      platformAdminGroupID:
+        $ref: '#/definitions/wordCharacterPattern'
+      allTeamsAdminGroupID:
         $ref: '#/definitions/wordCharacterPattern'
       teamAdminGroupID:
         $ref: '#/definitions/wordCharacterPattern'
