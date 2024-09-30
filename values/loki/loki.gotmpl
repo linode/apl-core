@@ -12,9 +12,6 @@ imagePullSecrets:
 
 global:
   priorityClassName: otomi-critical
-  {{- if eq $v.cluster.provider "scaleway" }}
-  dnsService: coredns
-  {{- end }}
 serviceMonitor:
   enabled: true
   labels:

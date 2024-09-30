@@ -25,7 +25,7 @@ releases:
       - {{- $v.apps.knative | get "_rawValues" dict | toYaml | nindent 8 }}
     <<: *upgrade
   - name: oauth2-proxy-redis
-    installed: false
+    installed: true
     namespace: istio-system
     chart: ../charts/redis
     labels:

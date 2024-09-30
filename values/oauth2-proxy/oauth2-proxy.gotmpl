@@ -15,22 +15,12 @@ configuration:
   clientSecret: {{ $k.idp.clientSecret }}
   cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
 
-replicas: 2
+replicaCount: 2
 podDisruptionBudget:
   enabled: false
   minAvailable: 1
 priorityClassName: otomi-critical
-resources:
-  {{- if (hasKey $oauth2 "resources") }}
-    {{- $oauth2.resources | toYaml | nindent 2 }}
-  {{- else }}
-  limits:
-    cpu: 500m
-    memory: 128Mi
-  requests:
-    cpu: 100m
-    memory: 32Mi
-  {{- end }}
+resources: {{- $oauth2.resources | toYaml | nindent 2 }}
 # get all public domains that don't have the cluster domain as root
 {{ $domains := list }}
 {{- range $teamId, $team := $v.teamConfig }}
@@ -86,84 +76,3 @@ extraArgs:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
-
-
-
-redis:
-  architecture: {{ $r | get "architecture" "standalone" }}
-  auth:
-    password: {{ $r | get "password" }}
-
-  sentinel:
-    persistence:
-      size: {{ $r | get "sizes.sentinel" "1Gi" }}
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    resources:
-    {{- with $r | get "resources.sentinel" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-      requests:
-        cpu: 200m
-        memory: 64Mi
-      limits:
-        cpu: 500m
-        memory: 256Mi
-    {{- end }}
-
-  master:
-    persistence:
-      {{- if eq $v.cluster.provider "vultr" }}
-      size: 10Gi
-      {{- else }}
-      size: {{ $r | get "sizes.master" "1Gi" }}
-      {{- end }}
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    priorityClassName: otomi-critical
-    resources:
-    {{- with $r | get "resources.master" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-      requests:
-        cpu: 200m
-        memory: 64Mi
-      limits:
-        cpu: 500m
-        memory: 256Mi
-    {{- end }}
-
-  replica:
-    persistence:
-      size: {{ $r | get "sizes.replica" "1Gi" }}
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    priorityClassName: otomi-critical
-    resources:
-    {{- with $r | get "resources.replica" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-      requests:
-        cpu: 200m
-        memory: 64Mi
-      limits:
-        cpu: 500m
-        memory: 256Mi
-    {{- end }}
-
-  metrics:
-    podAnnotations:
-      sidecar.istio.io/inject: "false"
-    priorityClassName: otomi-critical
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 100m
-        memory: 256Mi
-
-  {{- with .Values.otomi | get "globalPullSecret" nil }}
-  imagePullSecrets:
-    - name: otomi-pullsecret-global
-  {{- end }}

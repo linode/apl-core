@@ -86,6 +86,9 @@ metrics:
     additionalLabels:
       prometheus: system
 
+nginx:
+  resources: {{- $h.resources.nginx | toYaml | nindent 4 }}
+
 notary:
   server:
     priorityClassName: otomi-critical
