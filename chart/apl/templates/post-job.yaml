@@ -3,11 +3,11 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "otomi.fullname" . }}-pre-delete-job
+  name: {{ include "apl.fullname" . }}-pre-delete-job
   annotations:
     helm.sh/hook: pre-delete
     helm.sh/hook-delete-policy: hook-succeeded
-  labels: {{- include "otomi.labels" . | nindent 4 }}
+  labels: {{- include "apl.labels" . | nindent 4 }}
 spec:
   backoffLimit: 2
   ttlSecondsAfterFinished: 100
@@ -16,10 +16,10 @@ spec:
       {{- with .Values.podAnnotations }}
       annotations: {{- toYaml . | nindent 8 }}
       {{- end }}
-      labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
+      labels: {{- include "apl.selectorLabels" . | nindent 8 }}
     spec:
       restartPolicy: Never
-      serviceAccountName: {{ include "otomi.fullname" . }}
+      serviceAccountName: {{ include "apl.fullname" . }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
@@ -58,7 +58,7 @@ spec:
           {{- if hasKey $kms "sops" }}
           envFrom:
             - secretRef:
-                name: {{ include "otomi.fullname" . }}-sops-secrets
+                name: {{ include "apl.fullname" . }}-sops-secrets
           {{- end }}
           volumeMounts:
             - name: otomi-values
