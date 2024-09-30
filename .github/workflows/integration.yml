@@ -55,10 +55,10 @@ on:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.28']"
           - "['1.29']"
           - "['1.30']"
-        default: "['1.30']"
+          - "['1.31']"
+        default: "['1.31']"
       install_profile:
         description: Otomi installation profile
         default: minimal-with-team
