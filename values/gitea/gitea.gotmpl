@@ -49,9 +49,6 @@ image:
   rootless: true
 
 gitea:
-  podAnnotations:
-    policy.otomi.io/ignore.init: psp-allowed-users
-    policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
   admin:
     username: {{ $g.adminUsername }}
     password: {{ $g.adminPassword }}

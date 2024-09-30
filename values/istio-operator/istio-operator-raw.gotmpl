@@ -27,7 +27,6 @@ resources:
         pilot:
           k8s:
             podAnnotations:
-              policy.otomi.io/ignore: psp-allowed-users
               sidecar.istio.io/inject: "true"
             priorityClassName: otomi-critical
             hpaSpec:
@@ -53,8 +52,6 @@ resources:
               istio: ingressgateway-public
               app: ingressgateway
             k8s:
-              podAnnotations:
-                policy.otomi.io/ignore: psp-allowed-users
               priorityClassName: otomi-critical
               resources:
               {{- with $i | get "resources.ingressgateway" nil }}
@@ -92,8 +89,6 @@ resources:
           - name: istio-egressgateway
             enabled: true
             k8s:
-              podAnnotations:
-                policy.otomi.io/ignore: psp-allowed-users
               priorityClassName: otomi-critical
               resources:
               {{- with $i | get "resources.egressgateway" nil }}
@@ -178,5 +173,3 @@ resources:
         {{- end }}
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
-          injectedAnnotations: 
-            policy.otomi.io/ignore.istio-init: psp-allowed-users,psp-capabilities
