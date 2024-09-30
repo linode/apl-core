@@ -1,5 +1,5 @@
 The APL installer was successfully deployed on the cluster.
 
-Please inspect the output of the installer job ({{ .Release.Namespace }}/{{ include "apl.fullname" . }}) for any feedback or errors.
+Please inspect the output of the installer job ({{ .Release.Namespace }}/{{ include "otomi.fullname" . }}) for any feedback or errors.
 
 Also visit https://apl-docs.net for further instructions and reference documentation.
