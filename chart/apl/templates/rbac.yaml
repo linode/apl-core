@@ -1,13 +1,13 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ include "otomi.fullname" . }}
-  labels: {{- include "otomi.selectorLabels" . | nindent 8 }}
+  name: {{ include "apl.fullname" . }}
+  labels: {{- include "apl.selectorLabels" . | nindent 8 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
 subjects:
   - kind: ServiceAccount
-    name: {{ include "otomi.fullname" . }}
+    name: {{ include "apl.fullname" . }}
     namespace: {{ .Release.Namespace }}
