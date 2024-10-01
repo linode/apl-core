@@ -11,7 +11,7 @@ resources:
     cpu: 50m
     memory: 64Mi
 podAnnotations:
-  policy.otomi.io/ignore: psp-allowed-users,banned-image-tags
+  policy.otomi.io/ignore: banned-image-tags
 
 {{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:

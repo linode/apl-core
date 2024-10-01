@@ -4,7 +4,6 @@ import { hfValues } from 'src/common/hf'
 import { getFilename } from 'src/common/utils'
 import { HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { checkPolicies } from './check-policies'
 import { lint } from './lint'
 import { validateTemplates } from './validate-templates'
 import { validateValues } from './validate-values'
@@ -18,7 +17,6 @@ const test = async (): Promise<void> => {
   await lint()
   await validateTemplates()
   const values = await hfValues()
-  if (!values?.apps.gatekeeper!.disableValidatingWebhook) await checkPolicies()
   d.log('Tests OK!')
 }
 

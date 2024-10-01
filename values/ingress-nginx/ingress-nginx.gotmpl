@@ -29,8 +29,6 @@ controller:
       priorityClassName: otomi-critical
   useComponentLabel: true
   resources: {{- $n.resources.controller | toYaml | nindent 4 }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-privileged
   opentelemetry:
     enabled: {{ $n.tracing.enabled }}
     containerSecurityContext:

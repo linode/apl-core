@@ -11,8 +11,6 @@ falco:
     threadiness: 0
   grpc_output:
     enabled: true
-podAnnotations: 
-  policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-filesystem
 resources: {{- $f.resources.falco | toYaml  | nindent 2 }}
 tolerations:
   - key: node-role.kubernetes.io/master

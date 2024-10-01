@@ -52,7 +52,6 @@ resources:
   # runAsUser: 2000
 podAnnotations:
   sidecar.istio.io/inject: "false"
-  policy.otomi.io/ignore: psp-allowed-users
 extraArgs:
   - --ssl-insecure-skip-verify={{ $v._derived.untrustedCA }}
   # - # supported=oidc, google, azure, github
