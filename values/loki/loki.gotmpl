@@ -12,9 +12,6 @@ imagePullSecrets:
 
 global:
   priorityClassName: otomi-critical
-  {{- if eq $v.cluster.provider "scaleway" }}
-  dnsService: coredns
-  {{- end }}
 serviceMonitor:
   enabled: true
   labels:
@@ -78,8 +75,6 @@ loki:
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-host-filesystem
 
   autoscaling:
     enabled: {{ $l.autoscaling.ingester.enabled }}
@@ -99,8 +94,6 @@ gateway:
 
 querier:
   resources: {{- $l.resources.querier | toYaml | nindent 4 }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-host-filesystem
   autoscaling:
     enabled: {{ $l.autoscaling.querier.enabled }}
     minReplicas: {{ $l.autoscaling.querier.minReplicas }}
