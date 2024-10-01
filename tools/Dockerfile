@@ -10,7 +10,7 @@ ARG HELM_VERSION=3.16.1
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.9.11
 # https://github.com/jkroepke/helm-secrets/releases
-ARG HELM_SECRETS_VERSION=3.16.1
+ARG HELM_SECRETS_VERSION=4.6.1
 # https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=3.9.0
 # https://github.com/FiloSottile/age/releases
