@@ -202,7 +202,7 @@ function crypt() {
         [ -n "$VERBOSE" ] && echo "Found timestamp diff in seconds: $sec_diff"
       fi
       if [ ! -f $file.dec ] || [ $sec_diff -gt 1 ]; then
-        helm secrets encrypt -f $file >$out
+        helm secrets encrypt $file >$out
         ts=$(stat -c %Y $file)
         chek_ts=$(expr $ts + 1)
         touch -d @$chek_ts $file.dec
@@ -211,7 +211,7 @@ function crypt() {
         [ -n "$VERBOSE" ] && echo "Skipping encryption for $file as it is not changed."
       fi
     else
-      if helm secrets decrypt -f $file >$out; then
+      if helm secrets decrypt $file >$out; then
         # we correct timestamp of decrypted file to match source file,
         # in order to detect changes for conditional encryption
         [ -n "$VERBOSE" ] && echo "Setting timestamp of decrypted file to that of source file."
