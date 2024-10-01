@@ -76,3 +76,42 @@ extraArgs:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
+
+redis:
+  architecture: {{ $r | get "architecture" "standalone" }}
+  auth:
+    password: {{ $r | get "password" }}
+
+  sentinel:
+    persistence:
+      size: {{ $r.persistence.sentinel.size }}
+    podAnnotations:
+      sidecar.istio.io/inject: "false"
+    resources: {{- $r.resources.sentinel | toYaml | nindent 6 }}
+
+  master:
+    persistence:
+      size: {{ $r.persistence.master.size }}
+    podAnnotations:
+      sidecar.istio.io/inject: "false"
+    priorityClassName: otomi-critical
+    resources: {{- $r.resources.master | toYaml | nindent 6 }}
+
+  replica:
+    persistence:
+      size: {{ $r.persistence.replica.size }}
+    podAnnotations:
+      sidecar.istio.io/inject: "false"
+    priorityClassName: otomi-critical
+    resources: {{- $r.resources.replica | toYaml | nindent 6 }}
+
+  metrics:
+    podAnnotations:
+      sidecar.istio.io/inject: "false"
+    priorityClassName: otomi-critical
+    resources: {{- $r.resources.metrics | toYaml | nindent 6 }}
+
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
+  imagePullSecrets:
+    - name: otomi-pullsecret-global
+  {{- end }}

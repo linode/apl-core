@@ -24,16 +24,6 @@ releases:
       - ../values/knative/knative-serving-cr.gotmpl
       - {{- $v.apps.knative | get "_rawValues" dict | toYaml | nindent 8 }}
     <<: *upgrade
-  - name: oauth2-proxy-redis
-    installed: true
-    namespace: istio-system
-    chart: ../charts/redis
-    labels:
-      pkg: oauth2-proxy
-    values:
-      - ../values/oauth2-proxy/oauth2-proxy-redis.gotmpl
-      - snippets/common.gotmpl
-    <<: *upgrade
   - name: minio
     installed: {{ $a.minio.enabled }}
     namespace: minio

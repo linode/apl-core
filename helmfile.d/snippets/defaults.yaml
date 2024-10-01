@@ -970,9 +970,6 @@ environments:
                   cpu: 500m
                   memory: 256Mi
             _rawValues: {}
-          redis-shared:
-            enabled: false
-            _rawValues: {}
           otel:
             enabled: false
             collector:
