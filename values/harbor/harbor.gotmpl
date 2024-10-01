@@ -26,8 +26,6 @@ chartmuseum:
   priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
   resources: {{- $h.resources.chartmuseum | toYaml | nindent 6 }}
 
 core:
@@ -35,8 +33,6 @@ core:
   priorityClassName: otomi-critical
   image:
     tag: {{ $tag }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
   secret: {{ $h | get "core.secret" nil }}
   # secretName: {{ $harborSecretName }}
@@ -51,9 +47,6 @@ database:
     username: harbor
     host: harbor-otomi-db-rw.harbor.svc.cluster.local
     existingSecret: harbor-otomi-db-app
-  podAnnotations:
-    # this exception allows the chmod fix to pass, which needs root access:
-    policy.otomi.io/ignore.data-migrator: psp-allowed-users
 
 exporter:
   priorityClassName: otomi-critical
@@ -75,8 +68,6 @@ jobservice:
     tag: {{ $tag }}
   jobLoggers:
     - stdout
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
   resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
   secret: {{ $h | get "jobservice.secret" nil }}
 
@@ -182,24 +173,18 @@ portal:
   image:
     tag: {{ $tag }}
   resources: {{- $h.resources.portal | toYaml | nindent 4 }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
 
 redis:
   internal:
     priorityClassName: otomi-critical
     image:
       tag: {{ $tag }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
   internal:
     resources: {{- $h.resources.redis | toYaml | nindent 6 }}
 
 registry:
   priorityClassName: otomi-critical
   secret: {{ $h | get "registry.secret" nil }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
 
   registry:
     image:
