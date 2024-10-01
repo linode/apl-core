@@ -811,6 +811,7 @@ environments:
                 memory: 32Mi
             _rawValues: {}
           oauth2-proxy-redis:
+            architecture: standalone
             resources:
               master:
                 requests:
