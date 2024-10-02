@@ -21,8 +21,6 @@ ARG GUCCI_VERSION=1.6.13
 ARG HELMFILE_VERSION=0.168.0
 # https://github.com/yannh/kubeconform/releases
 ARG KUBECONFORM_VERSION="v0.6.7"
-# https://github.com/open-policy-agent/conftest/releases
-ARG CONFTEST_VERSION=0.55.0
 # https://github.com/plexsystems/konstraint/releases
 ARG KONSTRAINT_VERSION=0.38.0
 # https://nodejs.org/en/download/
