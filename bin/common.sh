@@ -187,8 +187,8 @@ function crypt() {
   command=${1:-'dec'}
   [ "$*" != "" ] && shift
   files="$*"
-
-
+  local out='/dev/stdout'
+  [ -z "$VERBOSE" ] && out='/dev/null'
   [ -z "$files" ] && files=$(find $ENV_DIR/env -type f -name 'secrets.*.yaml')
   pushd $ENV_DIR
   for file in $files; do
@@ -202,7 +202,7 @@ function crypt() {
         [ -n "$VERBOSE" ] && echo "Found timestamp diff in seconds: $sec_diff"
       fi
       if [ ! -f $file.dec ] || [ $sec_diff -gt 1 ]; then
-        helm secrets encrypt -i $file 
+        helm secrets enc $file >$out
         ts=$(stat -c %Y $file)
         chek_ts=$(expr $ts + 1)
         touch -d @$chek_ts $file.dec
@@ -211,7 +211,7 @@ function crypt() {
         [ -n "$VERBOSE" ] && echo "Skipping encryption for $file as it is not changed."
       fi
     else
-      if helm secrets decrypt $file ; then
+      if helm secrets dec $file >$out; then
         # we correct timestamp of decrypted file to match source file,
         # in order to detect changes for conditional encryption
         [ -n "$VERBOSE" ] && echo "Setting timestamp of decrypted file to that of source file."

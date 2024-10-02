@@ -119,7 +119,7 @@ mysecret: abc123
 ```
 
 ```
-$ helm secrets encrypt -i secrets.yaml
+$ helm secrets enc secrets.yaml
 ```
 
 #### STEP 2: Install your templated resources.
