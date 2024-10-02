@@ -147,7 +147,7 @@ alertmanager:
       {{- end }}
       pullPolicy: {{ $a | get "image.pullPolicy" "IfNotPresent" }}
     priorityClassName: otomi-critical
-    resources: {{- $a.resources | toYaml | nindent 6 }}
+    resources: {{- $a.resources.alertmanager | toYaml | nindent 6 }}
     externalUrl: https://{{ $alertmanagerDomain }}
   config: {{- tpl (readFile "../../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $v "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 4 }}
 grafana:
@@ -157,8 +157,6 @@ grafana:
   fullnameOverride: po-grafana
   namespaceOverride: grafana
   defaultDashboardsTimezone: browser
-  downloadDashboards:
-    resources: {{- $g.resources.downloadDashboards | toYaml | nindent 6 }}
   image:
     {{- with $g | get "image.tag" nil }}
     tag: {{ . }}
@@ -291,8 +289,6 @@ prometheus-node-exporter:
       {{- toYaml . | nindent 4 }}
     {{- end }}
   priorityClassName: otomi-critical
-  podAnnotations:
-    policy.otomi.io/ignore: psp-host-filesystem,psp-host-networking-ports,psp-host-security
 
 kubeProxy:
   enabled: false

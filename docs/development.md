@@ -29,7 +29,6 @@ apl-core
 ├── helmfile.d/snippets         # Reusable code snippets
 ├── helmfile.tpl                # Additional Helmfiles that do not have corresponding chart and are not parsed on otomi apply|template command
 ├── k8s                         # Kubernetes manifests that before any other chart
-├── policies                    # OPA policies for Gatekeeper
 ├── src                         # Otomi CLI source code
 ├── tests                       # Values used for testing purposes
 ├── upgrades.yaml               # Upgrade presync hooks

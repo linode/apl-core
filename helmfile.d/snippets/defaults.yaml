@@ -8,12 +8,20 @@ environments:
           alertmanager:
             enabled: false
             resources:
-              requests:
-                cpu: 100m
-                memory: 128Mi
-              limits:
-                cpu: 500m
-                memory: 256Mi
+              alertmanagerTeams:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              alertmanager:
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi              
             _rawValues: {}
           argocd:
             applicationSet:
@@ -71,7 +79,7 @@ environments:
                   memory: 1Gi
               notifications:
                 requests:
-                  cpu: 100m
+                  cpu: 50m
                   memory: 64M
                 limits:
                   cpu: "1"
@@ -119,8 +127,8 @@ environments:
           cnpg:
             resources:
               requests:
-                cpu: 100m
-                memory: 128Mi
+                cpu: 50m
+                memory: 144Mi
               limits:
                 cpu: "1"
                 memory: 1Gi
@@ -140,8 +148,7 @@ environments:
                 memory: 128Mi
               requests:
                 memory: 64Mi
-                cpu: 10m
-              
+                cpu: 10m  
           falco:
             enabled: false
             driver: ebpf
@@ -258,35 +265,35 @@ environments:
             resources:
               falco:
                 requests:
-                  cpu: 300m
+                  cpu: 100m
                   memory: 512Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               falcoCtlFollow:
                 requests:
-                  cpu: 300m
+                  cpu: 50m
                   memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 256Mi
               falcoCtlInstall:
                 requests:
-                  cpu: 100m
+                  cpu: 50m
                   memory: 128Mi
                 limits:
                   cpu: 200m
                   memory: 256Mi
               falcoDriverLoader:
                 requests:
-                  cpu: 100m
+                  cpu: 50m
                   memory: 128Mi
                 limits:
                   cpu: 200m
                   memory: 256Mi
               falcoExporter:
                 requests:
-                  cpu: 100m
+                  cpu: 50m
                   memory: 128Mi
                 limits:
                   cpu: 500m
@@ -328,25 +335,32 @@ environments:
             resources:
               grafana:
                 requests:
-                  cpu: 100m
+                  cpu: 10m
                   memory: 128Mi
                 limits:
-                  cpu: 500m
-                  memory: 256Mi
-              downloadDashboards:
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
+                  cpu: "1"
+                  memory: 1Gi
+              grafanaTeams:
                 requests:
-                  cpu: 200m
+                  cpu: 10m
                   memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
               sidecar:
                 limits:
                   cpu: 500m
                   memory: 256Mi
                 requests:
-                  cpu: 200m
-                  memory: 128Mi                
+                  cpu: 10m
+                  memory: 128Mi
+              sidecarTeams:
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+                requests:
+                  cpu: 10m
+                  memory: 128Mi
             _rawValues: {}
           harbor:
             enabled: false
@@ -358,29 +372,29 @@ environments:
             resources:
               chartmuseum:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 10m
+                  memory: 56Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               core:
                 requests:
-                  cpu: 100m
-                  memory: 256Mi
+                  cpu: 10m
+                  memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               jobservice:
                 requests:
-                  cpu: 100m
-                  memory: 256Mi
+                  cpu: 10m
+                  memory: 32Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               portal:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 10m
+                  memory: 32Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
@@ -393,25 +407,32 @@ environments:
                   memory: 512Mi
               registry:
                 requests:
-                  cpu: 100m
-                  memory: 64Mi
+                  cpu: 10m
+                  memory: 32Mi
                 limits:
                   cpu: 500m
                   memory: 256Mi
               registryController:
                 requests:
-                  cpu: 100m
-                  memory: 256Mi
+                  cpu: 10m
+                  memory: 32Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               trivy:
                 requests:
-                  cpu: 200m
+                  cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
+              nginx:
+                requests:
+                  memory: 32Mi
+                  cpu: 10m
+                limits:
+                  memory: 512Mi
+                  cpu: 200m
             _rawValues: {}
           httpbin:
             enabled: false
@@ -433,8 +454,8 @@ environments:
             resources:
               controller:
                 requests:
-                  cpu: 200m
-                  memory: 512Mi
+                  cpu: 100m
+                  memory: 256Mi
                 limits:
                   cpu: "2"
                   memory: 2Gi
@@ -469,37 +490,35 @@ environments:
                 maxReplicas: 10
             egressGateway:
               enabled: false
-            global:
-              proxy:
-                resources:
-                  requests:
-                    cpu: 20m
-                    memory: 128Mi
-                  limits:
-                    cpu: "1"
-                    memory: 1Gi
             resources:
+              proxy:
+                requests:
+                  cpu: 20m
+                  memory: 80Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
               egressgateway:
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
-                  limits:
-                    cpu: "1"
-                    memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 256Mi
               ingressgateway:
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
-                  limits:
-                    cpu: "1"
-                    memory: 256Mi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 256Mi
               pilot:
-                  requests:
-                    cpu: 100m
-                    memory: 128Mi
-                  limits:
-                    cpu: "2"
-                    memory: 2Gi
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: "2"
+                  memory: 2Gi
             _rawValues: {}
           jaeger:
             enabled: false
@@ -567,17 +586,17 @@ environments:
             resources:
               pod:
                 requests:
-                  cpu: 200m
-                  memory: 256Mi
+                  cpu: 100m
+                  memory: 768Mi
                 limits:
-                  cpu: "1"
+                  cpu: "2"
                   memory: 1Gi
               operator:
                 requests:
-                  cpu: "1"
-                  memory: 512Mi
+                  cpu: 100m
+                  memory: 256Mi
                 limits:
-                  cpu: "2"
+                  cpu: "1"
                   memory: 1Gi
             _rawValues: {}
           knative:
@@ -602,22 +621,22 @@ environments:
             resources:
               admissionController:
                 requests:
-                  cpu: 200m
+                  cpu: 100m
                   memory: 128Mi
                 limits:
                   cpu: "1"
                   memory: 512Mi
               cleanupController:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 10m
+                  memory: 64Mi
                 limits:
                   cpu: "1"
                   memory: 512Mi
               backgroundController:
                 requests:
                   cpu: 50m
-                  memory: 128Mi
+                  memory: 64Mi
                 limits:
                   cpu: "1"
                   memory: 512Mi
@@ -637,6 +656,41 @@ environments:
                   memory: 128Mi
                 requests:
                   cpu: 10m
+                  memory: 64Mi
+              pipelinesController:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              pipelinesRemoteresolver:
+                requests:
+                  cpu: 100m
+                  memory: 100Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              triggersInterceptors:
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+              triggersController:
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+              triggersWebhook:
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+                requests:
+                  cpu: 50m
                   memory: 64Mi
             _rawValues: {}
           loki:
@@ -748,8 +802,52 @@ environments:
                 memory: 1Gi
             _rawValues: {}
           oauth2-proxy:
+            resources:
+              limits:
+                cpu: 200m
+                memory: 128Mi
+              requests:
+                cpu: 20m
+                memory: 32Mi
             _rawValues: {}
           oauth2-proxy-redis:
+            architecture: standalone
+            resources:
+              master:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
+              replica:
+                requests:
+                  cpu: 200m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              sentinel:
+                requests:
+                  cpu: 200m
+                  memory: 64Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              metrics:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 256Mi
+            persistence:
+                master: 
+                  size: 1Gi
+                sentinel:
+                  size: 1Gi
+                replica:
+                  size: 1Gi
             _rawValues: {}
           otomi-api:
             editorInactivityTimeout: 1
@@ -792,7 +890,7 @@ environments:
             resources:
               operator:
                 requests:
-                  cpu: 200m
+                  cpu: 50m
                   memory: 128Mi
                 limits:
                   cpu: "1"
@@ -802,8 +900,8 @@ environments:
             resources:
               operator:
                 requests:
-                  cpu: 200m
-                  memory: 256Mi
+                  cpu: 50m
+                  memory: 128Mi
                 limits:
                   cpu: "1"
                   memory: 512Mi
@@ -812,7 +910,7 @@ environments:
             resources:
               operator:
                 requests:
-                  cpu: 200m
+                  cpu: 50m
                   memory: 128Mi
                 limits:
                   cpu: "1"
@@ -849,32 +947,29 @@ environments:
                   cpu: 400m
                   memory: 256Mi
                 requests:
-                  cpu: 100m
+                  cpu: 50m
                   memory: 128Mi
               prometheus:
                 requests:
-                  cpu: 100m
-                  memory: 512Mi
+                  cpu: 50m
+                  memory: 1Gi
                 limits:
                   cpu: '3'
                   memory: 3Gi
               kube-state-metrics:
                 requests:
-                  cpu: 100m
+                  cpu: 50m
                   memory: 128Mi
                 limits:
                   cpu: 200m
                   memory: 256Mi
               node-exporter:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 50m
+                  memory: 32Mi
                 limits:
                   cpu: 500m
                   memory: 256Mi
-            _rawValues: {}
-          redis-shared:
-            enabled: false
             _rawValues: {}
           otel:
             enabled: false
@@ -895,8 +990,8 @@ environments:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 500m
-                  memory: 512Mi
+                  cpu: "1"
+                  memory: 1Gi
               manager:
                 requests:
                   cpu: 50m
@@ -928,9 +1023,9 @@ environments:
               compactor:
                 requests:
                   cpu: 100m
-                  memory: 384Mi
+                  memory: 128Mi
                 limits:
-                  cpu: 500m
+                  cpu: "1"
                   memory: 1Gi
               ingester:
                 requests:
@@ -973,7 +1068,7 @@ environments:
                   memory: 128Mi
                 limits:
                   cpu: 200m
-                  memory: 1Gi
+                  memory: 512Mi
             persistence:
               ingester:
                 size: 10Gi
@@ -1028,14 +1123,14 @@ environments:
             resources:
               operator:
                 requests:
-                  cpu: 100m
+                  cpu: 10m
                   memory: 256Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               trivy:
                 requests:
-                  cpu: 100m
+                  cpu: 10m
                   memory: 128M
                 limits:
                   cpu: "1"
@@ -1048,8 +1143,8 @@ environments:
             logLevel: info
             resources:
               requests:
-                cpu: 500m
-                memory: 128Mi
+                cpu: 20m
+                memory: 184Mi
               limits:
                 cpu: "1"
                 memory: 512Mi
@@ -1064,8 +1159,8 @@ environments:
                 cpu: "1"
                 memory: 1Gi
               requests:
-                cpu: 200m
-                memory: 256Mi
+                cpu: 50m
+                memory: 128Mi
           harbor:
             size: 5Gi
             replicas: 2
@@ -1075,8 +1170,8 @@ environments:
                 cpu: "1"
                 memory: 1Gi
               requests:
-                cpu: 200m
-                memory: 256Mi
+                cpu: 50m
+                memory: 128Mi
           gitea:
             useOtomiDB: true
             imported: false
@@ -1087,8 +1182,8 @@ environments:
                 cpu: "1"
                 memory: 1Gi
               requests:
-                cpu: 200m
-                memory: 256Mi
+                cpu: 50m
+                memory: 128Mi
         obj:
           provider:
             type: disabled

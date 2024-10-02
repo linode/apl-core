@@ -1,26 +1,11 @@
+{{- $v := .Values }}
+{{- $t := $v.apps.tekton }}
+
 interceptors:
-  resources:
-    limits:
-      cpu: 500m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 64Mi
+  resources: {{- $t.resources.triggersInterceptors | toYaml | nindent 4 }}
 
 controller:
-  resources:
-    limits:
-      cpu: 500m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 64Mi
+  resources: {{- $t.resources.triggersController | toYaml | nindent 4 }}
 
 webhook:
-  resources:
-    limits:
-      cpu: 500m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 64Mi
+  resources: {{- $t.resources.triggersWebhook | toYaml | nindent 4 }}

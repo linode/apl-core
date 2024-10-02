@@ -49,11 +49,7 @@ resources:
       - ReadWriteOnce
     resources:
       requests:
-        {{- if eq $v.cluster.provider "vultr" }}
-        storage: 10Gi
-        {{- else }}
         storage: 1Gi
-        {{- end }}
 {{- if $giteaBackupConfig.enabled }}
 - apiVersion: v1
   kind: ServiceAccount

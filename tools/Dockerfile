@@ -19,8 +19,6 @@ ARG AGE_VERSION=1.2.0
 ARG GUCCI_VERSION=1.6.13
 # https://github.com/helmfile/helmfile/releases
 ARG HELMFILE_VERSION=0.168.0
-# https://github.com/open-policy-agent/opa/releases
-ARG OPA_VERSION=0.68.0
 # https://github.com/yannh/kubeconform/releases
 ARG KUBECONFORM_VERSION="v0.6.7"
 # https://github.com/open-policy-agent/conftest/releases
@@ -125,18 +123,6 @@ RUN chmod +x aws-iam-authenticator
 # kubeconform
 ADD https://github.com/yannh/kubeconform/releases/download/v0.6.4/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kubeconform kubeconform
-
-# opa -> remove when kyverno pr is merged
-ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
-RUN chmod +x opa
-
-# conftest -> remove when kyverno pr is merged
-ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp
-RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && mv /tmp/conftest conftest
-
-# konstraint -> remove when kyverno pr is merged
-ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
-RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 
 # node
 # https://github.com/nodesource/distributions

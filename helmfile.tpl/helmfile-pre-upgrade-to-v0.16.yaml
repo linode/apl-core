@@ -13,16 +13,6 @@ bases:
 {{- $tc := $v.teamConfig }}
 
 releases:
-  - name: gatekeeper-operator
-    installed: false
-    namespace: default
-    chart: not-used-but-required
-    # The gatekeeper-operator release has been move to gatekeeper-system namespace
-  - name: gatekeeper-constraints
-    installed: false
-    namespace: gatekeeper-system
-    chart: not-used-but-required
-    # The resources deployed in this release are removed on gatekeeper-operator removal. Here just ensure that helm bookepping is removed as well.
   - name: nginx-ingress
     namespace: ingress
     installed: false
@@ -45,8 +35,3 @@ releases:
     chart: not-used-but-required
     # The new prometheus-operator chart does not provide any upgrate path
 {{- end }}
-  - name: gatekeeper-artifacts
-    installed: false
-    namespace: gatekeeper-system
-    chart: not-used-but-required
-    # The resources deployed in this release are removed on gatekeeper-operator removal. Here just ensure that helm bookepping is removed as well. 

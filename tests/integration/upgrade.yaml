@@ -15,9 +15,6 @@ apps:
     enabled: true
   cert-manager:
     issuer: custom-ca
-  gatekeeper:
-    enabled: true
-    disableValidatingWebhook: false
   grafana:
     enabled: true
   harbor:
