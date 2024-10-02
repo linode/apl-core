@@ -298,6 +298,7 @@ changes:
       - 'apps.ingress-nginx.resources': 'apps.ingress-nginx.resources.controller'
       - 'apps.cert-manager.resources': 'apps.cert-manager.resources.certManager'
       - 'apps.alertmanager.resources': 'apps.alertmanager.resources.alertmanager'
+      - 'apps.istio.global.proxy.resources': 'apps.istio.resources.proxy'
     deletions:
       - 'teamConfig.{team}.managedMonitoring.prometheus'
       - 'apps.grafana.resources.downloadDashboards'
