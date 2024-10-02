@@ -1,4 +1,4 @@
-FROM linode/apl-tools:2.7.0 as ci
+FROM linode/apl-tools:fc-feat-values-enc as ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -27,7 +27,7 @@ FROM ci as clean
 RUN npm prune --production
 
 #-----------------------------
-FROM linode/apl-tools:2.7.0 as prod
+FROM linode/apl-tools:fc-feat-values-enc as prod
 
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
