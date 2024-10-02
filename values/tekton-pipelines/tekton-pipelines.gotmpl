@@ -1,0 +1,8 @@
+{{- $v := .Values }}
+{{- $t := $v.apps.tekton }}
+
+controller:
+  resources: {{- $t.resources.pipelinesController | toYaml | nindent 4 }}
+
+remoteresolver:
+  resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}

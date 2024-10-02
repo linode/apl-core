@@ -8,25 +8,23 @@ ARG KUBECTL_VERSION=1.31.1
 # https://github.com/helm/helm/tags
 ARG HELM_VERSION=3.16.1
 # https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=3.9.7
+ARG HELM_DIFF_VERSION=3.9.11
 # https://github.com/jkroepke/helm-secrets/releases
 ARG HELM_SECRETS_VERSION=3.15.0
 # https://github.com/mozilla/sops/releases
-ARG SOPS_VERSION=3.7.3
+ARG SOPS_VERSION=3.9.0
 # https://github.com/FiloSottile/age/releases
 ARG AGE_VERSION=1.2.0
 # https://github.com/noqcks/gucci/releases
-ARG GUCCI_VERSION=1.6.6
+ARG GUCCI_VERSION=1.6.13
 # https://github.com/helmfile/helmfile/releases
-ARG HELMFILE_VERSION=0.165.0
-# https://github.com/open-policy-agent/opa/releases
-ARG OPA_VERSION=0.50.1
+ARG HELMFILE_VERSION=0.168.0
 # https://github.com/yannh/kubeconform/releases
-ARG KUBECONFORM_VERSION="v0.6.4"
+ARG KUBECONFORM_VERSION="v0.6.7"
 # https://github.com/open-policy-agent/conftest/releases
-ARG CONFTEST_VERSION=0.39.2
+ARG CONFTEST_VERSION=0.55.0
 # https://github.com/plexsystems/konstraint/releases
-ARG KONSTRAINT_VERSION=0.26.0
+ARG KONSTRAINT_VERSION=0.38.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=16
 
@@ -91,7 +89,7 @@ RUN curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/
   chmod +x kubectl
 
 # sops
-ADD https://github.com/mozilla/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux sops
+ADD https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64 sops
 RUN chmod +x sops
 
 # age
@@ -112,7 +110,7 @@ ADD https://github.com/helmfile/helmfile/releases/download/v${HELMFILE_VERSION}/
 RUN tar -zxvf /tmp/helmfile_${HELMFILE_VERSION}_linux_${TARGETARCH}.tar.gz -C /tmp && mv /tmp/helmfile helmfile
 
 # gucci
-ADD https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-${TARGETARCH} gucci
+ADD https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-${TARGETARCH} gucci
 RUN chmod +x gucci
 
 # aws
@@ -125,18 +123,6 @@ RUN chmod +x aws-iam-authenticator
 # kubeconform
 ADD https://github.com/yannh/kubeconform/releases/download/v0.6.4/kubeconform-linux-${TARGETARCH}.tar.gz /tmp
 RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kubeconform kubeconform
-
-# opa -> remove when kyverno pr is merged
-ADD https://github.com/open-policy-agent/opa/releases/download/v${OPA_VERSION}/opa_linux_amd64 opa
-RUN chmod +x opa
-
-# conftest -> remove when kyverno pr is merged
-ADD https://github.com/open-policy-agent/conftest/releases/download/v$CONFTEST_VERSION/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz /tmp
-RUN tar -zxvf /tmp/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz -C /tmp && mv /tmp/conftest conftest
-
-# konstraint -> remove when kyverno pr is merged
-ADD https://github.com/plexsystems/konstraint/releases/download/v${KONSTRAINT_VERSION}/konstraint-linux-amd64 /tmp
-RUN mv /tmp/konstraint-linux-amd64 konstraint && chmod +x konstraint
 
 # node
 # https://github.com/nodesource/distributions

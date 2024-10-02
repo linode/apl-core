@@ -714,38 +714,6 @@ definitions:
       - custom
       - linode
     default: linode
-  redisChart:
-    properties:
-      _rawValues:
-        $ref: '#/definitions/rawValues'
-      architecture:
-        type: string
-        enum:
-          - standalone
-          - replication
-        default: standalone
-      password:
-        type: string
-        x-secret: '{{ randAlpha 24 }}'
-      resources:
-        additionalProperties: false
-        properties:
-          master:
-            $ref: '#/definitions/resources'
-          sentinel:
-            $ref: '#/definitions/resources'
-          slave:
-            $ref: '#/definitions/resources'
-      sizes:
-        additionalProperties: false
-        properties:
-          master:
-            $ref: '#/definitions/size'
-          sentinel:
-            $ref: '#/definitions/size'
-          slave:
-            $ref: '#/definitions/size'
-    type: object
   registry:
     pattern: '^[a-z0-9]+(?:[._-][a-z0-9]+)*$'
     type: string
@@ -1500,7 +1468,11 @@ properties:
           image:
             $ref: '#/definitions/imageSimple'
           resources:
-            $ref: '#/definitions/resources'
+            properties:
+              alertmanagerTeams:
+                $ref: '#/definitions/resources'
+              alertmanger:
+                $ref: '#/definitions/resources'
       argocd:
         additionalProperties: false
         properties:
@@ -1814,7 +1786,9 @@ properties:
               $ref: '#/definitions/resources'
             sidecar:
               $ref: '#/definitions/resources'
-            downloadDashboards:
+            grafanaTeams:
+              $ref: '#/definitions/resources'
+            sidecarTeams:
               $ref: '#/definitions/resources'
       harbor:
         additionalProperties: false
@@ -1888,6 +1862,8 @@ properties:
                 $ref: '#/definitions/resources'
               trivy:
                 $ref: '#/definitions/resources'
+              nginx:
+                $ref: '#/definitions/resources'
           secretKey:
             type: string
             x-secret: '{{ randAlpha 16 }}'
@@ -1935,11 +1911,6 @@ properties:
                 properties:
                   level:
                     type: string
-              proxy:
-                additionalProperties: false
-                properties:
-                  resources:
-                    $ref: '#/definitions/resources'
           extensionProviders:
             description: 'See: https://istio.io/latest/docs/reference/config/istio.mesh.v1alpha1/#MeshConfig'
             type: array
@@ -1956,6 +1927,8 @@ properties:
               ingressgateway-private:
                 $ref: '#/definitions/resources'
               pilot:
+                $ref: '#/definitions/resources'
+              proxy:
                 $ref: '#/definitions/resources'
       jaeger:
         additionalProperties: false
@@ -2101,6 +2074,16 @@ properties:
             properties:
               dashboard:
                 $ref: '#/definitions/resources'
+              pipelinesController:
+                $ref: '#/definitions/resources'
+              pipelinesRemoteresolver:
+                $ref: '#/definitions/resources'
+              triggersInterceptors:
+                $ref: '#/definitions/resources'
+              triggersController:
+                $ref: '#/definitions/resources'
+              triggersWebhook:
+                $ref: '#/definitions/resources'
       loki:
         additionalProperties: false
         properties:
@@ -2225,8 +2208,50 @@ properties:
                 pattern: '^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$'
                 type: string
                 x-secret: '{{ randAlphaNum 32 | b64enc }}'
+          resources:
+            $ref: '#/definitions/resources'
       oauth2-proxy-redis:
-        $ref: '#/definitions/redisChart'
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          architecture:
+            type: string
+            enum:
+              - standalone
+              - replication
+            default: standalone
+          password:
+            type: string
+            x-secret: '{{ randAlpha 24 }}'
+          resources:
+            additionalProperties: false
+            properties:
+              master:
+                $ref: '#/definitions/resources'
+              replica:
+                $ref: '#/definitions/resources'
+              sentinel:
+                $ref: '#/definitions/resources'
+              metrics:
+                $ref: '#/definitions/resources'
+          persistence:
+            properties:
+              master:
+                properties:
+                  size:
+                    default: 1Gi
+                    $ref: '#/definitions/size'
+              replica:
+                properties:
+                  size:
+                    default: 1Gi
+                    $ref: '#/definitions/size'
+              sentinet:
+                properties:
+                  size:
+                    default: 1Gi
+                    $ref: '#/definitions/size'
+        type: object
       otomi-api:
         additionalProperties: false
         properties:
@@ -2422,13 +2447,6 @@ properties:
               msgTopologyOperator:
                 description: Controller which is used to create RabbitMQ queues and policies
                 $ref: '#/definitions/resources'
-      redis-shared:
-        allOf:
-          - $ref: '#/definitions/redisChart'
-          - properties:
-              enabled:
-                type: boolean
-                default: false
       tempo:
         additionalProperties: false
         properties:
