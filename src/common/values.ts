@@ -191,14 +191,17 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
     'databases',
     'files',
     'bootstrap',
+    'users',
   ]
   const secretSettings = omit(secrets, fieldsToOmit)
   const license = { license: values?.license }
   const settings = omit(plainValues, fieldsToOmit)
+  const users = { users: values?.users }
   // and write to their files
   const promises: Promise<void>[] = []
   if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
   if (license) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.license.yaml`, license, overwrite))
+  if (users) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.users.yaml`, users, overwrite))
   if (secretSettings || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   if (plainValues.cluster || overwrite)
@@ -220,20 +223,15 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
       'services',
       'workloads',
       'policies',
-      'users',
     ]
     const teamConfig = plainValues.teamConfig ? cloneDeep(plainValues.teamConfig) : {}
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     teams.forEach(async (team) => {
       const teamPromises: Promise<void>[] = []
       types.forEach((type): void => {
-        const filePath =
-          type === 'users'
-            ? `${env.ENV_DIR}/env/teams/secrets.${type}.${team}.yaml`
-            : `${env.ENV_DIR}/env/teams/${type}.${team}.yaml`
         teamPromises.push(
           writeValuesToFile(
-            filePath,
+            `${env.ENV_DIR}/env/teams/${type}.${team}.yaml`,
             {
               teamConfig: {
                 [team]: {

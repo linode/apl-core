@@ -1175,10 +1175,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
-      users:
-        type: array
-        items:
-          $ref: '#/definitions/user'
       projects:
         type: array
         items:
@@ -1255,42 +1251,6 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
-  user:
-    type: object
-    description: A user can be a team member or an admin.
-    properties:
-      username:
-        description: Name of the user
-        $ref: '#/definitions/wordCharacterPattern'
-        x-secret: ''
-      email:
-        $ref: '#/definitions/email'
-        x-secret: ''
-      firstName:
-        type: string
-        x-secret: ''
-      lastName:
-        type: string
-        x-secret: ''
-      isPlatformAdmin:
-        type: boolean
-        x-secret: ''
-      isTeamAdmin:
-        type: boolean
-        x-secret: ''
-      teams:
-        type: array
-        items:
-          type: string
-          x-secret: ''
-    required:
-      - name
-      - email
-      - firstName
-      - lastName
-      - isPlatformAdmin
-      - isTeamAdmin
-      - teams
   project:
     type: object
     description: A single project can represent application's build, workload and service.
@@ -1379,7 +1339,6 @@ definitions:
                     - value
     required:
       - name
-
   sealedsecret:
     type: object
     description: Define location of code to build
@@ -1413,7 +1372,6 @@ definitions:
       - type
       - encryptedData
       - name
-
   workload:
     type: object
     description: Define location of the application's manifests or chart
@@ -1507,6 +1465,37 @@ definitions:
     required:
       - name
       - url
+  user:
+    type: object
+    description: A user can be a team member or an admin.
+    properties:
+      email:
+        $ref: '#/definitions/email'
+        x-secret: ''
+      firstName:
+        type: string
+        x-secret: ''
+      lastName:
+        type: string
+        x-secret: ''
+      isPlatformAdmin:
+        type: boolean
+        x-secret: ''
+      isTeamAdmin:
+        type: boolean
+        x-secret: ''
+      teams:
+        type: array
+        items:
+          type: string
+          x-secret: ''
+    required:
+      - email
+      - firstName
+      - lastName
+      - isPlatformAdmin
+      - isTeamAdmin
+      - teams
 
 properties:
   alerts:
@@ -3182,5 +3171,9 @@ properties:
             type: string
       helm:
         type: object
+  users:
+    type: array
+    items:
+      $ref: '#/definitions/user'
 required:
   - cluster

@@ -18,13 +18,7 @@
 {{- $k := $c | get "keycloak" }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
-{{- $users := list }}
-{{- range $teamId, $team := $v.teamConfig }}
-  {{- range ($team | get "users" list) }}
-    {{- $teamUser := . | merge (dict "teamId" $teamId) }}
-    {{- $users = append $users $teamUser }}
-  {{- end }}
-{{- end }}
+{{- $users := $v | get "users" list }}
 {{- $users := $users | toJson }}
 
 resources:
