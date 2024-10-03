@@ -9,9 +9,6 @@ folders:
   {{- if $v.apps.loki.enabled }}
   - loki
   {{- end }}
-  {{- if and (eq $v.cluster.provider "azure") ($v | get "azure.monitor" nil) }}
-  - azure
-  {{- end }}
   {{- if $v.apps.argocd.enabled }}
   - argo
   {{- end }}

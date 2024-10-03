@@ -27,23 +27,12 @@ resources:
         pilot:
           k8s:
             podAnnotations:
-              policy.otomi.io/ignore: psp-allowed-users
               sidecar.istio.io/inject: "true"
             priorityClassName: otomi-critical
             hpaSpec:
               minReplicas: {{ $i.autoscaling.pilot.minReplicas }}
               maxReplicas: {{ $i.autoscaling.pilot.maxReplicas }}
-            resources:
-              {{- with $i | get "resources.pilot" nil }}
-                {{- toYaml . | nindent 14 }}
-              {{- else }}
-              limits:
-                cpu: '2'
-                memory: 2Gi
-              requests:
-                cpu: 100m
-                memory: 128Mi
-              {{- end }}
+            resources: {{- $i.resources.pilot | toYaml | nindent 14 }}
         ingressGateways:
           - name: istio-ingressgateway
             enabled: false
@@ -53,20 +42,8 @@ resources:
               istio: ingressgateway-public
               app: ingressgateway
             k8s:
-              podAnnotations:
-                policy.otomi.io/ignore: psp-allowed-users
               priorityClassName: otomi-critical
-              resources:
-              {{- with $i | get "resources.ingressgateway" nil }}
-                {{- toYaml . | nindent 16 }}
-              {{- else }}
-                limits:
-                  cpu: '1'
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-              {{- end }}
+              resources: {{- $i.resources.ingressgateway | toYaml | nindent 16 }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" }}
                 maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" }}
@@ -83,29 +60,13 @@ resources:
                     name: https
                   - port: 15443
                     name: tls
-            {{- if eq $v.cluster.provider "azure" }}
-              readinessProbe:
-                failureThreshold: 20
-            {{- end }}
         {{ if $i.egressGateway.enabled }}
         egressGateways:
           - name: istio-egressgateway
             enabled: true
             k8s:
-              podAnnotations:
-                policy.otomi.io/ignore: psp-allowed-users
               priorityClassName: otomi-critical
-              resources:
-              {{- with $i | get "resources.egressgateway" nil }}
-                {{- toYaml . | nindent 16 }}
-              {{- else }}
-                limits:
-                  cpu: '1'
-                  memory: 256Mi
-                requests:
-                  cpu: 100m
-                  memory: 128Mi
-              {{- end }}
+              resources: {{- $i.resources.egressgateway | toYaml | nindent 16 }}
               hpaSpec:
                 minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" }}
                 maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" }}
@@ -120,10 +81,6 @@ resources:
                   - port: 443
                     targetPort: 8443
                     name: https
-            {{- if eq $v.cluster.provider "azure" }}
-              readinessProbe:
-                failureThreshold: 20
-            {{- end }}
         {{- end }}  
       values:
         cni:
@@ -137,17 +94,7 @@ resources:
           logging:
             level: {{ $ig | get "logging.level" "default:info" }}
           proxy:
-            resources:
-            {{- with $i | get "resources.proxy" nil }}
-              {{- toYaml . | nindent 14 }}
-            {{- else }}
-              limits:
-                cpu: '1'
-                memory: 1Gi
-              requests:
-                cpu: 20m
-                memory: 80Mi
-            {{- end }}
+            resources: {{- $i.resources.proxy | toYaml | nindent 14 }}
             autoInject: enabled
           useMCP: false
         meshConfig:
@@ -178,5 +125,3 @@ resources:
         {{- end }}
         sidecarInjectorWebhook:
           enableNamespacesByDefault: false
-          injectedAnnotations: 
-            policy.otomi.io/ignore.istio-init: psp-allowed-users,psp-capabilities

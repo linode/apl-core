@@ -2,8 +2,6 @@
 {{- $i := $v.apps | get "istio" }}
 hub: istio
 # tag: {{ $i | get "image.tag" "1.15.1" }}
-# podAnnotations:
-#   policy.otomi.io/ignore: psp-allowed-users
 
 operatorNamespace: istio-operator
 
