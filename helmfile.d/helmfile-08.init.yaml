@@ -18,6 +18,12 @@ releases:
     labels:
       pkg: prometheus-operator
     <<: *raw
+  - name: thanos-artifacts
+    installed: {{ $a | get "thanos.enabled" }}
+    namespace: thanos
+    labels:
+      pkg: thanos
+    <<: *raw
   - name: prometheus-operator
     installed: true
     namespace: monitoring
