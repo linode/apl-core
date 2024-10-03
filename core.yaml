@@ -64,6 +64,10 @@ k8s:
     - name: kyverno
       app: kyverno
       disableIstioInjection: true
+    - name: thanos
+      app: thanos
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: tekton-pipelines
       app: tekton
       disableIstioInjection: true
@@ -280,7 +284,7 @@ adminApps:
     ingress:
       - svc: thanos-query
         port: 9090
-        namespace: monitoring
+        namespace: thanos
         type: public
         auth: true
   - name: loki

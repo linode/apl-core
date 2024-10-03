@@ -43,6 +43,8 @@ prometheusOperator:
         name: custom-ca
         kind: ClusterIssuer
   priorityClassName: otomi-critical
+  prometheusConfigReloader:
+    resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}    
 commonLabels:
   prometheus: system
 prometheus:
@@ -54,6 +56,7 @@ prometheus:
   prometheusSpec:
     {{- if $t.enabled }}
     thanos:
+      resources: {{- $p.resources.thanosSidecar | toYaml | nindent 8 }}
       objectStorageConfig:
         name: thanos-objectstore
         key: objstore.yml
@@ -219,7 +222,7 @@ grafana:
       editable: false
       orgId: 1
       type: prometheus
-      url: http://thanos-query.monitoring:9090
+      url: http://thanos-query.thanos:9090
       jsonData:
         prometheusType: Thanos
         timeInterval: "60s"

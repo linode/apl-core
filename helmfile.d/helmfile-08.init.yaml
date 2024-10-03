@@ -32,7 +32,7 @@ releases:
     <<: *upgrade
   - name: thanos
     installed: {{ $a | get "thanos.enabled" }}
-    namespace: monitoring
+    namespace: thanos
     labels:
       pkg: thanos
     <<: *default

@@ -970,6 +970,20 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 256Mi
+              thanosSidecar:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: "1"
+                  memory: 256Mi
+              prometheusConfigReloader:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100
+                  memory: 128Mi              
             _rawValues: {}
           otel:
             enabled: false
@@ -1132,22 +1146,22 @@ environments:
             resources:
               query:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 50m
+                  memory: 160Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               compactor:
                 requests:
-                  cpu: 100m
+                  cpu: 50m
                   memory: 128Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               storegateway:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 50m
+                  memory: 265Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi

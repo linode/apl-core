@@ -111,7 +111,7 @@ releases:
               editable: false
               orgId: 1
               type: prometheus
-              url: http://thanos-query.monitoring:9090
+              url: http://thanos-query.thanos:9090
               jsonData:
                 prometheusType: Thanos
                 timeInterval: "60s"

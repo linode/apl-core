@@ -2467,6 +2467,10 @@ properties:
                 $ref: '#/definitions/resources'
               node-exporter:
                 $ref: '#/definitions/resources'
+              thanosSidecar:
+                $ref: '#/definitions/resources'
+              prometheusConfigReloader:
+                $ref: '#/definitions/resources'
       promtail:
         additionalProperties: false
         properties:
