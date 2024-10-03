@@ -49,9 +49,6 @@ image:
   rootless: true
 
 gitea:
-  podAnnotations:
-    policy.otomi.io/ignore.init: psp-allowed-users
-    policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
   admin:
     username: {{ $g.adminUsername }}
     password: {{ $g.adminPassword }}
@@ -178,11 +175,7 @@ memcached:
 
 
 persistence:
-  {{- if eq $v.cluster.provider "vultr" }}
-  size: 10Gi
-  {{- else }}
   size: 1Gi
-  {{- end }}
 
 postgresql:
   {{- if $gdb.useOtomiDB }}

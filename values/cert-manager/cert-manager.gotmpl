@@ -15,23 +15,17 @@ prometheus:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"  
-  policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security
 installCRDs: true
 resources: {{- toYaml $cm.resources.certManager | nindent 2 }}
 
 startupapicheck:
   jobAnnotations:
     sidecar.istio.io/inject: "false"  
-    policy.otomi.io/ignore: containerlimits
   resources: {{- toYaml $cm.resources.startupapicheck | nindent 4 }}
 
 cainjector:
   resources: {{- toYaml $cm.resources.cainjector | nindent 6 }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security
 webhook:
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
   resources: {{- toYaml $cm.resources.webhook | nindent 6 }}
 
 

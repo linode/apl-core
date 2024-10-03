@@ -12,10 +12,6 @@ metrics:
   labels:
     prometheus: system
 
-# the container's securityContext must have "privileged:true" thus we cannot set a non-root user for this chart
-podAnnotations: 
-  policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security,psp-host-networking-ports
-
 priorityClassName: otomi-critical
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}

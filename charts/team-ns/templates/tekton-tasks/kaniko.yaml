@@ -10,7 +10,6 @@ metadata:
     tekton.dev/tags: image-build
     tekton.dev/displayName: "Build and upload container image using Kaniko"
     tekton.dev/platforms: "linux/amd64,linux/arm64,linux/ppc64le"
-    policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
 spec:
   stepTemplate:
     computeResources:

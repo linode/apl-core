@@ -28,8 +28,6 @@ serviceMonitor:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"
-  # init container requires "privileged: true" thus we cannot remove "psp-allowed-users" policy Annotation
-  policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem
 
 config:
   clients:

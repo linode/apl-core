@@ -8,8 +8,6 @@ image:
     - name: otomi-pullsecret-global
 {{- end }}
 
-podAnnotations:
-  policy.otomi.io/ignore: psp-allowed-users
 
 image:
   repo: quay.io/kiali/kiali-operator
@@ -29,7 +27,6 @@ cr:
         username_claim: email
     deployment:
       pod_annotations:
-        policy.otomi.io/ignore: psp-allowed-users
         sidecar.istio.io/inject: "true"
       ingress_enabled: false
       namespace: kiali
