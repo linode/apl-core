@@ -3,6 +3,7 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $name := $domain | replace "." "-" }}
 {{- $ingress :=  $v.ingress.platformClass }}
+{{- $tlsSecretName := ternary $cm.externallyManagedTlsSecretName "otomi-cert-manager-wildcard-cert" (or (eq $cm.issuer "byo-wildcard-cert") (eq $cm.issuer "externally-managed-tls-secret")) }}
 
 resources:
   - apiVersion: networking.k8s.io/v1
@@ -43,10 +44,6 @@ resources:
             path: /
             pathType: Prefix
       tls: 
-        {{- if eq $cm.issuer "byo-wildcard-cert" }}
-        - secretName: "otomi-byo-wildcard-cert"
-        {{- else }}
-        - secretName: otomi-cert-manager-wildcard-cert
-        {{- end }}
+        - secretName: {{ $tlsSecretName }}
           hosts:
             - '{{ $domain }}'

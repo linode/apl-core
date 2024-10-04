@@ -150,7 +150,7 @@ resources:
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: otomi-byo-wildcard-cert
+      name: {{ $cm.externallyManagedTlsSecretName }}
       namespace: istio-system
     type: kubernetes.io/tls
     data:

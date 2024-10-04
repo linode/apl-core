@@ -13,6 +13,7 @@
 {{- $v := .dot.Values }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
 {{- $cm := index $v.apps "cert-manager" }}
+{{- $tlsSecretName := ternary $cm.externallyManagedTlsSecretName "otomi-cert-manager-wildcard-cert" (or (eq $cm.issuer "byo-wildcard-cert") (eq $cm.issuer "externally-managed-tls-secret")) }}
 {{- range $ingress := $v.ingress.classes }}
   {{- $routes := dict }}
   {{- $names := list }}
@@ -125,15 +126,11 @@ spec:
         - {{ $domain }}
           {{- if hasKey $secrets $domain }}
             {{- if ne (index $secrets $domain) "" }}
-{{/*If a team provides its own certificate in the team namespace then Otomi cornjob makes a copy of it*/}} 
+{{/*If a team provides its own certificate in the team namespace then Otomi cronjob makes a copy of it*/}} 
       secretName: copy-team-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}
-            {{- if eq $cm.issuer "byo-wildcard-cert" }}
-      secretName: otomi-byo-wildcard-cert
-            {{- else }}
-      secretName: otomi-cert-manager-wildcard-cert
-            {{- end}}
+      secretName: {{ $tlsSecretName }}
           {{- end }}
         {{- end }}
       {{- end }}
