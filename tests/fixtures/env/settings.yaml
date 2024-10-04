@@ -53,6 +53,7 @@ obj:
                 tempo: my-clusterid-tempo
                 velero: my-clusterid-velero
                 gitea: my-clusterid-gitea
+                thanos: my-clusterid-thanos
         type: linode
 oidc:
     adminGroupID: someAdminGroupID

@@ -5,6 +5,7 @@
 {{- $a := $v.apps | get "alertmanager" }}
 {{- $g := $v.apps | get "grafana" }}
 {{- $p := $v.apps | get "prometheus" }}
+{{- $t := $v.apps | get "thanos" }}
 {{- $hasKeycloak := $k.enabled }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
@@ -42,11 +43,24 @@ prometheusOperator:
         name: custom-ca
         kind: ClusterIssuer
   priorityClassName: otomi-critical
+  prometheusConfigReloader:
+    resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}    
 commonLabels:
   prometheus: system
 prometheus:
   enabled: {{ $p.enabled }}
+  thanosService:
+    enabled: {{ $t.enabled }}
+  thanosServiceMonitor:
+    enabled: {{ $t.enabled }}
   prometheusSpec:
+    {{- if $t.enabled }}
+    thanos:
+      resources: {{- $p.resources.thanosSidecar | toYaml | nindent 8 }}
+      objectStorageConfig:
+        name: thanos-objectstore
+        key: objstore.yml
+    {{- end }}
     {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
     {{ $selType }}Selector:
       matchLabels:
@@ -66,22 +80,29 @@ prometheus:
     resources: {{- $p.resources.prometheus | toYaml | nindent 6 }}
     # all team alert managers that will get alerts
     alertingEndpoints:
-    - name: po-alertmanager 
+    - name: po-alertmanager
       namespace: monitoring
       port: http-web
       scheme: http
       apiVersion: v2
     {{- range $id, $team := $v.teamConfig }}
+    {{- if ($v.teamConfig | get "managedMonitoring" "alertmanager") }}
     - name: '{{ $id }}-po-alertmanager'
       namespace: 'team-{{ $id }}'
       port: http-web
       scheme: http
       apiVersion: v2
+    {{- end }}
     {{- end }}    
     priorityClassName: otomi-critical
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"
-    retention: {{ $p | get "retention" "1d" }}
+    replicaExternalLabelName: __replica__
+    {{- if $t.enabled }}
+    retention: 6h
+    {{- else }}
+    retention: {{ $p | get "retention" }}
+    {{- end }}
     retentionSize: {{ $p | get "retentionSize" }}
     storageSpec:
       volumeClaimTemplate:
@@ -169,14 +190,16 @@ grafana:
       enabled: true
       label: release
       labelValue: grafana-dashboards
+    {{- if $t.enabled }}  
+    datasources:
+      isDefaultDatasource: false
+    {{- end }}
   serviceMonitor:
     enabled: {{ $p.enabled }}
     labels:
       prometheus: system
-
   testFramework:
-    enabled: false
-    
+    enabled: false  
   plugins:
     - grafana-piechart-panel
   additionalDataSources:
@@ -191,7 +214,19 @@ grafana:
       basicAuthUser: otomi-admin
       secureJsonData:
         basicAuthPassword: {{ $v.apps.loki.adminPassword }}
-
+    {{- if $t.enabled }}
+    - name: Thanos Query
+      access: proxy
+      isDefault: true
+      basicAuth: false
+      editable: false
+      orgId: 1
+      type: prometheus
+      url: http://thanos-query.thanos:9090
+      jsonData:
+        prometheusType: Thanos
+        timeInterval: "60s"
+    {{- end }}
     {{- if $c.tempo.enabled }}
       jsonData:
         derivedFields:

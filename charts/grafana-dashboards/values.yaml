@@ -7,6 +7,7 @@ folders:
   - k8s-admin
   - k8s-teams
   - minio
+  - thanos
   - trivy
   - trivy-teams
   - velero
