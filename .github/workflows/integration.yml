@@ -17,6 +17,9 @@ on:
       kms:
         type: string
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
+        options:
+          - age
+          - no_kms
         default: age
       domain:
         type: choice
@@ -47,74 +50,75 @@ on:
         description: Select certificate issuer
         default: gen_custom_ca
   workflow_dispatch:
-    kubernetes_versions:
-      description: 'Kubernetes version'
-      type: choice
-      options:
-        - "['1.29']"
-        - "['1.30']"
-        - "['1.31']"
-      default: "['1.31']"
-    install_profile:
-      description: Otomi installation profile
-      default: minimal-with-team
-      type: choice
-      options:
-        - minimal
-        - minimal-with-team
-        - monitoring-with-team
-        - full
-        - upgrade
-        - no-otomi
-    cluster_persistence:
-      type: choice
-      description: Should a cluster be destroyed on pipeline finish?
-      options:
-        - preserve
-        - destroy
-      default: preserve
-    domain:
-      type: choice
-      description: Select Domain
-      options:
-        - ani1357-1.dev-akamai-apl.net
-        - ani1357-2.dev-akamai-apl.net
-        - eldermatt-1.dev-akamai-apl.net
-        - eldermatt-2.dev-akamai-apl.net
-        - srodenhuis-1.dev-akamai-apl.net
-        - srodenhuis-2.dev-akamai-apl.net
-        - merll-1.dev-akamai-apl.net
-        - merll-2.dev-akamai-apl.net
-        - dennisvankekem-1.dev-akamai-apl.net
-        - dennisvankekem-2.dev-akamai-apl.net
-        - j-zimnowoda-1.dev-akamai-apl.net
-        - j-zimnowoda-2.dev-akamai-apl.net
-        - ferruhcihan-1.dev-akamai-apl.net
-        - ferruhcihan-2.dev-akamai-apl.net
-        - caslubbers-1.dev-akamai-apl.net
-        - caslubbers-2.dev-akamai-apl.net
-    kms:
-      type: choice
-      description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
-      options:
-        - age
-        - no_kms
-      default: age
-    generate_password:
-      type: choice
-      description: Should a unique password be generated?
-      options:
-        - 'yes'
-        - 'no'
-      default: 'no'
-    certificate:
-      type: choice
-      description: Select certificate issuer
-      options:
-        - gen_custom_ca
-        - letsencrypt_staging
-        - letsencrypt_production
-      default: letsencrypt_production
+    inputs:
+      kubernetes_versions:
+        description: 'Kubernetes version'
+        type: choice
+        options:
+          - "['1.29']"
+          - "['1.30']"
+          - "['1.31']"
+        default: "['1.31']"
+      install_profile:
+        description: Otomi installation profile
+        default: minimal-with-team
+        type: choice
+        options:
+          - minimal
+          - minimal-with-team
+          - monitoring-with-team
+          - full
+          - upgrade
+          - no-otomi
+      cluster_persistence:
+        type: choice
+        description: Should a cluster be destroyed on pipeline finish?
+        options:
+          - preserve
+          - destroy
+        default: preserve
+      domain:
+        type: choice
+        description: Select Domain
+        options:
+          - ani1357-1.dev-akamai-apl.net
+          - ani1357-2.dev-akamai-apl.net
+          - eldermatt-1.dev-akamai-apl.net
+          - eldermatt-2.dev-akamai-apl.net
+          - srodenhuis-1.dev-akamai-apl.net
+          - srodenhuis-2.dev-akamai-apl.net
+          - merll-1.dev-akamai-apl.net
+          - merll-2.dev-akamai-apl.net
+          - dennisvankekem-1.dev-akamai-apl.net
+          - dennisvankekem-2.dev-akamai-apl.net
+          - j-zimnowoda-1.dev-akamai-apl.net
+          - j-zimnowoda-2.dev-akamai-apl.net
+          - ferruhcihan-1.dev-akamai-apl.net
+          - ferruhcihan-2.dev-akamai-apl.net
+          - caslubbers-1.dev-akamai-apl.net
+          - caslubbers-2.dev-akamai-apl.net
+      kms:
+        type: choice
+        description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
+        options:
+          - age
+          - no_kms
+        default: age
+      generate_password:
+        type: choice
+        description: Should a unique password be generated?
+        options:
+          - 'yes'
+          - 'no'
+        default: 'no'
+      certificate:
+        type: choice
+        description: Select certificate issuer
+        options:
+          - gen_custom_ca
+          - letsencrypt_staging
+          - letsencrypt_production
+        default: letsencrypt_production
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -275,7 +279,6 @@ jobs:
         run: |
           domainSuffix=''
           touch values.yaml
-          [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
           [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider=age"
