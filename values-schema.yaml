@@ -1457,13 +1457,15 @@ definitions:
         items:
           type: string
           x-secret: ''
+      initialPassword:
+        type: string
+        x-secret: ''
     required:
       - email
       - firstName
       - lastName
       - isPlatformAdmin
       - isTeamAdmin
-      - teams
 
 properties:
   alerts:
