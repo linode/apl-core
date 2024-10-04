@@ -938,7 +938,7 @@ environments:
                 insecureSkipVerify: false
             replicas: 1
             scrapeInterval: 60s
-            retention: 120h
+            retention: 15d
             retentionSize: 4GB
             storageSize: 5Gi
             resources:
@@ -970,6 +970,20 @@ environments:
                 limits:
                   cpu: 500m
                   memory: 256Mi
+              thanosSidecar:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: "1"
+                  memory: 256Mi
+              prometheusConfigReloader:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi              
             _rawValues: {}
           otel:
             enabled: false
@@ -1115,6 +1129,42 @@ environments:
                 limits:
                   cpu: 900m
                   memory: 512Mi
+            _rawValues: {}
+          thanos:
+            enabled: false
+            query:
+              replicaCount: 1
+            compactor:
+              retentionResolutionRaw: 30d
+              retentionResolution5m: 30d
+              retentionResolution1h: 10y
+            persistence:
+              compactor:
+                size: 10Gi
+              storegateway:
+                size: 10Gi
+            resources:
+              query:
+                requests:
+                  cpu: 50m
+                  memory: 160Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              compactor:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              storegateway:
+                requests:
+                  cpu: 50m
+                  memory: 265Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
             _rawValues: {}
           trivy:
             enabled: false
