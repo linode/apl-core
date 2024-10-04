@@ -41,6 +41,7 @@ on:
           - ferruhcihan-2.dev-akamai-apl.net
           - caslubbers-1.dev-akamai-apl.net
           - caslubbers-2.dev-akamai-apl.net
+        default: ani1357-1.dev-akamai-apl.net
       generate_password:
         type: string
         description: Should a unique password be generated?
