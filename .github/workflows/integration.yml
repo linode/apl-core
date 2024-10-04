@@ -228,7 +228,6 @@ jobs:
           CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
           CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
         run: |
-          domainSuffix=''
           touch values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
@@ -247,6 +246,7 @@ jobs:
             --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
             --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
             --set otomi.hasExternalDNS=true \
+            --set ckuster.domainSuffix=${{ inputs.domain }} \
             $kms"
 
           helm install $install_args
