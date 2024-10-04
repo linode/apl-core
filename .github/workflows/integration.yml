@@ -22,7 +22,7 @@ on:
           - no_kms
         default: age
       domain:
-        type: choice
+        type: string
         description: Select Domain
         options:
           - ani1357-1.dev-akamai-apl.net
