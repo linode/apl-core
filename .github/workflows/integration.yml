@@ -240,7 +240,7 @@ jobs:
             --values values-container-registry.yaml \
             --values values.yaml \
             --set cluster.provider=linode \
-            --set dns.domainFilters={ ${{ inputs.domain }} } \
+            --set dns.domainFilters='{ ${{ inputs.domain }} }' \
             --set dns.provider.akamai.clientSecret=${CLIENT_SECRET}
             --set dns.provider.akamai.host=${HOST} \
             --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
