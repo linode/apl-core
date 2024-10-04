@@ -61,7 +61,7 @@ on:
         options:
           - 'yes'
           - 'no'
-        default: 'no'
+        default: 'yes'
       certificate:
         type: choice
         description: Select certificate issuer
@@ -245,7 +245,8 @@ jobs:
             --set dns.provider.akamai.host=${HOST} \
             --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
             --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
-            --set dns.provider.akamai.clientSecret=${CLIENT_SECRET}
+            --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
+            --set otomi.hasExternalDNS=true \
             $kms"
 
           helm install $install_args
