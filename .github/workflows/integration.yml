@@ -1,55 +1,55 @@
 name: Deploy Otomi
 on:
-  workflow_call:
-    inputs:
-      kubernetes_versions:
-        description: "Kubernetes versions (JSON formatted list e.g.: ['1.31'])"
-        type: string
-        default: "['1.31']"
-      install_profile:
-        description: Otomi installation profile
-        default: full
-        type: string
-      cluster_persistence:
-        type: string
-        description: Should a cluster be destroyed on pipeline finish
-        default: destroy
-      kms:
-        type: string
-        description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
-        options:
-          - age
-          - no_kms
-        default: age
-      domain:
-        type: string
-        description: Select Domain
-        options:
-          - ani1357-1.dev-akamai-apl.net
-          - ani1357-2.dev-akamai-apl.net
-          - eldermatt-1.dev-akamai-apl.net
-          - eldermatt-2.dev-akamai-apl.net
-          - srodenhuis-1.dev-akamai-apl.net
-          - srodenhuis-2.dev-akamai-apl.net
-          - merll-1.dev-akamai-apl.net
-          - merll-2.dev-akamai-apl.net
-          - dennisvankekem-1.dev-akamai-apl.net
-          - dennisvankekem-2.dev-akamai-apl.net
-          - j-zimnowoda-1.dev-akamai-apl.net
-          - j-zimnowoda-2.dev-akamai-apl.net
-          - ferruhcihan-1.dev-akamai-apl.net
-          - ferruhcihan-2.dev-akamai-apl.net
-          - caslubbers-1.dev-akamai-apl.net
-          - caslubbers-2.dev-akamai-apl.net
-        default: ani1357-1.dev-akamai-apl.net
-      generate_password:
-        type: string
-        description: Should a unique password be generated?
-        default: 'no'
-      certificate:
-        type: string
-        description: Select certificate issuer
-        default: gen_custom_ca
+  # workflow_call:
+  #   inputs:
+  #     kubernetes_versions:
+  #       description: "Kubernetes versions (JSON formatted list e.g.: ['1.31'])"
+  #       type: string
+  #       default: "['1.31']"
+  #     install_profile:
+  #       description: Otomi installation profile
+  #       default: full
+  #       type: string
+  #     cluster_persistence:
+  #       type: string
+  #       description: Should a cluster be destroyed on pipeline finish
+  #       default: destroy
+  #     kms:
+  #       type: string
+  #       description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
+  #       options:
+  #         - age
+  #         - no_kms
+  #       default: age
+  #     domain:
+  #       type: string
+  #       description: Select Domain
+  #       options:
+  #         - ani1357-1.dev-akamai-apl.net
+  #         - ani1357-2.dev-akamai-apl.net
+  #         - eldermatt-1.dev-akamai-apl.net
+  #         - eldermatt-2.dev-akamai-apl.net
+  #         - srodenhuis-1.dev-akamai-apl.net
+  #         - srodenhuis-2.dev-akamai-apl.net
+  #         - merll-1.dev-akamai-apl.net
+  #         - merll-2.dev-akamai-apl.net
+  #         - dennisvankekem-1.dev-akamai-apl.net
+  #         - dennisvankekem-2.dev-akamai-apl.net
+  #         - j-zimnowoda-1.dev-akamai-apl.net
+  #         - j-zimnowoda-2.dev-akamai-apl.net
+  #         - ferruhcihan-1.dev-akamai-apl.net
+  #         - ferruhcihan-2.dev-akamai-apl.net
+  #         - caslubbers-1.dev-akamai-apl.net
+  #         - caslubbers-2.dev-akamai-apl.net
+  #       default: ani1357-1.dev-akamai-apl.net
+  #     generate_password:
+  #       type: string
+  #       description: Should a unique password be generated?
+  #       default: 'no'
+  #     certificate:
+  #       type: string
+  #       description: Select certificate issuer
+  #       default: gen_custom_ca
   workflow_dispatch:
     inputs:
       kubernetes_versions:
