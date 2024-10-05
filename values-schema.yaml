@@ -1128,6 +1128,89 @@ definitions:
           private:
             type: boolean
             default: false
+      resources:
+        properties:
+          alertmanager:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 10m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 64Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 256Mi
+                required:
+                  - cpu
+                  - memory
+          grafana:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 10m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '1'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 1Gi
+                required:
+                  - cpu
+                  - memory
+          grafanaSidecar:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 10m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 256Mi
+                required:
+                  - cpu
+                  - memory
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster
@@ -1469,8 +1552,6 @@ properties:
             $ref: '#/definitions/imageSimple'
           resources:
             properties:
-              alertmanagerTeams:
-                $ref: '#/definitions/resources'
               alertmanger:
                 $ref: '#/definitions/resources'
       argocd:
@@ -1785,10 +1866,6 @@ properties:
             grafana:
               $ref: '#/definitions/resources'
             sidecar:
-              $ref: '#/definitions/resources'
-            grafanaTeams:
-              $ref: '#/definitions/resources'
-            sidecarTeams:
               $ref: '#/definitions/resources'
       harbor:
         additionalProperties: false

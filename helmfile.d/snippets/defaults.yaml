@@ -8,13 +8,6 @@ environments:
           alertmanager:
             enabled: false
             resources:
-              alertmanagerTeams:
-                requests:
-                  cpu: 10m
-                  memory: 64Mi
-                limits:
-                  cpu: 200m
-                  memory: 256Mi
               alertmanager:
                 requests:
                   cpu: 10m
@@ -25,13 +18,13 @@ environments:
             _rawValues: {}
           argocd:
             applicationSet:
-              replicas: 1
+              replicas: 2
             controller:
-              replicas: 1
+              replicas: 2
             autoscaling:
               repoServer:
                 enabled: true
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 5
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
@@ -44,7 +37,7 @@ environments:
             resources:
               controller:
                 requests:
-                  cpu: 500m
+                  cpu: 200m
                   memory: 1Gi
                 limits:
                   cpu: "2"
@@ -59,7 +52,7 @@ environments:
               repo:
                 requests:
                   cpu: 100m
-                  memory: 512M
+                  memory: 640M
                 limits:
                   cpu: "1"
                   memory: 1Gi
@@ -80,13 +73,13 @@ environments:
               notifications:
                 requests:
                   cpu: 50m
-                  memory: 64M
+                  memory: 160M
                 limits:
                   cpu: "1"
                   memory: 1Gi
               imageUpdater:
                 requests:
-                  memory: 50Mi
+                  memory: 160Mi
                   cpu: 50m
                 limits:
                   memory: 1Gi
@@ -308,21 +301,21 @@ environments:
                   memory: 1Gi
                 requests:
                   cpu: 100m
-                  memory: 128Mi
+                  memory: 256Mi
               memcached:
                 limits:
                   cpu: 250m
                   memory: 256Mi
                 requests:
-                  cpu: 100m
+                  cpu: 10m
                   memory: 128Mi
               memcachedMetrics:
                 limits:
                   cpu: 200m
                   memory: 128M
                 requests:
-                  cpu: 50m
-                  memory: 64M
+                  cpu: 10m
+                  memory: 16M
               init:
                 limits:
                   cpu: 400m
@@ -340,21 +333,7 @@ environments:
                 limits:
                   cpu: "1"
                   memory: 1Gi
-              grafanaTeams:
-                requests:
-                  cpu: 10m
-                  memory: 128Mi
-                limits:
-                  cpu: "1"
-                  memory: 1Gi
               sidecar:
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
-                requests:
-                  cpu: 10m
-                  memory: 128Mi
-              sidecarTeams:
                 limits:
                   cpu: 500m
                   memory: 256Mi
@@ -372,49 +351,49 @@ environments:
             resources:
               chartmuseum:
                 requests:
-                  cpu: 10m
+                  cpu: 20m
                   memory: 56Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               core:
                 requests:
-                  cpu: 10m
+                  cpu: 20m
                   memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               jobservice:
                 requests:
-                  cpu: 10m
-                  memory: 32Mi
+                  cpu: 20m
+                  memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               portal:
                 requests:
-                  cpu: 10m
-                  memory: 32Mi
+                  cpu: 20m
+                  memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               redis:
                 requests:
-                  cpu: 100m
+                  cpu: 20m
                   memory: 128Mi
                 limits:
                   cpu: 500m
                   memory: 512Mi
               registry:
                 requests:
-                  cpu: 10m
+                  cpu: 20m
                   memory: 32Mi
                 limits:
                   cpu: 500m
                   memory: 256Mi
               registryController:
                 requests:
-                  cpu: 10m
+                  cpu: 20m
                   memory: 32Mi
                 limits:
                   cpu: 500m
@@ -429,7 +408,7 @@ environments:
               nginx:
                 requests:
                   memory: 32Mi
-                  cpu: 10m
+                  cpu: 20m
                 limits:
                   memory: 512Mi
                   cpu: 200m
@@ -493,7 +472,7 @@ environments:
             resources:
               proxy:
                 requests:
-                  cpu: 20m
+                  cpu: 5m
                   memory: 80Mi
                 limits:
                   cpu: "1"
@@ -565,18 +544,18 @@ environments:
             resources:
               keycloak:
                 requests:
-                  cpu: 200m
-                  memory: 512Mi
+                  cpu: 100m
+                  memory: 640Mi
                 limits:
                   cpu: "2"
                   memory: 2Gi
               operator:
                 requests:
                   cpu: 100m
-                  memory: 128Mi
+                  memory: 336Mi
                 limits:
                   cpu: "1"
-                  memory: 512Mi
+                  memory: 1Gi
             idp:
               alias: otomi-idp
               clientID: otomi
@@ -920,11 +899,11 @@ environments:
             enabled: false
             resources:
               requests:
-                cpu: 200m
-                memory: 256Mi
+                cpu: 50m
+                memory: 160Mi
               limits:
                 cpu: "1"
-                memory: 512Mi
+                memory: 1Gi
             _rawValues: {}
           prometheus-blackbox-exporter:
             _rawValues: {}
