@@ -421,6 +421,8 @@ environments:
               enabled: true
               minReplicas: 2
               maxReplicas: 10
+              targetCPUUtilizationPercentage: 80
+              targetMemoryUtilizationPercentage: 80
             modsecurity:
               enabled: false
               block: false
@@ -434,7 +436,7 @@ environments:
               controller:
                 requests:
                   cpu: 100m
-                  memory: 256Mi
+                  memory: 384Mi
                 limits:
                   cpu: "2"
                   memory: 2Gi
