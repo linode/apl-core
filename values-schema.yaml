@@ -1184,6 +1184,141 @@ definitions:
                 required:
                   - cpu
                   - memory
+          buildpacksTask:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '2'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 2Gi
+                required:
+                  - cpu
+                  - memory
+          gitcloneTask:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '2'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 2Gi
+                required:
+                  - cpu
+                  - memory
+          grypeTask:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '2'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 2Gi
+                required:
+                  - cpu
+                  - memory
+          kanikoTask:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '2'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 2Gi
+                required:
+                  - cpu
+                  - memory
+          tektonDashboard:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 10m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 64Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '100m'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
           grafanaSidecar:
             additionalProperties: false
             properties:
@@ -2007,6 +2142,8 @@ properties:
                 $ref: '#/definitions/resources'
               proxy:
                 $ref: '#/definitions/resources'
+              operator:
+                $ref: '#/definitions/resources'
       jaeger:
         additionalProperties: false
         properties:
@@ -2015,12 +2152,6 @@ properties:
             default: false
           resources:
             operator:
-              $ref: '#/definitions/resources'
-            agent:
-              $ref: '#/definitions/resources'
-            collector:
-              $ref: '#/definitions/resources'
-            ingester:
               $ref: '#/definitions/resources'
             jaeger:
               $ref: '#/definitions/resources'
@@ -2200,6 +2331,10 @@ properties:
               pipelinesController:
                 $ref: '#/definitions/resources'
               pipelinesRemoteresolver:
+                $ref: '#/definitions/resources'
+              pipelinesEvents:
+                $ref: '#/definitions/resources'
+              pipelinesWebhook:
                 $ref: '#/definitions/resources'
               triggersInterceptors:
                 $ref: '#/definitions/resources'

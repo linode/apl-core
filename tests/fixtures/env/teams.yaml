@@ -63,6 +63,42 @@ teamConfig:
                 requests:
                     cpu: 10m
                     memory: 128Mi
+            buildpacksTask:
+                limits:
+                    cpu: '10'
+                    memory: 2Gi
+                requests:
+                    cpu: 500m
+                    memory: 512Mi
+            gitcloneTask:
+                limits:
+                    cpu: '2'
+                    memory: 2Gi
+                requests:
+                    cpu: 500m
+                    memory: 512Mi
+            grypeTask:
+                limits:
+                    cpu: '2'
+                    memory: 2Gi
+                requests:
+                    cpu: 500m
+                    memory: 512Mi
+            kanikoTask:
+                limits:
+                    cpu: '2'
+                    memory: 2Gi
+                requests:
+                    cpu: 500m
+                    memory: 512Mi
+            tektonDashboard:
+                limits:
+                    cpu: 101m
+                    memory: 128Mi
+                requests:
+                    cpu: 10m
+                    memory: 64Mi
+
     dev:
         id: dev
         managedMonitoring:
@@ -96,3 +132,38 @@ teamConfig:
                 requests:
                     cpu: 10m
                     memory: 128Mi
+            buildpacksTask:
+                limits:
+                    cpu: '2'
+                    memory: 2Gi
+                requests:
+                    cpu: 500m
+                    memory: 512Mi
+            gitcloneTask:
+                limits:
+                    cpu: '2'
+                    memory: 2Gi
+                requests:
+                    cpu: 500m
+                    memory: 512Mi
+            grypeTask:
+                limits:
+                    cpu: '2'
+                    memory: 2Gi
+                requests:
+                    cpu: 500m
+                    memory: 512Mi
+            kanikoTask:
+                limits:
+                    cpu: '2'
+                    memory: 2Gi
+                requests:
+                    cpu: 500m
+                    memory: 512Mi
+            tektonDashboard:
+                limits:
+                    cpu: 1000m
+                    memory: 188Mi
+                requests:
+                    cpu: 10m
+                    memory: 64Mi

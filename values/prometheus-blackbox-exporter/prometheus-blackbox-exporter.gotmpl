@@ -7,22 +7,10 @@ persistence:
   size: 1Gi
 usePassword: false
 
-resources:
-  requests:
-    cpu: 50m
-    memory: 50Mi
-  limits:
-    cpu: 250m
-    memory: 300Mi
+resources: {{- $pbe.resources.blackboxExporter| toYaml | nindent 4 }}
 
 sentinel:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 32Mi
-    limits:
-      cpu: 200m
-      memory: 128Mi
+  resources: {{- $pbe.resources.sentinel | toYaml | nindent 6 }}
 
 config:
   modules:

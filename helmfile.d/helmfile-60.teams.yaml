@@ -39,6 +39,7 @@ releases:
       pipeline: otomi-task-teams
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
+      - resources: {{- $team.resources.tektonDashboard | toYaml | nindent 10 }}
   - name: prometheus-{{ $teamId }}
     installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}

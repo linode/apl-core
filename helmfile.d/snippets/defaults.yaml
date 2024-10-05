@@ -470,6 +470,13 @@ environments:
             egressGateway:
               enabled: false
             resources:
+              operator:
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+                requests:
+                  cpu: 20m
+                  memory: 128Mi
               proxy:
                 requests:
                   cpu: 5m
@@ -505,31 +512,10 @@ environments:
               operator:
                 limits:
                   cpu: 500m
-                  memory: 128Mi
+                  memory: 1Gi
                 requests:
                   cpu: 100m
                   memory: 128Mi
-              agent:
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-                requests:
-                  cpu: 10m
-                  memory: 32Mi
-              collector:
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-                requests:
-                  cpu: 10m
-                  memory: 32Mi
-              ingester:
-                limits:
-                  cpu: 100m
-                  memory: 128Mi
-                requests:
-                  cpu: 10m
-                  memory: 32Mi
               jaeger:
                 limits:
                   cpu: "1"
@@ -644,6 +630,20 @@ environments:
                   cpu: "1"
                   memory: 1Gi
               pipelinesRemoteresolver:
+                requests:
+                  cpu: 100m
+                  memory: 100Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              pipelinesEvents:
+                requests:
+                  cpu: 100m
+                  memory: 100Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              pipelinesWebhook:
                 requests:
                   cpu: 100m
                   memory: 100Mi
@@ -907,6 +907,21 @@ environments:
             _rawValues: {}
           prometheus-blackbox-exporter:
             _rawValues: {}
+          resources:
+            blackboxExporter:
+              requests:
+                cpu: 50m
+                memory: 50Mi
+              limits:
+                cpu: 250m
+                memory: 300Mi
+            sentinel:
+              requests:
+                cpu: 100m
+                memory: 32Mi
+              limits:
+                cpu: 200m
+                memory: 128Mi
           prometheus:
             enabled: false
             disabledRules:
@@ -951,15 +966,15 @@ environments:
                   memory: 256Mi
               thanosSidecar:
                 requests:
-                  cpu: 50m
+                  cpu: 10m
                   memory: 64Mi
                 limits:
                   cpu: "1"
-                  memory: 256Mi
+                  memory: 512Mi
               prometheusConfigReloader:
                 requests:
                   cpu: 10m
-                  memory: 32Mi
+                  memory: 24Mi
                 limits:
                   cpu: 100m
                   memory: 128Mi              
