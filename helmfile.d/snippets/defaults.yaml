@@ -985,6 +985,11 @@ environments:
             enabled: false
             collector:
               mode: deployment
+              autoscaler:
+                minReplicas: 2
+                maxReplicas: 5
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
               attributes:
                 - k8s.pod.name
                 - k8s.pod.uid
@@ -997,24 +1002,24 @@ environments:
             resources:
               collector:
                 requests:
-                  cpu: 100m
-                  memory: 128Mi
+                  cpu: 50m
+                  memory: 256Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               manager:
                 requests:
                   cpu: 50m
-                  memory: 32Mi
+                  memory: 64Mi
                 limits:
-                  cpu: 200m
+                  cpu: 500m
                   memory: 512Mi
               kubeRBACProxy:
                 requests:
                   cpu: 50m
-                  memory: 64Mi
+                  memory: 32Mi
                 limits:
-                  cpu: 500m
+                  cpu: 200m
                   memory: 128Mi
             _rawValues: {}
           sealed-secrets:
@@ -1206,7 +1211,7 @@ environments:
                 memory: 1Gi
               requests:
                 cpu: 50m
-                memory: 128Mi
+                memory: 512Mi
           harbor:
             size: 5Gi
             replicas: 2
@@ -1229,7 +1234,7 @@ environments:
                 memory: 1Gi
               requests:
                 cpu: 50m
-                memory: 128Mi
+                memory: 256Mi
         obj:
           provider:
             type: disabled

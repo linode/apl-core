@@ -427,7 +427,23 @@ definitions:
             type: string
             default: '0.01'
       autoscaling:
-        $ref: '#/definitions/autoscalingEnabled'
+        additionalProperties: false
+        properties:
+          enabled:
+            default: true
+            type: boolean
+          maxReplicas:
+            type: integer
+            default: 10
+          minReplicas:
+            type: integer
+            default: 1
+          targetCPUUtilizationPercentage:
+            type: integer
+            default: 80
+          targetMemoryUtilizationPercentage:
+            type: integer
+            default: 80
       maxBodySize:
         type: string
         default: 1024m
@@ -2789,6 +2805,20 @@ properties:
                   - deployment
                   - daemonset
                   - statefulset
+              autoscaler:
+                properties:
+                  maxReplicas:
+                    type: integer
+                    default: 5
+                  minReplicas:
+                    type: integer
+                    default: 2
+                  targetCPUUtilizationPercentage:
+                    type: integer
+                    default: 80
+                  targetMemoryUtilizationPercentage:
+                    type: integer
+                    default: 80
               attributes:
                 type: array
                 title: Kubernetes Attributes
