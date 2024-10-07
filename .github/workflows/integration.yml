@@ -234,7 +234,7 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
           [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider=age"
           [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
-          [[ '${{ inputs.generate_password }}' == 'yes' ]] && adminPassword=$(< /dev/urandom tr -dc 'A-Za-z0-9' | head -c20)"
+          [[ '${{ inputs.generate_password }}' == 'yes' ]] && adminPassword=$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
 
 
           install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
