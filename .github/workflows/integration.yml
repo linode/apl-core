@@ -138,6 +138,10 @@ jobs:
         run: |
           echo "LINODE_CLUSTER_NAME=$(echo ${{ inputs.domain }} | cut -d '.' -f1)" >> $GITHUB_ENV
           # Cluster name must be no longer than 63 characters
+      - name: Check if cluster is running
+        run: |
+          [[ linode-cli lke clusters-list --json | jq '[.[] | select(.label == "${LINODE_CLUSTER_NAME}")] | length > 0' ]] \
+          && echo "There is already a cluster running with that name, please delete it before recreating this one." && exit 1
       - name: Determine exact k8s version
         run: |
           echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
