@@ -7,7 +7,7 @@ persistence:
   size: 1Gi
 usePassword: false
 
-resources: {{- $pbe.resources.blackboxExporter| toYaml | nindent 4 }}
+resources: {{- $pbe.resources.blackboxExporter | toYaml | nindent 4 }}
 
 sentinel:
   resources: {{- $pbe.resources.sentinel | toYaml | nindent 6 }}

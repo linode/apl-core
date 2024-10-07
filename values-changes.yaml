@@ -338,3 +338,11 @@ changes:
       - 'teamConfig.{team}.resources.grafanaSidecar.requests.memory': 128Mi
       - 'teamConfig.{team}.resources.grafanaSidecar.limits.cpu': 200m
       - 'teamConfig.{team}.resources.grafanaSidecar.limits.memory': 256Mi
+      - 'apps.prometheus-blackbox-exporter.resources.blackboxExporter.requests.cpu': 50m
+      - 'apps.prometheus-blackbox-exporter.resources.blackboxExporter.requests.memory': 56Mi
+      - 'apps.prometheus-blackbox-exporter.resources.blackboxExporter.limits.cpu': 250m
+      - 'apps.prometheus-blackbox-exporter.resources.blackboxExporter.limits.memory': 256Mi
+      - 'apps.prometheus-blackbox-exporter.resources.sentinel.requests.cpu': 50m
+      - 'apps.prometheus-blackbox-exporter.resources.sentinel.requests.memory': 32Mi
+      - 'apps.prometheus-blackbox-exporter.resources.sentinel.limits.cpu': 200m
+      - 'apps.prometheus-blackbox-exporter.resources.sentinel.limits.memory': 128Mi
