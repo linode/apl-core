@@ -232,24 +232,23 @@ jobs:
           adminPassword=welcomeotomi
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
-          [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider=age"
+          [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider='age'"
           [[ '${{ inputs.generate_password }}' == 'yes' ]] && adminPassword=$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
 
 
-          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
+          install_args="otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml \
             --values values.yaml \
-            --set cluster.provider=linode \
-            --set dns.domainFilters[0]=${{ inputs.domain }} \
-            --set dns.provider.akamai.clientSecret=${CLIENT_SECRET}
-            --set dns.provider.akamai.host=${HOST} \
-            --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
-            --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
-            --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
+            --set cluster.provider='linode' \
+            --set dns.domainFilters[0]='${{ inputs.domain }}' \
+            --set dns.provider.akamai.clientSecret='${CLIENT_SECRET}' \
+            --set dns.provider.akamai.host='${HOST}' \
+            --set dns.provider.akamai.accessToken='${ACCESS_TOKEN}' \
+            --set dns.provider.akamai.clientToken='${CLIENT_TOKEN}' \
             --set otomi.hasExternalDNS=true \
-            --set cluster.domainSuffix=${{ inputs.domain }} \
-            --set otomi.adminPassword=$adminPassword \
+            --set cluster.domainSuffix='${{ inputs.domain }}' \
+            --set otomi.adminPassword='$adminPassword' \
             $kms"
 
           helm install $install_args
