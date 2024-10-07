@@ -240,15 +240,15 @@ jobs:
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml \
             --values values.yaml \
-            --set cluster.provider='linode' \
-            --set dns.domainFilters[0]='${{ inputs.domain }}' \
-            --set dns.provider.akamai.clientSecret='${CLIENT_SECRET}' \
-            --set dns.provider.akamai.host='${HOST}' \
-            --set dns.provider.akamai.accessToken='${ACCESS_TOKEN}' \
-            --set dns.provider.akamai.clientToken='${CLIENT_TOKEN}' \
+            --set cluster.provider=linode \
+            --set dns.domainFilters[0]=${{ inputs.domain }} \
+            --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
+            --set dns.provider.akamai.host=${HOST} \
+            --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
+            --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
             --set otomi.hasExternalDNS=true \
-            --set cluster.domainSuffix='${{ inputs.domain }}' \
-            --set otomi.adminPassword='$adminPassword' \
+            --set cluster.domainSuffix=${{ inputs.domain }} \
+            --set otomi.adminPassword=$adminPassword \
             $kms"
 
           helm install $install_args
