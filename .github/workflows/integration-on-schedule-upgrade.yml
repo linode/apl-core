@@ -12,4 +12,4 @@ jobs:
     with:
       install_profile: upgrade
       generate_password: 'yes'
-      kubernetes_versions: "['1.30']"
+      kubernetes_versions: "['1.31']"

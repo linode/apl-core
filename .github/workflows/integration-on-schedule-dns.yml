@@ -11,8 +11,7 @@ jobs:
     secrets: inherit
     with:
       install_profile: minimal
-      dns: az_dns
-      kms: az_kms
-      oidc: keycloak
-      certificate: letsencrypt_staging
+      domain: dns-integration.dev-akamai-apl.net
+      kms: age
+      certificate: letsencrypt_production
       generate_password: 'yes'

@@ -11,4 +11,4 @@ jobs:
     secrets: inherit
     with:
       install_profile: minimal
-      generate_password: 'no'
+      generate_password: 'yes'
