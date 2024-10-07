@@ -2,7 +2,7 @@ name: Scheduled - upgrade
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
-    - cron: '30 1 * * *'
+    - cron: '0 0 * * *'
 
 jobs:
   start-integration-test-upgrade:
@@ -11,5 +11,3 @@ jobs:
     secrets: inherit
     with:
       install_profile: upgrade
-      generate_password: 'yes'
-      kubernetes_versions: "['1.31']"

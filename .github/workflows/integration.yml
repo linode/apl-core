@@ -1,4 +1,4 @@
-name: Reusable Workflow
+name: Deploy Otomi
 on:
   workflow_call:
     inputs:
@@ -32,7 +32,8 @@ on:
         description: 'Select Domain'
         type: choice
         options:
-          - dns-integration.dev-somedomain.net
+          - dns-integration.dev-akamai-apl.net
+        default: dns-integration.dev-akamai-apl.net
       kms:
         description: 'Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?'
         type: choice
@@ -104,7 +105,7 @@ on:
           - ferruhcihan-2.dev-akamai-apl.net
           - caslubbers-1.dev-akamai-apl.net
           - caslubbers-2.dev-akamai-apl.net
-          - dns-integration.dev-akamai-apl.net
+          - dns-integration.dev-akamai-apl.net # To be used by scheduled GHAs
       kms:
         type: choice
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
