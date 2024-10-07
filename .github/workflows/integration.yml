@@ -32,6 +32,7 @@ on:
         type: choice
         description: Select Domain
         options:
+          - select_your_domain
           - ani1357-1.dev-akamai-apl.net
           - ani1357-2.dev-akamai-apl.net
           - eldermatt-1.dev-akamai-apl.net
@@ -86,6 +87,10 @@ jobs:
     name: Preprocess input variables
     runs-on: ubuntu-latest
     steps:
+      - name: Check Domain
+        if: ${{ inputs.domain == 'select_your_domain' }}
+        run: |
+          echo "You did not select a valid domain. Select one of your domains from the domain list and try again" && exit 1
       - name: Print user input
         run: |
           echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
