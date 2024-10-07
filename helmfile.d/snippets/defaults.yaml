@@ -875,7 +875,7 @@ environments:
                   memory: 128Mi
                 limits:
                   cpu: "1"
-                  memory: 512Mi
+                  memory: 1Gi
             _rawValues: {}
           apl-gitea-operator:
             resources:
@@ -885,7 +885,7 @@ environments:
                   memory: 128Mi
                 limits:
                   cpu: "1"
-                  memory: 512Mi
+                  memory: 1Gi
             _rawValues: {}
           apl-keycloak-operator:
             resources:
@@ -895,7 +895,7 @@ environments:
                   memory: 128Mi
                 limits:
                   cpu: "1"
-                  memory: 512Mi
+                  memory: 1Gi
             _rawValues: {}
           promtail:
             enabled: false
@@ -909,21 +909,21 @@ environments:
             _rawValues: {}
           prometheus-blackbox-exporter:
             _rawValues: {}
-          resources:
-            blackboxExporter:
-              requests:
-                cpu: 50m
-                memory: 50Mi
-              limits:
-                cpu: 250m
-                memory: 300Mi
-            sentinel:
-              requests:
-                cpu: 100m
-                memory: 32Mi
-              limits:
-                cpu: 200m
-                memory: 128Mi
+            resources:
+              blackboxExporter:
+                requests:
+                  cpu: 50m
+                  memory: 50Mi
+                limits:
+                  cpu: 250m
+                  memory: 300Mi
+              sentinel:
+                requests:
+                  cpu: 100m
+                  memory: 32Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
           prometheus:
             enabled: false
             disabledRules:

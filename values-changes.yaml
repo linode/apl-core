@@ -299,12 +299,12 @@ changes:
       - 'apps.cert-manager.resources': 'apps.cert-manager.resources.certManager'
       - 'apps.alertmanager.resources': 'apps.alertmanager.resources.alertmanager'
       - 'apps.istio.global.proxy.resources': 'apps.istio.resources.proxy'
-      - 'apps.grafana.resources.grafanaTeams': 'teamConfig.{team}.resources.grafana'
-      - 'apps.grafana.resources.sidecarTeams': 'teamConfig.{team}.resources.grafanaSidecar'
       - 'apps.alertmanager.resources.alertmanagerTeams': 'teamConfig.{team}.resources.alertmanager'
     deletions:
       - 'teamConfig.{team}.managedMonitoring.prometheus'
       - 'apps.grafana.resources.downloadDashboards'
+      - 'apps.grafana.resources.grafanaTeams'
+      - 'apps.grafana.resources.sidecarTeams'
     additions:
       - 'teamConfig.{team}.resources.alertmanager.requests.cpu': 10m
       - 'teamConfig.{team}.resources.alertmanager.requests.memory': 64Mi
@@ -338,11 +338,3 @@ changes:
       - 'teamConfig.{team}.resources.grafanaSidecar.requests.memory': 128Mi
       - 'teamConfig.{team}.resources.grafanaSidecar.limits.cpu': 200m
       - 'teamConfig.{team}.resources.grafanaSidecar.limits.memory': 256Mi
-      - 'apps.prometheus-blackbox-exporter.resources.blackboxExporter.requests.cpu': 50m
-      - 'apps.prometheus-blackbox-exporter.resources.blackboxExporter.requests.memory': 56Mi
-      - 'apps.prometheus-blackbox-exporter.resources.blackboxExporter.limits.cpu': 250m
-      - 'apps.prometheus-blackbox-exporter.resources.blackboxExporter.limits.memory': 256Mi
-      - 'apps.prometheus-blackbox-exporter.resources.sentinel.requests.cpu': 50m
-      - 'apps.prometheus-blackbox-exporter.resources.sentinel.requests.memory': 32Mi
-      - 'apps.prometheus-blackbox-exporter.resources.sentinel.limits.cpu': 200m
-      - 'apps.prometheus-blackbox-exporter.resources.sentinel.limits.memory': 128Mi
