@@ -54,7 +54,7 @@ extraArgs:
   - --redirect-url=https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
   - --email-domain="*"
   - --cookie-domain={{ $domainList }}
-  - --cookie-samesite=none
+  - --cookie-samesite=strict
   - --cookie-secure=true
   # - # cookie-httponly=true
   - --reverse-proxy=true
