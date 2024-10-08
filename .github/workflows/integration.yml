@@ -147,7 +147,8 @@ jobs:
         run: |
           LINODE_CLUSTER_NAME=$(echo ${{ inputs.domain_alias }} | cut -d '.' -f1)
           if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == true ]]; then
-            echo "There is already a cluster running with that name, please delete it before recreating this one."
+            echo "There is already a running LKE cluster named "$LINODE_CLUSTER_NAME"
+            echo "Delete the LKE cluster before recreating it. Ending workflow..."
             exit 1
           fi
       - id: k8s-versions
