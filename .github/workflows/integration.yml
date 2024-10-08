@@ -4,57 +4,31 @@ on:
     inputs:
       kubernetes_versions:
         description: 'Kubernetes version'
-        type: choice
-        options:
-          - "['1.29']"
-          - "['1.30']"
-          - "['1.31']"
+        type: string
         default: "['1.31']"
       install_profile:
         description: 'Otomi installation profile'
-        type: choice
-        options:
-          - minimal
-          - minimal-with-team
-          - monitoring-with-team
-          - full
-          - upgrade
-          - no-otomi
+        type: string
         default: minimal-with-team
       cluster_persistence:
         description: 'Should a cluster be destroyed on pipeline finish?'
-        type: choice
-        options:
-          - preserve
-          - destroy
+        type: string
         default: destroy
       domain:
         description: 'Select Domain'
-        type: choice
-        options:
-          - dns-integration.dev-akamai-apl.net
+        type: string
         default: dns-integration.dev-akamai-apl.net
       kms:
         description: 'Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?'
-        type: choice
-        options:
-          - age
-          - no_kms
+        type: string
         default: age
       generate_password:
         description: 'Should a unique password be generated?'
-        type: choice
-        options:
-          - 'yes'
-          - 'no'
+        type: string
         default: 'yes'
       certificate:
         description: 'Select certificate issuer'
-        type: choice
-        options:
-          - gen_custom_ca
-          - letsencrypt_staging
-          - letsencrypt_production
+        type: string
         default: letsencrypt_production
   workflow_dispatch:
     inputs:
