@@ -115,7 +115,7 @@ environments:
                   memory: 64Mi
                 limits:
                   cpu: 100m
-                  memory: 256Mi                              
+                  memory: 256Mi
             _rawValues: {}
           cnpg:
             resources:
@@ -141,7 +141,7 @@ environments:
                 memory: 128Mi
               requests:
                 memory: 64Mi
-                cpu: 10m  
+                cpu: 10m
           falco:
             enabled: false
             driver: ebpf
@@ -725,7 +725,7 @@ environments:
                   memory: 32Mi
                 requests:
                   cpu: 50m
-                  memory: 16Mi                
+                  memory: 16Mi
             persistence:
               ingester:
                 size: 20Gi
@@ -1090,7 +1090,7 @@ environments:
             autoscaling:
               ingester:
                 enabled: false
-                minReplicas: 1
+                minReplicas: 2
                 maxReplicas: 3
                 targetCPUUtilizationPercentage: 80
                 targetMemoryUtilizationPercentage: 80
