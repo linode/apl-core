@@ -13,7 +13,6 @@
 {{- $v := .dot.Values }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
 {{- $cm := index $v.apps "cert-manager" }}
-{{- $tlsSecretName := ternary $cm.externallyManagedTlsSecretName "otomi-cert-manager-wildcard-cert" (or (eq $cm.issuer "byo-wildcard-cert") (eq $cm.issuer "externally-managed-tls-secret")) }}
 {{- range $ingress := $v.ingress.classes }}
   {{- $routes := dict }}
   {{- $names := list }}
@@ -130,7 +129,7 @@ spec:
       secretName: copy-team-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}
-      secretName: {{ $tlsSecretName }}
+      secretName: {{ $v._derived.tlsSecretName }}
           {{- end }}
         {{- end }}
       {{- end }}
