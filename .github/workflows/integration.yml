@@ -14,10 +14,10 @@ on:
         description: 'Should a cluster be destroyed on pipeline finish?'
         type: string
         default: destroy
-      domain:
-        description: 'Select Domain'
+      domain_alias:
+        description: 'Select Domain Alias'
         type: string
-        default: dns-integration.dev-akamai-apl.net
+        default: DNS-Integration
       kms:
         description: 'Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?'
         type: string
@@ -58,28 +58,27 @@ on:
           - preserve
           - destroy
         default: preserve
-      domain:
+      domain_alias:
         type: choice
-        description: Select Domain
+        description: Select Domain Alias
         options:
-          - select_your_domain
-          - ani1357-1.dev-akamai-apl.net
-          - ani1357-2.dev-akamai-apl.net
-          - eldermatt-1.dev-akamai-apl.net
-          - eldermatt-2.dev-akamai-apl.net
-          - srodenhuis-1.dev-akamai-apl.net
-          - srodenhuis-2.dev-akamai-apl.net
-          - merll-1.dev-akamai-apl.net
-          - merll-2.dev-akamai-apl.net
-          - dennisvankekem-1.dev-akamai-apl.net
-          - dennisvankekem-2.dev-akamai-apl.net
-          - j-zimnowoda-1.dev-akamai-apl.net
-          - j-zimnowoda-2.dev-akamai-apl.net
-          - ferruhcihan-1.dev-akamai-apl.net
-          - ferruhcihan-2.dev-akamai-apl.net
-          - caslubbers-1.dev-akamai-apl.net
-          - caslubbers-2.dev-akamai-apl.net
-          - dns-integration.dev-akamai-apl.net # To be used by scheduled GHAs
+          - select_your_domain_alias
+          - Ani-1
+          - Ani-2
+          - Matthew-1
+          - Matthew-2
+          - Sander-1
+          - Sander-2
+          - Matthias-1
+          - Matthias-2
+          - Dennis-1
+          - Dennis-2
+          - Jehoszafat-1
+          - Jehoszafat-2
+          - Ferruh-1
+          - Ferruh-2
+          - Cas-1
+          - Cas-2
       kms:
         type: choice
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
@@ -118,10 +117,10 @@ jobs:
     name: Preprocess input variables
     runs-on: ubuntu-latest
     steps:
-      - name: Check Domain
-        if: ${{ inputs.domain == 'select_your_domain' }}
+      - name: Check Domain Alias
+        if: ${{ inputs.select_your_domain_alias == 'select_your_domain_alias' }}
         run: |
-          echo "You did not select a valid domain. Select one of your domains from the domain list and try again" && exit 1
+          echo "You did not select a valid domain alias. Select one of your domain aliases from the list and try again" && exit 1
       - name: Print user input
         run: |
           echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
@@ -129,7 +128,7 @@ jobs:
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
           echo 'cluster_persistence: ${{ inputs.cluster_persistence }}'
           echo 'kms: ${{ inputs.kms }}'
-          echo 'domain: ${{ inputs.domain }}'
+          echo 'domain_alias: ${{ inputs.domain_alias }}'
           echo 'generate_password: ${{ inputs.generate_password }}'
           echo 'certificate: ${{ inputs.certificate }}'
 
@@ -146,7 +145,7 @@ jobs:
           token: ${{ secrets.LINODE_TOKEN }}
       - name: Check if cluster is running
         run: |
-          LINODE_CLUSTER_NAME=$(echo ${{ inputs.domain }} | cut -d '.' -f1)
+          LINODE_CLUSTER_NAME=$(echo ${{ inputs.domain_alias }} | cut -d '.' -f1)
           if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == true ]]; then
             echo "There is already a cluster running with that name, please delete it before recreating this one."
             exit 1
@@ -179,7 +178,7 @@ jobs:
           token: ${{ secrets.LINODE_TOKEN }}
       - name: Set k8s cluster name
         run: |
-          echo "LINODE_CLUSTER_NAME=$(echo ${{ inputs.domain }} | cut -d '.' -f1)" >> $GITHUB_ENV
+          echo "LINODE_CLUSTER_NAME=$(echo ${{ inputs.domain_alias }} | cut -d '.' -f1)" >> $GITHUB_ENV
           # Cluster name must be no longer than 63 characters
       - name: Determine exact k8s version
         run: |
@@ -199,6 +198,33 @@ jobs:
             --no-defaults
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
+      - name: Determine domain name to use
+        run: |
+          # Mapping of domain_alias to domain names
+          case "$domain_alias" in
+            "Ani-1") DOMAIN=$(jq '.Ani[0]' <<< ${{ env.DEV_DOMAINS }});;
+            "Ani-2") DOMAIN=$(jq '.Ani[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Matthew-1") DOMAIN=$(jq '.Matthew[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Matthew-2") DOMAIN=$(jq '.Matthew[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Sander-1") DOMAIN=$(jq '.Sander[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Sander-2") DOMAIN=$(jq '.Sander[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Matthias-1") DOMAIN=$(jq '.Matthias[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Matthias-2") DOMAIN=$(jq '.Matthias[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Dennis-1") DOMAIN=$(jq '.Dennis[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Dennis-2") DOMAIN=$(jq '.Dennis[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Jehoszafat-1") DOMAIN=$(jq '.Jehoszafat[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Jehoszafat-2") DOMAIN=$(jq '.Jehoszafat[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Ferruh-1") DOMAIN=$(jq '.Ferruh[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Ferruh-2") DOMAIN=$(jq '.Ferruh[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Cas-1") DOMAIN=$(jq '.Cas[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Cas-2") DOMAIN=$(jq '.Cas[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "DNS-Integration") DOMAIN=$(jq '.DNS-Integration[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            *) 
+              echo "Unknown domain alias: $domain_alias"
+              exit 1
+              ;;
+          esac
+          echo "DOMAIN=$DOMAIN" >> $GITHUB_ENV
       - name: Wait for cluster to be ready
         run: |
           echo "Waiting for the cluster to be active..."
@@ -284,13 +310,13 @@ jobs:
             --values values-container-registry.yaml \
             --values values.yaml \
             --set cluster.provider=linode \
-            --set dns.domainFilters[0]=${{ inputs.domain }} \
+            --set dns.domainFilters[0]=${{ env.DOMAIN }} \
             --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
             --set dns.provider.akamai.host=${HOST} \
             --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
             --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
             --set otomi.hasExternalDNS=true \
-            --set cluster.domainSuffix=${{ inputs.domain }} \
+            --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set otomi.adminPassword=$adminPassword \
             $kms"
 
