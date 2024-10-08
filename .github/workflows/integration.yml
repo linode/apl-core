@@ -201,7 +201,7 @@ jobs:
       - name: Determine domain name to use
         run: |
           # Mapping of domain_alias to domain names
-          case "$domain_alias" in
+          case "${{ inputs.domain_alias }}" in
             "Ani-1") DOMAIN=$(jq '.Ani[0]' <<< ${{ env.DEV_DOMAINS }});;
             "Ani-2") DOMAIN=$(jq '.Ani[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
             "Matthew-1") DOMAIN=$(jq '.Matthew[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
