@@ -503,7 +503,7 @@ environments:
               pilot:
                 requests:
                   cpu: 100m
-                  memory: 128Mi
+                  memory: 192Mi
                 limits:
                   cpu: "2"
                   memory: 2Gi
@@ -634,21 +634,21 @@ environments:
               pipelinesRemoteresolver:
                 requests:
                   cpu: 100m
-                  memory: 100Mi
+                  memory: 128Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               pipelinesEvents:
                 requests:
                   cpu: 100m
-                  memory: 100Mi
+                  memory: 128Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               pipelinesWebhook:
                 requests:
                   cpu: 100m
-                  memory: 100Mi
+                  memory: 144Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
@@ -701,7 +701,7 @@ environments:
               querier:
                 requests:
                   cpu: 50m
-                  memory: 64Mi
+                  memory: 144Mi
                 limits:
                   cpu: 200m
                   memory: 256Mi
@@ -947,8 +947,8 @@ environments:
                   memory: 128Mi
               prometheus:
                 requests:
-                  cpu: 50m
-                  memory: 1Gi
+                  cpu: 100m
+                  memory: 2Gi
                 limits:
                   cpu: '3'
                   memory: 3Gi
@@ -1175,7 +1175,7 @@ environments:
               operator:
                 requests:
                   cpu: 10m
-                  memory: 256Mi
+                  memory: 512Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
