@@ -235,6 +235,8 @@ releases:
         domain: {{ $domain }}
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
         dns: {{- $v.dns | toYaml | nindent 10 }}
+        _derived:
+          tlsSecretName: {{ $v._derived.tlsSecretName }}
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
         teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
