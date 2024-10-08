@@ -1532,7 +1532,7 @@ properties:
           externallyManagedTlsSecretName:
             description: |
               The name of a custom secret in the istio-system namespace that contains a trusted certificate and private key.
-              If set with the issuer byo-wildcard-cert, uses this secret name instead of the default "otomi-byo-wildcard-cert".
+              To be used with issuer externally-managed-tls-secret.
             type: string
           customRootCA:
             x-secret: ''
@@ -1552,8 +1552,7 @@ properties:
               The byo-wildcard-cert allows users to bring their own trusted wildcard certificate (cert-manager not involved)
               through the values byoWildcardCert and byoWildcardCertKey.
               The externally-managed-tls-secret is similar to byo-wildcard-cert, but assumes the certificate is already stored
-              in a secret (referenced by externallyManagedTlsSecretName, "otomi-byo-wildcard-cert" by default) and not provided
-              through the values.
+              in a secret (referenced by externallyManagedTlsSecretName) and not provided through the values.
             type: string
             enum:
               - custom-ca

@@ -94,7 +94,6 @@ environments:
             _rawValues: {}
           cert-manager:
             issuer: custom-ca
-            externallyManagedTlsSecretName: otomi-byo-wildcard-cert
             resources:
               certManager:
                 requests:
