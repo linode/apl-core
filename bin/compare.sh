@@ -23,7 +23,8 @@ helmfile template $templateArgs --output-dir-template="../$targetDirA/{{.Release
 git checkout $branchB
 
 # order of arguments matters so new chanages are green color
-bin/dyff.sh $targetDirA $targetDirB
+echo "Comparing $targetDirB with $targetDirA"
+bin/dyff.sh $targetDirB $targetDirA
 
 echo "#########################################################"
 echo "#"
