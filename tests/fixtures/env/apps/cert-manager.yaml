@@ -1,5 +1,11 @@
 apps:
     cert-manager:
-        issuer: letsencrypt
-        email: test@test.local
-        stage: staging
+        # issuer: letsencrypt
+        # email: test@test.local
+        # stage: staging
+        # issuer: custom-ca
+        issuer: externally-managed-tls-secret
+        externallyManagedTlsSecretName: mysecret
+        # issuer: byo-wildcard-cert
+        # byoWildcardCert: byoCert
+        # byoWildcardCertKey: byoCertKey
