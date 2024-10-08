@@ -65,7 +65,7 @@ extraArgs:
   - --silence-ping-logging=true
   # - # exclude-logging-paths=/ping
   - --set-authorization-header=true
-  # - # set-xauthrequest=true
+  - --set-xauthrequest=true
   - --oidc-issuer-url={{ $v._derived.oidcBaseUrl }}
   # - # oidc-issuer-url={{ $v._derived.oidcBaseUrlBackchannel }}
   - --insecure-oidc-allow-unverified-email=true
