@@ -13,7 +13,6 @@
 {{- $v := .dot.Values }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
 {{- $cm := index $v.apps "cert-manager" }}
-{{- $derived := index $v "_derived" }}
 {{- range $ingress := $v.ingress.classes }}
   {{- $routes := dict }}
   {{- $names := list }}
@@ -130,7 +129,7 @@ spec:
       secretName: copy-team-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}
-      secretName: {{ $derived.tlsSecretName }}
+      secretName: {{ $v._derived.tlsSecretName }}
           {{- end }}
         {{- end }}
       {{- end }}
