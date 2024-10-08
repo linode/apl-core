@@ -1435,7 +1435,7 @@ definitions:
       - url
   user:
     type: object
-    description: A user can be a team member or an admin.
+    description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
     properties:
       email:
         $ref: '#/definitions/email'

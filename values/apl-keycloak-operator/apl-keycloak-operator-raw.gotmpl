@@ -18,7 +18,7 @@
 {{- $k := $c | get "keycloak" }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
-{{- $users := $v | get "users" list }}
+{{- $users := $v.users }}
 {{- $users := $users | toJson }}
 
 resources:
