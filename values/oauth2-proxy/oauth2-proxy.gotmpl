@@ -65,11 +65,13 @@ extraArgs:
   - --silence-ping-logging=true
   # - # exclude-logging-paths=/ping
   - --set-authorization-header=true
-  - --set-xauthrequest=true
+  # - # set-xauthrequest=true
   - --oidc-issuer-url={{ $v._derived.oidcBaseUrl }}
   # - # oidc-issuer-url={{ $v._derived.oidcBaseUrlBackchannel }}
   - --insecure-oidc-allow-unverified-email=true
   - --show-debug-on-error=true
+  - --csrf-cookie-name=_csrf
+  - --csrf-field-name=csrf_token
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
