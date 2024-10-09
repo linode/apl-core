@@ -1464,8 +1464,6 @@ definitions:
       - email
       - firstName
       - lastName
-      - isPlatformAdmin
-      - isTeamAdmin
 
 properties:
   alerts:
