@@ -4,7 +4,7 @@ metadata:
   namespace: knative-operator
   name: knative-operator-webhook
   labels:
-    app.kubernetes.io/version: "1.15.5"
+    app.kubernetes.io/version: "1.15.6"
     app.kubernetes.io/name: knative-operator
 rules:
   # For manipulating certs into secrets.

@@ -1,9 +1,89 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
+  name: operator-webhook
+  labels:
+    app.kubernetes.io/version: "1.15.6"
+    app.kubernetes.io/name: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-operator-webhook
+subjects:
+  - kind: ServiceAccount
+    name: operator-webhook
+    namespace: knative-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-serving-operator-aggregated
+  labels:
+    app.kubernetes.io/version: "1.15.6"
+    app.kubernetes.io/name: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-serving-operator-aggregated
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: knative-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-serving-operator-aggregated-stable
+  labels:
+    app.kubernetes.io/version: "1.15.6"
+    app.kubernetes.io/name: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-serving-operator-aggregated-stable
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: knative-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator-aggregated
+  labels:
+    app.kubernetes.io/version: "1.15.6"
+    app.kubernetes.io/name: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator-aggregated
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: knative-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: knative-eventing-operator-aggregated-stable
+  labels:
+    app.kubernetes.io/version: "1.15.6"
+    app.kubernetes.io/name: knative-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: knative-eventing-operator-aggregated-stable
+subjects:
+  - kind: ServiceAccount
+    name: knative-operator
+    namespace: knative-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
   name: knative-serving-operator
   labels:
-    app.kubernetes.io/version: "1.15.5"
+    app.kubernetes.io/version: "1.15.6"
     app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -20,7 +100,7 @@ kind: ClusterRoleBinding
 metadata:
   name: knative-eventing-operator
   labels:
-    app.kubernetes.io/version: "1.15.5"
+    app.kubernetes.io/version: "1.15.6"
     app.kubernetes.io/name: knative-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -30,87 +110,4 @@ subjects:
   - kind: ServiceAccount
     name: knative-operator
     namespace: knative-operator
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: operator-webhook
-  labels:
-    app.kubernetes.io/version: "1.15.5"
-    app.kubernetes.io/name: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-operator-webhook
-subjects:
-  - kind: ServiceAccount
-    name: operator-webhook
-    namespace: knative-operator
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-serving-operator-aggregated
-  labels:
-    app.kubernetes.io/version: "1.15.5"
-    app.kubernetes.io/name: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-serving-operator-aggregated
-subjects:
-  - kind: ServiceAccount
-    name: knative-operator
-    namespace: knative-operator
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-serving-operator-aggregated-stable
-  labels:
-    app.kubernetes.io/version: "1.15.5"
-    app.kubernetes.io/name: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-serving-operator-aggregated-stable
-subjects:
-  - kind: ServiceAccount
-    name: knative-operator
-    namespace: knative-operator
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-eventing-operator-aggregated
-  labels:
-    app.kubernetes.io/version: "1.15.5"
-    app.kubernetes.io/name: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-eventing-operator-aggregated
-subjects:
-  - kind: ServiceAccount
-    name: knative-operator
-    namespace: knative-operator
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: knative-eventing-operator-aggregated-stable
-  labels:
-    app.kubernetes.io/version: "1.15.5"
-    app.kubernetes.io/name: knative-operator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: knative-eventing-operator-aggregated-stable
-subjects:
-  - kind: ServiceAccount
-    name: knative-operator
-    namespace: knative-operator
-
 ---

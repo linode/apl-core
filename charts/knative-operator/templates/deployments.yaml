@@ -5,7 +5,7 @@ metadata:
   namespace: knative-operator
   labels:
     app.kubernetes.io/component: operator-webhook
-    app.kubernetes.io/version: "1.15.5"
+    app.kubernetes.io/version: "1.15.6"
     app.kubernetes.io/name: knative-operator
 spec:
   selector:
@@ -20,7 +20,7 @@ spec:
         app: operator-webhook
         role: operator-webhook
         app.kubernetes.io/component: operator-webhook
-        app.kubernetes.io/version: "1.15.5"
+        app.kubernetes.io/version: "1.15.6"
         app.kubernetes.io/name: knative-operator
     spec:
       # To avoid node becoming SPOF, spread our replicas to different nodes.
@@ -38,7 +38,7 @@ spec:
         - name: operator-webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook@sha256:cfad5c5e3d75d7fca735da0018afb3ed5d4063d71bf9bd613a37b3cafe47ff3f
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook@sha256:9d0c7b27f2451d69ad0c48752795453bd73d36fbd918583432f70cfc214844fa
           resources:
             requests:
               cpu: 100m
@@ -112,7 +112,7 @@ metadata:
   namespace: knative-operator
   labels:
     app.kubernetes.io/name: knative-operator
-    app.kubernetes.io/version: "1.15.5"
+    app.kubernetes.io/version: "1.15.6"
 spec:
   replicas: 1
   selector:
@@ -125,12 +125,12 @@ spec:
       labels:
         name: knative-operator
         app.kubernetes.io/name: knative-operator
-        app.kubernetes.io/version: "1.15.5"
+        app.kubernetes.io/version: "1.15.6"
     spec:
       serviceAccountName: knative-operator
       containers:
         - name: knative-operator
-          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:29855c3d4d4afdd91c42061b24be26b4a0543f4af54c4be903cc812244a6672c
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:b10acd7eb8e2f931df18ae71315eafb54547b1d422f4d8198f1483f9088b43ce
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAME
