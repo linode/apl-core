@@ -5,7 +5,6 @@
 {{- $cm := index $v.apps "cert-manager" }}
 {{- $ingress :=  $v.ingress.platformClass }}
 {{- $name :=  printf "nginx-team-%s-platform-public-open-forward-harbor" $v.teamId }}
-{{- $secretName := ternary "otomi-byo-wildcard-cert" "otomi-cert-manager-wildcard-cert" (eq $cm.issuer "byo-wildcard-cert") }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -68,6 +67,6 @@ spec:
   tls:
     - hosts:
         - {{ $domain }}
-      secretName: {{ $secretName }}
+      secretName: {{ $v._derived.tlsSecretName }}
 {{- end }}
 {{- end }}
