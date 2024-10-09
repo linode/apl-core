@@ -210,6 +210,7 @@ jobs:
               exit 1
               ;;
           esac
+          echo DOMAIN=$DOMAIN
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
