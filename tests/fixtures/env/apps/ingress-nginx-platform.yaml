@@ -19,3 +19,9 @@ apps:
                 requests:
                     cpu: 100m
                     memory: 192Mi
+        autoscaling:
+            enabled: true
+            maxReplicas: 10
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 80
+            targetMemoryUtilizationPercentage: 80
