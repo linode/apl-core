@@ -38,10 +38,6 @@ on:
         type: string
         description: Select certificate issuer
         default: gen_custom_ca
-      license:
-        type: string
-        description: Should a unique password be generated?
-        default: 'yes'
       isPreInstalled:
         type: string
         default: 'false'
@@ -117,13 +113,6 @@ on:
           - letsencrypt_staging
           - letsencrypt_production
         default: gen_custom_ca
-      license:
-        type: choice
-        description: Should a predefined Otomi license be injected?
-        options:
-          - 'yes'
-          - 'no'
-        default: 'yes'
       isPreInstalled:
         type: choice
         description: Fake if Otomi is preInstalled by Installer
@@ -299,11 +288,9 @@ jobs:
           AZ_OIDC: ${{ secrets.AZ_OIDC }}
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
-          OTOMI_LICENSE: ${{ secrets.OTOMI_LICENSE }}
         run: |
           domainSuffix=''
           touch values.yaml
-          [[ '${{ inputs.license }}' == 'yes' ]] && echo "$OTOMI_LICENSE" >> values.yaml
           [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
@@ -462,11 +449,9 @@ jobs:
           AZ_OIDC: ${{ secrets.AZ_OIDC }}
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
-          OTOMI_LICENSE: ${{ secrets.OTOMI_LICENSE }}
         run: |
           domainSuffix=''
           touch values.yaml
-          [[ '${{ inputs.license }}' == 'yes' ]] && echo "$OTOMI_LICENSE" >> values.yaml
           [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix="--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net"
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
