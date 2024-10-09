@@ -2925,6 +2925,9 @@ properties:
       adminPassword:
         type: string
         x-secret: '{{ randAlphaNum 20 }}'
+      isPreInstalled:
+        type: boolean
+        default: false
       globalPullSecret:
         title: Global pullsecret
         description: Will be connected to each "default" service account in all otomi app namespaces.

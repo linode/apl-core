@@ -289,7 +289,7 @@ adminApps:
         auth: true
   - name: loki
     tags: [logging, telemetry, observability]
-    deps: [grafana, prometheus, minio]
+    deps: [grafana, prometheus]
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A"%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
   - name: minio
@@ -332,7 +332,7 @@ adminApps:
     ownHost: true
   - name: tempo
     tags: [tracing]
-    deps: [prometheus, grafana, minio]
+    deps: [prometheus, grafana]
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"tempo","queries":%5B%7B"refId":"A","datasource":%7B"type":"tempo","uid":"tempo"%7D,"queryType":"clear","limit":20%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
   - name: otel
