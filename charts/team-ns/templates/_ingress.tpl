@@ -91,6 +91,12 @@ metadata:
           proxy_set_header Connection "upgrade";
           proxy_cache_bypass $http_upgrade;
         }
+      location https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback {
+          error_page 403 = @csrf_error_redirect;
+        }
+      location @csrf_error_redirect {
+          return 302 https://console.{{ $v.cluster.domainSuffix }};
+        }
   labels: {{- include "team-ns.chart-labels" $.dot | nindent 4 }}
   name: nginx-team-{{ $v.teamId }}-{{ $ingress.className }}-{{ $.type }}-{{ $.name }}
   namespace: istio-system
