@@ -162,6 +162,37 @@ jobs:
           fi
           echo $versions
           echo "versions=$versions" >> $GITHUB_OUTPUT
+      - name: Determine domain name to use
+        run: |
+          # Mapping of domain_alias to domain names
+          echo jq-in the variable
+          echo ${{ env.DEV_DOMAINS }} | jq .
+          echo Getting one domain: 
+          jq '.Ani[0]' <<< "${{ env.DEV_DOMAINS }}"
+          # case "${{ inputs.domain_alias }}" in
+          #   "Ani-1") DOMAIN=$(jq '.Ani[0]' <<< "${{ env.DEV_DOMAINS }}");;
+          #   "Ani-2") DOMAIN=$(jq '.Ani[1]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Matthew-1") DOMAIN=$(jq '.Matthew[0]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Matthew-2") DOMAIN=$(jq '.Matthew[1]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Sander-1") DOMAIN=$(jq '.Sander[0]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Sander-2") DOMAIN=$(jq '.Sander[1]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Matthias-1") DOMAIN=$(jq '.Matthias[0]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Matthias-2") DOMAIN=$(jq '.Matthias[1]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Dennis-1") DOMAIN=$(jq '.Dennis[0]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Dennis-2") DOMAIN=$(jq '.Dennis[1]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Jehoszafat-1") DOMAIN=$(jq '.Jehoszafat[0]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Jehoszafat-2") DOMAIN=$(jq '.Jehoszafat[1]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Ferruh-1") DOMAIN=$(jq '.Ferruh[0]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Ferruh-2") DOMAIN=$(jq '.Ferruh[1]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Cas-1") DOMAIN=$(jq '.Cas[0]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "Cas-2") DOMAIN=$(jq '.Cas[1]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   "DNS-Integration") DOMAIN=$(jq '.DNS-Integration[0]' <<< "${{ env.DEV_DOMAINS }}") ;;
+          #   *) 
+          #     echo "Unknown domain alias: $domain_alias"
+          #     exit 1
+          #     ;;
+          # esac
+          # echo DOMAIN=$DOMAIN
 
   run-integration-test-linode:
     name: Run integration test on linode cluster
@@ -210,7 +241,7 @@ jobs:
               exit 1
               ;;
           esac
-          echo DOMAIN=$DOMAIN
+
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
