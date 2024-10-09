@@ -253,6 +253,7 @@ export const processValues = async (
     generateSecrets,
     createK8sSecret,
     createCustomCA,
+    generatePassword,
   },
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
@@ -292,7 +293,7 @@ export const processValues = async (
   const users = get(originalInput, 'users', [])
   for (const user of users) {
     if (!user.initialPassword) {
-      user.initialPassword = generatePassword({
+      user.initialPassword = deps.generatePassword({
         length: 16,
         numbers: true,
         symbols: true,
