@@ -1,5 +1,3 @@
-{{- $v := .Values }}
-{{- range $v.resources }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -87,7 +85,13 @@ spec:
     env:
       - name: CNB_PLATFORM_API
         value: "0.9"
-    computeResources: {{- $v.resources.buildpacksTask | toYaml | nindent 6 }}
+    computeResources:
+      limits:
+        cpu: "2"
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
   steps:
     - name: prepare
       computeResources: {}
@@ -198,4 +202,3 @@ spec:
       emptyDir: {}
     - name: layers-dir
       emptyDir: {}
-{{- end }}

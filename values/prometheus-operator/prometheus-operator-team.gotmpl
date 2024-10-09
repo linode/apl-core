@@ -59,13 +59,12 @@ grafana:
     enabled: false
   defaultDashboardsEnabled: false
   plugins: []
+  resources: {{- $g.resources.grafanaTeams | toYaml | nindent 4 }}
+  sidecar: 
+    resources: {{- $g.resources.sidecarTeams | toYaml | nindent 6 }}
 
 alertmanager:
   serviceMonitor:
     selfMonitor: false
-
-prometheus:
-  thanosService:
-    enabled: false
-  thanosServiceMonitor:
-    enabled: false
+  alertmanagerSpec:
+    resources: {{- $a.resources.alertmanagerTeams | toYaml | nindent 6 }}
