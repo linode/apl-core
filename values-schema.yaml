@@ -427,7 +427,23 @@ definitions:
             type: string
             default: '0.01'
       autoscaling:
-        $ref: '#/definitions/autoscalingEnabled'
+        additionalProperties: false
+        properties:
+          enabled:
+            default: true
+            type: boolean
+          maxReplicas:
+            type: integer
+            default: 10
+          minReplicas:
+            type: integer
+            default: 1
+          targetCPUUtilizationPercentage:
+            type: integer
+            default: 80
+          targetMemoryUtilizationPercentage:
+            type: integer
+            default: 80
       maxBodySize:
         type: string
         default: 1024m
@@ -1128,6 +1144,224 @@ definitions:
           private:
             type: boolean
             default: false
+      resources:
+        properties:
+          alertmanager:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 10m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 64Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 256Mi
+                required:
+                  - cpu
+                  - memory
+          grafana:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 10m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '1'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 1Gi
+                required:
+                  - cpu
+                  - memory
+          buildpacksTask:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '2'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 2Gi
+                required:
+                  - cpu
+                  - memory
+          gitcloneTask:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '2'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 2Gi
+                required:
+                  - cpu
+                  - memory
+          grypeTask:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '2'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 2Gi
+                required:
+                  - cpu
+                  - memory
+          kanikoTask:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '2'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 2Gi
+                required:
+                  - cpu
+                  - memory
+          tektonDashboard:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 10m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 64Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: '100m'
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+          grafanaSidecar:
+            additionalProperties: false
+            properties:
+              requests:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 10m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 128Mi
+                required:
+                  - cpu
+                  - memory
+              limits:
+                additionalProperties: false
+                properties:
+                  cpu:
+                    $ref: '#/definitions/cpuQuantity'
+                    default: 200m
+                  memory:
+                    $ref: '#/definitions/memoryQuantity'
+                    default: 256Mi
+                required:
+                  - cpu
+                  - memory
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster
@@ -1469,8 +1703,6 @@ properties:
             $ref: '#/definitions/imageSimple'
           resources:
             properties:
-              alertmanagerTeams:
-                $ref: '#/definitions/resources'
               alertmanger:
                 $ref: '#/definitions/resources'
       argocd:
@@ -1795,10 +2027,6 @@ properties:
               $ref: '#/definitions/resources'
             sidecar:
               $ref: '#/definitions/resources'
-            grafanaTeams:
-              $ref: '#/definitions/resources'
-            sidecarTeams:
-              $ref: '#/definitions/resources'
       harbor:
         additionalProperties: false
         properties:
@@ -1939,6 +2167,8 @@ properties:
                 $ref: '#/definitions/resources'
               proxy:
                 $ref: '#/definitions/resources'
+              operator:
+                $ref: '#/definitions/resources'
       jaeger:
         additionalProperties: false
         properties:
@@ -1947,12 +2177,6 @@ properties:
             default: false
           resources:
             operator:
-              $ref: '#/definitions/resources'
-            agent:
-              $ref: '#/definitions/resources'
-            collector:
-              $ref: '#/definitions/resources'
-            ingester:
               $ref: '#/definitions/resources'
             jaeger:
               $ref: '#/definitions/resources'
@@ -2132,6 +2356,10 @@ properties:
               pipelinesController:
                 $ref: '#/definitions/resources'
               pipelinesRemoteresolver:
+                $ref: '#/definitions/resources'
+              pipelinesEvents:
+                $ref: '#/definitions/resources'
+              pipelinesWebhook:
                 $ref: '#/definitions/resources'
               triggersInterceptors:
                 $ref: '#/definitions/resources'
@@ -2586,6 +2814,20 @@ properties:
                   - deployment
                   - daemonset
                   - statefulset
+              autoscaler:
+                properties:
+                  maxReplicas:
+                    type: integer
+                    default: 5
+                  minReplicas:
+                    type: integer
+                    default: 2
+                  targetCPUUtilizationPercentage:
+                    type: integer
+                    default: 80
+                  targetMemoryUtilizationPercentage:
+                    type: integer
+                    default: 80
               attributes:
                 type: array
                 title: Kubernetes Attributes
