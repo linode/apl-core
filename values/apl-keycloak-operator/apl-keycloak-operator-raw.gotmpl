@@ -18,7 +18,14 @@
 {{- $k := $c | get "keycloak" }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
-{{- $users := $v.users }}
+{{ $users := list }}
+{{- range $user := $v.users }}
+  {{ $groups := list }}
+  {{- if $user.isPlatformAdmin }}{{ $groups = append $groups "platform-admin" }}{{ end }}
+  {{- if $user.isTeamAdmin }}{{ $groups = append $groups "team-admin" }}{{ end }}
+  {{- range $team := $user.teams }}{{ $groups = append $groups (print "team-" $team) }}{{ end }}
+  {{- $users = append $users (dict "email" $user.email "firstName" $user.firstName "lastName" $user.lastName "initialPassword" $user.initialPassword "groups" $groups) }}
+{{- end }}
 {{- $users := $users | toJson }}
 
 resources:
