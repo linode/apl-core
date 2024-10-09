@@ -54,7 +54,6 @@ extraArgs:
   - --redirect-url=https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
   - --email-domain="*"
   - --cookie-domain={{ $domainList }}
-  - --cookie-path="/"
   - --cookie-samesite=lax
   - --cookie-secure=true
   # - # cookie-httponly=true
@@ -71,6 +70,7 @@ extraArgs:
   # - # oidc-issuer-url={{ $v._derived.oidcBaseUrlBackchannel }}
   - --insecure-oidc-allow-unverified-email=true
   - --show-debug-on-error=true
+  # - --cookie-path="/"
   # - --csrf-cookie-name=_csrf
   # - --csrf-field-name=csrf_token
 
