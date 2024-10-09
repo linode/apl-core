@@ -140,7 +140,7 @@ jobs:
           echo jq-in the variable:
           echo ${{ env.DEV_DOMAINS }} | jq .
           echo Getting one domain: 
-          jq '.Ani[0]' <<< "${{ env.DEV_DOMAINS }}"
+          jq '.Ani[0]' <<< ${{ env.DEV_DOMAINS }}
 
   preprocess-linode-input:
     needs: preprocess-input
