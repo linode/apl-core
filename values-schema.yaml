@@ -1558,6 +1558,11 @@ properties:
             description: 'A certificate key corresponding to the byoWildcardCert.'
             type: string
             x-secret: ''
+          externallyManagedTlsSecretName:
+            description: |
+              The name of a custom secret in the istio-system namespace that contains a trusted certificate and private key.
+              To be used with issuer externally-managed-tls-secret.
+            type: string
           customRootCA:
             x-secret: ''
             type: string
@@ -1574,11 +1579,15 @@ properties:
               The custom-ca - cert-manager uses the customRootCA to generate wildcard certificate.
               The letsencrypt - cert-manager requests certificate from letsencrypt endpoint.
               The byo-wildcard-cert allows users to bring their own trusted wildcard certificate (cert-manager not involved)
+              through the values byoWildcardCert and byoWildcardCertKey.
+              The externally-managed-tls-secret is similar to byo-wildcard-cert, but assumes the certificate is already stored
+              in a secret (referenced by externallyManagedTlsSecretName) and not provided through the values.
             type: string
             enum:
               - custom-ca
               - letsencrypt
               - byo-wildcard-cert
+              - externally-managed-tls-secret
             default: custom-ca
           stage:
             type: string
