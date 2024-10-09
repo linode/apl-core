@@ -125,15 +125,11 @@ spec:
         - {{ $domain }}
           {{- if hasKey $secrets $domain }}
             {{- if ne (index $secrets $domain) "" }}
-{{/*If a team provides its own certificate in the team namespace then Otomi cornjob makes a copy of it*/}} 
+{{/*If a team provides its own certificate in the team namespace then Otomi cronjob makes a copy of it*/}} 
       secretName: copy-team-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}
-            {{- if eq $cm.issuer "byo-wildcard-cert" }}
-      secretName: otomi-byo-wildcard-cert
-            {{- else }}
-      secretName: otomi-cert-manager-wildcard-cert
-            {{- end}}
+      secretName: {{ $v._derived.tlsSecretName }}
           {{- end }}
         {{- end }}
       {{- end }}

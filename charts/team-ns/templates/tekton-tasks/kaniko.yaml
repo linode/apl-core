@@ -1,3 +1,5 @@
+{{- $v := .Values }}
+{{- range $v.resources }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -12,13 +14,7 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/arm64,linux/ppc64le"
 spec:
   stepTemplate:
-    computeResources:
-      limits:
-        cpu: "2"
-        memory: 2Gi
-      requests:
-        cpu: 500m
-        memory: 512Mi
+    computeResources: {{- $v.resources.kanikoTask | toYaml | nindent 6 }}
   description: >-
     This Task builds a simple Dockerfile with kaniko and pushes to a registry.
     This Task stores the image name and digest as results, allowing Tekton Chains to pick up
@@ -80,3 +76,4 @@ spec:
         set -e
         image="$(params.IMAGE)"
         echo -n "${image}" | tee "$(results.IMAGE_URL.path)"
+{{- end }}

@@ -2,8 +2,6 @@
 {{- $v := .Values }}
 {{- $t := $v.apps.tekton }}
 
-resources: {{- $t.resources.dashboard | toYaml | nindent 2 }}
-
 teamId: {{ $teamId }}
 
 args:

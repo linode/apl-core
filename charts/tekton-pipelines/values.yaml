@@ -20,13 +20,7 @@ controller:
                   - windows
   tolerations: []
   nodeSelector: {}
-  resources:
-    requests:
-      cpu: 100m
-      memory: 100Mi
-    limits:
-      cpu: 1000m
-      memory: 1000Mi
+  resources: {}
 # Values for tekton-pipelines-webhook
 webhook:
   deployment:
@@ -48,6 +42,7 @@ webhook:
                   - windows
   tolerations: []
   nodeSelector: {}
+  resources: {}
 # Values to amend tekton-pipelines-remote-resolvers
 remoteresolver:
   deployment:
@@ -55,14 +50,9 @@ remoteresolver:
   affinity: {}
   tolerations: []
   nodeSelector: {}
-  resources:
-    requests:
-      cpu: 100m
-      memory: 100Mi
-    limits:
-      cpu: 1000m
-      memory: 1000Mi
+  resources: {}
 
 events:
   deployment:
     image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/events:v0.53.0@sha256:340e1edd0783bdb86e396ef53499f068a42da1986a1d806ab652b448869637bd
+  resources: {}
