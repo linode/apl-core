@@ -458,12 +458,14 @@ jobs:
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
-          if [[ '${{ inputs.isPreInstalled }}' == 'true']]; then
+
+          if [[ '${{ inputs.isPreInstalled }}' == 'true' ]]; then
             cat <<EOF >> values.yaml
           otomi:
             isPreInstalled: true
           EOF
             fi
+
           if [[ '${{ inputs.kms }}' == 'age' ]]; then
             cat <<EOF >> values.yaml
           kms:
