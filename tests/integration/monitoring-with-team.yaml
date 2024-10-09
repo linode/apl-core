@@ -52,6 +52,63 @@ teamConfig:
     networkPolicy:
       egressPublic: false
       ingressPrivate: false
+    resources:
+      alertmanager:
+        requests:
+          cpu: 100m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+      grafana:
+        requests:
+          cpu: 10m
+          memory: 128Mi
+        limits:
+          cpu: '1'
+          memory: 1Gi
+      grafanaSidecar:
+        limits:
+          cpu: 500m
+          memory: 256Mi
+        requests:
+          cpu: 10m
+          memory: 128Mi
+      buildpacksTask:
+        limits:
+          cpu: '10'
+          memory: 2Gi
+        requests:
+          cpu: 500m
+          memory: 512Mi
+      gitcloneTask:
+        limits:
+          cpu: '2'
+          memory: 2Gi
+        requests:
+          cpu: 500m
+          memory: 512Mi
+      grypeTask:
+        limits:
+          cpu: '2'
+          memory: 2Gi
+        requests:
+          cpu: 500m
+          memory: 512Mi
+      kanikoTask:
+        limits:
+          cpu: '2'
+          memory: 2Gi
+        requests:
+          cpu: 500m
+          memory: 512Mi
+      tektonDashboard:
+        limits:
+          cpu: 101m
+          memory: 128Mi
+        requests:
+          cpu: 10m
+          memory: 64Mi
     services:
       - ingressClassName: platform
         ksvc:
