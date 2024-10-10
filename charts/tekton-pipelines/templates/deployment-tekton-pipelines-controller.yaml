@@ -122,7 +122,13 @@ spec:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
-          resources: {{- toYaml .Values.controller.resources | nindent 12 }}
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 1000m
+              memory: 1000Mi
           ports:
             - name: metrics
               containerPort: 9090

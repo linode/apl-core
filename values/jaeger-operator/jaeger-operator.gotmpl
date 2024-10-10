@@ -10,8 +10,26 @@ jaeger:
       options:
         query:
           base-path: /jaeger
+    agent:
+      resources: {{- $j.resources.agent | toYaml | nindent 8 }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      sidecarSecurityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
     annotations:
       sidecar.istio.io/inject: "true"
+    collector:
+      resources: {{- $j.resources.collector | toYaml | nindent 8 }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+    ingester:
+      resources: {{- $j.resources.ingester | toYaml | nindent 8 }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
     ingress:
       enabled: false
     resources: {{- $j.resources.jaeger | toYaml | nindent 6 }}
