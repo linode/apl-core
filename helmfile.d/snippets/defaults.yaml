@@ -18,9 +18,9 @@ environments:
             _rawValues: {}
           argocd:
             applicationSet:
-              replicas: 2
+              replicas: 1
             controller:
-              replicas: 2
+              replicas: 1
             autoscaling:
               repoServer:
                 enabled: true
@@ -68,8 +68,8 @@ environments:
                   cpu: 100m
                   memory: 256M
                 limits:
-                  cpu: "1"
-                  memory: 1Gi
+                  cpu: "2"
+                  memory: 2Gi
               notifications:
                 requests:
                   cpu: 50m
