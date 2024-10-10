@@ -77,7 +77,7 @@ imagePullSecrets:
 {{- end }}
 
 redis:
-  enabled: false
+  enabled: true
   architecture: {{ $r | get "architecture" }}
   auth:
     password: {{ $r | get "password" }}
