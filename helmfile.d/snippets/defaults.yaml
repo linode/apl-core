@@ -18,9 +18,9 @@ environments:
             _rawValues: {}
           argocd:
             applicationSet:
-              replicas: 2
+              replicas: 1
             controller:
-              replicas: 2
+              replicas: 1
             autoscaling:
               repoServer:
                 enabled: true
@@ -1222,7 +1222,7 @@ environments:
                 memory: 1Gi
               requests:
                 cpu: 50m
-                memory: 128Mi
+                memory: 256Mi
           gitea:
             useOtomiDB: true
             imported: false
@@ -1234,7 +1234,7 @@ environments:
                 memory: 1Gi
               requests:
                 cpu: 50m
-                memory: 256Mi
+                memory: 512Mi
         obj:
           provider:
             type: disabled

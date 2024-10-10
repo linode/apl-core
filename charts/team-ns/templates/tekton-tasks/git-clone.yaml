@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- range $v.resources }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -14,7 +13,13 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le,linux/arm64"
 spec:
   stepTemplate:
-    computeResources: {{- $v.resources.gitcloneTask | toYaml | nindent 6 }}
+    computeResources:
+      limits:
+        cpu: "2"
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
   description: >-
     These Tasks are Git tasks to work with repositories used by other tasks
     in your Pipeline.
@@ -256,4 +261,3 @@ spec:
         printf "%s" "${RESULT_COMMITTER_DATE}" > "$(results.committer-date.path)"
         printf "%s" "${RESULT_SHA}" > "$(results.commit.path)"
         printf "%s" "${PARAM_URL}" > "$(results.url.path)"
-{{- end }}

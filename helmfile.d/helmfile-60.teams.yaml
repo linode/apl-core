@@ -39,7 +39,6 @@ releases:
       pipeline: otomi-task-teams
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
-      - resources: {{- $team.resources.tektonDashboard | toYaml | nindent 10 }}
   - name: prometheus-{{ $teamId }}
     installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
@@ -58,7 +57,6 @@ releases:
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
-            resources: {{- $team.resources.alertmanager | toYaml | nindent 14 }}
             podMetadata:
               annotations:
                 sidecar.istio.io/inject: "true"
@@ -79,7 +77,6 @@ releases:
           namespaceOverride: null # team-{{ $teamId }}
           nameOverride: {{ $teamId }}-po-grafana
           fullnameOverride: {{ $teamId }}-po-grafana
-          resources: {{- $team.resources.grafana | toYaml | nindent 12 }}
           grafana.ini:
             "auth.generic_oauth":
               role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || contains(groups[*], 'team-{{ $teamId }}') && 'Editor'{{ if not ($team | get "managedMonitoring.private" false) }} || 'Viewer'{{- end }}

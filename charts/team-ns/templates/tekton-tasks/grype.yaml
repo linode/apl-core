@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- range $v.resources }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -14,7 +13,13 @@ metadata:
     tekton.dev/platforms: "linux/amd64,linux/arm64,linux/ppc64le,linux/390x"
 spec:
   stepTemplate:
-    computeResources: {{- $v.resources.grypeTask | toYaml | nindent 6 }}
+    computeResources:
+      limits:
+        cpu: "2"
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
   description: >-
     A vulnerability scanner for container images and filesystems.
     Works with Syft, the powerful SBOM (software bill of materials) tool for container images and filesystems.
@@ -43,4 +48,3 @@ spec:
             - "ALL"
         seccompProfile:
           type: RuntimeDefault
-{{- end }}
