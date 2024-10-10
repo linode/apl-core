@@ -41,7 +41,6 @@ teamConfig:
                 - alerts
             policies:
                 - edit policies
-
     dev:
         id: dev
         managedMonitoring:

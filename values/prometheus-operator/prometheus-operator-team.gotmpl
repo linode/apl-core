@@ -52,7 +52,6 @@ defaultRules:
     nodeExporterRecording: false
     prometheus: false
     prometheusOperator: false
-
 additionalPrometheusRules: null
 grafana:
   serviceMonitor:
@@ -74,7 +73,6 @@ grafana:
       requests:
         cpu: 10m
         memory: 128Mi
-
 alertmanager:
   serviceMonitor:
     selfMonitor: false
@@ -86,7 +84,6 @@ alertmanager:
       limits:
         cpu: 200m
         memory: 256Mi
-
 prometheus:
   thanosService:
     enabled: false
