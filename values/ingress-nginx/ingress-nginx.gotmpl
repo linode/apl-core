@@ -43,8 +43,8 @@ controller:
     enabled: {{ $n.autoscaling.enabled }}
     minReplicas: {{ $n.autoscaling.minReplicas }}
     maxReplicas: {{ $n.autoscaling.maxReplicas }}
-    targetCPUUtilizationPercentage: 60
-    targetMemoryUtilizationPercentage: 75
+    targetCPUUtilizationPercentage: {{ $n.autoscaling.targetCPUUtilizationPercentage }}
+    targetMemoryUtilizationPercentage: {{ $n.autoscaling.targetMemoryUtilizationPercentage }}
   priorityClassName: otomi-critical
   extraArgs:
     v: 3

@@ -64,13 +64,7 @@ spec:
       containers:
         - name: controller
           image: {{ .Values.remoteresolver.deployment.image }}
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
-            limits:
-              cpu: 1000m
-              memory: 2Gi
+          resources: {{- toYaml .Values.controller.resources | nindent 12 }}
           ports:
             - name: metrics
               containerPort: 9090

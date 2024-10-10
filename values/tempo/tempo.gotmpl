@@ -6,6 +6,7 @@
 fullnameOverride: tempo
 
 ingester:
+  replicas: {{ $t.autoscaling.ingester.minReplicas }}
   resources: {{- $t.resources.ingester | toYaml | nindent 4 }}
   autoscaling:
     enabled: {{ $t.autoscaling.ingester.enabled }}
@@ -21,6 +22,7 @@ ingester:
   {{- end }}
 
 distributor:
+  replicas: {{ $t.autoscaling.distributor.minReplicas }}
   resources: {{- $t.resources.distributor | toYaml | nindent 4 }}
   autoscaling:
     enabled: {{ $t.autoscaling.distributor.enabled }}
@@ -38,6 +40,7 @@ compactor:
   resources: {{- $t.resources.compactor | toYaml | nindent 4 }}
 
 querier:
+  replicas: {{ $t.autoscaling.querier.minReplicas }}
   resources: {{- $t.resources.querier | toYaml | nindent 4 }}
   autoscaling:
     enabled: {{ $t.autoscaling.querier.enabled }}
@@ -47,6 +50,7 @@ querier:
     targetMemoryUtilizationPercentage: {{ $t.autoscaling.querier.targetMemoryUtilizationPercentage }}
 
 queryFrontend:
+  replicas: {{ $t.autoscaling.queryFrontend.minReplicas }}
   resources: {{- $t.resources.queryFrontend | toYaml | nindent 4 }}
   autoscaling:
     enabled: {{ $t.autoscaling.queryFrontend.enabled }}

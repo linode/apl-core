@@ -78,13 +78,7 @@ spec:
           # and substituted here.
           image: {{ .Values.webhook.deployment.image }}
           # Resource request required for autoscaler to take any action for a metric
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
-            limits:
-              cpu: 500m
-              memory: 500Mi
+          resources: {{- toYaml .Values.events.resources | nindent 12 }}
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:

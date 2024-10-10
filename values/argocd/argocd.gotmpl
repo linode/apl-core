@@ -11,7 +11,7 @@ global:
   {{- end }}
 # ApplicationSet Controller
 applicationSet:
-  replicas: {{ $a.applicationSet.replicas }} 
+  replicas: {{ $a.applicationSet.replicas }}
   resources: {{- $a.resources.applicationSet | toYaml | nindent 4 }}
   metrics:
     enabled: true
@@ -22,7 +22,7 @@ applicationSet:
 
 # Application Controller
 controller:
-  replicas: {{ $a.controller.replicas }} 
+  replicas: {{ $a.controller.replicas }}
   resources: {{- $a.resources.controller | toYaml | nindent 4 }}
   metrics:
     enabled: true
