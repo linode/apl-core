@@ -304,3 +304,7 @@ changes:
       - 'apps.grafana.resources.downloadDashboards'
       - 'apps.grafana.resources.grafanaTeams'
       - 'apps.grafana.resources.sidecarTeams'
+      - 'apps.alertmanger.resources.alertmanagerTeams'
+      - 'apps.jaeger.ingester'
+      - 'apps.jaeger.collector'
+      - 'apps.jaeger.agent'

@@ -1,4 +1,3 @@
-{{- $v := .Values }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
