@@ -54,8 +54,8 @@ extraArgs:
   - --redirect-url=https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
   - --email-domain="*"
   - --cookie-domain={{ $domainList }}
-  - --cookie-samesite=strict
-  - --cookie-secure=none
+  - --cookie-samesite=none
+  - --cookie-secure=true
   # - # cookie-httponly=true
   - --reverse-proxy=true
   - --cookie-refresh=0h1m0s # set to the same as keycloak realm's accessCodeLifespan 
