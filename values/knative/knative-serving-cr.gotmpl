@@ -15,7 +15,7 @@ spec:
     replicas: {{ $v.apps.knative.serving.replicas }}
   config:
     defaults:
-      revision-timeout-seconds: "300"  # 5 minutes
+      revision-timeout-seconds: "300"
       enable-service-links: "false"
     network:
       domain-template: "{{`{{.Name}}`}}-{{`{{.Namespace}}`}}.{{`{{.Domain}}`}}"
@@ -24,6 +24,16 @@ spec:
       scale-to-zero-grace-period: 60s
     deployment:
       registriesSkippingTagResolving: "ko.local,dev.local,docker.io,index.docker.io,gcr.io,azurecr.io"
+      queue-sidecar-cpu-request: "25m"
+      # queue-sidecar-cpu-limit is the limits.cpu to set for the queue proxy sidecar container.
+      # If omitted, no value is specified and the system default is used.
+      queue-sidecar-cpu-limit: "1000m"
+      # queue-sidecar-memory-request is the requests.memory to set for the queue proxy container.
+      # If omitted, no value is specified and the system default is used.
+      queue-sidecar-memory-request: "400Mi"
+      # queue-sidecar-memory-limit is the limits.memory to set for the queue proxy container.
+      # If omitted, no value is specified and the system default is used.
+      queue-sidecar-memory-limit: "800Mi"
     domain:
       {{ $v.cluster.domainSuffix }}: ''
     istio:
