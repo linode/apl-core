@@ -1,18 +1,18 @@
-{{- if and (.Values.configuration.content) (not .Values.configuration.existingConfigmap) }}
+{{- if not .Values.config.existingConfig }}
+{{- if .Values.config.configFile }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "common.names.fullname" . }}
-  namespace: {{ .Release.Namespace | quote }}
-  labels: {{- include "common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/component: oauth2-proxy
-    {{- if .Values.commonLabels }}
-    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
-    {{- end }}
-  {{- if .Values.commonAnnotations }}
-  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
-  {{- end }}
+{{- if .Values.config.annotations }}
+  annotations:
+{{ toYaml .Values.config.annotations | indent 4 }}
+{{- end }}
+  labels:
+    app: {{ template "oauth2-proxy.name" . }}
+{{- include "oauth2-proxy.labels" . | indent 4 }}
+  name: {{ template "oauth2-proxy.fullname" . }}
+  namespace: {{ template "oauth2-proxy.namespace" $ }}
 data:
-  oauth2_proxy.cfg: |
-    {{- include "common.tplvalues.render" ( dict "value" .Values.configuration.content "context" $ ) | nindent 4 }}
+  oauth2_proxy.cfg: {{ tpl .Values.config.configFile $ | quote }}
+{{- end }}
 {{- end }}

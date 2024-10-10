@@ -1,0 +1,15 @@
+sessionStorage:
+  type: redis
+  redis:
+    clientType: "standalone"
+    password: "foo"
+redis:
+  # provision an instance of the redis sub-chart
+  enabled: true
+  architecture: standalone
+  global:
+    redis:
+      password: "foo"
+initContainers:
+  waitForRedis:
+    enabled: true
