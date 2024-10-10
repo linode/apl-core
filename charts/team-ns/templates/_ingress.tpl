@@ -91,9 +91,10 @@ metadata:
           proxy_set_header Connection "upgrade";
           proxy_cache_bypass $http_upgrade;
         }
-      location https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback {
+      location /oauth2/callback {
+          proxy_pass https://auth.{{ $v.cluster.domainSuffix }};
           error_page 403 = @csrf_error_redirect;
-        }
+        } 
       location @csrf_error_redirect {
           return 302 https://console.{{ $v.cluster.domainSuffix }};
         }
