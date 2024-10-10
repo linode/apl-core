@@ -20,7 +20,7 @@ environments:
             applicationSet:
               replicas: 1
             controller:
-              replicas: 1
+              replicas: 2
             autoscaling:
               repoServer:
                 enabled: true
@@ -38,21 +38,21 @@ environments:
               controller:
                 requests:
                   cpu: 200m
-                  memory: 1Gi
+                  memory: 512Mi
                 limits:
                   cpu: "2"
                   memory: 2Gi
               server:
                 requests:
                   cpu: 100m
-                  memory: 512M
+                  memory: 512Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               repo:
                 requests:
                   cpu: 100m
-                  memory: 640M
+                  memory: 640Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
@@ -66,14 +66,14 @@ environments:
               applicationSet:
                 requests:
                   cpu: 100m
-                  memory: 256M
+                  memory: 256Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
               notifications:
                 requests:
                   cpu: 50m
-                  memory: 160M
+                  memory: 160Mi
                 limits:
                   cpu: "1"
                   memory: 1Gi
