@@ -82,8 +82,6 @@ releases:
               role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin' || contains(groups[*], 'team-{{ $teamId }}') && 'Editor'{{ if not ($team | get "managedMonitoring.private" false) }} || 'Viewer'{{- end }}
             server:
               root_url: https://grafana-{{ $teamId }}.{{ $domain }}
-          sidecar:
-            resources: {{- $team.resources.grafanaSidecar | toYaml | nindent 14 }}
             datasources:
               defaultDatasourceEnabled: false
             dashboards:
