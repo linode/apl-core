@@ -1,0 +1,64 @@
+{{- $v := .Values }}
+{{- $k := $v.apps.knative -}}
+apiVersion: operator.knative.dev/v1beta1
+kind: KnativeServing
+metadata:
+  name: knative-serving
+  namespace: knative-serving
+spec:
+  version: "1.15"
+  {{- if $v._derived.untrustedCA }}
+  controller-custom-certs:
+    name: certs
+    type: Secret
+  {{- end }}
+  high-availability:
+    replicas: {{ $k.serving.replicas }}
+  workloads:
+  - name: controller
+    resources:
+    - container: controller
+      {{- $k.resources.controller | toYaml | nindent 6 }}
+  - name: activator
+    resources:
+    - container: activator
+      {{- $k.resources.activator | toYaml | nindent 6 }}
+  - name: webhook
+    resources:
+    - container: webhook
+      {{- $k.resources.webhook | toYaml | nindent 6 }}
+  - name: autoscaler
+    resources:
+    - container: autoscaler
+      {{- $k.resources.autoscaler | toYaml | nindent 6 }}
+  - name: autoscaler-hpa
+    resources:
+    - container: autoscaler-hpa
+      {{- $k.resources.autoscalerHpa | toYaml | nindent 6 }}
+  config:
+    defaults:
+      revision-timeout-seconds: "300"
+      enable-service-links: "false"
+    network:
+      domain-template: "{{`{{.Name}}`}}-{{`{{.Namespace}}`}}.{{`{{.Domain}}`}}"
+    autoscaler:
+      stable-window: 600s
+      scale-to-zero-grace-period: 60s
+    deployment:
+      registriesSkippingTagResolving: "ko.local,dev.local,docker.io,index.docker.io,gcr.io,azurecr.io"
+      queue-sidecar-cpu-request: "{{ $k.resources.queueSidecar.requests.cpu }}"
+      queue-sidecar-cpu-limit: "{{ $k.resources.queueSidecar.limits.cpu }}"
+      queue-sidecar-memory-request: "{{ $k.resources.queueSidecar.requests.memory }}"
+      queue-sidecar-memory-limit: "{{ $k.resources.queueSidecar.limits.memory }}"
+    domain:
+      {{ $v.cluster.domainSuffix }}: ''
+    istio:
+      gateway.knative-serving.knative-ingress-gateway: istio-ingressgateway-public.istio-system.svc.cluster.local
+    features:
+      podspec-securitycontext: enabled
+  ingress:
+    istio: 
+      enabled: true
+      knative-ingress-gateway:
+        selector:
+          istio: ingressgateway-public
