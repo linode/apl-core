@@ -180,7 +180,7 @@ jobs:
           # Mapping of domain_zone to domain names
           case "${{ inputs.domain_zone }}" in
             "Zone-1") DOMAIN=$(jq '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "Zone-2") DOMAIN=$(jq '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Zone-2") DOMAIN=$(jq '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
             "DNS-Integration") DOMAIN=$(jq '."DNS-Integration"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
           esac
 
