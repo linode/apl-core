@@ -74,11 +74,6 @@ resources:
               - jaeger
               {{- end }}
       mode: {{ $o.collector.mode }}
-      autoscaler:
-        minReplicas: {{ $o.collector.autoscaler.minReplicas }}
-        maxReplicas: {{ $o.collector.autoscaler.maxReplicas }}
-        targetCPUUtilization: {{ $o.collector.autoscaler.targetCPUUtilizationPercentage }}
-        targetMemoryUtilization: {{ $o.collector.autoscaler.targetMemoryUtilizationPercentage }}
       resources: {{- $o.resources.collector | toYaml | nindent 8 }}
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRole
