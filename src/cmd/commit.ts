@@ -4,7 +4,7 @@ import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { waitTillGitRepoAvailable } from 'src/common/k8s'
+import { createGenericSecret, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -12,7 +12,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
-import { CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
+import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 import retry from 'async-retry'
 
 const cmdName = getFilename(__filename)
@@ -106,7 +106,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   d.info('Cloned apl-charts in Gitea')
 }
 
-export async function retryCheckingForPipelinerun() {
+export async function retryCheckingForPipelineRun() {
   const d = terminal(`cmd:${cmdName}:apply`)
   await retry(
     async () => {
@@ -117,6 +117,38 @@ export async function retryCheckingForPipelinerun() {
     d.error('Error retrieving PipelineRuns:', e)
     throw e
   })
+}
+
+export async function retryIsOAuth2ProxyRunning() {
+  const d = terminal(`cmd:${cmdName}:apply`)
+  const kc = new KubeConfig()
+  kc.loadFromDefault()
+  const appsV1Api = kc.makeApiClient(AppsV1Api)
+  await retry(
+    async () => {
+      await isOAuth2ProxyRunning(appsV1Api)
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  ).catch((e) => {
+    d.error('Error retrieving PipelineRuns:', e)
+    throw e
+  })
+}
+
+export async function isOAuth2ProxyRunning(k8s: AppsV1Api): Promise<void> {
+  const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
+  const { body: oauth2ProxyDeployment } = await k8s.readNamespacedDeployment('oauth2-proxy', 'istio-system')
+  if (!oauth2ProxyDeployment) {
+    throw new Error('OAuth2 Proxy deployment not found, waiting...')
+  }
+  const oauth2ProxyStatus = oauth2ProxyDeployment.status
+  if (!oauth2ProxyStatus) {
+    throw new Error('OAuth2 Proxy has no status, waiting...')
+  }
+  if (oauth2ProxyStatus.readyReplicas === 0) {
+    throw new Error('OAuth2 Proxy has no ready replicas, waiting...')
+  }
+  d.info('OAuth2 Proxy deployment is running, continuing...')
 }
 
 export async function checkIfPipelineRunExists(): Promise<void> {
@@ -142,19 +174,27 @@ export async function checkIfPipelineRunExists(): Promise<void> {
   d.info(`There is a Tekton PipelineRuns continuing...`)
 }
 
+async function createRootCredentialsSecret(credentials: { adminUser: string; adminPassword: string }) {
+  const secretData = {
+    username: credentials.adminUser,
+    password: credentials.adminPassword,
+  }
+  const kc = new KubeConfig()
+  kc.loadFromDefault()
+  const coreV1Api = kc.makeApiClient(CoreV1Api)
+  await createGenericSecret(coreV1Api, 'root-credentials', 'default', secretData)
+}
+
 export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak
+  await createRootCredentialsSecret({ adminUser: credentials.adminUser, adminPassword: credentials.adminPassword })
   const message = `
   ########################################################################################################################################
   #
-  #  Core apps installation complete! ArgoCD will now deploy the remaining applications. 
-  #  To monitor the progress, run: kubectl get applications -A
-  #  Once ArgoCD finishes, you can start using APL. Visit: https://console.${values.cluster.domainSuffix}
-  #  Sign in to the web console with the following credentials:
-  #    - Username: "${credentials.adminUsername}"
-  #    - Password: "${credentials.adminPassword}"
+  #  Visit the console: https://console.${values.cluster.domainSuffix}
+  #  Perform kubectl get secret root-credentials -n default to obtain access credentials
   #
   ########################################################################################################################################`
   d.info(message)
