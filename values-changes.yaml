@@ -302,3 +302,7 @@ changes:
     deletions:
       - 'teamConfig.{team}.managedMonitoring.prometheus'
       - 'apps.grafana.resources.downloadDashboards'
+  - version: 30
+    relocations:
+      - 'oidc.adminGroupID': 'oidc.platformAdminGroupID'
+      - 'oidc.teamAdminGroupID': 'oidc.allTeamsAdminGroupID'

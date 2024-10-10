@@ -56,10 +56,11 @@ obj:
                 thanos: my-clusterid-thanos
         type: linode
 oidc:
-    adminGroupID: someAdminGroupID
+    platformAdminGroupID: someAdminGroupID
     clientID: someClientID
     issuer: https://login.microsoftonline.com/xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     subClaimMapper: oid
+    allTeamsAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 otomi:
     additionalClusters:

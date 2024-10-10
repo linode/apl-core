@@ -22,6 +22,7 @@ describe('Bootstrapping values', () => {
     apps: { 'cert-manager': { issuer: 'custom-ca' } },
     cluster: { name: 'bla', provider: 'dida' },
   }
+  const users = [{ id: 'user1', initialPassword: 'existing-password' }, { id: 'user2' }]
   const secrets = { secret: 'true', deep: { nested: 'secret' } }
   const ageKeys = { publicKey: 'agePublicKey', privateKey: 'agePrivateKey' }
   const kmsValues = {
@@ -241,6 +242,11 @@ describe('Bootstrapping values', () => {
   })
   describe('processing values', () => {
     const generatedSecrets = { gen: 'x' }
+    const generatedPassword = 'generated-password'
+    const usersWithPasswords = [
+      { id: 'user1', initialPassword: 'existing-password' },
+      { id: 'user2', initialPassword: generatedPassword },
+    ]
     const ca = { a: 'cert' }
     const mergedValues = merge(cloneDeep(values), cloneDeep(secrets))
     const mergedSecretsWithCa = merge(cloneDeep(secrets), cloneDeep(ca))
@@ -262,6 +268,7 @@ describe('Bootstrapping values', () => {
         terminal,
         validateValues: jest.fn().mockReturnValue(true),
         writeValues: jest.fn(),
+        generatePassword: jest.fn().mockReturnValue(generatedPassword),
       }
     })
     describe('Creating CA', () => {
@@ -335,10 +342,15 @@ describe('Bootstrapping values', () => {
         expect(res).toEqual(mergedValues)
       })
       it('should merge original with generated values and write them to env dir', async () => {
-        const writtenValues = merge(cloneDeep(values), cloneDeep(mergedSecretsWithGenAndCa))
-        deps.loadYaml.mockReturnValue(values)
+        const writtenValues = merge(
+          cloneDeep(values),
+          cloneDeep(mergedSecretsWithGenAndCa),
+          cloneDeep({ users: usersWithPasswords }),
+        )
+        deps.loadYaml.mockReturnValue({ ...values, users })
         deps.getStoredClusterSecrets.mockReturnValue(secrets)
         deps.generateSecrets.mockReturnValue(generatedSecrets)
+        deps.generatePassword.mockReturnValue(generatedPassword)
         await processValues(deps)
         expect(deps.writeValues).toHaveBeenNthCalledWith(2, writtenValues)
       })
