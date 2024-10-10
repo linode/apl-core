@@ -39,13 +39,7 @@ spec:
           # This is the Go import path for the binary that is containerized
           # and substituted here.
           image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook@sha256:9d0c7b27f2451d69ad0c48752795453bd73d36fbd918583432f70cfc214844fa
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
-            limits:
-              cpu: 500m
-              memory: 500Mi
+          resources: {{- toYaml .Values.webhook.resources | nindent 12 }}
           env:
             - name: POD_NAME
               valueFrom:
@@ -132,6 +126,7 @@ spec:
         - name: knative-operator
           image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:b10acd7eb8e2f931df18ae71315eafb54547b1d422f4d8198f1483f9088b43ce
           imagePullPolicy: IfNotPresent
+          resources: {{- toYaml .Values.operator.resources | nindent 12 }}
           env:
             - name: POD_NAME
               valueFrom:

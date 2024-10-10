@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $k := $v.apps.knative -}}
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
@@ -12,7 +13,28 @@ spec:
     type: Secret
   {{- end }}
   high-availability:
-    replicas: {{ $v.apps.knative.serving.replicas }}
+    replicas: {{ $k.serving.replicas }}
+  workloads:
+  - name: controller
+    resources:
+    - container: controller
+      {{- $k.resources.controller | toYaml | nindent 6 }}
+  - name: activator
+    resources:
+    - container: activator
+      {{- $k.resources.activator | toYaml | nindent 6 }}
+  - name: webhook
+    resources:
+    - container: webhook
+      {{- $k.resources.webhook | toYaml | nindent 6 }}
+  - name: autoscaler
+    resources:
+    - container: autoscaler
+      {{- $k.resources.autoscaler | toYaml | nindent 6 }}
+  - name: autoscaler-hpa
+    resources:
+    - container: autoscaler-hpa
+      {{- $k.resources.autoscalerHpa | toYaml | nindent 6 }}
   config:
     defaults:
       revision-timeout-seconds: "300"
@@ -24,16 +46,10 @@ spec:
       scale-to-zero-grace-period: 60s
     deployment:
       registriesSkippingTagResolving: "ko.local,dev.local,docker.io,index.docker.io,gcr.io,azurecr.io"
-      queue-sidecar-cpu-request: "25m"
-      # queue-sidecar-cpu-limit is the limits.cpu to set for the queue proxy sidecar container.
-      # If omitted, no value is specified and the system default is used.
-      queue-sidecar-cpu-limit: "1000m"
-      # queue-sidecar-memory-request is the requests.memory to set for the queue proxy container.
-      # If omitted, no value is specified and the system default is used.
-      queue-sidecar-memory-request: "400Mi"
-      # queue-sidecar-memory-limit is the limits.memory to set for the queue proxy container.
-      # If omitted, no value is specified and the system default is used.
-      queue-sidecar-memory-limit: "800Mi"
+      queue-sidecar-cpu-request: "{{ $k.resources.queueSidecar.requests.cpu }}"
+      queue-sidecar-cpu-limit: "{{ $k.resources.queueSidecar.limits.cpu }}"
+      queue-sidecar-memory-request: "{{ $k.resources.queueSidecar.requests.memory }}"
+      queue-sidecar-memory-limit: "{{ $k.resources.queueSidecar.limits.memory }}"
     domain:
       {{ $v.cluster.domainSuffix }}: ''
     istio:

@@ -1,1 +1,6 @@
-teamName: ""
+
+webhook:
+  resources: {}
+
+operator:
+  resources: {}
