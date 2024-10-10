@@ -55,8 +55,8 @@ extraArgs:
   - --email-domain="*"
   - --cookie-domain={{ $domainList }}
   - --cookie-samesite=strict
-  - --cookie-secure=true
-  - --cookie-httponly=true
+  - --cookie-secure=none
+  # - # cookie-httponly=true
   - --reverse-proxy=true
   - --cookie-refresh=0h1m0s # set to the same as keycloak realm's accessCodeLifespan 
   - --pass-authorization-header=true
@@ -70,9 +70,6 @@ extraArgs:
   # - # oidc-issuer-url={{ $v._derived.oidcBaseUrlBackchannel }}
   - --insecure-oidc-allow-unverified-email=true
   - --show-debug-on-error=true
-  # - --cookie-path="/"
-  # - --csrf-cookie-name=_csrf
-  # - --csrf-field-name=csrf_token
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
