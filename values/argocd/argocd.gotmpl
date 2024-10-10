@@ -11,12 +11,7 @@ global:
   {{- end }}
 # ApplicationSet Controller
 applicationSet:
-  replicas: {{ $a.applicationSet.replicas }}
-  pdb:
-    enabled: true
-    labels:
-      app.kubernetes.io/component: applicationset-controller
-    minAvailable: 1
+  replicas: {{ $a.applicationSet.replicas }} 
   resources: {{- $a.resources.applicationSet | toYaml | nindent 4 }}
   metrics:
     enabled: true
@@ -27,12 +22,7 @@ applicationSet:
 
 # Application Controller
 controller:
-  replicas: {{ $a.controller.replicas }}
-  pdb:
-    enabled: true
-    labels:
-      app.kubernetes.io/component: application-controller
-    minAvailable: 1
+  replicas: {{ $a.controller.replicas }} 
   resources: {{- $a.resources.controller | toYaml | nindent 4 }}
   metrics:
     enabled: true
