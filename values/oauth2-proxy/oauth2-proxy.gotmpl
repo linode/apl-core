@@ -7,10 +7,10 @@
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
 image:
-  tag: "7.4.0-debian-11-r81"
+  tag: "7.7.0"
   repository: bitnami/oauth2-proxy
 
-configuration:
+config:
   clientID: {{ $k.idp.clientID  }}
   clientSecret: {{ $k.idp.clientSecret }}
   cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
@@ -77,6 +77,7 @@ imagePullSecrets:
 {{- end }}
 
 redis:
+  enabled: true
   architecture: {{ $r | get "architecture" }}
   auth:
     password: {{ $r | get "password" }}
