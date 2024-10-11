@@ -107,7 +107,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
 }
 
 export async function retryCheckingForPipelineRun() {
-  const d = terminal(`cmd:${cmdName}:apply`)
+  const d = terminal(`cmd:${cmdName}:pipelineRun`)
   await retry(
     async () => {
       await checkIfPipelineRunExists()
@@ -120,7 +120,7 @@ export async function retryCheckingForPipelineRun() {
 }
 
 export async function retryIsOAuth2ProxyRunning() {
-  const d = terminal(`cmd:${cmdName}:apply`)
+  const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
   const kc = new KubeConfig()
   kc.loadFromDefault()
   const appsV1Api = kc.makeApiClient(AppsV1Api)
@@ -130,13 +130,14 @@ export async function retryIsOAuth2ProxyRunning() {
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   ).catch((e) => {
-    d.error('Error retrieving PipelineRuns:', e)
+    d.error('Error checking if OAuth2Proxy is ready:', e)
     throw e
   })
 }
 
 export async function isOAuth2ProxyRunning(k8s: AppsV1Api): Promise<void> {
   const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
+  d.info('Checking if OAuth2Proxy is running, waiting...')
   const { body: oauth2ProxyDeployment } = await k8s.readNamespacedDeployment('oauth2-proxy', 'istio-system')
   if (!oauth2ProxyDeployment) {
     throw new Error('OAuth2 Proxy deployment not found, waiting...')
@@ -152,7 +153,7 @@ export async function isOAuth2ProxyRunning(k8s: AppsV1Api): Promise<void> {
 }
 
 export async function checkIfPipelineRunExists(): Promise<void> {
-  const d = terminal(`cmd:${cmdName}:pipelinerun`)
+  const d = terminal(`cmd:${cmdName}:pipelineRun`)
   const kc = new KubeConfig()
   kc.loadFromDefault()
   const customObjectsApi = kc.makeApiClient(CustomObjectsApi)
