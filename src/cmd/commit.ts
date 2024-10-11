@@ -175,13 +175,11 @@ export async function checkIfPipelineRunExists(): Promise<void> {
   d.info(`There is a Tekton PipelineRuns continuing...`)
 }
 
-async function createRootCredentialsSecret(credentials: { adminUser: string; adminPassword: string }) {
-  const d = terminal(`cmd:${cmdName}:commit`)
+async function createRootCredentialsSecret(credentials: { adminUsername: string; adminPassword: string }) {
   const secretData = {
-    username: credentials.adminUser,
+    username: credentials.adminUsername,
     password: credentials.adminPassword,
   }
-  d.info(secretData)
   const kc = new KubeConfig()
   kc.loadFromDefault()
   const coreV1Api = kc.makeApiClient(CoreV1Api)
@@ -192,8 +190,10 @@ export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak
-  d.info(credentials)
-  await createRootCredentialsSecret({ adminUser: credentials.adminUser, adminPassword: credentials.adminPassword })
+  await createRootCredentialsSecret({
+    adminUsername: credentials.adminUsername,
+    adminPassword: credentials.adminPassword,
+  })
   const message = `
   ########################################################################################################################################
   #
