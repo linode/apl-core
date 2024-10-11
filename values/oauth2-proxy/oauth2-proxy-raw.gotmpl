@@ -56,10 +56,17 @@ resources:
         <html lang="en">
         <head>
             <meta charset="UTF-8">
-            <title>Error</title>
+            <title>Login Redirect</title>
         </head>
         <body>
-            <h1>Access Denied</h1>
-            <p>You do not have permission to access this resource.</p>
+            <div class="content">
+                If the browser does not redirect automatically, please follow <a href="/">this</a> link.
+            </div>
+            <script>
+                document.title = "Login Redirect";
+                document.body = document.createElement("body");
+                document.body.innerHTML = "<div class=\"content\">If the browser does not redirect automatically, please follow <a href='/'>this</a> link.</div>";
+                window.location.href = "/";
+            </script>
         </body>
         </html>
