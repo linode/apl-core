@@ -52,7 +52,7 @@ const applyAll = async () => {
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
   const version = await getCurrentVersion()
-  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version, version })
+  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
 
   const state = await getDeploymentState()
   const releases = await getHelmReleases()
@@ -89,7 +89,7 @@ const applyAll = async () => {
   await prepareDomainSuffix()
 
   let labelOpts = ['']
-  if (intitalInstall) {
+  if (intitalInstall && !argv.tekton) {
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // Only install the core apps
     labelOpts = ['app=core']
@@ -115,7 +115,7 @@ const applyAll = async () => {
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit()
-    if (intitalInstall) {
+    if (intitalInstall && !argv.tekton) {
       await hf(
         {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
@@ -131,7 +131,7 @@ const applyAll = async () => {
       await printWelcomeMessage()
     }
   }
-  await setDeploymentState({ status: 'deployed' })
+  await setDeploymentState({ status: 'deployed', version })
   d.info('Deployment completed')
 }
 
@@ -174,8 +174,14 @@ const apply = async (): Promise<void> => {
 export const module: CommandModule = {
   command: cmdName,
   describe: 'Apply all, or supplied, k8s resources',
-  builder: (parser: Argv): Argv => helmOptions(parser),
-
+  builder: (parser: Argv): Argv =>
+    helmOptions(parser).option({
+      tekton: {
+        type: 'boolean',
+        description: 'Apply flag when run in tekton pipeline',
+        default: false,
+      },
+    }),
   handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     setup()

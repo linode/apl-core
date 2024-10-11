@@ -274,7 +274,9 @@ export async function createGenericSecret(
   namespace: string,
   secretData: Record<string, string>,
 ): Promise<V1Secret> {
+  console.log(`secretData ${secretData}`)
   const encodedData = mapValues(secretData, b64enc)
+  console.log(`encodedData ${encodedData}`)
 
   const secret: V1Secret = {
     metadata: {

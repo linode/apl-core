@@ -176,10 +176,12 @@ export async function checkIfPipelineRunExists(): Promise<void> {
 }
 
 async function createRootCredentialsSecret(credentials: { adminUser: string; adminPassword: string }) {
+  const d = terminal(`cmd:${cmdName}:commit`)
   const secretData = {
     username: credentials.adminUser,
     password: credentials.adminPassword,
   }
+  d.info(secretData)
   const kc = new KubeConfig()
   kc.loadFromDefault()
   const coreV1Api = kc.makeApiClient(CoreV1Api)
@@ -190,6 +192,7 @@ export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak
+  d.info(credentials)
   await createRootCredentialsSecret({ adminUser: credentials.adminUser, adminPassword: credentials.adminPassword })
   const message = `
   ########################################################################################################################################
