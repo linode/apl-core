@@ -52,7 +52,7 @@ const applyAll = async () => {
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
   const version = await getCurrentVersion()
-  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
+  await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version, version })
 
   const state = await getDeploymentState()
   const releases = await getHelmReleases()
@@ -131,7 +131,7 @@ const applyAll = async () => {
       await printWelcomeMessage()
     }
   }
-  await setDeploymentState({ status: 'deployed', version })
+  await setDeploymentState({ status: 'deployed' })
   d.info('Deployment completed')
 }
 
