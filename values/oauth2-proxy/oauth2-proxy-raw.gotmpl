@@ -72,37 +72,78 @@ resources:
                 flex-direction: column;
                 align-items: center;
                 justify-content: space-between;
-                height: 240px;
+                height: 280px;
                 width: 400px;
                 padding: 32px;
-                border-radius: 16px;
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
               }
-              .svg-wrapper {
+              .logo {
                 box-sizing: border-box;
                 position: absolute;
                 height: 50px;
                 width: 50px;
                 top: calc(50% - 25px);
                 left: calc(50% - 25px);
+                animation: logoAnimation 2s ease-in-out infinite;
               }
-              @keyframes spinner {
-                to {
-                  transform: rotate(360deg);
+              @keyframes logoAnimation {
+                0%,
+                100% {
+                  transform: scale(1);
+                  opacity: 1;
+                }
+                25%,
+                75% {
+                  transform: scale(0.9);
+                  opacity: 0.48;
                 }
               }
-              .spinner:before {
-                content: "";
-                box-sizing: border-box;
+              .circle1 {
                 position: absolute;
+                border-radius: 25%;
+                width: 100px;
+                height: 100px;
+                border: solid 4px rgba(16, 57, 150, 0.24);
+                animation: circle1Animation 3.2s linear infinite;
+                top: calc(50% - 52px);
+                left: calc(50% - 52px);
+              }
+              @keyframes circle1Animation {
+                0%,
+                100% {
+                  transform: scale(1.2) rotate(270deg);
+                  opacity: 0.25;
+                  border-radius: 25%;
+                }
+                25%,
+                75% {
+                  transform: scale(1) rotate(0deg);
+                  opacity: 1;
+                  border-radius: 50%;
+                }
+              }
+              .circle2 {
+                position: absolute;
+                border-radius: 25%;
                 width: 120px;
                 height: 120px;
-                top: calc(50% - 60px);
-                left: calc(50% - 60px);
-                border-radius: 50%;
-                border-top: 2px solid #009CDE;
-                border-right: 2px solid transparent;
-                animation: spinner 1s linear infinite;
+                border: solid 8px rgba(16, 57, 150, 0.24);
+                animation: circle2Animation 3.2s linear infinite;
+                top: calc(50% - 66px);
+                left: calc(50% - 66px);
+              }
+              @keyframes circle2Animation {
+                0%,
+                100% {
+                  transform: scale(1) rotate(0deg);
+                  opacity: 1;
+                  border-radius: 25%;
+                }
+                25%,
+                75% {
+                  transform: scale(1.2) rotate(270deg);
+                  opacity: 0.25;
+                  border-radius: 50%;
+                }
               }
             </style>
           </head>
@@ -112,8 +153,7 @@ resources:
                 <div>You are being redirected to <strong>console</strong>...</div>
                 <div>If you don't wish to wait, <a href="{{ $consoleUrl }}">click here</a>.</div>
               </div>
-              <div class="spinner"></div>
-              <div class="svg-wrapper">
+              <div class="logo">
                 <svg
                   viewBox="0 0 100 108"
                   version="1.1"
@@ -141,6 +181,8 @@ resources:
                   </g>
                 </svg>
               </div>
+              <div class="circle1"></div>
+              <div class="circle2"></div>
             </div>
             <script>
               document.title = "Login Redirect";
@@ -149,10 +191,9 @@ resources:
                 '<div class="container">' +
                 '<div class="content">' +
                 "<div>You are being redirected to <strong>console</strong>...</div>" +
-                '<div>If you don\'t wish to wait, <a href="/">click here</a>.</div>' +
+                '<div>If you don\'t wish to wait, <a href="{{ $consoleUrl }}">click here</a>.</div>' +
                 "</div>" +
-                '<div class="spinner"></div>' +
-                '<div class="svg-wrapper">' +
+                '<div class="logo">' +
                 '<svg viewBox="0 0 100 108" version="1.1" xmlns="http://www.w3.org/2000/svg">' +
                 "<title>Shape</title>" +
                 '<g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">' +
@@ -162,9 +203,12 @@ resources:
                 "</g>" +
                 "</svg>" +
                 "</div>" +
+                '<div class="circle1"></div>' +
+                '<div class="circle2"></div>' +
                 "</div>";
-              window.location.href = "{{ $consoleUrl }}";
+                window.location.href = "{{ $consoleUrl }}";
             </script>
           </body>
         </html>
+
 
