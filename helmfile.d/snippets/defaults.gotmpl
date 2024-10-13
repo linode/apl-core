@@ -1,0 +1,18 @@
+{{- /* Only dynamic defauts */}}
+{{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
+{{- $t := readFile (print $ENV_DIR "/env/teams.yaml") | fromYaml }}
+{{- if not (hasKey $t "teamConfig") }}{{ $_ := set $t "teamConfig" dict }}{{ end }}
+{{- $teams := keys $t.teamConfig}}
+
+environments:
+  default:
+    values:
+    - teamConfig:
+      {{- range $team := $teams }}
+        {{ $team }}: 
+          managedMonitoring:
+            grafana: true
+            prometheus: false
+            alertmanager: false
+            private: false
+        {{- end }}        

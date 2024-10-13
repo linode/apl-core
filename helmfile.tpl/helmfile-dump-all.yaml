@@ -1,6 +1,7 @@
 # this release file is used to dump the final values used by helmfile
 bases:
   - ../helmfile.d/snippets/defaults.yaml
+  - ../helmfile.d/snippets/defaults.gotmpl
 ---
 bases:
   - ../helmfile.d/snippets/env.gotmpl
