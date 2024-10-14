@@ -1,7 +1,6 @@
 {{- $v := .Values -}}
 {{- $l:= $v.apps.loki }}
 {{- $obj := $v.obj.provider }}
-{{- $bu := $v.obj.buckets }}
 {{- $useObjectStorage := eq $obj.type "minioLocal" "linode" }}
 
 nameOverride: loki
@@ -13,9 +12,6 @@ imagePullSecrets:
 
 global:
   priorityClassName: otomi-critical
-  {{- if eq $v.cluster.provider "scaleway" }}
-  dnsService: coredns
-  {{- end }}
 serviceMonitor:
   enabled: true
   labels:
@@ -29,25 +25,33 @@ loki:
     configs:
     - from: 2020-09-07
       store: boltdb-shipper
+      {{- if $useObjectStorage }}
       object_store: s3
+      {{- else }}
+      object_store: filesystem
+      {{- end }}
       schema: v11
       index:
         prefix: loki_index_
         period: 24h
-  {{- if $useObjectStorage }}
   storageConfig:
     boltdb_shipper:
       active_index_directory: /var/loki/index
       cache_location: /var/loki/index_cache
       resync_interval: 5s
+      {{- if $useObjectStorage }}
       shared_store: s3
+      {{- else }}
+      shared_store: filesystem
+      {{- end }}
+    {{- if $useObjectStorage }}
     aws:
       {{- if eq $obj.type "minioLocal" }}
-      s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/{{ $bu.loki }}
+      s3: http://otomi-admin:{{ $v.otomi.adminPassword }}@minio.minio.svc.cluster.local.:9000/loki
       s3forcepathstyle: true
       {{- end }}
       {{- if eq $obj.type "linode" }}
-      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $bu.loki }}     
+      s3: https://{{ $obj.linode.accessKeyId }}:{{ $obj.linode.secretAccessKey }}@{{ $obj.linode.region }}.linodeobjects.com/{{ $obj.linode.buckets.loki }}     
       s3forcepathstyle: true
       sse_encryption: false
       http_config:
@@ -56,8 +60,11 @@ loki:
       backoff_config:
         min_period: 2s
         max_period: 5s
-      {{- end }} 
-  {{- end }}
+      {{- end }}
+    {{- else }}
+    filesystem:
+      directory: "/var/loki/chunks"
+    {{- end }}
 
   structuredConfig:
     auth_enabled: true
@@ -68,8 +75,6 @@ loki:
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-host-filesystem
 
   autoscaling:
     enabled: {{ $l.autoscaling.ingester.enabled }}
@@ -89,8 +94,6 @@ gateway:
 
 querier:
   resources: {{- $l.resources.querier | toYaml | nindent 4 }}
-  podAnnotations:
-    policy.otomi.io/ignore: psp-host-filesystem
   autoscaling:
     enabled: {{ $l.autoscaling.querier.enabled }}
     minReplicas: {{ $l.autoscaling.querier.minReplicas }}
@@ -129,13 +132,7 @@ queryFrontend:
       - name: auth
         containerPort: 3101
         protocol: TCP
-    resources:
-      limits:
-        cpu: 100m
-        memory: 32Mi
-      requests:
-        cpu: 50m
-        memory: 16Mi
+    resources: {{- $l.resources.reverseProxy | toYaml | nindent 6 }}
     volumeMounts:
       - name: reverse-proxy-auth-config
         mountPath: /etc/reverse-proxy-conf

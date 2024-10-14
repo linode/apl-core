@@ -5,6 +5,13 @@
 {{- $giteaDomain := printf "gitea.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $gdb := $v.databases.gitea }}
+{{- $obj := $v.obj.provider }}
+{{- $giteaBucketName := "" }}
+{{- if eq $obj.type "minioLocal" }}
+{{- $giteaBucketName = "gitea" }}
+{{- else if eq $obj.type "linode" }}
+{{- $giteaBucketName = $obj.linode.buckets | get "gitea" nil }}
+{{- end }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -18,17 +25,8 @@ podDns:
     nameservers:
       - "8.8.4.4"
       - "8.8.8.8"
-resources:
-  {{ with $g | get "resources.gitea" nil }}
-    {{- toYaml . | nindent 2 }}
-  {{- else }}
-  limits:
-    cpu: 1
-    memory: 1Gi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  {{- end }}
+
+resources: {{- $g.resources.gitea | toYaml | nindent 2 }}
 
 securityContext:
   allowPrivilegeEscalation: false
@@ -51,9 +49,6 @@ image:
   rootless: true
 
 gitea:
-  podAnnotations:
-    policy.otomi.io/ignore.init: psp-allowed-users
-    policy.otomi.io/ignore.init-ca-finish: psp-allowed-users
   admin:
     username: {{ $g.adminUsername }}
     password: {{ $g.adminPassword }}
@@ -120,51 +115,57 @@ gitea:
       enabled: true
       additionalLabels:
         prometheus: system
-  oauth:
-    - name: {{ $k.idp.alias }}
-      provider: openidConnect
-      key: {{ $k.idp.clientID  }}
-      secret: {{ $k.idp.clientSecret }}
-      autoDiscoverUrl: {{ $v._derived.oidcWellKnownUrl }}
-      # autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrlBackchannel }}
-      autoDiscoverUrlBackchannel: {{ $v._derived.oidcWellKnownUrl }}
-      adminGroup: team-admin
-      groupClaimName: groups
 
 init:
-  resources:
-    limits:
-      cpu: 400m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
+  resources: {{- $g.resources.init | toYaml | nindent 4 }}
+
+statefulset:
+  env:
+    - name: RCLONE_CONFIG_GITEA_TYPE
+      value: s3
+    {{- if eq $obj.type "minioLocal" }}
+    - name: RCLONE_CONFIG_GITEA_PROVIDER
+      value: Minio
+    - name: RCLONE_CONFIG_GITEA_ENDPOINT
+      value: http://minio.minio.svc.cluster.local:9000
+    - name: RCLONE_CONFIG_GITEA_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: minio-creds
+          key: MINIO_ACCESS_KEY
+    - name: RCLONE_CONFIG_GITEA_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: minio-creds
+          key: MINIO_SECRET_KEY          
+    {{- else if eq $obj.type "linode" }}
+    - name: RCLONE_CONFIG_GITEA_PROVIDER
+      value: Linode
+    - name: RCLONE_CONFIG_GITEA_ENDPOINT
+      value: {{ $obj.linode.region }}.linodeobjects.com
+    - name: RCLONE_CONFIG_GITEA_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: linode-creds
+          key: S3_STORAGE_ACCOUNT
+    - name: RCLONE_CONFIG_GITEA_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: linode-creds
+          key: S3_STORAGE_KEY
+    {{- end }}
+    - name: BUCKET_NAME
+      value: {{ $giteaBucketName }}  
 
 memcached:
   # @TODO:
   image:
     tag: {{ $g | get "image.memcached.tag" "1.6.12" }}
     pullPolicy:  {{ $g | get "image.memcached.pullPolicy" "IfNotPresent" }}
-  resources:
-    {{ with $g | get "resources.memcached" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 250m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    {{- end }}
+  resources: {{- $g.resources.memcached| toYaml | nindent 4 }}
   metrics:
     enabled: true
-    resources:
-      limits:
-        cpu: 200m
-        memory: 128M
-      requests:
-        cpu: 50m
-        memory: 64M
+    resources: {{- $g.resources.memcachedMetrics| toYaml | nindent 6 }}
     securityContext:
       enabled: true
     serviceMonitor:
@@ -174,11 +175,7 @@ memcached:
 
 
 persistence:
-  {{- if eq $v.cluster.provider "vultr" }}
-  size: 10Gi
-  {{- else }}
   size: 1Gi
-  {{- end }}
 
 postgresql:
   {{- if $gdb.useOtomiDB }}
@@ -194,11 +191,7 @@ postgresql:
     image:
       tag: 0.10.0
   persistence:
-    {{- if eq $v.cluster.provider "vultr" }}
-    size: 10Gi
-    {{- else }}
     size: 1Gi
-    {{- end }}
   global:
     postgresql:
       postgresqlPassword: {{ $g | get "postgresqlPassword" }}
@@ -230,12 +223,19 @@ postgresql:
       additionalLabels:
         prometheus: system
 
-{{- if $v._derived.untrustedCA }}
 extraVolumeMounts:
+  - name: backup
+    mountPath: /backup
+{{- if $v._derived.untrustedCA }}
   - name: custom-ca
     mountPath: /etc/ssl/certs/ca-certificates.crt
     subPath: ca-certificates.crt
+{{- end }}
 extraVolumes:
+  - name: backup
+    persistentVolumeClaim:
+      claimName: gitea-backup
+{{- if $v._derived.untrustedCA }}
   - name: custom-ca
     secret:
       secretName: custom-ca

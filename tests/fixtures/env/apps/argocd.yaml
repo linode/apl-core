@@ -1,6 +1,5 @@
 apps:
     argocd:
-        enabled: true
         autoscaling:
             repoServer:
                 enabled: true

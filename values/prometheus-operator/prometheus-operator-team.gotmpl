@@ -1,3 +1,7 @@
+{{- $v := .Values }}
+{{- $a := $v.apps | get "alertmanager" }}
+{{- $g := $v.apps | get "grafana" }}
+
 kubeApiServer:
   enabled: false
 coreDns:
@@ -20,12 +24,12 @@ prometheusOperator:
   enabled: false
 
 defaultRules:
-  create: true
+  create: false
   rules:
     alertmanager: false
     configReloaders: false
     etcd: false
-    general: true
+    general: false
     k8s: false
     kubeApiserver: false
     kubeApiserverAvailability: false
@@ -49,53 +53,18 @@ defaultRules:
     prometheus: false
     prometheusOperator: false
 
-prometheus:
-  serviceMonitor:
-    selfMonitor: false
-  additionalServiceMonitors: null
-  prometheusSpec:
-    enableAdminAPI: false
-    replicas: 1
-    remoteWrite: null
-    resources:
-      limits:
-        cpu: '1'
-        memory: 4Gi
-      requests:
-        cpu: 100m
-        memory: 128Mi
 additionalPrometheusRules: null
 grafana:
   serviceMonitor:
     enabled: false
   defaultDashboardsEnabled: false
   plugins: []
-  resources:
-    limits:
-      cpu: '1'
-      memory: 4Gi
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  sidecar:
-    resources:
-      limits:
-        cpu: 100m
-        memory: 100Mi
-      requests:
-        cpu: 50m
-        memory: 50Mi
+  resources: {{- $g.resources.grafanaTeams | toYaml | nindent 4 }}
+  sidecar: 
+    resources: {{- $g.resources.sidecarTeams | toYaml | nindent 6 }}
 
 alertmanager:
   serviceMonitor:
     selfMonitor: false
   alertmanagerSpec:
-    alertmanagerConfigMatcherStrategy:
-      type: OnNamespace
-    resources:
-      limits:
-        cpu: 500m
-        memory: 2Gi
-      requests:
-        cpu: 100m
-        memory: 64Mi
+    resources: {{- $a.resources.alertmanagerTeams | toYaml | nindent 6 }}

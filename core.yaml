@@ -64,6 +64,10 @@ k8s:
     - name: kyverno
       app: kyverno
       disableIstioInjection: true
+    - name: thanos
+      app: thanos
+      disableIstioInjection: true
+      disablePolicyChecks: true
     - name: tekton-pipelines
       app: tekton
       disableIstioInjection: true
@@ -274,6 +278,15 @@ adminApps:
         auth: true
         removeRequestHeaders:
           - authorization
+  - name: thanos
+    tags: [metrics, observability]
+    ownHost: true
+    ingress:
+      - svc: thanos-query
+        port: 9090
+        namespace: thanos
+        type: public
+        auth: true
   - name: loki
     tags: [logging, telemetry, observability]
     deps: [grafana, prometheus, minio]
@@ -337,6 +350,7 @@ adminApps:
 teamApps:
   - name: alertmanager
     ownHost: true
+    path: /#/alerts?silenced=false&inhibited=false&active=true&filter=%7Bnamespace%3D"team-#TEAM#"%7D
     ingress:
       - svc: po-alertmanager
         hasPrefix: true
@@ -357,14 +371,6 @@ teamApps:
   - name: loki
     useHost: grafana
     path: /explore?orgId=1&left=%7B"datasource":"loki","queries":%5B%7B"refId":"A","expr":"","queryType":"range","datasource":%7B"type":"loki","uid":"loki"%7D%7D%5D,"range":%7B"from":"now-1h","to":"now"%7D%7D
-  - name: prometheus
-    ownHost: true
-    ingress:
-      - svc: po-prometheus
-        hasPrefix: true
-        port: 9090
-        type: public
-        auth: true
   - name: tekton
     ownHost: true
     ingress:

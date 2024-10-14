@@ -29,6 +29,12 @@
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
 {{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
+{{- $tlsSecretName := "otomi-cert-manager-wildcard-cert" }}
+{{- if eq $cm.issuer "externally-managed-tls-secret" }}
+  {{- $tlsSecretName = $cm.externallyManagedTlsSecretName }}
+{{- else if eq $cm.issuer "byo-wildcard-cert" }}
+  {{- $tlsSecretName = "byo-wildcard-cert" }}
+{{- end -}}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -150,6 +156,7 @@ environments:
           oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
           giteaDomain: {{ printf "gitea.%s" $domainSuffix }}
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
+          tlsSecretName: {{ $tlsSecretName }}
         apps:
           argocd:
             enabled: true
@@ -177,17 +184,24 @@ environments:
               credentials:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
           gitea:
+            enabled: true
             adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+          ingress-nginx:
+            enabled: true
+          istio:
+            enabled: true
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean" "linode")) }}
           minio:
             enabled: {{ eq $obj.type "minioLocal" }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
+          sealed-secrets:
+            enabled: true
         oidc: {}
         ingress:
           classes:

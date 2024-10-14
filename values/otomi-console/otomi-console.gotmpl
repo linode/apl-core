@@ -3,19 +3,9 @@
 {{- $o := $v.apps | get "otomi-console" }}
 
 replicaCount: 1
-resources:
-  {{- if (hasKey $o "resources") }}
-    {{- $o.resources | toYaml | nindent 2 }}
-  {{- else }}
-  limits:
-    cpu: 400m
-    memory: 256Mi
-  requests:
-    cpu: 50m
-    memory: 128Mi
-  {{- end }}
+resources: {{- $o.resources | toYaml | nindent 2 }}
 
-{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "console" "v" $v "skipScript" true) }}
+{{- tpl (readFile "../../helmfile.d/snippets/job.gotmpl") (dict "item" "console" "v" $v "skipScript" true ) }}
 
 env:
   API_BASE_URL: /api

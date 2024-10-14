@@ -278,3 +278,27 @@ changes:
   - version: 26
     relocations:
       - 'apps.metrics-server.apiServer.enabled': 'apps.metrics-server.apiServer.create'
+  - version: 27
+    deletions:
+      - 'teamConfig.{team}.jobs'
+    fileDeletions:
+      - env/teams/jobs.{team}.yaml
+  - version: 28
+    deletions:
+      - 'apps.cnpg.storage'
+      - 'obj.buckets'
+      - 'platformBackups.persistentVolumes.gitea'
+      - 'alerts.drone'
+      - 'otomi.isHomeMonitored'
+      - 'home'
+      - 'dns.provider.civo'
+  - version: 29
+    relocations:
+      - 'apps.harbor.resources.registry-controller': 'apps.harbor.resources.registryController'
+      - 'apps.ingress-nginx.resources': 'apps.ingress-nginx.resources.controller'
+      - 'apps.cert-manager.resources': 'apps.cert-manager.resources.certManager'
+      - 'apps.alertmanager.resources': 'apps.alertmanager.resources.alertmanager'
+      - 'apps.istio.global.proxy.resources': 'apps.istio.resources.proxy'
+    deletions:
+      - 'teamConfig.{team}.managedMonitoring.prometheus'
+      - 'apps.grafana.resources.downloadDashboards'

@@ -2,10 +2,10 @@ groups:
   - name: sites.rules
     rules:
       - alert: ProbeFailing
-        expr: probe_success{job="probe-services"} == 0
-        for: 3m
+        expr: probe_success == 0
+        for: 1m
         labels:
           severity: critical
         annotations:
-          description: 'Could not reach {{ $labels.instance }} during last 3 minutes'
-          summary: '{{ $labels.instance }} is down'
+          description: 'Could not reach {{ $labels.instance }} during last 1 minute'
+          summary: 'Target {{ $labels.instance }} is down'

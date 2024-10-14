@@ -7,7 +7,7 @@
 {{- $type := . | get "type" "job" }}
 image:
   registry: docker.io
-  repository: otomi/{{ .item }}
+  repository: linode/apl-{{ .item }}
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 {{ if $v._derived.untrustedCA }}

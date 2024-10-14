@@ -48,6 +48,7 @@ releases:
     labels:
       tag: ingress
       pkg: oauth2-proxy
+      app: core
     <<: *raw
   - name: otomi-api
     installed: true
@@ -60,8 +61,4 @@ releases:
     namespace: otomi
     labels:
       pkg: otomi
-    <<: *default
-  - name: redis
-    installed: {{ $a | get "redis-shared.enabled" }}
-    namespace: redis
     <<: *default

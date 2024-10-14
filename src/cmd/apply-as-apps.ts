@@ -52,6 +52,9 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
         'otomi.io/app': 'managed',
       },
       namespace: 'argocd',
+      annotations: {
+        'argocd.argoproj.io/compare-options': 'ServerSideDiff=true,IncludeMutationWebhook=true',
+      },
     },
     spec: {
       syncPolicy: {
@@ -80,14 +83,34 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
   }
 }
 
+const setFinalizers = async (name: string) => {
+  d.info(`Setting finalizers for ${name}`)
+  const resPatch =
+    await $`kubectl -n argocd patch application ${name} -p '{"metadata": {"finalizers": ["resources-finalizer.argocd.argoproj.io"]}}' --type merge`
+  if (resPatch.exitCode !== 0) {
+    throw new Error(`Failed to set finalizers for ${name}: ${resPatch.stderr}`)
+  }
+}
+
+const getFinalizers = async (name: string): Promise<string[]> => {
+  const res = await $`kubectl -n argocd get application ${name} -o jsonpath='{.metadata.finalizers}'`
+  return res.stdout ? JSON.parse(res.stdout) : []
+}
+
 const removeApplication = async (release: HelmRelease): Promise<void> => {
   const name = getAppName(release)
   if (!(await isResourcePresent('application', name, 'argocd'))) return
 
-  // TODO: do we always want to remove finalizers?
-  await $`kubectl -n argocd patch application ${name}  -p '{"metadata": {"finalizers": null}}' --type merge`
-  const resDelete = await $`kubectl -n argocd delete application ${name}`
-  d.info(resDelete.stdout.toString())
+  try {
+    const finalizers = await getFinalizers(name)
+    if (!finalizers.includes('resources-finalizer.argocd.argoproj.io')) {
+      await setFinalizers(name)
+    }
+    const resDelete = await $`kubectl -n argocd delete application ${name}`
+    d.info(resDelete.stdout.toString().trim())
+  } catch (e) {
+    d.error(`Failed to delete application ${name}: ${e.message}`)
+  }
 }
 
 const writeApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<void> => {

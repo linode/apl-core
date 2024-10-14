@@ -29,6 +29,7 @@ releases:
     namespace: istio-operator
     labels:
       pkg: istio
+      app: core
     chart: ../charts/raw
     values:
       - ../values/istio-operator/istio-operator-raw.gotmpl

@@ -10,6 +10,7 @@
     "trivy",
     "grype",
     "KUBECFG",
+    "cainjector",
     "CNAME",
     "SBOM",
     "Venafi",

@@ -3,7 +3,6 @@
 {{- $cnpg := $v.apps.cnpg }}
 {{- $kdb := $v.databases.keycloak }}
 {{- $obj := $v.obj.provider }}
-{{- $bu := $v.obj.buckets }}
 {{- $b := $v.platformBackups.database.keycloak }}
 
 name: keycloak-db
@@ -15,17 +14,17 @@ instances: {{ $kdb.replicas }}
 {{- if $b.enabled }}
 backup:
   enabled: {{ $b.enabled }}
-  schedule: {{ $b.schedule }}
+  schedule: {{ $b.schedule | quote }}
   retentionPolicy: {{ $b.retentionPolicy }}
   type:  {{ $obj.type }}
 {{- if eq $obj.type "minioLocal" }}
   minioLocal:
-    destinationPath: "s3://{{ $bu.cnpg }}/keycloak"
+    destinationPath: "s3://cnpg/keycloak"
 {{- end }}
 {{- if eq $obj.type "linode" }}
   linode:
-    destinationPath: "s3://{{ $bu.cnpg }}/keycloak"
-    endpointURL: {{ $bu.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
+    destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/keycloak"
+    endpointURL: https://{{ $obj.linode.buckets.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}
 {{- end }}
@@ -63,4 +62,4 @@ clusterSpec:
       localeCType: 'en_US.UTF-8'
 {{- end }}
 
-resources: {{- toYaml $kdb.resources | nindent 6 }}
+resources: {{- toYaml $kdb.resources | nindent 2 }}

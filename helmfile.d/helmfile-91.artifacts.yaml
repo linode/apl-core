@@ -17,4 +17,5 @@ releases:
     namespace: istio-system
     labels:
       pkg: istio
+      app: core
     <<: *raw

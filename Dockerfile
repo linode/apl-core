@@ -1,4 +1,4 @@
-FROM otomi/tools:v2.3.0 as ci
+FROM linode/apl-tools:v2.7.0 as ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -27,7 +27,7 @@ FROM ci as clean
 RUN npm prune --production
 
 #-----------------------------
-FROM otomi/tools:v2.3.0 as prod
+FROM linode/apl-tools:v2.7.0  as prod
 
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env

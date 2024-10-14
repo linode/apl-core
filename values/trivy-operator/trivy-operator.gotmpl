@@ -22,9 +22,6 @@ trivy:
   mode: Standalone
   resources: {{- $t.resources.trivy | toYaml | nindent 2 }}
 
-podAnnotations:
-  policy.otomi.io/ignore: psp-allowed-users
-
 podSecurityContext:
   runAsUser: 1001
 

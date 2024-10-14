@@ -40,7 +40,7 @@ releases:
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
   - name: prometheus-{{ $teamId }}
-    installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.prometheus" false) ($team | get "managedMonitoring.alertmanager" false) }}
+    installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
@@ -61,47 +61,17 @@ releases:
               annotations:
                 sidecar.istio.io/inject: "true"
               labels:
-                prometheus: team-{{ $teamId }}
+                prometheus: system
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
-          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
+          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
-          appNamespacesTarget: team-{{ $teamId }}
           rules:
-            general: {{ $team | get "managedMonitoring.prometheus" false }}
+            general: false
         commonLabels:
           prometheus: team-{{ $teamId }}
         prometheus:
-          enabled: {{ $team | get "managedMonitoring.prometheus" false }}
-          namespaceOverride: null # team-{{ $teamId }}
-          prometheusSpec:
-            podMetadata:
-              annotations:
-                traffic.sidecar.istio.io/excludeOutboundPorts: "9093"
-              labels:
-                otomi.io/app: prometheus-team-{{ $teamId }}
-            externalLabels:
-              cluster: "prometheus-{{ $teamId }}.{{ $domain }}"
-            externalUrl: "https://prometheus-{{ $teamId }}.{{ $domain }}"
-            {{- range $selType := list "podMonitor" "probe" "rule" "serviceMonitor" }}
-            {{ $selType }}NamespaceSelector:
-              matchExpressions:
-                - key: name
-                  operator: In
-                  values:
-                    - team-{{ $teamId }}
-            {{ $selType }}Selector:
-              matchLabels:
-                prometheus: team-{{ $teamId }}
-            {{- end }}
-    {{- if gt (len .services) 0 }}
-            additionalScrapeConfigs:
-          {{- tpl (readFile "../helmfile.d/snippets/blackbox-targets.gotmpl") (dict "teamId" $teamId "namespace" (printf "team-%s" $teamId) "services" $teamServices "domain" $domain) | nindent 12 }}
-    {{- end }}
-        {{- if $team | get "managedMonitoring.prometheus" false }}
-        additionalPrometheusRules:
-          - name: blackbox
-            {{- readFile "../values/prometheus-operator/rules/blackbox.yaml" | nindent 12 }}
-        {{- end }}    
+          enabled: false
+          prometheusSpec: {}
         grafana:
           enabled: {{ $team | get "managedMonitoring.grafana" false }}
           namespaceOverride: null # team-{{ $teamId }}
@@ -114,8 +84,7 @@ releases:
               root_url: https://grafana-{{ $teamId }}.{{ $domain }}
           sidecar:
             datasources:
-              defaultDatasourceEnabled: {{ $team | get "managedMonitoring.prometheus" false }}
-              uid: Prometheus-team
+              defaultDatasourceEnabled: false
             dashboards:
               enabled: true
               label: release
@@ -124,11 +93,29 @@ releases:
             - name: Prometheus-platform
               editable: false
               uid: prometheus-platform
+              {{- if $v.apps.thanos.enabled }}
+              isDefault: false
+              {{- else }}
+              isDefault: true
+              {{- end }}
               type: prometheus
               access: proxy
               url: http://po-prometheus.monitoring:9090
               jsonData:
                 httpMethod: GET
+            {{- if $v.apps.thanos.enabled }}
+            - name: Thanos Query
+              access: proxy
+              isDefault: true
+              basicAuth: false
+              editable: false
+              orgId: 1
+              type: prometheus
+              url: http://thanos-query.thanos:9090
+              jsonData:
+                prometheusType: Thanos
+                timeInterval: "60s"
+            {{- end }}
             - name: Loki
               editable: false
               uid: loki
@@ -186,7 +173,7 @@ releases:
                   datasourceUid: 'loki'
     {{- if has "msteams" ($team | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: {{ $team | get "managedMonitoring.prometheus" false }}
+    installed: {{ $team | get "managedMonitoring.alertmanager" false }}
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -227,7 +214,6 @@ releases:
           {{- if $v.apps.trivy.enabled }}
           - trivy-teams
           {{- end }}
-
   - name: team-ns-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -245,37 +231,15 @@ releases:
         domain: {{ $domain }}
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
         dns: {{- $v.dns | toYaml | nindent 10 }}
+        _derived:
+          tlsSecretName: {{ $v._derived.tlsSecretName }}
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
         teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if and ($team | get "managedMonitoring.prometheus" false) (gt (len $teamServices) 0) }}
+  {{- if (gt (len $teamServices) 0) }}
       - name: blackbox
         svc: prometheus-blackbox-exporter
         port: 9115
-  {{- end }}
-  {{- range $job := $team | get "jobs" list }}
-  - name: job-{{ $teamId }}-{{ $job.name }}
-    installed: {{ $job.enabled }}
-    namespace: team-{{ $teamId }}
-    chart: ../charts/jobs
-    labels:
-      group: jobs
-      tag: teams
-      team: {{ $teamId }}
-      pipeline: otomi-task-teams
-    hooks:
-      - events: [presync]
-        showlogs: true
-        command: ../bin/job-presync.sh
-        args:
-          - job-{{ $teamId }}-{{ $job.name }}
-          {{- if hasKey $job "runPolicy" }}
-          - "{{ $job.runPolicy }}"    
-          {{- end }}
-    values:
-      - teamSecrets: {{- $team | get "secrets" nil | toYaml | nindent 10 }}
-        teamId: {{ $teamId }}
-      - {{- $job | toYaml | nindent 8 }}
   {{- end }}
 {{- end }}

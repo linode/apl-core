@@ -3,7 +3,7 @@ version: '3.4'
 services:
   api:
     container_name: api
-    image: otomi/api:${API_TAG:-latest}
+    image: linode/apl-api:${API_TAG:-latest}
     user: ${USER_ID}:${GROUP_ID}
     expose:
       - 8080
@@ -25,7 +25,7 @@ services:
 
   tools:
     container_name: tools
-    image: otomi/core:${TOOLS_TAG:-latest}
+    image: linode/apl-core:${TOOLS_TAG:-latest}
     user: ${USER_ID}:${GROUP_ID}
     command: npm run compile && node --no-warnings ./dist/src/otomi.js -- server
     depends_on:
@@ -42,7 +42,7 @@ services:
       GCLOUD_SERVICE_KEY: ${GCLOUD_SERVICE_KEY}
 
   web:
-    image: otomi/console:${WEB_TAG:-latest}
+    image: linode/apl-console:${WEB_TAG:-latest}
     container_name: web
     expose:
       - 80

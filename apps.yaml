@@ -5,35 +5,35 @@ appsInfo:
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
-      - https://otomi.io/docs/apps/alertmanager
+      - https://apl-docs.net/docs/apps/alertmanager
       - https://prometheus.io/docs/alerting/latest/alertmanager]
     license: Apache 2.0
     dependencies: Prometheus
     about: Alertmanager handles alerts sent by client applications such as the Prometheus server. It takes care of de-duplicating, grouping, and routing them to the correct receiver integration such as email, PagerDuty, or OpsGenie. Alertmanager also takes care of silencing and inhibition of alerts.
-    integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by Otomi to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
+    integration: Alertmanager can be activated to send alerts to configured receivers. It is configured by APL to use the global values found under settings/alerts. A team can override global settings to send alerts to their own endpoints.
   argocd:
     title: Argo CD
     appVersion: 2.10.4
     repo: https://github.com/argoproj/argo-helm
     maintainers: Argo Project
     relatedLinks:
-      - https://otomi.io/docs/apps/argocd
+      - https://apl-docs.net/docs/apps/argocd
       - https://argo-cd.readthedocs.io
     license: Apache 2.0
     dependencies: None
     about: Argo CD is a declarative, GitOps continuous delivery tool for Kubernetes.
-    integration: Argo CD is configured by Otomi to use the SSO provided by keycloak, and maps otomi groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
+    integration: Argo CD is configured by APL to use the SSO provided by keycloak, and maps APL groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
   cert-manager:
     title: Certificate Manager
     appVersion: 1.11.4
     repo: https://github.com/cert-manager/cert-manager
     maintainers: The Linux Foundation
     relatedLinks:
-      - https://otomi.io/docs/apps/certmanager
+      - https://apl-docs.net/docs/apps/certmanager
       - https://cert-manager.io/
     license: Apache 2.0
     about: Cert-manager adds certificates and certificate issuers as resource types in Kubernetes clusters, and simplifies the process of obtaining, renewing and using those certificates. It can issue certificates from a variety of supported sources, including Let's Encrypt, HashiCorp Vault, and Venafi as well as private PKI, and it ensures certificates remain valid and up to date, attempting to renew certificates at an appropriate time before expiry.
-    integration: Cert-manager is used by Otomi to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let Otomi create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces Otomi to install external-dns. Because a lot of DNS settings are used by other Otomi contexts, most DNS configuration is found under settings/dns.
+    integration: Cert-manager is used by APL to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let APL create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces APL to install external-dns. Because a lot of DNS settings are used by other APL contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
     appVersion: 1.20.0
@@ -44,18 +44,18 @@ appsInfo:
       - https://cloudnative-pg.io/documentation/1.20/
     license: Apache 2.0
     about: CloudNative PostgreSQL is an open source operator designed to manage PostgreSQL workloads on any supported Kubernetes cluster running in private, public, hybrid, or multi-cloud environments.
-    integration: CloudNativePG is used by Otomi to provide Postgresql database for various applications. In the values you can configure a storageprovider for backups. The backups can be enabled in settings.
+    integration: CloudNativePG is used by APL to provide Postgresql database for various applications. In the values you can configure a storageprovider for backups. The backups can be enabled in settings.
   drone:
     title: Drone
     appVersion: 2.7.3
     repo: https://github.com/harness/drone
     maintainers: Harness
     relatedLinks:
-      - https://otomi.io/docs/apps/drone
+      - https://apl-docs.net/docs/apps/drone
       - https://www.drone.io/
     license: Apache 2.0
     about: Drone is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
-    integration: Otomi uses Drone to deploy changes to the configuration (values) repository. Drone is installed and configured by default. When no external source control is configured (default), Otomi will use Gitea as Drone's git hosting dependency. Teams can use Drone for other purposes if desired, with the limitation that it can't be configured for multiple git services.
+    integration: APL uses Drone to deploy changes to the configuration (values) repository. Drone is installed and configured by default. When no external source control is configured (default), APL will use Gitea as Drone's git hosting dependency. Teams can use Drone for other purposes if desired, with the limitation that it can't be configured for multiple git services.
     isDeprecated: true
     deprecationInfo:
       replacement: tekton
@@ -64,7 +64,7 @@ appsInfo:
       reasons:
         - To improve overall system performance
         - To enhance maintainability
-        - To offer better integration with other Kubernetes components and Otomi
+        - To offer better integration with other Kubernetes components and APL
       replacementAdvantages:
         - Superior performance
         - Scalability
@@ -80,58 +80,58 @@ appsInfo:
     repo: https://github.com/kubernetes-sigs/external-dns
     maintainers: Kubernetes SIGs
     relatedLinks:
-      - https://otomi.io/docs/apps/external-dns
+      - https://apl-docs.net/docs/apps/external-dns
       - https://kubernetes-sigs.github.io/external-dns/v0.12.2/
     license: Apache 2.0
     about: ExternalDNS synchronizes exposed Kubernetes Services and Ingresses with DNS providers.
-    integration: ExternalDNS is used by Otomi to make public service domains accessible by registering them with Otomi's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then Otomi will rely on nip.io to create host names for all services.
+    integration: ExternalDNS is used by APL to make public service domains accessible by registering them with APL's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then APL will rely on nip.io to create host names for all services.
   falco:
     title: Falco
     appVersion: 0.33.1
     repo: https://github.com/falcosecurity/falco
     maintainers: The Falco Authors
     relatedLinks:
-      - https://otomi.io/docs/apps/falco
+      - https://apl-docs.net/docs/apps/falco
       - https://falco.org/docs
     license: Apache 2.0
     dependencies: None. Prometheus and Grafana are adviced
     about: Falco is an open source cloud native runtime security tool that makes it easy to consume kernel events, and enrich those events with information from Kubernetes. Falco has a rich set of security rules specifically built for Kubernetes and Linux. If a rule is violated in a system, Falco will send an alert notifying the user of the violation and its severity.
-    integration: Falco can be enabled in Otomi for runtime intrusion detection. Macros have been configured to exclude all known platform violations so platform admins are only notified when user workloads are not compliant to the security rules. Alerts are automatically send using Alertmanager and the Falco Dashboard is added to Grafana.
+    integration: Falco can be enabled in APL for runtime intrusion detection. Macros have been configured to exclude all known platform violations so platform admins are only notified when user workloads are not compliant to the security rules. Alerts are automatically send using Alertmanager and the Falco Dashboard is added to Grafana.
   gitea:
     title: Gitea Self-hosted GIT
     appVersion: 1.15.8
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
-      - https://otomi.io/docs/apps/gitea
+      - https://apl-docs.net/docs/apps/gitea
       - https://docs.gitea.io/en-us/
     license: MIT
     about: Gitea is a painless self-hosted Git service. It is similar to GitHub, Bitbucket, and GitLab. Gitea is a fork of Gogs. See the Gitea Announcement blog post to read about the justification for a fork.
-    integration: Otomi uses Gitea as its default repository for otomi configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in Otomi. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, Otomi will automatically create a Gitops repository for each Team in Gitea.
+    integration: APL uses Gitea as its default repository for APL configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in APL. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, APL will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
     appVersion: 9.5.2
     repo: https://github.com/grafana/grafana
     maintainers: Grafana Labs
     relatedLinks:
-      - https://otomi.io/docs/apps/grafana
+      - https://apl-docs.net/docs/apps/grafana
       - https://grafana.com/docs/grafana/latest/
     license: AGPL-3.0
     dependencies: Prometheus
     about: Grafana allows you to query, visualize, alert on and understand your metrics no matter where they are stored. Create, explore, and share dashboards with your team and foster a data-driven culture.
-    integration: Otomi uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
+    integration: APL uses Grafana to visualize Prometheus metrics and Loki logs. Team members are automatically given the Editor role, while admins are also given the Admin role. It is possible to make configuration changes directly in Grafana, but only to non-conflicting settings. Data sources are preconfigured and must not be edited as changes will be gone when Grafana is redeployed.
   harbor:
     title: Harbor
     appVersion: 2.6.4
     repo: https://github.com/goharbor/harbor
     maintainers: Project Harbor
     relatedLinks:
-      - https://otomi.io/docs/apps/harbor
+      - https://apl-docs.net/docs/apps/harbor
       - https://goharbor.io/docs/2.6.0/
     license: Apache 2.0
     dependencies: None
     about: Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Having a registry closer to the build and run environment can improve the image transfer efficiency. Harbor supports replication of images between registries, and also offers advanced security features such as user management, access control and activity auditing.
-    integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. Otomi runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
+    integration: Harbor can be enabled to provide each team with a private registry. Harbor has been made user and tenant aware. APL runs automated tasks that take care of creating a project in Harbor for each team, creating a bot-account for each team, and creating a Kubernetes pull secret in the team namespace to enable pulling of images out of the local registry.
   httpbin:
     title: HTTPbin
     appVersion: 0.1.0
@@ -147,21 +147,21 @@ appsInfo:
     appVersion: 1.7.1
     repo: https://github.com/kubernetes/ingress-nginx
     maintainers: NGINX
-    relatedLinks: ['https://otomi.io/docs/apps/ingress-nginx', 'https://docs.nginx.com/nginx-ingress-controller/']
+    relatedLinks: ['https://apl-docs.net/docs/apps/ingress-nginx', 'https://docs.nginx.com/nginx-ingress-controller/']
     license: Apache 2.0
     about: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
-    integration: Otomi integrated ingress-nginx into an advanced ingress architecture.
+    integration: APL integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio Operator
     appVersion: 1.20.5
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
-      - https://otomi.io/docs/apps/istio
+      - https://apl-docs.net/docs/apps/istio
       - https://istio.io/
     license: Apache 2.0
     about: Istio is an open platform for providing a uniform way to integrate microservices, manage traffic flow across microservices, enforce policies and aggregate telemetry data. Istio's control plane provides an abstraction layer over the underlying cluster management platform.
-    integration: Otomi has security best practices built in, and is designed for intrusion. Istio is used by Otomi as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of Otomi and can not be disabled.
+    integration: APL has security best practices built in, and is designed for intrusion. Istio is used by APL as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of APL and can not be disabled.
   jaeger:
     title: Jaeger Operator
     dependencies: Open Telemetry (otel)
@@ -169,7 +169,7 @@ appsInfo:
     repo: https://github.com/jaegertracing/jaeger
     maintainers: CNCF
     relatedLinks:
-      - https://otomi.io/docs/apps/jaeger
+      - https://apl-docs.net/docs/apps/jaeger
       - https://www.jaegertracing.io/docs/1.37/
     license: Apache 2.0
     about: Jaeger is a distributed tracing platform. It can be used for monitoring microservices-based distributed systems. As on-the-ground microservice practitioners are quickly realizing, the majority of operational problems that arise when moving to a distributed architecture are ultimately grounded in networking and observability. It is simply an orders of magnitude larger problem to network and debug a set of intertwined distributed services versus a single monolithic application.
@@ -180,11 +180,11 @@ appsInfo:
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
-      - https://otomi.io/docs/apps/keycloak
+      - https://apl-docs.net/docs/apps/keycloak
       - https://www.keycloak.org/documentation.html
     license: Apache 2.0
     about: Keycloak is an Open Source Identity and Access Management solution for modern Applications and Services.
-    integration: The SSO login page for Otomi is served by Keycloak. Keycloak is used as an identity broker or provider for all Otomi integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of Otomi and is always enabled.
+    integration: The SSO login page for APL is served by Keycloak. Keycloak is used as an identity broker or provider for all APL integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of APL and is always enabled.
   kiali:
     title: Kiali Operator
     appVersion: 1.76.0
@@ -203,18 +203,18 @@ appsInfo:
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
-      - https://otomi.io/docs/apps/knative
+      - https://apl-docs.net/docs/apps/knative
       - https://knative.dev/docs/serving/
     license: Apache 2.0
     about: Knative Serving builds on Kubernetes to support deploying and serving of applications and functions as serverless containers. Serving is easy to get started with and scales to support advanced scenarios.
-    integration: Knative serving can be activated to deliver Container-as-a-Service (CaaS) functionality with a scale-to-zero option. It can be compared to Functions-as-a-service (FaaS) but is container oriented, and takes only one manifest to configure an auto scaling service based on a container image of choice. Otomi offers an on-the-fly Knative service deployment, making it very easy to deploy containerized services without the hassle of providing all the supporting resources involved with Helm charts. Istio Virtual Services are used to route traffic coming in for a public domain to its backing Knative Service, allowing it to set a custom domain.
+    integration: Knative serving can be activated to deliver Container-as-a-Service (CaaS) functionality with a scale-to-zero option. It can be compared to Functions-as-a-service (FaaS) but is container oriented, and takes only one manifest to configure an auto scaling service based on a container image of choice. APL offers an on-the-fly Knative service deployment, making it very easy to deploy containerized services without the hassle of providing all the supporting resources involved with Helm charts. Istio Virtual Services are used to route traffic coming in for a public domain to its backing Knative Service, allowing it to set a custom domain.
   kyverno:
     title: Kyverno
     appVersion: 1.11.3
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
-      - https://otomi.io/docs/apps/kyverno
+      - https://apl-docs.net/docs/apps/kyverno
       - https://kyverno.io/docs/kyverno-policies/
     license: Apache 2.0
     about: Kyverno is a policy engine designed for Kubernetes. It can validate, mutate, and generate configurations using admission controls and background scans. Kyverno policies are Kubernetes resources and do not require learning a new language.
@@ -224,7 +224,7 @@ appsInfo:
     repo: https://github.com/kubereboot/kured
     maintainers: Kured project
     relatedLinks:
-      - https://otomi.io/docs/apps/kured
+      - https://apl-docs.net/docs/apps/kured
       - https://kured.dev/
     license: Apache 2.0
     about: Kured (KUbernetes REboot Daemon) is a Kubernetes daemonset that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS.
@@ -235,7 +235,7 @@ appsInfo:
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:
-      - https://otomi.io/docs/apps/tekton
+      - https://apl-docs.net/docs/apps/tekton
       - https://github.com/tektoncd/pipeline/blob/main/docs/README.md
       - https://github.com/tektoncd/catalog/tree/main/task/buildpacks/0.6
       - https://github.com/tektoncd/catalog/tree/main/task/git-clone/0.9
@@ -243,42 +243,42 @@ appsInfo:
     license: Apache 2.0
     dependencies: Harbor
     about: Tekton Pipelines provides Kubernetes custom resources for declaring CI/CD-style pipelines.
-    integration: Otomi uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
+    integration: APL uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
   loki:
     title: Loki
     appVersion: 2.8.2
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
-      - https://otomi.io/docs/apps/loki
+      - https://apl-docs.net/docs/apps/loki
       - https://grafana.com/docs/loki/latest/
     license: AGPL-3.0
     dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
     about: Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate. It does not index the contents of the logs, but rather a set of labels for each log stream.
-    integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. Otomi shortcuts can be used to provide selections of logs based on interest.
+    integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. APL shortcuts can be used to provide selections of logs based on interest.
   minio:
     title: Minio
     appVersion: 2022.10.29
     repo: https://github.com/minio/minio
     maintainers: Minio
     relatedLinks:
-      - https://otomi.io/docs/apps/minio
+      - https://apl-docs.net/docs/apps/minio
       - https://minio.io/
     license: Apache 2.0
     dependencies: None
     about: MinIO is a High Performance Object Storage and its API is compatible with the Amazon Web Services S3 cloud storage service.
-    integration: Otomi installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in Otomi capable of using object storage for data persistence.
+    integration: APL installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in APL capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
     appVersion: 0.65.1
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
-      - https://otomi.io/docs/apps/prometheus
+      - https://apl-docs.net/docs/apps/prometheus
       - https://prometheus.io/
     license: Apache 2.0
     about: Prometheus is a systems and service monitoring system. It collects metrics from configured targets at given intervals, evaluates rule expressions, displays the results, and can trigger alerts when specified conditions are observed.
-    integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When Otomi is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
+    integration: Prometheus can be activated to aggregate all platform metrics and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, each team will be provided with a dedicated Prometheus instance. This instance can be used to aggregate custom team metrics.
   rabbitmq:
     title: RabbitMQ
     appVersion: 2.7.0
@@ -290,7 +290,7 @@ appsInfo:
     license: MPL-2.0 license
     dependencies: ''
     about: RabbitMQ is the most widely deployed open source message broker.
-    integration: Otomi install the RabbitMQ-Cluster-Kubernetes-Operator, afterwards users can use the RabbitMQ Catalog item to create RabbitMQ-cluster with queues and policies.
+    integration: APL install the RabbitMQ-Cluster-Kubernetes-Operator, afterwards users can use the RabbitMQ Catalog item to create RabbitMQ-cluster with queues and policies.
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
@@ -298,12 +298,11 @@ appsInfo:
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
-      - https://otomi.io/docs/apps/sealed-secrets
+      - https://apl-docs.net/docs/apps/sealed-secrets
       - https://github.com/bitnami-labs/sealed-secrets/tree/main/docs
     license: Apache 2.0
     about: Sealed Secrets is a Kubernetes Custom Resource Definition Controller which allows you to store even sensitive information in Git repositories.
-    integration: Otomi uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
-    isBeta: true
+    integration: APL uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
   tempo:
     title: Tempo
     appVersion: 2.1.1
@@ -314,26 +313,38 @@ appsInfo:
     license: AGPL-3.0
     dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used), Otel
     about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
-    integration: Otomi installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
+    integration: APL installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
+  thanos:
+    title: Thanos
+    appVersion: 0.35.1
+    repo: https://github.com/thanos-io/thanos
+    maintainers: Thanos
+    relatedLinks:
+      - https://apl-docs/docs/apps/thanos
+      - https://thanos.io
+    license: Apache 2.0
+    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
+    about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
+    integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
   trivy:
     title: Trivy Operator
     appVersion: 0.16.4
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:
-      - https://otomi.io/docs/apps/trivy-operator
+      - https://apl-docs.net/docs/apps/trivy-operator
       - https://aquasecurity.github.io/trivy-operator/v0.16.4/
     license: Apache 2.0
     dependencies: Prometheus, Grafana
     about: Trivy Operator continuously scans your Kubernetes cluster for security issues, and generates security reports as Kubernetes Custom Resources. It does it by watching Kubernetes for state changes and automatically triggering scans in response to changes.
-    integration: Otomi installs and configures Trivy Operator to scan all resources deployed by a team and makes results visible in a Grafana dashboard.
+    integration: APL installs and configures Trivy Operator to scan all resources deployed by a team and makes results visible in a Grafana dashboard.
   otel:
     title: Open Telemetry Operator
     appVersion: 0.80.0
     repo: https://github.com/open-telemetry/opentelemetry-operator
     maintainers: Grafana labs
     relatedLinks:
-      - https://otomi.io/docs/apps/otel
+      - https://apl-docs.net/docs/apps/otel
       - https://opentelemetry.io/docs/collector/
     license: AGPL-3.0
     dependencies: Prometheus, Grafana, Loki, Tempo
@@ -345,10 +356,10 @@ appsInfo:
     repo: https://github.com/vmware-tanzu/velero
     maintainers: VMware Tanzu
     relatedLinks:
-      - https://otomi.io/docs/apps/velero
+      - https://apl-docs.net/docs/apps/velero
       - https://velero.io/docs/v1.9/
       - https://velero.io/docs/main/restic/
     license: Apache 2.0
     dependencies: Minio (if no external Object Storage is used)
     about: Velero is a tool to back up and restore Kubernetes cluster resources and persistent volumes.
-    integration: When enabled, Velero can be used to automatically create backups of Otomi platform services. Based on the selected provider, Otomi installs required plug-ins. Otomi also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.
+    integration: When enabled, Velero can be used to automatically create backups of APL platform services. Based on the selected provider, APL installs required plug-ins. APL also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.

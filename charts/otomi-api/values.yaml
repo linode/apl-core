@@ -7,7 +7,7 @@ priorityClassName: "otomi-critical"
 replicaCount: 1
 image:
   registry: docker.io
-  repository: otomi/api
+  repository: linode/apl-api
   tag: 0.1.1
   pullPolicy: IfNotPresent
 
@@ -102,7 +102,7 @@ core: {}
 tools:
   image:
     registry: docker.io
-    repository: otomi/core
+    repository: linode/apl-core
     tag: latest
     pullPolicy: IfNotPresent
 
@@ -115,6 +115,7 @@ tools:
     #   memory: 100Mi
 
   secrets:
+    SOPS_AGE_KEY: ''
     GCLOUD_SERVICE_KEY: ''
     AZURE_TENANT_ID: ''
     AZURE_CLIENT_ID: ''

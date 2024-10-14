@@ -15,43 +15,17 @@ prometheus:
 
 podAnnotations:
   sidecar.istio.io/inject: "false"  
-  policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security
+installCRDs: true
+resources: {{- toYaml $cm.resources.certManager | nindent 2 }}
 
 startupapicheck:
   jobAnnotations:
     sidecar.istio.io/inject: "false"  
-    policy.otomi.io/ignore: containerlimits
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 200m
-      memory: 384Mi
-
-
-installCRDs: true
-
-resources: {{- toYaml $cm.resources | nindent 2 }}
+  resources: {{- toYaml $cm.resources.startupapicheck | nindent 4 }}
 
 cainjector:
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 200m
-      memory: 384Mi
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-security
+  resources: {{- toYaml $cm.resources.cainjector | nindent 6 }}
 webhook:
-  podAnnotations:
-    policy.otomi.io/ignore: psp-allowed-users
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 100m
-      memory: 256Mi
+  resources: {{- toYaml $cm.resources.webhook | nindent 6 }}
+
 

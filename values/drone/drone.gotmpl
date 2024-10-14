@@ -27,8 +27,6 @@ fullnameOverride: drone
 sharedSecret: {{ $d | get "sharedSecret" }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
-  annotations:
-    policy.otomi.io/ignore: psp-allowed-users
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d | get "adminUser" "otomi-admin" }}
@@ -66,7 +64,7 @@ server:
   strategyType: Recreate
 agent:
   annotations:
-    policy.otomi.io/ignore: psp-allowed-users,psp-privileged,psp-host-filesystem,banned-image-tags
+    policy.otomi.io/ignore: banned-image-tags
     sidecar.istio.io/inject: "false"
   resources:
     {{- with $d | get "resources.agent" nil }}

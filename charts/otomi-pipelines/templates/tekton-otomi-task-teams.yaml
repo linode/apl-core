@@ -23,7 +23,7 @@ spec:
   stepTemplate:
     computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     imagePullPolicy: Always
-    image: otomi/core:$(params["OTOMI_VERSION"])
+    image: linode/apl-core:$(params["OTOMI_VERSION"])
     workingDir: /home/app/stack
 {{- if hasKey $kms "sops" }}
     envFrom:
@@ -53,13 +53,13 @@ spec:
 
         # Parsing the repo url
         export fullRepoUrl=$(params["repoUrl"])
-        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+        export url=$(echo $fullRepoUrl|sed 's/http\:\/\///')
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
-        git clone -c http.sslVerify=false --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
+        git clone -c http.sslVerify=false --depth 1 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- else}}
-        git clone --depth 1 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
+        git clone --depth 1 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
         {{- end }}
     - name: test
       computeResources: {}

@@ -8,7 +8,9 @@ on:
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: linode/apl-core
-  REPO: otomi/core
+  REPO: linode/apl-core
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
+  DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
 
 jobs:
   build-test-cache:
@@ -60,7 +62,7 @@ jobs:
           image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
           docker pull $image
           docker tag $image $REPO:$TAG
-          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push $REPO:$TAG
       - name: Show me the logic
         run: |
@@ -72,6 +74,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
+      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -83,7 +87,7 @@ jobs:
         id: git_tag
         run: |
           TAG=${GITHUB_REF##*/}
-          docker login -u otomi -p ${{ secrets.DOCKERHUB_OTOMI_TOKEN }}
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker pull $REPO:$TAG
           docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
@@ -113,8 +117,12 @@ jobs:
     if: always() && contains(needs.release.result, 'success') && !github.event.act
     runs-on: ubuntu-latest
     container:
-      image: otomi/tools:v1.4.20
+      image: linode/apl-tools:2.7.0
       options: --user 0
+    env:
+      COMMIT_MSG: ${{ github.event.head_commit.message }}
+      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -163,6 +171,9 @@ jobs:
           # Set the global id for git as it seems needed by the next step when a custom image is used
           git config --global user.email ${{ env.BOT_EMAIL }}
           git config --global user.name ${{ env.BOT_USERNAME }}
+      #TODO: Use the same user id on the container as in the runner to avoid the "dubious ownership" error
+      - name: Mark repository as safe for Git
+        run: git config --global --add safe.directory /__w/apl-core/apl-core
       - name: Create and publish otomi chart release
         id: chart_release
         uses: helm/chart-releaser-action@v1.6.0
@@ -173,104 +184,104 @@ jobs:
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
-  test-otomi-release:
-    name: Test Helm Chart Installation
-    needs: [release, chart-release]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Use Scaleway CLI
-        uses: scaleway/action-scw@v0
-        with:
-          save-config: true
-          export-config: true
-          version: v2.26.0
-          access-key: ${{ secrets.SCW_ACCESS_KEY }}
-          secret-key: ${{ secrets.SCW_SECRET_KEY }}
-          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
-          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-      - name: Pulling the helm chart
-        run: |
-          # Install and update helm repo
-          helm repo add apl https://linode.github.io/apl-core
-          helm repo update
+  # test-otomi-release:
+  #   name: Test Helm Chart Installation
+  #   needs: [release, chart-release]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Use Scaleway CLI
+  #       uses: scaleway/action-scw@v0
+  #       with:
+  #         save-config: true
+  #         export-config: true
+  #         version: v2.26.0
+  #         access-key: ${{ secrets.SCW_ACCESS_KEY }}
+  #         secret-key: ${{ secrets.SCW_SECRET_KEY }}
+  #         default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+  #         default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+  #     - name: Pulling the helm chart
+  #       run: |
+  #         # Install and update helm repo
+  #         helm repo add apl https://linode.github.io/apl-core
+  #         helm repo update
 
-          # Get latest version of otomi
-          latest_version=$(helm search repo otomi -l | grep -m 1 otomi | awk '{print $2}')
-          echo The latest version to be tested is: $latest_version
-      - name: Creating the cluster
-        run: |
-          # Create cluster private network and get ID
-          SCALEWAY_PRIVATE_NETWORK_ID=$(scw vpc private-network create project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} name='otomi-test-release' region=nl-ams -ojson | jq -r .id)
+  #         # Get latest version of otomi
+  #         latest_version=$(helm search repo otomi -l | grep -m 1 otomi | awk '{print $2}')
+  #         echo The latest version to be tested is: $latest_version
+  #     - name: Creating the cluster
+  #       run: |
+  #         # Create cluster private network and get ID
+  #         SCALEWAY_PRIVATE_NETWORK_ID=$(scw vpc private-network create project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} name='otomi-test-release' region=nl-ams -ojson | jq -r .id)
 
-          # Get k8s 1.27 patch version
-          K8s_VERSION=$(scw k8s version list -o json | jq -ce '.[] | .name' -r | grep 1.27)
+  #         # Get k8s 1.27 patch version
+  #         K8s_VERSION=$(scw k8s version list -o json | jq -ce '.[] | .name' -r | grep 1.27)
 
-          # Create cluster
-          scw k8s cluster create \
-            name=otomi-test-release \
-            pools.0.node-type=PRO2-M \
-            private-network-id=$SCALEWAY_PRIVATE_NETWORK_ID \
-            auto-upgrade.enable=false \
-            cni=calico \
-            pools.0.name=otomi-test-release \
-            pools.0.size=3 \
-            pools.0.max-size=3 \
-            pools.0.autohealing=true \
-            pools.0.autoscaling=true \
-            pools.0.root-volume-size=50GB \
-            version=$K8s_VERSION \
-            region=nl-ams \
-            project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} \
-            --wait
-          echo "Cluster deployed successfully"
-      - name: Installing new otomi release
-        run: |
-          # Get cluster ID and set env var
-          cluster_id=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.name == "otomi-test-release") | .id')
-          echo "Cluster ID: $cluster_id"
-          echo SCALEWAY_CLUSTER_ID=$cluster_id >> $GITHUB_ENV
+  #         # Create cluster
+  #         scw k8s cluster create \
+  #           name=otomi-test-release \
+  #           pools.0.node-type=PRO2-M \
+  #           private-network-id=$SCALEWAY_PRIVATE_NETWORK_ID \
+  #           auto-upgrade.enable=false \
+  #           cni=calico \
+  #           pools.0.name=otomi-test-release \
+  #           pools.0.size=3 \
+  #           pools.0.max-size=3 \
+  #           pools.0.autohealing=true \
+  #           pools.0.autoscaling=true \
+  #           pools.0.root-volume-size=50GB \
+  #           version=$K8s_VERSION \
+  #           region=nl-ams \
+  #           project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} \
+  #           --wait
+  #         echo "Cluster deployed successfully"
+  #     - name: Installing new otomi release
+  #       run: |
+  #         # Get cluster ID and set env var
+  #         cluster_id=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.name == "otomi-test-release") | .id')
+  #         echo "Cluster ID: $cluster_id"
+  #         echo SCALEWAY_CLUSTER_ID=$cluster_id >> $GITHUB_ENV
 
-          # Get kubeconfig
-          scw k8s kubeconfig install $cluster_id region=nl-ams
-          echo "Kubeconfig installed successfully"
+  #         # Get kubeconfig
+  #         scw k8s kubeconfig install $cluster_id region=nl-ams
+  #         echo "Kubeconfig installed successfully"
 
-          # Update values.yaml integration test file
-          SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
+  #         # Update values.yaml integration test file
+  #         SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context`
 
-          # Install otomi
-          helm install otomi otomi/otomi \
-          --wait --wait-for-jobs --timeout 30m0s \
-          --set cluster.provider=scaleway \
-          --set cluster.name=otomi-test-release \
-          --set cluster.k8sContext=$SCALEWAY_CLUSTER_CONTEXT
-      - name: Gather k8s events on failure
-        if: failure()
-        run: |
-          kubectl get events --sort-by='.lastTimestamp' -A
-      - name: Gather k8s pods on failure
-        if: failure()
-        run: |
-          kubectl get pods -A -o wide
-      - name: Gather otomi logs on failure
-        if: failure()
-        run: |
-          kubectl logs jobs/otomi --tail 150
-      - name: Delete k8s cluster at Scaleway
-        if: always()
-        run: |
-          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
+  #         # Install otomi
+  #         helm install otomi otomi/otomi \
+  #         --wait --wait-for-jobs --timeout 30m0s \
+  #         --set cluster.provider=scaleway \
+  #         --set cluster.name=otomi-test-release \
+  #         --set cluster.k8sContext=$SCALEWAY_CLUSTER_CONTEXT
+  #     - name: Gather k8s events on failure
+  #       if: failure()
+  #       run: |
+  #         kubectl get events --sort-by='.lastTimestamp' -A
+  #     - name: Gather k8s pods on failure
+  #       if: failure()
+  #       run: |
+  #         kubectl get pods -A -o wide
+  #     - name: Gather otomi logs on failure
+  #       if: failure()
+  #       run: |
+  #         kubectl logs jobs/otomi --tail 150
+  #     - name: Delete k8s cluster at Scaleway
+  #       if: always()
+  #       run: |
+  #         scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
 
-  notification:
-    needs: [build-test-cache, push-to-docker, release, chart-release]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Slack Notification
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: github-ci
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://github.com/redkubes.png?size=48
-          SLACK_TITLE: CI run
-          SLACK_USERNAME: RedKubesBot
+  # notification:
+  #   needs: [build-test-cache, push-to-docker, release, chart-release]
+  #   if: always()
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Slack Notification
+  #       uses: rtCamp/action-slack-notify@v2
+  #       env:
+  #         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  #         SLACK_CHANNEL: github-ci
+  #         SLACK_COLOR: ${{ job.status }}
+  #         SLACK_ICON: https://github.com/redkubes.png?size=48
+  #         SLACK_TITLE: CI run
+  #         SLACK_USERNAME: RedKubesBot

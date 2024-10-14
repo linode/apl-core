@@ -13,11 +13,23 @@ global:
 applicationSet:
   replicas: {{ $a.applicationSet.replicas }} 
   resources: {{- $a.resources.applicationSet | toYaml | nindent 4 }}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 
 # Application Controller
 controller:
   replicas: {{ $a.controller.replicas }} 
   resources: {{- $a.resources.controller | toYaml | nindent 4 }}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 
 dex:
   enabled: false
@@ -35,7 +47,14 @@ repoServer:
     maxReplicas: {{ $a.autoscaling.repoServer.maxReplicas }}
     minReplicas: {{ $a.autoscaling.repoServer.minReplicas }}
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.repoServer.targetMemoryUtilizationPercentage }}
+    targetCPUUtilizationPercentage: {{ $a.autoscaling.repoServer.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.repo | toYaml | nindent 4 }}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 
 server:
   autoscaling:
@@ -43,7 +62,14 @@ server:
     maxReplicas: {{ $a.autoscaling.server.maxReplicas }}
     minReplicas: {{ $a.autoscaling.server.minReplicas }}
     targetMemoryUtilizationPercentage: {{ $a.autoscaling.server.targetMemoryUtilizationPercentage }}
+    targetCPUUtilizationPercentage: {{ $a.autoscaling.server.targetCPUUtilizationPercentage }}
   resources: {{- $a.resources.server | toYaml | nindent 4 }}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        prometheus: system
 
 configs:
   # General Argo CD configuration
@@ -71,6 +97,9 @@ configs:
     resource.customizations.knownTypeFields.cert-manager.io_Certificate: |
         - field: spec.duration
           type: meta/v1/Duration
+    resource.customizations.ignoreDifferences.apiextensions.k8s.io_CustomResourceDefinition: |
+        jqPathExpressions:
+          - '.metadata.annotations'
     oidc.config: |
       name: Otomi
       issuer: {{ $v._derived.oidcBaseUrl }}
@@ -97,6 +126,10 @@ configs:
       oidc.clientSecret: {{ $k.idp.clientSecret }}
   params:
     server.insecure: true # nginx terminates tls
+    # -- Number of application status processors
+    controller.status.processors: 10
+    # -- Number of application operation processors
+    controller.operation.processors: 5
 
   rbac:
     policy.csv: |

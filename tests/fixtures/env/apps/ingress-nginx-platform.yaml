@@ -12,13 +12,10 @@ apps:
         modsecurity:
             enabled: true
         resources:
-            limits:
-                cpu: 200m
-                memory: 256Mi
-            requests:
-                cpu: 100m
-                memory: 192Mi
-        service:
-            annotations:
-                - key: service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol
-                  value: true
+            controller:
+                limits:
+                    cpu: 200m
+                    memory: 256Mi
+                requests:
+                    cpu: 100m
+                    memory: 192Mi

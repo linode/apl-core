@@ -32,7 +32,7 @@ spec:
   stepTemplate:
     computeResources: {{- toYaml .Values.tektonTask.resources | nindent 6 }}
     workingDir: $(workspaces.source.path)
-    image: otomi/core:{{ .Values.otomiVersion }}
+    image: linode/apl-core:{{ .Values.otomiVersion }}
   steps:
     - name: git-clone
       computeResources: {}
@@ -54,14 +54,14 @@ spec:
         export fullRepoUrl=$(params["repoUrl"])
         echo $fullRepoUrl
 
-        # Removing the proto part ('https://')
-        export url=$(echo $fullRepoUrl|sed 's/https\:\/\///')
+        # Removing the proto part ('http://')
+        export url=$(echo $fullRepoUrl|sed 's/http\:\/\///')
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
-        git clone -c http.sslVerify=false --depth 2 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        git clone -c http.sslVerify=false --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- else }}
-        git clone --depth 2 https://$GITEA_USERNAME:$GITEA_PASSWORD@$url
+        git clone --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- end }}
 
         # Checking if the next steps should run or skipped 
@@ -82,5 +82,12 @@ spec:
         if git diff --name-only HEAD~1 | grep -v "env/teams/"; then
           echo -n "1" > $(results.TRIGGER_PLATFORM_PIPELINE.path)
         fi
+
+        # Allows to trigger pipeline without making any change in the values repo
+        if [[ ! $COMMIT_MESSAGE == "[apl-trigger]" ]]; then
+            echo -n "1" > $(results.TRIGGER_PLATFORM_PIPELINE.path)
+            echo -n "1" > $(results.TRIGGER_TEAMS_PIPELINE.path)
+        fi
+
       args:
         - '$(params["commitMessage"])'

@@ -9,9 +9,10 @@ apps:
         modsecurity:
             enabled: true
         resources:
-            limits:
-                cpu: 200m
-                memory: 256Mi
-            requests:
-                cpu: 100m
-                memory: 192Mi
+            controller:
+                limits:
+                    cpu: 200m
+                    memory: 256Mi
+                requests:
+                    cpu: 100m
+                    memory: 192Mi

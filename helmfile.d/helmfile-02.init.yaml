@@ -44,4 +44,5 @@ releases:
     namespace: cnpg-system
     labels:
       pkg: cloudnative-pg
+      app: core
     <<: *default
