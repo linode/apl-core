@@ -1,4 +1,4 @@
-name: Scheduled - full with nip.io
+name: Scheduled - full
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
@@ -11,4 +11,3 @@ jobs:
     secrets: inherit
     with:
       install_profile: full
-      generate_password: 'yes'
