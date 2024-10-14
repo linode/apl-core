@@ -42,7 +42,7 @@ describe('isOAuth2ProxyRunning', () => {
 
   it('should throw an error if the OAuth2 Proxy deployment has no ready replicas', async () => {
     // @ts-ignore
-    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({ body: { status: { readyReplicas: 0 } } })
+    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({ body: { status: { availableReplicas: 0 } } })
 
     await expect(isOAuth2ProxyRunning(mockAppsV1Api)).rejects.toThrow('OAuth2 Proxy has no ready replicas, waiting...')
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -51,7 +51,7 @@ describe('isOAuth2ProxyRunning', () => {
 
   it('should log success if the OAuth2 Proxy deployment is running', async () => {
     // @ts-ignore
-    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({ body: { status: { readyReplicas: 1 } } })
+    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({ body: { status: { availableReplicas: 1 } } })
 
     await expect(isOAuth2ProxyRunning(mockAppsV1Api)).resolves.toBeUndefined()
 
