@@ -1,4 +1,4 @@
-api: APL-221
-console: APL-221
-tasks: APL-221
+api: main
+console: main
+tasks: main
 tools: 2.7.0
