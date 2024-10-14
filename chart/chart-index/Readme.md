@@ -1,5 +1,13 @@
 The chart-index Helm chart allows to manage the most of the APL helm chart dependencies (a.k.a. core apps). 
-In the future it is going to be combined with Renovate to discover new versions from chart registries. 
+The chart-index is so called library Helm chart and cannot be installed itself. It only defines dependencies the `chart/chart-index/Chart.yaml` file. Each dependecy follows the following format:
+```
+  - name: <chart name>
+    version: <chart version>
+    repository: <chart url>
+```
+,thus Helm knows the chart registry URL, chart name and version.
+
+In the future, the chart-index it is going to be combined with Renovate to discover new versions.
 
 Currently, adding a new version of the core app is performed manually:
 1. In the `chart/chart-index/Chart.yaml` file, change a given version in the `dependencies` list.
@@ -10,5 +18,5 @@ Currently, adding a new version of the core app is performed manually:
 6. Carefully compare the rendered manifests (your feature branch vs main) by executing `bin/compare.sh`
    
 
-
-Note: some Helm charts do not have an official Helm chart repository. Those helm charts cannot be upgraded via the `chart-index`.
+Note 1: some Helm charts do not have an official Helm chart repository. Those helm charts cannot be upgraded via the `chart-index`.
+Note 1: some charts resides in different directory name that the original app name, e.g.: argo-cd app resides in charts/argocd directory
