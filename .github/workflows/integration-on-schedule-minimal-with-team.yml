@@ -2,7 +2,7 @@ name: Scheduled - minimal with team
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
-    - cron: '0 1 * * *'
+    - cron: '15 1 * * *'
 
 jobs:
   start-integration-test-minimal:
@@ -11,4 +11,3 @@ jobs:
     secrets: inherit
     with:
       install_profile: minimal-with-team
-      generate_password: 'yes'
