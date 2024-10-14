@@ -1,4 +1,4 @@
-api: main
+api: v3.0.0-rc.0
 console: main
 tasks: main
 tools: 2.7.0
