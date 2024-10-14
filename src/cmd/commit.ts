@@ -146,7 +146,11 @@ export async function isOAuth2ProxyRunning(k8s: AppsV1Api): Promise<void> {
   if (!oauth2ProxyStatus) {
     throw new Error('OAuth2 Proxy has no status, waiting...')
   }
-  if (oauth2ProxyStatus.availableReplicas === 0) {
+  if (
+    !oauth2ProxyStatus.availableReplicas ||
+    oauth2ProxyStatus.availableReplicas < 1 ||
+    (oauth2ProxyStatus.unavailableReplicas && oauth2ProxyStatus.unavailableReplicas > 0)
+  ) {
     throw new Error('OAuth2 Proxy has no ready replicas, waiting...')
   }
   d.info('OAuth2 Proxy deployment is running, continuing...')
