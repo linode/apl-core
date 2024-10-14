@@ -1,0 +1,18 @@
+apps:
+    prometheus-blackbox-exporter:
+        _rawValues: {}
+        resources:
+            blackboxExporter:
+                requests:
+                    cpu: 50m
+                    memory: 50Mi
+                limits:
+                    cpu: 250m
+                    memory: 300Mi
+            sentinel:
+                requests:
+                    cpu: 100m
+                    memory: 32Mi
+                limits:
+                    cpu: 200m
+                    memory: 128Mi

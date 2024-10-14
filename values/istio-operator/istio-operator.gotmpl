@@ -5,6 +5,9 @@ hub: istio
 
 operatorNamespace: istio-operator
 
+operator:
+  resources: {{- $i.resources.operator | toYaml | nindent 6 }}
+
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - otomi-pullsecret-global
