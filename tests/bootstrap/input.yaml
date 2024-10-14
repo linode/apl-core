@@ -7,3 +7,10 @@ otomi:
 apps:
   metrics-server:
     enabled: false
+users:
+  - email: platform@admin.local
+    firstName: platform
+    lastName: admin
+    isPlatformAdmin: true
+    isTeamAdmin: false
+    teams: []

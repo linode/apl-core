@@ -1,5 +1,6 @@
 import { copy, pathExists } from 'fs-extra'
 import { copyFile, mkdir, readFile, writeFile } from 'fs/promises'
+import { generate as generatePassword } from 'generate-password'
 import { cloneDeep, get, merge } from 'lodash'
 import { pki } from 'node-forge'
 import path from 'path'
@@ -252,6 +253,7 @@ export const processValues = async (
     generateSecrets,
     createK8sSecret,
     createCustomCA,
+    generatePassword,
   },
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
@@ -287,8 +289,21 @@ export const processValues = async (
   }
   // merge existing secrets over newly generated ones to keep them
   const allSecrets = merge(cloneDeep(caSecrets), cloneDeep(storedSecrets), cloneDeep(generatedSecrets))
+  // generate initial passwords for users if they don't have one
+  const users = get(originalInput, 'users', [])
+  for (const user of users) {
+    if (!user.initialPassword) {
+      user.initialPassword = deps.generatePassword({
+        length: 16,
+        numbers: true,
+        symbols: true,
+        lowercase: true,
+        uppercase: true,
+      })
+    }
+  }
   // we have generated all we need, now store everything by merging the original values over all the secrets
-  await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalInput)))
+  await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalInput), cloneDeep({ users })))
   // and do some context dependent post processing:
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
