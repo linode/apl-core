@@ -1,5 +1,7 @@
 bases:
   - snippets/defaults.yaml
+---
+bases:
   - snippets/defaults.gotmpl
 ---
 bases:
