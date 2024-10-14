@@ -2927,6 +2927,7 @@ properties:
         x-secret: '{{ randAlphaNum 20 }}'
       isPreInstalled:
         type: boolean
+        description: Defines if APL is installed and managed by Linode
         default: false
       globalPullSecret:
         title: Global pullsecret
