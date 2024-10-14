@@ -23,6 +23,7 @@
     "envalid": "7.3.1",
     "express": "4.18.1",
     "fs-extra": "9.1.0",
+    "generate-password": "^1.7.1",
     "ignore-walk": "3.0.4",
     "jest-mock-extended": "^4.0.0-beta1",
     "lodash": "4.17.21",
