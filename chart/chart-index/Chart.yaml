@@ -1,5 +1,5 @@
 apiVersion: v2
-name: charts-index
+name: chart-index
 description: APL chart index
 
 # Library charts provide useful utilities or functions for the chart developer. They're included as
