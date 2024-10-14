@@ -1266,6 +1266,7 @@ environments:
           hasExternalIDP: false
           isMultitenant: true
           nodeSelector: {}
+        users: []
         e2e:
           enabled: false
           upgrade:

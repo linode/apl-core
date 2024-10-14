@@ -308,3 +308,7 @@ changes:
       - 'apps.jaeger.ingester'
       - 'apps.jaeger.collector'
       - 'apps.jaeger.agent'
+  - version: 30
+    relocations:
+      - 'oidc.adminGroupID': 'oidc.platformAdminGroupID'
+      - 'oidc.teamAdminGroupID': 'oidc.allTeamsAdminGroupID'

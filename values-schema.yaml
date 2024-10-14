@@ -1323,7 +1323,6 @@ definitions:
                     - value
     required:
       - name
-
   sealedsecret:
     type: object
     description: Define location of code to build
@@ -1357,7 +1356,6 @@ definitions:
       - type
       - encryptedData
       - name
-
   workload:
     type: object
     description: Define location of the application's manifests or chart
@@ -1451,6 +1449,37 @@ definitions:
     required:
       - name
       - url
+  user:
+    type: object
+    description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
+    properties:
+      email:
+        $ref: '#/definitions/email'
+        x-secret: ''
+      firstName:
+        type: string
+        x-secret: ''
+      lastName:
+        type: string
+        x-secret: ''
+      isPlatformAdmin:
+        type: boolean
+        x-secret: ''
+      isTeamAdmin:
+        type: boolean
+        x-secret: ''
+      teams:
+        type: array
+        items:
+          type: string
+          x-secret: ''
+      initialPassword:
+        type: string
+        x-secret: ''
+    required:
+      - email
+      - firstName
+      - lastName
 
 properties:
   alerts:
@@ -2920,7 +2949,9 @@ properties:
       clientSecret:
         type: string
         x-secret: ''
-      adminGroupID:
+      platformAdminGroupID:
+        $ref: '#/definitions/wordCharacterPattern'
+      allTeamsAdminGroupID:
         $ref: '#/definitions/wordCharacterPattern'
       teamAdminGroupID:
         $ref: '#/definitions/wordCharacterPattern'
@@ -3245,5 +3276,9 @@ properties:
             type: string
       helm:
         type: object
+  users:
+    type: array
+    items:
+      $ref: '#/definitions/user'
 required:
   - cluster
