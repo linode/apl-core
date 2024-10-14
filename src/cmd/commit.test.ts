@@ -44,18 +44,59 @@ describe('isOAuth2ProxyRunning', () => {
     // @ts-ignore
     mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({ body: { status: { availableReplicas: 0 } } })
 
-    await expect(isOAuth2ProxyRunning(mockAppsV1Api)).rejects.toThrow('OAuth2 Proxy has no ready replicas, waiting...')
+    await expect(isOAuth2ProxyRunning(mockAppsV1Api)).rejects.toThrow(
+      'OAuth2 Proxy has no available replicas, waiting...',
+    )
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockAppsV1Api.readNamespacedDeployment).toHaveBeenCalledWith('oauth2-proxy', 'istio-system')
+  })
+
+  it('should throw an error if the OAuth2 Proxy deployment has no ready replicas', async () => {
+    // @ts-ignore
+    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({ body: { status: { replicas: 1 } } })
+
+    await expect(isOAuth2ProxyRunning(mockAppsV1Api)).rejects.toThrow(
+      'OAuth2 Proxy has no available replicas, waiting...',
+    )
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockAppsV1Api.readNamespacedDeployment).toHaveBeenCalledWith('oauth2-proxy', 'istio-system')
+  })
+
+  it('should throw an error if the OAuth2 Proxy deployment has no ready replicas', async () => {
+    // @ts-ignore
+    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({
+      body: { status: { replicas: 1, unavailableReplicas: 1 } },
+    })
+
+    await expect(isOAuth2ProxyRunning(mockAppsV1Api)).rejects.toThrow(
+      'OAuth2 Proxy has no available replicas, waiting...',
+    )
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockAppsV1Api.readNamespacedDeployment).toHaveBeenCalledWith('oauth2-proxy', 'istio-system')
+  })
+
+  it('should throw an error if the OAuth2 Proxy deployment has no ready replicas', async () => {
+    // @ts-ignore
+    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({
+      body: { status: { replicas: 2, unavailableReplicas: 1, availableReplicas: 1 } },
+    })
+
+    await expect(isOAuth2ProxyRunning(mockAppsV1Api)).resolves.toBeUndefined()
+
+    expect(mockTerminalInfo).toHaveBeenCalledWith('OAuth2proxy is running, continuing...')
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockAppsV1Api.readNamespacedDeployment).toHaveBeenCalledWith('oauth2-proxy', 'istio-system')
   })
 
   it('should log success if the OAuth2 Proxy deployment is running', async () => {
     // @ts-ignore
-    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({ body: { status: { availableReplicas: 1 } } })
+    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({
+      body: { status: { replicas: 1, availableReplicas: 1 } },
+    })
 
     await expect(isOAuth2ProxyRunning(mockAppsV1Api)).resolves.toBeUndefined()
 
-    expect(mockTerminalInfo).toHaveBeenCalledWith('OAuth2 Proxy deployment is running, continuing...')
+    expect(mockTerminalInfo).toHaveBeenCalledWith('OAuth2proxy is running, continuing...')
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockAppsV1Api.readNamespacedDeployment).toHaveBeenCalledWith('oauth2-proxy', 'istio-system')
   })
