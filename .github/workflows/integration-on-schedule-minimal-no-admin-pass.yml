@@ -1,8 +1,8 @@
-name: Scheduled - minimal with nip.io, without admin password
+name: Scheduled - minimal without admin password
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
   schedule:
-    - cron: '30 0 * * *'
+    - cron: '0 2 * * *'
 
 jobs:
   start-integration-test-minimal:

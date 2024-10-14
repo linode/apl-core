@@ -57,7 +57,6 @@ spec:
           {{- with .Values.container.additionalArgs }}
 {{ toYaml . | indent 12 }}
           {{- end}}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
           - name: http
             containerPort: {{ .Values.container.port }}

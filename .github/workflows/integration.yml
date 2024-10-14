@@ -2,54 +2,40 @@ name: Deploy Otomi
 on:
   workflow_call:
     inputs:
-      cloud_provider:
-        description: Provider where Otomi will be installed
-        type: string
-        default: linode
       kubernetes_versions:
-        description: "Kubernetes versions (JSON formatted list e.g.: ['1.31'])"
+        description: 'Kubernetes version'
         type: string
         default: "['1.31']"
       install_profile:
-        description: Otomi installation profile
-        default: full
+        description: 'Otomi installation profile'
         type: string
+        default: minimal-with-team
       cluster_persistence:
+        description: 'Should a cluster be destroyed on pipeline finish?'
         type: string
-        description: Should a cluster be destroyed on pipeline finish
         default: destroy
-      dns:
+      domain_zone:
+        description: 'Select Domain Zone'
         type: string
-        description: Select DNS provider
-        default: nip_io
+        default: DNS-Integration
       kms:
+        description: 'Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?'
         type: string
-        description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
         default: age
       generate_password:
+        description: 'Should a unique password be generated?'
         type: string
-        description: Should a unique password be generated?
-        default: 'no'
-      oidc:
-        type: string
-        description: Should Otomi use external OIDC?
-        default: keycloak
+        default: 'yes'
       certificate:
+        description: 'Select certificate issuer'
         type: string
-        description: Select certificate issuer
-        default: gen_custom_ca
-      isPreInstalled:
+        default: letsencrypt_production
+      is_pre_installed:
+        description: Fake if Otomi is pre-installed by Installer
         type: string
         default: 'false'
   workflow_dispatch:
     inputs:
-      cloud_provider:
-        description: Provider where Otomi will be installed
-        type: choice
-        options:
-          - scaleway
-          - linode
-        default: 'linode'
       kubernetes_versions:
         description: 'Kubernetes version'
         type: choice
@@ -76,20 +62,18 @@ on:
           - preserve
           - destroy
         default: preserve
-      dns:
+      domain_zone:
         type: choice
-        description: Select DNS provider
+        description: 'Select Domain Zone'
         options:
-          - nip_io
-          - az_dns
-        default: nip_io
+          - Zone-1
+          - Zone-2
       kms:
         type: choice
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
         options:
           - age
           - no_kms
-          - az_kms
         default: age
       generate_password:
         type: choice
@@ -97,14 +81,7 @@ on:
         options:
           - 'yes'
           - 'no'
-        default: 'no'
-      oidc:
-        type: choice
-        description: Should Otomi use external OIDC?
-        options:
-          - keycloak
-          - az_oidc
-        default: keycloak
+        default: 'yes'
       certificate:
         type: choice
         description: Select certificate issuer
@@ -112,26 +89,25 @@ on:
           - gen_custom_ca
           - letsencrypt_staging
           - letsencrypt_production
-        default: gen_custom_ca
-      isPreInstalled:
+        default: letsencrypt_production
+      is_pre_installed:
         type: choice
-        description: Fake if Otomi is preInstalled by Installer
+        description: Fake if Otomi is pre-installed by Installer
         options:
           - 'true'
           - 'false'
         default: 'false'
+        
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: linode/apl-core
   REPO: linode/apl-core
   GIT_USER: svcAPLBot
-  SCALEWAY_NODE_TYPE: PRO2-M
-  SCALEWAY_NODE_POOL_MIN_SIZE: 3
-  SCALEWAY_VPC_ID: e1019b0c-7c7d-49ef-86e4-b02f55b2e0d3
   CHECK_CONTEXT: continuous-integration/integration-test
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+  DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
 
 jobs:
   preprocess-input:
@@ -144,39 +120,14 @@ jobs:
           echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
           echo 'cluster_persistence: ${{ inputs.cluster_persistence }}'
-          echo 'dns: ${{ inputs.dns }}'
           echo 'kms: ${{ inputs.kms }}'
+          echo 'domain_zone: ${{ inputs.domain_zone }}'
           echo 'generate_password: ${{ inputs.generate_password }}'
-          echo 'oidc: ${{ inputs.oidc }}'
           echo 'certificate: ${{ inputs.certificate }}'
-
-  preprocess-scaleway-input:
-    needs: preprocess-input
-    if: ${{ inputs.cloud_provider == 'scaleway' }}
-    name: Preprocess input variables for scaleway
-    runs-on: ubuntu-latest
-    outputs:
-      kubernetes_versions: ${{ steps.k8s-versions.outputs.versions }}
-    steps:
-      - name: Install scw-cli
-        uses: scaleway/action-scw@v0
-        with:
-          version: v2.26.0
-      - id: k8s-versions
-        name: Process k8s version input
-        run: |
-          if [ -z '${{ inputs.kubernetes_versions }}' ]; then
-            echo "Kubernetes versions not specified, determine Scaleway supported versions"
-            versions=`scw k8s versions -o json | jq -ce '.[] | .name'`
-          else
-            versions='${{ inputs.kubernetes_versions }}'
-          fi
-          echo $versions
-          echo "versions=$versions" >> $GITHUB_OUTPUT
+          echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
 
   preprocess-linode-input:
     needs: preprocess-input
-    if: ${{ inputs.cloud_provider == 'linode' }}
     name: Preprocess input variables for linode
     runs-on: ubuntu-latest
     outputs:
@@ -186,6 +137,19 @@ jobs:
         uses: linode/action-linode-cli@v1
         with:
           token: ${{ secrets.LINODE_TOKEN }}
+      - name: Check if cluster is running
+        run: |
+          case "${{ inputs.domain_zone }}" in
+            "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
+            "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
+            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test ;;
+          esac
+
+          if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
+            echo "An LKE cluster for Zone-1 named \"$LINODE_CLUSTER_NAME\" already exists."
+            echo "Please delete the cluster before recreating it. Exiting workflow..."
+            exit 1
+          fi
       - id: k8s-versions
         name: Process k8s version input
         run: |
@@ -198,153 +162,7 @@ jobs:
           echo $versions
           echo "versions=$versions" >> $GITHUB_OUTPUT
 
-  run-integration-test-scaleway:
-    if: ${{ inputs.cloud_provider == 'scaleway' }}
-    name: Run integration test on scaleway cluster
-    needs: preprocess-scaleway-input
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        kubernetes_versions: ${{ fromJSON(needs.preprocess-scaleway-input.outputs.kubernetes_versions) }}
-      max-parallel: 5
-    steps:
-      - name: Use Scaleway CLI
-        uses: scaleway/action-scw@v0
-        with:
-          save-config: true
-          export-config: true
-          version: v2.26.0
-          access-key: ${{ secrets.SCW_ACCESS_KEY }}
-          secret-key: ${{ secrets.SCW_SECRET_KEY }}
-          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
-          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
-      - name: Set k8s cluster name
-        run: |
-          echo SCALEWAY_CLUSTER_NAME=${{ github.actor }}-$(TZ="GMT-2" date +"%m-%d-%H-%M") >> $GITHUB_ENV
-          # Cluster name must be no longer than 63 characters
-      - name: Determine exact k8s version
-        run: |
-          echo SCALEWAY_K8s_VERSION=$(scw k8s version list -o json | jq -re 'map(select(.name | startswith("${{ matrix.kubernetes_versions }}"))) | .[].name') >> $GITHUB_ENV
-      - name: Create private network
-        run: |
-          echo SCALEWAY_PRIVATE_NETWORK_ID=$(scw vpc private-network create project-id=${{ secrets.SCW_DEFAULT_PROJECT_ID }} name=$SCALEWAY_CLUSTER_NAME-pn region=nl-ams -ojson | jq -r .id) >> $GITHUB_ENV
-      - name: Create k8s cluster at Scaleway ${{env.SCALEWAY_CLUSTER_NAME}}
-        run: |
-          out=$(scw k8s cluster create name=${{env.SCALEWAY_CLUSTER_NAME}} \
-              project-id=${{ env.SCW_DEFAULT_PROJECT_ID }} \
-              private-network-id=${{ env.SCALEWAY_PRIVATE_NETWORK_ID }} \
-              auto-upgrade.enable=false \
-              cni=calico \
-              pools.0.node-type=${{ env.SCALEWAY_NODE_TYPE }} \
-              pools.0.min-size=${{env.SCALEWAY_NODE_POOL_MIN_SIZE}} \
-              pools.0.size=${{env.SCALEWAY_NODE_POOL_MIN_SIZE}} \
-              pools.0.max-size=3 \
-              pools.0.autohealing=true \
-              pools.0.autoscaling=true \
-              pools.0.name=${{env.SCALEWAY_CLUSTER_NAME}} \
-              pools.0.root-volume-size=50GB \
-              version=${{ env.SCALEWAY_K8s_VERSION }} \
-              region=nl-ams \
-              --wait \
-              -o=json)
-      - name: Retrieve cluster id
-        run: echo SCALEWAY_CLUSTER_ID=$(scw k8s cluster list region=nl-ams -o json | jq -r '.[] | select(.name == "${{ env.SCALEWAY_CLUSTER_NAME }}") | .id') >> $GITHUB_ENV
-      - name: Save kubectl config with auth token
-        run: scw k8s kubeconfig install ${{ env.SCALEWAY_CLUSTER_ID }} region=nl-ams
-      - name: Get kubectl environment
-        run: echo SCALEWAY_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
-      - name: Create image pull secret on test cluster
-        run: |
-          kubectl create secret docker-registry reg-otomi-github \
-            --docker-server=${{ env.CACHE_REGISTRY }} \
-            --docker-username=${{ env.BOT_USERNAME }} \
-            --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Prepare Otomi chart
-        if: ${{ inputs.install_profile != 'no-otomi' }}
-        run: |
-          ref=${{ github.event.pull_request.head.ref || github.ref }}
-          tag=${ref##*/}
-          sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/apl/Chart.yaml
-          sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.SCALEWAY_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
-          touch values-container-registry.yaml
-
-          # If a pipeline installs Otomi from the semver tag then pull container image from DockerHub
-          [[ ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]] && exit 0
-
-          # Pull image from cache registry
-          cat << EOF > values-container-registry.yaml
-          imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
-          imagePullSecretNames:
-            - reg-otomi-github
-          EOF
-      - name: Otomi install
-        if: ${{ inputs.install_profile != 'no-otomi' }}
-        env:
-          AZ_DNS: ${{ secrets.AZ_DNS }}
-          AZ_KMS: ${{ secrets.AZ_KMS }}
-          AZ_OIDC: ${{ secrets.AZ_OIDC }}
-          LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
-          LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
-        run: |
-          domainSuffix=''
-          touch values.yaml
-          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix='--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net'
-          [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
-          [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
-          [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
-          [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
-
-          if [[ '${{ inputs.kms }}' == 'age' ]]; then
-            cat <<EOF >> values.yaml
-          kms:
-            sops:
-              provider: age
-          EOF
-            fi
-
-          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
-            --values tests/integration/${{ inputs.install_profile }}.yaml \
-            --values values-container-registry.yaml
-            --values values.yaml \
-            --set cluster.provider=${{ inputs.cloud_provider }}
-            $domainSuffix"
-
-          [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
-
-           helm install $install_args
-      - name: Gather k8s events on failure
-        if: failure()
-        run: |
-          kubectl get events --sort-by='.lastTimestamp' -A
-      - name: Gather k8s pods on failure
-        if: failure()
-        run: |
-          kubectl get pods -A -o wide
-      - name: Gather otomi logs on failure
-        if: failure()
-        run: |
-          kubectl logs jobs/otomi --tail 150
-      - name: Delete k8s cluster at Scaleway
-        if: ${{ always() && inputs.cluster_persistence != 'preserve' }}
-        run: |
-          scw k8s cluster delete ${{ env.SCALEWAY_CLUSTER_ID }} with-additional-resources=true region=nl-ams
-      - name: Slack Notification
-        if: always()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: github-ci
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://github.com/redkubes.png?size=48
-          SLACK_TITLE: Scheduled integration tests
-          SLACK_USERNAME: RedKubesBot
-
   run-integration-test-linode:
-    if: ${{ inputs.cloud_provider == 'linode' }}
     name: Run integration test on linode cluster
     needs: preprocess-linode-input
     runs-on: ubuntu-latest
@@ -360,11 +178,26 @@ jobs:
           token: ${{ secrets.LINODE_TOKEN }}
       - name: Set k8s cluster name
         run: |
-          echo "LINODE_CLUSTER_NAME=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')-$(TZ='GMT-2' date +'%m-%d-%H-%M')" >> $GITHUB_ENV
-          # Cluster name must be no longer than 63 characters
+          case "${{ inputs.domain_zone }}" in
+            "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
+            "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
+            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test ;;
+          esac
+          echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
       - name: Determine exact k8s version
         run: |
           echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
+      - name: Determine domain name to use
+        run: |
+          # Mapping of domain_zone to domain names
+          case "${{ inputs.domain_zone }}" in
+            "Zone-1") DOMAIN=$(jq '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Zone-2") DOMAIN=$(jq '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "DNS-Integration") DOMAIN=$(jq '."DNS-Integration"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+          esac
+
+          echo "::add-mask::$DOMAIN"
+          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
           linode-cli lke cluster-create \
@@ -445,21 +278,24 @@ jobs:
       - name: Otomi install
         if: ${{ inputs.install_profile != 'no-otomi' }}
         env:
-          AZ_DNS: ${{ secrets.AZ_DNS }}
-          AZ_KMS: ${{ secrets.AZ_KMS }}
-          AZ_OIDC: ${{ secrets.AZ_OIDC }}
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
+          HOST: ${{ secrets.EDGEDNS_HOST }}
+          ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
+          CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
+          CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
         run: |
-          domainSuffix=''
           touch values.yaml
           [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix="--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net"
           [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
           [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
+          adminPassword=welcomeotomi
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
+          [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider=age"
+          [[ '${{ inputs.generate_password }}' == 'yes' ]] && adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
 
-          if [[ '${{ inputs.isPreInstalled }}' == 'true' ]]; then
+          if [[ '${{ inputs.is_pre_installed }}' == 'true' ]]; then
             cat <<EOF >> values.yaml
           otomi:
             isPreInstalled: true
@@ -474,14 +310,20 @@ jobs:
           EOF
             fi
 
-          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
+          install_args="otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml \
             --values values.yaml \
-            --set cluster.provider=${{ inputs.cloud_provider }} \
-            $domainSuffix"
-
-          [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
+            --set cluster.provider=linode \
+            --set dns.domainFilters[0]=${{ env.DOMAIN }} \
+            --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
+            --set dns.provider.akamai.host=${HOST} \
+            --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
+            --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
+            --set otomi.hasExternalDNS=true \
+            --set cluster.domainSuffix=${{ env.DOMAIN }} \
+            --set otomi.adminPassword=$adminPassword \
+            $kms"
 
           helm install $install_args
 

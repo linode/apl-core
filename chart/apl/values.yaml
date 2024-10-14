@@ -111,6 +111,8 @@ otomi: {}
 #   clientSecret: ''
 #   issuer: ''
 #   # IDP group id used to identify global admin
-#   adminGroupID: ''
+#   platformAdminGroupID: ''
+#   # IDP group id used to identify all teams admin
+#   allTeamsAdminGroupID: ''
 #   # IDP group id used to identify team admin
 #   teamAdminGroupID: ''

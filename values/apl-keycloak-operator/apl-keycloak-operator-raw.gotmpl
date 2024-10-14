@@ -18,6 +18,15 @@
 {{- $k := $c | get "keycloak" }}
 {{- $doms := tpl (readFile "../../helmfile.d/snippets/domains.gotmpl") $v | fromYaml }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
+{{ $users := list }}
+{{- range $user := $v.users }}
+  {{ $groups := list }}
+  {{- if $user.isPlatformAdmin }}{{ $groups = append $groups "platform-admin" }}{{ end }}
+  {{- if $user.isTeamAdmin }}{{ $groups = append $groups "team-admin" }}{{ end }}
+  {{- range $team := $user.teams }}{{ $groups = append $groups (print "team-" $team) }}{{ end }}
+  {{- $users = append $users (dict "email" $user.email "firstName" $user.firstName "lastName" $user.lastName "initialPassword" $user.initialPassword "groups" $groups) }}
+{{- end }}
+{{- $users := $users | toJson }}
 
 resources:
   - apiVersion: v1
@@ -29,6 +38,7 @@ resources:
       KEYCLOAK_ADMIN: {{ .Values.apps.keycloak.adminUsername | b64enc }}
       KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword | b64enc }}
       KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret | b64enc }}
+      USERS: {{ $users | b64enc }}
       {{- if $v.otomi.hasExternalIDP }}
       IDP_CLIENT_ID: {{ $oi.clientID | b64enc}}
       IDP_CLIENT_SECRET: {{ $oi.clientSecret | b64enc }}
@@ -56,8 +66,10 @@ resources:
       {{- with $oi | get "subClaimMapper" nil }}
       IDP_SUB_CLAIM_MAPPER: {{ . }}{{ end }}
       IDP_GROUP_MAPPINGS_TEAMS: '{{ $teamsMapping | toJson }}'
-      {{- with $oi | get "adminGroupID" nil }}
-      IDP_GROUP_apl_ADMIN: {{ . }}{{ end }}
+      {{- with $oi | get "platformAdminGroupID" nil }}
+      IDP_GROUP_PLATFORM_ADMIN: {{ . }}{{ end }}
+      {{- with $oi | get "allTeamsAdminGroupID" nil }}
+      IDP_GROUP_ALL_TEAMS_ADMIN: {{ . }}{{ end }}
       {{- with $oi | get "teamAdminGroupID" nil }}
       IDP_GROUP_TEAM_ADMIN: {{ . }}{{ end }}
       IDP_OIDC_URL: {{ $oi.issuer }}

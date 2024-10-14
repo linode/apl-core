@@ -6,3 +6,9 @@ controller:
 
 remoteresolver:
   resources: {{- $t.resources.pipelinesRemoteresolver | toYaml | nindent 4 }}
+
+events:
+  resources: {{- $t.resources.pipelinesEvents | toYaml | nindent 4 }}
+
+webhook:
+  resources: {{- $t.resources.pipelinesWebhook | toYaml | nindent 4 }}

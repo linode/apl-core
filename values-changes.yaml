@@ -302,3 +302,13 @@ changes:
     deletions:
       - 'teamConfig.{team}.managedMonitoring.prometheus'
       - 'apps.grafana.resources.downloadDashboards'
+      - 'apps.grafana.resources.grafanaTeams'
+      - 'apps.grafana.resources.sidecarTeams'
+      - 'apps.alertmanger.resources.alertmanagerTeams'
+      - 'apps.jaeger.ingester'
+      - 'apps.jaeger.collector'
+      - 'apps.jaeger.agent'
+  - version: 30
+    relocations:
+      - 'oidc.adminGroupID': 'oidc.platformAdminGroupID'
+      - 'oidc.teamAdminGroupID': 'oidc.allTeamsAdminGroupID'
