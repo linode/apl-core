@@ -191,14 +191,17 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
     'databases',
     'files',
     'bootstrap',
+    'users',
   ]
   const secretSettings = omit(secrets, fieldsToOmit)
   const license = { license: values?.license }
   const settings = omit(plainValues, fieldsToOmit)
+  const users = { users: values?.users }
   // and write to their files
   const promises: Promise<void>[] = []
   if (settings) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings.yaml`, settings, overwrite))
   if (license) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.license.yaml`, license, overwrite))
+  if (users) promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.users.yaml`, users, overwrite))
   if (secretSettings || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   if (plainValues.cluster || overwrite)
