@@ -19,7 +19,7 @@ Before installing the chart, you must first install the cert-manager CustomResou
 This is performed in a separate step to allow you to easily uninstall and reinstall cert-manager without deleting your installed custom resources.
 
 ```bash
-$ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.0/cert-manager.crds.yaml
+$ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.1/cert-manager.crds.yaml
 ```
 
 To install the chart with the release name `cert-manager`:
@@ -29,7 +29,7 @@ To install the chart with the release name `cert-manager`:
 $ helm repo add jetstack https://charts.jetstack.io --force-update
 
 ## Install the cert-manager helm chart
-$ helm install cert-manager --namespace cert-manager --version v1.16.0 jetstack/cert-manager
+$ helm install cert-manager --namespace cert-manager --version v1.16.1 jetstack/cert-manager
 ```
 
 In order to begin issuing certificates, you will need to set up a ClusterIssuer
@@ -65,7 +65,7 @@ If you want to completely uninstall cert-manager from your cluster, you will als
 delete the previously installed CustomResourceDefinition resources:
 
 ```console
-$ kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.0/cert-manager.crds.yaml
+$ kubectl delete -f https://github.com/cert-manager/cert-manager/releases/download/v1.16.1/cert-manager.crds.yaml
 ```
 
 ## Configuration
@@ -228,14 +228,16 @@ Enable or disable the PodDisruptionBudget resource.
   
 This prevents downtime during voluntary disruptions such as during a Node upgrade. For example, the PodDisruptionBudget will block `kubectl drain` if it is used on the Node where the only remaining cert-manager  
 Pod is currently running.
-#### **podDisruptionBudget.minAvailable** ~ `number`
+#### **podDisruptionBudget.minAvailable** ~ `unknown`
 
 This configures the minimum available pods for disruptions. It can either be set to an integer (e.g. 1) or a percentage value (e.g. 25%).  
 It cannot be used if `maxUnavailable` is set.
 
-#### **podDisruptionBudget.maxUnavailable** ~ `number`
+
+#### **podDisruptionBudget.maxUnavailable** ~ `unknown`
 
 This configures the maximum unavailable pods for disruptions. It can either be set to an integer (e.g. 1) or a percentage value (e.g. 25%). it cannot be used if `minAvailable` is set.
+
 
 #### **featureGates** ~ `string`
 > Default value:
@@ -952,15 +954,17 @@ Enable or disable the PodDisruptionBudget resource.
   
 This prevents downtime during voluntary disruptions such as during a Node upgrade. For example, the PodDisruptionBudget will block `kubectl drain` if it is used on the Node where the only remaining cert-manager  
 Pod is currently running.
-#### **webhook.podDisruptionBudget.minAvailable** ~ `number`
+#### **webhook.podDisruptionBudget.minAvailable** ~ `unknown`
 
 This property configures the minimum available pods for disruptions. Can either be set to an integer (e.g. 1) or a percentage value (e.g. 25%).  
 It cannot be used if `maxUnavailable` is set.
 
-#### **webhook.podDisruptionBudget.maxUnavailable** ~ `number`
+
+#### **webhook.podDisruptionBudget.maxUnavailable** ~ `unknown`
 
 This property configures the maximum unavailable pods for disruptions. Can either be set to an integer (e.g. 1) or a percentage value (e.g. 25%).  
 It cannot be used if `minAvailable` is set.
+
 
 #### **webhook.deploymentAnnotations** ~ `object`
 
@@ -1210,7 +1214,7 @@ If not set and create is true, a name is generated using the fullname template.
 
 #### **webhook.serviceAccount.annotations** ~ `object`
 
-Optional additional annotations to add to the controller's Service Account.
+Optional additional annotations to add to the webhook's Service Account.
 
 #### **webhook.serviceAccount.labels** ~ `object`
 
@@ -1422,17 +1426,19 @@ Enable or disable the PodDisruptionBudget resource.
   
 This prevents downtime during voluntary disruptions such as during a Node upgrade. For example, the PodDisruptionBudget will block `kubectl drain` if it is used on the Node where the only remaining cert-manager  
 Pod is currently running.
-#### **cainjector.podDisruptionBudget.minAvailable** ~ `number`
+#### **cainjector.podDisruptionBudget.minAvailable** ~ `unknown`
 
 `minAvailable` configures the minimum available pods for disruptions. It can either be set to  
 an integer (e.g. 1) or a percentage value (e.g. 25%).  
 Cannot be used if `maxUnavailable` is set.
 
-#### **cainjector.podDisruptionBudget.maxUnavailable** ~ `number`
+
+#### **cainjector.podDisruptionBudget.maxUnavailable** ~ `unknown`
 
 `maxUnavailable` configures the maximum unavailable pods for disruptions. It can either be set to  
 an integer (e.g. 1) or a percentage value (e.g. 25%).  
 Cannot be used if `minAvailable` is set.
+
 
 #### **cainjector.deploymentAnnotations** ~ `object`
 
@@ -1614,7 +1620,7 @@ If not set and create is true, a name is generated using the fullname template
 
 #### **cainjector.serviceAccount.annotations** ~ `object`
 
-Optional additional annotations to add to the controller's Service Account.
+Optional additional annotations to add to the cainjector's Service Account.
 
 #### **cainjector.serviceAccount.labels** ~ `object`
 

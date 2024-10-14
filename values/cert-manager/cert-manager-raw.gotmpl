@@ -10,7 +10,6 @@ resources:
     kind: Secret
     metadata:
       name: "external-dns"
-      namespace: "istio-system"
     data:
       {{- if hasKey $p "google" }}
       secret: "{{ $p.google.serviceAccountKey | b64enc }}"
