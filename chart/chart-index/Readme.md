@@ -19,4 +19,4 @@ Currently, adding a new version of the core app is performed manually:
    
 
 Note 1: some Helm charts do not have an official Helm chart repository. Those helm charts cannot be upgraded via the `chart-index`.
-Note 1: some charts resides in different directory name that the original app name, e.g.: argo-cd app resides in charts/argocd directory
+Note 2: some charts resides in different directory name than the original app name, e.g.: argo-cd app resides in charts/argocd directory
