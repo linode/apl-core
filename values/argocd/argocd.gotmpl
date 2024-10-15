@@ -139,6 +139,7 @@ configs:
       g, image-updater, role:image-updater
       # admin
       g, admin, role:admin
+      g, platform-admin, role:admin
     {{- if $v.otomi.isMultitenant }}
     policy.default: ''
     {{- else }}
