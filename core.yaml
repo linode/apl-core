@@ -3,6 +3,7 @@ k8s:
   namespaces:
     - name: argocd
       app: argocd
+      disableIstioInjection: true
     - name: cert-manager
       disableIstioInjection: true
     - name: cnpg-system
@@ -113,6 +114,7 @@ k8s:
     - name: velero
       app: velero
       disablePolicyChecks: true
+      disableIstioInjection: true
     - name: otomi-pipelines
       app: tekton
       disableIstioInjection: true

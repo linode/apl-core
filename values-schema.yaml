@@ -427,7 +427,23 @@ definitions:
             type: string
             default: '0.01'
       autoscaling:
-        $ref: '#/definitions/autoscalingEnabled'
+        additionalProperties: false
+        properties:
+          enabled:
+            default: true
+            type: boolean
+          maxReplicas:
+            type: integer
+            default: 10
+          minReplicas:
+            type: integer
+            default: 1
+          targetCPUUtilizationPercentage:
+            type: integer
+            default: 80
+          targetMemoryUtilizationPercentage:
+            type: integer
+            default: 80
       maxBodySize:
         type: string
         default: 1024m
@@ -1307,7 +1323,6 @@ definitions:
                     - value
     required:
       - name
-
   sealedsecret:
     type: object
     description: Define location of code to build
@@ -1341,7 +1356,6 @@ definitions:
       - type
       - encryptedData
       - name
-
   workload:
     type: object
     description: Define location of the application's manifests or chart
@@ -1435,6 +1449,37 @@ definitions:
     required:
       - name
       - url
+  user:
+    type: object
+    description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
+    properties:
+      email:
+        $ref: '#/definitions/email'
+        x-secret: ''
+      firstName:
+        type: string
+        x-secret: ''
+      lastName:
+        type: string
+        x-secret: ''
+      isPlatformAdmin:
+        type: boolean
+        x-secret: ''
+      isTeamAdmin:
+        type: boolean
+        x-secret: ''
+      teams:
+        type: array
+        items:
+          type: string
+          x-secret: ''
+      initialPassword:
+        type: string
+        x-secret: ''
+    required:
+      - email
+      - firstName
+      - lastName
 
 properties:
   alerts:
@@ -1469,8 +1514,6 @@ properties:
             $ref: '#/definitions/imageSimple'
           resources:
             properties:
-              alertmanagerTeams:
-                $ref: '#/definitions/resources'
               alertmanger:
                 $ref: '#/definitions/resources'
       argocd:
@@ -1795,10 +1838,6 @@ properties:
               $ref: '#/definitions/resources'
             sidecar:
               $ref: '#/definitions/resources'
-            grafanaTeams:
-              $ref: '#/definitions/resources'
-            sidecarTeams:
-              $ref: '#/definitions/resources'
       harbor:
         additionalProperties: false
         properties:
@@ -1939,6 +1978,8 @@ properties:
                 $ref: '#/definitions/resources'
               proxy:
                 $ref: '#/definitions/resources'
+              operator:
+                $ref: '#/definitions/resources'
       jaeger:
         additionalProperties: false
         properties:
@@ -1947,12 +1988,6 @@ properties:
             default: false
           resources:
             operator:
-              $ref: '#/definitions/resources'
-            agent:
-              $ref: '#/definitions/resources'
-            collector:
-              $ref: '#/definitions/resources'
-            ingester:
               $ref: '#/definitions/resources'
             jaeger:
               $ref: '#/definitions/resources'
@@ -2148,6 +2183,10 @@ properties:
               pipelinesController:
                 $ref: '#/definitions/resources'
               pipelinesRemoteresolver:
+                $ref: '#/definitions/resources'
+              pipelinesEvents:
+                $ref: '#/definitions/resources'
+              pipelinesWebhook:
                 $ref: '#/definitions/resources'
               triggersInterceptors:
                 $ref: '#/definitions/resources'
@@ -2602,6 +2641,20 @@ properties:
                   - deployment
                   - daemonset
                   - statefulset
+              autoscaler:
+                properties:
+                  maxReplicas:
+                    type: integer
+                    default: 5
+                  minReplicas:
+                    type: integer
+                    default: 2
+                  targetCPUUtilizationPercentage:
+                    type: integer
+                    default: 80
+                  targetMemoryUtilizationPercentage:
+                    type: integer
+                    default: 80
               attributes:
                 type: array
                 title: Kubernetes Attributes
@@ -2912,7 +2965,9 @@ properties:
       clientSecret:
         type: string
         x-secret: ''
-      adminGroupID:
+      platformAdminGroupID:
+        $ref: '#/definitions/wordCharacterPattern'
+      allTeamsAdminGroupID:
         $ref: '#/definitions/wordCharacterPattern'
       teamAdminGroupID:
         $ref: '#/definitions/wordCharacterPattern'
@@ -3237,5 +3292,9 @@ properties:
             type: string
       helm:
         type: object
+  users:
+    type: array
+    items:
+      $ref: '#/definitions/user'
 required:
   - cluster

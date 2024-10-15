@@ -63,13 +63,7 @@ spec:
         - name: tekton-events-controller
           image: {{ .Values.events.deployment.image }}
           args: []
-          resources:
-            requests:
-              cpu: 100m
-              memory: 100Mi
-            limits:
-              cpu: 1000m
-              memory: 1000Mi
+          resources: {{- toYaml .Values.events.resources | nindent 12 }}
           volumeMounts:
             - name: config-logging
               mountPath: /etc/config-logging
