@@ -11,7 +11,7 @@
   auth_url: {{ printf "%s/protocol/openid-connect/auth" .keycloakBase }}
   token_url: {{ printf "%s/protocol/openid-connect/token" .keycloakBase }}
   api_url: {{ printf "%s/protocol/openid-connect/userinfo" .keycloakBase }}
-  role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'team-admin') && 'Admin'
+  role_attribute_path: contains(groups[*], 'admin') && 'Admin' || contains(groups[*], 'platform-admin') && 'Admin'
   role_attribute_strict: true
 log:
   level: error
