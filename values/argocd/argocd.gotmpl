@@ -142,7 +142,7 @@ configs:
     {{- if $v.otomi.isMultitenant }}
     policy.default: ''
     {{- else }}
-      # not multitenant, make team-admin admin and keep global read-only
-      g, team-admin, role:admin
+      # not multitenant, make platform-admin admin and keep global read-only
+      g, platform-admin, role:admin
     policy.default: role:readonly
     {{- end }}
