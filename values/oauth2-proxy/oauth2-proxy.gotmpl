@@ -70,6 +70,17 @@ extraArgs:
   # - # oidc-issuer-url={{ $v._derived.oidcBaseUrlBackchannel }}
   - --insecure-oidc-allow-unverified-email=true
   - --show-debug-on-error=true
+  - --custom-templates-dir=/etc/oauth2-proxy
+
+extraVolumes:
+  - name: error-page
+    configMap:
+      name: oauth2-proxy-error-page
+
+extraVolumeMounts:
+  - name: error-page
+    mountPath: /etc/oauth2-proxy/error.html
+    subPath: error.html
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
