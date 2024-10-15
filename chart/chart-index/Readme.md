@@ -1,5 +1,5 @@
 The chart-index Helm chart allows to manage the most of the APL helm chart dependencies (a.k.a. core apps). 
-The chart-index is so called library Helm chart and cannot be installed itself. It only defines dependencies the `chart/chart-index/Chart.yaml` file. Each dependecy follows the following format:
+The chart-index is so-called library Helm chart and cannot be installed by itself. It only defines dependencies in the `chart/chart-index/Chart.yaml` file. Each dependency follows the following format:
 ```
   - name: <chart name>
     version: <chart version>
