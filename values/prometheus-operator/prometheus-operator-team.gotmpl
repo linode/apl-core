@@ -59,12 +59,36 @@ grafana:
     enabled: false
   defaultDashboardsEnabled: false
   plugins: []
-  resources: {{- $g.resources.grafanaTeams | toYaml | nindent 4 }}
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
   sidecar: 
-    resources: {{- $g.resources.sidecarTeams | toYaml | nindent 6 }}
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 10m
+        memory: 128Mi
 
 alertmanager:
   serviceMonitor:
     selfMonitor: false
   alertmanagerSpec:
-    resources: {{- $a.resources.alertmanagerTeams | toYaml | nindent 6 }}
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+prometheus:
+  thanosService:
+    enabled: false
+  thanosServiceMonitor:
+    enabled: false
