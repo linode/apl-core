@@ -7,7 +7,7 @@ The chart-index is so-called library Helm chart and cannot be installed by itsel
 ```
 ,thus Helm knows the chart registry URL, chart name and version.
 
-In the future, the chart-index it is going to be combined with Renovate to discover new versions.
+In the future, the chart-index is going to be combined with Renovate to discover new versions.
 
 Currently, adding a new version of the core app is performed manually:
 1. In the `chart/chart-index/Chart.yaml` file, change a given version in the `dependencies` list.
