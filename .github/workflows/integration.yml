@@ -64,6 +64,7 @@ on:
         options:
           - Zone-1
           - Zone-2
+          - DNS-Integration
       kms:
         type: choice
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
@@ -175,13 +176,24 @@ jobs:
       - name: Determine exact k8s version
         run: |
           echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
+      - name: Creating domain for scheduled integration test
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
+        run: |
+          # Generating a random 5 char string
+          RAND=$(tr -dc 'a-z0-9' </dev/urandom | head -c6)
+          echo "::add-mask::$RAND"
+          PARENT_DOMAIN=$(jq '."DNS-Integration"[0]' <<< ${{ env.DEV_DOMAINS }} | cut -d "." -f2-);;
+          DOMAIN=dns-integration-${RAND}.${PARENT_DOMAIN}
+          echo "::add-mask::$DOMAIN"
+          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
+          
       - name: Determine domain name to use
+        if: ${{ inputs.domain_zone != 'DNS-Integration' }}
         run: |
           # Mapping of domain_zone to domain names
           case "${{ inputs.domain_zone }}" in
             "Zone-1") DOMAIN=$(jq '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
             "Zone-2") DOMAIN=$(jq '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "DNS-Integration") DOMAIN=$(jq '."DNS-Integration"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
           esac
 
           echo "::add-mask::$DOMAIN"
@@ -296,7 +308,24 @@ jobs:
             --set otomi.adminPassword=$adminPassword \
             $kms"
 
-          helm install $install_args
+          helm install $install_args &
+          HELM_PID=$! 
+
+          # While helm is installing we can crete the wildcard dns record
+          while true; do
+              PUB_IP=$(kubectl get svc ingress-nginx-platform-controller -n ingress -ojson| jq '.status.loadBalancer.ingress.[].ip' -r)
+              if [[ -n "$PUB_IP" ]]; then
+                echo "::add-mask::$PUB_IP"
+                echo PUB_IP=$PUB_IP >> $GITHUB_ENV
+                break
+              else
+                echo "Waiting for ingress-nginx-platform-controller IP..."
+                sleep 5
+              fi
+          done
+          python3 bin/edgedns_A_record create $DOMAIN $PUB_IP
+
+          wait $HELM_PID
 
       - name: Gather k8s events on failure
         if: failure()
@@ -315,10 +344,13 @@ jobs:
         run: |
           kubectl logs -n maintenance -l app.kubernetes.io/instance=job-e2e --tail 15000
       - name: Remove the test cluster
-        if: always()
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
         run: |
-          [[ "${{ inputs.cluster_persistence }}" == "preserve" ]] && echo "The cluster ${{ env.LINODE_CLUSTER_NAME }} will NOT be destroyed!!" && exit 0
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
+      - name: Delete Domain
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
+        run : |
+            python3 bin/edgedns_A_record delete $DOMAIN
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2
