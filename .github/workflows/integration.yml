@@ -154,7 +154,7 @@ jobs:
       - name: Creating domain for scheduled integration test
         env:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-        if: ${{ inputs.z§ == 'DNS-Integration' }}
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
         run: |
           # Generating a random 5 char string
           RAND=$(openssl rand -hex 4)
