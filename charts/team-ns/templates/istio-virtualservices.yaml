@@ -333,7 +333,7 @@ spec:
         {{- if not $s.isShared }}
       when:
         - key: request.auth.claims[groups]
-          values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}team-admin,admin]
+          values: [{{ if not (eq $v.teamId "admin") }}team-{{ $v.teamId }},{{ end }}platform-admin,admin]
         {{- end }}
       to:
         - operation:

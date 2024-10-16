@@ -9,7 +9,7 @@ Effective development starts with an understanding the code structure and the re
 - [Integrating core apps](#Integrating-core-apps)
 - [Working with the team-ns chart](#working-with-the-team-ns-chart)
 - [Testing](#testing)
-- [Otomi CLI](#otomi-cli)
+- [APL CLI](#otomi-cli)
 - [Troubleshooting](#troubleshooting)
 
 # Navigating through code
@@ -20,21 +20,21 @@ Effective development starts with an understanding the code structure and the re
 apl-core
 ├── .values                     # Boilerplate for initializing git repository
 ├── adr                         # Architectural Decision Records [read more](https://adr.github.io/madr/)
-├── bin                         # Otomi CLI entrypoint (deprecated)
-├── binzx                       # Otomi CLI entrypoint
-├── chart                       # Helm chart for installing Otomi
-├── charts                      # All other Helm charts that comprise Otomi
+├── bin                         # APL CLI entrypoint (deprecated)
+├── binzx                       # APL CLI entrypoint
+├── chart                       # Helm chart for installing APL and upgrading APL Helm charts
+├── charts                      # All other Helm charts that comprise APL
 ├── docs                        # Documentation
 ├── helmfile.d/helmfile-*.yaml  # Helmfile specs ordered by name and executed accordingly by otomi commands
 ├── helmfile.d/snippets         # Reusable code snippets
 ├── helmfile.tpl                # Additional Helmfiles that do not have corresponding chart and are not parsed on otomi apply|template command
 ├── k8s                         # Kubernetes manifests that before any other chart
-├── src                         # Otomi CLI source code
+├── src                         # APL CLI source code
 ├── tests                       # Values used for testing purposes
 ├── upgrades.yaml               # Upgrade presync hooks
 ├── values                      # Value templates that serves as input to corresponding Helm charts
 ├── values-changes.yaml         # Definitions for performing data migrations
-├── values-schema.yaml          # JSON schema that defines Otomi interface
+├── values-schema.yaml          # JSON schema that defines APL interface
 └── versions.yaml               # Version tags of otomi-api, otomi-console and otomi-tasks
 ```
 
@@ -56,13 +56,13 @@ Whenever you see `<<: *somename` then it means that [node anchor](<(https://yaml
 
 # Values repo and data flow
 
-A values repo is provided by a user. If Otomi is a function then `values repo` is input arguments. It is composed of many YAML files containing the configuration for various apps and teams.
+A values repo is provided by a user. If APL is a function then `values repo` is input arguments. It is composed of many YAML files containing the configuration for various apps and teams.
 
-While rendering kubernetes manifests Otomi leverages Helmfile.
+While rendering kubernetes manifests APL leverages Helmfile.
 
 > Helmfile is a declarative spec for deploying helm charts. You are encouraged to read more about Helmfile at https://github.com/helmfile/helmfile.
 
-In Otomi, all Helmfile specs are defined in the `helmfile.d/` directory and executed in alphabetical order. The majority of Helmfile specs has the following structure:
+In APL, all Helmfile specs are defined in the `helmfile.d/` directory and executed in alphabetical order. The majority of Helmfile specs has the following structure:
 
 ```go-template
 #helmfiled./999-helmfile.yaml
@@ -106,7 +106,7 @@ flowchart LR
 
 From the flow diagram, we can distinguish four stages of data, before `Kubernetes manifests` are rendered. These are: `Values repo`, `Helmfile bases`, `Helmfile release`, and `Helm chart`.
 
-**Values repo**: It contains files that define input parameters for Otomi. This is where you can define teams, team, services, enabled applications and their configurations, etc. A user sets the `$ENV_DIR` env variable, so Otomi knows about its location.
+**Values repo**: It contains files that define input parameters for APL. This is where you can define teams, team, services, enabled applications and their configurations, etc. A user sets the `$ENV_DIR` env variable, so APL knows about its location.
 
 **Helmfile bases**: From the flow diagram, three files incorporate the content of the `.Values` - a Helmfile variable, which is accessible while using Go templates. These files are merged together in the following order: `snippets/default.yaml` -> `snippets/env.gotmpl` -> `snippets/derived.gotmpl`.
 
@@ -124,7 +124,7 @@ Almost each Helmfile spec loads `snippets/templates.gotmpl` file, which contains
 
 # Validating data from the values repo
 
-Otomi validates all parameters that a user can set in values repo by means checking values against JSON schema defined in the `values-schema.yaml` file. The validation can performed by calling `otomi validate-values` CLI command.
+APL validates all parameters that a user can set in values repo by means checking values against JSON schema defined in the `values-schema.yaml` file. The validation can performed by calling `otomi validate-values` CLI command.
 
 The schema is also a great source of documentation as most of the defined properties have corresponding documentation.
 
@@ -270,7 +270,7 @@ If your app has some parameters that a user should manipulate then make sure you
 
 ## Configuring Namespaces
 
-Otomi defines Kubernetes namespaces and their labels in the `core.yaml` file, at the `k8s.namespaces` property.
+APL defines Kubernetes namespaces and their labels in the `core.yaml` file, at the `k8s.namespaces` property.
 
 ## Configuring Ingress
 
@@ -307,7 +307,7 @@ Every team is deployed as a separate Helmfile release, thus targeting a specific
 otomi template -l name=team-ns-demo
 ```
 
-# Otomi CLI
+# APL CLI
 
 ## Developing CLI
 
@@ -315,11 +315,11 @@ TBD
 
 ## Using CLI while developing templates
 
-Using Otomi CLI can be very helpful while integrating apps or developing new features that involve the execution of Helmfile because it allows you to render and validate manifests. It is possible to use Otomi CLI in development mode, so the Otomi CLI reflects changes made in your local `apl-core` directory.
+Using APL CLI can be very helpful while integrating apps or developing new features that involve the execution of Helmfile because it allows you to render and validate manifests. It is possible to use APL CLI in development mode, so the APL CLI reflects changes made in your local `apl-core` directory.
 
-To run Otomi CLI in the development mode, you must:
+To run APL CLI in the development mode, you must:
 
-- execute Otomi CLI commands from a root directory of the `apl-core` project
+- execute APL CLI commands from a root directory of the `apl-core` project
 - export `ENV_DIR`
 
 First, run `npm install` to build all modules required for CLI.
@@ -344,7 +344,7 @@ export ENV_DIR=$HOME/otomi-values
 otomi bootstrap
 ```
 
-3. Now open `$ENV_DIR` directory in your favorite IDE. Otomi has bootstrapped the skeleton of the repo with default values.
+3. Now open `$ENV_DIR` directory in your favorite IDE. APL has bootstrapped the skeleton of the repo with default values.
 4. Last but not least provide information about your k8s cluster in `$ENV_DIR/env/cluster.yaml` file. Note, it can be fake data if you are not willing to deploy your changes to the cluster.
 
 ```
@@ -360,7 +360,7 @@ cluster:
 otomi validate-values
 ```
 
-Voila. You have built your values repo and can use it for Otomi development.
+Voila. You have built your values repo and can use it for APL development.
 
 Below you can find some useful use cases:
 
@@ -406,7 +406,7 @@ otomi x helmfile -l name=myapp write-values
 
 # Troubleshooting
 
-Some cloud providers are suing custom plugins to refresh the token. Since Otomi CLI executes by default in container some plugins may not be available. In order to solve this issue you can instruct Otomi CLI to execute directly on your host.
+Some cloud providers are suing custom plugins to refresh the token. Since APL CLI executes by default in container some plugins may not be available. In order to solve this issue you can instruct APL CLI to execute directly on your host.
 
 First ensure that you have all required binaries
 
@@ -414,7 +414,7 @@ First ensure that you have all required binaries
 npm run install-deps
 ```
 
-Then instruct Otomi to not run in docker:
+Then instruct APL to not run in docker:
 
 ```
 export IN_DOCKER=false
