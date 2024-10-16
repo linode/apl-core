@@ -259,7 +259,7 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
           CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
           CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
-          EDGEDNS_ZONE: ${{ EDGEDNS_ZONE }}
+          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           touch values.yaml
@@ -322,7 +322,7 @@ jobs:
       - name: Remove the test cluster
         if: ${{ inputs.domain_zone == 'DNS-Integration' }}
         env:
-          EDGEDNS_ZONE: ${{ EDGEDNS_ZONE }}
+          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
