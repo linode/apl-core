@@ -287,7 +287,7 @@ jobs:
 
           # While helm is installing we can crete the wildcard dns record
           while true; do
-              PUB_IP=$(kubectl get svc ingress-nginx-platform-controller -n ingress -ojson| jq '.status.loadBalancer.ingress.[0].ip' -r)
+              PUB_IP=$(kubectl get svc ingress-nginx-platform-controller -n ingress -ojson | jq '.status.loadBalancer.ingress[0].ip' -r)
               if [[ -n "$PUB_IP" ]]; then
                 echo "::add-mask::$PUB_IP"
                 echo PUB_IP=$PUB_IP >> $GITHUB_ENV
