@@ -1,10 +1,9 @@
 import { CoreV1Api } from '@kubernetes/client-node'
-import { jest } from '@jest/globals'
-import { mock } from 'jest-mock-extended'
 import * as k8s from './k8s'
 
+jest.mock('@kubernetes/client-node')
 describe('createGenericSecret', () => {
-  const mockCoreV1Api = mock<CoreV1Api>()
+  const mockCoreV1Api = new CoreV1Api() as jest.Mocked<CoreV1Api>
 
   afterEach(() => {
     jest.clearAllMocks()
@@ -22,8 +21,7 @@ describe('createGenericSecret', () => {
       password: 'cGFzc3dvcmQxMjM=', // base64 of 'password123'
     }
 
-    const mockResponse = { body: { metadata: { name, namespace }, data: encodedData } }
-    // @ts-ignore
+    const mockResponse = { body: { metadata: { name, namespace }, data: encodedData } } as any
     mockCoreV1Api.createNamespacedSecret.mockResolvedValue(mockResponse)
     const result = await k8s.createGenericSecret(mockCoreV1Api, name, namespace, secretData)
 
