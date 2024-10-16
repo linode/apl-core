@@ -162,7 +162,7 @@ jobs:
           DOMAIN=dns-integration-${RAND}.${PARENT_DOMAIN}
           echo "::add-mask::$DOMAIN"
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
-          
+
       - name: Determine domain name to use
         if: ${{ inputs.domain_zone != 'DNS-Integration' }}
         run: |
@@ -256,13 +256,14 @@ jobs:
         env:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
-          HOST: ${{ secrets.EDGEDNS_HOST }}
           ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
           CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
           CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
+          EDGEDNS_ZONE: ${{ EDGEDNS_ZONE }}
+          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           touch values.yaml
-          
+
           adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
@@ -275,7 +276,7 @@ jobs:
             --set cluster.provider=linode \
             --set dns.domainFilters[0]=${{ env.DOMAIN }} \
             --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
-            --set dns.provider.akamai.host=${HOST} \
+            --set dns.provider.akamai.host=${EDGEDNS_HOST} \
             --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
             --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
             --set otomi.hasExternalDNS=true \
@@ -320,12 +321,15 @@ jobs:
           kubectl logs -n maintenance -l app.kubernetes.io/instance=job-e2e --tail 15000
       - name: Remove the test cluster
         if: ${{ inputs.domain_zone == 'DNS-Integration' }}
+        env:
+          EDGEDNS_ZONE: ${{ EDGEDNS_ZONE }}
+          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
       - name: Delete Domain
         if: ${{ inputs.domain_zone == 'DNS-Integration' }}
-        run : |
-            python3 bin/edgedns_A_record delete $DOMAIN
+        run: |
+          python3 bin/edgedns_A_record delete $DOMAIN
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2
