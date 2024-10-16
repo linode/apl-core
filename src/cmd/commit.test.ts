@@ -37,8 +37,7 @@ describe('isOAuth2ProxyRunning', () => {
   })
 
   it('should throw an error if the OAuth2 Proxy deployment has availableReplicas 0', async () => {
-    // @ts-ignore
-    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({ body: { status: { availableReplicas: 0 } } })
+    mockAppsV1Api.readNamespacedDeployment.mockResolvedValue({ body: { status: { availableReplicas: 0 } } } as any)
 
     await expect(isOAuth2ProxyRunning(mockAppsV1Api)).rejects.toThrow(
       'OAuth2 Proxy has no available replicas, waiting...',
