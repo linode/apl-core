@@ -97,7 +97,7 @@ on:
           - 'true'
           - 'false'
         default: 'false'
-        
+
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: linode/apl-core
@@ -286,9 +286,6 @@ jobs:
           CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
         run: |
           touch values.yaml
-          [[ '${{ inputs.dns }}' == 'az_dns' ]] && echo "$AZ_DNS" >> values.yaml && domainSuffix="--set cluster.domainSuffix=tst-${{ github.run_id }}.aks.redkubes.net"
-          [[ '${{ inputs.kms }}' == 'az_kms' ]] && echo "$AZ_KMS" >> values.yaml
-          [[ '${{ inputs.oidc }}' == 'az_oidc' ]] && echo "$AZ_OIDC" >> values.yaml
           adminPassword=welcomeotomi
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
