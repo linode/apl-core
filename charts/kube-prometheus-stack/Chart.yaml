@@ -41,9 +41,6 @@ annotations:
       url: https://github.com/prometheus-operator/kube-prometheus
 
 dependencies:
-  - name: crds
-    version: "0.0.0"
-    condition: crds.enabled
   - name: kube-state-metrics
     version: "5.26.0"
     repository: https://prometheus-community.github.io/helm-charts

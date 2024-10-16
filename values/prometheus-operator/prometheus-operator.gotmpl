@@ -47,6 +47,8 @@ prometheusOperator:
     resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}    
 commonLabels:
   prometheus: system
+crds:
+  enabled: false
 prometheus:
   enabled: {{ $p.enabled }}
   thanosService:
