@@ -178,6 +178,7 @@ grafana:
   fullnameOverride: po-grafana
   namespaceOverride: grafana
   defaultDashboardsTimezone: browser
+  assertNoLeakedSecrets: false
   image:
     {{- with $g | get "image.tag" nil }}
     tag: {{ . }}
