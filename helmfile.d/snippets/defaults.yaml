@@ -570,7 +570,63 @@ environments:
             enabled: false
             serving:
               replicas: 1
-            _rawValues: {}
+            resources:
+              queueSidecar:
+                requests:
+                  cpu: 25m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
+                  memory: 512Mi
+              controller:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              activator:
+                requests:
+                  cpu: 50m
+                  memory: 32Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              webhook:
+                requests:
+                  cpu: 50m
+                  memory: 32Mi
+                limits:
+                  cpu: 500m
+                  memory: 512Mi
+              autoscaler:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              autoscalerHpa:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              operator:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              operatorWebhook:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
           kured:
             enabled: false
             resources:
