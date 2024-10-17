@@ -6,9 +6,6 @@
 {{- $o := $v | get "oidc" dict }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
-image:
-  tag: "7.7.0"
-  repository: bitnami/oauth2-proxy
 
 config:
   clientID: {{ $k.idp.clientID  }}
