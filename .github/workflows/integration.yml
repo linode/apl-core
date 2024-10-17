@@ -106,7 +106,6 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test ;;
           esac
 
           if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
@@ -145,7 +144,7 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test ;;
+            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test-$RANDOM ;;
           esac
           echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
       - name: Determine exact k8s version
