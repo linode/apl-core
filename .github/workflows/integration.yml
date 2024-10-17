@@ -297,6 +297,8 @@ jobs:
                 sleep 5
               fi
           done
+
+          pip3 install edgegrid-python requests
           python3 bin/edgedns_A_record.py create $DOMAIN $PUB_IP
 
           wait $HELM_PID
