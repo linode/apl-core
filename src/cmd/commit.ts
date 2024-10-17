@@ -1,10 +1,12 @@
+import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
+import retry from 'async-retry'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { waitTillGitRepoAvailable } from 'src/common/k8s'
+import { createGenericSecret, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -12,8 +14,6 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
-import { CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
-import retry from 'async-retry'
 
 const cmdName = getFilename(__filename)
 
@@ -142,10 +142,26 @@ export async function checkIfPipelineRunExists(): Promise<void> {
   d.info(`There is a Tekton PipelineRuns continuing...`)
 }
 
+async function createPlatformAdminCredentialsSecret(credentials: { username: string; initialPassword: string }) {
+  const secretData = {
+    username: credentials.username,
+    password: credentials.initialPassword,
+  }
+  const kc = new KubeConfig()
+  kc.loadFromDefault()
+  const coreV1Api = kc.makeApiClient(CoreV1Api)
+  await createGenericSecret(coreV1Api, 'platform-admin-initial-credentials', 'default', secretData)
+}
+
 export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak
+  const platformAdminUser = values?.users?.find((user: any) => user.email === 'platform-admin@clo.ud')
+  await createPlatformAdminCredentialsSecret({
+    username: platformAdminUser.email,
+    initialPassword: platformAdminUser.initialPassword,
+  })
   const message = `
   ########################################################################################################################################
   #

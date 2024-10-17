@@ -268,7 +268,10 @@ describe('Bootstrapping values', () => {
         terminal,
         validateValues: jest.fn().mockReturnValue(true),
         writeValues: jest.fn(),
+        getUsers: jest.fn().mockReturnValue(usersWithPasswords),
         generatePassword: jest.fn().mockReturnValue(generatedPassword),
+        addInitialPasswords: jest.fn().mockReturnValue(usersWithPasswords),
+        addPlatformAdminUser: jest.fn().mockReturnValue(usersWithPasswords),
       }
     })
     describe('Creating CA', () => {
@@ -350,7 +353,7 @@ describe('Bootstrapping values', () => {
         deps.loadYaml.mockReturnValue({ ...values, users })
         deps.getStoredClusterSecrets.mockReturnValue(secrets)
         deps.generateSecrets.mockReturnValue(generatedSecrets)
-        deps.generatePassword.mockReturnValue(generatedPassword)
+        deps.getUsers.mockReturnValue(usersWithPasswords)
         await processValues(deps)
         expect(deps.writeValues).toHaveBeenNthCalledWith(2, writtenValues)
       })
