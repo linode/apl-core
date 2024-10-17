@@ -10,11 +10,6 @@ nameOverride: {{ .Release.Name }}
 
 controller:
   enableAnnotationValidations: true
-  image:
-    runAsNonRoot: false
-    runAsUser: 101
-    allowPrivilegeEscalation: true
-    readOnlyRootFilesystem: false
   allowSnippetAnnotations: true
   # @TODO:
   electionID: ingress-controller-leader-{{ $ingress.className }}
