@@ -2,36 +2,50 @@ name: Deploy Otomi
 on:
   workflow_call:
     inputs:
+      cloud_provider:
+        description: Provider where Otomi will be installed
+        type: string
+        default: linode
       kubernetes_versions:
-        description: 'Kubernetes version'
+        description: "Kubernetes versions (JSON formatted list e.g.: ['1.31'])"
         type: string
         default: "['1.31']"
       install_profile:
-        description: 'Otomi installation profile'
+        description: Otomi installation profile
+        default: full
         type: string
-        default: minimal-with-team
       cluster_persistence:
-        description: 'Should a cluster be destroyed on pipeline finish?'
         type: string
+        description: Should a cluster be destroyed on pipeline finish
         default: destroy
-      domain_zone:
-        description: 'Select Domain Zone'
+      dns:
         type: string
-        default: DNS-Integration
+        description: Select DNS provider
+        default: nip_io
       kms:
-        description: 'Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?'
         type: string
+        description: Should Otomi encrypt secrets in values repo (DNS or KMS is used)
         default: age
       generate_password:
-        description: 'Should a unique password be generated?'
         type: string
-        default: 'yes'
+        description: Should a unique password be generated?
+        default: 'no'
+      oidc:
+        type: string
+        description: Should Otomi use external OIDC?
+        default: keycloak
       certificate:
-        description: 'Select certificate issuer'
         type: string
-        default: letsencrypt_production
+        description: Select certificate issuer
+        default: gen_custom_ca
   workflow_dispatch:
     inputs:
+      cloud_provider:
+        description: Provider where Otomi will be installed
+        type: choice
+        options:
+          - linode
+        default: 'linode'
       kubernetes_versions:
         description: 'Kubernetes version'
         type: choice
@@ -58,12 +72,12 @@ on:
           - preserve
           - destroy
         default: preserve
-      domain_zone:
+      dns:
         type: choice
-        description: 'Select Domain Zone'
+        description: Select DNS provider
         options:
-          - Zone-1
-          - Zone-2
+          - nip_io
+        default: nip_io
       kms:
         type: choice
         description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
@@ -77,7 +91,13 @@ on:
         options:
           - 'yes'
           - 'no'
-        default: 'yes'
+        default: 'no'
+      oidc:
+        type: choice
+        description: Should Otomi use external OIDC?
+        options:
+          - keycloak
+        default: keycloak
       certificate:
         type: choice
         description: Select certificate issuer
@@ -85,8 +105,7 @@ on:
           - gen_custom_ca
           - letsencrypt_staging
           - letsencrypt_production
-        default: letsencrypt_production
-
+        default: gen_custom_ca
 env:
   CACHE_REGISTRY: ghcr.io
   CACHE_REPO: linode/apl-core
@@ -96,7 +115,6 @@ env:
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
-  DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
 
 jobs:
   preprocess-input:
@@ -109,13 +127,15 @@ jobs:
           echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
           echo 'cluster_persistence: ${{ inputs.cluster_persistence }}'
+          echo 'dns: ${{ inputs.dns }}'
           echo 'kms: ${{ inputs.kms }}'
-          echo 'domain_zone: ${{ inputs.domain_zone }}'
           echo 'generate_password: ${{ inputs.generate_password }}'
+          echo 'oidc: ${{ inputs.oidc }}'
           echo 'certificate: ${{ inputs.certificate }}'
 
   preprocess-linode-input:
     needs: preprocess-input
+    if: ${{ inputs.cloud_provider == 'linode' }}
     name: Preprocess input variables for linode
     runs-on: ubuntu-latest
     outputs:
@@ -125,19 +145,6 @@ jobs:
         uses: linode/action-linode-cli@v1
         with:
           token: ${{ secrets.LINODE_TOKEN }}
-      - name: Check if cluster is running
-        run: |
-          case "${{ inputs.domain_zone }}" in
-            "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
-            "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test ;;
-          esac
-
-          if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
-            echo "An LKE cluster for Zone-1 named \"$LINODE_CLUSTER_NAME\" already exists."
-            echo "Please delete the cluster before recreating it. Exiting workflow..."
-            exit 1
-          fi
       - id: k8s-versions
         name: Process k8s version input
         run: |
@@ -151,6 +158,7 @@ jobs:
           echo "versions=$versions" >> $GITHUB_OUTPUT
 
   run-integration-test-linode:
+    if: ${{ inputs.cloud_provider == 'linode' }}
     name: Run integration test on linode cluster
     needs: preprocess-linode-input
     runs-on: ubuntu-latest
@@ -166,26 +174,11 @@ jobs:
           token: ${{ secrets.LINODE_TOKEN }}
       - name: Set k8s cluster name
         run: |
-          case "${{ inputs.domain_zone }}" in
-            "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
-            "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test ;;
-          esac
-          echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
+          echo "LINODE_CLUSTER_NAME=$(echo ${{ github.actor }} | tr '[:upper:]' '[:lower:]')-$(TZ='GMT-2' date +'%m-%d-%H-%M')" >> $GITHUB_ENV
+          # Cluster name must be no longer than 63 characters
       - name: Determine exact k8s version
         run: |
           echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
-      - name: Determine domain name to use
-        run: |
-          # Mapping of domain_zone to domain names
-          case "${{ inputs.domain_zone }}" in
-            "Zone-1") DOMAIN=$(jq '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "Zone-2") DOMAIN=$(jq '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "DNS-Integration") DOMAIN=$(jq '."DNS-Integration"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
-          esac
-
-          echo "::add-mask::$DOMAIN"
-          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Create k8s cluster for testing
         run: |
           linode-cli lke cluster-create \
@@ -268,33 +261,28 @@ jobs:
         env:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
-          HOST: ${{ secrets.EDGEDNS_HOST }}
-          ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
-          CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
-          CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
         run: |
+          domainSuffix=''
           touch values.yaml
-          adminPassword=welcomeotomi
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
-          [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider=age"
-          [[ '${{ inputs.generate_password }}' == 'yes' ]] && adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
 
+          if [[ '${{ inputs.kms }}' == 'age' ]]; then
+            cat <<EOF >> values.yaml
+          kms:
+            sops:
+              provider: age
+          EOF
+            fi
 
-          install_args="otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
+          install_args="--wait --wait-for-jobs --timeout 90m0s otomi chart/apl \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
             --values values-container-registry.yaml \
             --values values.yaml \
-            --set cluster.provider=linode \
-            --set dns.domainFilters[0]=${{ env.DOMAIN }} \
-            --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
-            --set dns.provider.akamai.host=${HOST} \
-            --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
-            --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
-            --set otomi.hasExternalDNS=true \
-            --set cluster.domainSuffix=${{ env.DOMAIN }} \
-            --set otomi.adminPassword=$adminPassword \
-            $kms"
+            --set cluster.provider=${{ inputs.cloud_provider }} \
+            $domainSuffix"
+
+          [[ '${{ inputs.generate_password }}' == 'no' ]] && install_args="$install_args --set otomi.adminPassword=welcomeotomi"
 
           helm install $install_args
 
@@ -319,13 +307,3 @@ jobs:
         run: |
           [[ "${{ inputs.cluster_persistence }}" == "preserve" ]] && echo "The cluster ${{ env.LINODE_CLUSTER_NAME }} will NOT be destroyed!!" && exit 0
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
-      - name: Slack Notification
-        if: always()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: github-ci
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://github.com/redkubes.png?size=48
-          SLACK_TITLE: Scheduled integration tests
-          SLACK_USERNAME: RedKubesBot
