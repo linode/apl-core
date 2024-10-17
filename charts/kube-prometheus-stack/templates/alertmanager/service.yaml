@@ -1,3 +1,4 @@
+{{- $kubeTargetVersion := default .Capabilities.KubeVersion.GitVersion .Values.kubeTargetVersionOverride }}
 {{- if .Values.alertmanager.enabled }}
 apiVersion: v1
 kind: Service
@@ -43,6 +44,12 @@ spec:
     port: {{ .Values.alertmanager.service.port }}
     targetPort: {{ .Values.alertmanager.service.targetPort }}
     protocol: TCP
+  - name: reloader-web
+    {{- if semverCompare ">=1.20.0-0" $kubeTargetVersion }}
+    appProtocol: http
+    {{- end }}
+    port: 8080
+    targetPort: reloader-web
 {{- if .Values.alertmanager.service.additionalPorts }}
 {{ toYaml .Values.alertmanager.service.additionalPorts | indent 2 }}
 {{- end }}
@@ -52,5 +59,14 @@ spec:
 {{- if .Values.alertmanager.service.sessionAffinity }}
   sessionAffinity: {{ .Values.alertmanager.service.sessionAffinity }}
 {{- end }}
+{{- if eq .Values.alertmanager.service.sessionAffinity "ClientIP" }}
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: {{ .Values.alertmanager.service.sessionAffinityConfig.clientIP.timeoutSeconds }}
+{{- end }}
   type: "{{ .Values.alertmanager.service.type }}"
+{{- if .Values.alertmanager.service.ipDualStack.enabled }}
+  ipFamilies: {{ toYaml .Values.alertmanager.service.ipDualStack.ipFamilies | nindent 4 }}
+  ipFamilyPolicy: {{ .Values.alertmanager.service.ipDualStack.ipFamilyPolicy }}
+{{- end }}
 {{- end }}
