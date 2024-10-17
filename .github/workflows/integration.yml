@@ -252,9 +252,9 @@ jobs:
         env:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
-          ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
-          CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
-          CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
+          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
+          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
+          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
@@ -271,10 +271,10 @@ jobs:
             --values values.yaml \
             --set cluster.provider=linode \
             --set dns.domainFilters[0]=${{ env.DOMAIN }} \
-            --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
+            --set dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET} \
             --set dns.provider.akamai.host=${EDGEDNS_HOST} \
-            --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
-            --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
+            --set dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN} \
+            --set dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN} \
             --set otomi.hasExternalDNS=true \
             --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set otomi.adminPassword=$adminPassword \
@@ -320,13 +320,16 @@ jobs:
           kubectl logs -n maintenance -l app.kubernetes.io/instance=job-e2e --tail 15000
       - name: Remove the test cluster
         if: ${{ inputs.domain_zone == 'DNS-Integration' }}
-        env:
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
       - name: Delete Domain
         if: ${{ inputs.domain_zone == 'DNS-Integration' }}
+        env:
+          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
+          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
+          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
+          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           python3 bin/edgedns_A_record.py delete $DOMAIN
       - name: Slack Notification
