@@ -1,6 +1,6 @@
 import retry, { Options } from 'async-retry'
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
-import { cloneDeep, isEmpty } from 'lodash'
+import { cloneDeep } from 'lodash'
 import { prepareDomainSuffix } from 'src/common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -41,8 +41,8 @@ const setup = (): void => {
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const prevState = await getDeploymentState()
-  const initialInstall = isEmpty(prevState.version)
   const argv: HelmArguments = getParsedArgs()
+  const initialInstall = !argv.tekton
   const hfArgs = initialInstall
     ? ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
     : ['apply', '--sync-args', '--qps=20']
@@ -89,7 +89,7 @@ const applyAll = async () => {
   await prepareDomainSuffix()
 
   let labelOpts = ['']
-  if (initialInstall && !argv.tekton) {
+  if (initialInstall) {
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // Only install the core apps
     labelOpts = ['app=core']
@@ -115,7 +115,7 @@ const applyAll = async () => {
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit()
-    if (initialInstall && !argv.tekton) {
+    if (initialInstall) {
       await hf(
         {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):

@@ -12,7 +12,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
-import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
+import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 import retry from 'async-retry'
 
 const cmdName = getFilename(__filename)
@@ -123,10 +123,10 @@ export async function retryIsOAuth2ProxyRunning() {
   const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
   const kc = new KubeConfig()
   kc.loadFromDefault()
-  const appsV1Api = kc.makeApiClient(AppsV1Api)
+  const coreV1Api = kc.makeApiClient(CoreV1Api)
   await retry(
     async () => {
-      await isOAuth2ProxyRunning(appsV1Api)
+      await isOAuth2ProxyAvailable(coreV1Api)
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   ).catch((e) => {
@@ -135,21 +135,23 @@ export async function retryIsOAuth2ProxyRunning() {
   })
 }
 
-export async function isOAuth2ProxyRunning(k8s: AppsV1Api): Promise<void> {
+export async function isOAuth2ProxyAvailable(k8s: CoreV1Api): Promise<void> {
   const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
-  d.info('Checking if OAuth2Proxy is running, waiting...')
-  const { body: oauth2ProxyDeployment } = await k8s.readNamespacedDeployment('oauth2-proxy', 'istio-system')
-  if (!oauth2ProxyDeployment) {
-    throw new Error('OAuth2 Proxy deployment not found, waiting...')
+  d.info('Checking if OAuth2Proxy is available, waiting...')
+  const { body: oauth2ProxyEndpoint } = await k8s.readNamespacedEndpoints('oauth2-proxy', 'istio-system')
+  if (!oauth2ProxyEndpoint) {
+    throw new Error('OAuth2Proxy endpoint not found, waiting...')
   }
-  const oauth2ProxyStatus = oauth2ProxyDeployment.status
-  if (!oauth2ProxyStatus) {
-    throw new Error('OAuth2 Proxy has no status, waiting...')
+  const oauth2ProxySubsets = oauth2ProxyEndpoint.subsets
+  if (!oauth2ProxySubsets || oauth2ProxySubsets.length < 1) {
+    throw new Error('OAuth2Proxy has no subsets, waiting...')
   }
-  if (!oauth2ProxyStatus.availableReplicas || oauth2ProxyStatus.availableReplicas < 1) {
-    throw new Error('OAuth2 Proxy has no available replicas, waiting...')
+  const oauth2ProxyAddresses = oauth2ProxySubsets[0].addresses
+
+  if (!oauth2ProxyAddresses || oauth2ProxyAddresses.length < 1) {
+    throw new Error('OAuth2Proxy has no available addresses, waiting...')
   }
-  d.info('OAuth2proxy is running, continuing...')
+  d.info('OAuth2proxy is available, continuing...')
 }
 
 export async function checkIfPipelineRunExists(): Promise<void> {
