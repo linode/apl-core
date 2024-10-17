@@ -1,6 +1,6 @@
 import retry, { Options } from 'async-retry'
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
-import { cloneDeep, isEmpty } from 'lodash'
+import { cloneDeep } from 'lodash'
 import { prepareDomainSuffix } from 'src/common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -14,7 +14,13 @@ import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, nothrow } from 'zx'
 import { applyAsApps } from './apply-as-apps'
-import { cloneOtomiChartsInGitea, commit, printWelcomeMessage, retryCheckingForPipelinerun } from './commit'
+import {
+  cloneOtomiChartsInGitea,
+  commit,
+  printWelcomeMessage,
+  retryCheckingForPipelineRun,
+  retryIsOAuth2ProxyRunning,
+} from './commit'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -35,9 +41,9 @@ const setup = (): void => {
 const applyAll = async () => {
   const d = terminal(`cmd:${cmdName}:applyAll`)
   const prevState = await getDeploymentState()
-  const intitalInstall = isEmpty(prevState.version)
   const argv: HelmArguments = getParsedArgs()
-  const hfArgs = intitalInstall
+  const initialInstall = !argv.tekton
+  const hfArgs = initialInstall
     ? ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
     : ['apply', '--sync-args', '--qps=20']
 
@@ -83,7 +89,7 @@ const applyAll = async () => {
   await prepareDomainSuffix()
 
   let labelOpts = ['']
-  if (intitalInstall) {
+  if (initialInstall) {
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // Only install the core apps
     labelOpts = ['app=core']
@@ -109,7 +115,7 @@ const applyAll = async () => {
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit()
-    if (intitalInstall) {
+    if (initialInstall) {
       await hf(
         {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
@@ -120,7 +126,8 @@ const applyAll = async () => {
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
       await cloneOtomiChartsInGitea()
-      await retryCheckingForPipelinerun()
+      await retryCheckingForPipelineRun()
+      await retryIsOAuth2ProxyRunning()
       await printWelcomeMessage()
     }
   }
@@ -167,8 +174,14 @@ const apply = async (): Promise<void> => {
 export const module: CommandModule = {
   command: cmdName,
   describe: 'Apply all, or supplied, k8s resources',
-  builder: (parser: Argv): Argv => helmOptions(parser),
-
+  builder: (parser: Argv): Argv =>
+    helmOptions(parser).option({
+      tekton: {
+        type: 'boolean',
+        description: 'Apply flag when run in tekton pipeline',
+        default: false,
+      },
+    }),
   handler: async (argv: HelmArguments): Promise<void> => {
     setParsedArgs(argv)
     setup()

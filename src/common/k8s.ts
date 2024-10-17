@@ -5,7 +5,7 @@ import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
-import { isEmpty, map } from 'lodash'
+import { isEmpty, map, mapValues } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
@@ -16,6 +16,7 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
+import { CoreV1Api, V1Secret } from '@kubernetes/client-node'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -265,4 +266,29 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
       throw e
     }
   }, retryOptions)
+}
+
+export async function createGenericSecret(
+  k8s: CoreV1Api,
+  name: string,
+  namespace: string,
+  secretData: Record<string, string>,
+): Promise<V1Secret> {
+  const encodedData = mapValues(secretData, b64enc)
+
+  const secret: V1Secret = {
+    metadata: {
+      name,
+      namespace,
+    },
+    data: encodedData,
+    type: 'Opaque',
+  }
+
+  const response = await k8s.createNamespacedSecret(namespace, secret)
+  return response.body
+}
+
+export function b64enc(value: string): string {
+  return Buffer.from(value).toString('base64')
 }
