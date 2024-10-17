@@ -9,13 +9,14 @@
 nameOverride: {{ .Release.Name }}
 
 controller:
+  enableAnnotationValidations: true
+  allowSnippetAnnotations: true
   # @TODO:
   electionID: ingress-controller-leader-{{ $ingress.className }}
   ingressClassResource: 
     enabled: false
     controllerValue: k8s.io/{{ $ingress.className }}
   image:
-    tag: {{ $n | get "image.tag" "v1.7.1" }}
     pullPolicy:  {{ $n | get "image.pullPolicy" "IfNotPresent" }}
   scope:
     enabled: true

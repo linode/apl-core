@@ -1,0 +1,13 @@
+{{- if and .Values.redis.enabled .Values.initContainers.waitForRedis.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: {{ template "oauth2-proxy.name" . }}
+{{- include "oauth2-proxy.labels" . | indent 4 }}
+  name: {{ template "oauth2-proxy.fullname" . }}-wait-for-redis
+  namespace: {{ template "oauth2-proxy.namespace" $ }}
+data:
+  check-redis.sh: |
+{{ .Files.Get "scripts/check-redis.sh" | indent 4 }}
+{{- end }}
