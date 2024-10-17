@@ -48,6 +48,7 @@ on:
         options:
           - Zone-1
           - Zone-2
+          - DNS-Integration
       kms:
         type: choice
         description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
