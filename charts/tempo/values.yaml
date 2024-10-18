@@ -16,6 +16,9 @@ global:
   dnsService: 'kube-dns'
   # -- configures DNS service namespace
   dnsNamespace: 'kube-system'
+  # -- Common environment variables to add to all pods directly managed by this chart.
+  # scope: admin-api, compactor, distributor, enterprise-federation-frontend, gateway, ingester, memcached, metrics-generator, querier, query-frontend, tokengen
+  extraEnv: []
 fullnameOverride: ''
 # fullnameOverride: tempo
 
@@ -32,6 +35,9 @@ configStorageType: ConfigMap
 
 # -- Name of the Secret or ConfigMap that contains the configuration (used for naming even if config is internal).
 externalConfigSecretName: '{{ include "tempo.resourceName" (dict "ctx" . "component" "config") }}'
+
+# -- Name of the Secret or ConfigMap that contains the runtime configuration (used for naming even if config is internal).
+externalRuntimeConfigName: '{{ include "tempo.resourceName" (dict "ctx" . "component" "runtime") }}'
 
 # -- When 'useExternalConfig' is true, then changing 'externalConfigVersion' triggers restart of services - otherwise changes to the configuration cause a restart.
 externalConfigVersion: '0'
@@ -90,6 +96,7 @@ serviceAccount:
   imagePullSecrets: []
   # -- Annotations for the service account
   annotations: {}
+  automountServiceAccountToken: false
 
 rbac:
   # -- Specifies whether RBAC manifests should be created
@@ -103,13 +110,21 @@ ingester:
   annotations: {}
   # -- Number of replicas for the ingester
   replicas: 3
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
+  initContainers: []
   autoscaling:
-    # -- Enable autoscaling for the ingester
+    # -- Enable autoscaling for the ingester. WARNING: Autoscaling ingesters can result in lost data. Only do this if you know what you're doing.
     enabled: false
     # -- Minimum autoscaling replicas for the ingester
-    minReplicas: 1
+    minReplicas: 2
     # -- Maximum autoscaling replicas for the ingester
     maxReplicas: 3
+    # -- Autoscaling behavior configuration for the ingester
+    behavior: {}
     # -- Target CPU utilisation percentage for the ingester
     targetCPUUtilizationPercentage: 60
     # -- Target memory utilisation percentage for the ingester
@@ -145,7 +160,7 @@ ingester:
   # @default -- Defaults to allow skew no more then 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
-      topologyKey: failure-domain.beta.kubernetes.io/zone
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
@@ -166,7 +181,9 @@ ingester:
             labelSelector:
               matchLabels:
                 {{- include "tempo.selectorLabels" (dict "ctx" . "component" "ingester") | nindent 12 }}
-            topologyKey: failure-domain.beta.kubernetes.io/zone
+            topologyKey: topology.kubernetes.io/zone
+  # -- Override Pod Disruption Budget maxUnavailable with a static value
+  # maxUnavailable: 1
   # -- Node selector for ingester pods
   nodeSelector: {}
   # -- Tolerations for ingester pods
@@ -203,6 +220,8 @@ ingester:
     max_block_duration: null
     # -- Duration to keep blocks in the ingester after they have been flushed
     complete_block_timeout: null
+    # -- Flush all traces to backend when ingester is stopped
+    flush_all_on_shutdown: false
   service:
     # -- Annotations for ingester service
     annotations: {}
@@ -210,15 +229,73 @@ ingester:
   appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
     grpc: null
+  # -- EXPERIMENTAL Feature, disabled by default
+  zoneAwareReplication:
+    # -- Enable zone-aware replication for ingester
+    enabled: false
+    # -- Maximum number of ingesters that can be unavailable per zone during rollout
+    maxUnavailable: 50
+    # -- topologyKey to use in pod anti-affinity. If unset, no anti-affinity rules are generated. If set, the generated anti-affinity rule makes sure that pods from different zones do not mix.
+    # E.g.: topologyKey: 'kubernetes.io/hostname'
+    topologyKey: null
+    # -- Zone definitions for ingester zones. Note: you have to redefine the whole list to change parts as YAML does not allow to modify parts of a list.
+    zones:
+      # -- Name of the zone, used in labels and selectors. Must follow Kubernetes naming restrictions: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+      - name: zone-a
+        # -- nodeselector to restrict where pods of this zone can be placed. E.g.:
+        # nodeSelector:
+        #   topology.kubernetes.io/zone: zone-a
+        nodeSelector: null
+        # -- extraAffinity adds user defined custom affinity rules (merged with generated rules)
+        extraAffinity: {}
+        # -- Ingester data Persistent Volume Storage Class
+        # If defined, storageClassName: <storageClass>
+        # If set to "-", then use `storageClassName: ""`, which disables dynamic provisioning
+        # If undefined or set to null (the default), then fall back to the value of `ingester.persistentVolume.storageClass`.
+        storageClass: null
+      # -- Name of the zone, used in labels and selectors. Must follow Kubernetes naming restrictions: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+      - name: zone-b
+        # -- nodeselector to restrict where pods of this zone can be placed. E.g.:
+        # nodeSelector:
+        #   topology.kubernetes.io/zone: zone-b
+        nodeSelector: null
+        # -- extraAffinity adds user defined custom affinity rules (merged with generated rules)
+        extraAffinity: {}
+        # -- Ingester data Persistent Volume Storage Class
+        # If defined, storageClassName: <storageClass>
+        # If set to "-", then use `storageClassName: ""`, which disables dynamic provisioning
+        # If undefined or set to null (the default), then fall back to the value of `ingester.persistentVolume.storageClass`.
+        storageClass: null
+      # -- Name of the zone, used in labels and selectors. Must follow Kubernetes naming restrictions: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+      - name: zone-c
+        # -- nodeselector to restrict where pods of this zone can be placed. E.g.:
+        # nodeSelector:
+        #   topology.kubernetes.io/zone: zone-c
+        nodeSelector: null
+        # -- extraAffinity adds user defined custom affinity rules (merged with generated rules)
+        extraAffinity: {}
+        # -- Ingester data Persistent Volume Storage Class
+        # If defined, storageClassName: <storageClass>
+        # If set to "-", then use `storageClassName: ""`, which disables dynamic provisioning
+        # If undefined or set to null (the default), then fall back to the value of `ingester.persistentVolume.storageClass`.
+        storageClass: null
 
 # Configuration for the metrics-generator
 metricsGenerator:
   # -- Specifies whether a metrics-generator should be deployed
   enabled: false
+  # -- Kind of deployment [StatefulSet/Deployment]
+  kind: Deployment
   # -- Annotations for the metrics-generator StatefulSet
   annotations: {}
   # -- Number of replicas for the metrics-generator
   replicas: 1
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
+  initContainers: []
   image:
     # -- The Docker registry for the metrics-generator image. Overrides `tempo.image.registry`
     registry: null
@@ -250,7 +327,7 @@ metricsGenerator:
   # @default -- Defaults to allow skew no more then 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
-      topologyKey: failure-domain.beta.kubernetes.io/zone
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
@@ -270,11 +347,26 @@ metricsGenerator:
             labelSelector:
               matchLabels:
                 {{- include "tempo.selectorLabels" (dict "ctx" . "component" "metrics-generator") | nindent 12 }}
-            topologyKey: failure-domain.beta.kubernetes.io/zone
+            topologyKey: topology.kubernetes.io/zone
+  # -- Pod Disruption Budget maxUnavailable
+  maxUnavailable: 1
   # -- Node selector for metrics-generator pods
   nodeSelector: {}
   # -- Tolerations for metrics-generator pods
   tolerations: []
+  # -- Persistence configuration for metrics-generator
+  persistence:
+    # -- Enable creating PVCs if you have kind set to StatefulSet. This disables using local disk or memory configured in walEmptyDir
+    enabled: false
+    size: 10Gi
+    # -- Storage class to be used.
+    # If defined, storageClassName: <storageClass>.
+    # If set to "-", storageClassName: "", which disables dynamic provisioning.
+    # If empty or set to null, no storageClassName spec is
+    # set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS, and OpenStack).
+    storageClass: null
+    # -- Annotations for metrics generator PVCs
+    annotations: {}
   # -- The EmptyDir location where the /var/tempo will be mounted on. Defaults to local disk, can be set to memory.
   walEmptyDir: {}
     ## Here shows how to configure 1Gi memory as emptyDir.
@@ -303,6 +395,7 @@ metricsGenerator:
       external_labels: {}
       stale_duration: 15m
     processor:
+      # -- For processors to be enabled and generate metrics, pass the names of the processors to overrides.metrics_generator_processors value like [service-graphs, span-metrics]
       service_graphs:
         # -- Additional dimensions to add to the metrics. Dimensions are searched for in the
         # -- resource and span attributes and are added to the metrics if present.
@@ -320,9 +413,15 @@ metricsGenerator:
       path: /var/tempo/wal
       wal:
       remote_write_flush_deadline: 1m
+      # Whether to add X-Scope-OrgID header in remote write requests
+      remote_write_add_org_id_header: true
       # -- A list of remote write endpoints.
       # -- https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
       remote_write: []
+    # -- Used by the local blocks processor to store a wal for traces.
+    traces_storage:
+      path: /var/tempo/traces
+    metrics_ingestion_time_range_slack: 30s
   service:
     # -- Annotations for Metrics Generator service
     annotations: {}
@@ -335,6 +434,11 @@ metricsGenerator:
 distributor:
   # -- Number of replicas for the distributor
   replicas: 1
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
   autoscaling:
     # -- Enable autoscaling for the distributor
     enabled: false
@@ -342,6 +446,8 @@ distributor:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the distributor
     maxReplicas: 3
+    # -- Autoscaling behavior configuration for the distributor
+    behavior: {}
     # -- Target CPU utilisation percentage for the distributor
     targetCPUUtilizationPercentage: 60
     # -- Target memory utilisation percentage for the distributor
@@ -358,12 +464,21 @@ distributor:
   service:
     # -- Annotations for distributor service
     annotations: {}
+    # -- Labels for distributor service
+    labels: {}
     # -- Type of service for the distributor
     type: ClusterIP
     # -- If type is LoadBalancer you can assign the IP to the LoadBalancer
     loadBalancerIP: ''
     # -- If type is LoadBalancer limit incoming traffic from IPs.
     loadBalancerSourceRanges: []
+    # -- If type is LoadBalancer you can set it to 'Local' [preserve the client source IP](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)
+    externalTrafficPolicy: null
+  serviceDiscovery:
+    # -- Annotations for distributorDiscovery service
+    annotations: {}
+    # -- Labels for distributorDiscovery service
+    labels: {}
   # -- The name of the PriorityClass for distributor pods
   priorityClassName: null
   # -- Labels for distributor pods
@@ -384,7 +499,7 @@ distributor:
   # @default -- Defaults to allow skew no more then 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
-      topologyKey: failure-domain.beta.kubernetes.io/zone
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
@@ -404,7 +519,9 @@ distributor:
             labelSelector:
               matchLabels:
                 {{- include "tempo.selectorLabels" (dict "ctx" . "component" "distributor") | nindent 12 }}
-            topologyKey: failure-domain.beta.kubernetes.io/zone
+            topologyKey: topology.kubernetes.io/zone
+  # -- Pod Disruption Budget maxUnavailable
+  maxUnavailable: 1
   # -- Node selector for distributor pods
   nodeSelector: {}
   # -- Tolerations for distributor pods
@@ -433,6 +550,47 @@ distributor:
 compactor:
   # -- Number of replicas for the compactor
   replicas: 1
+
+  # -- Autoscaling configurations
+  autoscaling:
+    # -- Enable autoscaling for the compactor
+    enabled: false
+    # -- Minimum autoscaling replicas for the compactor
+    minReplicas: 1
+    # -- Maximum autoscaling replicas for the compactor
+    maxReplicas: 3
+    # -- Autoscaling via HPA object
+    hpa:
+      enabled: false
+      # -- Autoscaling behavior configuration for the compactor
+      behavior: {}
+      # -- Target CPU utilisation percentage for the compactor
+      targetCPUUtilizationPercentage: 100
+      # -- Target memory utilisation percentage for the compactor
+      targetMemoryUtilizationPercentage:
+    # -- Autoscaling via keda/ScaledObject
+    keda:
+      # requires https://keda.sh/
+      enabled: false
+      # -- List of autoscaling triggers for the compactor
+      triggers: []
+      # - type: prometheus
+      #   metadata:
+      #     serverAddress: "http://<prometheus-host>:9090"
+      #     threshold: "250"
+      #     query: |-
+      #       sum by (cluster, namespace, tenant) (
+      #         tempodb_compaction_outstanding_blocks{container="compactor", namespace=~".*"}
+      #       ) /
+      #       ignoring(tenant) group_left count by (cluster, namespace)(
+      #         tempo_build_info{container="compactor", namespace=~".*"}
+      #       )
+
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
   image:
     # -- The Docker registry for the compactor image. Overrides `tempo.image.registry`
     registry: null
@@ -458,6 +616,8 @@ compactor:
   resources: {}
   # -- Grace period to allow the compactor to shutdown before it is killed
   terminationGracePeriodSeconds: 30
+  # -- Pod Disruption Budget maxUnavailable
+  maxUnavailable: 1
   # -- Node selector for compactor pods
   nodeSelector: {}
   # -- Tolerations for compactor pods
@@ -504,6 +664,11 @@ compactor:
 querier:
   # -- Number of replicas for the querier
   replicas: 1
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
   autoscaling:
     # -- Enable autoscaling for the querier
     enabled: false
@@ -511,6 +676,8 @@ querier:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the querier
     maxReplicas: 3
+    # -- Autoscaling behavior configuration for the querier
+    behavior: {}
     # -- Target CPU utilisation percentage for the querier
     targetCPUUtilizationPercentage: 60
     # -- Target memory utilisation percentage for the querier
@@ -544,7 +711,7 @@ querier:
   # @default -- Defaults to allow skew no more then 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
-      topologyKey: failure-domain.beta.kubernetes.io/zone
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
@@ -564,7 +731,9 @@ querier:
             labelSelector:
               matchLabels:
                 {{- include "tempo.selectorLabels" (dict "ctx" . "component" "querier" "memberlist" true) | nindent 12 }}
-            topologyKey: failure-domain.beta.kubernetes.io/zone
+            topologyKey: topology.kubernetes.io/zone
+  # -- Pod Disruption Budget maxUnavailable
+  maxUnavailable: 1
   # -- Node selector for querier pods
   nodeSelector: {}
   # -- Tolerations for querier pods
@@ -581,8 +750,6 @@ querier:
       # -- Timeout for trace lookup requests
       query_timeout: 10s
     search:
-      # -- A list of external endpoints that the querier will use to offload backend search requests
-      external_endpoints: []
       # -- Timeout for search requests
       query_timeout: 30s
       # -- If search_external_endpoints is set then the querier will primarily act as a proxy for whatever serverless backend you have configured. This setting allows the operator to have the querier prefer itself for a configurable number of subqueries.
@@ -591,6 +758,14 @@ querier:
       external_hedge_requests_at: 8s
       # -- The maximum number of requests to execute when hedging. Requires hedge_requests_at to be set.
       external_hedge_requests_up_to: 2
+      # -- A list of external endpoints that the querier will use to offload backend search requests
+      external_endpoints: []
+      # -- The serverless backend to use. The default value of "" omits
+      # -- credentials when querying the external backend.
+      external_backend: ""
+      # -- Google Cloud Run configuration. Will be used only if the value of
+      # -- external_backend is "google_cloud_run".
+      google_cloud_run: {}
     # -- This value controls the overall number of simultaneous subqueries that the querier will service at once. It does not distinguish between the types of queries.
     max_concurrent_queries: 20
 
@@ -632,11 +807,16 @@ queryFrontend:
       backend: 127.0.0.1:3100
   # -- Number of replicas for the query-frontend
   replicas: 1
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
   config:
+    # -- Maximum number of outstanding requests per tenant per frontend; requests beyond this error with HTTP 429.
+    max_outstanding_per_tenant: 2000
     # -- Number of times to retry a request sent to a querier
     max_retries: 2
-    # -- Number of block queries that are tolerated to error before considering the entire query as failed. Numbers greater than 0 make possible for a read to return partial results
-    tolerate_failed_blocks: 0
     search:
       # -- The number of concurrent jobs to execute when searching the backend
       concurrent_jobs: 1000
@@ -646,10 +826,6 @@ queryFrontend:
     trace_by_id:
       # -- The number of shards to split a trace by id query into.
       query_shards: 50
-      # -- If set to a non-zero value, a second request will be issued at the provided duration. Recommended to be set to p99 of search requests to reduce long-tail latency.
-      hedge_requests_at: 2s
-      # -- The maximum number of requests to execute when hedging. Requires hedge_requests_at to be set. Must be greater than 0.
-      hedge_requests_up_to: 2
   autoscaling:
     # -- Enable autoscaling for the query-frontend
     enabled: false
@@ -657,6 +833,8 @@ queryFrontend:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the query-frontend
     maxReplicas: 3
+    # -- Autoscaling behavior configuration for the query-frontend
+    behavior: {}
     # -- Target CPU utilisation percentage for the query-frontend
     targetCPUUtilizationPercentage: 60
     # -- Target memory utilisation percentage for the query-frontend
@@ -675,6 +853,8 @@ queryFrontend:
     port: 16686
     # -- Annotations for queryFrontend service
     annotations: {}
+    # -- Labels for queryFrontend service
+    labels: {}
     # -- Type of service for the queryFrontend
     type: ClusterIP
     # -- If type is LoadBalancer you can assign the IP to the LoadBalancer
@@ -684,6 +864,8 @@ queryFrontend:
   serviceDiscovery:
     # -- Annotations for queryFrontendDiscovery service
     annotations: {}
+    # -- Labels for queryFrontendDiscovery service
+    labels: {}
   ingress:
     # -- Specifies whether an ingress for the Jaeger should be created
     enabled: false
@@ -723,7 +905,7 @@ queryFrontend:
   # @default -- Defaults to allow skew no more then 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
-      topologyKey: failure-domain.beta.kubernetes.io/zone
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
@@ -743,7 +925,9 @@ queryFrontend:
             labelSelector:
               matchLabels:
                 {{- include "tempo.selectorLabels" (dict "ctx" . "component" "query-frontend") | nindent 12 }}
-            topologyKey: failure-domain.beta.kubernetes.io/zone
+            topologyKey: topology.kubernetes.io/zone
+  # -- Pod Disruption Budget maxUnavailable
+  maxUnavailable: 1
   # -- Node selector for query-frontend pods
   nodeSelector: {}
   # -- Tolerations for query-frontend pods
@@ -752,12 +936,135 @@ queryFrontend:
   extraVolumeMounts: []
   # -- Extra volumes for query-frontend deployment
   extraVolumes: []
-  # -- Adds the appProtocol field to the queriyFrontend service. This allows queriyFrontend to work with istio protocol selection.
+  # -- Adds the appProtocol field to the queryFrontend service. This allows queryFrontend to work with istio protocol selection.
   appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
     grpc: null
 
+# Configuration for the federation-frontend
+# Can only be enabled if enterprise.enabled is true - requires license.
+enterpriseFederationFrontend:
+  # -- Specifies whether a federation-frontend should be deployed
+  enabled: false
+  # -- Number of replicas for the federation-frontend
+  replicas: 1
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
+  # proxy_targets:
+  #   - name: own-data-center
+  #     url: http://get/tempo
+  #   - name: grafana-cloud
+  #     url: https://tempo-us-central1.grafana.net/tempo
+  #     basic_auth:
+  #       username: <instance-id>
+  #       password: <token>
+  proxy_targets: []
+  autoscaling:
+    # -- Enable autoscaling for the federation-frontend
+    enabled: false
+    # -- Minimum autoscaling replicas for the federation-frontend
+    minReplicas: 1
+    # -- Maximum autoscaling replicas for the federation-frontend
+    maxReplicas: 3
+    # -- Target CPU utilisation percentage for the federation-frontend
+    targetCPUUtilizationPercentage: 60
+    # -- Target memory utilisation percentage for the federation-frontend
+    targetMemoryUtilizationPercentage:
+  image:
+    # -- The Docker registry for the federation-frontend image. Overrides `tempo.image.registry`
+    registry: null
+    # -- Optional list of imagePullSecrets. Overrides `tempo.image.pullSecrets`
+    pullSecrets: []
+    # -- Docker image repository for the federation-frontend image. Overrides `tempo.image.repository`
+    repository: null
+    # -- Docker image tag for the federation-frontend image. Overrides `tempo.image.tag`
+    tag: null
+  service:
+    # -- Port of the federation-frontend service
+    port: 3100
+    # -- Annotations for enterpriseFederationFrontend service
+    annotations: {}
+    # -- Type of service for the enterpriseFederationFrontend
+    type: ClusterIP
+    # -- If type is LoadBalancer you can assign the IP to the LoadBalancer
+    loadBalancerIP: ""
+    # -- If type is LoadBalancer limit incoming traffic from IPs.
+    loadBalancerSourceRanges: []
+  # -- The name of the PriorityClass for federation-frontend pods
+  priorityClassName: null
+  # -- Labels for enterpriseFederationFrontend pods
+  podLabels: {}
+  # -- Annotations for federation-frontend pods
+  podAnnotations: {}
+  # -- Additional CLI args for the federation-frontend
+  extraArgs: []
+  # -- Environment variables to add to the federation-frontend pods
+  extraEnv: []
+  # -- Environment variables from secrets or configmaps to add to the federation-frontend pods
+  extraEnvFrom: []
+  # -- Resource requests and limits for the federation-frontend
+  resources: {}
+  # -- Grace period to allow the federation-frontend to shutdown before it is killed
+  terminationGracePeriodSeconds: 30
+  # -- topologySpread for federation-frontend pods. Passed through `tpl` and, thus, to be configured as string
+  # @default -- Defaults to allow skew no more then 1 node per AZ
+  topologySpreadConstraints: |
+    - maxSkew: 1
+      topologyKey: failure-domain.beta.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          {{- include "tempo.selectorLabels" (dict "ctx" . "component" "federation-frontend") | nindent 6 }}
+  # -- Affinity for federation-frontend pods. Passed through `tpl` and, thus, to be configured as string
+  # @default -- Hard node and soft zone anti-affinity
+  affinity: |
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              {{- include "tempo.selectorLabels" (dict "ctx" . "component" "federation-frontend") | nindent 10 }}
+          topologyKey: kubernetes.io/hostname
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                {{- include "tempo.selectorLabels" (dict "ctx" . "component" "federation-frontend") | nindent 12 }}
+            topologyKey: failure-domain.beta.kubernetes.io/zone
+  # -- Pod Disruption Budget maxUnavailable
+  maxUnavailable: 1
+  # -- Node selector for federation-frontend pods
+  nodeSelector: {}
+  # -- Tolerations for federation-frontend pods
+  tolerations: []
+  # -- Extra volumes for federation-frontend pods
+  extraVolumeMounts: []
+  # -- Extra volumes for federation-frontend deployment
+  extraVolumes: []
+
 multitenancyEnabled: false
+
+rollout_operator:
+# -- Enable rollout-operator. It must be enabled when using Zone Aware Replication.
+  enabled: false
+
+  podSecurityContext:
+    fsGroup: 10001
+    runAsGroup: 10001
+    runAsNonRoot: true
+    runAsUser: 10001
+    seccompProfile:
+      type: RuntimeDefault
+
+  # Set the container security context
+  securityContext:
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop: [ALL]
+    allowPrivilegeEscalation: false
 
 traces:
   jaeger:
@@ -804,6 +1111,28 @@ traces:
     receiverConfig: {}
   # -- Enable Tempo to ingest traces from Kafka. Reference: https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/kafkareceiver
   kafka: {}
+
+# -- Memberlist configuration. Please refer to https://grafana.com/docs/tempo/latest/configuration/#memberlist
+memberlist:
+  node_name: ""
+  randomize_node_name: true
+  stream_timeout: "10s"
+  retransmit_factor: 2
+  pull_push_interval: "30s"
+  gossip_interval: "1s"
+  gossip_nodes: 2
+  gossip_to_dead_nodes_time: "30s"
+  min_join_backoff: "1s"
+  max_join_backoff: "1m"
+  max_join_retries: 10
+  abort_if_cluster_join_fails: false
+  rejoin_interval: "0s"
+  left_ingesters_timeout: "5m"
+  leave_timeout: "5s"
+  bind_addr: []
+  bind_port: 7946
+  packet_dial_timeout: "5s"
+  packet_write_timeout: "5s"
 
 # -- Config file contents for Tempo distributed. Passed through the `tpl` function to allow templating
 
@@ -866,14 +1195,21 @@ config: |
         url: http://{{ template "tempo.fullname" . }}-admin-api.{{ .Release.Namespace }}.svc:{{ include "tempo.serverHttpListenPort" . }}
       distributor:
         url: http://{{ template "tempo.fullname" . }}-distributor.{{ .Release.Namespace }}.svc:{{ include "tempo.serverHttpListenPort" . }}
-      distributor_ingest:
-        url: h2c://{{ template "tempo.fullname" . }}-distributor.{{ .Release.Namespace }}.svc:4317
+        otlp/grpc:
+          url: h2c://{{ template "tempo.fullname" . }}-distributor.{{ .Release.Namespace }}.svc:4317
+        otlp/http:
+          url: http://{{ template "tempo.fullname" . }}-distributor.{{ .Release.Namespace }}.svc:4318
       ingester:
         url: http://{{ template "tempo.fullname" . }}-ingester.{{ .Release.Namespace }}.svc:{{ include "tempo.serverHttpListenPort" . }}
       querier:
         url: http://{{ template "tempo.fullname" . }}-querier.{{ .Release.Namespace }}.svc:{{ include "tempo.serverHttpListenPort" . }}
       query_frontend:
         url: http://{{ template "tempo.fullname" . }}-query-frontend.{{ .Release.Namespace }}.svc:{{ include "tempo.serverHttpListenPort" . }}{{get .Values.tempo.structuredConfig "http_api_prefix"}}
+  {{else}}
+  {{- if and .Values.enterprise.enabled .Values.enterpriseGateway.proxy }}
+  gateway:
+    proxy: {{- toYaml .Values.enterpriseGateway.proxy | nindent 6 }}
+  {{- end }}
   {{- end }}
 
   compactor:
@@ -892,6 +1228,11 @@ config: |
     ring:
       kvstore:
         store: memberlist
+  {{- if and .Values.enterprise.enabled .Values.enterpriseFederationFrontend.enabled }}
+  federation:
+    proxy_targets:
+      {{- toYaml .Values.enterpriseFederationFrontend.proxy_targets | nindent 6 }}
+  {{- end }}
   {{- if .Values.metricsGenerator.enabled }}
   metrics_generator:
     ring:
@@ -901,8 +1242,11 @@ config: |
       {{- toYaml .Values.metricsGenerator.config.processor | nindent 6 }}
     storage:
       {{- toYaml .Values.metricsGenerator.config.storage | nindent 6 }}
+    traces_storage:
+      {{- toYaml .Values.metricsGenerator.config.traces_storage | nindent 6 }}
     registry:
       {{- toYaml .Values.metricsGenerator.config.registry | nindent 6 }}
+    metrics_ingestion_time_range_slack: {{ .Values.metricsGenerator.config.metrics_ingestion_time_range_slack }}
   {{- end }}
   distributor:
     ring:
@@ -985,22 +1329,28 @@ config: |
       prefer_self: {{ .Values.querier.config.search.prefer_self }}
       external_hedge_requests_at: {{ .Values.querier.config.search.external_hedge_requests_at }}
       external_hedge_requests_up_to: {{ .Values.querier.config.search.external_hedge_requests_up_to }}
+      external_backend: {{ .Values.querier.config.search.external_backend }}
+      {{- if .Values.querier.config.search.google_cloud_run }}
+      google_cloud_run:
+        {{- toYaml .Values.querier.config.search.google_cloud_run | nindent 6 }}
+      {{- end }}
     max_concurrent_queries: {{ .Values.querier.config.max_concurrent_queries }}
   query_frontend:
+    max_outstanding_per_tenant: {{ .Values.queryFrontend.config.max_outstanding_per_tenant }}
     max_retries: {{ .Values.queryFrontend.config.max_retries }}
-    tolerate_failed_blocks: {{ .Values.queryFrontend.config.tolerate_failed_blocks }}
     search:
       target_bytes_per_job: {{ .Values.queryFrontend.config.search.target_bytes_per_job }}
       concurrent_jobs: {{ .Values.queryFrontend.config.search.concurrent_jobs }}
     trace_by_id:
       query_shards: {{ .Values.queryFrontend.config.trace_by_id.query_shards }}
-      hedge_requests_at: {{ .Values.queryFrontend.config.trace_by_id.hedge_requests_at }}
-      hedge_requests_up_to: {{ .Values.queryFrontend.config.trace_by_id.hedge_requests_up_to }}
 
   ingester:
     lifecycler:
       ring:
         replication_factor: {{ .Values.ingester.config.replication_factor }}
+        {{- if .Values.ingester.zoneAwareReplication.enabled }}
+        zone_awareness_enabled: true
+        {{- end }}
         kvstore:
           store: memberlist
       tokens_file_path: /var/tempo/tokens.json
@@ -1019,18 +1369,17 @@ config: |
     {{- if .Values.ingester.config.complete_block_timeout }}
     complete_block_timeout: {{ .Values.ingester.config.complete_block_timeout }}
     {{- end }}
+    {{- if .Values.ingester.config.flush_all_on_shutdown }}
+    flush_all_on_shutdown: {{ .Values.ingester.config.flush_all_on_shutdown }}
+    {{- end }}
   memberlist:
-    abort_if_cluster_join_fails: false
+    {{- with .Values.memberlist }}
+      {{- toYaml . | nindent 2 }}
+    {{- end }}
     join_members:
-      - {{ include "tempo.fullname" . }}-gossip-ring
+      - dns+{{ include "tempo.fullname" . }}-gossip-ring:{{ .Values.memberlist.bind_port }}
   overrides:
     {{- toYaml .Values.global_overrides | nindent 2 }}
-    {{- if .Values.metricsGenerator.enabled }}
-    metrics_generator_processors:
-    {{- range .Values.global_overrides.metrics_generator_processors }}
-    - {{ . }}
-    {{- end }}
-    {{- end }}
   server:
     http_listen_port: {{ .Values.server.httpListenPort }}
     log_level: {{ .Values.server.logLevel }}
@@ -1039,10 +1388,21 @@ config: |
     grpc_server_max_send_msg_size: {{ .Values.server.grpc_server_max_send_msg_size }}
     http_server_read_timeout: {{ .Values.server.http_server_read_timeout }}
     http_server_write_timeout: {{ .Values.server.http_server_write_timeout }}
+  cache:
+  {{- toYaml .Values.cache | nindent 2}}
   storage:
     trace:
+      {{- if .Values.storage.trace.block.version }}
       block:
         version: {{.Values.storage.trace.block.version}}
+        {{- if .Values.storage.trace.block.dedicated_columns}}
+        parquet_dedicated_columns:
+          {{ .Values.storage.trace.block.dedicated_columns | toYaml | nindent 8}}
+        {{- end }}
+      {{- end }}
+      pool:
+        max_workers: {{ .Values.storage.trace.pool.max_workers }}
+        queue_depth: {{ .Values.storage.trace.pool.queue_depth }}
       backend: {{.Values.storage.trace.backend}}
       {{- if eq .Values.storage.trace.backend "s3"}}
       s3:
@@ -1061,14 +1421,6 @@ config: |
         path: /var/tempo/traces
       wal:
         path: /var/tempo/wal
-      {{- if .Values.memcached.enabled }}
-      cache: memcached
-      memcached:
-        consistent_hash: true
-        host: {{ include "tempo.fullname" . }}-memcached
-        service: memcached-client
-        timeout: 500ms
-      {{- end }}
 
 # Set Tempo server configuration
 # Refers to https://grafana.com/docs/tempo/latest/configuration/#server
@@ -1088,6 +1440,21 @@ server:
   # -- Write timeout for HTTP server
   http_server_write_timeout: 30s
 
+# Use this block to configure caches available throughout the application.
+# Multiple caches can be created and assigned roles which determine how they are used by Tempo.
+# https://grafana.com/docs/tempo/latest/configuration/#cache
+cache:
+  caches:
+    - memcached:
+        host: '{{ include "tempo.fullname" . }}-memcached'
+        service: memcached-client
+        consistent_hash: true
+        timeout: 500ms
+      roles:
+        - parquet-footer
+        - bloom
+        - frontend-search
+
 # To configure a different storage backend instead of local storage:
 # storage:
 #   trace:
@@ -1100,25 +1467,29 @@ storage:
   trace:
     # Settings for the block storage backend and buckets.
     block:
-      # -- The supported block versions are v2 and vParquet, as specified in https://grafana.com/docs/tempo/latest/configuration/parquet/
-      version: vParquet
+      # -- The supported block versions are specified here https://grafana.com/docs/tempo/latest/configuration/parquet/
+      version: null
+      # -- Lis with dedicated attribute columns (only for vParquet3 or later)
+      dedicated_columns: []
     # -- The supported storage backends are gcs, s3 and azure, as specified in https://grafana.com/docs/tempo/latest/configuration/#storage
     backend: local
+    # The worker pool is used primarily when finding traces by id, but is also used by other.
+    pool:
+      # -- Total number of workers pulling jobs from the queue
+      max_workers: 400
+      # -- Length of job queue. imporatant for querier as it queues a job for every block it has to search
+      queue_depth: 20000
   # Settings for the Admin client storage backend and buckets. Only valid is enterprise.enabled is true.
   admin:
-    # -- The supported storage backends are gcs, s3 and azure, as specified in https://grafana.com/docs/enterprise-traces/latest/config/reference/#admin_client_config
+    # -- The supported storage backends are gcs, s3 and azure, as specified in https://grafana.com/docs/enterprise-traces/latest/configure/reference/#admin_client_config
     backend: filesystem
 
 # Global overrides
 global_overrides:
-  per_tenant_override_config: /conf/overrides.yaml
-  metrics_generator_processors:
-    - service-graphs
-    - span-metrics
+  per_tenant_override_config: /runtime-config/overrides.yaml
 
 # Per tenants overrides
-overrides: |
-  overrides: {}
+overrides: {}
 
 # memcached is for all of the Tempo pieces to coordinate with each other.
 # you can use your self memcacherd by set enable: false and host + service
@@ -1133,7 +1504,7 @@ memcached:
     # -- Memcached Docker image repository
     repository: memcached
     # -- Memcached Docker image tag
-    tag: 1.5.17-alpine
+    tag: 1.6.29-alpine
     # -- Memcached Docker image pull policy
     pullPolicy: IfNotPresent
   host: memcached
@@ -1155,7 +1526,7 @@ memcached:
   # @default -- Defaults to allow skew no more then 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
-      topologyKey: failure-domain.beta.kubernetes.io/zone
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
@@ -1175,7 +1546,9 @@ memcached:
             labelSelector:
               matchLabels:
                 {{- include "tempo.selectorLabels" (dict "ctx" . "component" "memcached") | nindent 12 }}
-            topologyKey: failure-domain.beta.kubernetes.io/zone
+            topologyKey: topology.kubernetes.io/zone
+  # -- Pod Disruption Budget maxUnavailable
+  maxUnavailable: 1
   service:
     # -- Annotations for memcached service
     annotations: {}
@@ -1183,6 +1556,11 @@ memcached:
 memcachedExporter:
   # -- Specifies whether the Memcached Exporter should be enabled
   enabled: false
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
   image:
     # -- The Docker registry for the Memcached Exporter image. Overrides `global.image.registry`
     registry: null
@@ -1191,7 +1569,7 @@ memcachedExporter:
     # -- Memcached Exporter Docker image repository
     repository: prom/memcached-exporter
     # -- Memcached Exporter Docker image tag
-    tag: v0.8.0
+    tag: v0.14.4
     # -- Memcached Exporter Docker image pull policy
     pullPolicy: IfNotPresent
     # -- Memcached Exporter resource requests and limits
@@ -1358,6 +1736,11 @@ gateway:
   enabled: false
   # -- Number of replicas for the gateway
   replicas: 1
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
   autoscaling:
     # -- Enable autoscaling for the gateway
     enabled: false
@@ -1365,6 +1748,8 @@ gateway:
     minReplicas: 1
     # -- Maximum autoscaling replicas for the gateway
     maxReplicas: 3
+    # -- Autoscaling behavior configuration for the gateway
+    behavior: {}
     # -- Target CPU utilisation percentage for the gateway
     targetCPUUtilizationPercentage: 60
     # -- Target memory utilisation percentage for the gateway
@@ -1379,7 +1764,7 @@ gateway:
     # -- The gateway image repository
     repository: nginxinc/nginx-unprivileged
     # -- The gateway image tag
-    tag: 1.19-alpine
+    tag: 1.27-alpine
     # -- The gateway image pull policy
     pullPolicy: IfNotPresent
   # -- The name of the PriorityClass for gateway pods
@@ -1406,7 +1791,7 @@ gateway:
   # @default -- Defaults to allow skew no more then 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
-      topologyKey: failure-domain.beta.kubernetes.io/zone
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
@@ -1426,7 +1811,9 @@ gateway:
             labelSelector:
               matchLabels:
                 {{- include "tempo.selectorLabels" (dict "ctx" . "component" "gateway") | nindent 12 }}
-            topologyKey: failure-domain.beta.kubernetes.io/zone
+            topologyKey: topology.kubernetes.io/zone
+  # -- Pod Disruption Budget maxUnavailable
+  maxUnavailable: 1
   # -- Node selector for gateway pods
   nodeSelector: {}
   # -- Tolerations for gateway pods
@@ -1448,11 +1835,13 @@ gateway:
     # -- Labels for gateway service
     labels: {}
     # -- Additional ports to be opneed on gateway service (e.g. for RPC connections)
-    additionalPorts: {}
+    additionalPorts: []
   # Gateway ingress configuration
   ingress:
     # -- Specifies whether an ingress for the gateway should be created
     enabled: false
+    # -- Labels for the gateway ingress
+    labels: {}
     # -- Ingress Class Name. MAY be required for Kubernetes versions >= 1.18
     # ingressClassName: nginx
     # -- Annotations for the gateway ingress
@@ -1564,39 +1953,53 @@ gateway:
           }
 
           location = /jaeger/api/traces {
-            proxy_pass       http://{{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}:14268/api/traces;
+            set $distributor {{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$distributor:14268/api/traces;
           }
 
           location = /zipkin/spans {
-            proxy_pass       http://{{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}:9411/spans;
+            set $distributor {{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$distributor:9411/spans;
+          }
+
+          location = /v1/traces {
+            set $distributor {{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$distributor:4318/v1/traces;
           }
 
           location = /otlp/v1/traces {
-            proxy_pass       http://{{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}:4318/v1/traces;
+            set $distributor {{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$distributor:4318/v1/traces;
           }
 
           location ^~ /api {
-            proxy_pass       http://{{ include "tempo.resourceName" (dict "ctx" . "component" "query-frontend") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}:3100$request_uri;
+            set $query_frontend {{ include "tempo.resourceName" (dict "ctx" . "component" "query-frontend") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$query_frontend:3100$request_uri;
           }
 
           location = /flush {
-            proxy_pass       http://{{ include "tempo.resourceName" (dict "ctx" . "component" "ingester") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}:3100$request_uri;
+            set $ingester {{ include "tempo.resourceName" (dict "ctx" . "component" "ingester") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$ingester:3100$request_uri;
           }
 
           location = /shutdown {
-            proxy_pass       http://{{ include "tempo.resourceName" (dict "ctx" . "component" "ingester") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}:3100$request_uri;
+            set $ingester {{ include "tempo.resourceName" (dict "ctx" . "component" "ingester") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$ingester:3100$request_uri;
           }
 
           location = /distributor/ring {
-            proxy_pass       http://{{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}:3100$request_uri;
+            set $distributor {{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$distributor:3100$request_uri;
           }
 
           location = /ingester/ring {
-            proxy_pass       http://{{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}:3100$request_uri;
+            set $distributor {{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$distributor:3100$request_uri;
           }
 
           location = /compactor/ring {
-            proxy_pass       http://{{ include "tempo.resourceName" (dict "ctx" . "component" "compactor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }}:3100$request_uri;
+            set $compactor {{ include "tempo.resourceName" (dict "ctx" . "component" "compactor") }}.{{ .Release.Namespace }}.svc.{{ .Values.global.clusterDomain }};
+            proxy_pass       http://$compactor:3100$request_uri;
           }
 
           {{- with .Values.gateway.nginxConfig.serverSnippet }}
@@ -1616,7 +2019,7 @@ enterprise:
     # -- Grafana Enterprise Metrics container image repository. Note: for Grafana Tempo use the value 'image.repository'
     repository: grafana/enterprise-traces
     # -- Grafana Enterprise Metrics container image tag. Note: for Grafana Tempo use the value 'image.tag'
-    tag: v2.1.0
+    tag: v2.4.0
     # Note: pullPolicy and optional pullSecrets are set in toplevel 'image' section, not here
 
 # In order to use Grafana Enterprise Traces features, you will need to provide the contents of your Grafana Enterprise Traces
@@ -1632,10 +2035,24 @@ license:
 # enterprise.enabled is true - requires license.
 tokengenJob:
   enable: true
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
   extraArgs: {}
   env: []
   extraEnvFrom: []
   annotations: {}
+  image:
+    # -- The Docker registry for the tokengenJob image. Overrides `tempo.image.registry`
+    registry: null
+    # -- Optional list of imagePullSecrets. Overrides `tempo.image.pullSecrets`
+    pullSecrets: []
+    # -- Docker image repository for the tokengenJob image. Overrides `tempo.image.repository`
+    repository: null
+    # -- Docker image tag for the tokengenJob image. Overrides `tempo.image.tag`
+    tag: null
   initContainers: []
   # -- The SecurityContext for tokenjobgen containers
   containerSecurityContext:
@@ -1645,11 +2062,26 @@ tokengenJob:
 # Can only be enabled if enterprise.enabled is true - requires license.
 adminApi:
   replicas: 1
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
 
   annotations: {}
   service:
     annotations: {}
     labels: {}
+
+  image:
+    # -- The Docker registry for the adminApi image. Overrides `tempo.image.registry`
+    registry: null
+    # -- Optional list of imagePullSecrets. Overrides `tempo.image.pullSecrets`
+    pullSecrets: []
+    # -- Docker image repository for the adminApi image. Overrides `tempo.image.repository`
+    repository: null
+    # -- Docker image tag for the adminApi image. Overrides `tempo.image.tag`
+    tag: null
 
   initContainers: []
 
@@ -1667,7 +2099,7 @@ adminApi:
   # @default -- Defaults to allow skew no more then 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
-      topologyKey: failure-domain.beta.kubernetes.io/zone
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
@@ -1688,7 +2120,7 @@ adminApi:
             labelSelector:
               matchLabels:
                 {{- include "tempo.selectorLabels" (dict "ctx" . "component" "admin-api") | nindent 12 }}
-            topologyKey: failure-domain.beta.kubernetes.io/zone
+            topologyKey: topology.kubernetes.io/zone
 
   # Pod Disruption Budget
   podDisruptionBudget: {}
@@ -1727,16 +2159,41 @@ adminApi:
 # Settings for the gateway service providing authentication and authorization via the admin_api.
 # Can only be enabled if enterprise.enabled is true - requires license.
 enterpriseGateway:
-  # If you want to use your own proxy URLs, set this to false.
+  # -- If you want to use your own proxy URLs, set this to false.
   useDefaultProxyURLs: true
+  # -- Proxy URLs defined in this object will be used if useDefaultProxyURLs is set to false.
+  proxy: {}
   replicas: 1
+  # -- hostAliases to add
+  hostAliases: []
+  #  - ip: 1.2.3.4
+  #    hostnames:
+  #      - domain.tld
+
+  image:
+    # -- The Docker registry for the enterpriseGateway image. Overrides `tempo.image.registry`
+    registry: null
+    # -- Optional list of imagePullSecrets. Overrides `tempo.image.pullSecrets`
+    pullSecrets: []
+    # -- Docker image repository for the enterpriseGateway image. Overrides `tempo.image.repository`
+    repository: null
+    # -- Docker image tag for the enterpriseGateway image. Overrides `tempo.image.tag`
+    tag: null
 
   annotations: {}
   service:
-    annotations: {}
-    labels: {}
-    # -- If the port is left undefined, the service will listen on the same port as the pod
+    # -- Port of the enterprise gateway service; if left undefined, the service will listen on the same port as the pod
     port: null
+    # -- Type of the enterprise gateway service
+    type: ClusterIP
+    # -- ClusterIP of the enterprise gateway service
+    clusterIP: null
+    # -- Load balancer IPO address if service type is LoadBalancer for enterprise gateway service
+    loadBalancerIP: null
+    # -- Annotations for the enterprise gateway service
+    annotations: {}
+    # -- Labels for enterprise gateway service
+    labels: {}
 
   strategy:
     type: RollingUpdate
@@ -1755,7 +2212,7 @@ enterpriseGateway:
   # @default -- Defaults to allow skew no more then 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
-      topologyKey: failure-domain.beta.kubernetes.io/zone
+      topologyKey: topology.kubernetes.io/zone
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
@@ -1776,7 +2233,7 @@ enterpriseGateway:
             labelSelector:
               matchLabels:
                 {{- include "tempo.selectorLabels" (dict "ctx" . "component" "enterprise-gateway") | nindent 12 }}
-            topologyKey: failure-domain.beta.kubernetes.io/zone
+            topologyKey: topology.kubernetes.io/zone
 
   securityContext:
     {}
@@ -1832,3 +2289,15 @@ enterpriseGateway:
       - secretName: gem-gateway-tls
         hosts:
           - gateway.gem.example.com
+
+# -- Create extra manifests via values.
+extraObjects: []
+  # - apiVersion: "kubernetes-client.io/v1"
+  #   kind: ExternalSecret
+  #   metadata:
+  #     name: tempo-secrets
+  #   spec:
+  #     backendType: aws
+  #     data:
+  #       - key: secret-access-key
+  #         name: awssm-secret

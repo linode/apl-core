@@ -9,7 +9,7 @@ metadata:
     prometheus.io/service-monitor: "false"
   {{- with .Values.ingester.service.annotations }}
   annotations:
-  {{- toYaml . | nindent 4 }}
+    {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
 spec:
   type: ClusterIP

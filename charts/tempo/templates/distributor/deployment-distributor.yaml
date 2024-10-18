@@ -48,6 +48,10 @@ spec:
       {{- end }}
       enableServiceLinks: false
       {{- include "tempo.distributorImagePullSecrets" . | nindent 6 -}}
+      {{- with .Values.distributor.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - args:
             - -target=distributor
@@ -60,7 +64,7 @@ spec:
           imagePullPolicy: {{ .Values.tempo.image.pullPolicy }}
           name: distributor
           ports:
-            - containerPort: 7946
+            - containerPort: {{ include "tempo.memberlistBindPort" . }}
               name: http-memberlist
               protocol: TCP
             - containerPort: 3100
@@ -90,7 +94,7 @@ spec:
               name: zipkin
               protocol: TCP
             {{- end }}
-            {{- if .Values.traces.otlp.http }}
+            {{- if .Values.traces.otlp.http.enabled }}
             - containerPort: 4318
               name: otlp-http
               protocol: TCP
@@ -105,9 +109,14 @@ spec:
               name: opencensus
               protocol: TCP
             {{- end }}
-          {{- with .Values.distributor.extraEnv }}
+          {{- if or .Values.global.extraEnv .Values.distributor.extraEnv }}
           env:
-            {{- toYaml . | nindent 12 }}
+            {{- with .Values.global.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.distributor.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           {{- with .Values.distributor.extraEnvFrom }}
           envFrom:
@@ -124,6 +133,8 @@ spec:
           volumeMounts:
             - mountPath: /conf
               name: config
+            - mountPath: /runtime-config
+              name: runtime-config
             - mountPath: /var/tempo
               name: tempo-distributor-store
             {{- if .Values.enterprise.enabled }}
@@ -134,7 +145,7 @@ spec:
             {{- toYaml . | nindent 12 }}
             {{- end }}
       terminationGracePeriodSeconds: {{ .Values.distributor.terminationGracePeriodSeconds }}
-      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.Version }}
       {{- with .Values.distributor.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- tpl . $ | nindent 8 }}
@@ -155,6 +166,8 @@ spec:
       volumes:
         - name: config
           {{- include "tempo.configVolume" . | nindent 10 }}
+        - name: runtime-config
+          {{- include "tempo.runtimeVolume" . | nindent 10 }}
         - name: tempo-distributor-store
           emptyDir: {}
         {{- if .Values.enterprise.enabled }}

@@ -1,0 +1,12 @@
+{{- if not .Values.useExternalConfig }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ tpl .Values.externalRuntimeConfigName . }}
+  labels:
+    {{- include "tempo.labels" (dict "ctx" .) | nindent 4 }}
+  namespace: {{ .Release.Namespace | quote }}
+data:
+  overrides.yaml: |
+    {{ include "tempo.overridesConfig" . | nindent 4 }}
+{{- end }}

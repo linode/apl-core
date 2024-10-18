@@ -9,7 +9,7 @@ metadata:
     {{- include "tempo.labels" $dict | nindent 4 }}
   {{- with .Values.metricsGenerator.service.annotations }}
   annotations:
-  {{- toYaml . | nindent 4 }}
+    {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
 spec:
   ports:
