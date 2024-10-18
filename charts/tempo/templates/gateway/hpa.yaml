@@ -4,6 +4,7 @@ apiVersion: {{ $apiVersion }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "tempo.resourceName" (dict "ctx" . "component" "gateway") }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" (dict "ctx" . "component" "gateway") | nindent 4 }}
 spec:
@@ -13,6 +14,10 @@ spec:
     name: {{ include "tempo.resourceName" (dict "ctx" . "component" "gateway") }}
   minReplicas: {{ .Values.gateway.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.gateway.autoscaling.maxReplicas }}
+  {{- with .Values.gateway.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   metrics:
   {{- with .Values.gateway.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource
