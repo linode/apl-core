@@ -59,6 +59,10 @@ k8s:
       app: knative
       disablePolicyChecks: true
       disableIstioInjection: true
+    - name: knative-operator
+      app: knative
+      disablePolicyChecks: true
+      disableIstioInjection: true
     - name: kured
       app: kured
       disableIstioInjection: true

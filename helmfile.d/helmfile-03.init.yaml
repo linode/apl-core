@@ -75,25 +75,10 @@ releases:
     labels:
       pkg: kiali
     <<: *raw
-  - name: knative-serving-artifacts
-    installed: {{ $a | get "knative.enabled" }}
-    namespace: knative-serving
-    needs: [default/knative-operator]
-    # we have to disable validation as helmfile has a bug (it aggregates all manifests for all deps):
-    # https://github.com/helmfile/helmfile/issues/208 (TODO: check for updates)
-    disableValidationOnInstall: true
-    chart: ../charts/raw
-    labels:
-      init: true
-      pkg: knative
-    values:
-      - ../values/knative/knative-serving-raw.gotmpl
-    <<: *upgrade
   - name: knative-operator
     installed: {{ $a | get "knative.enabled" }}
-    namespace: default
+    namespace: knative-operator
     labels:
-      init: true
       pkg: knative
     <<: *default
   - name: loki-artifacts
