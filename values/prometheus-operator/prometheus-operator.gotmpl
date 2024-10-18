@@ -47,6 +47,8 @@ prometheusOperator:
     resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}    
 commonLabels:
   prometheus: system
+crds:
+  enabled: false
 prometheus:
   enabled: {{ $p.enabled }}
   thanosService:
@@ -178,6 +180,7 @@ grafana:
   fullnameOverride: po-grafana
   namespaceOverride: grafana
   defaultDashboardsTimezone: browser
+  assertNoLeakedSecrets: false
   image:
     {{- with $g | get "image.tag" nil }}
     tag: {{ . }}
