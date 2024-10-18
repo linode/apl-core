@@ -4,7 +4,6 @@ set -eu
 
 if [[ $(kubectl get applications.argoproj.io monitoring-prometheus-operator -n argocd 2>/dev/null) ]]; then
   kubectl delete applications.argoproj.io monitoring-prometheus-operator -n argocd
-  kubectl delete crd clustercompliancereports.aquasecurity.github.io
   kubectl delete crd alertmanagerconfigs.monitoring.coreos.com
   kubectl delete crd alertmanagers.monitoring.coreos.com
   kubectl delete crd podmonitors.monitoring.coreos.com
