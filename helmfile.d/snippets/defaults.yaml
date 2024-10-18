@@ -574,7 +574,7 @@ environments:
               queueSidecar:
                 requests:
                   cpu: 25m
-                  memory: 256Mi
+                  memory: 64Mi
                 limits:
                   cpu: "1"
                   memory: 512Mi
