@@ -1,24 +1,25 @@
-{{- if .Values.querier.autoscaling.enabled }}
+{{- if and .Values.compactor.autoscaling.enabled .Values.compactor.autoscaling.hpa.enabled }}
 {{- $apiVersion := include "tempo.hpa.apiVersion" . -}}
 apiVersion: {{ $apiVersion }}
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "tempo.resourceName" (dict "ctx" . "component" "querier") }}
+  name: {{ include "tempo.resourceName" (dict "ctx" . "component" "compactor") }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    {{- include "tempo.labels" (dict "ctx" . "component" "querier") | nindent 4 }}
+    {{- include "tempo.labels" (dict "ctx" . "component" "compactor") | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "tempo.resourceName" (dict "ctx" . "component" "querier") }}
-  minReplicas: {{ .Values.querier.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.querier.autoscaling.maxReplicas }}
-  {{- with .Values.querier.autoscaling.behavior }}
+    name: {{ include "tempo.resourceName" (dict "ctx" . "component" "compactor") }}
+  minReplicas: {{ .Values.compactor.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.compactor.autoscaling.maxReplicas }}
+  {{- with .Values.compactor.autoscaling.hpa.behavior }}
   behavior:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   metrics:
-  {{- with .Values.querier.autoscaling.targetMemoryUtilizationPercentage }}
+  {{- with .Values.compactor.autoscaling.hpa.targetMemoryUtilizationPercentage }}
     - type: Resource
       resource:
         name: memory
@@ -30,7 +31,7 @@ spec:
         targetAverageUtilization: {{ . }}
         {{- end }}
   {{- end }}
-  {{- with .Values.querier.autoscaling.targetCPUUtilizationPercentage }}
+  {{- with .Values.compactor.autoscaling.hpa.targetCPUUtilizationPercentage }}
     - type: Resource
       resource:
         name: cpu
