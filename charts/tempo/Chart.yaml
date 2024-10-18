@@ -4,7 +4,6 @@ description: Grafana Tempo in MicroService mode
 type: application
 version: 1.18.5
 appVersion: 2.6.0
-engine: gotpl
 home: https://grafana.com/docs/tempo/latest/
 icon: https://raw.githubusercontent.com/grafana/tempo/master/docs/tempo/website/logo_and_name.png
 sources:
