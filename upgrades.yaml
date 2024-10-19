@@ -89,4 +89,4 @@ operations:
       - upgrades/pre/upgrade-3-0-0.sh || true
   - version: 3.0.1
     pre:
-      - upgrades/pre/upgrade-3-0-1.sh || true
+      - upgrades/pre/upgrade-3-0-1.sh || false
