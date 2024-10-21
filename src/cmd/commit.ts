@@ -146,6 +146,7 @@ export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak
+  const platformAdminUser = values?.users?.find((user) => user.email === 'platform-admin@local.host')
   const message = `
   ########################################################################################################################################
   #
@@ -155,6 +156,9 @@ export const printWelcomeMessage = async (): Promise<void> => {
   #  Sign in to the web console with the following credentials:
   #    - Username: "${credentials.adminUsername}"
   #    - Password: "${credentials.adminPassword}"
+  #  ---------------------------------------------
+  #    - Username: "${platformAdminUser?.email}"
+  #    - Password: "${platformAdminUser?.initialPassword}"
   #
   ########################################################################################################################################`
   d.info(message)
