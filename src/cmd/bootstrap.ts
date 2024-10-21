@@ -210,12 +210,12 @@ export const addInitialPasswords = (users: any[], deps = { generatePassword }) =
 }
 
 export const addPlatformAdminUser = (users: any[], deps = { generatePassword }) => {
-  const defaultPlatformAdminUser = users.find((user) => user.email === 'platform-admin@local.host')
+  const defaultPlatformAdminUser = users.find((user) => user.email === 'platform-admin@clo.ud')
   if (defaultPlatformAdminUser) return
   const platformAdminUser = {
-    email: 'platform-admin@local.host',
-    firstName: 'platform-admin',
-    lastName: 'localhost',
+    email: 'platform-admin@clo.ud',
+    firstName: 'platform',
+    lastName: 'admin',
     isPlatformAdmin: true,
     isTeamAdmin: false,
     teams: [],
