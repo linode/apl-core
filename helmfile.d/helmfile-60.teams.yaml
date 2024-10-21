@@ -125,7 +125,7 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               secureJsonData: 
-                basicAuthPassword: {{ $team.password }}
+                basicAuthPassword: {{ $team.password | quote }}
               jsonData:
                 derivedFields:
                   - datasourceName: Tempo
