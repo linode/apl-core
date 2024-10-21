@@ -267,8 +267,7 @@ trivyOperator:
   #    hostPath:
   #    path: /var/lib/etcd
 
-  # -- useGCRServiceAccount the flag to enable the usage of GCR service account for scanning images in GCR
-  useGCRServiceAccount: true
+
   # -- scanJobAutomountServiceAccountToken the flag to enable automount for service account token on scan job
   scanJobAutomountServiceAccountToken: false
 
@@ -340,7 +339,7 @@ trivy:
     # -- repository of the Trivy image
     repository: aquasecurity/trivy
     # -- tag version of the Trivy image
-    tag: 0.53.0
+    tag: 0.52.0
     # -- imagePullSecret is the secret name to be used when pulling trivy image from private registries example : reg-secret
     # It is the user responsibility to create the secret for the private registry in `trivy-operator` namespace
     imagePullSecret: ~
@@ -539,9 +538,7 @@ trivy:
   # -- The Flag to enable the usage of builtin rego policies by default, these policies are downloaded by default from ghcr.io/aquasecurity/trivy-checks
   #
   useBuiltinRegoPolicies: "true"
-  # -- The Flag to enable the usage of external rego policies config-map, this should be used when the user wants to use their own rego policies
-  #
-  externalRegoPoliciesEnabled: false
+
   # -- To enable the usage of embedded rego policies, set the flag useEmbeddedRegoPolicies. This should serve as a fallback for air-gapped environments.
   # When useEmbeddedRegoPolicies is set to true, useBuiltinRegoPolicies should be set to false.
   useEmbeddedRegoPolicies: "false"
@@ -597,24 +594,11 @@ trivy:
 
 compliance:
   # -- failEntriesLimit the flag to limit the number of fail entries per control check in the cluster compliance detail report
-  # this limit is for preventing the report from being too large per control checks
   failEntriesLimit: 10
   # -- reportType this flag control the type of report generated (summary or all)
   reportType: summary
   # -- cron this flag control the cron interval for compliance report generation
   cron: 0 */6 * * *
-  # -- specs is a list of compliance specs to be used by the cluster compliance scanner
-  #  - k8s-cis-1.23
-  #  - k8s-nsa-1.0
-  #  - k8s-pss-baseline-0.1
-  #  - k8s-pss-restricted-0.1
-  #  - eks-cis-1.4
-  #  - rke2-cis-1.24
-  specs:
-    - k8s-cis-1.23
-    - k8s-nsa-1.0
-    - k8s-pss-baseline-0.1
-    - k8s-pss-restricted-0.1
 
 rbac:
   create: true
@@ -706,7 +690,7 @@ nodeCollector:
   # -- repository of the node-collector image
   repository: aquasecurity/node-collector
   # -- tag version of the node-collector image
-  tag: 0.3.1
+  tag: 0.2.1
   # -- imagePullSecret is the secret name to be used when pulling node-collector image from private registries example : reg-secret
   # It is the user responsibility to create the secret for the private registry in `trivy-operator` namespace
   imagePullSecret: ~

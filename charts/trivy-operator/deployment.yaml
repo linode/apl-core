@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "trivy-operator.fullname" . }}
+  namespace: {{ include "trivy-operator.namespace" . }}
+  {{- with .Values.operator.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels: 
+    {{- include "trivy-operator.labels" . | nindent 4 }}
+    {{- with .Values.operator.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.operator.replicas }}
+  {{- with .Values.operator.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ . }}
+  {{- end }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {{- include "trivy-operator.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "trivy-operator.selectorLabels" . | nindent 8 }}
+        {{- with .Values.operator.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "trivy-operator.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      containers:
+        - name: {{ .Chart.Name | quote }}
+          image: "{{ include "global.imageRegistry" . | default .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          {{- with .Values.image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          env:
+            - name: OPERATOR_NAMESPACE
+              value: {{ include "trivy-operator.namespace" . }}
+            - name: OPERATOR_TARGET_NAMESPACES
+              value: {{ .Values.targetNamespaces | quote }}
+            - name: OPERATOR_EXCLUDE_NAMESPACES
+              value: {{ .Values.excludeNamespaces | quote }}
+            - name: OPERATOR_TARGET_WORKLOADS
+              value: {{ tpl .Values.targetWorkloads . | quote }}
+            - name: OPERATOR_SERVICE_ACCOUNT
+              value: {{ include "trivy-operator.serviceAccountName" . | quote }}
+          envFrom:
+            - configMapRef:
+                name: trivy-operator-config
+            {{- if .Values.operator.valuesFromConfigMap }}
+            - configMapRef:
+                name: {{ .Values.operator.valuesFromConfigMap }}
+            {{- end }}
+            {{- if .Values.operator.valuesFromSecret }}
+            - secretRef:
+                name: {{ .Values.operator.valuesFromSecret }}
+            {{- end }}
+          ports:
+            - name: metrics
+              containerPort: 8080
+            - name: probes
+              containerPort: 9090
+          readinessProbe:
+            httpGet:
+              path: /readyz/
+              port: probes
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz/
+              port: probes
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+          {{- with .Values.resources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.securityContext }}
+          securityContext: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts: {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.volumes }}
+      volumes: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
