@@ -1,0 +1,6 @@
+tplValue: "This is a test value for the template function"
+extraEnv:
+  - name: TEST_ENV_VAR_1
+    value: test_value_1
+  - name: TEST_ENV_VAR_2
+    value: '{{ .Values.tplValue }}'
