@@ -1,0 +1,15 @@
+You have installed Trivy Operator in the {{ include "trivy-operator.namespace" . }} namespace.
+It is configured to discover Kubernetes workloads and resources in
+{{ tpl .Values.targetNamespaces . | default "all" }} namespace(s).
+
+Inspect created VulnerabilityReports by:
+
+    kubectl get vulnerabilityreports --all-namespaces -o wide
+
+Inspect created ConfigAuditReports by:
+
+    kubectl get configauditreports --all-namespaces -o wide
+
+Inspect the work log of trivy-operator by:
+
+    kubectl logs -n {{ include "trivy-operator.namespace" . }} deployment/{{ include "trivy-operator.fullname" . }}
