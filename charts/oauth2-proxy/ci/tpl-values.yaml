@@ -1,0 +1,29 @@
+extraEnv:
+  - name: TEST_ENV_VAR_2
+    value: '{{ $.Release.Name }}'
+ingress:
+  enabled: true
+  hosts:
+    - "{{ $.Release.Name }}.local"
+  tls:
+    - hosts:
+        - "{{ $.Release.Name }}.local"
+oauth2-proxy:
+  checkDeprecation: false
+  config:
+    clientSecret: '{{ $.Release.Name }}'
+    configFile: |
+      oidc_issuer_url = "https://{{ $.Release.Name }}/dex"
+
+pass_authorization_header: "true"
+
+extraArgs:
+  pass-authorization-header: "{{ $.Values.pass_authorization_header }}"
+
+extraVolumes:
+  - name: "{{ $.Release.Name }}-secret"
+    secret:
+      secretName: "{{ .Release.Name }}-secret"
+      items:
+        - key: secret
+          path: secret

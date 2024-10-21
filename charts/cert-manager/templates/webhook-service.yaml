@@ -18,6 +18,12 @@ metadata:
     {{- end }}
 spec:
   type: {{ .Values.webhook.serviceType }}
+  {{- if .Values.webhook.serviceIPFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.webhook.serviceIPFamilyPolicy }}
+  {{- end }}
+  {{- if .Values.webhook.serviceIPFamilies }}
+  ipFamilies: {{ .Values.webhook.serviceIPFamilies | toYaml | nindent 2 }}
+  {{- end }}
   {{- with .Values.webhook.loadBalancerIP }}
   loadBalancerIP: {{ . }}
   {{- end }}
@@ -26,6 +32,12 @@ spec:
     port: 443
     protocol: TCP
     targetPort: "https"
+{{- if and .Values.prometheus.enabled (not .Values.prometheus.podmonitor.enabled) }}
+  - name: metrics
+    port: 9402
+    protocol: TCP
+    targetPort: "http-metrics"
+{{- end }}
   selector:
     app.kubernetes.io/name: {{ include "webhook.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
