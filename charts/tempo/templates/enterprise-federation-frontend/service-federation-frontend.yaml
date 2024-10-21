@@ -1,0 +1,28 @@
+{{- if .Values.enterprise.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tempo.resourceName" (dict "ctx" . "component" "enterprise-federation-frontend") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tempo.labels" (dict "ctx" . "component" "enterprise-federation-frontend") | nindent 4 }}
+  {{- with .Values.enterpriseFederationFrontend.service.annotations }}
+  annotations:
+    {{- tpl (toYaml . | nindent 4) $ }}
+  {{- end }}
+spec:
+  type: {{ .Values.enterpriseFederationFrontend.service.type }}
+  ports:
+    - name: http-metrics
+      port: 3100
+      targetPort: 3100
+  {{- if .Values.enterpriseFederationFrontend.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.enterpriseFederationFrontend.service.loadBalancerIP  }}
+  {{- end }}
+  {{- with .Values.enterpriseFederationFrontend.service.loadBalancerSourceRanges}}
+  loadBalancerSourceRanges:
+    {{ toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    {{- include "tempo.selectorLabels" (dict "ctx" . "component" "enterprise-federation-frontend") | nindent 4 }}
+{{- end }}

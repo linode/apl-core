@@ -31,3 +31,11 @@ Return if ingress supports pathType.
 {{- define "tempo.ingress.supportsPathType" -}}
   {{- or (eq (include "tempo.ingress.isStable" .) "true") (and (eq (include "tempo.ingress.apiVersion" .) "networking.k8s.io/v1beta1") (semverCompare ">= 1.18-0" .Capabilities.KubeVersion.Version)) -}}
 {{- end -}}
+
+{{/*
+enterpriseGateway imagePullSecrets
+*/}}
+{{- define "tempo.enterpriseGatewayImagePullSecrets" -}}
+{{- $dict := dict "tempo" .Values.tempo.image "component" .Values.enterpriseGateway.image "global" .Values.global.image -}}
+{{- include "tempo.imagePullSecrets" $dict -}}
+{{- end }}
