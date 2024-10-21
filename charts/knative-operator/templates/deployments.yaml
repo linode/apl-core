@@ -1,0 +1,150 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operator-webhook
+  namespace: knative-operator
+  labels:
+    app.kubernetes.io/component: operator-webhook
+    app.kubernetes.io/version: "1.15.6"
+    app.kubernetes.io/name: knative-operator
+spec:
+  selector:
+    matchLabels:
+      app: operator-webhook
+      role: operator-webhook
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: operator-webhook
+        role: operator-webhook
+        app.kubernetes.io/component: operator-webhook
+        app.kubernetes.io/version: "1.15.6"
+        app.kubernetes.io/name: knative-operator
+    spec:
+      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: operator-webhook
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      serviceAccountName: operator-webhook
+      containers:
+        - name: operator-webhook
+          # This is the Go import path for the binary that is containerized
+          # and substituted here.
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook@sha256:9d0c7b27f2451d69ad0c48752795453bd73d36fbd918583432f70cfc214844fa
+          resources: {{- toYaml .Values.webhook.resources | nindent 12 }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+            - name: WEBHOOK_NAME
+              value: operator-webhook
+            - name: WEBHOOK_PORT
+              value: "8443"
+            - name: WEBHOOK_SECRET_NAME
+              value: operator-webhook-certs
+            - name: METRICS_DOMAIN
+              value: knative.dev/operator
+            - name: KUBERNETES_MIN_VERSION
+              value: ""
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - all
+          ports:
+            - name: metrics
+              containerPort: 9090
+            - name: profiling
+              containerPort: 8008
+            - name: https-webhook
+              containerPort: 8443
+          readinessProbe:
+            periodSeconds: 1
+            httpGet:
+              scheme: HTTPS
+              port: 8443
+              httpHeaders:
+                - name: k-kubelet-probe
+                  value: "webhook"
+          livenessProbe:
+            periodSeconds: 1
+            httpGet:
+              scheme: HTTPS
+              port: 8443
+              httpHeaders:
+                - name: k-kubelet-probe
+                  value: "webhook"
+            failureThreshold: 6
+            initialDelaySeconds: 120
+      # Our webhook should gracefully terminate by lame ducking first, set this to a sufficiently
+      # high value that we respect whatever value it has configured for the lame duck grace period.
+      terminationGracePeriodSeconds: 300
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knative-operator
+  namespace: knative-operator
+  labels:
+    app.kubernetes.io/name: knative-operator
+    app.kubernetes.io/version: "1.15.6"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: knative-operator
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        name: knative-operator
+        app.kubernetes.io/name: knative-operator
+        app.kubernetes.io/version: "1.15.6"
+    spec:
+      serviceAccountName: knative-operator
+      containers:
+        - name: knative-operator
+          image: gcr.io/knative-releases/knative.dev/operator/cmd/operator@sha256:b10acd7eb8e2f931df18ae71315eafb54547b1d422f4d8198f1483f9088b43ce
+          imagePullPolicy: IfNotPresent
+          resources: {{- toYaml .Values.operator.resources | nindent 12 }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: METRICS_DOMAIN
+              value: knative.dev/operator
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability
+            - name: KUBERNETES_MIN_VERSION
+              value: ""
+          ports:
+            - name: metrics
+              containerPort: 9090
+---
