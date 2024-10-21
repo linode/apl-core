@@ -15,6 +15,10 @@ metadata:
   {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  {{- /* The if statement below is equivalent to {{- if $value }} but will also return true for 0. */ -}}
+  {{- if not (has (quote .Values.global.revisionHistoryLimit) (list "" (quote ""))) }}
+  revisionHistoryLimit: {{ .Values.global.revisionHistoryLimit }}
+  {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ template "cert-manager.name" . }}
@@ -39,7 +43,7 @@ spec:
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if and .Values.prometheus.enabled (not .Values.prometheus.servicemonitor.enabled) }}
+      {{- if and .Values.prometheus.enabled (not (or .Values.prometheus.servicemonitor.enabled .Values.prometheus.podmonitor.enabled)) }}
       {{- if not .Values.podAnnotations }}
       annotations:
       {{- end }}
@@ -52,6 +56,7 @@ spec:
       {{- if hasKey .Values "automountServiceAccountToken" }}
       automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
       {{- end }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
       {{- with .Values.global.priorityClassName }}
       priorityClassName: {{ . | quote }}
       {{- end }}
@@ -59,20 +64,30 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.volumes }}
+      {{- if or .Values.volumes .Values.config}}
       volumes:
+        {{- if .Values.config }}
+        - name: config 
+          configMap: 
+            name: {{ include "cert-manager.fullname" . }}
+        {{- end }}
+        {{ with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}-controller
-          {{- with .Values.image }}
-          image: "{{- if .registry -}}{{ .registry }}/{{- end -}}{{ .repository }}{{- if (.digest) -}} @{{ .digest }}{{- else -}}:{{ default $.Chart.AppVersion .tag }} {{- end -}}"
-          {{- end }}
+          image: "{{ template "image" (tuple .Values.image $.Chart.AppVersion) }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-          {{- if .Values.global.logLevel }}
+          {{- /* The if statement below is equivalent to {{- if $value }} but will also return true for 0. */ -}}
+          {{- if not (has (quote .Values.global.logLevel) (list "" (quote ""))) }}
           - --v={{ .Values.global.logLevel }}
           {{- end }}
+          {{- if .Values.config }}
+          - --config=/var/cert-manager/config/config.yaml
+          {{- end }}
+          {{- $config := default .Values.config "" }}
           {{- if .Values.clusterResourceNamespace }}
           - --cluster-resource-namespace={{ .Values.clusterResourceNamespace }}
           {{- else }}
@@ -113,17 +128,38 @@ spec:
           {{- if .Values.maxConcurrentChallenges }}
           - --max-concurrent-challenges={{ .Values.maxConcurrentChallenges }}
           {{- end }}
+          {{- if .Values.enableCertificateOwnerRef }}
+          - --enable-certificate-owner-ref=true
+          {{- end }}
+          {{- if .Values.dns01RecursiveNameserversOnly }}
+          - --dns01-recursive-nameservers-only=true
+          {{- end }}
+          {{- with .Values.dns01RecursiveNameservers }}
+          - --dns01-recursive-nameservers={{ . }}
+          {{- end }}
+          {{- if .Values.disableAutoApproval }}
+          - --controllers=-certificaterequests-approver
+          {{- end }}
           ports:
           - containerPort: 9402
             name: http-metrics
+            protocol: TCP
+          - containerPort: 9403
+            name: http-healthz
             protocol: TCP
           {{- with .Values.containerSecurityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
+          {{- if or .Values.config .Values.volumeMounts }}
           volumeMounts:
+            {{- if .Values.config }}
+            - name: config 
+              mountPath: /var/cert-manager/config
+            {{- end }}
+            {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           env:
           - name: POD_NAMESPACE
@@ -149,6 +185,24 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+
+          {{- with .Values.livenessProbe }}
+          {{- if .enabled }}
+          # LivenessProbe settings are based on those used for the Kubernetes
+          # controller-manager. See:
+          # https://github.com/kubernetes/kubernetes/blob/806b30170c61a38fedd54cc9ede4cd6275a1ad3b/cmd/kubeadm/app/util/staticpod/utils.go#L241-L245
+          livenessProbe:
+            httpGet:
+              port: http-healthz
+              path: /livez
+              scheme: HTTP
+            initialDelaySeconds: {{ .initialDelaySeconds }}
+            periodSeconds: {{ .periodSeconds }}
+            timeoutSeconds: {{ .timeoutSeconds }}
+            successThreshold: {{ .successThreshold }}
+            failureThreshold: {{ .failureThreshold }}
+          {{- end }}
+          {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -171,4 +225,7 @@ spec:
       {{- with .Values.podDnsConfig }}
       dnsConfig:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases: {{ toYaml . | nindent 8 }}
       {{- end }}

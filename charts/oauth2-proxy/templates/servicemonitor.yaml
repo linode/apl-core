@@ -1,0 +1,57 @@
+{{- if and .Values.metrics.enabled .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  {{- with .Values.metrics.serviceMonitor.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  name: {{ template "oauth2-proxy.fullname" . }}
+{{- if .Values.metrics.serviceMonitor.namespace }}
+  namespace: {{ .Values.metrics.serviceMonitor.namespace }}
+{{- else }}
+  namespace: {{ template "oauth2-proxy.namespace" $ }}
+{{- end }}
+  labels:
+    prometheus: {{ .Values.metrics.serviceMonitor.prometheusInstance }}
+    app: {{ template "oauth2-proxy.name" . }}
+{{- include "oauth2-proxy.labels" . | indent 4 }}
+{{- if .Values.metrics.serviceMonitor.labels }}
+{{ toYaml .Values.metrics.serviceMonitor.labels | indent 4}}
+{{- end }}
+spec:
+  jobLabel: {{ template "oauth2-proxy.fullname" . }}
+  selector:
+    matchLabels:
+      {{- include "oauth2-proxy.selectorLabels" . | indent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ template "oauth2-proxy.namespace" $ }}
+  endpoints:
+  - port: metrics
+    path: "/metrics"
+    {{- with .Values.metrics.serviceMonitor.interval }}
+    interval: {{ . }}
+    {{- end }}
+    {{- with .Values.metrics.serviceMonitor.scrapeTimeout }}
+    scrapeTimeout: {{ . }}
+    {{- end }}
+    {{- with .Values.metrics.serviceMonitor.scheme }}
+    scheme: {{ . }}
+    {{- end }}
+    {{- with .Values.metrics.serviceMonitor.bearerTokenFile }}
+    bearerTokenFile: {{ . }}
+    {{- end }}
+    {{- with .Values.metrics.serviceMonitor.tlsConfig }}
+    tlsConfig:
+      {{- toYaml .| nindent 6 }}
+    {{- end }}
+    {{- with .Values.metrics.serviceMonitor.metricRelabelings }}
+    metricRelabelings:
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.metrics.serviceMonitor.relabelings }}
+    relabelings:
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}
