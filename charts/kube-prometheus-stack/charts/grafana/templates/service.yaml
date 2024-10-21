@@ -21,9 +21,12 @@ spec:
   clusterIP: {{ . }}
   {{- end }}
   {{- else if eq .Values.service.type "LoadBalancer" }}
-  type: {{ .Values.service.type }}
+  type: LoadBalancer
   {{- with .Values.service.loadBalancerIP }}
   loadBalancerIP: {{ . }}
+  {{- end }}
+  {{- with .Values.service.loadBalancerClass }}
+  loadBalancerClass: {{ . }}
   {{- end }}
   {{- with .Values.service.loadBalancerSourceRanges }}
   loadBalancerSourceRanges:
@@ -32,9 +35,18 @@ spec:
   {{- else }}
   type: {{ .Values.service.type }}
   {{- end }}
+  {{- if .Values.service.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.service.ipFamilyPolicy }}
+  {{- end }}
+  {{- if .Values.service.ipFamilies }}
+  ipFamilies: {{ .Values.service.ipFamilies | toYaml | nindent 2 }}
+  {{- end }}
   {{- with .Values.service.externalIPs }}
   externalIPs:
     {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ . }}
   {{- end }}
   ports:
     - name: {{ .Values.service.portName }}
