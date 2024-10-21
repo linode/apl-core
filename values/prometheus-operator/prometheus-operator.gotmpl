@@ -205,6 +205,7 @@ grafana:
     enabled: false  
   plugins:
     - grafana-piechart-panel
+    - loki
   additionalDataSources:
     {{- if $c.loki.enabled }}
     - name: Loki
