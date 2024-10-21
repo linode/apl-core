@@ -23,6 +23,7 @@ serviceMonitor:
 trivy:
   mode: Standalone
   resources: {{- $t.resources.trivy | toYaml | nindent 2 }}
+  ignoreUnfixed: true
 
 podSecurityContext:
   runAsUser: 1001
