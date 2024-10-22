@@ -1,0 +1,29 @@
+{{- if .Values.monitoring.podMonitorEnabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "cloudnative-pg.fullname" . }}
+  labels:
+    {{- include "cloudnative-pg.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.podMonitorAdditionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end}}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "cloudnative-pg.selectorLabels" . | nindent 6 }}
+  podMetricsEndpoints:
+    - port: metrics
+      {{- with .Values.monitoring.podMonitorMetricRelabelings }}
+      metricRelabelings:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- with .Values.monitoring.podMonitorRelabelings }}
+      relabelings:
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+{{- end }}
