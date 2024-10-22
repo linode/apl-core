@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $i := $v.apps | get "istio" }}
 hub: istio
-# tag: {{ $i | get "image.tag" "1.15.1" }}
+tag: 1.22.5
 
 operatorNamespace: istio-operator
 
