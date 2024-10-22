@@ -1,3 +1,5 @@
+import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
+import retry from 'async-retry'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { encrypt } from 'src/common/crypt'
@@ -12,8 +14,6 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
-import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
-import retry from 'async-retry'
 
 const cmdName = getFilename(__filename)
 
@@ -177,31 +177,38 @@ export async function checkIfPipelineRunExists(): Promise<void> {
   d.info(`There is a Tekton PipelineRuns continuing...`)
 }
 
-async function createRootCredentialsSecret(credentials: { adminUsername: string; adminPassword: string }) {
-  const secretData = {
-    username: credentials.adminUsername,
-    password: credentials.adminPassword,
-  }
+async function createCredentialsSecret(secretName: string, username: string, password: string): Promise<void> {
+  const secretData = { username, password }
   const kc = new KubeConfig()
   kc.loadFromDefault()
   const coreV1Api = kc.makeApiClient(CoreV1Api)
-  await createGenericSecret(coreV1Api, 'root-credentials', 'default', secretData)
+  await createGenericSecret(coreV1Api, secretName, 'default', secretData)
 }
 
 export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
-  const credentials = values.apps.keycloak
-  await createRootCredentialsSecret({
-    adminUsername: credentials.adminUsername,
-    adminPassword: credentials.adminPassword,
-  })
+  const { adminUsername, adminPassword }: { adminUsername: string; adminPassword: string } = values.apps.keycloak
+  await createCredentialsSecret('root-credentials', adminUsername, adminPassword)
+
+  const platformAdmin = values.users.find((user: any) => user.email === env.DEFAULT_PLATFORM_ADMIN_EMAIL)
+  if (platformAdmin) {
+    const { email, initialPassword }: { email: string; initialPassword: string } = platformAdmin
+    await createCredentialsSecret('platform-admin-initial-credentials', email, initialPassword)
+  } else {
+    d.info('Default platform admin not found in users')
+  }
+  const platformAdminMessage = `
+  #
+  #  Perform: kubectl get secret platform-admin-initial-credentials -n default -o yaml
+  #  To obtain access credentials for the default platform admin user in base64 encoded format`
+
   const message = `
   ########################################################################################################################################
   #
   #  Visit the console at: https://console.${values.cluster.domainSuffix}
   #  Perform: kubectl get secret root-credentials -n default -o yaml
-  #  To obtain access credentials in base64 encoded format
+  #  To obtain access credentials in base64 encoded format ${platformAdmin ? platformAdminMessage : ''}
   #
   ########################################################################################################################################`
   d.info(message)

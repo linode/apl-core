@@ -8,7 +8,7 @@ apps:
   metrics-server:
     enabled: false
 users:
-  - email: platform@admin.local
+  - email: platform-admin@local.host
     firstName: platform
     lastName: admin
     isPlatformAdmin: true
