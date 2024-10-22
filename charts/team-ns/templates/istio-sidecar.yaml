@@ -25,7 +25,7 @@ spec:
     mode: ALLOW_ANY
   workloadSelector:
     labels:
-      app.kubernetes.io/instance: po-prometheus
+      app.kubernetes.io/instance: prometheus-labs
 {{- end }}
 {{- end }}
 {{- end }}
