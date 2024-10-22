@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-observability
+  namespace: knative-operator
+  labels:
+    app.kubernetes.io/version: "1.15.6"
+    app.kubernetes.io/name: knative-operator
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # logging.enable-var-log-collection defaults to false.
+    # The fluentd daemon set will be set up to collect /var/log if
+    # this flag is true.
+    logging.enable-var-log-collection: false
+
+    # logging.revision-url-template provides a template to use for producing the
+    # logging URL that is injected into the status of each Revision.
+    # This value is what you might use the the Knative monitoring bundle, and provides
+    # access to Kibana after setting up kubectl proxy.
+    logging.revision-url-template: |
+      http://localhost:8001/api/v1/namespaces/knative-monitoring/services/kibana-logging/proxy/app/kibana#/discover?_a=(query:(match:(kubernetes.labels.serving-knative-dev%2FrevisionUID:(query:'${REVISION_UID}',type:phrase))))
+
+    # metrics.backend-destination field specifies the system metrics destination.
+    # It supports either prometheus (the default) or stackdriver.
+    # Note: Using stackdriver will incur additional charges
+    metrics.backend-destination: prometheus
+
+    # metrics.request-metrics-backend-destination specifies the request metrics
+    # destination. If non-empty, it enables queue proxy to send request metrics.
+    # Currently supported values: prometheus, stackdriver.
+    metrics.request-metrics-backend-destination: prometheus
+
+    # metrics.stackdriver-project-id field specifies the stackdriver project ID. This
+    # field is optional. When running on GCE, application default credentials will be
+    # used if this field is not provided.
+    metrics.stackdriver-project-id: "<your stackdriver project id>"
+
+    # metrics.allow-stackdriver-custom-metrics indicates whether it is allowed to send metrics to
+    # Stackdriver using "global" resource type and custom metric type if the
+    # metrics are not supported by "knative_revision" resource type. Setting this
+    # flag to "true" could cause extra Stackdriver charge.
+    # If metrics.backend-destination is not Stackdriver, this is ignored.
+    metrics.allow-stackdriver-custom-metrics: "false"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-logging
+  namespace: knative-operator
+  labels:
+    app.kubernetes.io/version: "1.15.6"
+    app.kubernetes.io/name: knative-operator
+data:
+  _example: |
+    ################################
+    #                              #
+    #    EXAMPLE CONFIGURATION     #
+    #                              #
+    ################################
+
+    # This block is not actually functional configuration,
+    # but serves to illustrate the available configuration
+    # options and document them in a way that is accessible
+    # to users that `kubectl edit` this config map.
+    #
+    # These sample configuration options may be copied out of
+    # this example block and unindented to be in the data block
+    # to actually change the configuration.
+
+    # Common configuration for all Knative codebase
+    zap-logger-config: |
+      {
+        "level": "info",
+        "development": false,
+        "outputPaths": ["stdout"],
+        "errorOutputPaths": ["stderr"],
+        "encoding": "json",
+        "encoderConfig": {
+          "timeKey": "ts",
+          "levelKey": "level",
+          "nameKey": "logger",
+          "callerKey": "caller",
+          "messageKey": "msg",
+          "stacktraceKey": "stacktrace",
+          "lineEnding": "",
+          "levelEncoder": "",
+          "timeEncoder": "iso8601",
+          "durationEncoder": "",
+          "callerEncoder": ""
+        }
+      }
+---
