@@ -1,6 +1,5 @@
 {{- $v := .Values | merge (dict) }}
 {{- $ := . }}
-{{- $alertmanager := dig "managedMonitoring" "alertmanager" false $v }}
 {{- if not (eq $v.teamId "admin") }}
 {{- $egressFilteringEnabled := $v | dig "networkPolicy" "egressPublic" true }}
 {{- if $egressFilteringEnabled }}
@@ -13,7 +12,6 @@ metadata:
 spec:
   outboundTrafficPolicy: 
     mode: REGISTRY_ONLY
-{{- if $alertmanager }}
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: Sidecar
@@ -26,6 +24,6 @@ spec:
   workloadSelector:
     labels:
       app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
-{{- end }}
+      app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
 {{- end }}
 {{- end }}
