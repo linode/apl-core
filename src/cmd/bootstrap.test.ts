@@ -271,7 +271,7 @@ describe('Bootstrapping values', () => {
         getUsers: jest.fn().mockReturnValue(usersWithPasswords),
         generatePassword: jest.fn().mockReturnValue(generatedPassword),
         addInitialPasswords: jest.fn().mockReturnValue(usersWithPasswords),
-        addPlatformAdminUser: jest.fn().mockReturnValue(usersWithPasswords),
+        addPlatformAdmin: jest.fn().mockReturnValue(usersWithPasswords),
       }
     })
     describe('Creating CA', () => {
