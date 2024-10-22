@@ -1,4 +1,4 @@
-name: Deploy Otomi
+name: Deploy APL
 on:
   workflow_call:
     inputs:
@@ -7,25 +7,17 @@ on:
         type: string
         default: "['1.31']"
       install_profile:
-        description: 'Otomi installation profile'
+        description: 'APL installation profile'
         type: string
         default: minimal-with-team
-      cluster_persistence:
-        description: 'Should a cluster be destroyed on pipeline finish?'
-        type: string
-        default: destroy
       domain_zone:
         description: 'Select Domain Zone'
         type: string
         default: DNS-Integration
       kms:
-        description: 'Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?'
+        description: 'Should APL encrypt secrets in values repo (DNS or KMS is turned on)?'
         type: string
         default: age
-      generate_password:
-        description: 'Should a unique password be generated?'
-        type: string
-        default: 'yes'
       certificate:
         description: 'Select certificate issuer'
         type: string
@@ -45,7 +37,7 @@ on:
           - "['1.31']"
         default: "['1.31']"
       install_profile:
-        description: Otomi installation profile
+        description: APL installation profile
         default: minimal-with-team
         type: choice
         options:
@@ -54,14 +46,6 @@ on:
           - monitoring-with-team
           - full
           - upgrade
-          - no-otomi
-      cluster_persistence:
-        type: choice
-        description: Should a cluster be destroyed on pipeline finish?
-        options:
-          - preserve
-          - destroy
-        default: preserve
       domain_zone:
         type: choice
         description: 'Select Domain Zone'
@@ -70,18 +54,11 @@ on:
           - Zone-2
       kms:
         type: choice
-        description: Should Otomi encrypt secrets in values repo (DNS or KMS is turned on)?
+        description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
         options:
           - age
           - no_kms
         default: age
-      generate_password:
-        type: choice
-        description: Should a unique password be generated?
-        options:
-          - 'yes'
-          - 'no'
-        default: 'yes'
       certificate:
         type: choice
         description: Select certificate issuer
@@ -119,10 +96,8 @@ jobs:
           echo 'ref: ${{ github.event.pull_request.head.ref || github.ref }}'
           echo 'install_profile: ${{ inputs.install_profile }}'
           echo 'kubernetes_versions: ${{ inputs.kubernetes_versions }}'
-          echo 'cluster_persistence: ${{ inputs.cluster_persistence }}'
           echo 'kms: ${{ inputs.kms }}'
           echo 'domain_zone: ${{ inputs.domain_zone }}'
-          echo 'generate_password: ${{ inputs.generate_password }}'
           echo 'certificate: ${{ inputs.certificate }}'
           echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
 
@@ -142,7 +117,6 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test ;;
           esac
 
           if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
@@ -181,19 +155,30 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test ;;
+            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test-$RANDOM ;;
           esac
           echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
       - name: Determine exact k8s version
         run: |
           echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
+      - name: Creating domain for scheduled integration test
+        env:
+          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
+        run: |
+          # Generating a random 5 char string
+          RAND=$(openssl rand -hex 4)
+          DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
+          echo "::add-mask::$DOMAIN"
+          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
+
       - name: Determine domain name to use
+        if: ${{ inputs.domain_zone != 'DNS-Integration' }}
         run: |
           # Mapping of domain_zone to domain names
           case "${{ inputs.domain_zone }}" in
             "Zone-1") DOMAIN=$(jq '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
             "Zone-2") DOMAIN=$(jq '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "DNS-Integration") DOMAIN=$(jq '."DNS-Integration"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
           esac
 
           echo "::add-mask::$DOMAIN"
@@ -210,6 +195,7 @@ jobs:
             --node_pools.autoscaler.max 3 \
             --node_pools.autoscaler.min 3 \
             --tags testing \
+            --tags delete_me_tonight \
             --no-defaults
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
@@ -256,8 +242,7 @@ jobs:
             --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Prepare Otomi chart
-        if: ${{ inputs.install_profile != 'no-otomi' }}
+      - name: Prepare APL chart
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
@@ -266,7 +251,7 @@ jobs:
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
 
-          # If a pipeline installs Otomi from the semver tag then pull container image from DockerHub
+          # If a pipeline installs APL from the semver tag then pull container image from DockerHub
           [[ ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]] && exit 0
 
           # Pull image from cache registry
@@ -275,22 +260,22 @@ jobs:
           imagePullSecretNames:
             - reg-otomi-github
           EOF
-      - name: Otomi install
-        if: ${{ inputs.install_profile != 'no-otomi' }}
+      - name: APL install
         env:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
-          HOST: ${{ secrets.EDGEDNS_HOST }}
-          ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
-          CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
-          CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
+          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
+          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
+          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
+          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           touch values.yaml
-          adminPassword=welcomeotomi
+
+          adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
           [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider=age"
-          [[ '${{ inputs.generate_password }}' == 'yes' ]] && adminPassword="$(head /dev/urandom | tr -dc 'A-Za-z0-9' | head -c 24)"
 
           if [[ '${{ inputs.is_pre_installed }}' == 'true' ]]; then
             cat <<EOF >> values.yaml
@@ -313,16 +298,36 @@ jobs:
             --values values.yaml \
             --set cluster.provider=linode \
             --set dns.domainFilters[0]=${{ env.DOMAIN }} \
-            --set dns.provider.akamai.clientSecret=${CLIENT_SECRET} \
-            --set dns.provider.akamai.host=${HOST} \
-            --set dns.provider.akamai.accessToken=${ACCESS_TOKEN} \
-            --set dns.provider.akamai.clientToken=${CLIENT_TOKEN} \
+            --set dns.provider.akamai.clientSecret=${EDGEDNS_CLIENT_SECRET} \
+            --set dns.provider.akamai.host=${EDGEDNS_HOST} \
+            --set dns.provider.akamai.accessToken=${EDGEDNS_ACCESS_TOKEN} \
+            --set dns.provider.akamai.clientToken=${EDGEDNS_CLIENT_TOKEN} \
             --set otomi.hasExternalDNS=true \
             --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set otomi.adminPassword=$adminPassword \
             $kms"
 
-          helm install $install_args
+          helm install $install_args &
+          HELM_PID=$!
+          sleep 120
+
+          # While helm is installing we can crete the wildcard dns record
+          while true; do
+              PUB_IP=$(kubectl get svc ingress-nginx-platform-controller -n ingress -ojson | jq '.status.loadBalancer.ingress[0].ip' -r)
+              if [[ -n "$PUB_IP" ]]; then
+                echo "::add-mask::$PUB_IP"
+                echo PUB_IP=$PUB_IP >> $GITHUB_ENV
+                break
+              else
+                echo "Waiting for ingress-nginx-platform-controller IP..."
+                sleep 5
+              fi
+          done
+
+          pip3 install edgegrid-python requests
+          python3 bin/edgedns_A_record.py create $DOMAIN $PUB_IP
+
+          wait $HELM_PID
 
       - name: Gather k8s events on failure
         if: failure()
@@ -332,7 +337,7 @@ jobs:
         if: failure()
         run: |
           kubectl get pods -A -o wide
-      - name: Gather otomi logs on failure
+      - name: Gather APL logs on failure
         if: failure()
         run: |
           kubectl logs jobs/otomi --tail 150
@@ -341,10 +346,19 @@ jobs:
         run: |
           kubectl logs -n maintenance -l app.kubernetes.io/instance=job-e2e --tail 15000
       - name: Remove the test cluster
-        if: always()
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
         run: |
-          [[ "${{ inputs.cluster_persistence }}" == "preserve" ]] && echo "The cluster ${{ env.LINODE_CLUSTER_NAME }} will NOT be destroyed!!" && exit 0
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
+      - name: Delete Domain
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
+        env:
+          EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
+          EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
+          EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
+          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+          EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
+        run: |
+          python3 bin/edgedns_A_record.py delete $DOMAIN
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2

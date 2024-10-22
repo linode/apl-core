@@ -1,0 +1,4 @@
+extraArgs:
+  pass-authorization-header: "true"
+  request-logging: "true"
+  allowed-role: client_id:client_role

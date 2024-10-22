@@ -51,13 +51,13 @@ spec:
   #   kind: StatefulSet
   roles:
 {{- if $v.otomi.isMultitenant }}
-  # we create a scoped team-admin role since we are only allowed access to team-* projects as team-admin in multitenant setup
-  - name: team-admin
+  # we create a scoped platform-admin role since we are only allowed access to team-* projects as platform-admin in multitenant setup
+  - name: platform-admin
     description: Team member privileges to team-{{ $v.teamId }}
     policies:
-    - p, proj:team-{{ $v.teamId }}:team-admin, *, *, team-{{ $v.teamId }}/*, allow
+    - p, proj:team-{{ $v.teamId }}:platform-admin, *, *, team-{{ $v.teamId }}/*, allow
     groups:
-    - team-admin
+    - platform-admin
     - team-{{ $v.teamId }}
 {{- end }}
   - name: team-member

@@ -1,0 +1,8 @@
+{{- $v := .Values }}
+{{- $k := $v.apps.knative -}}
+
+webhook:
+  resources: {{- $k.resources.operatorWebhook | toYaml | nindent 4 }}
+
+operator:
+  resources: {{- $k.resources.operator | toYaml | nindent 4 }}
