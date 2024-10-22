@@ -286,7 +286,10 @@ grafana:
       # serve_from_sub_path: true
     security:
       allow_embedding: true
-
+    analytics:
+      check_for_updates: false
+      reporting_enabled: false
+      check_for_plugin_updates: false
 kubernetesServiceMonitors:
   enabled: {{ $p.enabled }}
 
