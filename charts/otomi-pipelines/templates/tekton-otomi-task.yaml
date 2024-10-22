@@ -82,4 +82,4 @@ spec:
         set -e
         # Prevent the detected dubious ownership in repository error
         git config --global --add safe.directory '*'
-        binzx/otomi apply
+        binzx/otomi apply --tekton
