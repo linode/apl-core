@@ -1,0 +1,12 @@
+{{- if .Values.checkDeprecation }}
+    {{- if .Values.service.port }}
+        {{ fail "`service.port` does no longer exist. It has been renamed to `service.portNumber`" }}
+    {{- end }}
+    {{- if eq ( include "capabilities.ingress.apiVersion" . ) "networking.k8s.io/v1" -}}
+        {{- range .Values.ingress.extraPaths }}
+            {{- if or (.backend.serviceName) (.backend.servicePort) }}
+                {{ fail "Please update the format of your `ingress.extraPaths` to the new ingress apiVersion `networking.k8s.io/v1` format" }}
+            {{- end }}
+        {{- end }}
+    {{- end }}
+{{- end }}

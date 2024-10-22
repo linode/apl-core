@@ -1,0 +1,14 @@
+ingress:
+  enabled: true
+  path: /
+  pathType: ImplementationSpecific
+  hosts:
+    - chart-example.local
+  extraPaths:
+    - path: /*
+      pathType: ImplementationSpecific
+      backend:
+        service:
+          name: ssl-redirect
+          port:
+            name: use-annotation

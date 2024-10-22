@@ -49,11 +49,7 @@ spec:
         args:
         - "--zap-log-level=info"
         - "--leader-election-id={{ include "kiali-operator.fullname" . }}"
-{{- if .Capabilities.APIVersions.Has "route.openshift.io/v1" }}
-        - "--watches-file=./watches-os.yaml"
-{{- else }}
-        - "--watches-file=./watches-k8s.yaml"
-{{- end }}
+        - "--watches-file=./$(WATCHES_FILE)"
         securityContext:
         {{- if .Values.securityContext }}
         {{- toYaml .Values.securityContext | nindent 10 }}
@@ -61,13 +57,14 @@ spec:
           allowPrivilegeEscalation: false
           privileged: false
           runAsNonRoot: true
+          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - ALL
         {{- end }}
         volumeMounts:
-        - mountPath: /tmp/ansible-operator/runner
-          name: runner
+        - mountPath: /tmp
+          name: tmp
         env:
         - name: WATCH_NAMESPACE
           value: {{ .Values.watchNamespace | default "\"\""  }}
@@ -109,6 +106,20 @@ spec:
         {{- else }}
           value: "/etc/ansible/ansible.cfg"
         {{- end }}
+        - name: ANSIBLE_LOCAL_TEMP
+          value: "/tmp/ansible/tmp"
+        - name: ANSIBLE_REMOTE_TEMP
+          value: "/tmp/ansible/tmp"
+        - name: WATCHES_FILE
+{{- if .Values.watchesFile }}
+          value: "{{ .Values.watchesFile }}"
+{{- else }}
+{{- if .Capabilities.APIVersions.Has "route.openshift.io/v1" }}
+          value: "watches-os.yaml"
+{{- else }}
+          value: "watches-k8s.yaml"
+{{- end }}
+{{- end }}
         {{- if .Values.env }}
         {{- toYaml .Values.env | nindent 8 }}
         {{- end }}
@@ -120,8 +131,8 @@ spec:
         {{- toYaml .Values.resources | nindent 10 }}
         {{- end }}
       volumes:
-      - name: runner
+      - name: tmp
         emptyDir: {}
       affinity:
       {{- toYaml .Values.affinity | nindent 8 }}
-...
+---
