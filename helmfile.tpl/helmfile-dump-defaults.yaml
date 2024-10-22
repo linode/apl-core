@@ -3,6 +3,9 @@ bases:
   - ../helmfile.d/snippets/defaults.yaml
 ---
 bases:
+  - ../helmfile.d/snippets/defaults.gotmpl
+---
+bases:
   - ../helmfile.d/snippets/env.gotmpl
 ---
 {{- $v := .Values }}
