@@ -16,7 +16,7 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: Sidecar
 metadata:
-  name: team-observability
+  name: team-grafana
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   outboundTrafficPolicy:
@@ -24,6 +24,17 @@ spec:
   workloadSelector:
     labels:
       app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: team-alertmanager
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  outboundTrafficPolicy:
+    mode: ALLOW_ANY
+  workloadSelector:
+    labels:
       app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
 {{- end }}
 {{- end }}
