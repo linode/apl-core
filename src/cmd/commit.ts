@@ -4,7 +4,7 @@ import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { waitTillGitRepoAvailable } from 'src/common/k8s'
+import { createGenericSecret, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -12,7 +12,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
-import { CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
+import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
 import retry from 'async-retry'
 
 const cmdName = getFilename(__filename)
@@ -106,8 +106,8 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   d.info('Cloned apl-charts in Gitea')
 }
 
-export async function retryCheckingForPipelinerun() {
-  const d = terminal(`cmd:${cmdName}:apply`)
+export async function retryCheckingForPipelineRun() {
+  const d = terminal(`cmd:${cmdName}:pipelineRun`)
   await retry(
     async () => {
       await checkIfPipelineRunExists()
@@ -119,8 +119,43 @@ export async function retryCheckingForPipelinerun() {
   })
 }
 
+export async function retryIsOAuth2ProxyRunning() {
+  const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
+  const kc = new KubeConfig()
+  kc.loadFromDefault()
+  const coreV1Api = kc.makeApiClient(CoreV1Api)
+  await retry(
+    async () => {
+      await isOAuth2ProxyAvailable(coreV1Api)
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  ).catch((e) => {
+    d.error('Error checking if OAuth2Proxy is ready:', e)
+    throw e
+  })
+}
+
+export async function isOAuth2ProxyAvailable(k8s: CoreV1Api): Promise<void> {
+  const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
+  d.info('Checking if OAuth2Proxy is available, waiting...')
+  const { body: oauth2ProxyEndpoint } = await k8s.readNamespacedEndpoints('oauth2-proxy', 'istio-system')
+  if (!oauth2ProxyEndpoint) {
+    throw new Error('OAuth2Proxy endpoint not found, waiting...')
+  }
+  const oauth2ProxySubsets = oauth2ProxyEndpoint.subsets
+  if (!oauth2ProxySubsets || oauth2ProxySubsets.length < 1) {
+    throw new Error('OAuth2Proxy has no subsets, waiting...')
+  }
+  const oauth2ProxyAddresses = oauth2ProxySubsets[0].addresses
+
+  if (!oauth2ProxyAddresses || oauth2ProxyAddresses.length < 1) {
+    throw new Error('OAuth2Proxy has no available addresses, waiting...')
+  }
+  d.info('OAuth2proxy is available, continuing...')
+}
+
 export async function checkIfPipelineRunExists(): Promise<void> {
-  const d = terminal(`cmd:${cmdName}:pipelinerun`)
+  const d = terminal(`cmd:${cmdName}:pipelineRun`)
   const kc = new KubeConfig()
   kc.loadFromDefault()
   const customObjectsApi = kc.makeApiClient(CustomObjectsApi)
@@ -142,19 +177,31 @@ export async function checkIfPipelineRunExists(): Promise<void> {
   d.info(`There is a Tekton PipelineRuns continuing...`)
 }
 
+async function createRootCredentialsSecret(credentials: { adminUsername: string; adminPassword: string }) {
+  const secretData = {
+    username: credentials.adminUsername,
+    password: credentials.adminPassword,
+  }
+  const kc = new KubeConfig()
+  kc.loadFromDefault()
+  const coreV1Api = kc.makeApiClient(CoreV1Api)
+  await createGenericSecret(coreV1Api, 'root-credentials', 'default', secretData)
+}
+
 export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
   const credentials = values.apps.keycloak
+  await createRootCredentialsSecret({
+    adminUsername: credentials.adminUsername,
+    adminPassword: credentials.adminPassword,
+  })
   const message = `
   ########################################################################################################################################
   #
-  #  Core apps installation complete! ArgoCD will now deploy the remaining applications. 
-  #  To monitor the progress, run: kubectl get applications -A
-  #  Once ArgoCD finishes, you can start using APL. Visit: https://console.${values.cluster.domainSuffix}
-  #  Sign in to the web console with the following credentials:
-  #    - Username: "${credentials.adminUsername}"
-  #    - Password: "${credentials.adminPassword}"
+  #  Visit the console at: https://console.${values.cluster.domainSuffix}
+  #  Perform: kubectl get secret root-credentials -n default -o yaml
+  #  To obtain access credentials in base64 encoded format
   #
   ########################################################################################################################################`
   d.info(message)
