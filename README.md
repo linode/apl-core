@@ -2,7 +2,7 @@
   <img src="https://github.com/linode/manager/blob/develop/packages/manager/src/assets/logo/akamai-logo-color.svg" width="200" />
   <br />
   <br />
-  Application Platform for Linode Kubernetes Engine
+  Akamai Application Platform (for LKE)
 </h3>
 
 <p align="center">
@@ -20,35 +20,43 @@
 
 ## Getting started
 
-### Helm
+### Step 1: [Install the Application Platform](https://apl-docs.net/docs/get-started/installation/overview)
+Install the Application Platform on Linode Kubernetes Engine (LKE) or any other conformant Kubernetes cluster.
 
-To install Application Platform for LKE, make sure to have a Kubernetes cluster running with at least:
+### Step 2: [Follow the post installation steps ](https://apl-docs.net/docs/get-started/installation/post-installation-steps)
+Configure the Application Platform for your use case.
 
-- Version `1.28`, `1.29` or `1.30`
-- A node pool with **8 vCPU** and **24GB RAM**
-- Calico CNI installed (or any other CNI that supports K8s network policies)
-- A default storage class configured
-- When using the `custom` provider, make sure the K8s LoadBalancer Service created by APL can obtain an external IP (using a cloud load balancer or MetalLB)
+### Step 3: [Explore the Application Platform using the Labs](https://apl-docs.net/docs/get-started/labs/overview)
+Explore the Application Platform with a comprehensive set of hands-on labs.
 
-> [TIP]  
-> Install APL with DNS to unlock it's full potential. Check [here](https://apl-docs.net/docs/get-started/installation/dns) for more information.
+## Akamai Application Platform supports
 
-Add the Helm repository:
+**Developers** - With easy self-service so you can focus on your apps
 
-```bash
-helm repo add apl https://linode.github.io/apl-core/
-helm repo update
-```
+- Build OCI compliant images from source code
+- Deploy containerized workloads the GitOps way using the provided quickstarts or BYO golden path templates
+- Automatically update container images of workloads
+- Publicly expose applications
+- Get instant access to logs, metrics and traces
+- Store images in a private registry
+- Configure network policies, response headers and CNAMEs
+- Check applications against a comprehensive set of build-in security policies
+- Create and manage secrets
+- Create private Git repositories and use the build-in CI/CD pipelines
 
-and then install the Helm chart:
+**Platform Administrators** - To setup a Kubernetes-based platform for developers and provide a paved road to production
 
-```bash
-helm install apl apl/apl \
---set cluster.name=$CLUSTERNAME \
---set cluster.provider=$PROVIDER # use 'linode' for LKE or 'custom' for any other cloud/infrastructure
-```
-
-When the installer job is completed, follow the [post installation steps](https://apl-docs.net/docs/get-started/installation/post-installation-steps).
+- Compose your ideal platform by enabling all the required capabilities
+- Get all the required capabilities in an integrated and automated way
+- Onboard development Teams in a comprehensive multi-tenant setup and make them self-serving
+- Manage users
+- Ensure governance with security policies
+- Implement zero-trust networking
+- Change the desired state of the platform based on Configuration-as-Code
+- Support multi- and hybrid cloud scenarios
+- Prevent cloud provider lock-in
+- Implement full observability
+- Comply to Disaster Recovery requirements
 
 ## Integrations
 
