@@ -24,35 +24,6 @@ describe('Bootstrapping values', () => {
   }
   const users = [{ id: 'user1', initialPassword: 'existing-password' }, { id: 'user2' }]
   const secrets = { secret: 'true', deep: { nested: 'secret' } }
-  const ageKeys = { publicKey: 'agePublicKey', privateKey: 'agePrivateKey' }
-  const kmsValues = {
-    kms: {
-      sops: {
-        provider: 'azure',
-        azure: {
-          keys: 'key1,key2',
-        },
-      },
-    },
-  }
-  const kmsValuesWithAgeProvider = {
-    kms: {
-      sops: {
-        provider: 'age',
-      },
-    },
-  }
-  const kmsValuesWithAgeFull = {
-    kms: {
-      sops: {
-        provider: 'age',
-        age: {
-          publicKey: 'publicKey',
-          privateKey: 'privateKey',
-        },
-      },
-    },
-  }
   let deps
   beforeEach(() => {
     deps = {
@@ -103,24 +74,64 @@ describe('Bootstrapping values', () => {
     const res = await getStoredClusterSecrets(deps)
     expect(res).toEqual(undefined)
   })
-  it('should not get kms values if those do not exist', async () => {
-    const res = await getKmsValues(values)
-    expect(res).toEqual(undefined)
-  })
-  it('should get kms values if those exist', async () => {
-    const res = await getKmsValues({ ...values, ...kmsValues })
-    expect(res).toEqual(kmsValues)
-  })
-  it('should generate and return new age keys if provider is age and keys are missing', async () => {
-    const kmsValuesDeps = {
-      generateAgeKeys: jest.fn().mockResolvedValue(ageKeys),
+  describe('getKmsValues', () => {
+    let kmsValuesDeps: any
+    const ageKeys = { publicKey: 'agePublicKey', privateKey: 'agePrivateKey' }
+    const values = { someKey: 'someValue' }
+    const kmsValues = {
+      kms: {
+        sops: {
+          provider: 'azure',
+          azure: {
+            keys: 'key1,key2',
+          },
+        },
+      },
     }
-    const res = await getKmsValues({ ...values, ...kmsValuesWithAgeProvider }, kmsValuesDeps)
-    expect(res).toEqual({ kms: { sops: { provider: 'age', age: ageKeys } } })
-  })
-  it('should get kms values if age has public and private key', async () => {
-    const res = await getKmsValues({ ...values, ...kmsValuesWithAgeFull })
-    expect(res).toEqual(kmsValuesWithAgeFull)
+    const kmsValuesWithAgeProvider = {
+      kms: {
+        sops: {
+          provider: 'age',
+        },
+      },
+    }
+    const kmsValuesWithAgeFull = {
+      kms: {
+        sops: {
+          provider: 'age',
+          age: {
+            publicKey: 'publicKey',
+            privateKey: 'privateKey',
+          },
+        },
+      },
+    }
+    beforeEach(() => {
+      kmsValuesDeps = {
+        generateAgeKeys: jest.fn().mockResolvedValue(ageKeys),
+        hfValues: jest.fn(),
+      }
+    })
+    it('should not get kms values if those do not exist', async () => {
+      kmsValuesDeps.hfValues.mockReturnValue(values)
+      const res = await getKmsValues(kmsValuesDeps)
+      expect(res).toBeUndefined()
+    })
+    it('should get kms values if those exist', async () => {
+      kmsValuesDeps.hfValues.mockReturnValue({ ...values, ...kmsValues })
+      const res = await getKmsValues(kmsValuesDeps)
+      expect(res).toEqual(kmsValues)
+    })
+    it('should generate and return new age keys if provider is age and keys are missing', async () => {
+      kmsValuesDeps.hfValues.mockReturnValue({ ...values, ...kmsValuesWithAgeProvider })
+      const res = await getKmsValues(kmsValuesDeps)
+      expect(res).toEqual({ kms: { sops: { provider: 'age', age: ageKeys } } })
+    })
+    it('should get kms values if age has public and private key', async () => {
+      kmsValuesDeps.hfValues.mockReturnValue({ ...values, ...kmsValuesWithAgeFull })
+      const res = await getKmsValues(kmsValuesDeps)
+      expect(res).toEqual(kmsValuesWithAgeFull)
+    })
   })
   it('should set k8sContext and owner if needed', async () => {
     deps.processValues.mockReturnValue(values)
