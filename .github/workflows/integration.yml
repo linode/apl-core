@@ -39,7 +39,6 @@ on:
         options:
           - minimal
           - minimal-with-team
-          - monitoring-with-team
           - full
           - upgrade
       domain_zone:
@@ -107,6 +106,7 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
+            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test-${{ inputs.install_profile }}
             "No-Apl") LINODE_CLUSTER_NAME=${{ github.actor }}-no-apl ;;
           esac
 
@@ -146,7 +146,7 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test-$RANDOM ;;
+            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test-${{ inputs.install_profile }} ;;
             "No-Apl") LINODE_CLUSTER_NAME=${{ github.actor }}-no-apl ;;
           esac
           echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
@@ -165,11 +165,14 @@ jobs:
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Determine domain name to use
         if: ${{ inputs.domain_zone != 'DNS-Integration' }}
+        env:
+          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
         run: |
           # Mapping of domain_zone to domain names
           case "${{ inputs.domain_zone }}" in
             "Zone-1") DOMAIN=$(jq -r '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
             "Zone-2") DOMAIN=$(jq -r '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "DNS-Integration") DOMAIN='nightly-apl-test-${{ inputs.install_profile }}.${EDGEDNS_ZONE}' ;;
           esac
 
           echo "::add-mask::$DOMAIN"
