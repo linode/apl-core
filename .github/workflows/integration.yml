@@ -302,7 +302,7 @@ jobs:
           done
 
           pip3 install edgegrid-python requests
-          python3 bin/edgedns_A_record.py create $DOMAIN $PUB_IP
+          python3 bin/edgedns_A_record.py create \*.${DOMAIN} $PUB_IP
 
           wait $HELM_PID
       - name: Gather k8s events on failure
@@ -316,7 +316,7 @@ jobs:
       - name: Gather APL logs on failure
         if: failure()
         run: |
-          kubectl logs jobs/otomi --tail 150
+          kubectl logs jobs/otomi-apl --tail 150
       - name: Gather otomi-e2e logs on failure
         if: failure()
         run: |
@@ -334,7 +334,7 @@ jobs:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
-          python3 bin/edgedns_A_record.py delete $DOMAIN
+          python3 bin/edgedns_A_record.py delete \*.${DOMAIN}
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2
