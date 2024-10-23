@@ -74,7 +74,7 @@ env:
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
-  DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
+  DEV_DOMAINS: ${{ vars.DEV_DOMAINS }}
 
 jobs:
   preprocess-input:
