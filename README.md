@@ -31,7 +31,7 @@ Explore the Application Platform with a comprehensive set of hands-on labs.
 
 ## Akamai Application Platform supports
 
-**Developers** - With easy self-service so you can focus on your apps
+**Developers** - With easy self-service to
 
 - Build OCI compliant images from source code
 - Deploy containerized workloads the GitOps way using the provided quickstarts or BYO golden path templates
@@ -44,7 +44,7 @@ Explore the Application Platform with a comprehensive set of hands-on labs.
 - Create and manage secrets
 - Create private Git repositories and use the build-in CI/CD pipelines
 
-**Platform Administrators** - To setup a Kubernetes-based platform for developers and provide a paved road to production
+**Platform Administrators** - To set up a Kubernetes-based platform for developers and provide a paved road to production
 
 - Compose your ideal platform by enabling all the required capabilities
 - Get all the required capabilities in an integrated and automated way
