@@ -2,6 +2,7 @@ import os
 import sys
 from akamai.edgegrid import EdgeGridAuth
 from requests import Session, HTTPError
+import json
 
 EDGEDNS_ZONE = os.environ.get('EDGEDNS_ZONE')
 EDGEDNS_HOST = os.environ.get('EDGEDNS_HOST')
@@ -43,7 +44,8 @@ def create_dns_record(session, domain, ip):
         response.raise_for_status()
         print(f"DNS record created successfully !")
     except HTTPError as e:
-        print(f"Failed to create DNS record!")
+        response_json = json.loads(e.response.text)
+        print(f"Failed to create DNS record: {response_json['title']} ")
 
 # Function to delete DNS record
 def delete_dns_record(session, domain):
@@ -54,7 +56,8 @@ def delete_dns_record(session, domain):
         response.raise_for_status()
         print(f"DNS record deleted successfully!")
     except HTTPError as e:
-        print(f"Failed to delete DNS record!")
+        response_json = json.loads(e.response.text)
+        print(f"Failed to delete DNS record: {response_json['title']}")
 
 def main():
     if len(sys.argv) < 3 or (sys.argv[1].lower() == "create" and len(sys.argv) != 4):

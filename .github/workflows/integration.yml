@@ -48,6 +48,7 @@ on:
         options:
           - Zone-1
           - Zone-2
+          - No-Apl
       kms:
         type: choice
         description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
@@ -144,6 +145,7 @@ jobs:
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
             "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test-$RANDOM ;;
+            "No-Apl") LINODE_CLUSTER_NAME=${{ github.actor }}-no-apl ;;
           esac
           echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
       - name: Determine exact k8s version
@@ -156,10 +158,9 @@ jobs:
         run: |
           # Generating a random 5 char string
           RAND=$(openssl rand -hex 4)
-          DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
+          DOMAIN="*.integration-${RAND}.${EDGEDNS_ZONE}"
           echo "::add-mask::$DOMAIN"
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
-
       - name: Determine domain name to use
         if: ${{ inputs.domain_zone != 'DNS-Integration' }}
         run: |
@@ -249,6 +250,7 @@ jobs:
             - reg-otomi-github
           EOF
       - name: APL install
+        if: ${{ inputs.domain_zone != 'No-Apl' }}
         env:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
@@ -301,7 +303,6 @@ jobs:
           python3 bin/edgedns_A_record.py create $DOMAIN $PUB_IP
 
           wait $HELM_PID
-
       - name: Gather k8s events on failure
         if: failure()
         run: |
@@ -323,7 +324,7 @@ jobs:
         run: |
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
       - name: Delete Domain
-        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }} && allways()
         env:
           EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
           EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
