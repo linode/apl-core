@@ -1,0 +1,15 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "trivy-operator.fullname" . }}
+  labels: {{- include "trivy-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: trivy-operator
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "trivy-operator.serviceAccountName" . }}
+    namespace: {{ include "trivy-operator.namespace" . }}
+{{- end }}
