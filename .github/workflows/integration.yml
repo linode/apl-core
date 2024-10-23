@@ -49,7 +49,6 @@ on:
           - Zone-1
           - Zone-2
           - No-Apl
-          - DNS-Integration
       kms:
         type: choice
         description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
@@ -208,6 +207,7 @@ jobs:
             sleep 30
           done
       - name: Save kubectl config with auth token and Get kubectl environment and create docker secret
+        if: ${{ inputs.domain_zone != 'No-Apl' }}
         run: |
           # Get the kubeconfig from linode-cli
           kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode)
@@ -226,14 +226,17 @@ jobs:
           echo "Kubectl context set to linode"
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
+        if: ${{ inputs.domain_zone != 'No-Apl' }}
         run: |
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
             --docker-username=${{ env.BOT_USERNAME }} \
             --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
+        if: ${{ inputs.domain_zone != 'No-Apl' }}
         uses: actions/checkout@v4
       - name: Prepare APL chart
+        if: ${{ inputs.domain_zone != 'No-Apl' }}
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
