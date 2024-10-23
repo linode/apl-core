@@ -182,7 +182,7 @@ async function createCredentialsSecret(secretName: string, username: string, pas
   const kc = new KubeConfig()
   kc.loadFromDefault()
   const coreV1Api = kc.makeApiClient(CoreV1Api)
-  await createGenericSecret(coreV1Api, secretName, 'default', secretData)
+  await createGenericSecret(coreV1Api, secretName, 'keycloak', secretData)
 }
 
 export const printWelcomeMessage = async (): Promise<void> => {
@@ -191,25 +191,20 @@ export const printWelcomeMessage = async (): Promise<void> => {
   const { adminUsername, adminPassword }: { adminUsername: string; adminPassword: string } = values.apps.keycloak
   await createCredentialsSecret('root-credentials', adminUsername, adminPassword)
 
-  const platformAdmin = values.users.find((user: any) => user.email === env.DEFAULT_PLATFORM_ADMIN_EMAIL)
+  const platformAdmin = values.users.find((user: any) => user.email === `platform-admin@${values.cluster.domainSuffix}`)
   if (platformAdmin) {
     const { email, initialPassword }: { email: string; initialPassword: string } = platformAdmin
     await createCredentialsSecret('platform-admin-initial-credentials', email, initialPassword)
   } else {
     d.info('Default platform admin not found in users')
   }
-  const platformAdminMessage = `
-  #
-  #  Perform: kubectl get secret platform-admin-initial-credentials -n default -o yaml
-  #  To obtain access credentials for the default platform admin user in base64 encoded format`
 
   const message = `
   ########################################################################################################################################
   #
   #  Visit the console at: https://console.${values.cluster.domainSuffix}
-  #
-  #  Perform: kubectl get secret root-credentials -n default -o yaml
-  #  To obtain access credentials in base64 encoded format ${platformAdmin ? platformAdminMessage : ''}
+  #  Perform: kubectl get secret platform-admin-initial-credentials -n default -o yaml
+  #  To obtain access credentials for the default platform admin in base64 encoded format
   #
   ########################################################################################################################################`
   d.info(message)

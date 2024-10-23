@@ -196,11 +196,12 @@ export const getKmsValues = async (deps = { generateAgeKeys, hfValues }) => {
   return { kms: { sops: { provider: 'age', age: ageKeys } } }
 }
 
-export const addPlatformAdmin = (users: any[]) => {
-  const platformAdminExists = users.some((user) => user.isPlatformAdmin)
+export const addPlatformAdmin = (users: any[], domainSuffix: string) => {
+  const defaultPlatformAdminEmail = `platform-admin@${domainSuffix}`
+  const platformAdminExists = users.find((user) => user.email === defaultPlatformAdminEmail)
   if (platformAdminExists) return
   const platformAdmin = {
-    email: env.DEFAULT_PLATFORM_ADMIN_EMAIL,
+    email: defaultPlatformAdminEmail,
     firstName: 'platform-admin',
     lastName: 'localhost',
     isPlatformAdmin: true,
@@ -227,7 +228,10 @@ export const addInitialPasswords = (users: any[], deps = { generatePassword }) =
 export const getUsers = (originalInput: any, deps = { generatePassword, addInitialPasswords, addPlatformAdmin }) => {
   const users = get(originalInput, 'users', []) as any[]
   const { hasExternalIDP } = get(originalInput, 'otomi', {})
-  if (!hasExternalIDP) deps.addPlatformAdmin(users)
+  if (!hasExternalIDP) {
+    const { domainSuffix }: { domainSuffix: string } = get(originalInput, 'cluster', {})
+    deps.addPlatformAdmin(users, domainSuffix)
+  }
   deps.addInitialPasswords(users)
   return users
 }

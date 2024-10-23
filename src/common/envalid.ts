@@ -42,10 +42,6 @@ export const cliEnvSpec = {
   RANDOM: bool({ desc: 'Randomizes the timeouts by multiplying with a factor between 1 to 2', default: false }),
   MIN_TIMEOUT: num({ desc: 'The number of milliseconds before starting the first retry', default: 10000 }),
   FACTOR: num({ desc: 'The factor to multiply the timeout with', default: 1.5 }),
-  DEFAULT_PLATFORM_ADMIN_EMAIL: str({
-    desc: 'The default platform admin email',
-    default: 'platform-admin@local.host',
-  }),
 }
 
 export function cleanEnv<T>(
