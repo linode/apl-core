@@ -203,8 +203,9 @@ export const printWelcomeMessage = async (): Promise<void> => {
   ########################################################################################################################################
   #
   #  Visit the console at: https://console.${domainSuffix}
-  #  Perform: kubectl get secret ${secretName} -n keycloak -o yaml
-  #  To obtain access credentials in base64 encoded format
+  #  Perform: 
+  #  kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.username}' | base64 -d
+  #  kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.password}' | base64 -d
   #
   ########################################################################################################################################`
   d.info(message)
