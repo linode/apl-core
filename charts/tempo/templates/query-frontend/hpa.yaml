@@ -13,6 +13,10 @@ spec:
     name: {{ include "tempo.resourceName" (dict "ctx" . "component" "query-frontend") }}
   minReplicas: {{ .Values.queryFrontend.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.queryFrontend.autoscaling.maxReplicas }}
+  {{- with .Values.queryFrontend.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   metrics:
   {{- with .Values.queryFrontend.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource

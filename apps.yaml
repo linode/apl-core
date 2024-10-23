@@ -246,7 +246,7 @@ appsInfo:
     integration: APL uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
   loki:
     title: Loki
-    appVersion: 2.8.2
+    appVersion: 2.9.8
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
@@ -305,7 +305,7 @@ appsInfo:
     integration: APL uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
   tempo:
     title: Tempo
-    appVersion: 2.1.1
+    appVersion: 2.6.0
     repo: https://github.com/grafana/tempo
     maintainers: Grafana labs
     relatedLinks:

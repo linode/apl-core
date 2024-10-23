@@ -39,6 +39,29 @@ The command removes all the Kubernetes components associated with the chart and 
 
 A major chart version change indicates that there is an incompatible breaking change needing manual actions.
 
+### From Chart versions < 1.18.0
+
+Please be aware that we've updated the minor version to Tempo 2.6, which includes breaking changes.
+We recommend reviewing the [release notes](https://github.com/grafana/tempo/releases/tag/v2.6.0/) before upgrading.
+
+### From Chart versions < 1.15.2
+
+Switch to new overrides format, see https://grafana.com/docs/tempo/latest/configuration/#overrides.
+
+### From Chart versions < 1.13.0
+
+EXPERIMENTAL: Zone Aware Replication has been added to the ingester statefulset.
+Attention, the calculation of the pods per AZ is as follows ```(.values.ingester.replicas + numberOfZones -1)/numberOfZones```
+
+### From Chart versions < 1.6.0
+
+The metrics generator component in the chart has been disabled by default, but the configuration for the processors was not empty, resulting error sin the distributor log.  Here we align the default metrics generator config settings to both disable the generator and remove processors.  Users who wish to keep the their processors enabled, will need to update their values.
+
+### From Chart versions < 1.5.0
+
+Please be aware that we've updated the minor version to Tempo 2.2, which includes breaking changes.
+We recommend reviewing the [release notes](https://github.com/grafana/tempo/releases/tag/v2.2.0) before upgrading.
+
 ### From Chart versions < 1.3.0
 
 Please be aware that we've updated the minor version to Tempo 2.1, which includes breaking changes.
@@ -56,7 +79,7 @@ Version 0.27.0:
 
 Many changes have been introduced, including some breaking changes.
 
-The (PR)[https://github.com/grafana/helm-charts/pull/1759] includes additional details.
+The [PR](https://github.com/grafana/helm-charts/pull/1759) includes additional details.
 
 * **BREAKING CHANGE** centralize selector label handling -- users who wish to keep old values should still be able to use the `nameOverride` and `fullNameOverride` top level keys in their values.
 
@@ -245,16 +268,19 @@ Metrics-generator is disabled by default and can be activated by configuring the
 metricsGenerator:
   enabled: true
   config:
-    storage_remote_write:
-     - url: http://cortex/api/v1/push
-       send_exemplars: true
+    storage:
+      remote_write:
+      - url: http://cortex/api/v1/push
+        send_exemplars: true
     #   headers:
     #     x-scope-orgid: operations
 # Global overrides
 global_overrides:
-  metrics_generator_processors:
-    - service-graphs
-    - span-metrics
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - span-metrics
 ```
 
 ----
@@ -300,7 +326,7 @@ config: |
     join_members:
       - {{"{{"}} include "tempo.fullname" . {{"}}"}}-memberlist
   overrides:
-    per_tenant_override_config: /conf/overrides.yaml
+    per_tenant_override_config: /runtime-config/overrides.yaml
   server:
     http_listen_port: 3100
   storage:
@@ -308,7 +334,7 @@ config: |
       backend: s3
       s3:
         access_key: tempo
-        bucket: tempo
+        bucket: <your s3 bucket>
         endpoint: minio:9000
         insecure: true
         secret_key: supersecret

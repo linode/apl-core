@@ -47,6 +47,10 @@ spec:
       {{- end }}
       enableServiceLinks: false
       {{- include "tempo.memcachedExporterImagePullSecrets" . | nindent 6 -}}
+      {{- with .Values.memcachedExporter.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - image: {{ include "tempo.imageReference" $dict }}
           imagePullPolicy: {{ .Values.memcached.image.pullPolicy }}
@@ -58,9 +62,14 @@ spec:
           ports:
             - containerPort: 11211
               name: client
-          {{- with .Values.memcached.extraEnv }}
+          {{- if or .Values.global.extraEnv .Values.memcached.extraEnv }}
           env:
-            {{- toYaml . | nindent 12 }}
+            {{- with .Values.global.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.memcached.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           {{- with .Values.memcached.extraEnvFrom }}
           envFrom:
@@ -89,7 +98,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         {{- end }}
-      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.Version }}
       {{- with .Values.memcached.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- tpl . $ | nindent 8 }}

@@ -35,11 +35,10 @@ spec:
         {{- toYaml .Values.enterpriseGateway.securityContext | nindent 8 }}
       initContainers:
         {{- toYaml .Values.enterpriseGateway.initContainers | nindent 8 }}
-      {{- if .Values.tempo.image.pullSecrets }}
-      imagePullSecrets:
-      {{- range .Values.image.pullSecrets }}
-        - name: {{ . }}
-      {{- end }}
+      {{- include "tempo.enterpriseGatewayImagePullSecrets" . | nindent 6 -}}
+      {{- with .Values.enterpriseGateway.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: gateway
@@ -94,7 +93,7 @@ spec:
         {{- end }}
       nodeSelector:
         {{- toYaml .Values.enterpriseGateway.nodeSelector | nindent 8 }}
-      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.Version }}
       {{- with .Values.enterpriseGateway.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- tpl . $ | nindent 8 }}

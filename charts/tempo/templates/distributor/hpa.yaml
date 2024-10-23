@@ -13,6 +13,10 @@ spec:
     name: {{ include "tempo.resourceName" (dict "ctx" . "component" "distributor") }}
   minReplicas: {{ .Values.distributor.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.distributor.autoscaling.maxReplicas }}
+  {{- with .Values.distributor.autoscaling.behavior }}
+  behavior:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   metrics:
   {{- with .Values.distributor.autoscaling.targetMemoryUtilizationPercentage }}
     - type: Resource

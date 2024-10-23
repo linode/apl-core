@@ -4,6 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
 spec:
@@ -45,6 +46,10 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.gateway.terminationGracePeriodSeconds }}
       enableServiceLinks: false
       {{- include "tempo.gatewayImagePullSecrets" . | nindent 6 -}}
+      {{- with .Values.gateway.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: nginx
           image: "{{ include "tempo.imageReference" $dict }}"
@@ -53,9 +58,14 @@ spec:
             - name: http-metrics
               containerPort: 8080
               protocol: TCP
-          {{- with .Values.gateway.extraEnv }}
+          {{- if or .Values.global.extraEnv .Values.gateway.extraEnv }}
           env:
-            {{- toYaml . | nindent 12 }}
+            {{- with .Values.global.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.gateway.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           {{- with .Values.gateway.extraEnvFrom }}
           envFrom:
@@ -87,7 +97,7 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.Version }}
       {{- with .Values.gateway.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- tpl . $ | nindent 8 }}

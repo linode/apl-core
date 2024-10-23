@@ -1,0 +1,25 @@
+{{- if and .Values.compactor.autoscaling.enabled .Values.compactor.autoscaling.keda.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "tempo.resourceName" (dict "ctx" . "component" "compactor") }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tempo.labels" (dict "ctx" . "component" "compactor") | nindent 4 }}
+spec:
+  minReplicaCount: {{ .Values.compactor.autoscaling.minReplicas }}
+  maxReplicaCount: {{ .Values.compactor.autoscaling.maxReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "tempo.resourceName" (dict "ctx" . "component" "compactor") }}
+  triggers:
+  {{- range .Values.compactor.autoscaling.keda.triggers }}
+  - type: {{ .type | quote }}
+    metadata:
+      serverAddress: {{ .metadata.serverAddress }}
+      threshold: {{ .metadata.threshold | quote }}
+      query: |
+        {{- .metadata.query | nindent 8 }}
+  {{- end }}
+{{- end }}
