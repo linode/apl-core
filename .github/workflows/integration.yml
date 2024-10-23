@@ -49,6 +49,7 @@ on:
           - Zone-1
           - Zone-2
           - No-Apl
+          - DNS-Integration
       kms:
         type: choice
         description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
@@ -325,7 +326,7 @@ jobs:
         run: |
           kubectl logs -n maintenance -l app.kubernetes.io/instance=job-e2e --tail 15000
       - name: Remove the test cluster
-        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
+        if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
         run: |
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
       - name: Delete Domain
