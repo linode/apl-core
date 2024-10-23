@@ -154,7 +154,7 @@ jobs:
           echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
       - name: Creating domain for scheduled integration test
         env:
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+          EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
         if: ${{ inputs.domain_zone == 'DNS-Integration' }}
         run: |
           # Generating a random 5 char string
@@ -258,7 +258,7 @@ jobs:
           EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
           EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+          EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           touch values.yaml
@@ -330,7 +330,7 @@ jobs:
           EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
           EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
           EDGEDNS_CLIENT_SECRET: ${{ secrets.EDGEDNS_CLIENT_SECRET }}
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+          EDGEDNS_ZONE: ${{ vars.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           python3 bin/edgedns_A_record.py delete $DOMAIN
