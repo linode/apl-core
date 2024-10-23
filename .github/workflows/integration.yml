@@ -324,7 +324,7 @@ jobs:
         run: |
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
       - name: Delete Domain
-        if: ${{ inputs.domain_zone == 'DNS-Integration' }} && allways()
+        if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
         env:
           EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
           EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
