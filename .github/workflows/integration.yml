@@ -153,18 +153,8 @@ jobs:
       - name: Determine exact k8s version
         run: |
           echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
-      - name: Creating domain for scheduled integration test
-        env:
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
-        run: |
-          # Generating a random 5 char string
-          RAND=$(openssl rand -hex 4)
-          DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
-          echo "::add-mask::$DOMAIN"
-          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Determine domain name to use
-        if: ${{ inputs.domain_zone != 'DNS-Integration' }}
+        if: ${{ inputs.domain_zone != 'No-Apl' }}
         env:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
         run: |
@@ -192,6 +182,7 @@ jobs:
             --tags delete_me_tonight \
             --no-defaults
       - name: Retrieve cluster id
+        if: ${{ inputs.domain_zone != 'No-Apl' }}
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
       - name: Wait for cluster to be ready
         run: |
