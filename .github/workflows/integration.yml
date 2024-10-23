@@ -327,10 +327,10 @@ jobs:
           done
 
           pip3 install edgegrid-python requests
-          python3 bin/edgedns_A_record.py create \*.${DOMAIN} $PUB_IP || \
+          python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP || \
             (echo "Will try to recreate it" && \
-            python3 bin/edgedns_A_record.py delete \*.${DOMAIN} && \
-            python3 bin/edgedns_A_record.py create \*.${DOMAIN} $PUB_IP)
+            python3 bin/edgedns_A_record.py delete "*.${DOMAIN}" && \
+            python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP)
 
 
           wait $HELM_PID
@@ -363,7 +363,7 @@ jobs:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
-          python3 bin/edgedns_A_record.py delete \*.${DOMAIN}
+          python3 bin/edgedns_A_record.py delete "*.${DOMAIN}"
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2
