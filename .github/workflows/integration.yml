@@ -123,8 +123,9 @@ jobs:
           esac
 
           if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
-            echo "An LKE cluster for Zone-1 named \"$LINODE_CLUSTER_NAME\" already exists."
-            echo "Please delete the cluster before recreating it. Exiting workflow..."
+            echo "An LKE cluster with the same name ($LINODE_CLUSTER_NAME) already exists."
+            echo "Visit https://cloud.linode.com/kubernetes/clusters to delete your cluster"
+            echo "Exiting workflow..."
             exit 1
           fi
       - id: k8s-versions
