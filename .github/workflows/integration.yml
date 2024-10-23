@@ -160,7 +160,7 @@ jobs:
         run: |
           # Generating a random 5 char string
           RAND=$(openssl rand -hex 4)
-          DOMAIN="*.integration-${RAND}.${EDGEDNS_ZONE}"
+          DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
           echo "::add-mask::$DOMAIN"
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Determine domain name to use
