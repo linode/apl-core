@@ -191,18 +191,18 @@ export const printWelcomeMessage = async (): Promise<void> => {
   const { adminUsername, adminPassword }: { adminUsername: string; adminPassword: string } = values.apps.keycloak
   await createCredentialsSecret('root-credentials', adminUsername, adminPassword)
   const { hasExternalIDP } = values.otomi
-  const platformAdmin = values.users.find((user: any) => user.email === `platform-admin@${values.cluster.domainSuffix}`)
+  const { domainSuffix } = values.cluster
+  const defaultPlatformAdminEmail = `platform-admin@${domainSuffix}`
+  const platformAdmin = values.users.find((user: any) => user.email === defaultPlatformAdminEmail)
   if (platformAdmin && !hasExternalIDP) {
     const { email, initialPassword }: { email: string; initialPassword: string } = platformAdmin
     await createCredentialsSecret('platform-admin-initial-credentials', email, initialPassword)
-  } else {
-    d.info('Default platform admin not found in users')
   }
   const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
   const message = `
   ########################################################################################################################################
   #
-  #  Visit the console at: https://console.${values.cluster.domainSuffix}
+  #  Visit the console at: https://console.${domainSuffix}
   #  Perform: kubectl get secret ${secretName} -n keycloak -o yaml
   #  To obtain access credentials in base64 encoded format
   #

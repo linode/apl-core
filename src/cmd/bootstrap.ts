@@ -202,8 +202,8 @@ export const addPlatformAdmin = (users: any[], domainSuffix: string) => {
   if (platformAdminExists) return
   const platformAdmin = {
     email: defaultPlatformAdminEmail,
-    firstName: 'platform-admin',
-    lastName: 'localhost',
+    firstName: 'platform',
+    lastName: 'admin',
     isPlatformAdmin: true,
     isTeamAdmin: false,
     teams: [],
