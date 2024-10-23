@@ -167,8 +167,8 @@ jobs:
         run: |
           # Mapping of domain_zone to domain names
           case "${{ inputs.domain_zone }}" in
-            "Zone-1") DOMAIN=$(jq '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "Zone-2") DOMAIN=$(jq '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Zone-1") DOMAIN=$(jq -r '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Zone-2") DOMAIN=$(jq -r '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
           esac
 
           #echo "::add-mask::$DOMAIN"
