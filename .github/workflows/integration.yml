@@ -187,7 +187,7 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") DOMAIN=$(jq -r '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
             "Zone-2") DOMAIN=$(jq -r '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "Random") DOMAIN=${{ github.actor }}-$RANDOM ;;
+            "Random") DOMAIN="*.$(openssl rand -hex 4)$(date +"%d%m%y").${EDGEDNS_ZONE}" ;;
           esac
 
           echo "::add-mask::$DOMAIN"
