@@ -118,7 +118,7 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test-${{ inputs.install_profile }} ;;
+            "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-${{ inputs.install_profile }} ;;
             "No-Apl") LINODE_CLUSTER_NAME=${{ github.actor }}-no-apl ;;
           esac
 
