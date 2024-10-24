@@ -166,8 +166,17 @@ jobs:
       - name: Determine exact k8s version
         run: |
           echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
+      - name: Determine domain name to use for scheduled integration test
+        env:
+          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+        if: ${{ inputs.domain_zone == 'DNS-Integration' && inputs.domain_zone != 'No-Apl'}}
+        run: |
+          RAND=$(openssl rand -hex 4)
+          DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
+          echo "::add-mask::$DOMAIN"
+          echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Determine domain name to use
-        if: ${{ inputs.domain_zone != 'No-Apl' }}
+        if: ${{ inputs.domain_zone != 'DNS-Integration' && inputs.domain_zone != 'No-Apl' }}
         env:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
         run: |
@@ -175,7 +184,6 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") DOMAIN=$(jq -r '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
             "Zone-2") DOMAIN=$(jq -r '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "DNS-Integration") DOMAIN='nightly-apl-test-${{ inputs.install_profile }}.${EDGEDNS_ZONE}' ;;
           esac
 
           echo "::add-mask::$DOMAIN"
