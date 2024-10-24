@@ -22,6 +22,10 @@ on:
         description: 'Select certificate issuer'
         type: string
         default: letsencrypt_production
+      is_pre_installed:
+        description: Fake if Otomi is pre-installed by Installer
+        type: string
+        default: 'false'
   workflow_dispatch:
     inputs:
       kubernetes_versions:
@@ -63,6 +67,13 @@ on:
           - letsencrypt_staging
           - letsencrypt_production
         default: letsencrypt_production
+      is_pre_installed:
+        type: choice
+        description: Fake if Otomi is pre-installed by Installer
+        options:
+          - 'true'
+          - 'false'
+        default: 'false'
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -88,6 +99,7 @@ jobs:
           echo 'kms: ${{ inputs.kms }}'
           echo 'domain_zone: ${{ inputs.domain_zone }}'
           echo 'certificate: ${{ inputs.certificate }}'
+          echo 'is_pre_installed: ${{ inputs.is_pre_installed }}'
 
   preprocess-linode-input:
     needs: preprocess-input
@@ -264,6 +276,21 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
           [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider=age"
+
+          if [[ '${{ inputs.is_pre_installed }}' == 'true' ]]; then
+            cat <<EOF >> values.yaml
+          otomi:
+            isPreInstalled: true
+          EOF
+            fi
+
+          if [[ '${{ inputs.kms }}' == 'age' ]]; then
+            cat <<EOF >> values.yaml
+          kms:
+            sops:
+              provider: age
+          EOF
+            fi
 
           install_args="otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
             --values tests/integration/${{ inputs.install_profile }}.yaml \
