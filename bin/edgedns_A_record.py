@@ -25,13 +25,10 @@ def create_session():
     })
     return session
 
-# Function to construct the DNS API URL
-def construct_dns_url(domain, record_type="A"):
-    return f"https://{EDGEDNS_HOST}/config-dns/v2/zones/{EDGEDNS_ZONE}/names/{domain}/types/{record_type}"
 
 # Function to create DNS record
 def create_dns_record(session, domain, ip):
-    url = construct_dns_url(domain)
+    url = f"https://{EDGEDNS_HOST}/config-dns/v2/zones/{EDGEDNS_ZONE}/names/{domain}/types/A"
     data = {
         "name": domain,
         "rdata": [ip],
@@ -50,7 +47,7 @@ def create_dns_record(session, domain, ip):
 
 # Function to delete DNS record
 def delete_dns_record(session, domain):
-    url = construct_dns_url(domain)
+    url = f"https://{EDGEDNS_HOST}/config-dns/v2/zones/{EDGEDNS_ZONE}/names/{domain}/types/A"
 
     try:
         response = session.delete(url)
@@ -61,13 +58,31 @@ def delete_dns_record(session, domain):
         print(f"Failed to delete DNS record: {response_json['title']}")
         sys.exit(1)
 
+# Function to list A records
+def list_a_records(session):
+    url = f"https://{EDGEDNS_HOST}/config-dns/v2/zones/{EDGEDNS_ZONE}/recordsets?types=A&showAll=true"
+
+    try:
+        response = session.get(url)
+        response.raise_for_status()
+        records = response.json().get("recordsets", [])
+        if not records:
+            print("No A records found.")
+        else:
+            for record in records:
+                print(record['name'])
+    except HTTPError as e:
+        response_json = json.loads(e.response.text)
+        print(f"Failed to list DNS records: {response_json['title']}")
+        sys.exit(1)
+
 def main():
-    if len(sys.argv) < 3 or (sys.argv[1].lower() == "create" and len(sys.argv) != 4):
+    if len(sys.argv) < 2 or (sys.argv[1].lower() == "create" and len(sys.argv) != 4):
         print("Usage: python edgedns_A_record.py <action> <domain> [<ip>]")
         sys.exit(1)
 
     action = sys.argv[1].lower()
-    domain = sys.argv[2].lower()
+    domain = sys.argv[2].lower() if len(sys.argv) > 2 else None
     ip = sys.argv[3] if action == "create" else None
 
     session = create_session()
@@ -79,8 +94,10 @@ def main():
         create_dns_record(session, domain, ip)
     elif action == "delete":
         delete_dns_record(session, domain)
+    elif action == "list":
+        list_a_records(session)
     else:
-        print("Invalid action. Use 'create' or 'delete'.")
+        print("Invalid action. Use 'create', 'delete', or 'list'.")
         sys.exit(1)
 
 if __name__ == "__main__":
