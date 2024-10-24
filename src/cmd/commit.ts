@@ -200,9 +200,10 @@ export const printWelcomeMessage = async (): Promise<void> => {
   ########################################################################################################################################
   #
   #  Visit the console at: https://console.${values.cluster.domainSuffix}
-  #  Perform: kubectl get secret root-credentials -n default -o yaml
-  #  To obtain access credentials in base64 encoded format
-  #
+  #  
+  #  To obtain access credentials run: 
+  #  kubectl get secret root-credentials -n default -o jsonpath="{.data.username}" | base64 -d
+  #  kubectl get secret root-credentials -n default -o jsonpath="{.data.password}" | base64 -d
   ########################################################################################################################################`
   d.info(message)
 }
