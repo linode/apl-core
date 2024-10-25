@@ -1,4 +1,4 @@
 api: APL-251
 console: APL-251
-tasks: fc-fix-platform-admin
+tasks: main
 tools: 2.7.0
