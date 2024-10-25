@@ -43,6 +43,7 @@ on:
         options:
           - minimal
           - minimal-with-team
+          - monitoring-with-team
           - full
           - upgrade
       domain_zone:
@@ -51,9 +52,6 @@ on:
         options:
           - Zone-1
           - Zone-2
-          - Random
-          - No-Apl
-          - DNS-Integration
       kms:
         type: choice
         description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
@@ -119,15 +117,11 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "Random") LINODE_CLUSTER_NAME=${{ github.actor }}-$RANDOM ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-${{ inputs.install_profile }} ;;
-            "No-Apl") LINODE_CLUSTER_NAME=${{ github.actor }}-no-apl ;;
           esac
 
           if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
-            echo "An LKE cluster with the same name ($LINODE_CLUSTER_NAME) already exists."
-            echo "Visit https://cloud.linode.com/kubernetes/clusters to delete your cluster"
-            echo "Exiting workflow..."
+            echo "An LKE cluster for Zone-1 named \"$LINODE_CLUSTER_NAME\" already exists."
+            echo "Please delete the cluster before recreating it. Exiting workflow..."
             exit 1
           fi
       - id: k8s-versions
@@ -161,33 +155,30 @@ jobs:
           case "${{ inputs.domain_zone }}" in
             "Zone-1") LINODE_CLUSTER_NAME=${{ github.actor }}-1 ;;
             "Zone-2") LINODE_CLUSTER_NAME=${{ github.actor }}-2 ;;
-            "Random") LINODE_CLUSTER_NAME=${{ github.actor }}-$RANDOM ;;
-            "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-${{ inputs.install_profile }} ;;
-            "No-Apl") LINODE_CLUSTER_NAME=${{ github.actor }}-no-apl ;;
+            "DNS-Integration") LINODE_CLUSTER_NAME=nightly-apl-test-$RANDOM ;;
           esac
           echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
       - name: Determine exact k8s version
         run: |
           echo LINODE_K8S_VERSION=$(linode-cli lke versions-list --json | jq -ce --arg version "$(echo ${{ matrix.kubernetes_versions }} | sed -E 's/^([0-9]+\.[0-9])$/\10/')" '.[] | select(.id | tostring | startswith($version)) | .id') >> $GITHUB_ENV
-      - name: Determine domain name to use for scheduled integration test
+      - name: Creating domain for scheduled integration test
         env:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-        if: ${{ inputs.domain_zone == 'DNS-Integration' && inputs.domain_zone != 'No-Apl'}}
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
         run: |
+          # Generating a random 5 char string
           RAND=$(openssl rand -hex 4)
           DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
           echo "::add-mask::$DOMAIN"
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
+
       - name: Determine domain name to use
-        if: ${{ inputs.domain_zone != 'DNS-Integration' && inputs.domain_zone != 'No-Apl' }}
-        env:
-          EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
+        if: ${{ inputs.domain_zone != 'DNS-Integration' }}
         run: |
           # Mapping of domain_zone to domain names
           case "${{ inputs.domain_zone }}" in
-            "Zone-1") DOMAIN=$(jq -r '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "Zone-2") DOMAIN=$(jq -r '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
-            "Random") DOMAIN="$(openssl rand -hex 4)$(date +"%d%m%y").${EDGEDNS_ZONE}" ;;
+            "Zone-1") DOMAIN=$(jq '."${{ github.actor }}"[0]' <<< ${{ env.DEV_DOMAINS }}) ;;
+            "Zone-2") DOMAIN=$(jq '."${{ github.actor }}"[1]' <<< ${{ env.DEV_DOMAINS }}) ;;
           esac
 
           echo "::add-mask::$DOMAIN"
@@ -226,7 +217,6 @@ jobs:
             sleep 30
           done
       - name: Save kubectl config with auth token and Get kubectl environment and create docker secret
-        if: ${{ inputs.domain_zone != 'No-Apl' }}
         run: |
           # Get the kubeconfig from linode-cli
           kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode)
@@ -245,17 +235,14 @@ jobs:
           echo "Kubectl context set to linode"
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
-        if: ${{ inputs.domain_zone != 'No-Apl' }}
         run: |
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
             --docker-username=${{ env.BOT_USERNAME }} \
             --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
-        if: ${{ inputs.domain_zone != 'No-Apl' }}
         uses: actions/checkout@v4
       - name: Prepare APL chart
-        if: ${{ inputs.domain_zone != 'No-Apl' }}
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
@@ -274,7 +261,6 @@ jobs:
             - reg-otomi-github
           EOF
       - name: APL install
-        if: ${{ inputs.domain_zone != 'No-Apl' }}
         env:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
@@ -339,13 +325,10 @@ jobs:
           done
 
           pip3 install edgegrid-python requests
-          python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP || \
-            (echo "Will try to recreate it" && \
-            python3 bin/edgedns_A_record.py delete "*.${DOMAIN}" && \
-            python3 bin/edgedns_A_record.py create "*.${DOMAIN}" $PUB_IP)
-
+          python3 bin/edgedns_A_record.py create $DOMAIN $PUB_IP
 
           wait $HELM_PID
+
       - name: Gather k8s events on failure
         if: failure()
         run: |
@@ -357,17 +340,17 @@ jobs:
       - name: Gather APL logs on failure
         if: failure()
         run: |
-          kubectl logs jobs/otomi-apl --tail 150
+          kubectl logs jobs/otomi --tail 150
       - name: Gather otomi-e2e logs on failure
         if: failure()
         run: |
           kubectl logs -n maintenance -l app.kubernetes.io/instance=job-e2e --tail 15000
       - name: Remove the test cluster
-        if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
         run: |
           linode-cli lke cluster-delete ${{ env.LINODE_CLUSTER_ID }}
       - name: Delete Domain
-        if: ${{ always() && inputs.domain_zone == 'DNS-Integration' }}
+        if: ${{ inputs.domain_zone == 'DNS-Integration' }}
         env:
           EDGEDNS_ACCESS_TOKEN: ${{ secrets.EDGEDNS_ACCESS_TOKEN }}
           EDGEDNS_CLIENT_TOKEN: ${{ secrets.EDGEDNS_CLIENT_TOKEN }}
@@ -375,7 +358,7 @@ jobs:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
-          python3 bin/edgedns_A_record.py delete "*.${DOMAIN}"
+          python3 bin/edgedns_A_record.py delete $DOMAIN
       - name: Slack Notification
         if: always()
         uses: rtCamp/action-slack-notify@v2
