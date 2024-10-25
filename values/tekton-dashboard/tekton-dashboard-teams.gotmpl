@@ -1,8 +1,7 @@
 {{- $teamId := .Release.Labels.team }}
 {{- $v := .Values }}
 {{- $t := $v.apps.tekton }}
-
-resources: {{- $t.resources.dashboard | toYaml | nindent 2 }}
+{{- $custom := dig "resources" "tektonDashboard" "enabled" false $v }}
 
 teamId: {{ $teamId }}
 

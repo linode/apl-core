@@ -1,3 +1,5 @@
+{{- $v := .Values | merge (dict) }}
+{{- $custom := dig "resources" "buildpacksTask" "enabled" false $v }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -86,12 +88,16 @@ spec:
       - name: CNB_PLATFORM_API
         value: "0.9"
     computeResources:
+      {{- if $custom }}
+        {{- $v.resources.buildpacksTask.resources | toYaml | nindent 6 }}
+      {{- else }}
       limits:
         cpu: "2"
         memory: 2Gi
       requests:
         cpu: 500m
         memory: 512Mi
+      {{- end }}
   steps:
     - name: prepare
       computeResources: {}

@@ -1118,6 +1118,65 @@ definitions:
       resourceQuota:
         description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
         type: object
+      resources:
+        additionalProperties: false
+        properties:
+          alertmanager:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+          grafana:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+          grafanaSidecar:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+          buildpacksTask:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+          gitcloneTask:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+          grypeTask:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+          kanikoTask:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
+          tektonDashboard:
+            properties:
+              enabled:
+                type: boolean
+                default: false
+              resources:
+                $ref: '#/definitions/resources'
       selfService:
         $ref: '#/definitions/teamSelfService'
       services:
@@ -1133,9 +1192,6 @@ definitions:
         description: Activate managed Grafana, Prometheus or Alertmanager instances
         properties:
           grafana:
-            type: boolean
-            default: true
-          prometheus:
             type: boolean
             default: false
           alertmanager:

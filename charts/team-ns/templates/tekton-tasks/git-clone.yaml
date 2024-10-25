@@ -1,3 +1,5 @@
+{{- $v := .Values | merge (dict) }}
+{{- $custom := dig "resources" "gitcloneTask" "enabled" false $v }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -13,12 +15,16 @@ metadata:
 spec:
   stepTemplate:
     computeResources:
+      {{- if $custom }}
+        {{- $v.resources.gitcloneTask.resources | toYaml | nindent 6 }}
+      {{- else }}
       limits:
         cpu: "2"
         memory: 2Gi
       requests:
         cpu: 500m
         memory: 512Mi
+      {{- end }}
   description: >-
     These Tasks are Git tasks to work with repositories used by other tasks
     in your Pipeline.

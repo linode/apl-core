@@ -1,3 +1,5 @@
+{{- $v := .Values | merge (dict) }}
+{{- $custom := dig "resources" "kanikoTask" "enabled" false $v }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -13,12 +15,16 @@ metadata:
 spec:
   stepTemplate:
     computeResources:
+      {{- if $custom }}
+        {{- $v.resources.grypeTask.resources | toYaml | nindent 6 }}
+      {{- else }}
       limits:
         cpu: "2"
         memory: 2Gi
       requests:
         cpu: 500m
         memory: 512Mi
+      {{- end }}
   description: >-
     This Task builds a simple Dockerfile with kaniko and pushes to a registry.
     This Task stores the image name and digest as results, allowing Tekton Chains to pick up

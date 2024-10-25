@@ -1,7 +1,3 @@
-{{- $v := .Values }}
-{{- $a := $v.apps | get "alertmanager" }}
-{{- $g := $v.apps | get "grafana" }}
-
 kubeApiServer:
   enabled: false
 coreDns:
@@ -60,33 +56,10 @@ grafana:
   defaultDashboardsEnabled: false
   assertNoLeakedSecrets: false
   plugins: []
-  resources:
-    requests:
-      cpu: 10m
-      memory: 128Mi
-    limits:
-      cpu: "1"
-      memory: 1Gi
-  sidecar: 
-    resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
-      requests:
-        cpu: 10m
-        memory: 128Mi
 
 alertmanager:
   serviceMonitor:
     selfMonitor: false
-  alertmanagerSpec:
-    resources:
-      requests:
-        cpu: 10m
-        memory: 64Mi
-      limits:
-        cpu: 200m
-        memory: 256Mi
 
 prometheus:
   thanosService:

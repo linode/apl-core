@@ -29,6 +29,10 @@ releases:
   {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $azure := $team | get "azure" dict }}
+  {{- $customTektonDashboardResources := ($team | get "resources.tektonDashboard.enabled" false) }}
+  {{- $customAlertmanagerResources := ($team | get "resources.alertmanager.enabled" false) }}
+  {{- $customGrafanaResources := ($team | get "resources.grafana.enabled" false) }}
+  {{- $customGrafanaSidecarResources := ($team | get "resources.grafanaSidecar.enabled" false) }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -39,6 +43,12 @@ releases:
       pipeline: otomi-task-teams
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
+      - resources:
+        {{- if $customTektonDashboardResources }}
+          {{- $team.resources.tektonDashboard.resources | toYaml | nindent 10 }}
+        {{- else }}
+          {{- $v.apps.tekton.resources.dashboard | toYaml | nindent 10 }}
+        {{- end }}
   - name: prometheus-{{ $teamId }}
     installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
@@ -62,6 +72,17 @@ releases:
                 sidecar.istio.io/inject: "true"
               labels:
                 prometheus: system
+            resources:
+            {{- if $customAlertmanagerResources }}
+              {{- $team.resources.alertmanager.resources | toYaml | nindent 14 }}
+            {{- else }}
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+            {{- end }}
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
@@ -74,6 +95,17 @@ releases:
           prometheusSpec: {}
         grafana:
           enabled: {{ $team | get "managedMonitoring.grafana" false }}
+          resources:
+          {{- if $customGrafanaResources }}
+            {{- $team.resources.grafana.resources | toYaml | nindent 12 }}
+          {{- else }}
+            requests:
+              cpu: 10m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          {{- end }}
           namespaceOverride: null # team-{{ $teamId }}
           nameOverride: {{ $teamId }}-po-grafana
           fullnameOverride: {{ $teamId }}-po-grafana
@@ -96,6 +128,17 @@ releases:
               enabled: true
               label: release
               labelValue: grafana-dashboards-{{ $teamId }}
+            resources:
+            {{- if $customGrafanaSidecarResources }}
+              {{- $team.resources.grafanaSidecar.resources | toYaml | nindent 14 }}
+            {{- else }}
+              limits:
+                cpu: 500m
+                memory: 256Mi
+              requests:
+                cpu: 10m
+                memory: 128Mi
+            {{- end }}   
           additionalDataSources:
             - name: Prometheus-platform
               editable: false
