@@ -1,0 +1,5 @@
+# Enables Horizontal Pod Autoscaler and removes replica count in deployment
+autoscaling:
+  enabled: true
+  annotations:
+    test-annotations/test: "true"

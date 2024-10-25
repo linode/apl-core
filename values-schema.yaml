@@ -2078,11 +2078,27 @@ properties:
           enabled:
             type: boolean
             default: true
+          resources:
+            queueSidecar:
+              $ref: '#/definitions/resources'
+            controller:
+              $ref: '#/definitions/resources'
+            activator:
+              $ref: '#/definitions/resources'
+            webhook:
+              $ref: '#/definitions/resources'
+            autoscaler:
+              $ref: '#/definitions/resources'
+            autoscalerHpa:
+              $ref: '#/definitions/resources'
+            operator:
+              $ref: '#/definitions/resources'
+            operatorWebhook:
+              $ref: '#/definitions/resources'
           serving:
             type: object
             properties:
               replicas:
-                description: For HA mode set to 5. Read more at https://github.com/knative/operator/issues/376
                 default: 1
                 type: integer
                 minimum: 1
@@ -2989,6 +3005,10 @@ properties:
       adminPassword:
         type: string
         x-secret: '{{ randAlphaNum 20 }}'
+      isPreInstalled:
+        type: boolean
+        description: Defines if APL is installed and managed by Linode
+        default: false
       globalPullSecret:
         title: Global pullsecret
         description: Will be connected to each "default" service account in all otomi app namespaces.

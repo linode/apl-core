@@ -6,9 +6,6 @@ sources:
 - istio-gateway
 ## - aws, azure, cloudflare, coredns, designate, digitalocoean, google, infoblox, rfc2136
 
-# @TODO:
-image:
-  tag: 0.13.4
 
 {{- range $provider, $config := $dns.provider }}
 {{- $providerConfigKey := $provider | replace "azure-private-dns" "azure" }}
