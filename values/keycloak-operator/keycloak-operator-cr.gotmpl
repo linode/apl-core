@@ -47,7 +47,7 @@ spec:
           emptyDir: {}
         initContainers:
         - name: init-container-theme-copy # Otomi branding init container
-          image: docker.io/linode/apl-console:{{ $v.versions.console }}
+          image: docker.io/linode/apl-console:v{{ $v.versions.console }}
           resources: {{ $k.resources.keycloak | toYaml  | nindent 12 }}
           command: 
           - sh 
