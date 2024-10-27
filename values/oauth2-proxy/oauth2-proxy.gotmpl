@@ -83,7 +83,7 @@ extraInitContainers:
   - name: wait-for-keycloak
     image: docker.io/linode/apl-console:v{{ $v.versions.console }}
     command: ["/bin/sh","-c"]
-    args: ["while [ $(curl -sw '%{http_code}' http:///keycloak-service.keycloak.svc.cluster.local:8080 -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak...'; done"]
+    args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
