@@ -81,7 +81,7 @@ extraVolumeMounts:
 
 extraInitContainers:
   - name: wait-for-keycloak
-    image: docker.io/linode/apl-console:{{ $v.versions.console }}
+    image: docker.io/linode/apl-console:v{{ $v.versions.console }}
     command: ["/bin/sh","-c"]
     args: ["while [ $(curl -sw '%{http_code}' http:///keycloak-service.keycloak.svc.cluster.local:8080 -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak...'; done"]
 
