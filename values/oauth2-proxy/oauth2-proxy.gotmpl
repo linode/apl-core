@@ -79,6 +79,12 @@ extraVolumeMounts:
     mountPath: /etc/oauth2-proxy/error.html
     subPath: error.html
 
+extraInitContainers:
+  - name: wait-for-keycloak
+    image: docker.io/linode/apl-console:{{ $v.versions.console }}
+    command: ["/bin/sh","-c"]
+    args: ["while [ $(curl -sw '%{http_code}' http:///keycloak-service.keycloak.svc.cluster.local:8080 -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak...'; done"]
+
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global

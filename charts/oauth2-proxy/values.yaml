@@ -215,6 +215,8 @@ extraContainers: []
   #  - name: my-sidecar
   #    image: nginx:latest
 
+extraInitContainers: []
+
 priorityClassName: ""
 
 # hostAliases is a list of aliases to be added to /etc/hosts for network name resolution
