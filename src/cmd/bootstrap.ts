@@ -183,8 +183,9 @@ export const generateAgeKeys = async (deps = { $, terminal }) => {
   }
 }
 
-export const getKmsValues = async (originalValues: any, deps = { generateAgeKeys }) => {
-  const kms = originalValues?.kms
+export const getKmsValues = async (deps = { generateAgeKeys, hfValues }) => {
+  const values = (await deps.hfValues({ defaultValues: true })) as Record<string, any>
+  const kms = values?.kms
   if (!kms) return undefined
   const provider = kms?.sops?.provider
   if (!provider) return {}
@@ -260,13 +261,11 @@ export const processValues = async (
   const { ENV_DIR, VALUES_INPUT } = env
   let originalInput: Record<string, any> | undefined
   let storedSecrets: Record<string, any> | undefined
-  let kmsValues: Record<string, any> | undefined
   if (deps.isChart) {
     d.log(`Loading app values from ${VALUES_INPUT}`)
     const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
     storedSecrets = (await deps.getStoredClusterSecrets()) || {}
-    kmsValues = (await deps.getKmsValues(originalValues)) || {}
-    originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues), cloneDeep(kmsValues))
+    originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
     await deps.writeValues(originalInput)
   } else {
     d.log(`Loading repo values from ${ENV_DIR}`)
@@ -287,8 +286,15 @@ export const processValues = async (
   } else {
     caSecrets = deps.createCustomCA()
   }
+  // get any kms values & generate age keys if needed
+  const kmsValues = (await deps.getKmsValues()) || {}
   // merge existing secrets over newly generated ones to keep them
-  const allSecrets = merge(cloneDeep(caSecrets), cloneDeep(storedSecrets), cloneDeep(generatedSecrets))
+  const allSecrets = merge(
+    cloneDeep(caSecrets),
+    cloneDeep(storedSecrets),
+    cloneDeep(generatedSecrets),
+    cloneDeep(kmsValues),
+  )
   // generate initial passwords for users if they don't have one
   const users = get(originalInput, 'users', [])
   for (const user of users) {
