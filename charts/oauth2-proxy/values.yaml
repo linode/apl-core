@@ -215,6 +215,7 @@ extraContainers: []
   #  - name: my-sidecar
   #    image: nginx:latest
 
+# The extraInitContainers is not supported by the upstream chart!
 extraInitContainers: []
 
 priorityClassName: ""

@@ -100,6 +100,7 @@ spec:
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- end }}
+# The .Values.extraInitContainers is not supported by the upstream chart!
 {{- if .Values.extraInitContainers }}
   {{- toYaml .Values.extraInitContainers | nindent 6 }}
 {{- end }}
