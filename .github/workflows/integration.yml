@@ -45,7 +45,7 @@ on:
           - minimal-with-team
           - full
           - upgrade
-          - No-Apl
+          - no-apl
       domain_zone:
         type: choice
         description: 'Select Domain Zone'
@@ -122,7 +122,7 @@ jobs:
             "Random") LINODE_CLUSTER_NAME=${{ github.actor }}-$RANDOM ;;
             "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-${{ inputs.install_profile }} ;;
           esac
-          [[ ${{ inputs.install_profile }} == 'No-Apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
+          [[ ${{ inputs.install_profile }} == 'no-apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
           if [[ $(linode-cli lke clusters-list --json | jq --arg name "$LINODE_CLUSTER_NAME" '[.[] | select(.label == $name)] | length > 0') == "true" ]]; then
             echo "An LKE cluster with the same name ($LINODE_CLUSTER_NAME) already exists."
             echo "Visit https://cloud.linode.com/kubernetes/clusters to delete your cluster"
@@ -163,7 +163,7 @@ jobs:
             "Random") LINODE_CLUSTER_NAME=${{ github.actor }}-$RANDOM ;;
             "DNS-Integration") LINODE_CLUSTER_NAME=apl-test-${{ inputs.install_profile }} ;;
           esac
-          [[ ${{ inputs.install_profile }} == 'No-Apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
+          [[ ${{ inputs.install_profile }} == 'no-apl' ]] && LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME-no-apl
           echo LINODE_CLUSTER_NAME=$LINODE_CLUSTER_NAME >> $GITHUB_ENV
       - name: Determine exact k8s version
         run: |
@@ -171,14 +171,14 @@ jobs:
       - name: Determine domain name to use for scheduled integration test
         env:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
-        if: ${{ inputs.domain_zone == 'DNS-Integration' && inputs.install_profile != 'No-Apl'}}
+        if: ${{ inputs.domain_zone == 'DNS-Integration' && inputs.install_profile != 'no-apl'}}
         run: |
           RAND=$(openssl rand -hex 4)
           DOMAIN="integration-${RAND}.${EDGEDNS_ZONE}"
           echo "::add-mask::$DOMAIN"
           echo DOMAIN=$DOMAIN >> $GITHUB_ENV
       - name: Determine domain name
-        if: ${{ inputs.domain_zone != 'DNS-Integration' && inputs.install_profile != 'No-Apl' }}
+        if: ${{ inputs.domain_zone != 'DNS-Integration' && inputs.install_profile != 'no-apl' }}
         env:
           EDGEDNS_ZONE: ${{ secrets.EDGEDNS_ZONE }}
         run: |
@@ -225,7 +225,7 @@ jobs:
             sleep 30
           done
       - name: Save kubectl config with auth token and Get kubectl environment and create docker secret
-        if: ${{ inputs.install_profile != 'No-Apl' }}
+        if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
           # Get the kubeconfig from linode-cli
           kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode)
@@ -244,17 +244,17 @@ jobs:
           echo "Kubectl context set to linode"
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
-        if: ${{ inputs.install_profile != 'No-Apl' }}
+        if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
           kubectl create secret docker-registry reg-otomi-github \
             --docker-server=${{ env.CACHE_REGISTRY }} \
             --docker-username=${{ env.BOT_USERNAME }} \
             --docker-password='${{ secrets.BOT_PULL_TOKEN }}'
       - name: Checkout
-        if: ${{ inputs.install_profile != 'No-Apl' }}
+        if: ${{ inputs.install_profile != 'no-apl' }}
         uses: actions/checkout@v4
       - name: Prepare APL chart
-        if: ${{ inputs.install_profile != 'No-Apl' }}
+        if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
           ref=${{ github.event.pull_request.head.ref || github.ref }}
           tag=${ref##*/}
@@ -273,7 +273,7 @@ jobs:
             - reg-otomi-github
           EOF
       - name: APL install
-        if: ${{ inputs.install_profile != 'No-Apl' }}
+        if: ${{ inputs.install_profile != 'no-apl' }}
         env:
           LETSENCRYPT_STAGING: ${{ secrets.LETSENCRYPT_STAGING }}
           LETSENCRYPT_PRODUCTION: ${{ secrets.LETSENCRYPT_PRODUCTION }}
