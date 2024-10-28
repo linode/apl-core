@@ -81,7 +81,7 @@ extraVolumeMounts:
 
 extraInitContainers:
   - name: wait-for-keycloak
-    image: docker.io/linode/apl-console:v{{ $v.versions.console }}
+    image: curlimages/curl:latest
     command: ["/bin/sh","-c"]
     args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
 
