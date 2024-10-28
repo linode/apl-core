@@ -220,6 +220,7 @@ export const addInitialPasswords = (users: any[], deps = { generatePassword }) =
         symbols: true,
         lowercase: true,
         uppercase: true,
+        exclude: String(':,;"/=|%\\\''),
       })
     }
   }
