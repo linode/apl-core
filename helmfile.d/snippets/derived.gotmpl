@@ -33,7 +33,7 @@
 {{- if eq $cm.issuer "externally-managed-tls-secret" }}
   {{- $tlsSecretName = $cm.externallyManagedTlsSecretName }}
 {{- else if eq $cm.issuer "byo-wildcard-cert" }}
-  {{- $tlsSecretName = "byo-wildcard-cert" }}
+  {{- $tlsSecretName = "otomi-byo-wildcard-cert" }}
 {{- end -}}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
