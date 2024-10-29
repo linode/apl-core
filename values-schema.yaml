@@ -1521,6 +1521,12 @@ properties:
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          controllerStatusProcessors:
+            default: 20
+            type: integer
+          controllerOperationProcessors:
+            default: 10
+            type: integer
           applicationSet:
             replicas:
               default: 1
