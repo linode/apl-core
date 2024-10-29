@@ -215,6 +215,9 @@ extraContainers: []
   #  - name: my-sidecar
   #    image: nginx:latest
 
+# The extraInitContainers is not supported by the upstream chart!
+extraInitContainers: []
+
 priorityClassName: ""
 
 # hostAliases is a list of aliases to be added to /etc/hosts for network name resolution

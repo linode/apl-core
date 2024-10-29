@@ -10,9 +10,9 @@ spec:
   clusterIP: None
   ports:
     - name: gossip-ring
-      port: 7946
+      port: {{ include "tempo.memberlistBindPort" . }}
       protocol: TCP
-      targetPort: http-memberlist
+      targetPort: {{ include "tempo.memberlistBindPort" . }}
       {{- if .Values.tempo.memberlist.appProtocol }}
       appProtocol: {{ .Values.tempo.memberlist.appProtocol }}
       {{- end }}

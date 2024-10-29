@@ -11,6 +11,6 @@ spec:
   selector:
     matchLabels:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
-  maxUnavailable: 1
+  maxUnavailable: {{ .Values.metricsGenerator.maxUnavailable }}
 {{- end }}
 {{- end }}
