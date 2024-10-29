@@ -246,14 +246,14 @@ appsInfo:
     integration: APL uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
   loki:
     title: Loki
-    appVersion: 2.8.2
+    appVersion: 2.9.8
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
       - https://apl-docs.net/docs/apps/loki
       - https://grafana.com/docs/loki/latest/
     license: AGPL-3.0
-    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
+    dependencies: Prometheus, Grafana
     about: Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate. It does not index the contents of the logs, but rather a set of labels for each log stream.
     integration: Loki can be activated to aggregate all the container logs on the platform and store them in a storage endpoint of choice (defaults to PVC). When APL is configured in multi-tenancy mode, logs will be split-up between team namespaces and made available for team members only. APL shortcuts can be used to provide selections of logs based on interest.
   minio:
@@ -288,7 +288,7 @@ appsInfo:
       - https://github.com/rabbitmq/cluster-operator
       - https://www.rabbitmq.com
     license: MPL-2.0 license
-    dependencies: ''
+    dependencies: None
     about: RabbitMQ is the most widely deployed open source message broker.
     integration: APL install the RabbitMQ-Cluster-Kubernetes-Operator, afterwards users can use the RabbitMQ Catalog item to create RabbitMQ-cluster with queues and policies.
     isBeta: true
@@ -305,13 +305,13 @@ appsInfo:
     integration: APL uses Sealed Secrets to provide a secure way to store Kubernetes secrets in Git repositories. Sealed Secrets can be used to store secrets in the values repository.
   tempo:
     title: Tempo
-    appVersion: 2.1.1
+    appVersion: 2.6.0
     repo: https://github.com/grafana/tempo
     maintainers: Grafana labs
     relatedLinks:
       - https://grafana.com/docs/tempo/latest/
     license: AGPL-3.0
-    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used), Otel
+    dependencies: Prometheus, Grafana, Otel
     about: Grafana Tempo is an open source, easy-to-use and high-scale distributed tracing backend. Tempo is cost-efficient, requiring only object storage to operate, and is deeply integrated with Grafana, Prometheus, and Loki.
     integration: APL installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
   thanos:
@@ -323,7 +323,7 @@ appsInfo:
       - https://apl-docs/docs/apps/thanos
       - https://thanos.io
     license: Apache 2.0
-    dependencies: Prometheus, Grafana, Minio (if no external Object Storage is used)
+    dependencies: Prometheus, Grafana
     about: Thanos is a tool to set up a Highly Available Prometheus with long-term storage capabilities.
     integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
   trivy:
@@ -360,6 +360,6 @@ appsInfo:
       - https://velero.io/docs/v1.9/
       - https://velero.io/docs/main/restic/
     license: Apache 2.0
-    dependencies: Minio (if no external Object Storage is used)
+    dependencies: None
     about: Velero is a tool to back up and restore Kubernetes cluster resources and persistent volumes.
     integration: When enabled, Velero can be used to automatically create backups of APL platform services. Based on the selected provider, APL installs required plug-ins. APL also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.
