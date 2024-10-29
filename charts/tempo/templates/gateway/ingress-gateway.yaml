@@ -8,8 +8,12 @@ apiVersion: {{ include "tempo.ingress.apiVersion" . }}
 kind: Ingress
 metadata:
   name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" (dict "ctx" . "component" "gateway") | nindent 4 }}
+    {{- with .Values.gateway.ingress.labels }}
+    {{- toYaml . | nindent 4}}
+    {{- end}}
   {{- with .Values.gateway.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
