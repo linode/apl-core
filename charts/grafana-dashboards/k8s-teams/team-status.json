@@ -1239,9 +1239,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "Prometheus-platform",
-          "value": "Prometheus-platform"
+          "selected": true,
+          "text": "default",
+          "value": "default"
         },
         "hide": 0,
         "includeAll": false,
@@ -1277,7 +1277,7 @@
           "refId": "StandardVariableQuery"
         },
         "refresh": 2,
-        "regex": "/(.*team\\-titan.*)/",
+        "regex": "/(.*team\\-#TEAM#.*)/",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
