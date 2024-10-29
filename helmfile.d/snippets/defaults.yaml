@@ -403,8 +403,8 @@ environments:
                   cpu: 100m
                   memory: 128Mi
                 limits:
-                  cpu: 500m
-                  memory: 512Mi
+                  cpu: "1"
+                  memory: 1Gi
               nginx:
                 requests:
                   memory: 32Mi

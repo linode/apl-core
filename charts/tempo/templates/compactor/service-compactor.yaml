@@ -6,7 +6,7 @@ metadata:
     {{- include "tempo.labels" (dict "ctx" . "component" "compactor") | nindent 4 }}
   {{- with .Values.compactor.service.annotations }}
   annotations:
-  {{- toYaml . | nindent 4 }}
+    {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
 spec:
   type: ClusterIP
