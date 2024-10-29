@@ -75,13 +75,20 @@ export const commit = async (): Promise<void> => {
 
 export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:gitea-apl-charts`)
-  d.info('Cloning apl-charts in Gitea')
+  d.info('Checking if apl-charts already exists in Gitea')
   const values = (await hfValues()) as Record<string, any>
   const { email, username, password } = getRepo(values)
   const workDir = '/tmp/apl-charts'
   const otomiChartsUrl = env.OTOMI_CHARTS_URL
   const giteaChartsUrl = `http://${username}:${password}@gitea-http.gitea.svc.cluster.local:3000/otomi/charts.git`
   try {
+    // Check if remote repository exists by verifying if output from git ls-remote is not empty
+    const repoExists = await $`git ls-remote ${giteaChartsUrl}`
+    if (repoExists.stdout.trim()) {
+      d.info('apl-charts repository already exists in Gitea. Skipping clone and initialization steps.')
+      return
+    }
+    d.info('Cloning apl-charts in Gitea')
     await $`mkdir ${workDir}`
     await $`git clone --depth 1 ${otomiChartsUrl} ${workDir}`
     cd(workDir)

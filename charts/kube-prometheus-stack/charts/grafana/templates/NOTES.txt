@@ -47,7 +47,7 @@
 
 3. Login with the password from step 1 and the username: {{ .Values.adminUser }}
 
-{{- if not .Values.persistence.enabled }}
+{{- if and (not .Values.persistence.enabled) (not .Values.persistence.disableWarning) }}
 #################################################################################
 ######   WARNING: Persistence is disabled!!! You will lose your data when   #####
 ######            the Grafana pod is terminated.                            #####
