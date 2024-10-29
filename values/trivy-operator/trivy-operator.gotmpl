@@ -12,6 +12,7 @@ operator:
   replicas: {{ $t.operator.replicaCount }}
   metricsVulnIdEnabled: true
   infraAssessmentScannerEnabled: false
+  clusterComplianceEnabled: false
 
 serviceMonitor:
   enabled: true
@@ -20,7 +21,8 @@ serviceMonitor:
 
 trivy:
   mode: Standalone
-  resources: {{- $t.resources.trivy | toYaml | nindent 2 }}
+  resources: {{- $t.resources.trivy | toYaml | nindent 4 }}
+  ignoreUnfixed: true
 
 podSecurityContext:
   runAsUser: 1001
