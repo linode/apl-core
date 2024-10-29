@@ -6,10 +6,13 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
-    prometheus.io/service-monitor: "false"
-  {{- with .Values.distributor.service.annotations }}
-  annotations:
+    {{- with .Values.distributor.serviceDiscovery.labels }}
     {{- toYaml . | nindent 4 }}
+    {{- end }}
+    prometheus.io/service-monitor: "false"
+  {{- with .Values.distributor.serviceDiscovery.annotations }}
+  annotations:
+    {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
 spec:
   type: ClusterIP

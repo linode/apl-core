@@ -7,7 +7,7 @@ metadata:
     {{- include "tempo.labels" (dict "ctx" . "component" "querier") | nindent 4 }}
   {{- with .Values.querier.service.annotations }}
   annotations:
-  {{- toYaml . | nindent 4 }}
+    {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
 spec:
   ports:

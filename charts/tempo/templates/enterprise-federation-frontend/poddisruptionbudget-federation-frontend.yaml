@@ -1,0 +1,16 @@
+{{- if and .Values.enterprise.enabled .Values.enterpriseFederationFrontend.enabled -}}
+{{- if gt (int .Values.enterpriseFederationFrontend.replicas) 1 }}
+{{ $dict := dict "ctx" . "component" "enterprise-federation-frontend" }}
+apiVersion: {{ include "tempo.pdb.apiVersion" . }}
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "tempo.resourceName" $dict }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+  maxUnavailable: {{ .Values.enterpriseFederationFrontend.maxUnavailable }}
+{{- end }}
+{{- end -}}

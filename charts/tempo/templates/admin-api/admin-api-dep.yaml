@@ -37,11 +37,10 @@ spec:
         {{- with .Values.adminApi.initContainers }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-      {{- if .Values.tempo.image.pullSecrets }}
-      imagePullSecrets:
-      {{- range .Values.image.pullSecrets }}
-        - name: {{ . }}
-      {{- end }}
+      {{- include "tempo.adminApiImagePullSecrets" . | nindent 6 -}}
+      {{- with .Values.adminApi.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: admin-api
@@ -83,6 +82,7 @@ spec:
             {{- toYaml .Values.adminApi.resources | nindent 12 }}
           securityContext:
             {{- toYaml .Values.adminApi.containerSecurityContext | nindent 12 }}
+          {{- if or .Values.global.extraEnv .Values.adminApi.env }}
           env:
             {{- with .Values.global.extraEnv }}
               {{ toYaml . | nindent 12 }}
@@ -90,6 +90,7 @@ spec:
             {{- with .Values.adminApi.env }}
               {{ toYaml . | nindent 12 }}
             {{- end }}
+          {{- end }}
           envFrom:
             {{- with .Values.global.extraEnvFrom }}
               {{- toYaml . | nindent 12 }}
@@ -102,7 +103,7 @@ spec:
         {{- end }}
       nodeSelector:
         {{- toYaml .Values.adminApi.nodeSelector | nindent 8 }}
-      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.Version }}
       {{- with .Values.adminApi.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- tpl . $ | nindent 8 }}
