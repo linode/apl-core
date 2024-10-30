@@ -1,16 +1,16 @@
 # Minimal values file with defaults
 cluster:
   k8sContext: CONTEXT_PLACEHOLDER
-  domainSuffix: my.localhost
+  domainSuffix: local.host
 otomi:
   version: 'main'
 apps:
   metrics-server:
     enabled: false
 users:
-  - email: platform@admin.local
-    firstName: platform
-    lastName: admin
-    isPlatformAdmin: true
+  - email: team-member@local.host
+    firstName: team-member
+    lastName: localhost
+    isPlatformAdmin: false
     isTeamAdmin: false
-    teams: []
+    teams: ['demo']
