@@ -1189,7 +1189,7 @@ definitions:
         type: array
       managedMonitoring:
         title: Managed monitoring
-        description: Activate managed Grafana, Prometheus or Alertmanager instances
+        description: Activate managed Grafana and/or Alertmanager
         properties:
           grafana:
             type: boolean

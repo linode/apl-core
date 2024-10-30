@@ -16,7 +16,7 @@ spec:
   stepTemplate:
     computeResources:
       {{- if $custom }}
-        {{- $v.resources.grypeTask.resources | toYaml | nindent 6 }}
+        {{- $v.resources.kanikoTask.resources | toYaml | nindent 6 }}
       {{- else }}
       limits:
         cpu: "2"
