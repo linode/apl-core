@@ -16,7 +16,7 @@
       }
     ]
   },
-  "description": "Loki metrics via 2.0",
+  "description": "Loki metrics",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "gnetId": 13407,
@@ -2135,7 +2135,7 @@
     ]
   },
   "timezone": "",
-  "title": "Loki2.0 Global Metrics",
+  "title": "Loki Metrics",
   "uid": "MQHVDmtWk",
   "version": 1,
   "weekStart": ""
