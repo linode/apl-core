@@ -312,3 +312,6 @@ changes:
     relocations:
       - 'oidc.adminGroupID': 'oidc.platformAdminGroupID'
       - 'oidc.teamAdminGroupID': 'oidc.allTeamsAdminGroupID'
+  - version: 31
+    deletions:
+      - 'teamConfig.{team}.managedMonitoring.private'
