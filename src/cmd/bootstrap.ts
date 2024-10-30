@@ -196,6 +196,47 @@ export const getKmsValues = async (deps = { generateAgeKeys, hfValues }) => {
   return { kms: { sops: { provider: 'age', age: ageKeys } } }
 }
 
+export const addPlatformAdmin = (users: any[], domainSuffix: string) => {
+  const defaultPlatformAdminEmail = `platform-admin@${domainSuffix}`
+  const platformAdminExists = users.find((user) => user.email === defaultPlatformAdminEmail)
+  if (platformAdminExists) return
+  const platformAdmin = {
+    email: defaultPlatformAdminEmail,
+    firstName: 'platform',
+    lastName: 'admin',
+    isPlatformAdmin: true,
+    isTeamAdmin: false,
+    teams: [],
+  }
+  users.push(platformAdmin)
+}
+
+export const addInitialPasswords = (users: any[], deps = { generatePassword }) => {
+  for (const user of users) {
+    if (!user.initialPassword) {
+      user.initialPassword = deps.generatePassword({
+        length: 20,
+        numbers: true,
+        symbols: true,
+        lowercase: true,
+        uppercase: true,
+        exclude: String(':,;"/=|%\\\''),
+      })
+    }
+  }
+}
+
+export const getUsers = (originalInput: any, deps = { generatePassword, addInitialPasswords, addPlatformAdmin }) => {
+  const users = get(originalInput, 'users', []) as any[]
+  const { hasExternalIDP } = get(originalInput, 'otomi', {})
+  if (!hasExternalIDP) {
+    const { domainSuffix }: { domainSuffix: string } = get(originalInput, 'cluster', {})
+    deps.addPlatformAdmin(users, domainSuffix)
+  }
+  deps.addInitialPasswords(users)
+  return users
+}
+
 export const copyBasicFiles = async (
   deps = { copy, copyFile, copySchema, mkdir, pathExists, terminal },
 ): Promise<void> => {
@@ -254,7 +295,10 @@ export const processValues = async (
     generateSecrets,
     createK8sSecret,
     createCustomCA,
+    getUsers,
     generatePassword,
+    addInitialPasswords,
+    addPlatformAdmin,
   },
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:processValues`)
@@ -295,19 +339,8 @@ export const processValues = async (
     cloneDeep(generatedSecrets),
     cloneDeep(kmsValues),
   )
-  // generate initial passwords for users if they don't have one
-  const users = get(originalInput, 'users', [])
-  for (const user of users) {
-    if (!user.initialPassword) {
-      user.initialPassword = deps.generatePassword({
-        length: 16,
-        numbers: true,
-        symbols: true,
-        lowercase: true,
-        uppercase: true,
-      })
-    }
-  }
+  // add default platform admin & generate initial passwords for users if they don't have one
+  const users = deps.getUsers(originalInput)
   // we have generated all we need, now store everything by merging the original values over all the secrets
   await deps.writeValues(merge(cloneDeep(allSecrets), cloneDeep(originalInput), cloneDeep({ users })))
   // and do some context dependent post processing:
