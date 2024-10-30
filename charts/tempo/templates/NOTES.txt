@@ -9,6 +9,9 @@ Installed components:
 * distributor
 * querier
 * query-frontend
+{{- if .Values.enterpriseFederationFrontend.enabled }}
+* federation-frontend
+{{- end }}
 * compactor
 {{- if .Values.memcached.enabled }}
 * memcached

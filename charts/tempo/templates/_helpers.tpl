@@ -152,7 +152,7 @@ Return if ingress supports pathType.
 Return the appropriate apiVersion for PodDisruptionBudget.
 */}}
 {{- define "tempo.pdb.apiVersion" -}}
-  {{- if .Capabilities.APIVersions.Has "policy/v1/PodDisruptionBudget" -}}
+  {{- if and (.Capabilities.APIVersions.Has "policy/v1") (semverCompare ">=1.21-0" .Capabilities.KubeVersion.Version) -}}
     {{- print "policy/v1" -}}
   {{- else -}}
     {{- print "policy/v1beta1" -}}
@@ -188,7 +188,8 @@ Calculate the config from structured and unstructured text input
 Renders the overrides config
 */}}
 {{- define "tempo.overridesConfig" -}}
-{{ tpl .Values.overrides . }}
+overrides:
+{{ toYaml .Values.overrides | indent 2 }}
 {{- end -}}
 
 {{/*
@@ -204,9 +205,22 @@ configMap:
   items:
     - key: "tempo.yaml"
       path: "tempo.yaml"
+{{- if .Values.queryFrontend.query.enabled }}
+    - key: "tempo-query.yaml"
+      path: "tempo-query.yaml"
+{{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+The volume to mount for tempo runtime configuration
+*/}}
+{{- define "tempo.runtimeVolume" -}}
+configMap:
+  name: {{ tpl .Values.externalRuntimeConfigName . }}
+  items:
     - key: "overrides.yaml"
       path: "overrides.yaml"
-{{- end -}}
 {{- end -}}
 
 {{/*
