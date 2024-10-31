@@ -63,10 +63,6 @@ oidc:
     allTeamsAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 otomi:
-    additionalClusters:
-        - domainSuffix: demo.eks.otomi.cloud
-          name: demo
-          provider: custom
     globalPullSecret:
         username: otomi
     hasExternalDNS: true
