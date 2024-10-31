@@ -127,9 +127,9 @@ configs:
   params:
     server.insecure: true # nginx terminates tls
     # -- Number of application status processors
-    controller.status.processors: 10
+    controller.status.processors: {{ $a.controllerStatusProcessors }}
     # -- Number of application operation processors
-    controller.operation.processors: 5
+    controller.operation.processors: {{ $a.controllerOperationProcessors }}
 
   rbac:
     policy.csv: |
