@@ -315,3 +315,4 @@ changes:
   - version: 31
     deletions:
       - 'teamConfig.{team}.managedMonitoring.private'
+      - 'otomi.additionalClusters'
