@@ -9,25 +9,23 @@ All notable changes to this project will be documented in this file. See [standa
 
 * add init container for oauth2 proxy ([#1779](https://github.com/linode/apl-core/issues/1779)) ([e3886cc](https://github.com/linode/apl-core/commit/e3886cc7e03392a2a04043e9a775fb3ef3efbeee))
 * add thanos for prom HA ([#1729](https://github.com/linode/apl-core/issues/1729)) ([6dd3ad7](https://github.com/linode/apl-core/commit/6dd3ad732ddaf62df665a1046adcde38c0a7852e))
-* added support for externally-managed-tls-secret ([#1746](https://github.com/linode/apl-core/issues/1746)) ([f72ff6c](https://github.com/linode/apl-core/commit/f72ff6c59602dc4714aa17fc57684c2b13678aae))
-* Apl 133 removing gatekeeper ([#1737](https://github.com/linode/apl-core/issues/1737)) ([fe9f06f](https://github.com/linode/apl-core/commit/fe9f06fc8afe779d78ca069b06dde2f9bd801549))
-* Apl 36 - apl-tools update versions ([#1743](https://github.com/linode/apl-core/issues/1743)) ([d7918dc](https://github.com/linode/apl-core/commit/d7918dcaaee3507815b5b313543c407b04493a76))
-* Apl-10 ingress apps update ([#1761](https://github.com/linode/apl-core/issues/1761)) ([990d3a1](https://github.com/linode/apl-core/commit/990d3a18fa613fe5436f094cea03a667092b3ed4))
-* Apl-248 github actions update to support valid dns by default ([#1748](https://github.com/linode/apl-core/issues/1748)) ([73ed921](https://github.com/linode/apl-core/commit/73ed9219d65c79d0a6d4153ecd550421ab3ee5f7))
-* argo app removal ([#1727](https://github.com/linode/apl-core/issues/1727)) ([bb4a757](https://github.com/linode/apl-core/commit/bb4a757f4702cf36c953c1e96d47b08a0e722da4))
+* add support for externally-managed-tls-secret ([#1746](https://github.com/linode/apl-core/issues/1746)) ([f72ff6c](https://github.com/linode/apl-core/commit/f72ff6c59602dc4714aa17fc57684c2b13678aae))
+* remove gatekeeper ([#1737](https://github.com/linode/apl-core/issues/1737)) ([fe9f06f](https://github.com/linode/apl-core/commit/fe9f06fc8afe779d78ca069b06dde2f9bd801549))
+* upgrade tools versions ([#1743](https://github.com/linode/apl-core/issues/1743)) ([d7918dc](https://github.com/linode/apl-core/commit/d7918dcaaee3507815b5b313543c407b04493a76))
+* upgrade ingress apps ([#1761](https://github.com/linode/apl-core/issues/1761)) ([990d3a1](https://github.com/linode/apl-core/commit/990d3a18fa613fe5436f094cea03a667092b3ed4))
+* implement argocd applicaiton removal ([#1727](https://github.com/linode/apl-core/issues/1727)) ([bb4a757](https://github.com/linode/apl-core/commit/bb4a757f4702cf36c953c1e96d47b08a0e722da4))
 * chart index ([#1759](https://github.com/linode/apl-core/issues/1759)) ([f29e5bf](https://github.com/linode/apl-core/commit/f29e5bf6c4bae9fb3e2b1ee049ef3f96bd704d02))
-* configurable core apps resources and scaling optimization  ([#1754](https://github.com/linode/apl-core/issues/1754)) ([938ac7d](https://github.com/linode/apl-core/commit/938ac7dc0737c25f8563a789bd248e15b8d95e54))
+* add configurable core apps resources and scaling optimization  ([#1754](https://github.com/linode/apl-core/issues/1754)) ([938ac7d](https://github.com/linode/apl-core/commit/938ac7dc0737c25f8563a789bd248e15b8d95e54))
 * default platform admin user ([#1770](https://github.com/linode/apl-core/issues/1770)) ([7f1f6d3](https://github.com/linode/apl-core/commit/7f1f6d395dcf8d26c11f8676dddf957db17d4f26))
 * gitea backup to object storage ([#1723](https://github.com/linode/apl-core/issues/1723)) ([d2d3064](https://github.com/linode/apl-core/commit/d2d3064f3ce2669199b0fee63ca71bb23089758d))
 * implement age values encryption ([#1709](https://github.com/linode/apl-core/issues/1709)) ([20ced03](https://github.com/linode/apl-core/commit/20ced03ad679ad85f7c605c4f59a09e7050c4d04))
 * improve installer job feedback ([#1755](https://github.com/linode/apl-core/issues/1755)) ([d3e0783](https://github.com/linode/apl-core/commit/d3e0783d510a474fbfbc1846a459090c76b4c92c))
-* Integration test domains ([#1763](https://github.com/linode/apl-core/issues/1763)) ([b64c334](https://github.com/linode/apl-core/commit/b64c3349d00230da4e1d2e369b2b2b9e48525905))
-* ispreinstalled flag ([#1760](https://github.com/linode/apl-core/issues/1760)) ([e498b48](https://github.com/linode/apl-core/commit/e498b48e0acac1b360724fe1e5226d4622c6b248))
-* k8s 1.31 upgrade ([#1742](https://github.com/linode/apl-core/issues/1742)) ([c298d8d](https://github.com/linode/apl-core/commit/c298d8d969698feafbfd146b7297d6f915badb26))
-* oauth2-proxy custom error page ([#1758](https://github.com/linode/apl-core/issues/1758)) ([fef95dd](https://github.com/linode/apl-core/commit/fef95dd9777696147aeca5dfb48abb757287e063))
-* one prometheus ([#1724](https://github.com/linode/apl-core/issues/1724)) ([79d84e2](https://github.com/linode/apl-core/commit/79d84e26a948e9516c59fa6cd79ac0186f96d500))
+* add ispreinstalled flag ([#1760](https://github.com/linode/apl-core/issues/1760)) ([e498b48](https://github.com/linode/apl-core/commit/e498b48e0acac1b360724fe1e5226d4622c6b248))
+* support k8s 1.31 upgrade ([#1742](https://github.com/linode/apl-core/issues/1742)) ([c298d8d](https://github.com/linode/apl-core/commit/c298d8d969698feafbfd146b7297d6f915badb26))
+* add oauth2-proxy custom error page ([#1758](https://github.com/linode/apl-core/issues/1758)) ([fef95dd](https://github.com/linode/apl-core/commit/fef95dd9777696147aeca5dfb48abb757287e063))
+* implement single prometheus for the whole platform ([#1724](https://github.com/linode/apl-core/issues/1724)) ([79d84e2](https://github.com/linode/apl-core/commit/79d84e26a948e9516c59fa6cd79ac0186f96d500))
 * remove optional private grafana ([#1783](https://github.com/linode/apl-core/issues/1783)) ([9cc2b7e](https://github.com/linode/apl-core/commit/9cc2b7eea896ed329babced30f1beb0705a8ea69))
-* updating apl-tools [TOOLS][MINOR] ([#1735](https://github.com/linode/apl-core/issues/1735)) ([dbfc089](https://github.com/linode/apl-core/commit/dbfc0895b2a0843ad012967f5360e79593b5c1b9))
+* upgrade apl-tools [TOOLS][MINOR] ([#1735](https://github.com/linode/apl-core/issues/1735)) ([dbfc089](https://github.com/linode/apl-core/commit/dbfc0895b2a0843ad012967f5360e79593b5c1b9))
 * upgrade Istio Knative and Kiali ([#1736](https://github.com/linode/apl-core/issues/1736)) ([600f584](https://github.com/linode/apl-core/commit/600f584b3dfa1574829dd11da8d15e52cb3e5d36))
 * upgrade kube-prometheus-stack ([#1764](https://github.com/linode/apl-core/issues/1764)) ([4ce16ea](https://github.com/linode/apl-core/commit/4ce16ea992e5d1613a1eb41aaf4e3dd165698c42))
 * user management ([#1740](https://github.com/linode/apl-core/issues/1740)) ([9eedbab](https://github.com/linode/apl-core/commit/9eedbab04b724bb873ac81f49bae48f9ee2406cd))
@@ -67,9 +65,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 
 ### Others
-
+* Integration test domains ([#1763](https://github.com/linode/apl-core/issues/1763)) ([b64c334](https://github.com/linode/apl-core/commit/b64c3349d00230da4e1d2e369b2b2b9e48525905))
 * versions ([#1775](https://github.com/linode/apl-core/issues/1775)) ([0980afb](https://github.com/linode/apl-core/commit/0980afb74187eb17b4da04ea6775293cbc02606d))
 * versions ([#1791](https://github.com/linode/apl-core/issues/1791)) ([cd68c48](https://github.com/linode/apl-core/commit/cd68c48a9c0dcffc6398ce2d4c74417d97ad5cf9))
+* github actions update to support valid dns by default ([#1748](https://github.com/linode/apl-core/issues/1748)) ([73ed921](https://github.com/linode/apl-core/commit/73ed9219d65c79d0a6d4153ecd550421ab3ee5f7))
 
 ## [3.0.0](https://github.com/linode/apl-core/compare/v3.0.0-rc.1...v3.0.0) (2024-09-19)
 
