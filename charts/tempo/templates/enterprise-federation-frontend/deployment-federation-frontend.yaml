@@ -1,0 +1,137 @@
+{{- if and .Values.enterprise.enabled .Values.enterpriseFederationFrontend.enabled }}
+{{ $dict := dict "ctx" . "component" "enterprise-federation-frontend" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "tempo.labels" $dict | nindent 4 }}
+  {{- with .Values.enterpriseFederationFrontend.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  minReadySeconds: 10
+{{- if not .Values.enterpriseFederationFrontend.autoscaling.enabled }}
+  replicas: {{ .Values.enterpriseFederationFrontend.replicas }}
+{{- end }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        {{- include "tempo.podLabels" $dict | nindent 8 }}
+        {{- with .Values.tempo.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.enterpriseFederationFrontend.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-tempo.yaml") . | sha256sum }}
+        {{- with .Values.tempo.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.enterpriseFederationFrontend.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if or (.Values.enterpriseFederationFrontend.priorityClassName) (.Values.global.priorityClassName) }}
+      priorityClassName: {{ default .Values.enterpriseFederationFrontend.priorityClassName .Values.global.priorityClassName }}
+      {{- end }}
+      serviceAccountName: {{ include "tempo.serviceAccountName" . }}
+      {{- with .Values.tempo.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      enableServiceLinks: false
+      {{- include "tempo.enterpriseFederationFrontendImagePullSecrets" . | nindent 6 -}}
+      {{- with .Values.enterpriseFederationFrontend.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - args:
+            - -target=federation-frontend
+            - -config.file=/conf/tempo.yaml
+            - -mem-ballast-size-mbs=1024
+            {{- with .Values.enterpriseFederationFrontend.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          image: {{ include "tempo.imageReference" $dict }}
+          imagePullPolicy: {{ .Values.tempo.image.pullPolicy }}
+          name: federation-frontend
+          ports:
+            - containerPort: 3100
+              name: http-metrics
+          {{- if or .Values.global.extraEnv .Values.enterpriseFederationFrontend.extraEnv }}
+          env:
+            {{- with .Values.global.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.enterpriseFederationFrontend.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          {{- with .Values.enterpriseFederationFrontend.extraEnvFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.enterpriseFederationFrontend.resources | nindent 12 }}
+          {{- with .Values.tempo.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /conf
+              name: config
+            - mountPath: /var/tempo
+              name: tempo-federation-frontend-store
+            {{- if .Values.enterprise.enabled }}
+            - name: license
+              mountPath: /license
+            {{- end }}
+            {{- with .Values.enterpriseFederationFrontend.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.enterpriseFederationFrontend.terminationGracePeriodSeconds }}
+      {{- if ge (.Capabilities.KubeVersion.Minor|int) 19 }}
+      {{- with .Values.enterpriseFederationFrontend.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.enterpriseFederationFrontend.affinity }}
+      affinity:
+        {{- tpl . $ | nindent 8 }}
+      {{- end }}
+      {{- with .Values.enterpriseFederationFrontend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.enterpriseFederationFrontend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: config
+          {{- include "tempo.configVolume" . | nindent 10 }}
+        - name: tempo-federation-frontend-store
+          emptyDir: {}
+        {{- if .Values.enterprise.enabled }}
+        - name: license
+          secret:
+            secretName: {{ tpl .Values.license.secretName . }}
+        {{- end }}
+        {{- with .Values.enterpriseFederationFrontend.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+{{- end }}

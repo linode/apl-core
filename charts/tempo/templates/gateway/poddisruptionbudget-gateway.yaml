@@ -4,11 +4,12 @@ apiVersion: {{ include "tempo.pdb.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "tempo.resourceName" $dict }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
 spec:
   selector:
     matchLabels:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
-  maxUnavailable: 1
+  maxUnavailable: {{ .Values.gateway.maxUnavailable }}
 {{- end }}
