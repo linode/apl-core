@@ -4271,29 +4271,6 @@
     "otomi": {
       "additionalProperties": false,
       "properties": {
-        "additionalClusters": {
-          "type": "array",
-          "items": {
-            "title": "Additional cluster",
-            "description": "A k8s cluster managed by Otomi.",
-            "properties": {
-              "domainSuffix": {
-                "$ref": "#/definitions/domain"
-              },
-              "name": {
-                "$ref": "#/definitions/idName"
-              },
-              "provider": {
-                "$ref": "#/definitions/provider"
-              }
-            },
-            "required": [
-              "domainSuffix",
-              "name",
-              "provider"
-            ]
-          }
-        },
         "adminPassword": {
           "type": "string",
           "x-secret": "{{ randAlphaNum 20 }}"
