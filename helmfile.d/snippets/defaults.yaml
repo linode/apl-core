@@ -146,7 +146,7 @@ environments:
                 cpu: 10m
           falco:
             enabled: false
-            driver: ebpf
+            driver: modern-bpf
             _rawValues:
               customRules:
                 otomi-rules.yaml: >-
