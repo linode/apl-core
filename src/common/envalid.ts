@@ -1,15 +1,5 @@
 import { config } from 'dotenv'
-import {
-  CleanOptions,
-  CleanedEnvAccessors,
-  ValidatorSpec,
-  bool,
-  cleanEnv as clean,
-  json,
-  makeValidator,
-  num,
-  str,
-} from 'envalid'
+import { CleanOptions, ValidatorSpec, bool, cleanEnv as clean, json, makeValidator, num, str } from 'envalid'
 import { existsSync } from 'fs'
 
 const ciBool = makeValidator<boolean | undefined>((x) => {
@@ -44,10 +34,7 @@ export const cliEnvSpec = {
   FACTOR: num({ desc: 'The factor to multiply the timeout with', default: 1.5 }),
 }
 
-export function cleanEnv<T>(
-  spec: { [K in keyof T]: ValidatorSpec<T[K]> },
-  options?: CleanOptions<T>,
-): Readonly<T & CleanedEnvAccessors> {
+export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {
   let pEnv: any = process.env
   // load local .env and $ENV_DIR/.secrets if we have it
   ;[`${process.cwd()}/.env`, `${pEnv.ENV_DIR}/.secrets`].forEach((path) => {

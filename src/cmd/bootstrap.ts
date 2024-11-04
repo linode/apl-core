@@ -250,7 +250,7 @@ export const copyBasicFiles = async (
   ])
   d.info('Copied bin files')
   await deps.mkdir(`${ENV_DIR}/.vscode`, { recursive: true })
-  await deps.copy(`${rootDir}/.values/.vscode`, `${ENV_DIR}/.vscode`, { recursive: true })
+  await deps.copy(`${rootDir}/.values/.vscode`, `${ENV_DIR}/.vscode`)
   d.info('Copied vscode folder')
 
   await deps.copySchema()
@@ -271,7 +271,7 @@ export const copyBasicFiles = async (
   // recursively copy the skeleton files to env if that folder doesn't yet exist
   if (!(await pathExists(`${ENV_DIR}/env`))) {
     d.log(`Copying skeleton files`)
-    await deps.copy(`${rootDir}/.values/env`, `${ENV_DIR}/env`, { overwrite: false, recursive: true })
+    await deps.copy(`${rootDir}/.values/env`, `${ENV_DIR}/env`, { overwrite: false })
   }
 
   // copy these files from core

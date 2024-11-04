@@ -13,7 +13,7 @@ export const x = async (inArgv?: Arguments): Promise<number> => {
   const argv: Arguments = inArgv ?? getParsedArgs()
   const commands = argv._.slice(1)
   const output = await stream(nothrow($`${commands}`), { stdout: d.stream.log, stderr: d.stream.error })
-  return output.exitCode
+  return output.exitCode ?? 0
 }
 
 export const module = {

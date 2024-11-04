@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
-import $RefParser from '@apidevtools/json-schema-ref-parser'
+import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { bootstrapSops } from 'src/cmd/bootstrap'
@@ -84,7 +84,7 @@ app.get('/otomi/values', async (req: Request, res: Response) => {
 
 app.get('/apl/schema', async (req: Request, res: Response) => {
   const schema = await loadYaml(`${rootDir}/values-schema.yaml`)
-  const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
+  const derefSchema = await $RefParser.dereference(schema as JSONSchema)
   res.setHeader('Content-type', 'application/json')
   res.status(200).send(derefSchema)
 })
