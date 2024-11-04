@@ -20,7 +20,7 @@ ARG GUCCI_VERSION=1.6.13
 # https://github.com/helmfile/helmfile/releases
 ARG HELMFILE_VERSION=0.168.0
 # https://nodejs.org/en/download/
-ARG NODE_VERSION=16
+ARG NODE_VERSION=20
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
 WORKDIR /
