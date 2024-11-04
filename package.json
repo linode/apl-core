@@ -93,7 +93,7 @@
   },
   "engines": {
     "node": ">=20 <21",
-    "npm": "^10"
+    "npm": "^9"
   },
   "homepage": "https://github.com/linode/apl-core#readme",
   "license": "Apache-2.0",
