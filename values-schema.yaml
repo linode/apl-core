@@ -1256,17 +1256,27 @@ definitions:
       trigger:
         type: boolean
         default: false
-      externalRepo:
-        type: boolean
-        description: Select when using an external private Git repository.
-        default: false
+      repoType:
+        proprties:
+          external:
+            properties:
+              private:
+                type: boolean
+                description: Select when the external repository is private.
+                default: false
+              secretName:
+                description: The name of the secret with the credentials of the external private Git repository
+                type: string
+          type:
+            type: string
+            enum:
+              - internal
+              - external
+            default: internal
       scanSource:
         type: boolean
         default: true
         description: Select to scan source
-      secretName:
-        description: The name of the secret with the credentials of the external private Git repository
-        type: string
       mode:
         properties:
           docker:

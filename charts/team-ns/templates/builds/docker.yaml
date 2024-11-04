@@ -116,8 +116,8 @@ spec:
             status: {}
         - name: git-credentials
           secret:
-            {{- if .externalRepo }}
-            secretName: {{ .secretName }}
+            {{- if and ( eq .repoType.type "external" ) ( .repoType.external.private ) }}
+            secretName: {{ .repoType.external.secretName }}
             {{- else }}
             secretName: gitea-credentials
             {{- end }}
@@ -156,8 +156,8 @@ spec:
       status: {}
   - name: git-credentials
     secret:
-      {{- if .externalRepo }}
-      secretName: {{ .secretName }}
+      {{- if and ( eq .repoType.type "external" ) ( .repoType.external.private ) }}
+      secretName: {{ .repoType.external.secretName }}
       {{- else }}
       secretName: gitea-credentials
       {{- end }}
