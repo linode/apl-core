@@ -441,8 +441,9 @@
     "list": [
       {
         "current": {
-          "text": "Prometheus-platform",
-          "value": "Prometheus-platform"
+          "selected": true,
+          "text": "default",
+          "value": "default"
         },
         "hide": 0,
         "label": null,
