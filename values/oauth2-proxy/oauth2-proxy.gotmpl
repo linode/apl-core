@@ -110,7 +110,20 @@ redis:
       sidecar.istio.io/inject: "false"
     priorityClassName: otomi-critical
     resources: {{- $r.resources.master | toYaml | nindent 6 }}
-
+    podLabels:
+      otomi.io/affinity: "anti"
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: otomi.io/affinity
+                    operator: In
+                    values:
+                      - anti
+              topologyKey: kubernetes.io/hostname
+            weight: 100
   replica:
     persistence:
       size: {{ $r.persistence.replica.size }}
