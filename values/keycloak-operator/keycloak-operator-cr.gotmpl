@@ -35,8 +35,23 @@ spec:
     strictBackchannel: false
   unsupported:
     podTemplate:
+      metadata:
+        labels:
+          otomi.io/affinity: "anti"
       spec:
         priorityClassName: otomi-critical
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                      - key: otomi.io/affinity
+                        operator: In
+                        values:
+                          - anti
+                  topologyKey: kubernetes.io/hostname
+                weight: 100
         containers: #
         - volumeMounts:
             - name: theme-volume

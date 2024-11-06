@@ -28,6 +28,19 @@ podDns:
 
 resources: {{- $g.resources.gitea | toYaml | nindent 2 }}
 
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: otomi.io/affinity
+                operator: In
+                values:
+                  - anti
+          topologyKey: kubernetes.io/hostname
+        weight: 100
+
 securityContext:
   allowPrivilegeEscalation: false
   capabilities:
@@ -120,6 +133,8 @@ init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}
 
 statefulset:
+  labels:
+    otomi.io/affinity: "anti"
   env:
     - name: RCLONE_CONFIG_GITEA_TYPE
       value: s3
