@@ -43,15 +43,13 @@ spec:
         affinity:
           podAntiAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:
-              - podAffinityTerm:
-                  labelSelector:
-                    matchExpressions:
-                      - key: otomi.io/affinity
-                        operator: In
-                        values:
-                          - anti
-                  topologyKey: kubernetes.io/hostname
-                weight: 100
+            - labelSelector:
+                matchExpressions:
+                  - key: otomi.io/affinity
+                    operator: In
+                    values:
+                      - anti
+              topologyKey: kubernetes.io/hostname
         containers: #
         - volumeMounts:
             - name: theme-volume
