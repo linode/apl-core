@@ -1325,6 +1325,7 @@ environments:
           hasExternalIDP: false
           isMultitenant: true
           nodeSelector: {}
+          isPreInstalled: false
         users: []
         e2e:
           enabled: false
