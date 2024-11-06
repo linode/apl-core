@@ -37,7 +37,7 @@
       "dashes": false,
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus-platform"
+        "uid": "$datasource"
       },
       "description": "",
       "fieldConfig": {
@@ -86,7 +86,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus-platform"
+            "uid": "$datasource"
           },
           "editorMode": "builder",
           "expr": "rate(falco_events{k8s_ns_name=\"$namespace\"}[5m])",
@@ -130,7 +130,7 @@
       "columns": [],
       "datasource": {
         "type": "prometheus",
-        "uid": "prometheus-platform"
+        "uid": "$datasource"
       },
       "fontSize": "100%",
       "gridPos": {
@@ -229,7 +229,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus-platform"
+            "uid": "$datasource"
           },
           "editorMode": "builder",
           "expr": "falco_events{k8s_ns_name=\"$namespace\"}",
@@ -311,13 +311,13 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "team-test",
-          "value": "team-test"
+          "selected": true,
+          "text": "default",
+          "value": "default"
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "prometheus-platform"
+          "uid": "$datasource"
         },
         "definition": "label_values(k8s_ns_name)",
         "hide": 0,
@@ -344,7 +344,7 @@
   "timepicker": {},
   "timezone": "",
   "title": "Detected threads in containers",
-  "uid": "otomiplatformfalco",
+  "uid": "aplteamsfalco",
   "version": 1,
   "weekStart": ""
 }
