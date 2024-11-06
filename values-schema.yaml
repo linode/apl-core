@@ -2731,7 +2731,6 @@ properties:
         enum:
           - upsert-only
           - sync
-        default: upsert-only
       provider:
         description: The DNS provider managing the domains.
         oneOf:
