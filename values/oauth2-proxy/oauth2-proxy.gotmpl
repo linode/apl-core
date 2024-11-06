@@ -122,7 +122,6 @@ redis:
                 values:
                   - anti
           topologyKey: kubernetes.io/hostname
-        weight: 100
   replica:
     persistence:
       size: {{ $r.persistence.replica.size }}
