@@ -19,7 +19,7 @@ clusterAffinity:
   affinity:
     enablePodAntiAffinity: true
     topologyKey: kubernetes.io/hostname
-    podAntiAffinityType: preferred
+    podAntiAffinityType: required
 
 # Example for backups: 
 # clusterBackup:

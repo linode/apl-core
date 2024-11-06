@@ -30,7 +30,7 @@ resources: {{- $g.resources.gitea | toYaml | nindent 2 }}
 
 affinity:
   podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
+    requiredDuringSchedulingIgnoredDuringExecution:
       - podAffinityTerm:
           labelSelector:
             matchExpressions:

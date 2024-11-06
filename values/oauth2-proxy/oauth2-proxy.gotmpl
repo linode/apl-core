@@ -114,7 +114,7 @@ redis:
       otomi.io/affinity: "anti"
     affinity:
       podAntiAffinity:
-        preferredDuringSchedulingIgnoredDuringExecution:
+        requiredDuringSchedulingIgnoredDuringExecution:
           - podAffinityTerm:
               labelSelector:
                 matchExpressions:

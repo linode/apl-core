@@ -42,7 +42,7 @@ spec:
         priorityClassName: otomi-critical
         affinity:
           podAntiAffinity:
-            preferredDuringSchedulingIgnoredDuringExecution:
+            requiredDuringSchedulingIgnoredDuringExecution:
               - podAffinityTerm:
                   labelSelector:
                     matchExpressions:
