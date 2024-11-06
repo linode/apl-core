@@ -1312,6 +1312,7 @@ environments:
         dns:
           domainFilters: []
           zoneIdFilters: []
+          policy: upsert-only
         ingress:
           platformClass:
             className: platform
