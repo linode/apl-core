@@ -1257,7 +1257,7 @@ definitions:
         type: boolean
         default: false
       repoType:
-        proprties:
+        properties:
           external:
             properties:
               private:
