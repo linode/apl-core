@@ -8,10 +8,10 @@ apiVersion: v1
 metadata:
   name: sa-docker-build-{{ .name }}
 secrets:
-{{- if eq .repoType.type "external" }}
-  {{- if .repoType.external.private }}
+{{- if and (eq .repoType.type "external") }}
+{{- if .repoType.external.private }}
 - name: {{ .repoType.external.secretName }}
-  {{- end }}
+{{- end }}
 {{- else }}
 - name: gitea-credentials
 {{- end }}

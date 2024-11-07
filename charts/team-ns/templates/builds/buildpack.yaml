@@ -5,16 +5,15 @@
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  name: sa-buildpacks-build-{{ .name }}
+  name: sa-docker-build-{{ .name }}
 secrets:
-{{- if eq .repoType.type "external" }}
-  {{- if .repoType.external.private }}
+{{- if and (eq .repoType.type "external") }}
+{{- if .repoType.external.private }}
 - name: {{ .repoType.external.secretName }}
-  {{- end }}
+{{- end }}
 {{- else }}
 - name: gitea-credentials
 {{- end }}
-- name: harbor-pushsecret-builds
 ---
 apiVersion: tekton.dev/v1
 kind: Pipeline
@@ -26,6 +25,7 @@ metadata:
 spec:
   workspaces:
   - name: shared-data
+  - name: docker-credentials
   tasks:
   - name: fetch-source
     taskRef:
@@ -67,6 +67,8 @@ spec:
     workspaces:
     - name: source
       workspace: shared-data
+    - name: dockerconfig
+      workspace: docker-credentials
     params:
     - name: APP_IMAGE
       value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
@@ -124,6 +126,9 @@ spec:
                 requests:
                   storage: 1Gi
             status: {}
+        - name: docker-credentials
+          secret:
+            secretName: harbor-pushsecret-builds
 ---
 {{- else }}
 apiVersion: tekton.dev/v1
@@ -154,6 +159,9 @@ spec:
           requests:
             storage: 1Gi
       status: {}
+  - name: docker-credentials
+    secret:
+      secretName: harbor-pushsecret-builds
 ---
 {{- end }}
 {{- if .trigger }}
