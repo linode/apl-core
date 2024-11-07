@@ -4,17 +4,16 @@
 ---
 kind: ServiceAccount
 metadata:
-  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
   name: sa-buildpacks-build-{{ .name }}
 secrets:
-  {{- if and ( eq .repoType.type "external" ) ( .repoType.external.private ) }}
-  - name: git-credentials
-      secret: {{ .repoType.external.secretName }}
-  {{- else }}
-      secret: gitea-credentials
+{{- if eq .repoType.type "external" }}
+  {{- if .repoType.external.private }}
+- name: {{ .repoType.external.secretName }}
   {{- end }}
-  - name: docker-credentials
-      secret: harbor-pushsecret-builds
+{{- else }}
+- name: gitea-credentials
+{{- end }}
+- name: harbor-pushsecret-builds
 ---
 apiVersion: tekton.dev/v1
 kind: Pipeline

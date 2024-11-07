@@ -13,8 +13,7 @@ teamConfig:
               repoType:
                   type: external
                   external:
-                      private: true
-                      secretName: secret-build-demo-java
+                      private: false
               scanSource: true
             - name: demo-java2
               tag: v.0.0.1
@@ -33,7 +32,8 @@ teamConfig:
               repoType:
                   type: external
                   external:
-                      private: false
+                      private: true
+                      secretName: secret-build-demo-java
             - name: demo-java3
               tag: v_0_0_1
               trigger: true
@@ -49,7 +49,5 @@ teamConfig:
                             value: test2
                   type: docker
               repoType:
-                  type: external
-                  external:
-                      private: false
+                  type: internal
               scanSource: true
