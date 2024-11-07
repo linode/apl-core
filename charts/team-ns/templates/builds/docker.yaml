@@ -3,6 +3,20 @@
 {{- if eq .mode.type "docker" }}
 {{- $context := ( dir .mode.docker.path ) }}
 ---
+kind: ServiceAccount
+metadata:
+  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
+  name: sa-docker-build-{{ .name }}
+secrets:
+  {{- if and ( eq .repoType.type "external" ) ( .repoType.external.private ) }}
+  - name: git-credentials
+      secret: {{ .repoType.external.secretName }}
+  {{- else }}
+      secret: gitea-credentials
+  {{- end }}
+  - name: docker-credentials
+      secret: harbor-pushsecret-builds
+---
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -13,8 +27,6 @@ metadata:
 spec:
   workspaces:
   - name: shared-data
-  - name: docker-credentials
-  - name: git-credentials
   tasks:
   - name: fetch-source
     taskRef:
@@ -98,7 +110,7 @@ spec:
         pipelineRef:
           name: docker-build-{{ .name }}
         taskRunTemplate:
-          serviceAccountName: sa-team-{{ $v.teamId }}
+          serviceAccountName: sa-docker-build-{{ .name }}
           podTemplate:
             securityContext:
               fsGroup: 65532
@@ -114,16 +126,6 @@ spec:
                 requests:
                   storage: 1Gi
             status: {}
-        - name: git-credentials
-          secret:
-            {{- if and ( eq .repoType.type "external" ) ( .repoType.external.private ) }}
-            secretName: {{ .repoType.external.secretName }}
-            {{- else }}
-            secretName: gitea-credentials
-            {{- end }}
-        - name: docker-credentials
-          secret:
-            secretName: harbor-pushsecret-builds
 ---
 {{- else }}
 apiVersion: tekton.dev/v1
@@ -138,7 +140,7 @@ spec:
   pipelineRef:
     name: docker-build-{{ .name }}
   taskRunTemplate:
-    serviceAccountName: sa-team-{{ $v.teamId }}
+    serviceAccountName: sa-docker-build-{{ .name }}
     podTemplate:
       securityContext:
         fsGroup: 65532
@@ -154,16 +156,6 @@ spec:
           requests:
             storage: 1Gi
       status: {}
-  - name: git-credentials
-    secret:
-      {{- if and ( eq .repoType.type "external" ) ( .repoType.external.private ) }}
-      secretName: {{ .repoType.external.secretName }}
-      {{- else }}
-      secretName: gitea-credentials
-      {{- end }}
-  - name: docker-credentials
-    secret:
-      secretName: harbor-pushsecret-builds
 {{- end }}
 ---
 {{- if .trigger }}
