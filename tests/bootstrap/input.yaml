@@ -1,5 +1,6 @@
 # Minimal values file with defaults
 cluster:
+  name: CLUSTER_NAME_PLACEHOLDER
   k8sContext: CONTEXT_PLACEHOLDER
   domainSuffix: local.host
 otomi:
