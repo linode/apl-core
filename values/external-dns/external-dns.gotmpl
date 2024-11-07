@@ -20,6 +20,7 @@ provider: {{ $provider }}
 domainFilters: {{ $dns | get "domainFilters" | toYaml | nindent 2 }}
 zoneIdFilters: {{ $dns | get "zoneIdFilters" list | toYaml | nindent 2 }}
 annotationFilter: "externaldns=true"
+policy: {{ $dns.policy }}
 logLevel: {{ $externalDns | get "logLevel" }}
 dryRun: false
 crd:

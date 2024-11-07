@@ -1312,6 +1312,7 @@ environments:
         dns:
           domainFilters: []
           zoneIdFilters: []
+          policy: upsert-only
         ingress:
           platformClass:
             className: platform
@@ -1324,6 +1325,7 @@ environments:
           hasExternalIDP: false
           isMultitenant: true
           nodeSelector: {}
+          isPreInstalled: false
         users: []
         e2e:
           enabled: false
