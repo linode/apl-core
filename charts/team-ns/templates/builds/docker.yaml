@@ -35,8 +35,6 @@ spec:
     workspaces:
     - name: output
       workspace: shared-data
-    - name: ssh-directory
-      workspace: git-credentials
     params:
     - name: url
       value: {{ .mode.docker.repoUrl }}
@@ -71,8 +69,6 @@ spec:
     workspaces:
     - name: source
       workspace: shared-data
-    - name: dockerconfig
-      workspace: docker-credentials
     params:
     - name: DOCKERFILE
       value: {{ .mode.docker.path }}
