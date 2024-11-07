@@ -27,8 +27,6 @@ metadata:
 spec:
   workspaces:
   - name: shared-data
-  - name: docker-credentials
-  - name: git-credentials
   tasks:
   - name: fetch-source
     taskRef:
@@ -37,8 +35,6 @@ spec:
     workspaces:
     - name: output
       workspace: shared-data
-    - name: ssh-directory
-      workspace: git-credentials
     params:
     - name: url
       value: {{ .mode.docker.repoUrl }}
@@ -73,8 +69,6 @@ spec:
     workspaces:
     - name: source
       workspace: shared-data
-    - name: dockerconfig
-      workspace: docker-credentials
     params:
     - name: DOCKERFILE
       value: {{ .mode.docker.path }}
@@ -128,8 +122,6 @@ spec:
                 requests:
                   storage: 1Gi
             status: {}
-        - name: git-credentials
-        - name: docker-credentials
 ---
 {{- else }}
 apiVersion: tekton.dev/v1
@@ -160,8 +152,6 @@ spec:
           requests:
             storage: 1Gi
       status: {}
-  - name: git-credentials
-  - name: docker-credentials
 {{- end }}
 ---
 {{- if .trigger }}
