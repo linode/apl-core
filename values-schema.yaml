@@ -3167,6 +3167,10 @@ properties:
 
   obj:
     properties:
+      showWizard:
+        type: boolean
+        default: true
+        description: Show the Object Storage wizard.
       provider:
         properties:
           linode:
