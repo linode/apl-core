@@ -3,6 +3,7 @@
 {{- if eq .mode.type "buildpacks" }}
 ---
 kind: ServiceAccount
+apiVersion: v1
 metadata:
   name: sa-buildpacks-build-{{ .name }}
 secrets:
