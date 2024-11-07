@@ -1,6 +1,6 @@
 # All apps enabled
 cluster:
-  name: 'dev'
+  name: CLUSTER_NAME_PLACEHOLDER
   k8sContext: CONTEXT_PLACEHOLDER
 otomi:
   isMultitenant: true
