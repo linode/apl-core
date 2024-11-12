@@ -209,7 +209,7 @@ export const printWelcomeMessage = async (): Promise<void> => {
   const message = `
   ########################################################################################################################################
   #
-  #  The Application Platform console is available at https://console.${domainSuffix}
+  #  The App Platform console is available at https://console.${domainSuffix}
   #
   #  Obtain login credentials by using the below commands:
   #      kubectl get secret ${secretName} -n keycloak -o jsonpath='{.data.username}' | base64 -d
