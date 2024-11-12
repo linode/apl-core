@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.1.0](https://github.com/linode/apl-core/compare/v4.0.0...v4.1.0) (2024-11-12)
+
+
+### Features
+
+* added cors for ouath2-proxy ingress ([#1799](https://github.com/linode/apl-core/issues/1799)) ([d0ee298](https://github.com/linode/apl-core/commit/d0ee2981378f4f2234c0ca161fd8cb98f8c25dd8))
+* added policy setting to external-dns values ([#1793](https://github.com/linode/apl-core/issues/1793)) ([d6d9741](https://github.com/linode/apl-core/commit/d6d9741d001ca1694a14e8c689a49770a73cfe22))
+* adjust retry factor to 1 and 30 retries of 1 minute ([#1801](https://github.com/linode/apl-core/issues/1801)) ([70099bc](https://github.com/linode/apl-core/commit/70099bceb34e525bdf8d58e30e087f044b43fb6e))
+* object storage wizard ([#1790](https://github.com/linode/apl-core/issues/1790)) ([4d28234](https://github.com/linode/apl-core/commit/4d28234da70c6cb0e81b72f4e1ad03c37fcc60f2))
+* set datasource for trivy dashboard to default ([#1796](https://github.com/linode/apl-core/issues/1796)) ([cd52cc0](https://github.com/linode/apl-core/commit/cd52cc0f86e7347b2c6c249c6d2902912b030c7f))
+* update tools version ([#1794](https://github.com/linode/apl-core/issues/1794)) ([718719b](https://github.com/linode/apl-core/commit/718719b2d4890a0dc56e4525880c96290e012f65))
+
+
+### Bug Fixes
+
+* change default falco driver ([#1795](https://github.com/linode/apl-core/issues/1795)) ([5fc6f14](https://github.com/linode/apl-core/commit/5fc6f149eb10e920be4f6b64b6b98f01d840d5a2))
+* datasource for team and platform Grafana dashboards ([#1785](https://github.com/linode/apl-core/issues/1785)) ([6782421](https://github.com/linode/apl-core/commit/6782421ac651aea5cebdc68c9aaa98f1b2897b38))
+* falco team grafana falco dashboard datasource ([#1806](https://github.com/linode/apl-core/issues/1806)) ([378903f](https://github.com/linode/apl-core/commit/378903f7f433113658f6178b5540de734eb8ec0a))
+
+
+### Others
+
+* rename application  to app ([#1804](https://github.com/linode/apl-core/issues/1804)) ([9d886eb](https://github.com/linode/apl-core/commit/9d886eb3d6c3038eb439ac6f7371d3fc34523909))
+* update packages and docker image [TOOLS][MINOR] ([#1788](https://github.com/linode/apl-core/issues/1788)) ([1ab0fca](https://github.com/linode/apl-core/commit/1ab0fca52a9f794ef872eb115d130db47f4d9f8f))
+* versions ([#1802](https://github.com/linode/apl-core/issues/1802)) ([8dca419](https://github.com/linode/apl-core/commit/8dca419f5433039a73a901857ba30f8274ef748a))
+
 ## [4.0.0](https://github.com/linode/apl-core/compare/v3.0.0...v4.0.0) (2024-11-01)
 
 
