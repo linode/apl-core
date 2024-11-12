@@ -59,8 +59,10 @@ spec:
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
+        echo: APL356 Debug
         git clone -c http.sslVerify=false --depth 2 "http://${GITEA_USERNAME}:${GITEA_PASSWORD}@$url"
         {{- else }}
+        echo: APL356 Debug
         git clone --depth 2 "http://${GITEA_USERNAME}:${GITEA_PASSWORD}@$url"
         {{- end }}
 
