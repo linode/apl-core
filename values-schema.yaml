@@ -2725,6 +2725,12 @@ properties:
         items:
           type: string
         type: array
+      policy:
+        description: Modify how DNS records are synchronized between sources and providers.
+        type: string
+        enum:
+          - upsert-only
+          - sync
       provider:
         description: The DNS provider managing the domains.
         oneOf:
@@ -3151,6 +3157,10 @@ properties:
 
   obj:
     properties:
+      showWizard:
+        type: boolean
+        default: true
+        description: Show the Object Storage wizard.
       provider:
         properties:
           linode:
