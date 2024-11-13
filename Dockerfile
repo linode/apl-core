@@ -1,4 +1,4 @@
-FROM linode/apl-tools:v2.8.1 as ci
+FROM linode/apl-tools:v2.8.2 as ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -26,7 +26,7 @@ FROM ci as clean
 # below command removes the packages specified in devDependencies and set NODE_ENV to production
 RUN npm prune --production
 
-FROM linode/apl-tools:v2.8.1  as prod
+FROM linode/apl-tools:v2.8.2  as prod
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
 ENV VERBOSITY='0'

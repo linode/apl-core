@@ -121,7 +121,7 @@ RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kub
 # node
 # https://github.com/nodesource/distributions
 RUN set -uex && \
-  curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x -o nodesource_setup.sh && \
+  curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x -o nodesource_setup.sh && \
   bash nodesource_setup.sh && \
   apt-get update && \
   apt-get install -y nodejs && \
