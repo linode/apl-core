@@ -121,10 +121,8 @@ RUN tar -zxvf /tmp/kubeconform-linux-${TARGETARCH}.tar.gz -C /tmp && mv /tmp/kub
 # node
 # https://github.com/nodesource/distributions
 RUN set -uex && \
-  mkdir -p /etc/apt/keyrings && \
-  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-  NODE_MAJOR=${NODE_VERSION} && \
-  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x focal main" | tee /etc/apt/sources.list.d/nodesource.list && \
+  curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh && \
+  bash nodesource_setup.sh && \
   apt-get update && \
   apt-get install -y nodejs && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
