@@ -136,7 +136,7 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
       d.info(`Argocd-application-controller has been OOMKilled`)
       const config = values as unknown as Record<string, any>
       const controllerResources = config.apps?.argocd?.resources?.controller
-      d.info(`config: ${config}`)
+      d.info(`config: ${JSON.stringify(config, null, 2)}`)
       d.info(`config: ${controllerResources}`)
       if (controllerResources) {
         await patchStatefulSetResources(
