@@ -5,7 +5,7 @@
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  name: sa-docker-build-{{ .name }}
+  name: sa-buildpacks-build-{{ .name }}
 secrets:
 {{- if and (eq .repoType.type "external") }}
 {{- if .repoType.external.private }}
