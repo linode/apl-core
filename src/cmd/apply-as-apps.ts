@@ -135,7 +135,7 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
     if (await hasStsOOMKilledPods('argocd-application-controller', 'argocd', appV1Api, coreV1Api)) {
       d.info(`Argocd-application-controller has been OOMKilled`)
       const config = values as unknown as Record<string, any>
-      const controllerResources = config.apps?.argocd?.resources?.controller
+      const controllerResources = config.controller?.resources
       d.info(`config: ${JSON.stringify(config, null, 2)}`)
       d.info(`config: ${controllerResources}`)
       if (controllerResources) {
