@@ -131,7 +131,9 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
     kc.loadFromDefault()
     const coreV1Api = kc.makeApiClient(CoreV1Api)
     const appV1Api = kc.makeApiClient(AppsV1Api)
+    d.info(`Checking if argocd-application-controller has been OOMKilled`)
     if (await hasStsOOMKilledPods('argocd-application-controller', 'argocd', appV1Api, coreV1Api)) {
+      d.info(`Argocd-application-controller has been OOMKilled`)
       const config = values as unknown as Record<string, any>
       const controllerResources = config.apps?.argocd?.resources?.controller
       d.info(`config: ${config}`)
