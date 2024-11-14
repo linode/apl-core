@@ -38,10 +38,10 @@ export const cliEnvSpec = {
   TRACE: bool({ default: false }),
   VERBOSITY: num({ desc: 'The verbosity level', default: 1 }),
   VALUES_INPUT: str({ desc: 'The chart values.yaml file', default: undefined }),
-  RETRIES: num({ desc: 'The maximum amount of times to retry the operation by the reconciler', default: 10 }),
+  RETRIES: num({ desc: 'The maximum amount of times to retry the operation by the reconciler', default: 30 }),
   RANDOM: bool({ desc: 'Randomizes the timeouts by multiplying with a factor between 1 to 2', default: false }),
-  MIN_TIMEOUT: num({ desc: 'The number of milliseconds before starting the first retry', default: 10000 }),
-  FACTOR: num({ desc: 'The factor to multiply the timeout with', default: 1.5 }),
+  MIN_TIMEOUT: num({ desc: 'The number of milliseconds before starting the first retry', default: 60000 }),
+  FACTOR: num({ desc: 'The factor to multiply the timeout with', default: 1 }),
 }
 
 export function cleanEnv<T>(

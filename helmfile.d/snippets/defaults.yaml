@@ -17,10 +17,12 @@ environments:
                   memory: 256Mi              
             _rawValues: {}
           argocd:
+            controllerStatusProcessors: 20
+            controllerOperationProcessors: 10
             applicationSet:
               replicas: 1
             controller:
-              replicas: 2
+              replicas: 1
             autoscaling:
               repoServer:
                 enabled: true
@@ -38,10 +40,10 @@ environments:
               controller:
                 requests:
                   cpu: 200m
-                  memory: 512Mi
+                  memory: 1Gi
                 limits:
                   cpu: "2"
-                  memory: 2Gi
+                  memory: 4Gi
               server:
                 requests:
                   cpu: 100m
@@ -144,7 +146,7 @@ environments:
                 cpu: 10m
           falco:
             enabled: false
-            driver: ebpf
+            driver: modern-bpf
             _rawValues:
               customRules:
                 otomi-rules.yaml: >-
@@ -1310,6 +1312,7 @@ environments:
         dns:
           domainFilters: []
           zoneIdFilters: []
+          policy: upsert-only
         ingress:
           platformClass:
             className: platform
@@ -1322,6 +1325,7 @@ environments:
           hasExternalIDP: false
           isMultitenant: true
           nodeSelector: {}
+          isPreInstalled: false
         users: []
         e2e:
           enabled: false

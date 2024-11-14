@@ -1,5 +1,5 @@
-api: main
-console: main
+api: 3.3.0
+console: 3.3.0
 consoleLogin: v3.0.0
-tasks: main
+tasks: 3.4.0
 tools: 2.7.0

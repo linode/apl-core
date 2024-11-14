@@ -203,7 +203,6 @@ jobs:
             --node_pools.autoscaler.max 3 \
             --node_pools.autoscaler.min 3 \
             --tags testing \
-            --tags delete_me_tonight \
             --no-defaults
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
@@ -260,6 +259,7 @@ jobs:
           tag=${ref##*/}
           sed --in-place "s/APP_VERSION_PLACEHOLDER/$tag/g" chart/apl/Chart.yaml
           sed --in-place "s/CONTEXT_PLACEHOLDER/${{ env.LINODE_CLUSTER_CONTEXT }}/g" tests/integration/${{ inputs.install_profile }}.yaml
+          sed --in-place "s/CLUSTER_NAME_PLACEHOLDER/aplinstall${{ env.LINODE_CLUSTER_ID }}/g" tests/integration/${{ inputs.install_profile }}.yaml
           sed --in-place "s/OTOMI_VERSION_PLACEHOLDER/${GITHUB_REF##*/}/g" tests/integration/${{ inputs.install_profile }}.yaml
           touch values-container-registry.yaml
 
