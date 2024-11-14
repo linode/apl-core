@@ -5,7 +5,7 @@
 
 version: 2
 updates:
-  # npm patch
+  # npm
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
@@ -14,42 +14,6 @@ updates:
       prefix: ':seedling:'
     labels:
       - 'dependencies'
-      - 'patch'
-    ignore:
-      # For all deps
-      - dependency-name: '*'
-        update-types: ['version-update:semver-major', 'version-update:semver-minor']
-
-  # npm minor
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'weekly'
-    commit-message:
-      prefix: ':seedling:'
-    labels:
-      - 'dependencies'
-      - 'minor'
-    ignore:
-      # For all deps
-      - dependency-name: '*'
-        update-types: ['version-update:semver-major', 'version-update:semver-patch']
-
-  # npm major
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'weekly'
-    commit-message:
-      prefix: ':seedling:'
-    labels:
-      - 'dependencies'
-      - 'major'
-    draft: true
-    ignore:
-      # For all deps
-      - dependency-name: '*'
-        update-types: ['version-update:semver-minor', 'version-update:semver-patch']
 
   # Docker
   - package-ecosystem: 'docker'
