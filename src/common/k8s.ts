@@ -16,7 +16,7 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
-import { CoreV1Api, V1Secret } from '@kubernetes/client-node'
+import { AppsV1Api, CoreV1Api, V1Secret } from '@kubernetes/client-node'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -291,4 +291,107 @@ export async function createGenericSecret(
 
 export function b64enc(value: string): string {
   return Buffer.from(value).toString('base64')
+}
+
+export async function hasStsOOMKilledPods(
+  statefulSetName: string,
+  namespace: string,
+  appsApi: AppsV1Api,
+  coreApi: CoreV1Api,
+): Promise<boolean> {
+  try {
+    // Retrieve the StatefulSet to confirm it exists
+    const statefulSet = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
+    console.log(`Checking pods in StatefulSet ${statefulSetName} in namespace ${namespace}...`)
+
+    // List pods in the StatefulSet by matching labels
+    const labelSelector = Object.entries(statefulSet.body.spec?.selector.matchLabels || {})
+      .map(([key, value]) => `${key}=${value}`)
+      .join(',')
+
+    const pods = await coreApi.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, labelSelector)
+
+    for (const pod of pods.body.items) {
+      const podName = pod.metadata?.name
+      const podStatus = pod.status
+
+      // Check if the pod is in `CrashLoopBackOff`
+      const isCrashLoopBackOff = podStatus?.containerStatuses?.some(
+        (containerStatus) => containerStatus.state?.waiting?.reason === 'CrashLoopBackOff',
+      )
+
+      if (isCrashLoopBackOff) {
+        console.log(`Pod ${podName} is in CrashLoopBackOff.`)
+
+        // Check if any container was terminated due to `OOMKilled`
+        const isOOMKilled = podStatus?.containerStatuses?.some(
+          (containerStatus) => containerStatus.lastState?.terminated?.reason === 'OOMKilled',
+        )
+
+        if (isOOMKilled) {
+          console.log(`Pod ${podName} in StatefulSet ${statefulSetName} was OOMKilled.`)
+          return true
+        } else {
+          console.log(`Pod ${podName} in CrashLoopBackOff, but not OOMKilled.`)
+        }
+      }
+    }
+  } catch (error) {
+    console.error(`Error checking StatefulSet ${statefulSetName}:`, error)
+  }
+  return false
+}
+
+export async function patchStatefulSetResources(
+  statefulSetName: string,
+  namespace: string,
+  cpuRequest: string,
+  memoryRequest: string,
+  cpuLimit: string,
+  memoryLimit: string,
+  appsApi: AppsV1Api,
+) {
+  try {
+    // Define the patch payload to update resource requests and limits
+    const patch = {
+      spec: {
+        template: {
+          spec: {
+            containers: [
+              {
+                name: statefulSetName, // Adjust if the container name differs from StatefulSet name
+                resources: {
+                  requests: {
+                    cpu: cpuRequest,
+                    memory: memoryRequest,
+                  },
+                  limits: {
+                    cpu: cpuLimit,
+                    memory: memoryLimit,
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    }
+
+    // Patch the StatefulSet with strategic merge
+    await appsApi.patchNamespacedStatefulSet(
+      statefulSetName,
+      namespace,
+      patch,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { headers: { 'Content-Type': 'application/strategic-merge-patch+json' } },
+    )
+
+    console.log(`Successfully patched resources for StatefulSet ${statefulSetName} in namespace ${namespace}`)
+  } catch (error) {
+    console.error(`Failed to patch StatefulSet ${statefulSetName}:`, error)
+  }
 }

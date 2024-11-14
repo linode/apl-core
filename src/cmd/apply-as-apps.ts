@@ -4,12 +4,13 @@ import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { isResourcePresent } from 'src/common/k8s'
+import { hasStsOOMKilledPods, isResourcePresent, patchStatefulSetResources } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
+import { AppsV1Api, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -124,6 +125,29 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
   const manifest = getArgocdAppManifest(release, values, otomiVersion)
   // d.info(`Saving Argocd Application at ${applicationPath}`)
   await writeFile(applicationPath, objectToYaml(manifest))
+
+  if (appName === 'argocd-argocd') {
+    const kc = new KubeConfig()
+    kc.loadFromDefault()
+    const coreV1Api = kc.makeApiClient(CoreV1Api)
+    const appV1Api = kc.makeApiClient(AppsV1Api)
+    if (await hasStsOOMKilledPods('argocd-application-controller', 'argocd', appV1Api, coreV1Api)) {
+      const config = values as unknown as Record<string, any>
+      const controllerResources = config.apps?.argocd?.resources?.controller
+
+      if (controllerResources) {
+        await patchStatefulSetResources(
+          'argocd-application-controller',
+          'argocd',
+          controllerResources.request?.cpu,
+          controllerResources.request?.memory,
+          controllerResources.limit?.cpu,
+          controllerResources.limit?.request,
+          appV1Api,
+        )
+      }
+    }
+  }
 }
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
