@@ -398,8 +398,8 @@ export async function patchStatefulSetResources(
 }
 
 export async function deleteStatefulSetPods(
-  namespace: string,
   statefulSetName: string,
+  namespace: string,
   appsApi: AppsV1Api,
   coreApi: CoreV1Api,
 ) {
@@ -433,8 +433,8 @@ export async function deleteStatefulSetPods(
     // Delete each pod
     for (const pod of podList.items) {
       if (pod.metadata?.name) {
-        await coreApi.deleteNamespacedPod(pod.metadata.name, namespace)
         console.log(`Deleted pod: ${pod.metadata.name}`)
+        await coreApi.deleteNamespacedPod(pod.metadata.name, namespace)
       }
     }
 
