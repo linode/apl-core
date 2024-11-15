@@ -136,9 +136,7 @@ function getResources(values: Record<string, any>) {
 }
 
 async function patchArgocdResources(release: HelmRelease, values: Record<string, any>) {
-  d.info(`test1`)
   if (release.name === 'argocd') {
-    d.info(`test2`)
     if (await hasStsOOMKilledPods('argocd-application-controller', 'argocd', k8s.app(), k8s.core(), d)) {
       d.info(`sts/argocd-application-controller pods have been OOMKilled`)
 

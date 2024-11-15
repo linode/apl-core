@@ -322,7 +322,7 @@ export function b64enc(value: string): string {
   return Buffer.from(value).toString('base64')
 }
 
-async function getPodsOfStatefulSet(
+export async function getPodsOfStatefulSet(
   appsApi: AppsV1Api,
   statefulSetName: string,
   namespace: string,
@@ -378,7 +378,6 @@ export async function hasStsOOMKilledPods(
         )
 
         if (isOOMKilled) {
-          console.log(`Pod ${podName} in StatefulSet ${statefulSetName} was OOMKilled.`)
           return true
         }
       }
