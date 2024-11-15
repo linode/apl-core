@@ -136,16 +136,22 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
       d.info(`Argocd-application-controller has been OOMKilled`)
       const config = values as unknown as Record<string, any>
       const controllerResources = config.controller?.resources
-      d.info(`config: ${JSON.stringify(config, null, 2)}`)
-      d.info(`config: ${controllerResources}`)
+      d.info(`config: ${JSON.stringify(controllerResources, null, 2)}`)
+
       if (controllerResources) {
+        const cpuRequest = controllerResources.request?.cpu
+        const memoryRequest = controllerResources.request?.memory
+        const cpuLimit = controllerResources.limit?.cpu
+        const memoryLimit = controllerResources.limit?.request
+        d.info(`resources: ${cpuRequest} ${memoryRequest} ${cpuLimit} ${memoryLimit}`)
         await patchStatefulSetResources(
           'argocd-application-controller',
+          'application-controller',
           'argocd',
-          controllerResources.request?.cpu,
-          controllerResources.request?.memory,
-          controllerResources.limit?.cpu,
-          controllerResources.limit?.request,
+          cpuRequest,
+          memoryRequest,
+          cpuLimit,
+          memoryLimit,
           appV1Api,
         )
       }

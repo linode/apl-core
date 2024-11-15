@@ -344,6 +344,7 @@ export async function hasStsOOMKilledPods(
 
 export async function patchStatefulSetResources(
   statefulSetName: string,
+  containerName: string,
   namespace: string,
   cpuRequest: string,
   memoryRequest: string,
@@ -359,7 +360,7 @@ export async function patchStatefulSetResources(
           spec: {
             containers: [
               {
-                name: statefulSetName, // Adjust if the container name differs from StatefulSet name
+                name: containerName, // Adjust if the container name differs from StatefulSet name
                 resources: {
                   requests: {
                     cpu: cpuRequest,
