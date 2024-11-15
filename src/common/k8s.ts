@@ -11,14 +11,43 @@ import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
 import { $, cd, nothrow, sleep } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
-import { terminal } from './debug'
+import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
-import { AppsV1Api, CoreV1Api, V1Secret } from '@kubernetes/client-node'
+import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
+
+// Warning don't use this with asynchronous code and multiple kubeconfigs it will override the kubeconfig
+let kc: KubeConfig
+let coreClient: CoreV1Api
+let appClient: AppsV1Api
+let customClient: CustomObjectsApi
+export const k8s = {
+  kc: (): KubeConfig => {
+    if (kc) return kc
+    kc = new KubeConfig()
+    kc.loadFromDefault()
+    return kc
+  },
+  core: (): CoreV1Api => {
+    if (coreClient) return coreClient
+    coreClient = k8s.kc().makeApiClient(CoreV1Api)
+    return coreClient
+  },
+  app: (): AppsV1Api => {
+    if (appClient) return appClient
+    appClient = k8s.kc().makeApiClient(AppsV1Api)
+    return appClient
+  },
+  custom: (): CustomObjectsApi => {
+    if (customClient) return customClient
+    customClient = k8s.kc().makeApiClient(CustomObjectsApi)
+    return customClient
+  },
+}
 
 export const createK8sSecret = async (
   name: string,
@@ -269,7 +298,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
 }
 
 export async function createGenericSecret(
-  k8s: CoreV1Api,
+  coreV1Api: CoreV1Api,
   name: string,
   namespace: string,
   secretData: Record<string, string>,
@@ -285,7 +314,7 @@ export async function createGenericSecret(
     type: 'Opaque',
   }
 
-  const response = await k8s.createNamespacedSecret(namespace, secret)
+  const response = await coreV1Api.createNamespacedSecret(namespace, secret)
   return response.body
 }
 
@@ -298,13 +327,11 @@ export async function hasStsOOMKilledPods(
   namespace: string,
   appsApi: AppsV1Api,
   coreApi: CoreV1Api,
+  d: OtomiDebugger,
 ): Promise<boolean> {
   try {
-    // Retrieve the StatefulSet to confirm it exists
     const statefulSet = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
-    console.log(`Checking pods in StatefulSet ${statefulSetName} in namespace ${namespace}...`)
 
-    // List pods in the StatefulSet by matching labels
     const labelSelector = Object.entries(statefulSet.body.spec?.selector.matchLabels || {})
       .map(([key, value]) => `${key}=${value}`)
       .join(',')
@@ -315,15 +342,11 @@ export async function hasStsOOMKilledPods(
       const podName = pod.metadata?.name
       const podStatus = pod.status
 
-      // Check if the pod is in `CrashLoopBackOff`
       const isCrashLoopBackOff = podStatus?.containerStatuses?.some(
         (containerStatus) => containerStatus.state?.waiting?.reason === 'CrashLoopBackOff',
       )
 
       if (isCrashLoopBackOff) {
-        console.log(`Pod ${podName} is in CrashLoopBackOff.`)
-
-        // Check if any container was terminated due to `OOMKilled`
         const isOOMKilled = podStatus?.containerStatuses?.some(
           (containerStatus) => containerStatus.lastState?.terminated?.reason === 'OOMKilled',
         )
@@ -331,13 +354,11 @@ export async function hasStsOOMKilledPods(
         if (isOOMKilled) {
           console.log(`Pod ${podName} in StatefulSet ${statefulSetName} was OOMKilled.`)
           return true
-        } else {
-          console.log(`Pod ${podName} in CrashLoopBackOff, but not OOMKilled.`)
         }
       }
     }
   } catch (error) {
-    console.error(`Error checking StatefulSet ${statefulSetName}:`, error)
+    d.error(`Error checking StatefulSet ${statefulSetName}:`, error)
   }
   return false
 }
@@ -351,16 +372,16 @@ export async function patchStatefulSetResources(
   cpuLimit: string,
   memoryLimit: string,
   appsApi: AppsV1Api,
+  d: OtomiDebugger,
 ) {
   try {
-    // Define the patch payload to update resource requests and limits
     const patch = {
       spec: {
         template: {
           spec: {
             containers: [
               {
-                name: containerName, // Adjust if the container name differs from StatefulSet name
+                name: containerName,
                 resources: {
                   requests: {
                     cpu: cpuRequest,
@@ -378,7 +399,6 @@ export async function patchStatefulSetResources(
       },
     }
 
-    // Patch the StatefulSet with strategic merge
     await appsApi.patchNamespacedStatefulSet(
       statefulSetName,
       namespace,
@@ -390,10 +410,8 @@ export async function patchStatefulSetResources(
       undefined,
       { headers: { 'Content-Type': 'application/strategic-merge-patch+json' } },
     )
-
-    console.log(`Successfully patched resources for StatefulSet ${statefulSetName} in namespace ${namespace}`)
   } catch (error) {
-    console.error(`Failed to patch StatefulSet ${statefulSetName}:`, error)
+    d.error(`Failed to patch StatefulSet ${statefulSetName}:`, error)
   }
 }
 
@@ -402,12 +420,13 @@ export async function deleteStatefulSetPods(
   namespace: string,
   appsApi: AppsV1Api,
   coreApi: CoreV1Api,
+  d: OtomiDebugger,
 ) {
   try {
-    // Get the StatefulSet to retrieve its label selector
     const { body: statefulSet } = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
 
     if (!statefulSet.spec?.selector?.matchLabels) {
+      d.error(`StatefulSet ${statefulSetName} does not have matchLabels`)
       throw new Error(`StatefulSet ${statefulSetName} does not have matchLabels`)
     }
 
@@ -426,21 +445,28 @@ export async function deleteStatefulSetPods(
     )
 
     if (podList.items.length === 0) {
-      console.log(`No pods found for StatefulSet ${statefulSetName}`)
-      return
+      d.error(`No pods found for StatefulSet ${statefulSetName}`)
+      throw new Error(`No pods found for StatefulSet ${statefulSetName}`)
     }
 
     // Delete each pod
     for (const pod of podList.items) {
       if (pod.metadata?.name) {
-        console.log(`Deleted pod: ${pod.metadata.name}`)
         await coreApi.deleteNamespacedPod(pod.metadata.name, namespace)
       }
     }
-
-    console.log(`All pods for StatefulSet ${statefulSetName} have been deleted.`)
   } catch (error) {
-    console.error(`Failed to delete pods for StatefulSet ${statefulSetName}:`, error)
-    throw error
+    d.error(`Failed to delete pods for StatefulSet ${statefulSetName}:`, error)
+  }
+}
+
+export interface ResourceRequirements {
+  limits: {
+    cpu: string
+    memory: string
+  }
+  requests: {
+    cpu: string
+    memory: string
   }
 }

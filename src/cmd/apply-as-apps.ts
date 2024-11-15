@@ -8,14 +8,15 @@ import {
   deleteStatefulSetPods,
   hasStsOOMKilledPods,
   isResourcePresent,
+  k8s,
   patchStatefulSetResources,
+  ResourceRequirements,
 } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { AppsV1Api, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -119,50 +120,59 @@ const removeApplication = async (release: HelmRelease): Promise<void> => {
   }
 }
 
-const writeApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<void> => {
-  const appName = `${release.namespace}-${release.name}`
-  // d.info(`Generating Argocd Application at ${appName}`)
-  const applicationPath = `${appsDir}/${appName}.yaml`
-  const valuesPath = `${valuesDir}/${appName}.yaml`
-  // d.info(`Loading values file from ${valuesPath}`)
-  let values = {}
-  if (await pathExists(valuesPath)) values = (await loadYaml(valuesPath)) || {}
-  const manifest = getArgocdAppManifest(release, values, otomiVersion)
-  // d.info(`Saving Argocd Application at ${applicationPath}`)
-  await writeFile(applicationPath, objectToYaml(manifest))
+function getResources(values: Record<string, any>) {
+  const config = values
+  const resources: ResourceRequirements = {
+    limits: {
+      cpu: config.controller?.resources?.limits?.cpu || undefined,
+      memory: config.controller?.resources?.limits?.memory || undefined,
+    },
+    requests: {
+      cpu: config.controller?.resources?.requests?.cpu || undefined,
+      memory: config.controller?.resources?.requests?.memory || undefined,
+    },
+  }
+  return resources
+}
 
-  if (appName === 'argocd-argocd') {
-    const kc = new KubeConfig()
-    kc.loadFromDefault()
-    const coreV1Api = kc.makeApiClient(CoreV1Api)
-    const appV1Api = kc.makeApiClient(AppsV1Api)
-    d.info(`Checking if argocd-application-controller has been OOMKilled`)
-    if (await hasStsOOMKilledPods('argocd-application-controller', 'argocd', appV1Api, coreV1Api)) {
-      d.info(`Argocd-application-controller has been OOMKilled`)
-      const config = values as unknown as Record<string, any>
-      const controllerResources = config.controller?.resources
-      d.info(`config: ${JSON.stringify(controllerResources, null, 2)}`)
+async function patchArgocdResources(release: HelmRelease, values: Record<string, any>) {
+  if (getAppName(release) === 'argocd-argocd') {
+    if (await hasStsOOMKilledPods('argocd-application-controller', 'argocd', k8s.app(), k8s.core(), d)) {
+      d.info(`sts/argocd-application-controller pods have been OOMKilled`)
 
-      if (controllerResources) {
-        const cpuRequest = controllerResources.requests?.cpu
-        const memoryRequest = controllerResources.requests?.memory
-        const cpuLimit = controllerResources.limits?.cpu
-        const memoryLimit = controllerResources.limits?.memory
-        d.info(`resources: ${cpuRequest} ${memoryRequest} ${cpuLimit} ${memoryLimit}`)
+      const resources = getResources(values)
+      if (resources) {
         await patchStatefulSetResources(
           'argocd-application-controller',
           'application-controller',
           'argocd',
-          cpuRequest,
-          memoryRequest,
-          cpuLimit,
-          memoryLimit,
-          appV1Api,
+          resources.requests.cpu,
+          resources.requests.memory,
+          resources.limits.cpu,
+          resources.limits.memory,
+          k8s.app(),
+          d,
         )
-        await deleteStatefulSetPods('argocd-application-controller', 'argocd', appV1Api, coreV1Api)
+        d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(resources)}`)
+
+        await deleteStatefulSetPods('argocd-application-controller', 'argocd', k8s.app(), k8s.core(), d)
+        d.info(`sts/argocd-application-controller pods restarted`)
       }
     }
   }
+}
+
+const writeApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<void> => {
+  const appName = `${release.namespace}-${release.name}`
+  const applicationPath = `${appsDir}/${appName}.yaml`
+  const valuesPath = `${valuesDir}/${appName}.yaml`
+  let values = {}
+
+  if (await pathExists(valuesPath)) values = (await loadYaml(valuesPath)) || {}
+  const manifest = getArgocdAppManifest(release, values, otomiVersion)
+  await writeFile(applicationPath, objectToYaml(manifest))
+
+  await patchArgocdResources(release, values)
 }
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
