@@ -4,7 +4,12 @@ import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { hasStsOOMKilledPods, isResourcePresent, patchStatefulSetResources } from 'src/common/k8s'
+import {
+  deleteStatefulSetPods,
+  hasStsOOMKilledPods,
+  isResourcePresent,
+  patchStatefulSetResources,
+} from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -154,6 +159,7 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
           memoryLimit,
           appV1Api,
         )
+        await deleteStatefulSetPods('argocd-application-controller', 'argocd', appV1Api, coreV1Api)
       }
     }
   }

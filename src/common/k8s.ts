@@ -396,3 +396,51 @@ export async function patchStatefulSetResources(
     console.error(`Failed to patch StatefulSet ${statefulSetName}:`, error)
   }
 }
+
+export async function deleteStatefulSetPods(
+  namespace: string,
+  statefulSetName: string,
+  appsApi: AppsV1Api,
+  coreApi: CoreV1Api,
+) {
+  try {
+    // Get the StatefulSet to retrieve its label selector
+    const { body: statefulSet } = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
+
+    if (!statefulSet.spec?.selector?.matchLabels) {
+      throw new Error(`StatefulSet ${statefulSetName} does not have matchLabels`)
+    }
+
+    const labelSelector = Object.entries(statefulSet.spec.selector.matchLabels)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(',')
+
+    // List all pods matching the label selector
+    const { body: podList } = await coreApi.listNamespacedPod(
+      namespace,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      labelSelector,
+    )
+
+    if (podList.items.length === 0) {
+      console.log(`No pods found for StatefulSet ${statefulSetName}`)
+      return
+    }
+
+    // Delete each pod
+    for (const pod of podList.items) {
+      if (pod.metadata?.name) {
+        await coreApi.deleteNamespacedPod(pod.metadata.name, namespace)
+        console.log(`Deleted pod: ${pod.metadata.name}`)
+      }
+    }
+
+    console.log(`All pods for StatefulSet ${statefulSetName} have been deleted.`)
+  } catch (error) {
+    console.error(`Failed to delete pods for StatefulSet ${statefulSetName}:`, error)
+    throw error
+  }
+}
