@@ -322,6 +322,33 @@ export function b64enc(value: string): string {
   return Buffer.from(value).toString('base64')
 }
 
+async function getPodsOfStatefulSet(
+  appsApi: AppsV1Api,
+  statefulSetName: string,
+  namespace: string,
+  coreApi: CoreV1Api,
+) {
+  const { body: statefulSet } = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
+
+  if (!statefulSet.spec?.selector?.matchLabels) {
+    throw new Error(`StatefulSet ${statefulSetName} does not have matchLabels`)
+  }
+
+  const labelSelector = Object.entries(statefulSet.spec.selector.matchLabels)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(',')
+
+  const { body: podList } = await coreApi.listNamespacedPod(
+    namespace,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    labelSelector,
+  )
+  return podList
+}
+
 export async function hasStsOOMKilledPods(
   statefulSetName: string,
   namespace: string,
@@ -330,15 +357,14 @@ export async function hasStsOOMKilledPods(
   d: OtomiDebugger,
 ): Promise<boolean> {
   try {
-    const statefulSet = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
+    const pods = await getPodsOfStatefulSet(appsApi, statefulSetName, namespace, coreApi)
 
-    const labelSelector = Object.entries(statefulSet.body.spec?.selector.matchLabels || {})
-      .map(([key, value]) => `${key}=${value}`)
-      .join(',')
+    if (pods.items.length === 0) {
+      d.error(`No pods found for StatefulSet ${statefulSetName}`)
+      throw new Error(`No pods found for StatefulSet ${statefulSetName}`)
+    }
 
-    const pods = await coreApi.listNamespacedPod(namespace, undefined, undefined, undefined, undefined, labelSelector)
-
-    for (const pod of pods.body.items) {
+    for (const pod of pods.items) {
       const podName = pod.metadata?.name
       const podStatus = pod.status
 
@@ -423,34 +449,15 @@ export async function deleteStatefulSetPods(
   d: OtomiDebugger,
 ) {
   try {
-    const { body: statefulSet } = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
+    const pods = await getPodsOfStatefulSet(appsApi, statefulSetName, namespace, coreApi)
 
-    if (!statefulSet.spec?.selector?.matchLabels) {
-      d.error(`StatefulSet ${statefulSetName} does not have matchLabels`)
-      throw new Error(`StatefulSet ${statefulSetName} does not have matchLabels`)
-    }
-
-    const labelSelector = Object.entries(statefulSet.spec.selector.matchLabels)
-      .map(([key, value]) => `${key}=${value}`)
-      .join(',')
-
-    // List all pods matching the label selector
-    const { body: podList } = await coreApi.listNamespacedPod(
-      namespace,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      labelSelector,
-    )
-
-    if (podList.items.length === 0) {
+    if (pods.items.length === 0) {
       d.error(`No pods found for StatefulSet ${statefulSetName}`)
       throw new Error(`No pods found for StatefulSet ${statefulSetName}`)
     }
 
     // Delete each pod
-    for (const pod of podList.items) {
+    for (const pod of pods.items) {
       if (pod.metadata?.name) {
         await coreApi.deleteNamespacedPod(pod.metadata.name, namespace)
       }
