@@ -29,7 +29,7 @@ jobs:
 
           set -e
 
-          if "${{ github.ref_name }}" != "main"; then
+          if ["${{ github.ref_name }}" != "main"]; then
             NEW_VERSION="${{ github.ref_name }}"
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
             exit 0
