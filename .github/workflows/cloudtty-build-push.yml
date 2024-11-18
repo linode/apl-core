@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'APL-369'
 
 env:
   NAMESPACE: linode
@@ -28,6 +29,10 @@ jobs:
 
           set -e
 
+          if ${{ github.ref_name }} != "main"
+            NEW_VERSION=${{ github.ref_name }}
+            exit 0
+          fi
           # # Set the first image version to '0.1.0' if the repo does not exists.
           # if ! curl -s -L --fail "https://hub.docker.com/v2/repositories/${{ env.NAMESPACE }}/${{ env.REPO }}"; then echo "NEW_VERSION=0.1.0" >> $GITHUB_ENV && exit 0; fi
 
