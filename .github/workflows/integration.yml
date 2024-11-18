@@ -203,7 +203,6 @@ jobs:
             --node_pools.autoscaler.max 3 \
             --node_pools.autoscaler.min 3 \
             --tags testing \
-            --tags delete_me_tonight \
             --no-defaults
       - name: Retrieve cluster id
         run: echo "LINODE_CLUSTER_ID=$(linode-cli lke clusters-list --json | jq -ce '.[] | select(.label | startswith("${{ env.LINODE_CLUSTER_NAME }}")) | .id')" >> $GITHUB_ENV
