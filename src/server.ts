@@ -90,6 +90,24 @@ app.get('/apl/schema', async (req: Request, res: Response) => {
 })
 
 export const startServer = (): void => {
-  server = app.listen(17771, '0.0.0.0')
-  d.log(`Server listening on http://0.0.0.0:17771`)
+  server = app
+    .listen(17771, '0.0.0.0', () => {
+      d.log(`Server listening on http://0.0.0.0:17771`)
+    })
+    .on('error', (e) => {
+      console.error(e)
+    })
 }
+
+// Add this at the bottom of the file or in a lifecycle manager
+process.on('SIGINT', () => {
+  d.info('Shutting down server')
+  stopServer()
+  process.exit(0)
+})
+
+process.on('SIGTERM', () => {
+  d.info('Shutting down server')
+  stopServer()
+  process.exit(0)
+})
