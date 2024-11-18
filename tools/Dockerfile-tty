@@ -8,31 +8,31 @@ FROM ubuntu:jammy
 RUN apt update && apt upgrade -y && apt install -y ttyd jq curl vim wget less tmux bash-completion 
 
 # Installing yq
-ADD --chmod=755 --checksum=sha256:00d48a5240ab575c3e82fb1e4fab768c33ce3e87e75b673a45d41a1c4ed1e86c https://github.com/mikefarah/yq/releases/download/v4.40.2/yq_linux_amd64 /usr/local/bin/yq
+ADD --chmod=755 --checksum=sha256:638c4b251c49201fc94b598834b715f8f1c6e9b1854d2820772d2c79f0289002 https://github.com/mikefarah/yq/releases/download/v4.44.5/yq_linux_amd64 /usr/local/bin/yq
 
 # Installing kubectl
-ADD --checksum=sha256:893c92053adea6edbbd4e959c871f5c21edce416988f968bec565d115383f7b8 https://dl.k8s.io/release/v1.28.4/bin/linux/amd64/kubectl /tmp/kubectl
+ADD --checksum=sha256:399e9d1995da80b64d2ef3606c1a239018660d8b35209fba3f7b0bc11c631c68 https://dl.k8s.io/release/v1.31.2/bin/linux/amd64/kubectl /tmp/kubectl
 RUN install -o root -g root -m 0755 /tmp/kubectl /usr/local/bin/kubectl && rm /tmp/kubectl
 
 # Installing k9s
-ADD --checksum=sha256:3dc8238a554ad2051b91931f9da154188e222a9a1accc4410d7a87a654aab34e https://github.com/derailed/k9s/releases/download/v0.28.2/k9s_Linux_amd64.tar.gz /tmp/
+ADD --checksum=sha256:03934727bfbf39b1e61a74d8e045796cda2de14f8ce4c01df27f43d4494021de https://github.com/derailed/k9s/releases/download/v0.32.7/k9s_Linux_amd64.tar.gz /tmp/
 RUN tar zxf /tmp/k9s_Linux_amd64.tar.gz -C /usr/local/bin/ k9s && rm /tmp/k9s_Linux_amd64.tar.gz
 
 # Installing helm
-ADD --checksum=sha256:55a8e6dce87a1e52c61e0ce7a89bf85b38725ba3e8deb51d4a08ade8a2c70b2d https://get.helm.sh/helm-v3.13.2-linux-amd64.tar.gz /tmp/
-RUN tar zxvf /tmp/helm-v3.13.2-linux-amd64.tar.gz linux-amd64/helm -O > /usr/local/bin/helm && chmod +x /usr/local/bin/helm && rm /tmp/helm-v3.13.2-linux-amd64.tar.gz
+ADD --checksum=sha256:f5355c79190951eed23c5432a3b920e071f4c00a64f75e077de0dd4cb7b294ea https://get.helm.sh/helm-v3.16.3-linux-amd64.tar.gz /tmp/
+RUN tar zxvf /tmp/helm-v3.16.3-linux-amd64.tar.gz linux-amd64/helm -O > /usr/local/bin/helm && chmod +x /usr/local/bin/helm && rm /tmp/helm-v3.16.3-linux-amd64.tar.gz
 
 # Installing velero cli
-ADD --checksum=sha256:4cbb18a05c0dd3e60430e015e90d53fddbf4111a0252ea27877a8cea42bdea8f https://github.com/vmware-tanzu/velero/releases/download/v1.13.0/velero-v1.13.0-linux-amd64.tar.gz /tmp/
-RUN tar zxvf /tmp/velero-v1.13.0-linux-amd64.tar.gz velero-v1.13.0-linux-amd64/velero -O > /usr/local/bin/velero && chmod +x /usr/local/bin/velero && rm /tmp/velero-v1.13.0-linux-amd64.tar.gz
+ADD --checksum=sha256:9b066714cdb874fe34ec123645385d6f8c40c43308bbedf11d3265a7af17fda6 https://github.com/vmware-tanzu/velero/releases/download/v1.14.0/velero-v1.14.0-linux-amd64.tar.gz /tmp/
+RUN tar zxvf /tmp/velero-v1.14.0-linux-amd64.tar.gz velero-v1.14.0-linux-amd64/velero -O > /usr/local/bin/velero && chmod +x /usr/local/bin/velero && rm /tmp/velero-v1.14.0-linux-amd64.tar.gz
 
 # Installing tekton cli
-ADD --checksum=sha256:7af26831d802d2ec834f2c4ac8aac3a7b7b052a3d7a375240f2f8e5b94e3352e https://github.com/tektoncd/cli/releases/download/v0.33.0/tkn_0.33.0_Linux_x86_64.tar.gz /tmp/
-RUN tar zxvf /tmp/tkn_0.33.0_Linux_x86_64.tar.gz -C /usr/local/bin/ tkn && rm /tmp/tkn_0.33.0_Linux_x86_64.tar.gz
+ADD --checksum=sha256:75830656f99a08bb86b421b6ff8db50b5ecf3ed2735f2fc4f665b941a43aa18b https://github.com/tektoncd/cli/releases/download/v0.38.1/tkn_0.38.1_Linux_x86_64.tar.gz /tmp/
+RUN tar zxvf /tmp/tkn_0.38.1_Linux_x86_64.tar.gz -C /usr/local/bin/ tkn && rm /tmp/tkn_0.38.1_Linux_x86_64.tar.gz
 
 # Installing kubectl-cnpg
-ADD --checksum=sha256:584dc993fb216c2907616588de0822461701e6bdb8301eb034dd1a697b1f4015 https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v1.21.1/kubectl-cnpg_1.21.1_linux_x86_64.deb /tmp/
-RUN dpkg -i /tmp/kubectl-cnpg_1.21.1_linux_x86_64.deb && rm /tmp/kubectl-cnpg_1.21.1_linux_x86_64.deb
+ADD --checksum=sha256:84a0d832d551f943bb0d9c93ec1ae257aa7de5ae039935c54bc3d5be09a4de34 https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v1.24.1/kubectl-cnpg_1.24.1_linux_x86_64.deb /tmp/
+RUN dpkg -i /tmp/kubectl-cnpg_1.24.1_linux_x86_64.deb && rm /tmp/kubectl-cnpg_1.24.1_linux_x86_64.deb
 
 # Creating user named user
 RUN addgroup --gid 1000 user && adduser --uid 1000 --gid 1000 --disabled-password --gecos "" user
