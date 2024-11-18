@@ -30,7 +30,8 @@ jobs:
           set -e
 
           if "${{ github.ref_name }}" != "main"; then
-            NEW_VERSION=${{ github.ref_name }}
+            NEW_VERSION="${{ github.ref_name }}"
+            echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
             exit 0
           fi
           # # Set the first image version to '0.1.0' if the repo does not exists.
