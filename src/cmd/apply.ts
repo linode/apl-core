@@ -149,8 +149,8 @@ const apply = async (): Promise<void> => {
         await applyAll()
       } catch (e) {
         d.error(e)
-        await $`helm uninstall wait-for-otomi-realm -n maintenance`.nothrow()
-        await $`kubectl delete job wait-for-otomi-realm -n maintenance`.nothrow()
+        await $`helm uninstall wait-for-otomi-realm -n maintenance`.nothrow().quiet()
+        await $`kubectl delete job wait-for-otomi-realm -n maintenance`.nothrow().quiet()
         d.info(`Retrying in ${retryOptions.maxRetryTime} ms`)
         throw e
       }

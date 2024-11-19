@@ -26,7 +26,7 @@ const scoreTemplate = async (): Promise<void> => {
   await hfTemplate(argv, templatePath)
   d.info('Scoring DONE')
 
-  const scoreResult = await $`kube-score score ${templatePath}`.nothrow()
+  const scoreResult = await $`kube-score score ${templatePath}`.nothrow().quiet()
   d.log(scoreResult.stdout.trim())
 }
 

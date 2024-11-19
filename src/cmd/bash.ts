@@ -14,7 +14,7 @@ const bash = async (): Promise<void> => {
   if (argv._[0] === 'bash') parser.showHelp()
   else {
     const command = argv._.slice(1).join(' ')
-    const output = await $`${command}`.nothrow()
+    const output = await $`${command}`.nothrow().quiet()
     output.stdout
       .trim()
       .split('\n')

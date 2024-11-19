@@ -31,7 +31,7 @@ const destroyAll = async () => {
   const debugStream = { stdout: d.stream.debug, stderr: d.stream.error }
   d.info('Removing problematic part: kiali finalizer...')
   await stream(
-    $`kubectl -n kiali patch kiali kiali -p '{"metadata":{"finalizers": []}}' --type=merge`.nothrow(),
+    $`kubectl -n kiali patch kiali kiali -p '{"metadata":{"finalizers": []}}' --type=merge`.nothrow().quiet(),
     debugStream,
   )
   d.info('Uninstalling all charts...')
@@ -47,7 +47,7 @@ const destroyAll = async () => {
   }
 
   d.info('Uninstalling webhook mutatingwebhookconfiguration ...')
-  await stream($`kubectl delete mutatingwebhookconfiguration istio-sidecar-injector`.nothrow(), debugStream)
+  await stream($`kubectl delete mutatingwebhookconfiguration istio-sidecar-injector`.nothrow().quiet(), debugStream)
 
   d.info('Uninstalling webhook validatingwebhookconfiguration ...')
 
@@ -67,7 +67,7 @@ const destroyAll = async () => {
   await Promise.allSettled(
     validationAdmissionControllers.map(async (val) =>
       stream(
-        $`kubectl delete validatingwebhookconfiguration.admissionregistration.k8s.io ${val}`.nothrow(),
+        $`kubectl delete validatingwebhookconfiguration.admissionregistration.k8s.io ${val}`.nothrow().quiet(),
         debugStream,
       ),
     ),
@@ -86,7 +86,7 @@ const destroyAll = async () => {
   await Promise.allSettled(
     mutatingAdminionControllers.map(async (val) =>
       stream(
-        $`kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io ${val}`.nothrow(),
+        $`kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io ${val}`.nothrow().quiet(),
         debugStream,
       ),
     ),
@@ -94,7 +94,7 @@ const destroyAll = async () => {
 
   const templateOutput: string = output.stdout
   writeFileSync(templateFile, templateOutput)
-  await stream($`kubectl delete -f ${templateFile}`.nothrow(), debugStream)
+  await stream($`kubectl delete -f ${templateFile}`.nothrow().quiet(), debugStream)
   d.info('Uninstalled all manifests.')
   if (!argv.full) return
   d.info('Uninstalling CRDs...')
@@ -121,7 +121,9 @@ const destroyAll = async () => {
     .map((val) => val.split(' ')[0])
     .filter(Boolean)
   d.info('Our CRDs will be removed: ', allOurCRDS)
-  await Promise.allSettled(allOurCRDS.map(async (val) => stream($`kubectl delete crd ${val}`.nothrow(), debugStream)))
+  await Promise.allSettled(
+    allOurCRDS.map(async (val) => stream($`kubectl delete crd ${val}`.nothrow().quiet(), debugStream)),
+  )
   d.log('Uninstalled otomi!')
 }
 

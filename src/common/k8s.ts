@@ -37,7 +37,9 @@ export const createK8sSecret = async (
 
   await writeFile(filePath, rawString)
   const result =
-    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`.nothrow()
+    await $`kubectl create secret generic ${name} -n ${namespace} --from-file ${filePath} --dry-run=client -o yaml | kubectl apply -f -`
+      .nothrow()
+      .quiet()
   if (result.stderr) d.error(result.stderr)
   d.debug(`kubectl create secret output: \n ${result.stdout}`)
 }
@@ -52,8 +54,9 @@ export const isResourcePresent = async (type: string, name: string, namespace: s
 }
 
 export const getK8sSecret = async (name: string, namespace: string): Promise<Record<string, any> | undefined> => {
-  const result =
-    await $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`.nothrow()
+  const result = await $`kubectl get secret ${name} -n ${namespace} -ojsonpath='{.data.${name}}' | base64 --decode`
+    .nothrow()
+    .quiet()
   if (result.exitCode === 0) return parse(result.stdout) as Record<string, any>
   return undefined
 }
@@ -68,12 +71,12 @@ export interface DeploymentState {
 
 export const getDeploymentState = async (): Promise<DeploymentState> => {
   if (env.isDev && env.DISABLE_SYNC) return {}
-  const result = await $`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`.nothrow()
+  const result = await $`kubectl get cm -n otomi ${DEPLOYMENT_STATUS_CONFIGMAP} -o jsonpath='{.data}'`.nothrow().quiet()
   return JSON.parse(result.stdout || '{}')
 }
 
 export const getHelmReleases = async (): Promise<Record<string, any>> => {
-  const result = await $`helm list -A -a -o json`.nothrow()
+  const result = await $`helm list -A -a -o json`.nothrow().quiet()
   const data = JSON.parse(result.stdout || '[]') as []
   const status = data.reduce((acc, item) => {
     // eslint-disable-next-line no-param-reassign
@@ -93,7 +96,7 @@ export const setDeploymentState = async (state: Record<string, any>): Promise<vo
   const cmdPatch = `kubectl -n otomi patch cm ${DEPLOYMENT_STATUS_CONFIGMAP} --type merge -p {"data":${JSON.stringify(
     newState,
   )}}`
-  const res = await $`${cmdPatch.split(' ')} || ${cmdCreate.split(' ')}`.nothrow()
+  const res = await $`${cmdPatch.split(' ')} || ${cmdCreate.split(' ')}`.nothrow().quiet()
   if (res.stderr) d.error(res.stderr)
 }
 

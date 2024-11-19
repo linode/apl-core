@@ -156,7 +156,7 @@ export const getStoredClusterSecrets = async (
   d.info(`Checking if ${secretId} already pathExists`)
   if (env.isDev && env.DISABLE_SYNC) return undefined
   // we might need to create the 'otomi' namespace if we are in CLI mode
-  if (isCli) await deps.$`kubectl create ns otomi &> /dev/null`.nothrow()
+  if (isCli) await deps.$`kubectl create ns otomi &> /dev/null`.nothrow().quiet()
   const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
   if (kubeSecretObject) {
     d.info(`Found ${secretId} secrets on cluster, recovering`)

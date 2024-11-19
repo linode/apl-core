@@ -12,7 +12,7 @@ const d: OtomiDebugger = terminal(`cmd:${cmdName}`)
 export const x = async (inArgv?: Arguments): Promise<number> => {
   const argv: Arguments = inArgv ?? getParsedArgs()
   const commands = argv._.slice(1)
-  const output = await stream($`${commands}`.nothrow(), { stdout: d.stream.log, stderr: d.stream.error })
+  const output = await stream($`${commands}`.nothrow().quiet(), { stdout: d.stream.log, stderr: d.stream.error })
   return output.exitCode ?? 0
 }
 
