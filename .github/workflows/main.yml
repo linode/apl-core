@@ -91,7 +91,7 @@ jobs:
           docker pull $REPO:$TAG
           docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
-          release_tag="v$(echo $COMMIT_MSG | cut -d' ' -f2)"
+          release_tag=v$(jq -r '.version' < package.json)
           echo tag=$release_tag >> $GITHUB_OUTPUT
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag
