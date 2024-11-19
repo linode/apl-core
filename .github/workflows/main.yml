@@ -184,6 +184,79 @@ jobs:
         env:
           CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
 
+  dummy-chart-release:
+    # needs: release
+    if: always()
+    runs-on: ubuntu-22.04
+    container:
+      image: linode/apl-tools:v2.8.2
+      # options: --user 0
+    env:
+      COMMIT_MSG: ${{ github.event.head_commit.message }}
+      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+      BRANCH_NAME: ${{ github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare chart
+        id: prepare_chart
+        run: |
+          # Install and update helm repo
+          helm repo add apl https://linode.github.io/apl-core
+          helm repo update
+
+          # Retrieve the app version from package.json
+          app_version=$(jq -r '.version' package.json)
+          if [ -z "$app_version" ]; then
+              echo "Error: Could not retrieve app version from package.json"
+              exit 1
+          fi
+
+          # Extract major and minor from the app version
+          new_app_major=$(echo "$app_version" | cut -d '.' -f 1)
+          new_app_minor=$(echo "$app_version" | cut -d '.' -f 2)
+
+          # Get existing helm charts in the registry
+          helm_output=$(helm search repo otomi -l -o json)
+
+          # Use jq to parse the output and find the latest version for the given $new_app_major.$new_app_minor app version
+          existing_version=$(echo "$helm_output" | jq -r --arg major "$new_app_major" --arg minor "$new_app_minor" '
+            map(select(.app_version | startswith("v\($major).\($minor)"))) |
+            max_by(.version | split(".") | map(tonumber)) |
+            .version'
+          )
+
+          # Update Chart.yaml and values.yaml with the new app version
+          sed -i "s/0.0.0-chart-version/$app_version/g" chart/apl/Chart.yaml
+          sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/apl/Chart.yaml
+
+          echo "Chart and values files updated successfully with version $app_version"
+
+          # Copy readme from repo into the charts and add tpl/chart-values.md
+          cp README.md chart/apl/
+          printf "\n\n" >>chart/apl/README.md
+          cat tpl/chart-values.md >>chart/apl/README.md
+
+          # Generate schema
+          npx js-yaml values-schema.yaml > chart/apl/values.schema.json
+
+          # Set the global id for git as it seems needed by the next step when a custom image is used
+          git config --global user.email ${{ env.BOT_EMAIL }}
+          git config --global user.name ${{ env.BOT_USERNAME }}
+      #TODO: Use the same user id on the container as in the runner to avoid the "dubious ownership" error
+      - name: Mark repository as safe for Git
+        run: git config --global --add safe.directory /__w/apl-core/apl-core
+      # - name: Create and publish otomi chart release
+      #   id: chart_release
+      #   uses: helm/chart-releaser-action@v1.6.0
+      #   with:
+      #     charts_dir: chart
+      #     skip_existing: true
+      #     mark_as_latest: false
+      #   env:
+      #     CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+
   # test-otomi-release:
   #   name: Test Helm Chart Installation
   #   needs: [release, chart-release]
