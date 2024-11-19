@@ -368,25 +368,20 @@ export async function patchContainerResourcesOfSts(
     }
 
     for (const pod of pods.items) {
-      d.info(`Checking pod ${pod.metadata?.name} for resources`)
-      // filter resources based on container name
       const actualResources = pod.spec?.containers?.find((container) => container.name === containerName)?.resources
-      d.info(`Patching actualResources for ${JSON.stringify(actualResources)}`)
-      d.info(`Patching desiredResources for ${JSON.stringify(desiredResources)}`)
 
-      //compare desired resources with actual resources
       if (actualResources != desiredResources) {
         d.info(`sts/argocd-application-controller pod has not desired resources`)
 
-        await patchStatefulSetResources(statefulSetName, containerName, namespace, desiredResources, k8s.app(), d)
+        await patchStatefulSetResources(statefulSetName, containerName, namespace, desiredResources, appsApi, d)
         d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(desiredResources)}`)
 
-        await deleteStatefulSetPods(statefulSetName, namespace, k8s.app(), k8s.core(), d)
+        await deleteStatefulSetPods(statefulSetName, namespace, appsApi, coreApi, d)
         d.info(`sts/argocd-application-controller pods restarted`)
       }
     }
   } catch (error) {
-    d.error(`Error checking StatefulSet ${statefulSetName}:`, error)
+    d.error(`Error patching StatefulSet ${statefulSetName}:`, error)
   }
 }
 

@@ -132,7 +132,6 @@ function getResources(values: Record<string, any>) {
 async function patchArgocdResources(release: HelmRelease, values: Record<string, any>) {
   if (release.name === 'argocd') {
     const resources = getResources(values)
-    d.info(`Patching resources for ${JSON.stringify(resources)}`)
     await patchContainerResourcesOfSts(
       'argocd-application-controller',
       'argocd',

@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { AppsV1Api, CoreV1Api, V1PodList, V1StatefulSet } from '@kubernetes/client-node'
+import { AppsV1Api, CoreV1Api, V1Pod, V1PodList, V1StatefulSet } from '@kubernetes/client-node'
 import * as k8s from './k8s'
 import { terminal } from './debug'
 import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
+import { deleteStatefulSetPods, patchContainerResourcesOfSts, patchStatefulSetResources } from './k8s'
 
 jest.mock('@kubernetes/client-node')
 describe('createGenericSecret', () => {
@@ -103,138 +104,143 @@ describe('StatefulSet tests', () => {
     })
   })
 
-  // describe('patchContainerResourcesOfSts', () => {
-  //   const mockPodList: V1PodList = {
-  //     items: [
-  //       {
-  //         metadata: { name: 'pod-1' },
-  //         spec: {
-  //           containers: [
-  //             {
-  //               name: 'controller',
-  //               resources: {
-  //                 requests: { cpu: '100m', memory: '256Mi' },
-  //                 limits: { cpu: '200m', memory: '512Mi' },
-  //               },
-  //             },
-  //           ],
-  //         },
-  //       } as V1Pod,
-  //     ],
-  //   }
-  //   const mockStatefulSet = {
-  //     spec: {
-  //       selector: {
-  //         matchLabels: { app: 'my-app' },
-  //       },
-  //     },
-  //   }
-  //   const desiredResources: V1ResourceRequirements = {
-  //     requests: { cpu: '500m', memory: '1Gi' },
-  //     limits: { cpu: '1', memory: '2Gi' },
-  //   }
-  //
-  //   beforeEach(() => {
-  //     jest.clearAllMocks()
-  //   })
-  //
-  //   it('should patch the StatefulSet and restart pods if resources do not match', async () => {
-  //     mockCoreApi.listNamespacedPod.mockResolvedValue({ body: mockPodList } as any)
-  //     mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
-  //     const patch = jest.spyOn(k8s, 'patchStatefulSetResources')
-  //     const deletePod = jest.spyOn(k8s, 'deleteStatefulSetPods')
-  //     await expect(
-  //       patchContainerResourcesOfSts(
-  //         'argocd-application-controller',
-  //         'argocd',
-  //         'controller',
-  //         desiredResources,
-  //         mockAppsApi,
-  //         mockCoreApi,
-  //         mockDebugger,
-  //       ),
-  //     ).resolves.not.toThrow()
-  //   })
-  //
-  //   it('should log an error if no pods are found', async () => {
-  //     mockCoreApi.listNamespacedPod.mockResolvedValue({ body: { items: [] } } as any)
-  //     const patch = jest.spyOn(k8s, 'patchStatefulSetResources')
-  //     const deletePod = jest.spyOn(k8s, 'deleteStatefulSetPods')
-  //     await expect(
-  //       patchContainerResourcesOfSts(
-  //         'argocd-application-controller',
-  //         'argocd',
-  //         'controller',
-  //         desiredResources,
-  //         mockAppsApi,
-  //         mockCoreApi,
-  //         mockDebugger,
-  //       ),
-  //     ).rejects.toThrow(`No pods found for StatefulSet argocd-application-controller`)
-  //
-  //     expect(mockDebugger.error).toHaveBeenCalledWith(`No pods found for StatefulSet argocd-application-controller`)
-  //     expect(patch).not.toHaveBeenCalled()
-  //     expect(deletePod).not.toHaveBeenCalled()
-  //   })
-  //
-  //   it('should not patch resources if they already match', async () => {
-  //     const matchingPodList: V1PodList = {
-  //       items: [
-  //         {
-  //           metadata: { name: 'pod-1' },
-  //           spec: {
-  //             containers: [
-  //               {
-  //                 name: 'controller',
-  //                 resources: desiredResources,
-  //               },
-  //             ],
-  //           },
-  //         } as V1Pod,
-  //       ],
-  //     }
-  //     const patch = jest.spyOn(k8s, 'patchStatefulSetResources')
-  //     const deletePod = jest.spyOn(k8s, 'deleteStatefulSetPods')
-  //     mockCoreApi.listNamespacedPod.mockResolvedValue({ body: matchingPodList } as any)
-  //
-  //     await patchContainerResourcesOfSts(
-  //       'argocd-application-controller',
-  //       'argocd',
-  //       'controller',
-  //       desiredResources,
-  //       mockAppsApi,
-  //       mockCoreApi,
-  //       mockDebugger,
-  //     )
-  //
-  //     expect(mockDebugger.info).not.toHaveBeenCalledWith(`sts/argocd-application-controller pods restarted`)
-  //     expect(patch).not.toHaveBeenCalled()
-  //     expect(deletePod).not.toHaveBeenCalled()
-  //   })
-  //
-  //   it('should log an error if an exception occurs', async () => {
-  //     const error = new Error('API error')
-  //     ;(k8s.getPodsOfStatefulSet as jest.Mock).mockRejectedValue(error)
-  //     const patch = jest.spyOn(k8s, 'patchStatefulSetResources')
-  //     const deletePod = jest.spyOn(k8s, 'deleteStatefulSetPods')
-  //     await patchContainerResourcesOfSts(
-  //       'argocd-application-controller',
-  //       'argocd',
-  //       'controller',
-  //       desiredResources,
-  //       mockAppsApi,
-  //       mockCoreApi,
-  //       mockDebugger,
-  //     )
-  //
-  //     expect(mockDebugger.error).toHaveBeenCalledWith(
-  //       `Error checking StatefulSet argocd-application-controller:`,
-  //       error,
-  //     )
-  //     expect(patch).not.toHaveBeenCalled()
-  //     expect(deletePod).not.toHaveBeenCalled()
-  //   })
-  // })
+  describe('patchContainerResourcesOfSts', () => {
+    const mockPodList: V1PodList = {
+      items: [
+        {
+          metadata: { name: 'pod-1' },
+          spec: {
+            containers: [
+              {
+                name: 'controller',
+                resources: {
+                  requests: { cpu: '100m', memory: '256Mi' },
+                  limits: { cpu: '200m', memory: '512Mi' },
+                },
+              },
+            ],
+          },
+        } as V1Pod,
+      ],
+    }
+    const mockStatefulSet = {
+      spec: {
+        selector: {
+          matchLabels: { app: 'my-app' },
+        },
+      },
+    }
+    const desiredResources: V1ResourceRequirements = {
+      requests: { cpu: '500m', memory: '1Gi' },
+      limits: { cpu: '1', memory: '2Gi' },
+    }
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should patch the StatefulSet and restart pods if resources do not match', async () => {
+      mockCoreApi.listNamespacedPod.mockResolvedValue({ body: mockPodList } as any)
+      mockCoreApi.deleteNamespacedPod.mockResolvedValue({ body: mockPodList } as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
+      mockAppsApi.patchNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
+
+      const debug = jest.spyOn(mockDebugger, 'info')
+      jest.isMockFunction(patchStatefulSetResources)
+      jest.isMockFunction(deleteStatefulSetPods)
+      await expect(
+        k8s.patchContainerResourcesOfSts(
+          'argocd-application-controller',
+          'argocd',
+          'controller',
+          desiredResources,
+          mockAppsApi,
+          mockCoreApi,
+          mockDebugger,
+        ),
+      ).resolves.not.toThrow()
+
+      expect(debug).toHaveBeenNthCalledWith(1, 'sts/argocd-application-controller pod has not desired resources')
+      expect(debug).toHaveBeenNthCalledWith(
+        2,
+        'sts/argocd-application-controller has been patched with resources: {"requests":{"cpu":"500m","memory":"1Gi"},"limits":{"cpu":"1","memory":"2Gi"}}',
+      )
+      expect(debug).toHaveBeenNthCalledWith(3, 'sts/argocd-application-controller pods restarted')
+    })
+
+    it('should log an error if no pods are found', async () => {
+      mockCoreApi.listNamespacedPod.mockResolvedValue({ body: { items: [] } } as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
+
+      const debugInfo = jest.spyOn(mockDebugger, 'info')
+      const debugError = jest.spyOn(mockDebugger, 'error')
+
+      await patchContainerResourcesOfSts(
+        'argocd-application-controller',
+        'argocd',
+        'controller',
+        desiredResources,
+        mockAppsApi,
+        mockCoreApi,
+        mockDebugger,
+      )
+      expect(debugInfo).not.toBeCalled()
+      expect(debugError).toBeCalledTimes(2)
+    })
+
+    it('should not patch resources if they already match', async () => {
+      const matchingPodList: V1PodList = {
+        items: [
+          {
+            metadata: { name: 'pod-1' },
+            spec: {
+              containers: [
+                {
+                  name: 'controller',
+                  resources: desiredResources,
+                },
+              ],
+            },
+          } as V1Pod,
+        ],
+      }
+      mockCoreApi.listNamespacedPod.mockResolvedValue({ body: matchingPodList } as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
+      const debug = jest.spyOn(mockDebugger, 'info')
+
+      await patchContainerResourcesOfSts(
+        'argocd-application-controller',
+        'argocd',
+        'controller',
+        desiredResources,
+        mockAppsApi,
+        mockCoreApi,
+        mockDebugger,
+      )
+
+      expect(debug).toBeCalledTimes(0)
+    })
+
+    it('should log an error if an exception occurs', async () => {
+      const error = new Error('API error')
+      mockAppsApi.readNamespacedStatefulSet.mockRejectedValue(error)
+      const debugInfo = jest.spyOn(mockDebugger, 'info')
+      const debugError = jest.spyOn(mockDebugger, 'error')
+
+      await patchContainerResourcesOfSts(
+        'argocd-application-controller',
+        'argocd',
+        'controller',
+        desiredResources,
+        mockAppsApi,
+        mockCoreApi,
+        mockDebugger,
+      )
+
+      expect(debugInfo).not.toBeCalled()
+      expect(debugError).toBeCalledWith('Error patching StatefulSet argocd-application-controller:', error)
+    })
+  })
 
   describe('patchStatefulSetResources', () => {
     it('should patch StatefulSet resources', async () => {
