@@ -46,6 +46,10 @@ spec:
         secretAccessKey:
           name: minio-creds
           key: MINIO_SECRET_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
   {{- end }}
   {{- if eq .Values.backup.type "linode" }}
   backup:
@@ -60,6 +64,10 @@ spec:
         secretAccessKey:
           name: linode-creds
           key: S3_STORAGE_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
   {{- end }}
 {{- end }}
 

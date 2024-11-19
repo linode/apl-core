@@ -24,7 +24,7 @@ backup:
 {{- if eq $obj.type "linode" }}
   linode:
     destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/gitea"
-    endpointURL: https://{{ $obj.linode.buckets.cnpg }}.{{ $obj.linode.region }}.linodeobjects.com
+    endpointURL: https://{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}
 {{- end }}
