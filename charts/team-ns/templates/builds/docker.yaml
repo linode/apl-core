@@ -3,6 +3,19 @@
 {{- if eq .mode.type "docker" }}
 {{- $context := ( dir .mode.docker.path ) }}
 ---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: sa-docker-build-{{ .name }}
+secrets:
+{{- if and (eq .repoType.type "external") }}
+{{- if .repoType.external.private }}
+- name: {{ .repoType.external.secretName }}
+{{- end }}
+{{- else }}
+- name: gitea-credentials
+{{- end }}
+---
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -14,7 +27,6 @@ spec:
   workspaces:
   - name: shared-data
   - name: docker-credentials
-  - name: git-credentials
   tasks:
   - name: fetch-source
     taskRef:
@@ -23,8 +35,6 @@ spec:
     workspaces:
     - name: output
       workspace: shared-data
-    - name: ssh-directory
-      workspace: git-credentials
     params:
     - name: url
       value: {{ .mode.docker.repoUrl }}
@@ -98,7 +108,7 @@ spec:
         pipelineRef:
           name: docker-build-{{ .name }}
         taskRunTemplate:
-          serviceAccountName: sa-team-{{ $v.teamId }}
+          serviceAccountName: sa-docker-build-{{ .name }}
           podTemplate:
             securityContext:
               fsGroup: 65532
@@ -114,13 +124,6 @@ spec:
                 requests:
                   storage: 1Gi
             status: {}
-        - name: git-credentials
-          secret:
-            {{- if .externalRepo }}
-            secretName: {{ .secretName }}
-            {{- else }}
-            secretName: gitea-credentials
-            {{- end }}
         - name: docker-credentials
           secret:
             secretName: harbor-pushsecret-builds
@@ -138,7 +141,7 @@ spec:
   pipelineRef:
     name: docker-build-{{ .name }}
   taskRunTemplate:
-    serviceAccountName: sa-team-{{ $v.teamId }}
+    serviceAccountName: sa-docker-build-{{ .name }}
     podTemplate:
       securityContext:
         fsGroup: 65532
@@ -154,13 +157,6 @@ spec:
           requests:
             storage: 1Gi
       status: {}
-  - name: git-credentials
-    secret:
-      {{- if .externalRepo }}
-      secretName: {{ .secretName }}
-      {{- else }}
-      secretName: gitea-credentials
-      {{- end }}
   - name: docker-credentials
     secret:
       secretName: harbor-pushsecret-builds
