@@ -60,6 +60,7 @@ spec:
     - platform-admin
     - team-{{ $v.teamId }}
 {{- end }}
+{{- if not (eq $v.teamId "admin") }}
   - name: team-member
     description: Team member privileges to team-{{ $v.teamId }}
 {{- if or (has "argocd" $v.selfService.apps) $v.otomi.isMultitenant }}
@@ -81,10 +82,9 @@ spec:
     description: Read-only privileges to team-{{ $v.teamId }}
     policies:
     - p, proj:team-{{ $v.teamId }}:read-only, applications, get, team-{{ $v.teamId }}/*, allow
-{{- if not $v.otomi.isMultitenant }}
-{{- end }}
     groups:
     - team-viewer
+{{- end }}
   - name: ci-role
     description: Sync privileges for team applications
     policies:
