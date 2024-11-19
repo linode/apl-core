@@ -58,7 +58,9 @@ spec:
     - p, proj:team-{{ $v.teamId }}:platform-admin, *, *, team-{{ $v.teamId }}/*, allow
     groups:
     - platform-admin
+    {{- if not (eq $v.teamId "admin") }}
     - team-{{ $v.teamId }}
+    {{- end }}
 {{- end }}
 {{- if not (eq $v.teamId "admin") }}
   - name: team-member
@@ -77,6 +79,7 @@ spec:
 {{- end }}
     groups:
     - team-{{ $v.teamId }}
+{{- end }}
   # A role which provides read-only access to all applications in the project
   - name: read-only
     description: Read-only privileges to team-{{ $v.teamId }}
@@ -84,7 +87,6 @@ spec:
     - p, proj:team-{{ $v.teamId }}:read-only, applications, get, team-{{ $v.teamId }}/*, allow
     groups:
     - team-viewer
-{{- end }}
   - name: ci-role
     description: Sync privileges for team applications
     policies:
