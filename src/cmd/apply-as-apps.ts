@@ -4,19 +4,13 @@ import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import {
-  deleteStatefulSetPods,
-  hasStsOOMKilledPods,
-  isResourcePresent,
-  k8s,
-  patchStatefulSetResources,
-  ResourceRequirements,
-} from 'src/common/k8s'
+import { patchContainerResourcesOfSts, isResourcePresent, k8s } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
+import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -122,14 +116,14 @@ const removeApplication = async (release: HelmRelease): Promise<void> => {
 
 function getResources(values: Record<string, any>) {
   const config = values
-  const resources: ResourceRequirements = {
+  const resources: V1ResourceRequirements = {
     limits: {
-      cpu: config.controller?.resources?.limits?.cpu || undefined,
-      memory: config.controller?.resources?.limits?.memory || undefined,
+      cpu: config.controller?.resources?.limits?.cpu,
+      memory: config.controller?.resources?.limits?.memory,
     },
     requests: {
-      cpu: config.controller?.resources?.requests?.cpu || undefined,
-      memory: config.controller?.resources?.requests?.memory || undefined,
+      cpu: config.controller?.resources?.requests?.cpu,
+      memory: config.controller?.resources?.requests?.memory,
     },
   }
   return resources
@@ -137,28 +131,16 @@ function getResources(values: Record<string, any>) {
 
 async function patchArgocdResources(release: HelmRelease, values: Record<string, any>) {
   if (release.name === 'argocd') {
-    if (await hasStsOOMKilledPods('argocd-application-controller', 'argocd', k8s.app(), k8s.core(), d)) {
-      d.info(`sts/argocd-application-controller pods have been OOMKilled`)
-
-      const resources = getResources(values)
-      if (resources) {
-        await patchStatefulSetResources(
-          'argocd-application-controller',
-          'application-controller',
-          'argocd',
-          resources.requests.cpu,
-          resources.requests.memory,
-          resources.limits.cpu,
-          resources.limits.memory,
-          k8s.app(),
-          d,
-        )
-        d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(resources)}`)
-
-        await deleteStatefulSetPods('argocd-application-controller', 'argocd', k8s.app(), k8s.core(), d)
-        d.info(`sts/argocd-application-controller pods restarted`)
-      }
-    }
+    const resources = getResources(values)
+    await patchContainerResourcesOfSts(
+      'argocd-application-controller',
+      'argocd',
+      'application-controller',
+      resources,
+      k8s.app(),
+      k8s.core(),
+      d,
+    )
   }
 }
 

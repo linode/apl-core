@@ -17,6 +17,7 @@ import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
+import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -349,13 +350,15 @@ export async function getPodsOfStatefulSet(
   return podList
 }
 
-export async function hasStsOOMKilledPods(
+export async function patchContainerResourcesOfSts(
   statefulSetName: string,
   namespace: string,
+  containerName: string,
+  desiredResources: V1ResourceRequirements,
   appsApi: AppsV1Api,
   coreApi: CoreV1Api,
   d: OtomiDebugger,
-): Promise<boolean> {
+) {
   try {
     const pods = await getPodsOfStatefulSet(appsApi, statefulSetName, namespace, coreApi)
 
@@ -365,37 +368,30 @@ export async function hasStsOOMKilledPods(
     }
 
     for (const pod of pods.items) {
-      const podName = pod.metadata?.name
-      const podStatus = pod.status
+      // filter resources based on container name
+      const actualResources = pod.spec?.containers?.find((container) => container.name === containerName)?.resources
 
-      const isCrashLoopBackOff = podStatus?.containerStatuses?.some(
-        (containerStatus) => containerStatus.state?.waiting?.reason === 'CrashLoopBackOff',
-      )
+      //compare desired resources with actual resources
+      if (actualResources === desiredResources) {
+        d.info(`sts/argocd-application-controller pod has not desired resources`)
 
-      if (isCrashLoopBackOff) {
-        const isOOMKilled = podStatus?.containerStatuses?.some(
-          (containerStatus) => containerStatus.lastState?.terminated?.reason === 'OOMKilled',
-        )
+        await patchStatefulSetResources(statefulSetName, containerName, namespace, desiredResources, k8s.app(), d)
+        d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(desiredResources)}`)
 
-        if (isOOMKilled) {
-          return true
-        }
+        await deleteStatefulSetPods(statefulSetName, namespace, k8s.app(), k8s.core(), d)
+        d.info(`sts/argocd-application-controller pods restarted`)
       }
     }
   } catch (error) {
     d.error(`Error checking StatefulSet ${statefulSetName}:`, error)
   }
-  return false
 }
 
 export async function patchStatefulSetResources(
   statefulSetName: string,
   containerName: string,
   namespace: string,
-  cpuRequest: string,
-  memoryRequest: string,
-  cpuLimit: string,
-  memoryLimit: string,
+  resources: V1ResourceRequirements,
   appsApi: AppsV1Api,
   d: OtomiDebugger,
 ) {
@@ -407,16 +403,7 @@ export async function patchStatefulSetResources(
             containers: [
               {
                 name: containerName,
-                resources: {
-                  requests: {
-                    cpu: cpuRequest,
-                    memory: memoryRequest,
-                  },
-                  limits: {
-                    cpu: cpuLimit,
-                    memory: memoryLimit,
-                  },
-                },
+                resources,
               },
             ],
           },
@@ -463,16 +450,5 @@ export async function deleteStatefulSetPods(
     }
   } catch (error) {
     d.error(`Failed to delete pods for StatefulSet ${statefulSetName}:`, error)
-  }
-}
-
-export interface ResourceRequirements {
-  limits: {
-    cpu: string
-    memory: string
-  }
-  requests: {
-    cpu: string
-    memory: string
   }
 }
