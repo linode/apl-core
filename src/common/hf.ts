@@ -2,7 +2,7 @@ import { pathExists } from 'fs-extra'
 import { readFile } from 'fs/promises'
 import { has, set } from 'lodash'
 import { parse } from 'yaml'
-import { $, ProcessOutput, ProcessPromise } from 'zx'
+import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, readdirRecurse, rootDir } from './utils'
@@ -18,7 +18,7 @@ type HFParams = {
   args: string | string[]
 }
 
-const hfCore = (args: HFParams, envDir = env.ENV_DIR): ProcessPromise<ProcessOutput> => {
+const hfCore = (args: HFParams, envDir = env.ENV_DIR): ProcessPromise => {
   const paramsCopy: HFParams = { ...args }
   paramsCopy.fileOpts = asArray(paramsCopy.fileOpts ?? [])
   paramsCopy.labelOpts = asArray(paramsCopy.labelOpts ?? [])
@@ -61,7 +61,7 @@ type HFOptions = {
 }
 
 export const hf = async (args: HFParams, opts?: HFOptions, envDir?: string): Promise<ProcessOutputTrimmed> => {
-  const proc: ProcessPromise<ProcessOutput> = hfCore(args, envDir)
+  const proc: ProcessPromise = hfCore(args, envDir)
   if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
   if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
   return new ProcessOutputTrimmed(await proc)
