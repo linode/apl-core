@@ -22,7 +22,7 @@ export const diff = async (): Promise<ProcessOutputTrimmed> => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
-  return new ProcessOutputTrimmed(res)
+  return res
 }
 
 export const module = {
