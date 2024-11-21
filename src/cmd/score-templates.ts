@@ -5,7 +5,7 @@ import { hfTemplate } from 'src/common/hf'
 import { getFilename } from 'src/common/utils'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $ } from 'zx'
 
 const cmdName = getFilename(__filename)
 const templatePath = '/tmp/template.yaml'
@@ -26,7 +26,7 @@ const scoreTemplate = async (): Promise<void> => {
   await hfTemplate(argv, templatePath)
   d.info('Scoring DONE')
 
-  const scoreResult = await nothrow($`kube-score score ${templatePath}`)
+  const scoreResult = await $`kube-score score ${templatePath}`.nothrow().quiet()
   d.log(scoreResult.stdout.trim())
 }
 
