@@ -315,4 +315,5 @@ changes:
   - version: 31
     deletions:
       - 'teamConfig.{team}.managedMonitoring.private'
+      - 'teamConfig.{team}.managedMonitoring.prometheus'
       - 'otomi.additionalClusters'

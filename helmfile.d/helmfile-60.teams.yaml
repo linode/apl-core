@@ -2,6 +2,9 @@ bases:
   - snippets/defaults.yaml
 ---
 bases:
+  - snippets/defaults.gotmpl
+---
+bases:
   - snippets/env.gotmpl
 ---
 bases:
@@ -29,6 +32,7 @@ releases:
   {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $azure := $team | get "azure" dict }}
+  {{- $teamApps := index $tc $teamId "apps" | default dict }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -242,6 +246,7 @@ releases:
           tlsSecretName: {{ $v._derived.tlsSecretName }}
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
+        teamApps: {{- toYaml $teamApps | nindent 10 }}
         teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
   {{- if (gt (len $teamServices) 0) }}

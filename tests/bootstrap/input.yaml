@@ -15,3 +15,13 @@ users:
     isPlatformAdmin: false
     isTeamAdmin: false
     teams: ['demo']
+teamConfig:
+  demo:
+    password: somesecretvalue
+    id: demo
+    selfService:
+      service:
+        - ingress
+    networkPolicy:
+      egressPublic: true
+      ingressPrivate: true
