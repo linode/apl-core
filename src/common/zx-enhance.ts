@@ -71,7 +71,7 @@ export type Streams = {
   stdout?: DebugStream
   stderr?: DebugStream
 }
-export const stream = (cmd: ProcessPromise<ProcessOutput>, streams?: Streams): ProcessPromise<ProcessOutput> => {
+export const stream = (cmd: ProcessPromise, streams?: Streams): ProcessPromise => {
   if (streams?.stdout) cmd.stdout.pipe(streams.stdout, { end: false })
   if (streams?.stderr) cmd.stderr.pipe(streams.stderr, { end: false })
   return cmd
@@ -85,7 +85,7 @@ export class ProcessOutputTrimmed {
   }
 
   get exitCode(): number {
-    return this.#po.exitCode
+    return this.#po.exitCode ?? 0
   }
 
   get stdout(): string {
