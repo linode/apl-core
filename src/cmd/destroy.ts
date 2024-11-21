@@ -6,7 +6,7 @@ import { getFilename } from 'src/common/utils'
 import { BasicArguments, HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed, stream } from 'src/common/zx-enhance'
 import { Argv } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $ } from 'zx'
 
 const cmdName = getFilename(__filename)
 const templateFile = '/tmp/otomi/destroy-template.yaml'
@@ -31,7 +31,7 @@ const destroyAll = async () => {
   const debugStream = { stdout: d.stream.debug, stderr: d.stream.error }
   d.info('Removing problematic part: kiali finalizer...')
   await stream(
-    nothrow($`kubectl -n kiali patch kiali kiali -p '{"metadata":{"finalizers": []}}' --type=merge`),
+    $`kubectl -n kiali patch kiali kiali -p '{"metadata":{"finalizers": []}}' --type=merge`.nothrow().quiet(),
     debugStream,
   )
   d.info('Uninstalling all charts...')
@@ -47,7 +47,7 @@ const destroyAll = async () => {
   }
 
   d.info('Uninstalling webhook mutatingwebhookconfiguration ...')
-  await stream(nothrow($`kubectl delete mutatingwebhookconfiguration istio-sidecar-injector`), debugStream)
+  await stream($`kubectl delete mutatingwebhookconfiguration istio-sidecar-injector`.nothrow().quiet(), debugStream)
 
   d.info('Uninstalling webhook validatingwebhookconfiguration ...')
 
@@ -67,7 +67,7 @@ const destroyAll = async () => {
   await Promise.allSettled(
     validationAdmissionControllers.map(async (val) =>
       stream(
-        nothrow($`kubectl delete validatingwebhookconfiguration.admissionregistration.k8s.io ${val}`),
+        $`kubectl delete validatingwebhookconfiguration.admissionregistration.k8s.io ${val}`.nothrow().quiet(),
         debugStream,
       ),
     ),
@@ -85,13 +85,16 @@ const destroyAll = async () => {
 
   await Promise.allSettled(
     mutatingAdminionControllers.map(async (val) =>
-      stream(nothrow($`kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io ${val}`), debugStream),
+      stream(
+        $`kubectl delete mutatingwebhookconfigurations.admissionregistration.k8s.io ${val}`.nothrow().quiet(),
+        debugStream,
+      ),
     ),
   )
 
   const templateOutput: string = output.stdout
   writeFileSync(templateFile, templateOutput)
-  await stream(nothrow($`kubectl delete -f ${templateFile}`), debugStream)
+  await stream($`kubectl delete -f ${templateFile}`.nothrow().quiet(), debugStream)
   d.info('Uninstalled all manifests.')
   if (!argv.full) return
   d.info('Uninstalling CRDs...')
@@ -118,7 +121,9 @@ const destroyAll = async () => {
     .map((val) => val.split(' ')[0])
     .filter(Boolean)
   d.info('Our CRDs will be removed: ', allOurCRDS)
-  await Promise.allSettled(allOurCRDS.map(async (val) => stream(nothrow($`kubectl delete crd ${val}`), debugStream)))
+  await Promise.allSettled(
+    allOurCRDS.map(async (val) => stream($`kubectl delete crd ${val}`.nothrow().quiet(), debugStream)),
+  )
   d.log('Uninstalled otomi!')
 }
 
