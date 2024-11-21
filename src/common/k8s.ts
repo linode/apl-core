@@ -11,14 +11,44 @@ import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
 import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './constants'
-import { terminal } from './debug'
+import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
-import { CoreV1Api, V1Secret } from '@kubernetes/client-node'
+import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
+import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
+
+// Warning don't use this with asynchronous code and multiple kubeconfigs it will override the kubeconfig
+let kc: KubeConfig
+let coreClient: CoreV1Api
+let appClient: AppsV1Api
+let customClient: CustomObjectsApi
+export const k8s = {
+  kc: (): KubeConfig => {
+    if (kc) return kc
+    kc = new KubeConfig()
+    kc.loadFromDefault()
+    return kc
+  },
+  core: (): CoreV1Api => {
+    if (coreClient) return coreClient
+    coreClient = k8s.kc().makeApiClient(CoreV1Api)
+    return coreClient
+  },
+  app: (): AppsV1Api => {
+    if (appClient) return appClient
+    appClient = k8s.kc().makeApiClient(AppsV1Api)
+    return appClient
+  },
+  custom: (): CustomObjectsApi => {
+    if (customClient) return customClient
+    customClient = k8s.kc().makeApiClient(CustomObjectsApi)
+    return customClient
+  },
+}
 
 export const createK8sSecret = async (
   name: string,
@@ -270,7 +300,7 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
 }
 
 export async function createGenericSecret(
-  k8s: CoreV1Api,
+  coreV1Api: CoreV1Api,
   name: string,
   namespace: string,
   secretData: Record<string, string>,
@@ -286,10 +316,138 @@ export async function createGenericSecret(
     type: 'Opaque',
   }
 
-  const response = await k8s.createNamespacedSecret(namespace, secret)
+  const response = await coreV1Api.createNamespacedSecret(namespace, secret)
   return response.body
 }
 
 export function b64enc(value: string): string {
   return Buffer.from(value).toString('base64')
+}
+
+export async function getPodsOfStatefulSet(
+  appsApi: AppsV1Api,
+  statefulSetName: string,
+  namespace: string,
+  coreApi: CoreV1Api,
+) {
+  const { body: statefulSet } = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
+
+  if (!statefulSet.spec?.selector?.matchLabels) {
+    throw new Error(`StatefulSet ${statefulSetName} does not have matchLabels`)
+  }
+
+  const labelSelector = Object.entries(statefulSet.spec.selector.matchLabels)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(',')
+
+  const { body: podList } = await coreApi.listNamespacedPod(
+    namespace,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    labelSelector,
+  )
+  return podList
+}
+
+export async function patchContainerResourcesOfSts(
+  statefulSetName: string,
+  namespace: string,
+  containerName: string,
+  desiredResources: V1ResourceRequirements,
+  appsApi: AppsV1Api,
+  coreApi: CoreV1Api,
+  d: OtomiDebugger,
+) {
+  try {
+    const pods = await getPodsOfStatefulSet(appsApi, statefulSetName, namespace, coreApi)
+
+    if (pods.items.length === 0) {
+      d.error(`No pods found for StatefulSet ${statefulSetName}`)
+      throw new Error(`No pods found for StatefulSet ${statefulSetName}`)
+    }
+
+    for (const pod of pods.items) {
+      const actualResources = pod.spec?.containers?.find((container) => container.name === containerName)?.resources
+
+      if (actualResources != desiredResources) {
+        d.info(`sts/argocd-application-controller pod has not desired resources`)
+
+        await patchStatefulSetResources(statefulSetName, containerName, namespace, desiredResources, appsApi, d)
+        d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(desiredResources)}`)
+
+        await deleteStatefulSetPods(statefulSetName, namespace, appsApi, coreApi, d)
+        d.info(`sts/argocd-application-controller pods restarted`)
+      }
+    }
+  } catch (error) {
+    d.error(`Error patching StatefulSet ${statefulSetName}:`, error)
+  }
+}
+
+export async function patchStatefulSetResources(
+  statefulSetName: string,
+  containerName: string,
+  namespace: string,
+  resources: V1ResourceRequirements,
+  appsApi: AppsV1Api,
+  d: OtomiDebugger,
+) {
+  try {
+    const patch = {
+      spec: {
+        template: {
+          spec: {
+            containers: [
+              {
+                name: containerName,
+                resources,
+              },
+            ],
+          },
+        },
+      },
+    }
+
+    await appsApi.patchNamespacedStatefulSet(
+      statefulSetName,
+      namespace,
+      patch,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      { headers: { 'Content-Type': 'application/strategic-merge-patch+json' } },
+    )
+  } catch (error) {
+    d.error(`Failed to patch StatefulSet ${statefulSetName}:`, error)
+  }
+}
+
+export async function deleteStatefulSetPods(
+  statefulSetName: string,
+  namespace: string,
+  appsApi: AppsV1Api,
+  coreApi: CoreV1Api,
+  d: OtomiDebugger,
+) {
+  try {
+    const pods = await getPodsOfStatefulSet(appsApi, statefulSetName, namespace, coreApi)
+
+    if (pods.items.length === 0) {
+      d.error(`No pods found for StatefulSet ${statefulSetName}`)
+      throw new Error(`No pods found for StatefulSet ${statefulSetName}`)
+    }
+
+    // Delete each pod
+    for (const pod of pods.items) {
+      if (pod.metadata?.name) {
+        await coreApi.deleteNamespacedPod(pod.metadata.name, namespace)
+      }
+    }
+  } catch (error) {
+    d.error(`Failed to delete pods for StatefulSet ${statefulSetName}:`, error)
+  }
 }
