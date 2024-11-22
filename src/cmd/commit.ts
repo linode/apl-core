@@ -1,4 +1,4 @@
-import { CoreV1Api, CustomObjectsApi, KubeConfig } from '@kubernetes/client-node'
+import { CoreV1Api } from '@kubernetes/client-node'
 import retry from 'async-retry'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
@@ -6,7 +6,7 @@ import { encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { createGenericSecret, waitTillGitRepoAvailable } from 'src/common/k8s'
+import { createGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -128,12 +128,9 @@ export async function retryCheckingForPipelineRun() {
 
 export async function retryIsOAuth2ProxyRunning() {
   const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
-  const kc = new KubeConfig()
-  kc.loadFromDefault()
-  const coreV1Api = kc.makeApiClient(CoreV1Api)
   await retry(
     async () => {
-      await isOAuth2ProxyAvailable(coreV1Api)
+      await isOAuth2ProxyAvailable(k8s.core())
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   ).catch((e) => {
@@ -142,10 +139,10 @@ export async function retryIsOAuth2ProxyRunning() {
   })
 }
 
-export async function isOAuth2ProxyAvailable(k8s: CoreV1Api): Promise<void> {
+export async function isOAuth2ProxyAvailable(coreV1Api: CoreV1Api): Promise<void> {
   const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
   d.info('Checking if OAuth2Proxy is available, waiting...')
-  const { body: oauth2ProxyEndpoint } = await k8s.readNamespacedEndpoints('oauth2-proxy', 'istio-system')
+  const { body: oauth2ProxyEndpoint } = await coreV1Api.readNamespacedEndpoints('oauth2-proxy', 'istio-system')
   if (!oauth2ProxyEndpoint) {
     throw new Error('OAuth2Proxy endpoint not found, waiting...')
   }
@@ -163,16 +160,10 @@ export async function isOAuth2ProxyAvailable(k8s: CoreV1Api): Promise<void> {
 
 export async function checkIfPipelineRunExists(): Promise<void> {
   const d = terminal(`cmd:${cmdName}:pipelineRun`)
-  const kc = new KubeConfig()
-  kc.loadFromDefault()
-  const customObjectsApi = kc.makeApiClient(CustomObjectsApi)
 
-  const response = await customObjectsApi.listNamespacedCustomObject(
-    'tekton.dev',
-    'v1beta1',
-    'otomi-pipelines',
-    'pipelineruns',
-  )
+  const response = await k8s
+    .custom()
+    .listNamespacedCustomObject('tekton.dev', 'v1beta1', 'otomi-pipelines', 'pipelineruns')
 
   const pipelineRuns = (response.body as { items: any[] }).items
   if (pipelineRuns.length === 0) {
@@ -186,10 +177,7 @@ export async function checkIfPipelineRunExists(): Promise<void> {
 
 async function createCredentialsSecret(secretName: string, username: string, password: string): Promise<void> {
   const secretData = { username, password }
-  const kc = new KubeConfig()
-  kc.loadFromDefault()
-  const coreV1Api = kc.makeApiClient(CoreV1Api)
-  await createGenericSecret(coreV1Api, secretName, 'keycloak', secretData)
+  await createGenericSecret(k8s.core(), secretName, 'keycloak', secretData)
 }
 
 export const printWelcomeMessage = async (): Promise<void> => {

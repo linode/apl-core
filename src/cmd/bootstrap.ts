@@ -16,7 +16,7 @@ import { getFilename, gucci, isCore, loadYaml, providerMap, rootDir } from 'src/
 import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $ } from 'zx'
 import { migrate } from './migrate'
 import { validateValues } from './validate-values'
 
@@ -150,13 +150,13 @@ export const copySchema = async (deps = { terminal, rootDir, env, isCore, loadYa
 }
 
 export const getStoredClusterSecrets = async (
-  deps = { $, nothrow, terminal, getK8sSecret },
+  deps = { $, terminal, getK8sSecret },
 ): Promise<Record<string, any> | undefined> => {
   const d = deps.terminal(`cmd:${cmdName}:getStoredClusterSecrets`)
   d.info(`Checking if ${secretId} already pathExists`)
   if (env.isDev && env.DISABLE_SYNC) return undefined
   // we might need to create the 'otomi' namespace if we are in CLI mode
-  if (isCli) await deps.nothrow(deps.$`kubectl create ns otomi &> /dev/null`)
+  if (isCli) await deps.$`kubectl create ns otomi &> /dev/null`.nothrow().quiet()
   const kubeSecretObject = await deps.getK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi')
   if (kubeSecretObject) {
     d.info(`Found ${secretId} secrets on cluster, recovering`)
@@ -250,7 +250,7 @@ export const copyBasicFiles = async (
   ])
   d.info('Copied bin files')
   await deps.mkdir(`${ENV_DIR}/.vscode`, { recursive: true })
-  await deps.copy(`${rootDir}/.values/.vscode`, `${ENV_DIR}/.vscode`, { recursive: true })
+  await deps.copy(`${rootDir}/.values/.vscode`, `${ENV_DIR}/.vscode`)
   d.info('Copied vscode folder')
 
   await deps.copySchema()
@@ -271,7 +271,7 @@ export const copyBasicFiles = async (
   // recursively copy the skeleton files to env if that folder doesn't yet exist
   if (!(await pathExists(`${ENV_DIR}/env`))) {
     d.log(`Copying skeleton files`)
-    await deps.copy(`${rootDir}/.values/env`, `${ENV_DIR}/env`, { overwrite: false, recursive: true })
+    await deps.copy(`${rootDir}/.values/env`, `${ENV_DIR}/env`, { overwrite: false })
   }
 
   // copy these files from core

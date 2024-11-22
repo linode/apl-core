@@ -49,7 +49,7 @@ spec:
         git config --global --add safe.directory '*'
         # Reading gitea credentials
         GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
-        GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
+        GITEA_PASSWORD=$(cat /etc/gitea-credentials/password | jq -s -R -r @uri )
 
         # Parsing the repo url
         export fullRepoUrl=$(params["repoUrl"])
@@ -70,6 +70,7 @@ spec:
         - 'binzx/otomi validate-values'
     - name: apply
       computeResources: {}
+      {{/* Be aware that during the upgrade this task is not immediately upgraded */}}
       script: |
         #!/bin/bash
         set -e

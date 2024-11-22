@@ -4,12 +4,13 @@ import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { isResourcePresent } from 'src/common/k8s'
+import { patchContainerResourcesOfSts, isResourcePresent, k8s } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
+import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -113,17 +114,47 @@ const removeApplication = async (release: HelmRelease): Promise<void> => {
   }
 }
 
+function getResources(values: Record<string, any>) {
+  const config = values
+  const resources: V1ResourceRequirements = {
+    limits: {
+      cpu: config.controller?.resources?.limits?.cpu,
+      memory: config.controller?.resources?.limits?.memory,
+    },
+    requests: {
+      cpu: config.controller?.resources?.requests?.cpu,
+      memory: config.controller?.resources?.requests?.memory,
+    },
+  }
+  return resources
+}
+
+async function patchArgocdResources(release: HelmRelease, values: Record<string, any>) {
+  if (release.name === 'argocd') {
+    const resources = getResources(values)
+    await patchContainerResourcesOfSts(
+      'argocd-application-controller',
+      'argocd',
+      'application-controller',
+      resources,
+      k8s.app(),
+      k8s.core(),
+      d,
+    )
+  }
+}
+
 const writeApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<void> => {
   const appName = `${release.namespace}-${release.name}`
-  // d.info(`Generating Argocd Application at ${appName}`)
   const applicationPath = `${appsDir}/${appName}.yaml`
   const valuesPath = `${valuesDir}/${appName}.yaml`
-  // d.info(`Loading values file from ${valuesPath}`)
   let values = {}
+
   if (await pathExists(valuesPath)) values = (await loadYaml(valuesPath)) || {}
   const manifest = getArgocdAppManifest(release, values, otomiVersion)
-  // d.info(`Saving Argocd Application at ${applicationPath}`)
   await writeFile(applicationPath, objectToYaml(manifest))
+
+  await patchArgocdResources(release, values)
 }
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'

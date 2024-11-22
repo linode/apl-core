@@ -48,7 +48,7 @@ spec:
 
         # Reading gitea credentials
         GITEA_USERNAME=$(cat /etc/gitea-credentials/username)
-        GITEA_PASSWORD=$(cat /etc/gitea-credentials/password)
+        GITEA_PASSWORD=$(cat /etc/gitea-credentials/password | jq -s -R -r @uri )
 
         # Getting the full repository url
         export fullRepoUrl=$(params["repoUrl"])

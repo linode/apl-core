@@ -8,7 +8,7 @@ import { getOtomiLoadBalancerIP } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getRepo, writeValues } from 'src/common/values'
 import { getParsedArgs } from 'src/common/yargs'
-import { $, cd, nothrow } from 'zx'
+import { $, cd } from 'zx'
 
 const cmdName = getFilename(__filename)
 
@@ -31,9 +31,9 @@ export const prepareDomainSuffix = async (inValues: Record<string, any> | undefi
 }
 
 export const setIdentity = async (username, password, email) => {
-  await nothrow($`git config --local user.name ${username}`)
-  await nothrow($`git config --local user.password ${password}`)
-  await nothrow($`git config --local user.email ${email}`)
+  await $`git config --local user.name ${username}`.nothrow().quiet()
+  await $`git config --local user.password ${password}`.nothrow().quiet()
+  await $`git config --local user.email ${email}`.nothrow().quiet()
 }
 /**
  * Prepare the ENV_DIR before anything else. Scenario's:
@@ -103,17 +103,17 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   if (isCli) {
     await copyFile(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
   } else {
-    await nothrow($`git config --global --add safe.directory ${env.ENV_DIR}`)
+    await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
   }
 
   await setIdentity(username, password, email)
 
   if (!hasCommits) {
-    await nothrow($`git checkout -b ${branch}`)
-    await nothrow($`git remote add origin ${remote}`)
+    await $`git checkout -b ${branch}`.nothrow().quiet()
+    await $`git remote add origin ${remote}`.nothrow().quiet()
   }
   if (await pathExists(`${env.ENV_DIR}/.sops.yaml`)) {
-    await nothrow($`git config --local diff.sopsdiffer.textconv "sops -d"`)
+    await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
   }
   d.log(`Done bootstrapping git`)
 }
