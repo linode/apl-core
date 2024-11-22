@@ -159,7 +159,7 @@
     "validate-templates:all": "set -e; i=28; while [ $i -le 31 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",
     "validate-values": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test binzx/otomi validate-values",
     "bootstrap-dev": "rm -rf /tmp/otomi-bootstrap-dev; CI=1 VALUES_INPUT=$PWD/tests/bootstrap/input.yaml ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi bootstrap",
-    "bootstrap-dev-with-repo": "CI=1 ENV_DIR=/tmp/otomi-bootstrap-dev VALUES_INPUT=$PWD/tests/bootstrap/input.yaml binzx/otomi bootstrap"
+    "bootstrap-dev-with-repo": "CI=1 ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi bootstrap"
   },
   "standard-version": {
     "skip": {
