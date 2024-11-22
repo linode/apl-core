@@ -1087,14 +1087,28 @@ definitions:
         $ref: '#/definitions/alerts'
       apps:
         additionalProperties: true
+        alertmanager:
+          additionalProperties: false
+          properties:
+            resources:
+              $ref: '#/definitions/resources'
+        grafana:
+          additionalProperties: false
+          properties:
+            additionalProperties: false
+            properties:
+              grafana:
+                $ref: '#/definitions/resources'
+              sidecar:
+                $ref: '#/definitions/resources'
         tekton:
           additionalProperties: false
           properties:
-            _rawValues:
-              $ref: '#/definitions/rawValues'
             resources:
               additionalProperties: false
               properties:
+                dashboard:
+                  $ref: '#/definitions/resources'
                 buildpacksTask:
                   $ref: '#/definitions/resources'
                 gitCloneTask:

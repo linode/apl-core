@@ -43,6 +43,8 @@ releases:
       pipeline: otomi-task-teams
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
+      - resources:
+          {{- $teamApps.tekton.resources.dashboard | toYaml | nindent 10 }}
   - name: prometheus-{{ $teamId }}
     installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
@@ -66,6 +68,8 @@ releases:
                 sidecar.istio.io/inject: "true"
               labels:
                 prometheus: system
+            resources:
+              {{- $teamApps.alertmanager.resources | toYaml | nindent 14 }}
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
@@ -78,6 +82,8 @@ releases:
           prometheusSpec: {}
         grafana:
           enabled: {{ $team | get "managedMonitoring.grafana" false }}
+          resources:
+            {{- $teamApps.grafana.resources.grafana | toYaml | nindent 12 }}
           namespaceOverride: null # team-{{ $teamId }}
           nameOverride: {{ $teamId }}-po-grafana
           fullnameOverride: {{ $teamId }}-po-grafana
@@ -100,6 +106,8 @@ releases:
               enabled: true
               label: release
               labelValue: grafana-dashboards-{{ $teamId }}
+            resources:
+              {{- $teamApps.grafana.resources.sidecar | toYaml | nindent 14 }}
           additionalDataSources:
             - name: Prometheus-platform
               editable: false

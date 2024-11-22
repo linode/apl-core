@@ -11,8 +11,39 @@ environments:
     {{- range $team := $teams }}
         {{ $team }}:
           apps:
+            alertmanager:
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+            grafana:
+              resources:
+                grafana:
+                  limits:
+                    cpu: "1"
+                    memory: 1Gi
+                  requests:
+                    cpu: 10m
+                    memory: 128Mi
+                sidecar:
+                  limits:
+                    cpu: 500m
+                    memory: 256Mi
+                  requests:
+                    cpu: 10m
+                    memory: 128Mi
             tekton:
               resources:
+                dashboard:
+                  limits:
+                    cpu: 100m
+                    memory: 128Mi
+                  requests:
+                    cpu: 10m
+                    memory: 64Mi
                 buildpacksTask:
                   limits:
                     cpu: "2"

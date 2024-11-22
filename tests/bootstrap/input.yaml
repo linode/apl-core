@@ -25,3 +25,66 @@ teamConfig:
     networkPolicy:
       egressPublic: true
       ingressPrivate: true
+    builds:
+      - name: nodejs-hello-world
+        tag: v0.0.1
+        trigger: false
+        mode:
+          docker:
+            repoUrl: https://github.com/redkubes/nodejs-helloworld
+            revision: HEAD
+            path: ./Docker
+          type: docker
+      - name: demo-java-maven
+        tag: v0.0.1
+        trigger: false
+        mode:
+          buildpacks:
+            repoUrl: https://github.com/buildpacks/samples
+            revision: HEAD
+            path: apps/java-maven
+          type: buildpacks
+      - name: demo-java-trigger
+        tag: v_0_0_1
+        trigger: true
+        mode:
+          docker:
+            repoUrl: https://github.com/buildpacks/samples
+            revision: HEAD
+            path: ./Docker
+          type: docker
+    services:
+      - headers:
+          response:
+            set: []
+        id: 78595314-cdaf-4b60-acc2-3b1a7f80fe2b
+        ingressClassName: platform
+        name: httpbin
+        ownHost: true
+        port: 80
+        type: public
+      - id: a106eb22-8c06-41b6-ab15-97aafb0888b5
+        ingressClassName: platform
+        name: nginx-deployment
+        ownHost: true
+        paths: []
+        port: 80
+        type: public
+      - id: 91f6af98-ad8e-4111-b916-cf1b5bdcafb0
+        ingressClassName: platform
+        ksvc:
+          predeployed: true
+        name: nginx-ksvc
+        ownHost: true
+        paths: []
+        port: 80
+        type: public
+    workloads:
+      - name: nodejs-helloworld
+        url: https://github.com/redkubes/nodejs-helloworld.git
+        path: ./
+        revision: HEAD
+      - name: httpbin
+        path: charts/httpbin
+        revision: HEAD
+        url: https://github.com/linode/apl-core.git
