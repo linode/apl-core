@@ -48,7 +48,7 @@ jobs:
 
   push-to-docker:
     needs: build-test-cache
-    if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
+    if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-22.04
     env:
       BOT_EMAIL: ${{ vars.BOT_EMAIL }}
