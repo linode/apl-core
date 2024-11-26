@@ -15,7 +15,7 @@ env:
 jobs:
   build-test-cache:
     if: (!contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/') && !github.event.act)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
       BOT_EMAIL: ${{ vars.BOT_EMAIL }}
@@ -49,7 +49,7 @@ jobs:
   push-to-docker:
     needs: build-test-cache
     if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       BOT_EMAIL: ${{ vars.BOT_EMAIL }}
       BOT_USERNAME: ${{ vars.BOT_USERNAME }}
@@ -71,7 +71,7 @@ jobs:
   release:
     needs: push-to-docker
     if: always() && (startsWith(github.ref, 'refs/heads/releases/') || startsWith(github.ref, 'refs/heads/main')) && startsWith(github.event.head_commit.message, 'chore(release)') && !github.event.act
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
       BOT_EMAIL: ${{ vars.BOT_EMAIL }}
@@ -91,7 +91,7 @@ jobs:
           docker pull $REPO:$TAG
           docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
-          release_tag="v$(echo $COMMIT_MSG | cut -d' ' -f2)"
+          release_tag=v$(jq -r '.version' < package.json)
           echo tag=$release_tag >> $GITHUB_OUTPUT
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag
@@ -115,10 +115,10 @@ jobs:
   chart-release:
     needs: release
     if: always() && contains(needs.release.result, 'success') && !github.event.act
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container:
-      image: linode/apl-tools:2.7.0
-      options: --user 0
+      image: linode/apl-tools:v2.8.2
+      options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
       BOT_EMAIL: ${{ vars.BOT_EMAIL }}
@@ -187,7 +187,7 @@ jobs:
   # test-otomi-release:
   #   name: Test Helm Chart Installation
   #   needs: [release, chart-release]
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-22.04
   #   steps:
   #     - name: Use Scaleway CLI
   #       uses: scaleway/action-scw@v0
@@ -274,7 +274,7 @@ jobs:
   # notification:
   #   needs: [build-test-cache, push-to-docker, release, chart-release]
   #   if: always()
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-22.04
   #   steps:
   #     - name: Slack Notification
   #       uses: rtCamp/action-slack-notify@v2
