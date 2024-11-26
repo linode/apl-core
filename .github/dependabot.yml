@@ -11,7 +11,7 @@ updates:
     schedule:
       interval: 'weekly'
     commit-message:
-      prefix: ':seedling:'
+      prefix: 'chore(deps)'
     labels:
       - 'dependencies'
 
@@ -21,7 +21,7 @@ updates:
     schedule:
       interval: 'weekly'
     commit-message:
-      prefix: ':seedling:'
+      prefix: 'chore(deps)'
     labels:
       - 'dependencies'
 
@@ -31,6 +31,6 @@ updates:
     schedule:
       interval: 'weekly'
     commit-message:
-      prefix: ':seedling:'
+      prefix: 'chore(deps)'
     labels:
       - 'dependencies'
