@@ -1,4 +1,4 @@
-{{- $t := .Values.teamApps.tekton | merge (dict) }}
+{{- $t := .Values.teamApps.tekton }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
