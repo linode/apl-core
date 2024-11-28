@@ -83,6 +83,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          context: .
           platforms: linux/amd64
           file: tools/Dockerfile
           tags: |

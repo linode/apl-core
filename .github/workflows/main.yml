@@ -43,6 +43,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          context: .
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
