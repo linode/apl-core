@@ -1,3 +1,40 @@
 teamConfig:
     demo:
-        apps: {}
+        apps:
+            tekton:
+                resources:
+                    buildpacksTask:
+                        limits:
+                            cpu: '2'
+                            memory: 1Gi
+                        requests:
+                            cpu: 500m
+                            memory: 512Mi
+                    gitCloneTask:
+                        limits:
+                            cpu: '2'
+                            memory: 1Gi
+                        requests:
+                            cpu: 500m
+                            memory: 512Mi
+                    grypeTask:
+                        limits:
+                            cpu: '2'
+                            memory: 1Gi
+                        requests:
+                            cpu: 500m
+                            memory: 512Mi
+                    kanikoTask:
+                        limits:
+                            cpu: '2'
+                            memory: 1Gi
+                        requests:
+                            cpu: 500m
+                            memory: 512Mi
+                    dashboard:
+                        limits:
+                            cpu: 100m
+                            memory: 128Mi
+                        requests:
+                            cpu: 10m
+                            memory: 64Mi
