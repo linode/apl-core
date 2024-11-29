@@ -15,8 +15,10 @@ const allowedUpgradeType = process.env.ALLOWED_UPGRADE_TYPE || 'minor'
 const ciPushtoBranch = true
 const ciCreateFeatureBranch = true
 const ciCreateGithubPr = true
+// FIXME: before merging this PR change dependencyNameFilter to []
 const dependencyNameFilter = ['ingress-nginx']
-const baseBranch = 'main'
+// FIXME: before merging this PR change baseBranch to 'main'
+const baseBranch = 'APL-11'
 // const dependencyNameFilter = []
 
 async function main() {
