@@ -2,6 +2,9 @@ bases:
   - snippets/defaults.yaml
 ---
 bases:
+  - snippets/defaults.gotmpl
+---
+bases:
   - snippets/env.gotmpl
 ---
 bases:
@@ -43,6 +46,7 @@ releases:
         teamId: admin
         _derived: {{- toYaml $v._derived | nindent 10 }}
         teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
+        teamApps: {{- $tca.apps | toYaml | nindent 10 }}
         apps: {{- $a | toYaml | nindent 10 }}
         oidc: {{- $v.oidc | toYaml | nindent 10 }}
         cluster: {{- $v.cluster | toYaml | nindent 10 }}

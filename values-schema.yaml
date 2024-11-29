@@ -1086,7 +1086,37 @@ definitions:
       alerts:
         $ref: '#/definitions/alerts'
       apps:
-        type: object
+        additionalProperties: true
+        alertmanager:
+          additionalProperties: false
+          properties:
+            resources:
+              $ref: '#/definitions/resources'
+        grafana:
+          additionalProperties: false
+          properties:
+            additionalProperties: false
+            properties:
+              grafana:
+                $ref: '#/definitions/resources'
+              sidecar:
+                $ref: '#/definitions/resources'
+        tekton:
+          additionalProperties: false
+          properties:
+            resources:
+              additionalProperties: false
+              properties:
+                dashboard:
+                  $ref: '#/definitions/resources'
+                buildpacksTask:
+                  $ref: '#/definitions/resources'
+                gitCloneTask:
+                  $ref: '#/definitions/resources'
+                grypeTask:
+                  $ref: '#/definitions/resources'
+                kanikoTask:
+                  $ref: '#/definitions/resources'
       backups:
         type: array
         items:
@@ -1134,13 +1164,8 @@ definitions:
         properties:
           grafana:
             type: boolean
-            default: true
-          prometheus:
-            type: boolean
-            default: false
           alertmanager:
             type: boolean
-            default: false
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster

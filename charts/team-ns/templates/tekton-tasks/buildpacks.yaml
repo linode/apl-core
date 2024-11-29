@@ -1,3 +1,4 @@
+{{- $t := .Values.teamApps.tekton }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -86,12 +87,7 @@ spec:
       - name: CNB_PLATFORM_API
         value: "0.9"
     computeResources:
-      limits:
-        cpu: "2"
-        memory: 2Gi
-      requests:
-        cpu: 500m
-        memory: 512Mi
+    {{- $t.resources.buildpacksTask | toYaml | nindent 6 }}
   steps:
     - name: prepare
       computeResources: {}
