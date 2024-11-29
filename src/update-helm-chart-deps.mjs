@@ -107,7 +107,7 @@ async function main() {
       }
       if (ciPushtoBranch) {
         // Push the branch
-        await $`git push origin ${branchName}`
+        await $`git push --no-verify origin ${branchName}`
       }
       if (ciCreateGithubPr) {
         // Create a pull request
