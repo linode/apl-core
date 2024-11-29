@@ -12,9 +12,9 @@ const chartsDir = 'charts'
 // Specify allowed upgrade types: 'minor', 'patch', or leave undefined for all
 const allowedUpgradeType = process.env.ALLOWED_UPGRADE_TYPE || 'minor'
 
-const ciPushtoBranch = false
-const ciCreateFeatureBranch = false
-const ciCreateGithubPr = false
+const ciPushtoBranch = true
+const ciCreateFeatureBranch = true
+const ciCreateGithubPr = true
 const dependencyNameFilter = ['ingress-nginx']
 // const dependencyNameFilter = []
 // branchForEachDependency| allInOne
@@ -92,8 +92,6 @@ async function main() {
       if (ciCreateFeatureBranch) {
         // Create a new branch for the update
         await $`git checkout -b ${branchName}`
-        await $`git add ${chartFile}`
-        await $`git commit -m "chore(chart-deps): update ${dependency.name} to version ${latestVersion}"`
       }
       // Write the updated Chart.yaml file
       const updatedChart = yaml.dump(chart)
@@ -104,6 +102,10 @@ async function main() {
       await $`helm pull ${dependency.name}/${dependency.name} --version ${latestVersion} --destination ${tempDir}`
       await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
 
+      if (ciCreateFeatureBranch) {
+        await $`git add ${chartFile}`
+        await $`git commit -m "chore(chart-deps): update ${dependency.name} to version ${latestVersion}"`
+      }
       if (ciPushtoBranch) {
         // Push the branch
         await $`git push origin ${branchName}`
