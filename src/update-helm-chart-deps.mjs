@@ -90,7 +90,7 @@ async function main() {
 
       // Update the version in Chart.yaml
       dependency.version = latestVersion
-      const branchName = `update-${dependency.name}-to-${latestVersion}`
+      const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
       const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion}`
       if (ciCreateFeatureBranch) {
         // Create a new branch for the update
