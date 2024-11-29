@@ -16,7 +16,7 @@ const ciPushtoBranch = true
 const ciCreateFeatureBranch = true
 const ciCreateGithubPr = true
 // FIXME: before merging this PR change dependencyNameFilter to []
-const dependencyNameFilter = ['ingress-nginx']
+const dependencyNameFilter = ['ingress-nginx', 'cert-manager']
 // FIXME: before merging this PR change baseBranch to 'main'
 const baseBranch = 'APL-11'
 // const dependencyNameFilter = []
