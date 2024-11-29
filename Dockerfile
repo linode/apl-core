@@ -1,4 +1,4 @@
-FROM linode/apl-tools:v2.8.4 AS ci
+FROM linode/apl-tools:v2.8.5 AS ci
 
 ENV APP_HOME=/home/app/stack
 
