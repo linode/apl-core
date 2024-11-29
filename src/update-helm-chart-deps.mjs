@@ -2,12 +2,18 @@
 
 import fs from 'fs/promises'
 import yaml from 'js-yaml'
+import semver from 'semver'
 import { $ } from 'zx'
 
 // Path to the Chart.yaml file
 const chartFile = 'chart/chart-index/Chart.yaml'
-const chartsDir = 'chart/charts'
+const chartsDir = 'charts'
 
+// Specify allowed upgrade types: 'minor', 'patch', or leave undefined for all
+const allowedUpgradeType = process.env.ALLOWED_UPGRADE_TYPE || 'minor'
+
+const ciPushtoFeatureBranch = false
+const ciCreateGithubPr = false
 async function main() {
   try {
     // Read the Chart.yaml file
@@ -26,37 +32,85 @@ async function main() {
       await $`helm repo add ${dependency.name} ${dependency.repository}`
       await $`helm repo update`
 
-      // Get the latest version of the dependency
-      const latestVersion = await $`helm search repo ${dependency.name}/${dependency.name} -o json`.then(
-        (output) => JSON.parse(output.stdout)[0]?.version,
-      )
+      // Get all available versions for the dependency
+      const allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -o json`
+        .then((output) => JSON.parse(output.stdout))
+        .then((results) => results.map((entry) => entry.version).filter((version) => semver.valid(version)))
 
-      if (!latestVersion) {
-        console.error(`Failed to fetch versions for dependency ${dependency.name}`)
+      if (!allVersions.length) {
+        console.error(`No valid versions found for dependency ${dependency.name}`)
         continue
       }
 
-      if (latestVersion === dependency.version) {
+      // Filter versions for allowed upgrades (minor/patch)
+      const currentVersion = dependency.version
+      const filteredVersions = allVersions.filter((version) => {
+        if (semver.lte(version, currentVersion)) {
+          return false // Ignore versions that are <= current version
+        }
+        if (allowedUpgradeType === 'patch') {
+          return semver.diff(currentVersion, version) === 'patch'
+        }
+        if (allowedUpgradeType === 'minor') {
+          const isMinorOrPatch =
+            semver.diff(currentVersion, version) === 'patch' || semver.diff(currentVersion, version) === 'minor'
+          return isMinorOrPatch
+        }
+        return true // Default: Allow all upgrades
+      })
+
+      if (!filteredVersions.length) {
+        console.log(`No matching ${allowedUpgradeType} updates for dependency ${dependency.name}`)
+        continue
+      }
+
+      // Determine the latest matching version
+      const latestVersion = filteredVersions.sort(semver.rcompare)[0]
+
+      if (latestVersion === currentVersion) {
         console.log(`${dependency.name} is already up to date.`)
         continue
       }
 
-      console.log(`Updating ${dependency.name} from version ${dependency.version} to ${latestVersion}`)
+      console.log(`Updating ${dependency.name} from version ${currentVersion} to ${latestVersion}`)
 
+      // Update the version in Chart.yaml
+      dependency.version = latestVersion
+      const branchName = `update-${dependency.name}-to-${latestVersion}`
+      if (ciPushtoFeatureBranch) {
+        // Create a new branch for the update
+        await $`git checkout -b ${branchName}`
+        await $`git add ${chartFile}`
+        await $`git commit -m "chore(chart-deps): update ${dependency.name} to version ${latestVersion}"`
+      }
+      // Write the updated Chart.yaml file
+      const updatedChart = yaml.dump(chart)
+      await fs.writeFile(chartFile, updatedChart, 'utf8')
       // Fetch and unpack the new chart version
       const tempDir = `./tmp/charts/${dependency.name}`
       await $`mkdir -p ${tempDir}`
       await $`helm pull ${dependency.name}/${dependency.name} --version ${latestVersion} --destination ${tempDir}`
       await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
 
-      // Update the version in Chart.yaml
-      dependency.version = latestVersion
+      if (ciPushtoFeatureBranch) {
+        // Push the branch
+        await $`git push origin ${branchName}`
+      }
+      if (ciCreateGithubPr) {
+        // Create a pull request
+        const prTitle = `Update ${dependency.name} to version ${latestVersion}`
+        const prBody = `This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`
+        await $`gh pr create --title "${prTitle}" --body "${prBody}" --base main --head ${branchName}`
+      }
+
+      if (ciPushtoFeatureBranch) {
+        // Reset to the main branch for the next dependency
+        await $`git checkout main`
+        await $`git reset --hard origin/main`
+      }
     }
 
-    // Write the updated Chart.yaml file
-    const updatedChart = yaml.dump(chart)
-    await fs.writeFile(chartFile, updatedChart, 'utf8')
-    console.log('Updated Chart.yaml written successfully.')
+    console.log('Dependency updates complete.')
   } catch (error) {
     console.error('Error updating dependencies:', error)
     process.exit(1)
