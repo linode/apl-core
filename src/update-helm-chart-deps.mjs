@@ -17,8 +17,7 @@ const ciCreateFeatureBranch = true
 const ciCreateGithubPr = true
 const dependencyNameFilter = ['ingress-nginx']
 // const dependencyNameFilter = []
-// branchForEachDependency| allInOne
-const featureBranchMode = 'allInOne'
+
 async function main() {
   try {
     // Read the Chart.yaml file
