@@ -12,8 +12,13 @@ const chartsDir = 'charts'
 // Specify allowed upgrade types: 'minor', 'patch', or leave undefined for all
 const allowedUpgradeType = process.env.ALLOWED_UPGRADE_TYPE || 'minor'
 
-const ciPushtoFeatureBranch = false
+const ciPushtoBranch = false
+const ciCreateFeatureBranch = false
 const ciCreateGithubPr = false
+const dependencyNameFilter = ['ingress-nginx']
+// const dependencyNameFilter = []
+// branchForEachDependency| allInOne
+const featureBranchMode = 'allInOne'
 async function main() {
   try {
     // Read the Chart.yaml file
@@ -26,6 +31,13 @@ async function main() {
     }
 
     for (const dependency of chart.dependencies) {
+      if (dependencyNameFilter.length != 0 && !dependencyNameFilter.includes(dependency.name)) {
+        console.log(
+          `Skipping  updates for dependency: ${dependency.name} due to dependencyNameFilter: ${dependencyNameFilter} `,
+        )
+        continue
+      }
+
       console.log(`Checking updates for dependency: ${dependency.name}`)
 
       // Add the Helm repository (idempotent)
@@ -77,7 +89,7 @@ async function main() {
       // Update the version in Chart.yaml
       dependency.version = latestVersion
       const branchName = `update-${dependency.name}-to-${latestVersion}`
-      if (ciPushtoFeatureBranch) {
+      if (ciCreateFeatureBranch) {
         // Create a new branch for the update
         await $`git checkout -b ${branchName}`
         await $`git add ${chartFile}`
@@ -92,7 +104,7 @@ async function main() {
       await $`helm pull ${dependency.name}/${dependency.name} --version ${latestVersion} --destination ${tempDir}`
       await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
 
-      if (ciPushtoFeatureBranch) {
+      if (ciPushtoBranch) {
         // Push the branch
         await $`git push origin ${branchName}`
       }
@@ -103,7 +115,7 @@ async function main() {
         await $`gh pr create --title "${prTitle}" --body "${prBody}" --base main --head ${branchName}`
       }
 
-      if (ciPushtoFeatureBranch) {
+      if (ciCreateFeatureBranch) {
         // Reset to the main branch for the next dependency
         await $`git checkout main`
         await $`git reset --hard origin/main`
