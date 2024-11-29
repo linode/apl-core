@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.6
-FROM ubuntu:20.04 as builder
+FROM ubuntu:20.04 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
@@ -127,7 +127,7 @@ RUN set -uex && \
   apt-get install -y nodejs && \
   npm install -g ajv-cli@v3.3.0 json-dereference-cli@0.1.2 zx
 
-FROM ubuntu:20.04 as final
+FROM ubuntu:20.04 AS final
 
 RUN mkdir -p /home/app
 RUN groupadd -r app &&\

@@ -40,9 +40,10 @@ jobs:
           username: ${{ env.BOT_USERNAME }}
           password: '${{ secrets.BOT_TOKEN }}'
       - name: CI tests, image build and push tag for main or branch
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
+          context: .
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
