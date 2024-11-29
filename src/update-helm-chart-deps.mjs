@@ -88,10 +88,12 @@ async function main() {
       // Update the version in Chart.yaml
       dependency.version = latestVersion
       const branchName = `update-${dependency.name}-to-${latestVersion}`
+      const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion}`
       if (ciCreateFeatureBranch) {
         // Create a new branch for the update
         await $`git checkout -b ${branchName}`
       }
+
       // Write the updated Chart.yaml file
       const updatedChart = yaml.dump(chart)
       await fs.writeFile(chartFile, updatedChart, 'utf8')
@@ -103,7 +105,7 @@ async function main() {
 
       if (ciCreateFeatureBranch) {
         await $`git add ${chartFile}`
-        await $`git commit -m "chore(chart-deps): update ${dependency.name} to version ${latestVersion}"`
+        await $`git commit -m ${commitMessage}`
       }
       if (ciPushtoBranch) {
         // Push the branch
@@ -111,9 +113,8 @@ async function main() {
       }
       if (ciCreateGithubPr) {
         // Create a pull request
-        const prTitle = `Update ${dependency.name} to version ${latestVersion}`
         const prBody = `This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`
-        await $`gh pr create --title "${prTitle}" --body "${prBody}" --base main --head ${branchName}`
+        await $`gh pr create --title ${commitMessage} --body "${prBody}" --base main --head ${branchName}`
       }
 
       if (ciCreateFeatureBranch) {
