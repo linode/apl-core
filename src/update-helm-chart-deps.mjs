@@ -16,6 +16,7 @@ const ciPushtoBranch = true
 const ciCreateFeatureBranch = true
 const ciCreateGithubPr = true
 const dependencyNameFilter = ['ingress-nginx']
+const baseBranch = 'main'
 // const dependencyNameFilter = []
 
 async function main() {
@@ -115,13 +116,13 @@ async function main() {
       if (ciCreateGithubPr) {
         // Create a pull request
         const prBody = `This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`
-        await $`gh pr create --title ${commitMessage} --body "${prBody}" --base main --head ${branchName}`
+        await $`gh pr create --title ${commitMessage} --body "${prBody}" --base ${baseBranch} --head ${branchName}`
       }
 
       if (ciCreateFeatureBranch) {
         // Reset to the main branch for the next dependency
-        await $`git checkout main`
-        await $`git reset --hard origin/main`
+        await $`git checkout ${baseBranch}`
+        await $`git reset --hard origin/${baseBranch}`
       }
     }
 
