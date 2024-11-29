@@ -105,6 +105,7 @@ async function main() {
 
       if (ciCreateFeatureBranch) {
         await $`git add ${chartFile}`
+        await $`git add ${chartsDir}`
         await $`git commit -m ${commitMessage}`
       }
       if (ciPushtoBranch) {
