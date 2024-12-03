@@ -383,19 +383,11 @@ export async function patchContainerResourcesOfSts(
         return
       }
 
-      if (!isEqual(actualResources, desiredResources)) {
-        d.info(
-          `sts/argocd-application-controller pod has not desired resources yet: ${JSON.stringify(
-            desiredResources,
-          )} and actual resources: ${JSON.stringify(actualResources)}`,
-        )
+      await patchStatefulSetResources(statefulSetName, containerName, namespace, desiredResources, appsApi, d)
+      d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(desiredResources)}`)
 
-        await patchStatefulSetResources(statefulSetName, containerName, namespace, desiredResources, appsApi, d)
-        d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(desiredResources)}`)
-
-        await deleteStatefulSetPods(statefulSetName, namespace, appsApi, coreApi, d)
-        d.info(`sts/argocd-application-controller pods restarted`)
-      }
+      await deleteStatefulSetPods(statefulSetName, namespace, appsApi, coreApi, d)
+      d.info(`sts/argocd-application-controller pods restarted`)
     }
   } catch (error) {
     d.error(`Error patching StatefulSet ${statefulSetName}:`, error)
