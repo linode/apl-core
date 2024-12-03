@@ -221,7 +221,7 @@ describe('StatefulSet tests', () => {
         mockDebugger,
       )
 
-      expect(debug).toBeCalledTimes(0)
+      expect(debug).toBeCalledTimes(1)
     })
 
     it('should log an error if an exception occurs', async () => {

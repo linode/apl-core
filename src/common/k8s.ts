@@ -371,6 +371,18 @@ export async function patchContainerResourcesOfSts(
     for (const pod of pods.items) {
       const actualResources = pod.spec?.containers?.find((container) => container.name === containerName)?.resources
 
+      if (
+        isEqual(actualResources?.limits, desiredResources?.limits) &&
+        isEqual(actualResources?.requests, desiredResources?.requests)
+      ) {
+        d.info(
+          `sts/argocd-application-controller pod has desired resources: ${JSON.stringify(
+            desiredResources,
+          )} and actual resources: ${JSON.stringify(actualResources)}`,
+        )
+        return
+      }
+
       if (!isEqual(actualResources, desiredResources)) {
         d.info(
           `sts/argocd-application-controller pod has not desired resources yet: ${JSON.stringify(
