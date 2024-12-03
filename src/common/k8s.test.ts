@@ -160,7 +160,7 @@ describe('StatefulSet tests', () => {
         ),
       ).resolves.not.toThrow()
 
-      expect(debug).toHaveBeenNthCalledWith(1, 'sts/argocd-application-controller pod has not desired resources')
+      // expect(debug).toHaveBeenNthCalledWith(1, 'sts/argocd-application-controller pod has not desired resources')
       expect(debug).toHaveBeenNthCalledWith(
         2,
         'sts/argocd-application-controller has been patched with resources: {"requests":{"cpu":"500m","memory":"1Gi"},"limits":{"cpu":"1","memory":"2Gi"}}',

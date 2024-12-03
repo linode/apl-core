@@ -372,7 +372,11 @@ export async function patchContainerResourcesOfSts(
       const actualResources = pod.spec?.containers?.find((container) => container.name === containerName)?.resources
 
       if (actualResources != desiredResources) {
-        d.info(`sts/argocd-application-controller pod has not desired resources`)
+        d.info(
+          `sts/argocd-application-controller pod has not desired resources yet: ${JSON.stringify(
+            desiredResources,
+          )} and actual resources: ${JSON.stringify(actualResources)}`,
+        )
 
         await patchStatefulSetResources(statefulSetName, containerName, namespace, desiredResources, appsApi, d)
         d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(desiredResources)}`)
