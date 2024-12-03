@@ -5,7 +5,7 @@ import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
-import { isEmpty, map, mapValues } from 'lodash'
+import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
@@ -371,7 +371,7 @@ export async function patchContainerResourcesOfSts(
     for (const pod of pods.items) {
       const actualResources = pod.spec?.containers?.find((container) => container.name === containerName)?.resources
 
-      if (actualResources != desiredResources) {
+      if (!isEqual(actualResources, desiredResources)) {
         d.info(
           `sts/argocd-application-controller pod has not desired resources yet: ${JSON.stringify(
             desiredResources,
