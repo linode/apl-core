@@ -5,7 +5,7 @@ import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
 import { Agent } from 'https'
-import { isEmpty, map, mapValues } from 'lodash'
+import { isEmpty, isEqual, map, mapValues } from 'lodash'
 import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
@@ -371,15 +371,23 @@ export async function patchContainerResourcesOfSts(
     for (const pod of pods.items) {
       const actualResources = pod.spec?.containers?.find((container) => container.name === containerName)?.resources
 
-      if (actualResources != desiredResources) {
-        d.info(`sts/argocd-application-controller pod has not desired resources`)
-
-        await patchStatefulSetResources(statefulSetName, containerName, namespace, desiredResources, appsApi, d)
-        d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(desiredResources)}`)
-
-        await deleteStatefulSetPods(statefulSetName, namespace, appsApi, coreApi, d)
-        d.info(`sts/argocd-application-controller pods restarted`)
+      if (
+        isEqual(actualResources?.limits, desiredResources?.limits) &&
+        isEqual(actualResources?.requests, desiredResources?.requests)
+      ) {
+        d.info(
+          `sts/argocd-application-controller pod has desired resources: ${JSON.stringify(
+            desiredResources,
+          )} and actual resources: ${JSON.stringify(actualResources)}`,
+        )
+        return
       }
+
+      await patchStatefulSetResources(statefulSetName, containerName, namespace, desiredResources, appsApi, d)
+      d.info(`sts/argocd-application-controller has been patched with resources: ${JSON.stringify(desiredResources)}`)
+
+      await deleteStatefulSetPods(statefulSetName, namespace, appsApi, coreApi, d)
+      d.info(`sts/argocd-application-controller pods restarted`)
     }
   } catch (error) {
     d.error(`Error patching StatefulSet ${statefulSetName}:`, error)
