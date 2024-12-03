@@ -182,6 +182,7 @@ adminApps:
     tags: [git]
     isShared: true
     ownHost: true
+    path: /user/oauth2/otomi-idp
     ingress:
       - namespace: gitea
         svc: gitea-http
