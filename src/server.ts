@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
-import $RefParser from '@apidevtools/json-schema-ref-parser'
+import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { bootstrapSops } from 'src/cmd/bootstrap'
@@ -84,12 +84,30 @@ app.get('/otomi/values', async (req: Request, res: Response) => {
 
 app.get('/apl/schema', async (req: Request, res: Response) => {
   const schema = await loadYaml(`${rootDir}/values-schema.yaml`)
-  const derefSchema = await $RefParser.dereference(schema as $RefParser.JSONSchema)
+  const derefSchema = await $RefParser.dereference(schema as JSONSchema)
   res.setHeader('Content-type', 'application/json')
   res.status(200).send(derefSchema)
 })
 
 export const startServer = (): void => {
-  server = app.listen(17771, '0.0.0.0')
-  d.log(`Server listening on http://0.0.0.0:17771`)
+  server = app
+    .listen(17771, '0.0.0.0', () => {
+      d.log(`Server listening on http://0.0.0.0:17771`)
+    })
+    .on('error', (e) => {
+      console.error(e)
+    })
 }
+
+// Add this at the bottom of the file or in a lifecycle manager
+process.on('SIGINT', () => {
+  d.info('Shutting down server')
+  stopServer()
+  process.exit(0)
+})
+
+process.on('SIGTERM', () => {
+  d.info('Shutting down server')
+  stopServer()
+  process.exit(0)
+})

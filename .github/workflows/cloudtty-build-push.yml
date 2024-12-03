@@ -49,7 +49,7 @@ jobs:
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
             echo OLD_VERSION = ${OLD_VERSION}
             echo NEW_VERSION = ${NEW_VERSION}
-          elif git diff-tree --no-commit-id --name-only ${{ github.sha }} -r | grep -q "tools\/Dockerfile-tty"; then
+          elif git diff-tree --no-commit-id --name-only ${{ github.sha }} -r | grep -q -x "tools\/Dockerfile-tty"; then
             # No special tag found, but changes were made to the tools/Dockerfile-tty so will upgrade the patch version.
             NEW_VERSION="$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')"
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV

@@ -9,7 +9,7 @@ import { getK8sVersion } from 'src/common/values'
 import { BasicArguments, HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import tar from 'tar'
 import { Argv } from 'yargs'
-import { $, cd, chalk, nothrow } from 'zx'
+import { $, cd, chalk } from 'zx'
 
 const cmdName = getFilename(__filename)
 
@@ -153,11 +153,9 @@ export const validateTemplates = async (): Promise<void> => {
     )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${verbose} ${k8sResourcesPath}`,
   )
 
-  const kubeconformOutput = await nothrow(
-    $`kubeconform -skip ${skipKinds.join(
-      ',',
-    )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${verbose} ${k8sResourcesPath}`,
-  )
+  const kubeconformOutput = await $`kubeconform -skip ${skipKinds.join(
+    ',',
+  )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${verbose} ${k8sResourcesPath}`.nothrow()
 
   if (kubeconformOutput.exitCode !== 0) {
     d.info('Kubeconform output: %s', kubeconformOutput.toString())

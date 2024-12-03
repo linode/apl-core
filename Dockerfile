@@ -1,4 +1,4 @@
-FROM linode/apl-tools:v2.8.0 as ci
+FROM linode/apl-tools:v2.8.5 AS ci
 
 ENV APP_HOME=/home/app/stack
 
@@ -21,14 +21,12 @@ RUN npm ci --ignore-scripts && npm run compile
 RUN if [ "$SKIP_TESTS" = 'false' ]; then ln -s $APP_HOME/tests/fixtures env && npm test && rm env; fi
 
 # --------------- Cleanup
-FROM ci as clean
+FROM ci AS clean
 
 # below command removes the packages specified in devDependencies and set NODE_ENV to production
 RUN npm prune --production
 
-#-----------------------------
-FROM linode/apl-tools:v2.8.0  as prod
-
+FROM linode/apl-tools:v2.8.5  AS prod
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
 ENV VERBOSITY='0'

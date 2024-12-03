@@ -63,7 +63,7 @@ jobs:
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
             echo OLD_VERSION = ${OLD_VERSION}
             echo NEW_VERSION = ${NEW_VERSION}
-          elif git diff-tree --no-commit-id --name-only ${{ github.sha }} -r | grep -q "tools\/Dockerfile"; then
+          elif git diff-tree --no-commit-id --name-only ${{ github.sha }} -r | grep -q -x "tools\/Dockerfile"; then
             # No special tag found, but changes were made to the tools/Dockerfile so will upgrade the patch version.
             NEW_VERSION="$(echo ${OLD_VERSION} | awk -F. -v OFS=. '{$3 = $3 + 1} {print $0}')"
             echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
@@ -80,9 +80,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
       - name: image build and push tag for branch
         if: ${{ env.NEW_VERSION != null }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: true
+          context: './tools'
           platforms: linux/amd64
           file: tools/Dockerfile
           tags: |

@@ -1,0 +1,78 @@
+{{- /* Only dynamic defauts */}}
+{{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
+{{- $t := readFile (print $ENV_DIR "/env/teams.yaml") | fromYaml }}
+{{- if not (hasKey $t "teamConfig") }}{{ $_ := set $t "teamConfig" dict }}{{ end }}
+{{- $teams := keys $t.teamConfig}}
+
+environments:
+  default:
+    values:
+    - teamConfig:
+    {{- range $team := $teams }}
+        {{ $team }}:
+          apps:
+            alertmanager:
+              resources:
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+                requests:
+                  cpu: 10m
+                  memory: 64Mi
+            grafana:
+              resources:
+                grafana:
+                  limits:
+                    cpu: "1"
+                    memory: 1Gi
+                  requests:
+                    cpu: 10m
+                    memory: 128Mi
+                sidecar:
+                  limits:
+                    cpu: 500m
+                    memory: 256Mi
+                  requests:
+                    cpu: 10m
+                    memory: 128Mi
+            tekton:
+              resources:
+                dashboard:
+                  limits:
+                    cpu: 100m
+                    memory: 128Mi
+                  requests:
+                    cpu: 10m
+                    memory: 64Mi
+                buildpacksTask:
+                  limits:
+                    cpu: "2"
+                    memory: 2Gi
+                  requests:
+                    cpu: 500m
+                    memory: 512Mi
+                gitCloneTask:
+                  limits:
+                    cpu: "2"
+                    memory: 2Gi
+                  requests:
+                    cpu: 500m
+                    memory: 512Mi
+                grypeTask:
+                  limits:
+                    cpu: "2"
+                    memory: 2Gi
+                  requests:
+                    cpu: 500m
+                    memory: 512Mi
+                kanikoTask:
+                  limits:
+                    cpu: "2"
+                    memory: 2Gi
+                  requests:
+                    cpu: 500m
+                    memory: 512Mi
+          managedMonitoring:
+            grafana: true
+            alertmanager: false
+    {{- end }}

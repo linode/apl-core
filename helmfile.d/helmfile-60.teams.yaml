@@ -2,6 +2,9 @@ bases:
   - snippets/defaults.yaml
 ---
 bases:
+  - snippets/defaults.gotmpl
+---
+bases:
   - snippets/env.gotmpl
 ---
 bases:
@@ -29,6 +32,7 @@ releases:
   {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
   {{- $azure := $team | get "azure" dict }}
+  {{- $teamApps := index $tc $teamId "apps" | default dict }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: true
     namespace: team-{{ $teamId }}
@@ -39,6 +43,8 @@ releases:
       pipeline: otomi-task-teams
     values:
       - ../values/tekton-dashboard/tekton-dashboard-teams.gotmpl
+      - resources:
+          {{- $teamApps.tekton.resources.dashboard | toYaml | nindent 10 }}
   - name: prometheus-{{ $teamId }}
     installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
@@ -62,6 +68,8 @@ releases:
                 sidecar.istio.io/inject: "true"
               labels:
                 prometheus: system
+            resources:
+              {{- $teamApps.alertmanager.resources | toYaml | nindent 14 }}
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
           config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
@@ -74,6 +82,8 @@ releases:
           prometheusSpec: {}
         grafana:
           enabled: {{ $team | get "managedMonitoring.grafana" false }}
+          resources:
+            {{- $teamApps.grafana.resources.grafana | toYaml | nindent 12 }}
           namespaceOverride: null # team-{{ $teamId }}
           nameOverride: {{ $teamId }}-po-grafana
           fullnameOverride: {{ $teamId }}-po-grafana
@@ -96,6 +106,8 @@ releases:
               enabled: true
               label: release
               labelValue: grafana-dashboards-{{ $teamId }}
+            resources:
+              {{- $teamApps.grafana.resources.sidecar | toYaml | nindent 14 }}
           additionalDataSources:
             - name: Prometheus-platform
               editable: false
@@ -242,6 +254,7 @@ releases:
           tlsSecretName: {{ $v._derived.tlsSecretName }}
       - {{- omit $team "apps" | toYaml | nindent 8 }}
         teamId: {{ $teamId }}
+        teamApps: {{- toYaml $teamApps | nindent 10 }}
         teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
       - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
   {{- if (gt (len $teamServices) 0) }}
