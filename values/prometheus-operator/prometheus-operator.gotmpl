@@ -156,6 +156,8 @@ prometheus:
 additionalPrometheusRules:
   - name: blackbox
     {{- readFile "rules/blackbox.yaml" | nindent 4 }}
+  - name: cnpg
+    {{- readFile "rules/cnpg.yaml" | nindent 4 }}
 alertmanager:
   enabled: {{ $a.enabled }}
   alertmanagerSpec:
