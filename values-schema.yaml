@@ -797,7 +797,7 @@ definitions:
       - name
       - type
   backupSchedule:
-    default: 0 0 * * *
+    default: 0 0 0 * * *
     description: Cron-type expression to schedule the backup. Defaults to once a day at 00:00.
     type: string
   secret:
