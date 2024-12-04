@@ -8,6 +8,7 @@ name: harbor-otomi-db
 storage:
   size: {{ $hdb.size }}
 instances: {{ $hdb.replicas }}
+imageName: {{ $hdb.imageName }}
 
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}

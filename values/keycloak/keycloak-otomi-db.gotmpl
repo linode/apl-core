@@ -9,6 +9,7 @@ name: keycloak-db
 storage:
   size: {{ $kdb.size }}
 instances: {{ $kdb.replicas }}
+imageName: {{ $kdb.imageName }}
 
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
