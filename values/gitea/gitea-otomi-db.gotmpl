@@ -9,7 +9,6 @@ name: gitea-db
 storage:
   size: {{ $gdb.size }}
 instances: {{ $gdb.replicas }}
-imageName: ghcr.io/cloudnative-pg/postgresql:15.10
 
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
