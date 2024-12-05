@@ -60,7 +60,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
       d.info(`${crypt.cmd} ${file}`)
-      const result = $`${crypt.cmd.split(' ')} -i ${file}`
+      const result = $`${crypt.cmd.split(' ')} ${file}`
       return result.then(async (res) => {
         if (crypt.post) await crypt.post(file)
         return res
