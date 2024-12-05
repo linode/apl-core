@@ -22,12 +22,12 @@ enum CryptType {
 
 const preCrypt = async (path): Promise<void> => {
   const d = terminal(`common:crypt:preCrypt`)
-  d.info('Checking prerequisites for the (de,en)crypt action')
+  d.debug('Checking prerequisites for the (de,en)crypt action')
   // we might have set GCLOUD_SERVICE_KEY in bootstrap so reparse env
   // just this time (not desired as should be considered read only):
   const lateEnv = cleanEnv(cliEnvSpec)
   if (lateEnv.GCLOUD_SERVICE_KEY) {
-    d.info('Writing GOOGLE_APPLICATION_CREDENTIAL')
+    d.debug('Writing GOOGLE_APPLICATION_CREDENTIAL')
     // and set the location to the file holding the credentials for zx running sops
     process.env.GOOGLE_APPLICATION_CREDENTIALS = '/tmp/key.json'
     await writeFile(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(lateEnv.GCLOUD_SERVICE_KEY))
@@ -45,7 +45,7 @@ const getAllSecretFiles = async (path) => {
   const files = (await readdirRecurse(`${path}/env`, { skipHidden: true }))
     .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
     .map((file) => file.replace(`${path}/`, ''))
-  d.info('getAllSecretFiles: ', files)
+  d.debug('getAllSecretFiles: ', files)
   return files
 }
 
@@ -59,7 +59,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
   const d = terminal(`common:crypt:processFileChunk`)
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
-      d.info(`${crypt.cmd} ${file}`)
+      d.debug(`${crypt.cmd} ${file}`)
       const result = $`${crypt.cmd.split(' ')} ${file}`
       return result.then(async (res) => {
         if (crypt.post) await crypt.post(file)
@@ -95,7 +95,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   // EventEmitter.defaultMaxListeners is 10, if we increase chunkSize in the future then this line will prevent it from crashing
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
-  d.info(`runOnSecretFiles: ${crypt.cmd}`)
+  d.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
     // eslint-disable-next-line no-restricted-syntax
     for (const fileChunk of filesChunked) {
@@ -116,7 +116,7 @@ const matchTimestamps = async (path, file: string) => {
   const d = terminal(`common:crypt:matchTimeStamps`)
   const absFilePath = `${path}/${file}`
   if (!(await pathExists(`${absFilePath}.dec`))) {
-    d.info(`Missing ${file}.dec, skipping...`)
+    d.debug(`Missing ${file}.dec, skipping...`)
     return
   }
 
@@ -125,7 +125,7 @@ const matchTimestamps = async (path, file: string) => {
   await utimes(`${absFilePath}.dec`, decTS.mtime, encTS.mtime)
   const encSec = Math.round(encTS.mtimeMs / 1000)
   const decSec = Math.round(decTS.mtimeMs / 1000)
-  d.info(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
+  d.debug(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
 }
 
 export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
@@ -163,17 +163,17 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
 
         const decExists = await pathExists(`${absFilePath}.dec`)
         if (!decExists) {
-          d.info(`Did not find decrypted ${absFilePath}.dec`)
+          d.debug(`Did not find decrypted ${absFilePath}.dec`)
           return true
         }
 
         // if there is a .dec && .dec is > 1s newer
-        d.info(`Found decrypted ${file}.dec`)
+        d.debug(`Found decrypted ${file}.dec`)
 
         const encTS = await stat(absFilePath)
         const decTS = await stat(`${absFilePath}.dec`)
-        d.info('encTS.mtime: ', encTS.mtime)
-        d.info('decTS.mtime: ', decTS.mtime)
+        d.debug('encTS.mtime: ', encTS.mtime)
+        d.debug('decTS.mtime: ', decTS.mtime)
         const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
         if (timeDiff > 1) {
           d.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
