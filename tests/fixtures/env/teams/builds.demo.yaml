@@ -8,7 +8,7 @@ teamConfig:
                   docker:
                       repoUrl: https://github.com/buildpacks/samples
                       revision: HEAD
-                      path: ./Docker
+                      path: ./Dockerfile
                   type: docker
               externalRepo: false
               scanSource: true
