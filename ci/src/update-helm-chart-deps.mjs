@@ -29,7 +29,7 @@ async function main() {
   const allowedUpgradeType = env.CI_UPDATE_TYPE
 
   const ciPushtoBranch = !env.CI_GIT_LOCAL_BRANCH_ONLY
-  const ciCreateFeatureBranch = env.CI_GIT_LOCAL_BRANCH_ONLY
+  const ciCreateFeatureBranch = true
   const ciCreateGithubPr = !env.CI_GIT_LOCAL_BRANCH_ONLY && env.CI_GH_CREATE_PR
   const dependencyNameFilter = env.CI_HELM_CHART_NAME_FILTER || []
   const baseBranch = env.CI_GIT_BASELINE_BRANCH
