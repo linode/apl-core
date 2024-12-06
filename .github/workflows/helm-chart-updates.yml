@@ -18,7 +18,6 @@ env:
   COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
-  DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
 
 jobs:
   preprocess-input:
@@ -38,11 +37,11 @@ jobs:
         run: |
           cd ci/
           npm install
-      - name: Run Docker image check script
+      - name: Update helm charts
         env:
           CI_UPDATE_TYPE: patch
           CI_HELM_CHART_NAME_FILTER: '["cert-manager"]'
           CI_GIT_BASELINE_BRANCH: 'APL-11'
         run: |
           cd ci/ 
-          src/update-helm-chart-deps.mjs
+          npm run update-helm-chart-deps

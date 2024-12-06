@@ -3,11 +3,6 @@
   "bugs": {
     "url": "https://github.com/linode/apl-core/issues"
   },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
-  },
   "dependencies": {
     "ajv": "8.17.1",
     "js-yaml": "^4.1.0",
