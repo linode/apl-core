@@ -15,7 +15,7 @@ async function main() {
       choices: ['patch', 'minor', 'major'],
       default: 'minor',
     }),
-    CI_HELM_CHART_NAME_FILTER: json({ desc: 'A list of names in json format' }),
+    CI_HELM_CHART_NAME_FILTER: json({ desc: 'A list of names in json format', default: [] }),
     CI_GH_CREATE_PR: bool({ desc: 'Create Github PR', default: true }),
     CI_GIT_BASELINE_BRANCH: str({ desc: 'A baseline git branch', default: 'main' }),
     CI_GIT_LOCAL_BRANCH_ONLY: bool({ desc: 'Perform changes only on local branches', default: false }),
@@ -96,7 +96,7 @@ async function main() {
         console.log(`${dependency.name} is already up to date.`)
         continue
       }
-
+      const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
       if (ciPushtoBranch) {
         const remoteBranch = await $`git ls-remote --heads origin ${branchName}`
         if (remoteBranch.message === '') {
@@ -111,7 +111,7 @@ async function main() {
 
       // Update the version in Chart.yaml
       dependency.version = latestVersion
-      const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
+
       const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion}`
       if (ciCreateFeatureBranch) {
         // Create a new branch for the update
