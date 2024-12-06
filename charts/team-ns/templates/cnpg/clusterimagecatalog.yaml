@@ -1,3 +1,5 @@
+{{- $v := .Values }}
+{{- if eq $v.teamId "admin" }} 
 apiVersion: postgresql.cnpg.io/v1
 kind: ClusterImageCatalog
 metadata:
@@ -6,5 +8,6 @@ spec:
   images:
     - major: 15
       image: ghcr.io/cloudnative-pg/postgresql:15.10
-    - major: 16
+    - major: 17
       image: ghcr.io/cloudnative-pg/postgresql:17.2
+{{- end }}
