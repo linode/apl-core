@@ -29,14 +29,9 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-hostNetwork: false
-dnsPolicy: ""
-
 crds:
-  # -- Specifies whether the CRDs should be created when installing the chart.
   create: true
 
-# -- The webhook configuration.
 webhook:
   port: 9443
   mutating:
@@ -50,67 +45,51 @@ webhook:
   readinessProbe:
     initialDelaySeconds: 3
 
-# -- Operator configuration.
+# Operator configuration
 config:
-  # -- Specifies whether the secret should be created.
+  # -- Specifies whether the secret should be created
   create: true
-  # -- The name of the configmap/secret to use.
-  name: cnpg-controller-manager-config
-  # -- Specifies whether it should be stored in a secret, instead of a configmap.
+  # -- Specifies whether it should be stored in a secret, instead of a configmap
   secret: false
-  # -- The content of the configmap/secret, see
-  # https://cloudnative-pg.io/documentation/current/operator_conf/#available-options
-  # for all the available options.
-  data: {}
+  # Examples:
   # INHERITED_ANNOTATIONS: categories
   # INHERITED_LABELS: environment, workload, app
-  # WATCH_NAMESPACE: namespace-a,namespace-b
 
-# -- Additinal arguments to be added to the operator's args list.
+  data: {}
+  name: cnpg-controller-manager-config
+
+# -- Additinal arguments to be added to the operator's args list
 additionalArgs: []
 
-# -- Array containing extra environment variables which can be templated.
-# For example:
-#  - name: RELEASE_NAME
-#    value: "{{ .Release.Name }}"
-#  - name: MY_VAR
-#    value: "mySpecialKey"
-additionalEnv: []
-
 serviceAccount:
-  # -- Specifies whether the service account should be created.
+  # -- Specifies whether the service account should be created
   create: true
   # -- The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template.
+  # If not set and create is true, a name is generated using the fullname template
   name: ""
 
 rbac:
-  # -- Specifies whether ClusterRole and ClusterRoleBinding should be created.
+  # -- Specifies whether ClusterRole and ClusterRoleBinding should be created
   create: true
-  # -- Aggregate ClusterRoles to Kubernetes default user-facing roles.
-  # Ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles
-  aggregateClusterRoles: false
 
-# -- Annotations to be added to all other resources.
+# -- Annotations to be added to all other resources
 commonAnnotations: {}
-# -- Annotations to be added to the pod.
+# -- Annotations to be added to the pod
 podAnnotations: {}
-# -- Labels to be added to the pod.
+# -- Labels to be added to the pod
 podLabels: {}
 
-# -- Container Security Context.
+# -- Container Security Context
 containerSecurityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
   runAsUser: 10001
   runAsGroup: 10001
-  seccompProfile:
-    type: RuntimeDefault
   capabilities:
     drop:
       - "ALL"
 
-# -- Security Context for the whole pod.
+# -- Security Context for the whole pod
 podSecurityContext:
   runAsNonRoot: true
   seccompProfile:
@@ -127,57 +106,35 @@ service:
   name: cnpg-webhook-service
   port: 443
 
-resources: {}
-  # If you want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  #
-  # limits:
-  #   cpu: 100m
-  #   memory: 200Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 100Mi
+resources:
+  limits:
+    cpu: 100m
+    memory: 200Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
 
-# -- Nodeselector for the operator to be installed.
+# -- Nodeselector for the operator to be installed
 nodeSelector: {}
 
-# -- Tolerations for the operator to be installed.
+# -- Tolerations for the operator to be installed
 tolerations: []
 
-# -- Affinity for the operator to be installed.
+# -- Affinity for the operator to be installed
 affinity: {}
 
-monitoring:
-
-  # -- Specifies whether the monitoring should be enabled. Requires Prometheus Operator CRDs.
-  podMonitorEnabled: false
-  # -- Metrics relabel configurations to apply to samples before ingestion.
-  podMonitorMetricRelabelings: []
-  # -- Relabel configurations to apply to samples before scraping.
-  podMonitorRelabelings: []
-  # -- Additional labels for the podMonitor
-  podMonitorAdditionalLabels: {}
-
-  grafanaDashboard:
-    create: false
-    # -- Allows overriding the namespace where the ConfigMap will be created, defaulting to the same one as the Release.
-    namespace: ""
-    # -- The name of the ConfigMap containing the dashboard.
-    configMapName: "cnpg-grafana-dashboard"
-    # -- Label that ConfigMaps should have to be loaded as dashboards.  DEPRECATED: Use labels instead.
-    sidecarLabel: "grafana_dashboard"
-    # -- Label value that ConfigMaps should have to be loaded as dashboards.  DEPRECATED: Use labels instead.
-    sidecarLabelValue: "1"
-    # -- Labels that ConfigMaps should have to get configured in Grafana.
-    labels: {}
-    # -- Annotations that ConfigMaps can have to get configured in Grafana.
-    annotations: {}
+# -- Test related configurations
+test:
+  image:
+    repository: busybox
+    pullPolicy: IfNotPresent
+    tag: "latest"
 
 # Default monitoring queries
 monitoringQueriesConfigMap:
-  # -- The name of the default monitoring configmap.
+  # -- The name of the default monitoring configmap
   name: cnpg-default-monitoring
-  # -- A string representation of a YAML defining monitoring queries.
+  # -- A string representation of a YAML defining monitoring queries
   queries: |
     backends:
       query: |
@@ -255,7 +212,6 @@ monitoringQueriesConfigMap:
           , pg_catalog.age(datfrozenxid) AS xid_age
           , pg_catalog.mxid_age(datminmxid) AS mxid_age
         FROM pg_catalog.pg_database
-        WHERE datallowconn
       metrics:
         - datname:
             usage: "LABEL"
@@ -280,16 +236,14 @@ monitoringQueriesConfigMap:
             description: "Time at which postgres started (based on epoch)"
 
     pg_replication:
-      query: "SELECT CASE WHEN (
-                NOT pg_catalog.pg_is_in_recovery()
-                OR pg_catalog.pg_last_wal_receive_lsn() = pg_catalog.pg_last_wal_replay_lsn())
+      query: "SELECT CASE WHEN NOT pg_catalog.pg_is_in_recovery()
               THEN 0
               ELSE GREATEST (0,
                 EXTRACT(EPOCH FROM (now() - pg_catalog.pg_last_xact_replay_timestamp())))
               END AS lag,
               pg_catalog.pg_is_in_recovery() AS in_recovery,
               EXISTS (TABLE pg_stat_wal_receiver) AS is_wal_receiver_up,
-              (SELECT count(*) FROM pg_catalog.pg_stat_replication) AS streaming_replicas"
+              (SELECT count(*) FROM pg_stat_replication) AS streaming_replicas"
       metrics:
         - lag:
             usage: "GAUGE"
@@ -310,10 +264,7 @@ monitoringQueriesConfigMap:
           slot_type,
           database,
           active,
-          (CASE pg_catalog.pg_is_in_recovery()
-            WHEN TRUE THEN pg_catalog.pg_wal_lsn_diff(pg_catalog.pg_last_wal_receive_lsn(), restart_lsn)
-            ELSE pg_catalog.pg_wal_lsn_diff(pg_catalog.pg_current_wal_lsn(), restart_lsn)
-          END) as pg_wal_lsn_diff
+          pg_catalog.pg_wal_lsn_diff(pg_catalog.pg_current_wal_lsn(), restart_lsn)
         FROM pg_catalog.pg_replication_slots
         WHERE NOT temporary
       metrics:
@@ -375,7 +326,6 @@ monitoringQueriesConfigMap:
             description: "Time at which these statistics were last reset"
 
     pg_stat_bgwriter:
-      runonserver: "<17.0.0"
       query: |
         SELECT checkpoints_timed
           , checkpoints_req
@@ -419,71 +369,6 @@ monitoringQueriesConfigMap:
         - buffers_alloc:
             usage: "COUNTER"
             description: "Number of buffers allocated"
-
-    pg_stat_bgwriter_17:
-      runonserver: ">=17.0.0"
-      name: pg_stat_bgwriter
-      query: |
-        SELECT buffers_clean
-          , maxwritten_clean
-          , buffers_alloc
-          , EXTRACT(EPOCH FROM stats_reset) AS stats_reset_time
-        FROM pg_catalog.pg_stat_bgwriter
-      metrics:
-        - buffers_clean:
-            usage: "COUNTER"
-            description: "Number of buffers written by the background writer"
-        - maxwritten_clean:
-            usage: "COUNTER"
-            description: "Number of times the background writer stopped a cleaning scan because it had written too many buffers"
-        - buffers_alloc:
-            usage: "COUNTER"
-            description: "Number of buffers allocated"
-        - stats_reset_time:
-            usage: "GAUGE"
-            description: "Time at which these statistics were last reset"
-
-    pg_stat_checkpointer:
-      runonserver: ">=17.0.0"
-      query: |
-        SELECT num_timed AS checkpoints_timed
-          , num_requested AS checkpoints_req
-          , restartpoints_timed
-          , restartpoints_req
-          , restartpoints_done
-          , write_time
-          , sync_time
-          , buffers_written
-          , EXTRACT(EPOCH FROM stats_reset) AS stats_reset_time
-        FROM pg_catalog.pg_stat_checkpointer
-      metrics:
-        - checkpoints_timed:
-            usage: "COUNTER"
-            description: "Number of scheduled checkpoints that have been performed"
-        - checkpoints_req:
-            usage: "COUNTER"
-            description: "Number of requested checkpoints that have been performed"
-        - restartpoints_timed:
-            usage: "COUNTER"
-            description: "Number of scheduled restartpoints due to timeout or after a failed attempt to perform it"
-        - restartpoints_req:
-            usage: "COUNTER"
-            description: "Number of requested restartpoints that have been performed"
-        - restartpoints_done:
-            usage: "COUNTER"
-            description: "Number of restartpoints that have been performed"
-        - write_time:
-            usage: "COUNTER"
-            description: "Total amount of time that has been spent in the portion of processing checkpoints and restartpoints where files are written to disk, in milliseconds"
-        - sync_time:
-            usage: "COUNTER"
-            description: "Total amount of time that has been spent in the portion of processing checkpoints and restartpoints where files are synchronized to disk, in milliseconds"
-        - buffers_written:
-            usage: "COUNTER"
-            description: "Number of buffers written during checkpoints and restartpoints"
-        - stats_reset_time:
-            usage: "GAUGE"
-            description: "Time at which these statistics were last reset"
 
     pg_stat_database:
       query: |
@@ -560,7 +445,6 @@ monitoringQueriesConfigMap:
        SELECT usename
          , COALESCE(application_name, '') AS application_name
          , COALESCE(client_addr::text, '') AS client_addr
-         , COALESCE(client_port::text, '') AS client_port
          , EXTRACT(EPOCH FROM backend_start) AS backend_start
          , COALESCE(pg_catalog.age(backend_xmin), 0) AS backend_xmin_age
          , pg_catalog.pg_wal_lsn_diff(pg_catalog.pg_current_wal_lsn(), sent_lsn) AS sent_diff_bytes
@@ -581,9 +465,6 @@ monitoringQueriesConfigMap:
         - client_addr:
             usage: "LABEL"
             description: "Client IP address"
-        - client_port:
-            usage: "LABEL"
-            description: "Client TCP port"
         - backend_start:
             usage: "COUNTER"
             description: "Time when this process was started"

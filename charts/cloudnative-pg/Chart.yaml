@@ -1,17 +1,9 @@
 apiVersion: v2
-appVersion: 1.24.1
-dependencies:
-- alias: monitoring
-  condition: monitoring.grafanaDashboard.create
-  name: cluster
-  repository: https://cloudnative-pg.github.io/grafana-dashboards
-  version: "0.0"
-description: CloudNativePG Operator Helm Chart
+appVersion: 1.20.0
+description: CloudNativePG Helm Chart
 home: https://cloudnative-pg.io
 icon: https://raw.githubusercontent.com/cloudnative-pg/artwork/main/cloudnativepg-logo.svg
 keywords:
-- operator
-- controller
 - postgresql
 - postgres
 - database
@@ -22,4 +14,4 @@ name: cloudnative-pg
 sources:
 - https://github.com/cloudnative-pg/charts
 type: application
-version: 0.22.1
+version: 0.18.0

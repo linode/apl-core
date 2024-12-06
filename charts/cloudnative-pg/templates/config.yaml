@@ -27,6 +27,7 @@ metadata:
   {{- end }}
 data:
   {{- toYaml .Values.config.data | nindent 2 }}
+{{- end }}
 {{- else }}
 apiVersion: v1
 kind: Secret
@@ -41,5 +42,4 @@ metadata:
   {{- end }}
 stringData:
   {{- toYaml .Values.config.data | nindent 2 }}
-{{- end }}
 {{- end }}

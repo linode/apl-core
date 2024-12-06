@@ -1261,7 +1261,6 @@ environments:
         databases:
           keycloak:
             imported: false
-            imageName: ghcr.io/cloudnative-pg/postgresql:17.2
             size: 5Gi
             replicas: 2
             resources:
@@ -1273,7 +1272,6 @@ environments:
                 memory: 128Mi
           harbor:
             size: 5Gi
-            imageName: ghcr.io/cloudnative-pg/postgresql:17.2
             replicas: 2
             coreDatabase: registry
             resources:
@@ -1285,7 +1283,6 @@ environments:
                 memory: 128Mi
           gitea:
             useOtomiDB: true
-            imageName: ghcr.io/cloudnative-pg/postgresql:17.2
             imported: false
             size: 5Gi
             replicas: 2
@@ -1303,13 +1300,10 @@ environments:
           database:
             harbor:
               enabled: false
-              schedule: '0 0 0 * * *'
             gitea:
               enabled: false
-              schedule: '0 0 0 * * *'
             keycloak:
               enabled: false
-              schedule: '0 0 0 * * *'
           gitea:
             enabled: false
         cluster:
@@ -1338,4 +1332,4 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes
-        version: 32
+        version: 28

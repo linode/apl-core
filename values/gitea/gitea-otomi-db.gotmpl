@@ -16,10 +16,6 @@ postgresql:
     shared_buffers: 64MB
     work_mem: 2MB
 
-{{- if $gdb.imageName }}
-imageName: {{ $gdb.imageName }}
-{{- end }}
-
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:
