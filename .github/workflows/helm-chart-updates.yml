@@ -1,5 +1,6 @@
 name: Helm chart updates
 on:
+  push:
   workflow_dispatch:
     inputs:
       CI_UPDATE_TYPE:
