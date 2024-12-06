@@ -1261,7 +1261,7 @@ environments:
         databases:
           keycloak:
             imported: false
-            imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+            postgresMajor: 17
             size: 5Gi
             replicas: 2
             resources:
@@ -1273,7 +1273,7 @@ environments:
                 memory: 512Mi
           harbor:
             size: 5Gi
-            imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+            postgresMajor: 17
             replicas: 2
             coreDatabase: registry
             resources:
@@ -1285,7 +1285,7 @@ environments:
                 memory: 256Mi
           gitea:
             useOtomiDB: true
-            imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+            postgresMajor: 17
             imported: false
             size: 5Gi
             replicas: 2
