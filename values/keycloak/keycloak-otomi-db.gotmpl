@@ -9,6 +9,9 @@ name: keycloak-db
 storage:
   size: {{ $kdb.size }}
 instances: {{ $kdb.replicas }}
+{{- if $kdb.imageName }}
+imageName: {{ $kdb.imageName }}
+{{- end }}
 
 postgresql:
   parameters:
