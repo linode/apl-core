@@ -35,7 +35,9 @@ jobs:
         with:
           node-version: 20
       - name: Install packages
-        run: npm install
+        run: |
+          cd ci/
+          npm install
       - name: Run Docker image check script
         env:
           CI_UPDATE_TYPE: patch
