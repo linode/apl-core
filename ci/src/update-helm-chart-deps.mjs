@@ -30,7 +30,7 @@ async function main() {
 
   const ciPushtoBranch = !env.CI_GIT_LOCAL_BRANCH_ONLY
   const ciCreateFeatureBranch = true
-  const ciCreateGithubPr = !env.CI_GIT_LOCAL_BRANCH_ONLY && env.CI_GH_CREATE_PR
+  const ciCreateGithubPr = !env.CI_GIT_LOCAL_BRANCH_ONLY && env.CI_GH_CREATE_PR && ciCreateFeatureBranch
   const dependencyNameFilter = env.CI_HELM_CHART_NAME_FILTER || []
   const baseBranch = env.CI_GIT_BASELINE_BRANCH
   try {
