@@ -46,7 +46,7 @@ async function main() {
     for (const dependency of chart.dependencies) {
       if (dependencyNameFilter.length != 0 && !dependencyNameFilter.includes(dependency.name)) {
         console.log(
-          `Skipping  updates for dependency: ${dependency.name} due to dependencyNameFilter: ${dependencyNameFilter} `,
+          `Skipping updates for dependency: ${dependency.name} due to dependencyNameFilter: ${dependencyNameFilter} `,
         )
         continue
       }
@@ -96,13 +96,17 @@ async function main() {
         console.log(`${dependency.name} is already up to date.`)
         continue
       }
-      const remoteBranch = await $`git ls-remote --heads origin ${branchName}`
-      if (remoteBranch.message === '') {
-        console.log(
-          `Skipping  updates for dependency: ${dependency.name}: the remote branch ${branchName} already exists`,
-        )
-        continue
+
+      if (ciPushtoBranch) {
+        const remoteBranch = await $`git ls-remote --heads origin ${branchName}`
+        if (remoteBranch.message === '') {
+          console.log(
+            `Skipping  updates for dependency: ${dependency.name}: the remote branch ${branchName} already exists`,
+          )
+          continue
+        }
       }
+
       console.log(`Updating ${dependency.name} from version ${currentVersion} to ${latestVersion}`)
 
       // Update the version in Chart.yaml
