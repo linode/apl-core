@@ -92,8 +92,8 @@ async function main() {
       const latestVersion = filteredVersions.sort(semver.rcompare)[0]
       const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
 
-      remoteBranch = await $`git ls-remote --heads origin ${branchName}`
-      if (remoteBranch === '') {
+      const remoteBranch = await $`git ls-remote --heads origin ${branchName}`
+      if (remoteBranch.message === '') {
         console.log(
           `Skipping  updates for dependency: ${dependency.name}: the remote branch ${branchName} already exists`,
         )
