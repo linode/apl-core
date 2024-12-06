@@ -1,0 +1,36 @@
+{
+  "author": "Akamai",
+  "bugs": {
+    "url": "https://github.com/linode/apl-core/issues"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "dependencies": {
+    "ajv": "8.17.1",
+    "js-yaml": "^4.1.0",
+    "yaml": "2.3.0-5",
+    "zx": "^8.2.2",
+    "envalid": "8.0.0"
+  },
+  "description": "CI scripts",
+  "engines": {
+    "node": ">=20 <21",
+    "npm": "^10"
+  },
+  "homepage": "https://github.com/linode/apl-core#readme",
+  "license": "Apache-2.0",
+  "name": "apl-core",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/linode/apl-core.git"
+  },
+  "scripts": {
+    "update-helm-chart-deps": "src/update-helm-chart-deps.mjs"
+  },
+  "type": "commonjs",
+  "version": "1.0.0"
+}

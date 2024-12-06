@@ -15,7 +15,7 @@ const env = envalid.cleanEnv(process.env, {
   CI_HELM_CHART_NAME_FILTER: json({ desc: 'A list of names in json format' }),
   CI_GH_CREATE_PR: bool({ desc: 'Create Github PR', default: true }),
   CI_GIT_BASELINE_BRANCH: str({ desc: 'A baseline git branch', default: 'main' }),
-  CI_GIT_ONLY_LOCAL_CHANGES: bool({ desc: 'Perform changes only on local branches', default: false }),
+  CI_GIT_LOCAL_BRANCH_ONLY: bool({ desc: 'Perform changes only on local branches', default: false }),
 })
 
 // Path to the Chart.yaml file
