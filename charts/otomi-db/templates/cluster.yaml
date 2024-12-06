@@ -8,6 +8,13 @@ metadata:
   {{- end }}
 spec:
   instances: {{ .Values.instances }}
+  {{- with .Values.postgresql.parameters }}
+  postgresql:
+    parameters:
+    {{- range $key, $value := . }}
+      {{ $key }}: {{ $value }}
+    {{- end }}
+  {{- end }}
   {{- with .Values.imageName }}
   imageName: {{ . }}
   {{- end }}

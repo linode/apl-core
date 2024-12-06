@@ -10,6 +10,12 @@ storage:
   size: {{ $kdb.size }}
 instances: {{ $kdb.replicas }}
 
+postgresql:
+  parameters:
+    max_parallel_workers: "32"
+    shared_buffers: 64MB
+    work_mem: 2MB
+
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:
