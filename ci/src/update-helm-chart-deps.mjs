@@ -19,15 +19,15 @@ const env = envalid.cleanEnv(process.env, {
 })
 
 // Path to the Chart.yaml file
-const chartFile = 'chart/chart-index/Chart.yaml'
-const chartsDir = 'charts'
+const chartFile = '../chart/chart-index/Chart.yaml'
+const chartsDir = '../charts'
 
 // Specify allowed upgrade types: 'minor', 'patch', or leave undefined for all
 const allowedUpgradeType = env.CI_UPDATE_TYPE
 
-const ciPushtoBranch = !env.CI_GIT_ONLY_LOCAL_CHANGES
-const ciCreateFeatureBranch = env.CI_GIT_ONLY_LOCAL_CHANGES
-const ciCreateGithubPr = !env.CI_GIT_ONLY_LOCAL_CHANGES && env.CI_GH_CREATE_PR
+const ciPushtoBranch = !env.CI_GIT_LOCAL_BRANCH_ONLY
+const ciCreateFeatureBranch = env.CI_GIT_LOCAL_BRANCH_ONLY
+const ciCreateGithubPr = !env.CI_GIT_LOCAL_BRANCH_ONLY && env.CI_GH_CREATE_PR
 const dependencyNameFilter = env.CI_HELM_CHART_NAME_FILTER || []
 const baseBranch = env.CI_GIT_BASELINE_BRANCH
 
