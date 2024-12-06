@@ -141,15 +141,15 @@ async function main() {
           const prBody = `This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`
           await $`gh pr create --title ${commitMessage} --body "${prBody}" --base ${baseBranch} --head ${branchName}`
         }
-
+      } catch (error) {
+        console.error('Error updating dependencies:', error)
+        continue
+      } finally {
         if (ciCreateFeatureBranch) {
           // Reset to the main branch for the next dependency
           await $`git checkout ${baseBranch}`
           await $`git reset --hard origin/${baseBranch}`
         }
-      } catch (error) {
-        console.error('Error updating dependencies:', error)
-        continue
       }
     }
 
