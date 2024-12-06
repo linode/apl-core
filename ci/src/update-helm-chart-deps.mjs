@@ -50,7 +50,6 @@ async function main() {
         )
         continue
       }
-
       console.log(`Checking updates for dependency: ${dependency.name}`)
 
       // Add the Helm repository (idempotent)
@@ -91,7 +90,15 @@ async function main() {
 
       // Determine the latest matching version
       const latestVersion = filteredVersions.sort(semver.rcompare)[0]
+      const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
 
+      remoteBranch = await $`git ls-remote --heads origin ${branchName}`
+      if (remoteBranch === '') {
+        console.log(
+          `Skipping  updates for dependency: ${dependency.name}: the remote branch ${branchName} already exists`,
+        )
+        continue
+      }
       if (latestVersion === currentVersion) {
         console.log(`${dependency.name} is already up to date.`)
         continue
@@ -101,7 +108,6 @@ async function main() {
 
       // Update the version in Chart.yaml
       dependency.version = latestVersion
-      const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
       const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion}`
       if (ciCreateFeatureBranch) {
         // Create a new branch for the update
