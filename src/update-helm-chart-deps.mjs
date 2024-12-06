@@ -1,25 +1,35 @@
 #!/usr/bin/env zx
 
+import envalid, { bool, json, str } from 'envalid'
 import fs from 'fs/promises'
 import yaml from 'js-yaml'
 import semver from 'semver'
 import { $ } from 'zx'
+
+const env = envalid.cleanEnv(process.env, {
+  CI_UPDATE_TYPE: str({
+    desc: 'Path to the YAML file to validate',
+    choices: ['patch', 'minor', 'major'],
+    default: 'minor',
+  }),
+  CI_HELM_CHART_NAME_FILTER: json({ desc: 'A list of names in json format' }),
+  CI_GH_CREATE_PR: bool({ desc: 'Create Github PR', default: true }),
+  CI_GIT_BASELINE_BRANCH: str({ desc: 'A baseline git branch', default: 'main' }),
+  CI_GIT_ONLY_LOCAL_CHANGES: bool({ desc: 'Perform changes only on local branches', default: false }),
+})
 
 // Path to the Chart.yaml file
 const chartFile = 'chart/chart-index/Chart.yaml'
 const chartsDir = 'charts'
 
 // Specify allowed upgrade types: 'minor', 'patch', or leave undefined for all
-const allowedUpgradeType = process.env.ALLOWED_UPGRADE_TYPE || 'minor'
+const allowedUpgradeType = env.CI_UPDATE_TYPE
 
-const ciPushtoBranch = true
-const ciCreateFeatureBranch = true
-const ciCreateGithubPr = true
-// FIXME: before merging this PR change dependencyNameFilter to []
-const dependencyNameFilter = ['ingress-nginx', 'cert-manager']
-// FIXME: before merging this PR change baseBranch to 'main'
-const baseBranch = 'APL-11'
-// const dependencyNameFilter = []
+const ciPushtoBranch = !env.CI_GIT_ONLY_LOCAL_CHANGES
+const ciCreateFeatureBranch = env.CI_GIT_ONLY_LOCAL_CHANGES
+const ciCreateGithubPr = !env.CI_GIT_ONLY_LOCAL_CHANGES && env.CI_GH_CREATE_PR
+const dependencyNameFilter = env.CI_HELM_CHART_NAME_FILTER || []
+const baseBranch = env.CI_GIT_BASELINE_BRANCH
 
 async function main() {
   try {
