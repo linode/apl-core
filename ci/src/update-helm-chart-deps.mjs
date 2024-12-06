@@ -99,7 +99,7 @@ async function main() {
         const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
         if (ciPushtoBranch) {
           const remoteBranch = await $`git ls-remote --heads origin ${branchName}`
-          if (remoteBranch.message !== '') {
+          if (remoteBranch.stdout !== '') {
             console.log(
               `Skipping  updates for dependency: ${dependency.name}: the remote branch ${branchName} already exists`,
             )
