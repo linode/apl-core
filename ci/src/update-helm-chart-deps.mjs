@@ -125,6 +125,7 @@ async function main() {
       const tempDir = `./tmp/charts/${dependency.name}`
       await $`mkdir -p ${tempDir}`
       await $`helm pull ${dependency.name}/${dependency.name} --version ${latestVersion} --destination ${tempDir}`
+      await $`rm -R ${chartsDir}/${dependency.name}`
       await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
 
       if (ciCreateFeatureBranch) {
