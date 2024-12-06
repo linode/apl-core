@@ -1266,10 +1266,10 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 1Gi
+                memory: 512Mi
               requests:
                 cpu: 50m
-                memory: 512Mi
+                memory: 128Mi
           harbor:
             size: 5Gi
             replicas: 2
@@ -1277,10 +1277,10 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 1Gi
+                memory: 512Mi
               requests:
                 cpu: 50m
-                memory: 256Mi
+                memory: 128Mi
           gitea:
             useOtomiDB: true
             imported: false
@@ -1289,10 +1289,10 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 1Gi
+                memory: 512Mi
               requests:
                 cpu: 50m
-                memory: 512Mi
+                memory: 128Mi
         obj:
           provider:
             type: disabled
