@@ -5,6 +5,9 @@
         "additionalArgs": {
             "type": "array"
         },
+        "additionalEnv": {
+            "type": "array"
+        },
         "affinity": {
             "type": "object"
         },
@@ -53,6 +56,14 @@
                 },
                 "runAsUser": {
                     "type": "integer"
+                },
+                "seccompProfile": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         },
@@ -64,8 +75,14 @@
                 }
             }
         },
+        "dnsPolicy": {
+            "type": "string"
+        },
         "fullnameOverride": {
             "type": "string"
+        },
+        "hostNetwork": {
+            "type": "boolean"
         },
         "image": {
             "type": "object",
@@ -83,6 +100,49 @@
         },
         "imagePullSecrets": {
             "type": "array"
+        },
+        "monitoring": {
+            "type": "object",
+            "properties": {
+                "grafanaDashboard": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "type": "object"
+                        },
+                        "configMapName": {
+                            "type": "string"
+                        },
+                        "create": {
+                            "type": "boolean"
+                        },
+                        "labels": {
+                            "type": "object"
+                        },
+                        "namespace": {
+                            "type": "string"
+                        },
+                        "sidecarLabel": {
+                            "type": "string"
+                        },
+                        "sidecarLabelValue": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "podMonitorAdditionalLabels": {
+                    "type": "object"
+                },
+                "podMonitorEnabled": {
+                    "type": "boolean"
+                },
+                "podMonitorMetricRelabelings": {
+                    "type": "array"
+                },
+                "podMonitorRelabelings": {
+                    "type": "array"
+                }
+            }
         },
         "monitoringQueriesConfigMap": {
             "type": "object",
@@ -129,6 +189,9 @@
         "rbac": {
             "type": "object",
             "properties": {
+                "aggregateClusterRoles": {
+                    "type": "boolean"
+                },
                 "create": {
                     "type": "boolean"
                 }
@@ -162,25 +225,6 @@
                 },
                 "name": {
                     "type": "string"
-                }
-            }
-        },
-        "test": {
-            "type": "object",
-            "properties": {
-                "image": {
-                    "type": "object",
-                    "properties": {
-                        "pullPolicy": {
-                            "type": "string"
-                        },
-                        "repository": {
-                            "type": "string"
-                        },
-                        "tag": {
-                            "type": "string"
-                        }
-                    }
                 }
             }
         },
