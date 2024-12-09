@@ -14,6 +14,12 @@ instances: {{ $gdb.replicas }}
 postgresMajor: {{ $gdb.postgresMajor }}
 {{- end }}
 
+postgresql:
+  parameters:
+    max_connections: "32"
+    shared_buffers: 64MB
+    work_mem: 2MB
+
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:

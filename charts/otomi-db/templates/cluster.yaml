@@ -13,6 +13,11 @@ spec:
     kind: ClusterImageCatalog
     name: postgresql
     major: {{ .Values.postgresMajor }}
+  postgresql:
+    parameters: {{- toYaml .Values.postgresql.parameters | nindent 6 }}
+  {{- with .Values.imageName }}
+  imageName: {{ . }}
+  {{- end }}
   storage:
     {{- with .Values.storage.storageClass }}
     storageClass: {{ . }}
