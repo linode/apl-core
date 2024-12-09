@@ -45,9 +45,16 @@ data:
   trivy.severity: {{ .Values.trivy.severity | quote }}
   trivy.slow: {{ .Values.trivy.slow | quote }}
   trivy.skipJavaDBUpdate: {{ .Values.trivy.skipJavaDBUpdate | quote }}
+  trivy.includeDevDeps: {{ .Values.trivy.includeDevDeps | quote }}
+  trivy.imageScanCacheDir: {{ .Values.trivy.imageScanCacheDir | quote }}
+  trivy.filesystemScanCacheDir: {{ .Values.trivy.filesystemScanCacheDir | quote }}
   trivy.dbRepository: "{{ .Values.trivy.dbRegistry }}/{{ .Values.trivy.dbRepository }}"
   trivy.javaDbRepository: "{{ .Values.trivy.javaDbRegistry }}/{{ .Values.trivy.javaDbRepository }}"
   trivy.command: {{ .Values.trivy.command | quote }}
+  trivy.sbomSources: {{ .Values.trivy.sbomSources | quote }}
+  {{- with .Values.trivy.skipFiles }}
+  trivy.skipFiles: {{ . | quote }}
+  {{- end }}
   {{- with .Values.trivy.skipDirs }}
   trivy.skipDirs: {{ . | quote }}
   {{- end }}
@@ -60,6 +67,9 @@ data:
   {{- with .Values.trivy.useBuiltinRegoPolicies }}
   trivy.useBuiltinRegoPolicies: {{ . | quote }}
   {{- end }}
+  {{- with .Values.trivy.useEmbeddedRegoPolicies }}
+  trivy.useEmbeddedRegoPolicies: {{ . | quote }}
+  {{- end }}
   {{- with .Values.trivy.offlineScan }}
   trivy.offlineScan: {{ . | quote }}
   {{- end }}
@@ -70,9 +80,11 @@ data:
   {{- with .Values.trivy.timeout }}
   trivy.timeout: {{ . | quote }}
   {{- end }}
-  {{- with .Values.trivy.ignoreFile }}
+  {{- if .Values.trivy.ignoreFile }}
   trivy.ignoreFile: |
-    {{- . | trim | nindent 4 }}
+{{- range .Values.trivy.ignoreFile }}
+    {{ . | indent 4 }}
+  {{- end }}
   {{- end }}
   {{- range $k, $v := .Values.trivy }}
   {{- if hasPrefix "ignorePolicy" $k }}
@@ -116,6 +128,7 @@ data:
   TRIVY_DEBUG: {{ .Values.trivy.debug | quote }}
   TRIVY_SKIP_DB_UPDATE: "false"
   TRIVY_DB_REPOSITORY: "{{ .Values.trivy.dbRegistry }}/{{ .Values.trivy.dbRepository }}"
+  TRIVY_INSECURE: "{{ .Values.operator.builtInServerRegistryInsecure }}"
   {{- end }}
 {{- end }}
 {{- end }}

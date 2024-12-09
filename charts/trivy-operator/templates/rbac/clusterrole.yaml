@@ -16,5 +16,11 @@
   - serviceaccounts
   verbs:
   - get
+- apiGroups:
+    - ""
+  resources:
+    - nodes/proxy
+  verbs:
+    - get
 {{- end }}
 {{- end }}
