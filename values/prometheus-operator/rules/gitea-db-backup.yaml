@@ -1,0 +1,10 @@
+groups:
+  - name: gitea-db-backup
+    rules:
+      - alert: BackupGiteaDbFailing
+        expr: time() - cnpg_collector_last_failed_backup_timestamp{namespace="gitea",pod=~"gitea-db-1"} > 86400 or time() - cnpg_collector_last_failed_backup_timestamp{namespace="gitea",pod=~"gitea-db-2"} > 86400
+        labels:
+          severity: warning
+        annotations:
+          description: 'The Gitea database backup for DB {{ $labels.pod }} failed at {{ $value | humanizeTimestamp }}'
+          summary: Backup of {{ $labels.pod }} failed
