@@ -3031,7 +3031,7 @@ properties:
         additionalProperties: false
         properties:
           username:
-            $ref: '#/definitions/idName'
+            $ref: '#/definitions/wordCharacterPattern'
           password:
             type: string
             x-secret: ''
