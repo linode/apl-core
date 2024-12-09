@@ -195,9 +195,9 @@ environments:
           istio:
             enabled: true
           metrics-server:
-            enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "aws" "digitalocean" "linode")) }}
+            enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
           minio:
-            enabled: {{ eq $obj.type "minioLocal" }}
+            enabled: {{ $a | get "minio.enabled" false }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           sealed-secrets:
