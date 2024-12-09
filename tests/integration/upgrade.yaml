@@ -61,9 +61,9 @@ teamConfig:
         tag: v0.0.1
         mode:
           docker:
-            repoUrl: https://github.com/redkubes/nodejs-helloworld
+            repoUrl: https://github.com/linode/apl-nodejs-helloworld
             revision: HEAD
-            path: ./Docker
+            path: ./Dockerfile
           type: docker
       - name: demo-java-maven
         tag: v0.0.1
@@ -110,7 +110,7 @@ teamConfig:
         type: public
     workloads:
       - name: nodejs-helloworld
-        url: https://github.com/redkubes/nodejs-helloworld.git
+        url: https://github.com/linode/apl-nodejs-helloworld.git
         path: /
         revision: HEAD
       - name: httpbin
@@ -131,7 +131,7 @@ teamConfig:
     services: []
     workloads:
       - name: nodejs-helloworld
-        url: https://github.com/redkubes/nodejs-helloworld.git
+        url: https://github.com/linode/apl-nodejs-helloworld.git
         path: /
         revision: HEAD
 files:
