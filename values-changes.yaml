@@ -320,6 +320,6 @@ changes:
     deletions:
       - 'teamConfig.{team}.managedMonitoring.prometheus'
     additions:
-      - databases.gitea.imageName: ghcr.io/cloudnative-pg/postgresql:15.10
-      - databases.keycloak.imageName: ghcr.io/cloudnative-pg/postgresql:15.10
-      - databases.harbor.imageName: ghcr.io/cloudnative-pg/postgresql:15.10
+      - databases.gitea.postgresMajor: 15
+      - databases.keycloak.postgresMajor: 15
+      - databases.harbor.postgresMajor: 15
