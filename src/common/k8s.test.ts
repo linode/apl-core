@@ -160,12 +160,11 @@ describe('StatefulSet tests', () => {
         ),
       ).resolves.not.toThrow()
 
-      expect(debug).toHaveBeenNthCalledWith(1, 'sts/argocd-application-controller pod has not desired resources')
       expect(debug).toHaveBeenNthCalledWith(
-        2,
+        1,
         'sts/argocd-application-controller has been patched with resources: {"requests":{"cpu":"500m","memory":"1Gi"},"limits":{"cpu":"1","memory":"2Gi"}}',
       )
-      expect(debug).toHaveBeenNthCalledWith(3, 'sts/argocd-application-controller pods restarted')
+      expect(debug).toHaveBeenNthCalledWith(2, 'sts/argocd-application-controller pods restarted')
     })
 
     it('should log an error if no pods are found', async () => {
@@ -218,7 +217,7 @@ describe('StatefulSet tests', () => {
         mockDebugger,
       )
 
-      expect(debug).toBeCalledTimes(0)
+      expect(debug).toBeCalledTimes(1)
     })
 
     it('should log an error if an exception occurs', async () => {
