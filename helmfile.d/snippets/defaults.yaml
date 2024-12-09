@@ -1267,10 +1267,10 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 512Mi
+                memory: 1Gi
               requests:
                 cpu: 50m
-                memory: 128Mi
+                memory: 512Mi
           harbor:
             size: 5Gi
             postgresMajor: 17
@@ -1279,10 +1279,10 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 512Mi
+                memory: 1Gi
               requests:
                 cpu: 50m
-                memory: 128Mi
+                memory: 256Mi
           gitea:
             useOtomiDB: true
             postgresMajor: 17
@@ -1292,10 +1292,10 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 512Mi
+                memory: 1Gi
               requests:
                 cpu: 50m
-                memory: 128Mi
+                memory: 512Mi
         obj:
           provider:
             type: disabled
