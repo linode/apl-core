@@ -10,7 +10,7 @@ storage:
 instances: {{ $hdb.replicas }}
 
 {{- if $hdb.imageName }}
-imageName: {{ . }}
+imageName: {{ $hdb.imageName }}
 {{- else }}
 postgresMajor: {{ $hdb.postgresMajor }}
 {{- end }}

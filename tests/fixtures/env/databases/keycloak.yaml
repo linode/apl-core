@@ -1,3 +1,4 @@
 databases:
     keycloak:
         imported: false
+        imageName: 'ghcr.io/cloudnative-pg/postgresql:15.10'
