@@ -27,7 +27,7 @@ admissionController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
   container:
     resources: {{- $kv.resources.admissionController | toYaml | nindent 6 }}
 
@@ -42,7 +42,7 @@ cleanupController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
 
 backgroundController:
   {{- if eq $kv.mode "DevTest" }}
@@ -55,7 +55,7 @@ backgroundController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
 
 reportsController:
   {{- if eq $kv.mode "DevTest" }}
@@ -68,7 +68,7 @@ reportsController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
 
 features:
   logging:
@@ -88,6 +88,6 @@ metricsConfig:
   namespaces:
     include:
       {{- range $id, $team := $v.teamConfig }}
-      - {{ $id }}
+      - team-{{ $id }}
       {{- end }}
       
