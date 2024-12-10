@@ -10,7 +10,7 @@ on:
 jobs:
   start-helm-update-ci:
     name: Helm patch update
-    uses: .github/workflows/helm-chart-updates.yml
+    uses: ./github/workflows/helm-chart-updates.yml
     secrets: inherit
     with:
       CI_UPDATE_TYPE: patch
