@@ -11,6 +11,12 @@ storage:
 instances: {{ $kdb.replicas }}
 
 {{- if $kdb.imageName }}
+imageName: {{ . }}
+{{- else }}
+postgresMajor: {{ $kdb.postgresMajor }}
+{{- end }}
+
+{{- if $kdb.imageName }}
 imageName: {{ $kdb.imageName }}
 {{- end }}
 

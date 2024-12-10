@@ -1263,7 +1263,8 @@ environments:
             imported: false
             size: 5Gi
             replicas: 2
-            imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+            postgresMajor: 17
+            imageName: null
             resources:
               limits:
                 cpu: "1"
@@ -1274,7 +1275,8 @@ environments:
           harbor:
             size: 5Gi
             replicas: 2
-            imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+            postgresMajor: 17
+            imageName: null
             coreDatabase: registry
             resources:
               limits:
@@ -1288,7 +1290,8 @@ environments:
             imported: false
             size: 5Gi
             replicas: 2
-            imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+            postgresMajor: 17
+            imageName: null
             resources:
               limits:
                 cpu: "1"
