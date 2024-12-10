@@ -45,7 +45,10 @@ jobs:
           echo 'CI_UPDATE_TYPE: ${{ inputs.CI_UPDATE_TYPE }}'
           echo 'CI_HELM_CHART_NAME_FILTER: ${{ inputs.CI_HELM_CHART_NAME_FILTER }}'
           echo 'CI_GIT_BASELINE_BRANCH: ${{ inputs.CI_GIT_BASELINE_BRANCH }}'
-
+      - name: Set env
+        run: |
+          git config --global user.email $BOT_EMAIL
+          git config --global user.name $BOT_USERNAME
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Node.js
@@ -61,6 +64,7 @@ jobs:
           CI_UPDATE_TYPE: ${{ inputs.CI_UPDATE_TYPE }}
           CI_HELM_CHART_NAME_FILTER: ${{ inputs.CI_HELM_CHART_NAME_FILTER }}
           CI_GIT_BASELINE_BRANCH: ${{ inputs.CI_GIT_BASELINE_BRANCH }}
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: |
           cd ci/ 
           npm run update-helm-chart-deps
