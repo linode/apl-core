@@ -211,7 +211,7 @@ function crypt() {
         [ -n "$VERBOSE" ] && echo "Skipping encryption for $file as it is not changed."
       fi
     else
-      if helm secrets decrypt -i $file >$out; then
+      if helm secrets decrypt "$file" > "${file}.dec"; then
         # we correct timestamp of decrypted file to match source file,
         # in order to detect changes for conditional encryption
         [ -n "$VERBOSE" ] && echo "Setting timestamp of decrypted file to that of source file."

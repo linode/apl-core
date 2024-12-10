@@ -15,7 +15,7 @@ export interface Arguments extends BasicArguments {
 EventEmitter.defaultMaxListeners = 20
 
 enum CryptType {
-  ENCRYPT = 'helm secrets encrypt',
+  ENCRYPT = 'helm secrets encrypt -i',
   DECRYPT = 'helm secrets decrypt',
   ROTATE = 'sops --input-type=yaml --output-type=yaml -i -r',
 }
@@ -62,6 +62,11 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
       d.debug(`${crypt.cmd} ${file}`)
       const result = $`${crypt.cmd.split(' ')} ${file}`
       return result.then(async (res) => {
+        d.info(`Result: ${res}`)
+        if (crypt.cmd === CryptType.DECRYPT) {
+          const outputFile = `${file}.dec`
+          await writeFile(outputFile, res.stdout)
+        }
         if (crypt.post) await crypt.post(file)
         return res
       })

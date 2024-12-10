@@ -5,6 +5,9 @@ cluster:
   domainSuffix: local.host
 otomi:
   version: 'main'
+kms:
+  sops:
+    provider: age
 apps:
   metrics-server:
     enabled: false
