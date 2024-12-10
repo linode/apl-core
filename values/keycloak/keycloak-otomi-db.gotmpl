@@ -10,6 +10,10 @@ storage:
   size: {{ $kdb.size }}
 instances: {{ $kdb.replicas }}
 
+{{- if $kdb.imageName }}
+imageName: {{ $kdb.imageName }}
+{{- end }}
+
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:
