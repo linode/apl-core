@@ -7,7 +7,6 @@ on:
         required: true
       CI_HELM_CHART_NAME_FILTER:
         type: string
-        required: true
       CI_GIT_BASELINE_BRANCH:
         type: string
         default: 'main'
@@ -44,6 +43,9 @@ jobs:
       - name: Print user input
         run: |
           echo 'CI_UPDATE_TYPE: ${{ inputs.CI_UPDATE_TYPE }}'
+          echo 'CI_HELM_CHART_NAME_FILTER: ${{ inputs.CI_HELM_CHART_NAME_FILTER }}'
+          echo 'CI_GIT_BASELINE_BRANCH: ${{ inputs.CI_GIT_BASELINE_BRANCH }}'
+
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Node.js
@@ -56,9 +58,9 @@ jobs:
           npm install
       - name: Update helm charts
         env:
-          CI_UPDATE_TYPE: ${{ github.event.inputs.CI_UPDATE_TYPE }}
-          CI_HELM_CHART_NAME_FILTER: ${{ github.event.inputs.CI_HELM_CHART_NAME_FILTER }}
-          CI_GIT_BASELINE_BRANCH: ${{ github.event.inputs.CI_GIT_BASELINE_BRANCH }}
+          CI_UPDATE_TYPE: ${{ inputs.CI_UPDATE_TYPE }}
+          CI_HELM_CHART_NAME_FILTER: ${{ inputs.CI_HELM_CHART_NAME_FILTER }}
+          CI_GIT_BASELINE_BRANCH: ${{ inputs.CI_GIT_BASELINE_BRANCH }}
         run: |
           cd ci/ 
           npm run update-helm-chart-deps
