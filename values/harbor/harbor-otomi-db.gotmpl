@@ -15,10 +15,6 @@ imageName: {{ $hdb.imageName }}
 postgresMajor: {{ $hdb.postgresMajor }}
 {{- end }}
 
-{{- if $hdb.imageName }}
-imageName: {{ $hdb.imageName }}
-{{- end }}
-
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:

@@ -16,10 +16,6 @@ imageName: {{ $gdb.imageName }}
 postgresMajor: {{ $gdb.postgresMajor }}
 {{- end }}
 
-{{- if $gdb.imageName }}
-imageName: {{ $gdb.imageName }}
-{{- end }}
-
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:
