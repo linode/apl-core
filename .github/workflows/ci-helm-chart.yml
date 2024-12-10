@@ -1,0 +1,63 @@
+name: Helm chart updates
+on:
+  workflow_call:
+    inputs:
+      CI_UPDATE_TYPE:
+        type: string
+        required: true
+      CI_HELM_CHART_NAME_FILTER:
+        type: string
+        required: true
+      CI_GIT_BASELINE_BRANCH:
+        type: string
+        default: 'main'
+  workflow_dispatch:
+    inputs:
+      CI_UPDATE_TYPE:
+        description: 'Specify the type of update (e.g., patch, minor, major)'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: 'patch'
+      CI_HELM_CHART_NAME_FILTER:
+        description: 'Filter for Helm chart names (list in JSON format)'
+        required: true
+        default: '[]'
+      CI_GIT_BASELINE_BRANCH:
+        description: 'Baseline branch for Git operations'
+        required: true
+        default: 'main'
+
+env:
+  GIT_USER: svcAPLBot
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+
+jobs:
+  preprocess-input:
+    name: Helm chart update
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print user input
+        run: |
+          echo 'CI_UPDATE_TYPE: ${{ inputs.CI_UPDATE_TYPE }}'
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install packages
+        run: |
+          cd ci/
+          npm install
+      - name: Update helm charts
+        env:
+          CI_UPDATE_TYPE: ${{ github.event.inputs.CI_UPDATE_TYPE }}
+          CI_HELM_CHART_NAME_FILTER: ${{ github.event.inputs.CI_HELM_CHART_NAME_FILTER }}
+          CI_GIT_BASELINE_BRANCH: ${{ github.event.inputs.CI_GIT_BASELINE_BRANCH }}
+        run: |
+          cd ci/ 
+          npm run update-helm-chart-deps

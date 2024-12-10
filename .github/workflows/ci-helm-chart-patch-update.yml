@@ -1,0 +1,17 @@
+name: CI - helm chart patch update
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+on:
+  push:
+    branches:
+      - APL-11
+  schedule:
+    - cron: '30 0 * * *'
+
+jobs:
+  start-helm-update-ci:
+    name: Helm patch update
+    uses: .github/workflows/helm-chart-updates.yml
+    secrets: inherit
+    with:
+      CI_UPDATE_TYPE: patch
+      CI_HELM_CHART_NAME_FILTER: '[]'
