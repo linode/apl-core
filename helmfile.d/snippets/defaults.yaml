@@ -1261,7 +1261,6 @@ environments:
         databases:
           keycloak:
             imported: false
-            postgresMajor: 17
             size: 5Gi
             replicas: 2
             resources:
@@ -1273,7 +1272,6 @@ environments:
                 memory: 512Mi
           harbor:
             size: 5Gi
-            postgresMajor: 17
             replicas: 2
             coreDatabase: registry
             resources:
@@ -1285,7 +1283,6 @@ environments:
                 memory: 256Mi
           gitea:
             useOtomiDB: true
-            postgresMajor: 17
             imported: false
             size: 5Gi
             replicas: 2
