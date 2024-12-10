@@ -8,7 +8,10 @@ name: harbor-otomi-db
 storage:
   size: {{ $hdb.size }}
 instances: {{ $hdb.replicas }}
-{{- if $hdb.postgresMajor }}
+
+{{- if $hdb.imageName }}
+imageName: {{ $hdb.imageName }}
+{{- else }}
 postgresMajor: {{ $hdb.postgresMajor }}
 {{- end }}
 

@@ -1261,9 +1261,10 @@ environments:
         databases:
           keycloak:
             imported: false
-            postgresMajor: 17
             size: 5Gi
             replicas: 2
+            postgresMajor: 17
+            imageName: null
             resources:
               limits:
                 cpu: "1"
@@ -1273,8 +1274,9 @@ environments:
                 memory: 512Mi
           harbor:
             size: 5Gi
-            postgresMajor: 17
             replicas: 2
+            postgresMajor: 17
+            imageName: null
             coreDatabase: registry
             resources:
               limits:
@@ -1285,10 +1287,11 @@ environments:
                 memory: 256Mi
           gitea:
             useOtomiDB: true
-            postgresMajor: 17
             imported: false
             size: 5Gi
             replicas: 2
+            postgresMajor: 17
+            imageName: null
             resources:
               limits:
                 cpu: "1"
@@ -1303,13 +1306,13 @@ environments:
           database:
             harbor:
               enabled: false
-              schedule: '0 0 0 * * *'
+              schedule: '0 0 * * *'
             gitea:
               enabled: false
-              schedule: '0 0 0 * * *'
+              schedule: '0 0 * * *'
             keycloak:
               enabled: false
-              schedule: '0 0 0 * * *'
+              schedule: '0 0 * * *'
           gitea:
             enabled: false
         cluster:

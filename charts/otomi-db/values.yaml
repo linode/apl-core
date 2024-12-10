@@ -3,7 +3,6 @@ labels:
   prometheus: system
   helm.sh/resource-policy: keep
 instances: 2
-postgresMajor: 17
 storage:
   storageClass: ""
   size: 5Gi

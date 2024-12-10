@@ -9,10 +9,12 @@ name: keycloak-db
 storage:
   size: {{ $kdb.size }}
 instances: {{ $kdb.replicas }}
-{{- if $kdb.postgresMajor }}
+
+{{- if $kdb.imageName }}
+imageName: {{ $kdb.imageName }}
+{{- else }}
 postgresMajor: {{ $kdb.postgresMajor }}
 {{- end }}
-
 
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}

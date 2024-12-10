@@ -11,7 +11,7 @@ spec:
   suspend: {{ .Values.backup.suspend }}
   immediate: {{ .Values.backup.immediate }}
   target: {{ .Values.backup.target }}
-  schedule: {{ .Values.backup.schedule | quote }}
+  schedule: {{ printf "0 %s" .Values.backup.schedule | quote }}
   backupOwnerReference: {{ .Values.backup.backupOwnerReference }}
   cluster:
     name: {{ .Values.name }}
