@@ -15,3 +15,4 @@ jobs:
     with:
       CI_UPDATE_TYPE: patch
       CI_HELM_CHART_NAME_FILTER: '[]'
+      CI_GIT_BASELINE_BRANCH: APL-11
