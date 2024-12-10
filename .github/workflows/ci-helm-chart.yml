@@ -34,7 +34,8 @@ env:
   GIT_USER: svcAPLBot
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
-
+  CHECK_CONTEXT: continuous-integration/integration-test
+  COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
 jobs:
   preprocess-input:
     name: Helm chart update
