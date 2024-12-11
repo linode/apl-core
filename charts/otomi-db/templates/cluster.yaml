@@ -10,12 +10,6 @@ spec:
   instances: {{ .Values.instances }}
   {{- with .Values.imageName }}
   imageName: {{ . }}
-  {{- else }}
-  imageCatalogRef:
-    apiGroup: postgresql.cnpg.io
-    kind: ClusterImageCatalog
-    name: platform
-    major: {{ .Values.postgresMajor }}
   {{- end }}
   storage:
     {{- with .Values.storage.storageClass }}

@@ -10,12 +10,6 @@ storage:
   size: {{ $gdb.size }}
 instances: {{ $gdb.replicas }}
 
-{{- if $gdb.imageName }}
-imageName: {{ $gdb.imageName }}
-{{- else }}
-postgresMajor: {{ $gdb.postgresMajor }}
-{{- end }}
-
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:

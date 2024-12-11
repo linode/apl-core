@@ -1263,8 +1263,6 @@ environments:
             imported: false
             size: 5Gi
             replicas: 2
-            postgresMajor: 17
-            imageName: null
             resources:
               limits:
                 cpu: "1"
@@ -1275,8 +1273,6 @@ environments:
           harbor:
             size: 5Gi
             replicas: 2
-            postgresMajor: 17
-            imageName: null
             coreDatabase: registry
             resources:
               limits:
@@ -1290,8 +1286,6 @@ environments:
             imported: false
             size: 5Gi
             replicas: 2
-            postgresMajor: 17
-            imageName: null
             resources:
               limits:
                 cpu: "1"
@@ -1306,13 +1300,10 @@ environments:
           database:
             harbor:
               enabled: false
-              schedule: '0 0 * * *'
             gitea:
               enabled: false
-              schedule: '0 0 * * *'
             keycloak:
               enabled: false
-              schedule: '0 0 * * *'
           gitea:
             enabled: false
         cluster:
@@ -1341,4 +1332,4 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes
-        version: 32
+        version: 28
