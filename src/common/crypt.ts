@@ -62,10 +62,9 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
       d.debug(`${crypt.cmd} ${file}`)
       const result = $`${crypt.cmd.split(' ')} ${file}`
       return result.then(async (res) => {
-        d.info(`Result: ${res}`)
         if (crypt.cmd === CryptType.DECRYPT) {
           const outputFile = `${file}.dec`
-          await writeFile(outputFile, res.stdout)
+          await $`echo ${res.stdout} > ${outputFile}`
         }
         if (crypt.post) await crypt.post(file)
         return res
@@ -177,8 +176,8 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
 
         const encTS = await stat(absFilePath)
         const decTS = await stat(`${absFilePath}.dec`)
-        d.debug('encTS.mtime: ', encTS.mtime)
-        d.debug('decTS.mtime: ', decTS.mtime)
+        d.debug(`${file} encTS.mtime: `, encTS.mtime)
+        d.debug(`${file} decTS.mtime: `, decTS.mtime)
         const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
         if (timeDiff > 1) {
           d.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
