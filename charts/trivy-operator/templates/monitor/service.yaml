@@ -8,12 +8,17 @@ metadata:
   annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{ if .Values.service.headless }}
+  {{- if and (.Values.service.headless) (eq .Values.service.type "ClusterIP") }}
   clusterIP: None
-  {{ end }}
+  {{- end }}
   ports:
     - name: metrics
       port: {{ .Values.service.metricsPort }}
       targetPort: metrics
+      {{- if not (empty .Values.service.nodePort) }}
+      nodePort: {{ .Values.service.nodePort }}
+      {{- end }}
       protocol: TCP
+      appProtocol: {{ .Values.service.metricsAppProtocol }}
   selector: {{- include "trivy-operator.selectorLabels" . | nindent 4 }}
+  type: {{ .Values.service.type }}
