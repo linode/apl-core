@@ -320,9 +320,9 @@ changes:
     deletions:
       - 'teamConfig.{team}.managedMonitoring.prometheus'
     mutations:
-      - databases.keycloak.resources.limits.memory: '.prev | replace("1Gi", "128Mi")'
-      - databases.keycloak.resources.requests.memory: '.prev | replace("512Mi", "64Mi")'
-      - databases.gitea.resources.limits.memory: '.prev | replace("1Gi", "128Mi")'
-      - databases.gitea.resources.requests.memory: '.prev | replace("512Mi", "64Mi")'
-      - databases.harbor.resources.limits.memory: '.prev | replace("1Gi", "128Mi")'
-      - databases.harbor.resources.requests.memory: '.prev | replace("512Mi", "64Mi")'
+      - databases.keycloak.resources.limits.memory: '128Mi'
+      - databases.keycloak.resources.requests.memory: '64Mi'
+      - databases.gitea.resources.limits.memory: '128Mi'
+      - databases.gitea.resources.requests.memory: '64Mi'
+      - databases.harbor.resources.limits.memory: '128Mi'
+      - databases.harbor.resources.requests.memory: '64Mi'
