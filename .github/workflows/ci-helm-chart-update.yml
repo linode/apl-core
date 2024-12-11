@@ -1,9 +1,6 @@
 name: CI - helm chart update
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 on:
-  push:
-    branches:
-      - APL-11
   schedule:
     - cron: '30 0 * * *'
 
@@ -14,5 +11,3 @@ jobs:
     secrets: inherit
     with:
       CI_UPDATE_TYPE: minor
-      CI_HELM_CHART_NAME_FILTER: '["cert-manager", "harbor", "promtail"]'
-      CI_GIT_BASELINE_BRANCH: APL-11
