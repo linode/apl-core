@@ -1,0 +1,71 @@
+name: Helm chart updates
+on:
+  workflow_call:
+    inputs:
+      CI_UPDATE_TYPE:
+        type: string
+        required: true
+      CI_HELM_CHART_NAME_FILTER:
+        type: string
+        default: '[]'
+      CI_GIT_BASELINE_BRANCH:
+        type: string
+        default: 'main'
+  workflow_dispatch:
+    inputs:
+      CI_UPDATE_TYPE:
+        description: 'Specify the type of update (e.g., patch, minor, major)'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: 'patch'
+      CI_HELM_CHART_NAME_FILTER:
+        description: 'Filter for Helm chart names (list in JSON format)'
+        required: true
+        default: '[]'
+      CI_GIT_BASELINE_BRANCH:
+        description: 'Baseline branch for Git operations'
+        required: true
+        default: 'main'
+
+env:
+  GIT_USER: svcAPLBot
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+  CHECK_CONTEXT: continuous-integration/integration-test
+  COMMIT_ID: '${{ github.event.pull_request.head.sha || github.sha }}'
+jobs:
+  preprocess-input:
+    name: Helm chart update
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print user input
+        run: |
+          echo 'CI_UPDATE_TYPE: ${{ inputs.CI_UPDATE_TYPE }}'
+          echo 'CI_HELM_CHART_NAME_FILTER: ${{ inputs.CI_HELM_CHART_NAME_FILTER }}'
+          echo 'CI_GIT_BASELINE_BRANCH: ${{ inputs.CI_GIT_BASELINE_BRANCH }}'
+      - name: Set env
+        run: |
+          git config --global user.email $BOT_EMAIL
+          git config --global user.name $BOT_USERNAME
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - name: Install packages
+        run: |
+          cd ci/
+          npm install
+      - name: Update helm charts
+        env:
+          CI_UPDATE_TYPE: ${{ inputs.CI_UPDATE_TYPE }}
+          CI_HELM_CHART_NAME_FILTER: ${{ inputs.CI_HELM_CHART_NAME_FILTER }}
+          CI_GIT_BASELINE_BRANCH: ${{ inputs.CI_GIT_BASELINE_BRANCH }}
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          cd ci/ 
+          npm run update-helm-chart-deps
