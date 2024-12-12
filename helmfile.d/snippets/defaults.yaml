@@ -1266,7 +1266,7 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 128Mi
+                memory: 192Mi
               requests:
                 cpu: 50m
                 memory: 64Mi
@@ -1277,7 +1277,7 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 128Mi
+                memory: 192Mi
               requests:
                 cpu: 50m
                 memory: 64Mi
@@ -1289,7 +1289,7 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 128Mi
+                memory: 192Mi
               requests:
                 cpu: 50m
                 memory: 64Mi
