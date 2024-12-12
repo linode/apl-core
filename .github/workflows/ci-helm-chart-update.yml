@@ -1,0 +1,13 @@
+name: CI - helm chart update
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+on:
+  schedule:
+    - cron: '30 0 * * *'
+
+jobs:
+  start-helm-update-ci:
+    name: Helm chart minor update
+    uses: ./.github/workflows/ci-helm-chart.yml
+    secrets: inherit
+    with:
+      CI_UPDATE_TYPE: minor
