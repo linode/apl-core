@@ -15,7 +15,7 @@ export interface Arguments extends BasicArguments {
 EventEmitter.defaultMaxListeners = 20
 
 enum CryptType {
-  ENCRYPT = 'helm secrets encrypt -i',
+  ENCRYPT = 'helm secrets -q encrypt -i',
   DECRYPT = 'helm secrets decrypt',
   ROTATE = 'sops --input-type=yaml --output-type=yaml -i -r',
 }
@@ -60,15 +60,27 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
       d.debug(`${crypt.cmd} ${file}`)
-      const result = $`${crypt.cmd.split(' ')} ${file}`
-      return result.then(async (res) => {
-        if (crypt.cmd === CryptType.DECRYPT) {
-          const outputFile = `${file}.dec`
-          await $`echo ${res.stdout} > ${outputFile}`
-        }
-        if (crypt.post) await crypt.post(file)
-        return res
-      })
+      const result = $`${crypt.cmd.split(' ')} ${file}`.quiet()
+      return result
+        .then(async (res) => {
+          if (crypt.cmd === CryptType.DECRYPT) {
+            const outputFile = `${file}.dec`
+            await $`echo ${res.stdout} > ${outputFile}`
+          }
+          if (crypt.post) await crypt.post(file)
+          return res
+        })
+        .catch(async (error) => {
+          if (error.message.includes('Already encrypted')) {
+            const res = await $`helm secrets encrypt ${file}.dec`
+            await $`echo ${res.stdout} > ${file}`
+            if (crypt.post) await crypt.post(file)
+            return res
+          } else {
+            d.error(error)
+            throw error
+          }
+        })
     }
     return undefined
   })
