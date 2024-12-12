@@ -256,7 +256,7 @@ definitions:
         $ref: '#/definitions/k8sContext'
         description: Optional. Must be set for development mode and must point to an existing context in KUBECONFIG.
       name:
-        $ref: '#/definitions/clusterName'
+        $ref: '#/definitions/idName'
         description: Short name that will be used in construction of cluster domain and messaging.
       owner:
         $ref: '#/definitions/idName'
@@ -267,9 +267,6 @@ definitions:
     required:
       - name
       - provider
-  clusterName:
-    $ref: '#/definitions/wordCharacterPattern'
-    type: string
   containerSpecNoSec:
     properties:
       image:
@@ -314,7 +311,7 @@ definitions:
     description: PV backups
     properties:
       name:
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: '#/definitions/idName'
       ttl:
         $ref: '#/definitions/backupTtl'
       schedule:
@@ -621,7 +618,7 @@ definitions:
     type: object
     properties:
       name:
-        type: string
+        $ref: '#/definitions/idName'
         title: Network Policy name
         description: 'A unique name for the network policy'
       ruleType:
@@ -656,7 +653,7 @@ definitions:
                       title: Selector label value
                       description: 'The value of the Pod selector label'
                     fromNamespace:
-                      type: string
+                      $ref: '#/definitions/idName'
                       title: Namespace name
                       description: 'The name of the namespace'
                   required:
@@ -1030,9 +1027,8 @@ definitions:
         description: Points to the backing k8s service (only used when 'svc' is set).
       ingressClassName:
         description: Ingress class name
-        type: string
+        $ref: '#/definitions/idName'
         default: platform
-        pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])+$'
       svc:
         $ref: '#/definitions/idName'
         description: When given a backing k8s service is expected to be deployed with this name, which will be exposed through this team service.
@@ -1051,7 +1047,7 @@ definitions:
             type: string
           tlsSecretName:
             description: Kubernetes secret name of type TLS (not required if the tlsPass flag is set to true).
-            type: string
+            $ref: '#/definitions/idName'
       type:
         nullable: true
         default: public
@@ -1247,11 +1243,11 @@ definitions:
       properties:
         name:
           description: Name must match mount name.
-          $ref: '#/definitions/wordCharacterPattern'
+          $ref: '#/definitions/idName'
         configMap:
           properties:
             name:
-              $ref: '#/definitions/wordCharacterPattern'
+              $ref: '#/definitions/idName'
     type: array
   wordCharacterPattern:
     type: string
@@ -1263,7 +1259,7 @@ definitions:
     properties:
       name:
         description: Name of the project
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: '#/definitions/idName'
     required:
       - name
   policies:
@@ -1274,7 +1270,7 @@ definitions:
     properties:
       name:
         description: Name of the image
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: '#/definitions/idName'
       tag:
         description: Image tag
         $ref: '#/definitions/imageTag'
@@ -1291,7 +1287,7 @@ definitions:
         description: Select to scan source
       secretName:
         description: The name of the secret with the credentials of the external private Git repository
-        type: string
+        $ref: '#/definitions/idName'
       mode:
         properties:
           docker:
@@ -1350,9 +1346,9 @@ definitions:
     description: Define location of code to build
     properties:
       name:
-        type: string
+        $ref: '#/definitions/idName'
       namespace:
-        type: string
+        $ref: '#/definitions/idName'
       immutable:
         description: 'Immutable, if set to true, ensures that data stored in the Secret cannot be updated (only object metadata can be modified).'
         type: boolean
@@ -1383,7 +1379,7 @@ definitions:
     description: Define location of the application's manifests or chart
     properties:
       name:
-        $ref: '#/definitions/wordCharacterPattern'
+        $ref: '#/definitions/idName'
       url:
         description: URL to either Helm or Git repository
         $ref: '#/definitions/url'
@@ -1415,7 +1411,7 @@ definitions:
             default: ''
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
-        $ref: '#/definitions/domain'
+        $ref: '#/definitions/idName'
       imageUpdateStrategy:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
@@ -1604,7 +1600,7 @@ properties:
             description: |
               The name of a custom secret in the istio-system namespace that contains a trusted certificate and private key.
               To be used with issuer externally-managed-tls-secret.
-            type: string
+            $ref: '#/definitions/idName'
           customRootCA:
             x-secret: ''
             type: string
