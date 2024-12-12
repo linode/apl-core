@@ -27,6 +27,26 @@ spec:
         - resources:
             kinds:
               - Pod
+      exclude:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              selector:
+                matchLabels:
+                  app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
+          - resources:
+              kinds:
+                - Pod
+              selector:
+                matchLabels:
+                  app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
+          - resources:
+              kinds:
+                - Pod
+              selector:
+                matchLabels:
+                  app.kubernetes.io/instance: tekton-dashboard-{{ $v.teamId }}
       skipBackgroundRequests: true
       validate:
         message: >-
