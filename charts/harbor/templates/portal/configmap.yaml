@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "{{ template "harbor.portal" . }}"
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
 data:
@@ -30,8 +31,12 @@ data:
             ssl_certificate_key /etc/harbor/ssl/portal/tls.key;
 
             # Recommendations from https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
-            ssl_protocols TLSv1.2;
+            ssl_protocols TLSv1.2 TLSv1.3;
+            {{- if .Values.internalTLS.strong_ssl_ciphers }}
+            ssl_ciphers ECDHE+AESGCM:DHE+AESGCM:ECDHE+RSA+SHA256:DHE+RSA+SHA256:!AES128;
+            {{ else }}
             ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
+            {{- end }}
             ssl_prefer_server_ciphers on;
             ssl_session_cache shared:SSL:10m;
     {{- else }}
@@ -50,6 +55,9 @@ data:
             gzip_min_length 1000;
             gzip_proxied expired no-cache no-store private auth;
             gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+            location /devcenter-api-2.0 {
+                try_files $uri $uri/ /swagger-ui-index.html;
+            }
             location / {
                 try_files $uri $uri/ /index.html;
             }

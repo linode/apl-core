@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "{{ template "harbor.jobservice" . }}-env"
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
 data:
@@ -10,6 +11,10 @@ data:
   REGISTRY_URL: "{{ template "harbor.registryURL" . }}"
   REGISTRY_CONTROLLER_URL: "{{ template "harbor.registryControllerURL" . }}"
   REGISTRY_CREDENTIAL_USERNAME: "{{ .Values.registry.credentials.username }}"
+
+  JOBSERVICE_WEBHOOK_JOB_MAX_RETRY: "{{ .Values.jobservice.notification.webhook_job_max_retry }}"
+  JOBSERVICE_WEBHOOK_JOB_HTTP_CLIENT_TIMEOUT: "{{ .Values.jobservice.notification.webhook_job_http_client_timeout }}"
+
   {{- if has "jobservice" .Values.proxy.components }}
   HTTP_PROXY: "{{ .Values.proxy.httpProxy }}"
   HTTPS_PROXY: "{{ .Values.proxy.httpsProxy }}"
@@ -24,4 +29,7 @@ data:
   _REDIS_URL_CORE: "{{ template "harbor.redis.urlForCore" . }}"
   CACHE_ENABLED: "true"
   CACHE_EXPIRE_HOURS: "{{ .Values.cache.expireHours }}"
+  {{- end }}
+  {{- if or (and (eq .Values.redis.type "internal") .Values.redis.internal.cacheLayerDatabaseIndex) (and (eq .Values.redis.type "external") .Values.redis.external.cacheLayerDatabaseIndex) }}
+  _REDIS_URL_CACHE_LAYER: "{{ template "harbor.redis.urlForCache" . }}"
   {{- end }}

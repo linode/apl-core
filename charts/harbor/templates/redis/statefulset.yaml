@@ -4,9 +4,11 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "harbor.redis" . }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
     component: redis
+    app.kubernetes.io/component: redis
 spec:
   replicas: 1
   serviceName: {{ template "harbor.redis" . }}
@@ -19,6 +21,10 @@ spec:
       labels:
 {{ include "harbor.labels" . | indent 8 }}
         component: redis
+        app.kubernetes.io/component: redis
+{{- if .Values.redis.podLabels }}
+{{ toYaml .Values.redis.podLabels | indent 8 }}
+{{- end }}
 {{- if .Values.redis.podAnnotations }}
       annotations:
 {{ toYaml .Values.redis.podAnnotations | indent 8 }}
@@ -36,10 +42,17 @@ spec:
       {{- end }}
       automountServiceAccountToken: {{ .Values.redis.internal.automountServiceAccountToken | default false }}
       terminationGracePeriodSeconds: 120
+      {{- with .Values.redis.internal.initContainers }}
+      initContainers:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: redis
         image: {{ .Values.redis.internal.image.repository }}:{{ .Values.redis.internal.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
+        {{- end }}
         livenessProbe:
           tcpSocket:
             port: 6379
@@ -53,6 +66,10 @@ spec:
 {{- if .Values.redis.internal.resources }}
         resources:
 {{ toYaml .Values.redis.internal.resources | indent 10 }}
+{{- end }}
+{{- with .Values.redis.internal.extraEnvVars }}
+        env:
+{{- toYaml . | nindent 10 }}
 {{- end }}
         volumeMounts:
         - name: data
@@ -85,12 +102,10 @@ spec:
     {{- end }}
   {{- if and .Values.persistence.enabled (not $redis.existingClaim) }}
   volumeClaimTemplates:
-  - apiVersion: v1
-    kind: PersistentVolumeClaim
-    metadata:
+  - metadata:
       name: data
       labels:
-{{ include "harbor.labels" . | indent 8 }}
+{{ include "harbor.legacy.labels" . | indent 8 }}
       annotations:
       {{- range $key, $value := $redis.annotations }}
         {{ $key }}: {{ $value | quote }}

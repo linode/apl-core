@@ -4,6 +4,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ template "harbor.nginx" . }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
 data:
@@ -89,21 +90,6 @@ data:
           proxy_request_buffering off;
         }
 
-        location /chartrepo/ {
-          proxy_pass {{ $scheme }}://core/chartrepo/;
-        {{- if and .Values.internalTLS.enabled }}
-          proxy_ssl_verify        off;
-          proxy_ssl_session_reuse on;
-        {{- end }}
-          proxy_set_header Host $host;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
-
-          proxy_buffering off;
-          proxy_request_buffering off;
-        }
-
         location /c/ {
           proxy_pass {{ $scheme }}://core/c/;
           proxy_set_header Host $host;
@@ -127,6 +113,8 @@ data:
           proxy_set_header X-Forwarded-Proto $x_forwarded_proto;
           proxy_buffering off;
           proxy_request_buffering off;
+          proxy_send_timeout 900;
+          proxy_read_timeout 900;
         }
 
         location /service/ {
