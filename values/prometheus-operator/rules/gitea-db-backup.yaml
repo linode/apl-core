@@ -2,7 +2,7 @@ groups:
   - name: gitea-db-backup
     rules:
       - alert: BackupGiteaDbFailing
-        expr: time() - cnpg_collector_last_failed_backup_timestamp{namespace="gitea",pod=~"gitea-db-1"} > 86400 or time() - cnpg_collector_last_failed_backup_timestamp{namespace="gitea",pod=~"gitea-db-2"} > 86400
+        expr: cnpg_collector_last_failed_backup_timestamp{namespace="gitea",pod=~"gitea-db-1"} offset 24h != 0 or cnpg_collector_last_failed_backup_timestamp{namespace="gitea",pod=~"gitea-db-2"} offset 24h != 0
         labels:
           severity: warning
         annotations:
