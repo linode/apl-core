@@ -12,6 +12,7 @@ folders:
   - trivy-teams
   - velero
   - kyverno-teams
+  - kyverno
 
 sidecar:
   dashboards:
