@@ -1,0 +1,10 @@
+groups:
+  - name: keycloak-db-backup
+    rules:
+      - alert: BackupKeycloakDbFailing
+        expr: time() - cnpg_collector_last_failed_backup_timestamp{namespace="keycloak",pod=~"keycloak-db-1"} > 86400 or time() - cnpg_collector_last_failed_backup_timestamp{namespace="keycloak",pod=~"keycloak-db-2"} > 86400
+        labels:
+          severity: warning
+        annotations:
+          description: 'The Keycloak database backup for DB {{ $labels.pod }} failed at {{ $value | humanizeTimestamp }}'
+          summary: Backup of {{ $labels.pod }} failed
