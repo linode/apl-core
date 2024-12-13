@@ -7,13 +7,6 @@ import yaml from 'js-yaml'
 import semver from 'semver'
 import { $ } from 'zx'
 
-/**
- *
- * @param {string} currentVersion
- * @param {string} version
- * @param {string} allowedUpgradeType
- * @returns boolean
- */
 export function isVersionApplicable(currentVersion, version, allowedUpgradeType) {
   if (semver.lte(version, currentVersion)) {
     return false // Ignore versions that are <= current version
