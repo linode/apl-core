@@ -52,7 +52,7 @@
           "refId": "A"
         }
       ],
-      "title": "Summary of security policy compliance",
+      "title": "Summary of security policy rule compliance",
       "type": "row"
     },
     {
@@ -120,7 +120,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "round(sum(increase(kyverno_policy_results_total{rule_result=\"pass\", resource_namespace=\"$namespace\"}[$__range])))",
+          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"pass\", policy_namespace=\"$namespace\"}))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
@@ -197,7 +197,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "round(sum(increase(kyverno_policy_results_total{rule_result=\"skip\", resource_namespace=\"$namespace\"}[$__range])))",
+          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"skip\", policy_namespace=\"$namespace\"}))",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -271,7 +271,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "round(sum(increase(kyverno_policy_results_total{rule_result=\"warn\", resource_namespace=\"$namespace\"}[$__range])))",
+          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"warn\", policy_namespace=\"$namespace\"}))",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -345,7 +345,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "round(sum(increase(kyverno_policy_results_total{rule_result=\"fail\", resource_namespace=\"$namespace\"}[$__range])))",
+          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"fail\", policy_namespace=\"$namespace\"}))",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -518,7 +518,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(increase(kyverno_policy_results_total{rule_result=\"fail\", resource_namespace=\"$namespace\"}[$__range])) by (policy_name)",
+          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"fail\", policy_namespace=\"$namespace\"})) by (policy_name)",
           "instant": false,
           "interval": "$__interval",
           "legendFormat": "{{severity}}",
@@ -526,7 +526,7 @@
           "refId": "A"
         }
       ],
-      "title": "All non-compliant security policies by policy name",
+      "title": "Non-compliant rules by policy name",
       "type": "timeseries"
     }
   ],
@@ -559,8 +559,8 @@
       {
         "current": {
           "selected": false,
-          "text": "team-demo",
-          "value": "team-demo"
+          "text": "team-test",
+          "value": "team-test"
         },
         "datasource": {
           "type": "prometheus",
@@ -585,13 +585,13 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-12h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Policy compliance",
   "uid": "kyverno",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
