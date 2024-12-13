@@ -7,6 +7,28 @@ import yaml from 'js-yaml'
 import semver from 'semver'
 import { $ } from 'zx'
 
+/**
+ *
+ * @param {string} currentVersion
+ * @param {string} version
+ * @param {string} allowedUpgradeType
+ * @returns boolean
+ */
+export function isVersionApplicable(currentVersion, version, allowedUpgradeType) {
+  if (semver.lte(version, currentVersion)) {
+    return false // Ignore versions that are <= current version
+  }
+  if (allowedUpgradeType === 'patch') {
+    return semver.diff(currentVersion, version) === 'patch'
+  }
+  if (allowedUpgradeType === 'minor') {
+    const isMinorOrPatch =
+      semver.diff(currentVersion, version) === 'patch' || semver.diff(currentVersion, version) === 'minor'
+    return isMinorOrPatch
+  }
+  return true // Default: Allow all upgrades
+}
+
 async function main() {
   config()
   const env = envalid.cleanEnv(process.env, {
@@ -70,18 +92,7 @@ async function main() {
         // Filter versions for allowed upgrades (minor/patch)
         const currentVersion = dependency.version
         const filteredVersions = allVersions.filter((version) => {
-          if (semver.lte(version, currentVersion)) {
-            return false // Ignore versions that are <= current version
-          }
-          if (allowedUpgradeType === 'patch') {
-            return semver.diff(currentVersion, version) === 'patch'
-          }
-          if (allowedUpgradeType === 'minor') {
-            const isMinorOrPatch =
-              semver.diff(currentVersion, version) === 'patch' || semver.diff(currentVersion, version) === 'minor'
-            return isMinorOrPatch
-          }
-          return true // Default: Allow all upgrades
+          return isVersionApplicable(currentVersion, version, allowedUpgradeType)
         })
 
         if (!filteredVersions.length) {
@@ -143,7 +154,6 @@ async function main() {
         }
       } catch (error) {
         console.error('Error updating dependencies:', error)
-        continue
       } finally {
         if (ciCreateFeatureBranch) {
           // Reset to the main branch for the next dependency
