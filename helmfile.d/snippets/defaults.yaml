@@ -1268,8 +1268,8 @@ environments:
                 cpu: "1"
                 memory: 192Mi
               requests:
-                cpu: 50m
-                memory: 64Mi
+                cpu: "1"
+                memory: 192Mi
           harbor:
             size: 5Gi
             replicas: 2
@@ -1279,8 +1279,8 @@ environments:
                 cpu: "1"
                 memory: 192Mi
               requests:
-                cpu: 50m
-                memory: 64Mi
+                cpu: "1"
+                memory: 192Mi
           gitea:
             useOtomiDB: true
             imported: false
@@ -1291,8 +1291,8 @@ environments:
                 cpu: "1"
                 memory: 192Mi
               requests:
-                cpu: 50m
-                memory: 64Mi
+                cpu: "1"
+                memory: 192Mi
         obj:
           provider:
             type: disabled
