@@ -1,0 +1,10 @@
+groups:
+  - name: harbor-db-backup
+    rules:
+      - alert: BackupHarborDbFailing
+        expr: time() - cnpg_collector_last_failed_backup_timestamp{namespace="harbor",pod=~"harbor-otomi-db-1"} > 86400 or time() - cnpg_collector_last_failed_backup_timestamp{namespace="harbor",pod=~"harbor-otomi-db-2"} > 86400
+        labels:
+          severity: warning
+        annotations:
+          description: 'The Harbor database backup for DB {{ $labels.pod }} failed at {{ $value | humanizeTimestamp }}'
+          summary: Backup of {{ $labels.pod }} failed
