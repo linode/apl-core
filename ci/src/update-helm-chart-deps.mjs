@@ -66,6 +66,7 @@ async function main() {
     }
 
     for (const dependency of chart.dependencies) {
+      const currentDependencyVersion = dependency.version
       if (dependencyNameFilter.length != 0 && !dependencyNameFilter.includes(dependency.name)) {
         console.log(
           `Skipping updates for dependency: ${dependency.name} due to dependencyNameFilter: ${dependencyNameFilter} `,
@@ -155,6 +156,8 @@ async function main() {
       } catch (error) {
         console.error('Error updating dependencies:', error)
       } finally {
+        // restore this version so it does not populate to the next chart update
+        dependency.version = currentDependencyVersion
         if (ciCreateFeatureBranch) {
           // Reset to the main branch for the next dependency
           await $`git checkout ${baseBranch}`
