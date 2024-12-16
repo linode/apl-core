@@ -27,7 +27,7 @@ dependencies:
     version: v1.11.4
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
-    version: 0.18.0
+    version: 0.22.1
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
     version: 6.20.4
