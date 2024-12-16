@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.2](https://github.com/linode/apl-core/compare/v4.1.1...v4.1.2) (2024-12-16)
+
+
+### Bug Fixes
+
+* CNPG object storage endpint URL ([#1812](https://github.com/linode/apl-core/issues/1812)) ([43c32f0](https://github.com/linode/apl-core/commit/43c32f0ce7bda37c5fe86a17efc160ffdb0b2f18))
+
 ### [4.1.1](https://github.com/linode/apl-core/compare/v4.1.0...v4.1.1) (2024-11-14)
 
 ### Others
