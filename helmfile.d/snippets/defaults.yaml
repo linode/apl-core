@@ -1266,10 +1266,10 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 1Gi
+                memory: 192Mi
               requests:
-                cpu: 50m
-                memory: 512Mi
+                cpu: "1"
+                memory: 192Mi
           harbor:
             size: 5Gi
             replicas: 2
@@ -1277,10 +1277,10 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 1Gi
+                memory: 192Mi
               requests:
-                cpu: 50m
-                memory: 256Mi
+                cpu: "1"
+                memory: 192Mi
           gitea:
             useOtomiDB: true
             imported: false
@@ -1289,10 +1289,10 @@ environments:
             resources:
               limits:
                 cpu: "1"
-                memory: 1Gi
+                memory: 192Mi
               requests:
-                cpu: 50m
-                memory: 512Mi
+                cpu: "1"
+                memory: 192Mi
         obj:
           provider:
             type: disabled
@@ -1332,4 +1332,4 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes
-        version: 28
+        version: 32
