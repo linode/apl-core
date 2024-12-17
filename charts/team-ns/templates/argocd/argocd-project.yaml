@@ -13,7 +13,7 @@ spec:
   description: ArgoCD project for team {{ $v.teamId }}
   # Allow manifests to deploy from any Git repos
   sourceRepos:
-  - https://gitea.{{ $v.cluster.domainSuffix }}/otomi/team-{{ $v.teamId }}-argocd.git
+  - {{ $v.gitOps.repoUrl }}
   {{- range $v.workloads }}
   - {{ .url }}
   {{- end }}

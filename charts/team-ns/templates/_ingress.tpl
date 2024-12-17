@@ -128,7 +128,7 @@ spec:
       secretName: copy-team-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}
-      secretName: {{ $v._derived.tlsSecretName }}
+      secretName: {{ $v.tlsSecretName }}
           {{- end }}
         {{- end }}
       {{- end }}

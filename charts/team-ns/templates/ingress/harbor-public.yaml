@@ -66,6 +66,6 @@ spec:
   tls:
     - hosts:
         - {{ $domain }}
-      secretName: {{ $v._derived.tlsSecretName }}
+      secretName: {{ $v.tlsSecretName }}
 {{- end }}
 {{- end }}
