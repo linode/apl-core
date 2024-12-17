@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- if eq $v.teamId "admin" }}
 {{- if $v.apps.harbor.enabled }}
-{{- $domain := printf "harbor.%s" $v.cluster.domainSuffix }}
 {{- $ingress :=  $v.ingress.platformClass }}
 {{- $name :=  printf "nginx-team-%s-platform-public-open-forward-harbor" $v.teamId }}
 ---
@@ -32,7 +31,7 @@ metadata:
 spec:
   ingressClassName: platform
   rules:
-    - host: {{ $domain }}
+    - host: {{ $v.harborDomain }}
       http:
         paths:
         - backend:
@@ -65,7 +64,7 @@ spec:
           pathType: Prefix
   tls:
     - hosts:
-        - {{ $domain }}
+        - {{ $v.harborDomain }}
       secretName: {{ $v.tlsSecretName }}
 {{- end }}
 {{- end }}

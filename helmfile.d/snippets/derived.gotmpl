@@ -157,6 +157,7 @@ environments:
           authDomain: {{ printf "auth.%s" $domainSuffix }}
           giteaDomain: {{ printf "gitea.%s" $domainSuffix }}
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
+          harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           tlsSecretName: {{ $tlsSecretName }}
         apps:
           argocd:

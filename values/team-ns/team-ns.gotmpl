@@ -43,10 +43,13 @@ tlsSecretName: {{ $v._derived.tlsSecretName }}
 giteaDomain: {{ $v._derived.giteaDomain }}
 keycloakDomain: {{ $v._derived.keycloakDomain }}
 authDomain: {{ $v._derived.authDomain }}
+harborDomain: {{ $v._derived.harborDomain }}
 
 sso:
-  masterRealm: {{ printf "%s/realms/otomi" $domain }}
+  masterRealm: {{ printf "%s/realms/otomi" $v._derived.keycloakDomain }}
   logoutUri: "/oauth2/sign_out?rd={{ $keycloakRealm }}/protocol/openid-connect/logout?redirect_uri=https://{{ $v._derived.keycloakDomain }}"
   issuer: "{{ $keycloakRealm }}"
   jwksUri: "{{ $keycloakRealm }}/protocol/openid-connect/certs"
   clientId: {{ $a.keycloak.idp.clientID }}
+  authUrl: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
+  signInUrl: "https://{{ $v._derived.authDomain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"

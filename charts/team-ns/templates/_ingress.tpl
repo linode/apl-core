@@ -72,8 +72,8 @@ metadata:
     {{- end}}
     {{- if and $.hasAuth (eq $ingress.className $v.ingress.platformClass.className )}}
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
-    nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-url: "{{ $v.sso.authUrl }}"
+    nginx.ingress.kubernetes.io/auth-signin: "{{ $v.sso.signInUrl }}"
     {{- end }}
     {{- if and (hasKey $ingress "entrypoint") (ne $ingress.entrypoint "")}}
     external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }} 

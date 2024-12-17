@@ -58,7 +58,7 @@ spec:
             prefix: /logout-otomi
       redirect:
         authority: {{ $v.authDomain }}
-        uri: {{ $v.sso.jwksUri }}
+        uri: {{ $v.sso.logoutUri }}
     -
         {{- with $s.paths | default (list "/") }}
       match:
@@ -206,7 +206,7 @@ spec:
             prefix: /logout-otomi
       redirect:
         authority: "{{ $v.authDomain }}"
-        uri: "{{ $v.sso.jwksUri }}"
+        uri: "{{ $v.sso.logoutUri }}"
     -
         {{- with $s.paths | default (list "/") }}
       match:
@@ -314,7 +314,7 @@ spec:
         - {{ $v.sso.clientId }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
 ---    
-      {{- $principal := printf "https://keycloak.%s/realms/otomi/*" $v.cluster.domainSuffix }}
+      {{- $principal := printf "%s/*" $v.masterRealm }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
