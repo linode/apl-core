@@ -13,15 +13,6 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $tc := $v.teamConfig }}
-{{- $coreTeamServices := list }}
-{{- range $s := $v.teamApps }}
-  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
-    {{- range $ing := $s.ingress }}
-      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
-      {{- $coreTeamServices = append $coreTeamServices $svc }}
-    {{- end }}
-  {{- end }}
-{{- end }}
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 releases:
