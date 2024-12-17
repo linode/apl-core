@@ -2,7 +2,8 @@ groups:
   - name: harbor-db-backup
     rules:
       - alert: BackupHarborDbFailing
-        expr: time() - cnpg_collector_last_failed_backup_timestamp{namespace="harbor",pod=~"harbor-otomi-db-1"} > 86400 or time() - cnpg_collector_last_failed_backup_timestamp{namespace="harbor",pod=~"harbor-otomi-db-2"} > 86400
+        # 86400 sec => 24H
+        expr: (time() - max(cnpg_collector_last_available_backup_timestamp{namespace="harbor"}) > 86400)
         labels:
           severity: warning
         annotations:
