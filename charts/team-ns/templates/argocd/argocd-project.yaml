@@ -13,7 +13,7 @@ spec:
   description: ArgoCD project for team {{ $v.teamId }}
   # Allow manifests to deploy from any Git repos
   sourceRepos:
-  - {{ $v.gitOps.repoUrl }}
+  - {{ $v.gitOps.teamRepoUrl }}
   {{- range $v.workloads }}
   - {{ .url }}
   {{- end }}
