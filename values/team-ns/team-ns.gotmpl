@@ -7,6 +7,15 @@
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $keycloakRealm := printf "https://keycloak.%s/realms/otomi" $domain }}
 
+{{- $coreTeamServices := list }}
+{{- range $s := $v.teamApps }}
+  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
+    {{- range $ing := $s.ingress }}
+      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
+      {{- $coreTeamServices = append $coreTeamServices $svc }}
+    {{- end }}
+  {{- end }}
+{{- end }}
 cluster: {{- $v.cluster | toYaml | nindent 2 }}
 apps: 
 {{- range $appId, $app := $v.apps }}
@@ -25,7 +34,7 @@ teamId: {{ $teamId }}
 teamApps: {{- toYaml $teamApps | nindent 2 }}
 teamIds: {{- toYaml (keys $v.teamConfig) | nindent 2 }}
 tracingEnabled: {{ $v.apps.istio.tracing.enabled }}
-services: {{- $teamServices | toYaml | nindent 2 }}
+services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 2 }}
 {{- if (gt (len $teamServices) 0) }}
   - name: blackbox
     svc: prometheus-blackbox-exporter
