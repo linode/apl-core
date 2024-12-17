@@ -116,8 +116,8 @@ metadata:
     tekton.dev/git-0: "{{ $v.gitOps.globalUrl }}"
 type: kubernetes.io/basic-auth
 stringData:
-  username: otomi-admin
-  password: {{ $v.otomi.adminPassword }}
+  username: {{ $v.gitOps.adminUsername }}
+  password: {{ $v.gitOps.adminPassword }}
 ---
 apiVersion: v1
 kind: ServiceAccount
