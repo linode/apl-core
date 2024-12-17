@@ -29,7 +29,12 @@ otomi: {{- $v.otomi | toYaml | nindent 2 }}
 domain: {{ $domain }}
 ingress: {{- $v.ingress | toYaml | nindent 2 }}
 dns: {{- $v.dns | toYaml | nindent 2 }}
-{{ omit $team "apps" | toYaml }}
+secrets: {{- $team  | get "secrets" list | toYaml | nindent 2 }}
+workloads: {{- $team | get "workloads" list | toYaml | nindent 2 }}
+backups: {{- $team | get "backups" list | toYaml | nindent 2 }}
+builds: {{- $team | get "builds" list | toYaml | nindent 2 }}
+policies: {{- $team | get "policies" list | toYaml | nindent 2 }}
+sealedsecrets: {{- $team | get "sealedsecrets" list | toYaml | nindent 2 }}
 teamId: {{ $teamId }}
 teamApps: {{- toYaml $teamApps | nindent 2 }}
 teamIds: {{- toYaml (keys $v.teamConfig) | nindent 2 }}
