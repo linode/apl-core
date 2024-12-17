@@ -1260,6 +1260,7 @@ environments:
             _rawValues: {}
         databases:
           keycloak:
+            imageName: null
             imported: false
             size: 5Gi
             replicas: 2
@@ -1271,6 +1272,7 @@ environments:
                 cpu: "1"
                 memory: 192Mi
           harbor:
+            imageName: null
             size: 5Gi
             replicas: 2
             coreDatabase: registry
@@ -1282,6 +1284,7 @@ environments:
                 cpu: "1"
                 memory: 192Mi
           gitea:
+            imageName: null
             useOtomiDB: true
             imported: false
             size: 5Gi
