@@ -336,8 +336,3 @@ changes:
       - databases.harbor.resources.limits.cpu: '1'
       - databases.harbor.resources.requests.memory: '192Mi'
       - databases.harbor.resources.requests.cpu: '1'
-  - version: 33
-    mutations:
-      - databases.keycloak.imageName: ghcr.io/cloudnative-pg/postgresql:15.10
-      - databases.gitea.imageName: ghcr.io/cloudnative-pg/postgresql:15.10
-      - databases.harbor.imageName: ghcr.io/cloudnative-pg/postgresql:15.10
