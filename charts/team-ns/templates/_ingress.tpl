@@ -12,7 +12,6 @@
 {{- $ := . }}
 {{- $v := .dot.Values }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
-{{- $cm := index $v.apps "cert-manager" }}
 {{- range $ingress := $v.ingress.classes }}
   {{- $routes := dict }}
   {{- $names := list }}

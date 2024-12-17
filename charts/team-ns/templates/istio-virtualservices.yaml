@@ -313,7 +313,7 @@ spec:
     - issuer: {{ $kkMaster }}
       jwksUri: {{ $kkMaster }}/protocol/openid-connect/certs
       audiences:
-        - {{ $k.idp.clientID }}
+        - {{ $v.idp.clientId }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
 ---    
       {{- $principal := printf "https://keycloak.%s/realms/otomi/*" $v.cluster.domainSuffix }}
