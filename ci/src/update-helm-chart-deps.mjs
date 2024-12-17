@@ -7,6 +7,21 @@ import yaml from 'js-yaml'
 import semver from 'semver'
 import { $ } from 'zx'
 
+export function isVersionApplicable(currentVersion, version, allowedUpgradeType) {
+  if (semver.lte(version, currentVersion)) {
+    return false // Ignore versions that are <= current version
+  }
+  if (allowedUpgradeType === 'patch') {
+    return semver.diff(currentVersion, version) === 'patch'
+  }
+  if (allowedUpgradeType === 'minor') {
+    const isMinorOrPatch =
+      semver.diff(currentVersion, version) === 'patch' || semver.diff(currentVersion, version) === 'minor'
+    return isMinorOrPatch
+  }
+  return true // Default: Allow all upgrades
+}
+
 async function main() {
   config()
   const env = envalid.cleanEnv(process.env, {
@@ -44,6 +59,7 @@ async function main() {
     }
 
     for (const dependency of chart.dependencies) {
+      const currentDependencyVersion = dependency.version
       if (dependencyNameFilter.length != 0 && !dependencyNameFilter.includes(dependency.name)) {
         console.log(
           `Skipping updates for dependency: ${dependency.name} due to dependencyNameFilter: ${dependencyNameFilter} `,
@@ -70,18 +86,7 @@ async function main() {
         // Filter versions for allowed upgrades (minor/patch)
         const currentVersion = dependency.version
         const filteredVersions = allVersions.filter((version) => {
-          if (semver.lte(version, currentVersion)) {
-            return false // Ignore versions that are <= current version
-          }
-          if (allowedUpgradeType === 'patch') {
-            return semver.diff(currentVersion, version) === 'patch'
-          }
-          if (allowedUpgradeType === 'minor') {
-            const isMinorOrPatch =
-              semver.diff(currentVersion, version) === 'patch' || semver.diff(currentVersion, version) === 'minor'
-            return isMinorOrPatch
-          }
-          return true // Default: Allow all upgrades
+          return isVersionApplicable(currentVersion, version, allowedUpgradeType)
         })
 
         if (!filteredVersions.length) {
@@ -143,8 +148,9 @@ async function main() {
         }
       } catch (error) {
         console.error('Error updating dependencies:', error)
-        continue
       } finally {
+        // restore this version so it does not populate to the next chart update
+        dependency.version = currentDependencyVersion
         if (ciCreateFeatureBranch) {
           // Reset to the main branch for the next dependency
           await $`git checkout ${baseBranch}`
