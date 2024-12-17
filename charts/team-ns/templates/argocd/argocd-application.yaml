@@ -9,7 +9,7 @@ metadata:
 spec:
   project: team-{{ $v.teamId }}
   source:
-    repoURL: {{ $v.gitOps.repoURL }}
+    repoURL: {{ $v.gitOps.teamRepoUrl }}
     targetRevision: HEAD
     path: ./
   destination:

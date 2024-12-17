@@ -36,7 +36,7 @@ gitOps:
   adminPassword: {{ $a.gitea.adminPassword }}
   adminUsername: {{ $a.gitea.adminUsername }}
   globalUrl: "https://{{ $v._derived.giteaDomain }}"
-  repoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
+  teamRepoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
   workloadValuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
 
 tlsSecretName: {{ $v._derived.tlsSecretName }}
