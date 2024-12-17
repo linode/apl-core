@@ -243,23 +243,5 @@ releases:
       team: {{ $teamId }}
       pipeline: otomi-task-teams
     values:
-      - cluster: {{- $v.cluster | toYaml | nindent 10 }}
-        apps: {{- $a | toYaml | nindent 10 }}
-        otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
-        domain: {{ $domain }}
-        ingress: {{- $v.ingress | toYaml | nindent 10 }}
-        dns: {{- $v.dns | toYaml | nindent 10 }}
-        _derived:
-          tlsSecretName: {{ $v._derived.tlsSecretName }}
-      - {{- omit $team "apps" | toYaml | nindent 8 }}
-        teamId: {{ $teamId }}
-        teamApps: {{- toYaml $teamApps | nindent 10 }}
-        teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
-      - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if (gt (len $teamServices) 0) }}
-      - name: blackbox
-        svc: prometheus-blackbox-exporter
-        port: 9115
-  {{- end }}
+      - ../values/team-ns/team-ns.gotmpl
 {{- end }}
