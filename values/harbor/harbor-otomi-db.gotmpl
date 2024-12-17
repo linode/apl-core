@@ -9,6 +9,10 @@ storage:
   size: {{ $hdb.size }}
 instances: {{ $hdb.replicas }}
 
+{{- with $hdb.imageName }}
+imageName: {{ . }}
+{{- end }}
+
 postgresql:
   parameters:
     max_connections: "32"
