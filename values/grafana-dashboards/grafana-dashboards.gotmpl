@@ -27,3 +27,6 @@ folders:
   {{- if $v.apps.thanos.enabled }}
   - thanos
   {{- end }}
+  {{- if $v.apps.kyverno.enabled }}
+  - kyverno
+  {{- end }}

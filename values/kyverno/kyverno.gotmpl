@@ -27,7 +27,7 @@ admissionController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
   container:
     resources: {{- $kv.resources.admissionController | toYaml | nindent 6 }}
 
@@ -39,6 +39,10 @@ cleanupController:
   replicas: 3
   {{- end }}
   resources: {{- $kv.resources.cleanupController | toYaml | nindent 4 }}
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      prometheus: system
 
 backgroundController:
   {{- if eq $kv.mode "DevTest" }}
@@ -51,7 +55,7 @@ backgroundController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
 
 reportsController:
   {{- if eq $kv.mode "DevTest" }}
@@ -61,6 +65,10 @@ reportsController:
   replicas: 2
   {{- end }}
   resources: {{- $kv.resources.reportsController | toYaml | nindent 4 }}
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      prometheus: system
 
 features:
   logging:
@@ -75,3 +83,11 @@ config:
   # Determines if default Kyverno namespace exclusion is enabled for webhooks and resourceFilters
   # required for nodeAffinity (alse force kyverno to disired nodes)
   excludeKyvernoNamespace: true
+
+metricsConfig:
+  namespaces:
+    include:
+      {{- range $id, $team := $v.teamConfig }}
+      - team-{{ $id }}
+      {{- end }}
+      
