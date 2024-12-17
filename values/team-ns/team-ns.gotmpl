@@ -35,6 +35,7 @@ backups: {{- $team | get "backups" list | toYaml | nindent 2 }}
 builds: {{- $team | get "builds" list | toYaml | nindent 2 }}
 policies: {{- $team | get "policies" list | toYaml | nindent 2 }}
 sealedsecrets: {{- $team | get "sealedsecrets" list | toYaml | nindent 2 }}
+netpols: {{- $team | get "netpols" list | toYaml | nindent 2 }}
 teamId: {{ $teamId }}
 teamApps: {{- toYaml $teamApps | nindent 2 }}
 teamIds: {{- toYaml (keys $v.teamConfig) | nindent 2 }}
