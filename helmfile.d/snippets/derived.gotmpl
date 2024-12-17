@@ -155,6 +155,7 @@ environments:
           oidcWellKnownUrl: {{ $oidcWellKnownUrl }}
           oidcWellKnownUrlBackchannel: {{ $oidcWellKnownBackchannel}}
           authDomain: {{ printf "auth.%s" $domainSuffix }}
+          consoleDomain: {{ printf "console.%s" $domainSuffix }}
           giteaDomain: {{ printf "gitea.%s" $domainSuffix }}
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}

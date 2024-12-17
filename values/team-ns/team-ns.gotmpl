@@ -33,8 +33,8 @@ services: {{- $teamServices | toYaml | nindent 2 }}
 {{- end }}
 
 gitOps:
-  password: {{ $a.gitea.adminPassword }}
-  username: {{ $a.gitea.adminUsername }}
+  adminPassword: {{ $a.gitea.adminPassword }}
+  adminUsername: {{ $a.gitea.adminUsername }}
   globalUrl: "https://{{ $v._derived.giteaDomain }}"
   repoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
   workloadValuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
@@ -47,7 +47,7 @@ harborDomain: {{ $v._derived.harborDomain }}
 
 sso:
   masterRealm: {{ printf "%s/realms/otomi" $v._derived.keycloakDomain }}
-  logoutUri: "/oauth2/sign_out?rd={{ $keycloakRealm }}/protocol/openid-connect/logout?redirect_uri=https://{{ $v._derived.keycloakDomain }}"
+  logoutUri: "/oauth2/sign_out?rd={{ $keycloakRealm }}/protocol/openid-connect/logout?redirect_uri=https://{{ $v._derived.consoleDomain }}"
   issuer: "{{ $keycloakRealm }}"
   jwksUri: "{{ $keycloakRealm }}/protocol/openid-connect/certs"
   clientId: {{ $a.keycloak.idp.clientID }}
