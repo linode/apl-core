@@ -1,0 +1,52 @@
+{{- $v := .Values }}
+{{- $a := .Values.apps }}
+{{- $teamId := .Release.Labels.team }}
+{{- $team := index $v.teamConfig .Release.Labels.team }}
+{{- $teamApps := $team.apps | default dict }}
+{{- $teamServices := ($team | get "services" list) }}
+{{- $domain := ($v.cluster | get "domainSuffix" nil) }}
+{{- $keycloakRealm := printf "https://keycloak.%s/realms/otomi" $domain }}
+
+cluster: {{- $v.cluster | toYaml | nindent 2 }}
+apps: 
+{{- range $appId, $app := $v.apps }}
+{{- if hasKey $app "enabled" }}
+  {{ $appId }}:
+    enabled: {{ $app.enabled }}
+{{- end }}
+{{- end }}
+
+otomi: {{- $v.otomi | toYaml | nindent 2 }}
+domain: {{ $domain }}
+ingress: {{- $v.ingress | toYaml | nindent 2 }}
+dns: {{- $v.dns | toYaml | nindent 2 }}
+{{ omit $team "apps" | toYaml }}
+teamId: {{ $teamId }}
+teamApps: {{- toYaml $teamApps | nindent 2 }}
+teamIds: {{- toYaml (keys $v.teamConfig) | nindent 2 }}
+tracingEnabled: {{ $v.apps.istio.tracing.enabled }}
+services: {{- $teamServices | toYaml | nindent 2 }}
+{{- if (gt (len $teamServices) 0) }}
+  - name: blackbox
+    svc: prometheus-blackbox-exporter
+    port: 9115
+{{- end }}
+
+gitOps:
+  password: {{ $a.gitea.adminPassword }}
+  username: {{ $a.gitea.adminUsername }}
+  globalUrl: "https://{{ $v._derived.giteaDomain }}"
+  repoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
+  workloadValuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
+
+tlsSecretName: {{ $v._derived.tlsSecretName }}
+giteaDomain: {{ $v._derived.giteaDomain }}
+keycloakDomain: {{ $v._derived.keycloakDomain }}
+authDomain: {{ $v._derived.authDomain }}
+
+sso:
+  masterRealm: {{ printf "%s/realms/otomi" $domain }}
+  logoutUri: "/oauth2/sign_out?rd={{ $keycloakRealm }}/protocol/openid-connect/logout?redirect_uri=https://{{ $v._derived.keycloakDomain }}"
+  issuer: "{{ $keycloakRealm }}"
+  jwksUri: "{{ $keycloakRealm }}/protocol/openid-connect/certs"
+  clientId: {{ $a.keycloak.idp.clientID }}

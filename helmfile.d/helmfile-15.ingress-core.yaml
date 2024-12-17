@@ -42,24 +42,11 @@ releases:
       team: admin
       pipeline: otomi-task-teams
     values:
+      - ../values/team-ns/team-ns.gotmpl
       - name: admin
         teamId: admin
-        _derived: {{- toYaml $v._derived | nindent 10 }}
-        teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
-        teamApps: {{- $tca.apps | toYaml | nindent 10 }}
-        apps: {{- $a | toYaml | nindent 10 }}
-        oidc: {{- $v.oidc | toYaml | nindent 10 }}
-        cluster: {{- $v.cluster | toYaml | nindent 10 }}
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        domain: {{ $v | get "cluster.domainSuffix" nil }}
         services: {{- $services | toYaml | nindent 10 }}
         resourceQuota: null
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
-        jobs: {{- $tca | get "jobs" list | toYaml | nindent 10 }}
-        secrets: {{- $tca | get "secrets" list | toYaml | nindent 10 }}
-        workloads: {{- $tca | get "workloads" list | toYaml | nindent 10 }}
-        backups: {{- $tca | get "backups" list | toYaml | nindent 10 }}
-        builds: {{- $tca | get "builds" list | toYaml | nindent 10 }}
-        policies: {{- $tca | get "policies" list | toYaml | nindent 10 }}
-        sealedsecrets: {{- $tca | get "sealedsecrets" list | toYaml | nindent 10 }}
         dns: {{- $v.dns | toYaml | nindent 10 }}
