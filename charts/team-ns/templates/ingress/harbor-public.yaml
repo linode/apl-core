@@ -2,7 +2,6 @@
 {{- if eq $v.teamId "admin" }}
 {{- if $v.apps.harbor.enabled }}
 {{- $domain := printf "harbor.%s" $v.cluster.domainSuffix }}
-{{- $cm := index $v.apps "cert-manager" }}
 {{- $ingress :=  $v.ingress.platformClass }}
 {{- $name :=  printf "nginx-team-%s-platform-public-open-forward-harbor" $v.teamId }}
 ---

@@ -113,7 +113,7 @@ kind: Secret
 metadata:
   name: gitea-credentials
   annotations:
-    tekton.dev/git-0: https://gitea.{{ $v.cluster.domainSuffix }}
+    tekton.dev/git-0: "{{ $v.gitOps.globalUrl }}"
 type: kubernetes.io/basic-auth
 stringData:
   username: otomi-admin

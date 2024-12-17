@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $k := $v.apps.keycloak | default dict }}
 {{- $kkMaster := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $ := . }}
 {{- range $s := $v.services }}
