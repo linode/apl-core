@@ -2,7 +2,8 @@ groups:
   - name: keycloak-db-backup
     rules:
       - alert: BackupKeycloakDbFailing
-        expr: cnpg_collector_last_failed_backup_timestamp{namespace="keycloak",pod=~"keycloak-db-1"} offset 24h != 0 or cnpg_collector_last_failed_backup_timestamp{namespace="keycloak",pod=~"keycloak-db-2"} offset 24h != 0
+        # 86400 sec => 24H
+        expr: (time() - max(cnpg_collector_last_available_backup_timestamp{namespace="keycloak"}) > 86400)
         labels:
           severity: warning
         annotations:
