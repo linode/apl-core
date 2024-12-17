@@ -120,7 +120,7 @@
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"pass\", policy_namespace=\"$namespace\"}))",
+          "expr": "count (count by (rule_name, policy_name) (kyverno_policy_results_total{rule_result=\"pass\", policy_namespace=\"$namespace\"}))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": true,
@@ -197,7 +197,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"skip\", policy_namespace=\"$namespace\"}))",
+          "expr": "count (count by (rule_name, policy_name) (kyverno_policy_results_total{rule_result=\"skip\", policy_namespace=\"$namespace\"}))",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -271,7 +271,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"warn\", policy_namespace=\"$namespace\"}))",
+          "expr": "count (count by (rule_name, policy_name) (kyverno_policy_results_total{rule_result=\"warn\", policy_namespace=\"$namespace\"}))",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -345,7 +345,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"fail\", policy_namespace=\"$namespace\"}))",
+          "expr": "count (count by (rule_name, policy_name) (kyverno_policy_results_total{rule_result=\"fail\", policy_namespace=\"$namespace\"}))",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -418,7 +418,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "round(sum(increase(kyverno_policy_results_total{rule_result=\"unknown\", resource_namespace=\"$namespace\"}[$__range])))",
+          "expr": "count (count by (rule_name, policy_name) (kyverno_policy_results_total{rule_result=\"unknown\", policy_namespace=\"$namespace\"}))",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -518,7 +518,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "count (count by (policy_name) (kyverno_policy_results_total{rule_result=\"fail\", policy_namespace=\"$namespace\"})) by (policy_name)",
+          "expr": "count (count by (policy_name, rule_name) (kyverno_policy_results_total{rule_result=\"fail\", policy_namespace=\"$namespace\"})) by (policy_name, rule_name)",
           "instant": false,
           "interval": "$__interval",
           "legendFormat": "{{severity}}",
@@ -557,11 +557,7 @@
         "type": "datasource"
       },
       {
-        "current": {
-          "selected": false,
-          "text": "team-test",
-          "value": "team-test"
-        },
+        "current": {},
         "datasource": {
           "type": "prometheus",
           "uid": "$datasource"
@@ -592,6 +588,6 @@
   "timezone": "",
   "title": "Policy compliance",
   "uid": "kyverno",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
