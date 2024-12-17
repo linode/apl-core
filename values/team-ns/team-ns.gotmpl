@@ -17,7 +17,7 @@
   {{- end }}
 {{- end }}
 cluster: {{- $v.cluster | toYaml | nindent 2 }}
-apps: 
+apps:
 {{- range $appId, $app := $v.apps }}
 {{- if hasKey $app "enabled" }}
   {{ $appId }}:
