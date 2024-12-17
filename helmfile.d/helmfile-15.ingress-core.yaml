@@ -47,7 +47,7 @@ releases:
         teamId: admin
         otomi: {{- $v.otomi | toYaml | nindent 10 }}
         services: {{- $services | toYaml | nindent 10 }}
-        networkPolicy: []
+        networkPolicy: null
         resourceQuota: null
         ingress: {{- $v.ingress | toYaml | nindent 10 }}
         dns: {{- $v.dns | toYaml | nindent 10 }}
