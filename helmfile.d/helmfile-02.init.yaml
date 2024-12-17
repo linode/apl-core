@@ -46,3 +46,12 @@ releases:
       pkg: cloudnative-pg
       app: core
     <<: *default
+  - name: cloudnative-pg-artifacts
+    installed: true
+    namespace: cnpg-system
+    labels:
+      pkg: cloudnative-pg
+      app: core
+    chart: ../charts/raw
+    values:
+      - ../values/cloudnative-pg/cloudnative-pg-raw.gotmpl

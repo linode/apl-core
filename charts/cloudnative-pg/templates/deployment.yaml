@@ -31,8 +31,9 @@ spec:
       {{- include "cloudnative-pg.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
@@ -45,13 +46,22 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if .Values.hostNetwork }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      {{- end }}
+      {{- if .Values.dnsPolicy }}
+      dnsPolicy: {{ .Values.dnsPolicy }}
+      {{- end }}
       containers:
       - args:
         - controller
         - --leader-elect
-        {{- with .Values.config.name }}
-        - --config-map-name={{ . }}
-        - --secret-name={{ . }}
+        {{- if .Values.config.name }}
+        {{- if not .Values.config.secret }}
+        - --config-map-name={{ .Values.config.name }}
+        {{- else }}
+        - --secret-name={{ .Values.config.name }}
+        {{- end }}
         {{- end }}
         - --webhook-port={{ .Values.webhook.port }}
         {{- range .Values.additionalArgs }}
@@ -68,6 +78,9 @@ spec:
               fieldPath: metadata.namespace
         - name: MONITORING_QUERIES_CONFIGMAP
           value: "{{ .Values.monitoringQueriesConfigMap.name }}"
+        {{- if .Values.additionalEnv }}
+        {{- tpl (.Values.additionalEnv | toYaml) . | nindent 8 }}
+        {{- end }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         livenessProbe:
