@@ -29,7 +29,7 @@ apps:
   kyverno:
     enabled: {{ $v.apps.kyverno.enabled }}
 
-isMultitenant: {{ $v.otomi.globalPullSecret }}
+isMultitenant: {{ $v.otomi.isMultitenant }}
 globalPullSecret: {{ $v.otomi.globalPullSecret }}
 domain: {{ $domain }}
 ingress: {{- $v.ingress | toYaml | nindent 2 }}
