@@ -25,7 +25,8 @@ apps:
 {{- end }}
 {{- end }}
 
-otomi: {{- $v.otomi | toYaml | nindent 2 }}
+isMultitenant: {{ $v.otomi.globalPullSecret }}
+globalPullSecret: {{ $v.otomi.globalPullSecret }}
 domain: {{ $domain }}
 ingress: {{- $v.ingress | toYaml | nindent 2 }}
 dns: {{- $v.dns | toYaml | nindent 2 }}
@@ -38,7 +39,6 @@ sealedsecrets: {{- $team | get "sealedsecrets" list | toYaml | nindent 2 }}
 networkPolicy: {{- $team | get "networkPolicy" dict | toYaml | nindent 2 }}
 oidc: {{- $team | get "oidc" dict | toYaml | nindent 2 }}
 managedMonitoring: {{- $team | get "managedMonitoring" dict | toYaml | nindent 2 }}
-projects: {{- $team | get "projects" list | toYaml | nindent 2 }}
 teamId: {{ $teamId }}
 teamApps: {{- toYaml $teamApps | nindent 2 }}
 teamIds: {{- toYaml (keys $v.teamConfig) | nindent 2 }}

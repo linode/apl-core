@@ -50,7 +50,7 @@ spec:
   # - group: 'apps'
   #   kind: StatefulSet
   roles:
-{{- if $v.otomi.isMultitenant }}
+{{- if $v.isMultitenant }}
   # we create a scoped platform-admin role since we are only allowed access to team-* projects as platform-admin in multitenant setup
   - name: platform-admin
     description: Team member privileges to team-{{ $v.teamId }}
@@ -65,12 +65,12 @@ spec:
 {{- if not (eq $v.teamId "admin") }}
   - name: team-member
     description: Team member privileges to team-{{ $v.teamId }}
-{{- if or (has "argocd" $v.selfService.apps) $v.otomi.isMultitenant }}
+{{- if or (has "argocd" $v.selfService.apps) $v.isMultitenant }}
     policies:
   {{- if has "argocd" $v.selfService.apps }}
     - p, proj:team-{{ $v.teamId }}:team-member, *, *, team-{{ $v.teamId }}/*, allow
   {{- else }}
-    {{- if $v.otomi.isMultitenant }}
+    {{- if $v.isMultitenant }}
     - p, proj:team-{{ $v.teamId }}:team-member, *, get, team-{{ $v.teamId }}/*, allow
     {{- else }}
     # we already have read-only rights globally when not in multitenancy

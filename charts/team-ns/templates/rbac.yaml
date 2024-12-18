@@ -4,7 +4,7 @@
 ---
 apiVersion: v1
 imagePullSecrets:
-{{- with $v.otomi.globalPullSecret }}
+{{- with $v.globalPullSecret }}
 - name: otomi-pullsecret-global
 {{- end }}
 {{- if $h.enabled }}
