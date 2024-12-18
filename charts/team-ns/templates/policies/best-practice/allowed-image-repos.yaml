@@ -58,7 +58,7 @@ spec:
                 all:
                 - key: "{{`{{ element }}`}}"
                   operator: NotEquals
-                  value: "harbor.{{ $v.cluster.domainSuffix }}/*"
+                  value: "{{ $v.harborDomain }}/*"
                 {{- if $p.customValues }}
                 - key: "{{`{{ element }}`}}"
                   operator: AnyNotIn

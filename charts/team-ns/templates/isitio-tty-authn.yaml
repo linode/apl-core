@@ -10,5 +10,5 @@ spec:
     matchLabels:
       otomi: tty
   jwtRules:
-  - issuer: "https://keycloak.{{ $v.cluster.domainSuffix }}/realms/otomi"
-    jwksUri: "https://keycloak.{{ $v.cluster.domainSuffix }}/realms/otomi/protocol/openid-connect/certs"
+  - issuer: "{{ $v.sso.issuer }}"
+    jwksUri: "{{ $v.sso.jwksUri }}"

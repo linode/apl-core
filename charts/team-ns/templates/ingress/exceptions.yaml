@@ -9,8 +9,8 @@ spec:
   gateways:
   - {{ $.Release.Namespace }}/team-admin-public-tlsterm
   hosts:
-  - {{ $v._derived.giteaDomain }}
-  - {{ $v._derived.keycloakDomain }}
+  - {{ $v.giteaDomain }}
+  - {{ $v.keycloakDomain }}
   http:
   - match:
     - uri:
