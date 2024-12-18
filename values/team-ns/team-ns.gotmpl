@@ -5,7 +5,7 @@
 {{- $teamApps := $team.apps | default dict }}
 {{- $teamServices := ($team | get "services" list) }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
-{{- $keycloakRealm := printf "https://keycloak.%s/realms/otomi" $domain }}
+{{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
 
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
@@ -16,14 +16,18 @@
     {{- end }}
   {{- end }}
 {{- end }}
-cluster: {{- $v.cluster | toYaml | nindent 2 }}
+
 apps:
-{{- range $appId, $app := $v.apps }}
-{{- if hasKey $app "enabled" }}
-  {{ $appId }}:
-    enabled: {{ $app.enabled }}
-{{- end }}
-{{- end }}
+  harbor:
+    enabled: {{ $v.apps.harbor.enabled }}
+  knative: 
+    enabled: {{ $v.apps.knative.enabled }}
+  argocd:
+    enabled: {{ $v.apps.argocd.enabled }}
+  velero:
+    enabled: {{ $v.apps.velero.enabled }}
+  kyverno:
+    enabled: {{ $v.apps.kyverno.enabled }}
 
 isMultitenant: {{ $v.otomi.globalPullSecret }}
 globalPullSecret: {{ $v.otomi.globalPullSecret }}
@@ -37,7 +41,6 @@ builds: {{- $team | get "builds" list | toYaml | nindent 2 }}
 policies: {{- $team | get "policies" list | toYaml | nindent 2 }}
 sealedsecrets: {{- $team | get "sealedsecrets" list | toYaml | nindent 2 }}
 networkPolicy: {{- $team | get "networkPolicy" dict | toYaml | nindent 2 }}
-oidc: {{- $team | get "oidc" dict | toYaml | nindent 2 }}
 managedMonitoring: {{- $team | get "managedMonitoring" dict | toYaml | nindent 2 }}
 teamId: {{ $teamId }}
 teamApps: {{- toYaml $teamApps | nindent 2 }}
