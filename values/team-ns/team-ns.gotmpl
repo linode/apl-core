@@ -30,7 +30,7 @@ apps:
     enabled: {{ $v.apps.kyverno.enabled }}
 
 isMultitenant: {{ $v.otomi.isMultitenant }}
-globalPullSecret: {{ $v.otomi.globalPullSecret }}
+globalPullSecret: {{ $v | get "otomi.globalPullSecret" nil }}
 domain: {{ $domain }}
 ingress: {{- $v.ingress | toYaml | nindent 2 }}
 dns: {{- $v.dns | toYaml | nindent 2 }}
