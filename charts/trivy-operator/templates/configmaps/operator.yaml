@@ -6,8 +6,20 @@ metadata:
   namespace: {{ include "trivy-operator.namespace" . }}
   labels: {{- include "trivy-operator.labels" . | nindent 4 }}
 data:
+  {{- with .Values.trivyOperator.scanJobAffinity }}
+  scanJob.affinity: {{ . | toJson | quote }}
+  {{- end }}
   {{- with .Values.trivyOperator.scanJobTolerations }}
   scanJob.tolerations: {{ . | toJson | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobCustomVolumesMount }}
+  scanJob.customVolumesMount: {{ . | toJson | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.scanJobCustomVolumes }}
+  scanJob.customVolumes: {{ . | toJson | quote }}
+  {{- end }}
+  {{- with .Values.nodeCollector.tolerations }}
+  nodeCollector.tolerations: {{ . | toJson | quote }}
   {{- end }}
   {{- with .Values.nodeCollector.volumes }}
   nodeCollector.volumes: {{ . | toJson | quote }}
@@ -21,8 +33,12 @@ data:
   {{- with .Values.trivyOperator.scanJobAutomountServiceAccountToken }}
   scanJob.automountServiceAccountToken: {{ . | quote }}
   {{- end }}
+  scanJob.useGCRServiceAccount: {{ .Values.trivyOperator.useGCRServiceAccount | quote }}
   {{- with .Values.trivyOperator.skipInitContainers }}
   scanJob.skipInitContainers: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.trivyOperator.excludeImages }}
+  scanJob.excludeImages: {{ . | quote }}
   {{- end }}
   {{- with .Values.nodeCollector.excludeNodes }}
   nodeCollector.excludeNodes: {{ . | quote }}
@@ -71,6 +87,10 @@ data:
   trivy.serverURL: {{ printf "http://%s.%s:%s" .Values.trivy.serverServiceName (include "trivy-operator.namespace" .) "4954"  | quote }}
   {{- end }}
   node.collector.imageRef: "{{ include "global.imageRegistry" . | default .Values.nodeCollector.registry }}/{{ .Values.nodeCollector.repository }}:{{ .Values.nodeCollector.tag }}"
+  policies.bundle.oci.ref: "{{ .Values.policiesBundle.registry }}/{{ .Values.policiesBundle.repository }}:{{ .Values.policiesBundle.tag }}"
+  policies.bundle.insecure: {{ .Values.policiesBundle.insecure | quote }}
   {{- with .Values.nodeCollector.imagePullSecret }}
   node.collector.imagePullSecret: "{{ . }}"
   {{- end }}
+
+  node.collector.nodeSelector: {{ .Values.nodeCollector.useNodeSelector | quote }}
