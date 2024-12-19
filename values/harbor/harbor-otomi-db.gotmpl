@@ -9,6 +9,16 @@ storage:
   size: {{ $hdb.size }}
 instances: {{ $hdb.replicas }}
 
+{{- with $hdb.imageName }}
+imageName: {{ . }}
+{{- end }}
+
+postgresql:
+  parameters:
+    max_connections: "32"
+    shared_buffers: 64MB
+    work_mem: 2MB
+
 {{- if eq $obj.type "minioLocal" "linode" }}
 {{- if $b.enabled }}
 backup:
