@@ -142,7 +142,7 @@
             "mode": "fixed"
           },
           "mappings": [],
-          "noValue": "o",
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
