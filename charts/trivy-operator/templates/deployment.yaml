@@ -3,7 +3,14 @@ kind: Deployment
 metadata:
   name: {{ include "trivy-operator.fullname" . }}
   namespace: {{ include "trivy-operator.namespace" . }}
-  labels: {{- include "trivy-operator.labels" . | nindent 4 }}
+  {{- with .Values.operator.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  labels: 
+    {{- include "trivy-operator.labels" . | nindent 4 }}
+    {{- with .Values.operator.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.operator.replicas }}
   {{- with .Values.operator.revisionHistoryLimit }}
@@ -43,81 +50,16 @@ spec:
               value: {{ tpl .Values.targetWorkloads . | quote }}
             - name: OPERATOR_SERVICE_ACCOUNT
               value: {{ include "trivy-operator.serviceAccountName" . | quote }}
-            - name: OPERATOR_LOG_DEV_MODE
-              value: {{ .Values.operator.logDevMode | quote }}
-            - name: OPERATOR_SCAN_JOB_TTL
-              value: {{ .Values.operator.scanJobTTL | quote }}
-            - name: OPERATOR_SCAN_JOB_TIMEOUT
-              value: {{ .Values.operator.scanJobTimeout | quote }}
-            - name: OPERATOR_CONCURRENT_SCAN_JOBS_LIMIT
-              value: {{ .Values.operator.scanJobsConcurrentLimit | quote }}
-            - name: OPERATOR_CONCURRENT_NODE_COLLECTOR_LIMIT
-              value: {{ .Values.operator.scanNodeCollectorLimit | quote }}
-            - name: OPERATOR_SCAN_JOB_RETRY_AFTER
-              value: {{ .Values.operator.scanJobsRetryDelay | quote }}
-            - name: OPERATOR_BATCH_DELETE_LIMIT
-              value: {{ .Values.operator.batchDeleteLimit | quote }}
-            - name: OPERATOR_BATCH_DELETE_DELAY
-              value: {{ .Values.operator.batchDeleteDelay | quote }}
-            - name: OPERATOR_METRICS_BIND_ADDRESS
-              value: ":8080"
-            - name: OPERATOR_METRICS_FINDINGS_ENABLED
-              value: {{ .Values.operator.metricsFindingsEnabled | quote }}
-            - name: OPERATOR_METRICS_VULN_ID_ENABLED
-              value: {{ .Values.operator.metricsVulnIdEnabled | quote }}
-            - name: OPERATOR_HEALTH_PROBE_BIND_ADDRESS
-              value: ":9090"
-            - name: OPERATOR_VULNERABILITY_SCANNER_ENABLED
-              value: {{ .Values.operator.vulnerabilityScannerEnabled | quote }}
-            - name: OPERATOR_SBOM_GENERATION_ENABLED
-              value: {{ .Values.operator.sbomGenerationEnabled | quote }}
-            - name: OPERATOR_VULNERABILITY_SCANNER_SCAN_ONLY_CURRENT_REVISIONS
-              value: {{ .Values.operator.vulnerabilityScannerScanOnlyCurrentRevisions | quote }}
-            - name: OPERATOR_SCANNER_REPORT_TTL
-              value: {{ .Values.operator.scannerReportTTL | quote }}
-            - name: CONTROLLER_CACHE_SYNC_TIMEOUT
-              value: {{ .Values.operator.controllerCacheSyncTimeout | quote }}
-            - name: OPERATOR_CONFIG_AUDIT_SCANNER_ENABLED
-              value: {{ .Values.operator.configAuditScannerEnabled | quote }}
-            - name: OPERATOR_RBAC_ASSESSMENT_SCANNER_ENABLED
-              value: {{ .Values.operator.rbacAssessmentScannerEnabled | quote }}
-            - name: OPERATOR_INFRA_ASSESSMENT_SCANNER_ENABLED
-              value: {{ .Values.operator.infraAssessmentScannerEnabled | quote }}
-            - name: OPERATOR_CONFIG_AUDIT_SCANNER_SCAN_ONLY_CURRENT_REVISIONS
-              value: {{ .Values.operator.configAuditScannerScanOnlyCurrentRevisions | quote }}
-            - name: OPERATOR_EXPOSED_SECRET_SCANNER_ENABLED
-              value: {{ .Values.operator.exposedSecretScannerEnabled | quote }}
-            - name: OPERATOR_METRICS_EXPOSED_SECRET_INFO_ENABLED
-              value: {{ .Values.operator.metricsExposedSecretInfo | quote }}
-            - name: OPERATOR_METRICS_CONFIG_AUDIT_INFO_ENABLED
-              value: {{ .Values.operator.metricsConfigAuditInfo | quote }}
-            - name: OPERATOR_METRICS_RBAC_ASSESSMENT_INFO_ENABLED
-              value: {{ .Values.operator.metricsRbacAssessmentInfo | quote }}
-            - name: OPERATOR_METRICS_INFRA_ASSESSMENT_INFO_ENABLED
-              value: {{ .Values.operator.metricsInfraAssessmentInfo | quote }}   
-            - name: OPERATOR_WEBHOOK_BROADCAST_URL
-              value: {{ .Values.operator.webhookBroadcastURL | quote }}
-            - name: OPERATOR_WEBHOOK_BROADCAST_TIMEOUT
-              value: {{ .Values.operator.webhookBroadcastTimeout | quote }}
-            - name: OPERATOR_SEND_DELETED_REPORTS
-              value: {{ .Values.operator.webhookSendDeletedReports | quote }}
-            - name: OPERATOR_PRIVATE_REGISTRY_SCAN_SECRETS_NAMES
-              value: {{ .Values.operator.privateRegistryScanSecretsNames | toJson | quote }}
-            - name: OPERATOR_ACCESS_GLOBAL_SECRETS_SERVICE_ACCOUNTS
-              value: {{ .Values.operator.accessGlobalSecretsAndServiceAccount | quote }}
-            - name: OPERATOR_BUILT_IN_TRIVY_SERVER
-              value: {{ .Values.operator.builtInTrivyServer | quote }}
-            - name: TRIVY_SERVER_HEALTH_CHECK_CACHE_EXPIRATION
-              value: {{ .Values.operator.trivyServerHealthCheckCacheExpiration | quote }}
-            - name: OPERATOR_MERGE_RBAC_FINDING_WITH_CONFIG_AUDIT
-              value: {{ .Values.operator.mergeRbacFindingWithConfigAudit | quote }}
-            - name: OPERATOR_CLUSTER_COMPLIANCE_ENABLED
-              value: {{ .Values.operator.clusterComplianceEnabled | quote }}
-            {{- if gt (int .Values.operator.replicas) 1 }}
-            - name: OPERATOR_LEADER_ELECTION_ENABLED
-              value: "true"
-            - name: OPERATOR_LEADER_ELECTION_ID
-              value: {{ .Values.operator.leaderElectionId | quote }}
+          envFrom:
+            - configMapRef:
+                name: trivy-operator-config
+            {{- if .Values.operator.valuesFromConfigMap }}
+            - configMapRef:
+                name: {{ .Values.operator.valuesFromConfigMap }}
+            {{- end }}
+            {{- if .Values.operator.valuesFromSecret }}
+            - secretRef:
+                name: {{ .Values.operator.valuesFromSecret }}
             {{- end }}
           ports:
             - name: metrics

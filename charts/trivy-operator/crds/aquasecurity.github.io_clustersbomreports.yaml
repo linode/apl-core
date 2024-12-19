@@ -4,18 +4,17 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: sbomreports.aquasecurity.github.io
+  name: clustersbomreports.aquasecurity.github.io
 spec:
   group: aquasecurity.github.io
   names:
-    kind: SbomReport
-    listKind: SbomReportList
-    plural: sbomreports
+    kind: ClusterSbomReport
+    listKind: ClusterSbomReportList
+    plural: clustersbomreports
     shortNames:
-    - sbom
-    - sboms
-    singular: sbomreport
-  scope: Namespaced
+    - clustersbom
+    singular: clustersbomreport
+  scope: Cluster
   versions:
   - additionalPrinterColumns:
     - description: The name of image repository
@@ -47,8 +46,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: SbomReport summarizes components and dependencies found in container
-          image
+        description: ClusterSbomReport summarizes components and dependencies found
+          in container image
         properties:
           apiVersion:
             description: |-
@@ -391,7 +390,6 @@ spec:
         required:
         - report
         type: object
-        x-kubernetes-preserve-unknown-fields: true
     served: true
     storage: true
     subresources: {}
