@@ -10,7 +10,6 @@ targetNamespaces: "{{- tpl $joinTpl (dict "list" $targets "sep" ",") }}"
 
 operator:
   replicas: {{ $t.operator.replicaCount }}
-  # metricsVulnIdEnabled set to false because of bug in trivy
   metricsVulnIdEnabled: false
   infraAssessmentScannerEnabled: false
   clusterComplianceEnabled: false
