@@ -4,7 +4,7 @@
 ---
 apiVersion: v1
 imagePullSecrets:
-{{- with $v.otomi.globalPullSecret }}
+{{- with $v.globalPullSecret }}
 - name: otomi-pullsecret-global
 {{- end }}
 {{- if $h.enabled }}
@@ -113,11 +113,11 @@ kind: Secret
 metadata:
   name: gitea-credentials
   annotations:
-    tekton.dev/git-0: https://gitea.{{ $v.cluster.domainSuffix }}
+    tekton.dev/git-0: "{{ $v.gitOps.globalUrl }}"
 type: kubernetes.io/basic-auth
 stringData:
-  username: otomi-admin
-  password: {{ $v.otomi.adminPassword }}
+  username: {{ $v.gitOps.adminUsername }}
+  password: {{ $v.gitOps.adminPassword }}
 ---
 apiVersion: v1
 kind: ServiceAccount

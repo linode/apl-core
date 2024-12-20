@@ -12,7 +12,6 @@
 {{- $ := . }}
 {{- $v := .dot.Values }}
 {{- $istioSvc := print "istio-ingressgateway-" .type }}
-{{- $cm := index $v.apps "cert-manager" }}
 {{- range $ingress := $v.ingress.classes }}
   {{- $routes := dict }}
   {{- $names := list }}
@@ -73,8 +72,8 @@ metadata:
     {{- end}}
     {{- if and $.hasAuth (eq $ingress.className $v.ingress.platformClass.className )}}
     nginx.ingress.kubernetes.io/auth-response-headers: Authorization
-    nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://auth.{{ $v.cluster.domainSuffix }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-url: "{{ $v.sso.authUrl }}"
+    nginx.ingress.kubernetes.io/auth-signin: "{{ $v.sso.signInUrl }}"
     {{- end }}
     {{- if and (hasKey $ingress "entrypoint") (ne $ingress.entrypoint "")}}
     external-dns.alpha.kubernetes.io/target: {{ $ingress.entrypoint }} 
@@ -129,7 +128,7 @@ spec:
       secretName: copy-team-{{ $v.teamId }}-{{ index $secrets $domain }}
             {{- end }}
           {{- else }}
-      secretName: {{ $v._derived.tlsSecretName }}
+      secretName: {{ $v.tlsSecretName }}
           {{- end }}
         {{- end }}
       {{- end }}

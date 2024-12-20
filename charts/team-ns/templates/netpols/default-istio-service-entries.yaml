@@ -11,7 +11,7 @@ metadata:
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   hosts:
-    - {{ trimPrefix "https://" .Values.apps.keycloak.address }}
+    - {{ $v.keycloakDomain }}
   ports:
     - number: 443
       name: https

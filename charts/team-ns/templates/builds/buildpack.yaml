@@ -61,7 +61,7 @@ spec:
       workspace: docker-credentials
     params:
     - name: APP_IMAGE
-      value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+      value: {{ $v.harborDomain }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
     {{- with .mode.buildpacks.path }}
     - name: SOURCE_SUBPATH
       value: {{ . }}

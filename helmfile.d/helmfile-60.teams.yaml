@@ -13,15 +13,6 @@ bases:
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 {{- $tc := $v.teamConfig }}
-{{- $coreTeamServices := list }}
-{{- range $s := $v.teamApps }}
-  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
-    {{- range $ing := $s.ingress }}
-      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
-      {{- $coreTeamServices = append $coreTeamServices $svc }}
-    {{- end }}
-  {{- end }}
-{{- end }}
 {{- $slackTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
 releases:
@@ -243,23 +234,5 @@ releases:
       team: {{ $teamId }}
       pipeline: otomi-task-teams
     values:
-      - cluster: {{- $v.cluster | toYaml | nindent 10 }}
-        apps: {{- $a | toYaml | nindent 10 }}
-        otomi: {{- $v.otomi | toYaml | nindent 10 }}
-        oidc: {{- $v | get "oidc" dict | toYaml | nindent 10 }}
-        domain: {{ $domain }}
-        ingress: {{- $v.ingress | toYaml | nindent 10 }}
-        dns: {{- $v.dns | toYaml | nindent 10 }}
-        _derived:
-          tlsSecretName: {{ $v._derived.tlsSecretName }}
-      - {{- omit $team "apps" | toYaml | nindent 8 }}
-        teamId: {{ $teamId }}
-        teamApps: {{- toYaml $teamApps | nindent 10 }}
-        teamIds: {{- toYaml (keys $v.teamConfig) | nindent 10 }}
-      - services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 10 }}
-  {{- if (gt (len $teamServices) 0) }}
-      - name: blackbox
-        svc: prometheus-blackbox-exporter
-        port: 9115
-  {{- end }}
+      - ../values/team-ns/team-ns.gotmpl
 {{- end }}
