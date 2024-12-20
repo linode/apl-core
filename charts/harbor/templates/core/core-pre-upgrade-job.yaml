@@ -3,6 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: migration-job
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
     component: migrator
@@ -47,6 +48,9 @@ spec:
               secretKeyRef:
                 name: {{ .Values.database.external.existingSecret }}
                 key: password
+        {{- end }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
         {{- end }}               
         volumeMounts:
         - name: config

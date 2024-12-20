@@ -5,6 +5,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ template "harbor.registry" . }}
+  namespace: {{ .Release.Namespace | quote }}
   annotations:
   {{- range $key, $value := $registry.annotations }}
     {{ $key }}: {{ $value | quote }}
@@ -15,6 +16,7 @@ metadata:
   labels:
 {{ include "harbor.labels" . | indent 4 }}
     component: registry
+    app.kubernetes.io/component: registry
 spec:
   accessModes: 
     - {{ $registry.accessMode }}

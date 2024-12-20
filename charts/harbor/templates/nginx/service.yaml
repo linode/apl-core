@@ -5,14 +5,21 @@ metadata:
 {{- if eq .Values.expose.type "clusterIP" }}
 {{- $clusterIP := .Values.expose.clusterIP }}
   name: {{ $clusterIP.name }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
+{{- if .Values.expose.clusterIP.labels }}
+{{ toYaml $clusterIP.labels | indent 4 }}
+{{- end }}
 {{- with $clusterIP.annotations }}
   annotations:
   {{- toYaml . | nindent 4 }}
 {{- end }}
 spec:
   type: ClusterIP
+  {{- if .Values.expose.clusterIP.staticClusterIP }}
+  clusterIP: {{ .Values.expose.clusterIP.staticClusterIP }}
+  {{- end }}
   ports:
     - name: http
       port: {{ $clusterIP.ports.httpPort }}
@@ -22,16 +29,18 @@ spec:
       port: {{ $clusterIP.ports.httpsPort }}
       targetPort: 8443
     {{- end }}
-    {{- if .Values.notary.enabled }}
-    - name: notary
-      port: {{ $clusterIP.ports.notaryPort }}
-      targetPort: 4443
-    {{- end }}
 {{- else if eq .Values.expose.type "nodePort" }}
 {{- $nodePort := .Values.expose.nodePort }}
   name: {{ $nodePort.name }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
+{{- if .Values.expose.nodePort.labels }}
+{{ toYaml $nodePort.labels | indent 4 }}
+{{- end }}
+{{- with $nodePort.annotations }}
+  annotations:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
 spec:
   type: NodePort
   ports:
@@ -49,19 +58,14 @@ spec:
       nodePort: {{ $nodePort.ports.https.nodePort }}
       {{- end }}
     {{- end }}
-    {{- if .Values.notary.enabled }}
-    - name: notary
-      port: {{ $nodePort.ports.notary.port }}
-      targetPort: 4443
-      {{- if $nodePort.ports.notary.nodePort }}
-      nodePort: {{ $nodePort.ports.notary.nodePort }}
-      {{- end }}
-    {{- end }}
 {{- else if eq .Values.expose.type "loadBalancer" }}
 {{- $loadBalancer := .Values.expose.loadBalancer }}
   name: {{ $loadBalancer.name }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
+{{- if .Values.expose.loadBalancer.labels }}
+{{ toYaml $loadBalancer.labels | indent 4 }}
+{{- end }}
 {{- with $loadBalancer.annotations }}
   annotations:
   {{- toYaml . | nindent 4 }}
@@ -83,11 +87,6 @@ spec:
     - name: https
       port: {{ $loadBalancer.ports.httpsPort }}
       targetPort: 8443
-    {{- end }}
-    {{- if .Values.notary.enabled }}
-    - name: notary
-      port: {{ $loadBalancer.ports.notaryPort }}
-      targetPort: 4443
     {{- end }}
 {{- end }}
   selector:
