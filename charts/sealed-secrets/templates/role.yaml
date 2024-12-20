@@ -11,6 +11,10 @@ metadata:
     {{- if .Values.commonLabels }}
     {{- include "sealed-secrets.render" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
     {{- end }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "sealed-secrets.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
 rules:
   - apiGroups:
       - ""
@@ -28,6 +32,8 @@ rules:
       - create
       - list
 ---
+{{- end }}
+{{- if and .Values.rbac.create .Values.rbac.serviceProxier.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -60,8 +66,8 @@ rules:
     verbs:
       - create
       - get
-{{ end }}
 ---
+{{- end }}
 {{ if and (and .Values.rbac.create .Values.rbac.namespacedRoles) (not $.Values.rbac.clusterRole) }}
   {{- range $additionalNamespace := $.Values.additionalNamespaces }}
 apiVersion: rbac.authorization.k8s.io/v1

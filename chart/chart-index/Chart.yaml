@@ -1,24 +1,8 @@
 apiVersion: v2
 name: chart-index
 description: APL chart index
-
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: library
-
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
 version: 0.1.0
-
-# # This is the version number of the application being deployed. This version number should be
-# # incremented each time you make changes to the application. Versions are not expected to
-# # follow Semantic Versioning. They should reflect the version the application is using.
-# # It is recommended to use it with quotes.
-# appVersion: "1.16.0"
-
-# The below dependencies are used to download Helm chart archive to the charts directory. Note that charts directory is a symlink.
 dependencies:
   - name: argo-cd
     version: 6.7.3
@@ -57,7 +41,7 @@ dependencies:
     version: 6.11.2
     repository: https://grafana.github.io/helm-charts
   - name: sealed-secrets
-    version: 2.14.1
+    version: 2.17.0
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     version: 1.0.2
