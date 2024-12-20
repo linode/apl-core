@@ -9,3 +9,12 @@ giteaPassword: {{ $g.adminPassword }}
 otomiVersion: {{ $v.otomi.version }}
 
 cloneUnsecure: true
+
+
+tektonTask:
+  resources:
+    # Tekton Task pod resouce limits and requests
+    requests:
+      cpu: '50m'
+    limits:
+      cpu: '2'
