@@ -7,6 +7,9 @@ metadata:
   labels:
     app.kubernetes.io/name: trivy-server
     app.kubernetes.io/instance: trivy-server
+    {{- with .Values.trivy.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   podManagementPolicy: "Parallel"
   serviceName: {{ .Values.trivy.serverServiceName }}
@@ -24,15 +27,18 @@ spec:
       spec:
         resources:
           requests:
-            storage: 5Gi
+            storage: {{ .Values.trivy.storageSize }}
         accessModes:
           - ReadWriteOnce
         storageClassName: {{ .Values.trivy.storageClassName }}
-  {{- end }}        
+  {{- end }}
   template:
     metadata:
       annotations:
         checksum/config: 7fcc66ace3f98462349856795765021e7bf7a0106f28439a9f6dc74257404370
+        {{- with .Values.operator.serverAdditionalAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         {{- with .Values.trivy.podLabels }}
           {{- toYaml . | nindent 8 }}
@@ -81,6 +87,14 @@ spec:
                 name: trivy-operator-trivy-config
             - secretRef:
                 name: trivy-operator-trivy-config
+            {{- if .Values.trivy.valuesFromConfigMap }}
+            - configMapRef:
+                name: {{ .Values.trivy.valuesFromConfigMap }}
+            {{- end }}
+            {{- if .Values.trivy.valuesFromSecret }}
+            - secretRef:
+                name: {{ .Values.trivy.valuesFromSecret }}
+            {{- end }}
           ports:
             - name: trivy-http
               containerPort: 4954
@@ -109,6 +123,11 @@ spec:
             - mountPath: /home/scanner/.cache
               name: data
               readOnly: false
+          {{- with .Values.trivy.sslCertDir | quote }}
+            - mountPath: {{ . }}
+              name: ssl-cert-dir
+              readOnly: true
+          {{- end }}
           {{- with .Values.trivy.server.resources }}
           resources: {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -118,6 +137,11 @@ spec:
         {{- if not .Values.trivy.storageClassEnabled }}
         - name: data
           emptyDir: {}
+        {{- end }}
+        {{- with .Values.trivy.sslCertDir | quote }}
+        - name: ssl-cert-dir
+          hostPath:
+            path: {{ . }}
         {{- end }}
       {{- with .Values.tolerations }}
       tolerations: {{- toYaml . | nindent 8 }}
