@@ -49,5 +49,3 @@ releases:
         services: {{- $services | toYaml | nindent 10 }}
         networkPolicy: null
         resourceQuota: null
-        ingress: {{- $v.ingress | toYaml | nindent 10 }}
-        dns: {{- $v.dns | toYaml | nindent 10 }}
