@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: 1.24.1
+appVersion: 1.25.0
 dependencies:
 - alias: monitoring
   condition: monitoring.grafanaDashboard.create
@@ -22,4 +22,4 @@ name: cloudnative-pg
 sources:
 - https://github.com/cloudnative-pg/charts
 type: application
-version: 0.22.1
+version: 0.23.0

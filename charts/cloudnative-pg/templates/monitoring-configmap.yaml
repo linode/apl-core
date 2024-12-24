@@ -18,6 +18,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Values.monitoringQueriesConfigMap.name }}
+  namespace: {{ include "cloudnative-pg.namespace" . }}
   labels:
     {{- include "cloudnative-pg.labels" . | nindent 4 }}
     cnpg.io/reload: ""
