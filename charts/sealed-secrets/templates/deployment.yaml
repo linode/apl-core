@@ -8,9 +8,10 @@ metadata:
     {{- if .Values.commonLabels }}
     {{- include "sealed-secrets.render" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
     {{- end }}
-  {{- if .Values.commonAnnotations }}
-  annotations: {{- toYaml .Values.commonAnnotations | nindent 4 }}
-  {{- end }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "sealed-secrets.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
 spec:
   replicas: 1
   {{- if .Values.revisionHistoryLimit }}
@@ -81,6 +82,14 @@ spec:
             - --key-renew-period
             - {{ .Values.keyrenewperiod | quote }}
             {{- end }}
+            {{- if .Values.keyttl }}
+            - --key-ttl
+            - {{ .Values.keyttl | quote }}
+            {{- end }}
+            {{- if .Values.keycutofftime }}
+            - --key-cutoff-time
+            - {{ .Values.keycutofftime | quote }}
+            {{- end }}
             {{- if .Values.rateLimit }}
             - --rate-limit
             - {{ .Values.rateLimit | quote }}
@@ -105,7 +114,7 @@ spec:
             {{- end }}
             - --privatekey-annotations
             - {{ trimSuffix "," $privatekeyAnnotations | quote }}
-            {{- end }}            
+            {{- end }}
             {{- if $.Values.privateKeyLabels }}
             {{- $privateKeyLabels := ""}}
             {{- range $k, $v := $.Values.privateKeyLabels }}
@@ -120,14 +129,57 @@ spec:
             {{- if .Values.logInfoStdout }}
             - --log-info-stdout
             {{- end }}
+            {{- if .Values.logLevel }}
+            - --log-level
+            - {{ .Values.logLevel }}
+            {{- end }}
+            {{- if .Values.logFormat }}
+            - --log-format
+            - {{ .Values.logFormat }}
+            {{- end }}
+            {{- if .Values.containerPorts.http }}
+            - --listen-addr
+            - {{ printf ":%s" (.Values.containerPorts.http | toString ) }}
+            {{- end }}
+            {{- if .Values.containerPorts.metrics }}
+            - --listen-metrics-addr
+            - {{ printf ":%s" (.Values.containerPorts.metrics | toString) }}
+            {{- end }}
+            {{- if .Values.maxRetries }}
+            - --max-unseal-retries
+            - {{ .Values.maxRetries | quote }}
+            {{- end }}
           {{- end }}
           image: {{ printf "%s/%s:%s" .Values.image.registry .Values.image.repository .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- if (.Values.resources.limits).cpu }}
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+            {{- end }}
+            {{- if (.Values.resources.limits).memory }}
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+            {{- end }}
           ports:
-            - containerPort: 8080
-              name: http
-            - containerPort: 8081
-              name: metrics
+            - name: http
+              containerPort: {{ .Values.containerPorts.http | default "8080" }}
+              {{- if .Values.hostNetwork }}
+              hostPort: {{ .Values.containerPorts.http }}
+              {{- else if .Values.hostPorts.http }}
+              hostPort: {{ .Values.hostPorts.http }}
+              {{- end }}
+            - name: metrics
+              containerPort: {{ .Values.containerPorts.metrics | default "8081" }}
+              {{- if .Values.hostNetwork }}
+              hostPort: {{ .Values.containerPorts.metrics }}
+              {{- else if .Values.hostPorts.metrics }}
+              hostPort: {{ .Values.hostPorts.metrics }}
+              {{- end }}
           {{- if .Values.startupProbe.enabled }}
           startupProbe: {{- include "sealed-secrets.render" (dict "value" (omit .Values.startupProbe "enabled") "context" $) | nindent 12 }}
             tcpSocket:
@@ -159,13 +211,13 @@ spec:
           {{- end }}
           volumeMounts:
             {{- if .Values.additionalVolumeMounts }}
-              {{- toYaml .Values.additionalVolumeMounts | nindent 12 }} 
+              {{- toYaml .Values.additionalVolumeMounts | nindent 12 }}
             {{- end }}
             - mountPath: /tmp
               name: tmp
-      volumes: 
+      volumes:
       {{- if .Values.additionalVolumes }}
-        {{- toYaml .Values.additionalVolumes | nindent 8 }} 
+        {{- toYaml .Values.additionalVolumes | nindent 8 }}
       {{- end }}
         - name: tmp
           emptyDir: {}
