@@ -50,6 +50,10 @@ const applyAll = async () => {
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
+  d.info('show directory')
+  await $`pwd`
+  d.info('show all files in directory')
+  await $`ls -a`
   const tag = await getImageTag()
   const version = await getCurrentVersion()
   await setDeploymentState({ status: 'deploying', deployingTag: tag, deployingVersion: version })
@@ -159,10 +163,6 @@ const apply = async (): Promise<void> => {
     return
   }
   d.info('Start apply')
-  d.info('show directory')
-  await $`pwd`
-  d.info('show all files in directory')
-  await $`ls -a`
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
   await hf(
     {
