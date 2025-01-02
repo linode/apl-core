@@ -132,7 +132,7 @@ export async function retryIsOAuth2ProxyRunning() {
     async () => {
       await isOAuth2ProxyAvailable(k8s.core())
     },
-    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+    { retries: 1, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   ).catch((e) => {
     d.error('Error checking if OAuth2Proxy is ready:', e)
     throw e
