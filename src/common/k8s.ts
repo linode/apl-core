@@ -253,7 +253,7 @@ export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
       // the ls-remote exist with zero even if repo is empty
       await $`git ls-remote ${repoUrl}`
     } catch (e) {
-      d.warn(e.message)
+      d.warn(`The ${repoUrl} is not yet reachable. Retrying in ${retryOptions.maxTimeout} ms`)
       throw e
     }
   }, retryOptions)
