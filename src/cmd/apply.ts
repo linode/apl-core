@@ -159,6 +159,10 @@ const apply = async (): Promise<void> => {
     return
   }
   d.info('Start apply')
+  d.info('show directory')
+  await $`pwd`
+  d.info('show all files in directory')
+  await $`ls -a`
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
   await hf(
     {
