@@ -1,0 +1,72 @@
+{{- $v := .Values }}
+{{- $a := .Values.apps }}
+{{- $teamId := .Release.Labels.team }}
+{{- $team := index $v.teamConfig .Release.Labels.team }}
+{{- $teamApps := $team.apps | default dict }}
+{{- $teamServices := ($team | get "services" list) }}
+{{- $domain := ($v.cluster | get "domainSuffix" nil) }}
+{{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
+
+{{- $coreTeamServices := list }}
+{{- range $s := $v.teamApps }}
+  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
+    {{- range $ing := $s.ingress }}
+      {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
+      {{- $coreTeamServices = append $coreTeamServices $svc }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+apps:
+  harbor:
+    enabled: {{ $a.harbor.enabled }}
+  knative: 
+    enabled: {{ $a.knative.enabled }}
+  argocd:
+    enabled: {{ $a.argocd.enabled }}
+  velero:
+    enabled: {{ $a.velero.enabled }}
+  kyverno:
+    enabled: {{ $a.kyverno.enabled }}
+
+isMultitenant: {{ $v.otomi.isMultitenant }}
+globalPullSecret: {{ $v | get "otomi.globalPullSecret" nil }}
+domain: {{ $domain }}
+ingress: {{- $v.ingress | toYaml | nindent 2 }}
+dns: {{- $v.dns | toYaml | nindent 2 }}
+secrets: {{- $team  | get "secrets" list | toYaml | nindent 2 }}
+workloads: {{- $team | get "workloads" list | toYaml | nindent 2 }}
+backups: {{- $team | get "backups" list | toYaml | nindent 2 }}
+builds: {{- $team | get "builds" list | toYaml | nindent 2 }}
+policies: {{- $team | get "policies" list | toYaml | nindent 2 }}
+sealedsecrets: {{- $team | get "sealedsecrets" list | toYaml | nindent 2 }}
+networkPolicy: {{- $team | get "networkPolicy" dict | toYaml | nindent 2 }}
+managedMonitoring: {{- $team | get "managedMonitoring" dict | toYaml | nindent 2 }}
+teamId: {{ $teamId }}
+teamApps: {{- toYaml $teamApps | nindent 2 }}
+teamIds: {{- toYaml (keys $v.teamConfig) | nindent 2 }}
+tracingEnabled: {{ $a.istio.tracing.enabled }}
+services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 2 }}
+resourceQuota: {{- $team | get "resourceQuota" dict | toYaml | nindent 2 }}
+
+gitOps:
+  adminPassword: {{ $a.gitea.adminPassword }}
+  adminUsername: {{ $a.gitea.adminUsername }}
+  globalUrl: "https://{{ $v._derived.giteaDomain }}"
+  teamRepoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
+  workloadValuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
+
+tlsSecretName: {{ $v._derived.tlsSecretName }}
+giteaDomain: {{ $v._derived.giteaDomain }}
+keycloakDomain: {{ $v._derived.keycloakDomain }}
+authDomain: {{ $v._derived.authDomain }}
+harborDomain: {{ $v._derived.harborDomain }}
+
+sso:
+  masterRealm: {{ printf "%s/realms/otomi" $v._derived.keycloakDomain }}
+  logoutUri: "/oauth2/sign_out?rd={{ $keycloakRealm }}/protocol/openid-connect/logout?redirect_uri=https://{{ $v._derived.consoleDomain }}"
+  issuer: "{{ $keycloakRealm }}"
+  jwksUri: "{{ $keycloakRealm }}/protocol/openid-connect/certs"
+  clientId: {{ $a.keycloak.idp.clientID }}
+  authUrl: "http://oauth2-proxy.istio-system.svc.cluster.local/oauth2/auth"
+  signInUrl: "https://{{ $v._derived.authDomain }}/oauth2/start?rd=/oauth2/redirect/$http_host$escaped_request_uri"

@@ -1,6 +1,4 @@
 {{- $v := .Values }}
-{{- $k := $v.apps.keycloak | default dict }}
-{{- $kkMaster := printf "https://keycloak.%s/realms/otomi" $v.cluster.domainSuffix }}
 {{- $ := . }}
 {{- range $s := $v.services }}
   {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
@@ -59,8 +57,8 @@ spec:
         - uri:
             prefix: /logout-otomi
       redirect:
-        authority: auth.{{ $v.cluster.domainSuffix }}
-        uri: /oauth2/sign_out?rd={{ $kkMaster }}/protocol/openid-connect/logout?redirect_uri=https://{{ printf "console.%s" $v.cluster.domainSuffix }}
+        authority: {{ $v.authDomain }}
+        uri: {{ $v.sso.logoutUri }}
     -
         {{- with $s.paths | default (list "/") }}
       match:
@@ -207,8 +205,8 @@ spec:
         - uri:
             prefix: /logout-otomi
       redirect:
-        authority: auth.{{ $v.cluster.domainSuffix }}
-        uri: /oauth2/sign_out?rd={{ $kkMaster }}/protocol/openid-connect/logout?redirect_uri=https://{{ printf "otomi.%s" $v.cluster.domainSuffix }}
+        authority: "{{ $v.authDomain }}"
+        uri: "{{ $v.sso.logoutUri }}"
     -
         {{- with $s.paths | default (list "/") }}
       match:
@@ -310,13 +308,13 @@ spec:
   selector:
     matchLabels: {{ $workload | nindent 6 }}
   jwtRules:
-    - issuer: {{ $kkMaster }}
-      jwksUri: {{ $kkMaster }}/protocol/openid-connect/certs
+    - issuer: {{ $v.sso.masterRealm }}
+      jwksUri: {{ $v.sso.jwksUri }}
       audiences:
-        - {{ $k.idp.clientID }}
+        - {{ $v.sso.clientId }}
       forwardOriginalToken: {{ $s.authz.forwardOriginalToken | default false }}
 ---    
-      {{- $principal := printf "https://keycloak.%s/realms/otomi/*" $v.cluster.domainSuffix }}
+      {{- $principal := printf "%s/*" $v.masterRealm }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
