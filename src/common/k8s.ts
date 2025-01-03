@@ -1,5 +1,6 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable no-await-in-loop */
+import { CoreV1Api, V1Secret } from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
@@ -16,7 +17,6 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
-import { CoreV1Api, V1Secret } from '@kubernetes/client-node'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -212,7 +212,7 @@ type WaitTillAvailableOptions = Options & {
 
 export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
   const retryOptions: Options = {
-    retries: 10,
+    retries: 20,
     maxTimeout: 30000,
   }
   const d = terminal('common:k8s:waitTillGitRepoAvailable')
@@ -222,7 +222,7 @@ export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
       // the ls-remote exist with zero even if repo is empty
       await $`git ls-remote ${repoUrl}`
     } catch (e) {
-      d.warn(e.message)
+      d.warn(`The ${repoUrl} is not yet reachable. Retrying in ${retryOptions.maxTimeout} ms`)
       throw e
     }
   }, retryOptions)

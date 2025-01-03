@@ -12,7 +12,7 @@ import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/va
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
-import { $, nothrow } from 'zx'
+import { $, cd } from 'zx'
 import { applyAsApps } from './apply-as-apps'
 import {
   cloneOtomiChartsInGitea,
@@ -146,12 +146,11 @@ const apply = async (): Promise<void> => {
   if (!argv.label && !argv.file) {
     await retry(async (bail) => {
       try {
+        cd(rootDir)
         await applyAll()
       } catch (e) {
         d.error(e)
-        await nothrow($`helm uninstall wait-for-otomi-realm -n maintenance`)
-        await nothrow($`kubectl delete job wait-for-otomi-realm -n maintenance`)
-        d.info(`Retrying in ${retryOptions.maxRetryTime} ms`)
+        d.info(`Retrying in ${retryOptions.maxTimeout} ms`)
         throw e
       }
     }, retryOptions)
