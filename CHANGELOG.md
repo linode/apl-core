@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.1.3](https://github.com/linode/apl-core/compare/v4.1.2...v4.1.3) (2025-01-06)
+
+
+### Bug Fixes
+
+* ensure correct working directory and increase retry timeout ([#1882](https://github.com/linode/apl-core/issues/1882)) ([30996b7](https://github.com/linode/apl-core/commit/30996b76a977f63b3f4fa1a5d662b7066d924645))
+* removed repoUrl variable from error message ([#1885](https://github.com/linode/apl-core/issues/1885)) ([c4e92b6](https://github.com/linode/apl-core/commit/c4e92b6ea34b88722e461ea66f4887bc186a734f))
+
 ### [4.1.2](https://github.com/linode/apl-core/compare/v4.1.1...v4.1.2) (2024-12-16)
 
 
