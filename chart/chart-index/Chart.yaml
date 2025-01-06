@@ -49,3 +49,6 @@ dependencies:
   - name: velero
     version: 5.4.1
     repository: https://vmware-tanzu.github.io/helm-charts/
+  - name: trivy-operator
+    version: 0.25.0
+    repository: https://github.com/aquasecurity/trivy-operator/
