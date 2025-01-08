@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.2.0](https://github.com/linode/apl-core/compare/v4.1.0...v4.2.0) (2025-01-08)
+
+
+### Features
+
+* add path for gitea ([#1835](https://github.com/linode/apl-core/issues/1835)) ([6e62d6a](https://github.com/linode/apl-core/commit/6e62d6a15868ee8debc9124df0fbc9c145d462d9))
+* add prometheus rule to validate db backup executions ([#1866](https://github.com/linode/apl-core/issues/1866)) ([5586cd9](https://github.com/linode/apl-core/commit/5586cd9b522e303cb168a51381f942317a453301))
+* add prometheus rules for cnpg backups ([#1837](https://github.com/linode/apl-core/issues/1837)) ([99e9e20](https://github.com/linode/apl-core/commit/99e9e2061069b405d5e8da844bd52237155ef4ef))
+* add resource configuration for apps to teams ([#1819](https://github.com/linode/apl-core/issues/1819)) ([64a51c3](https://github.com/linode/apl-core/commit/64a51c3e0c95ca54a8a535ddff3d3115dd239f8b))
+* lower database memory footprint ([#1856](https://github.com/linode/apl-core/issues/1856)) ([8dfe18b](https://github.com/linode/apl-core/commit/8dfe18b566db5f046c28515c7dbb7f5ca3e53c21))
+* cnpg upgrade fix ([#1871](https://github.com/linode/apl-core/issues/1871)) ([faa8ac8](https://github.com/linode/apl-core/commit/faa8ac881d423e2302a59c2384f377a95a1891b4))
+* lower pipeline and db footprint ([#1873](https://github.com/linode/apl-core/issues/1873)) ([3b76352](https://github.com/linode/apl-core/commit/3b76352734294e18b02c75b658bfb1cf54a01ffe))
+* node 20 upgrade ([#1797](https://github.com/linode/apl-core/issues/1797)) ([69d7364](https://github.com/linode/apl-core/commit/69d7364da43f3e1805c9ea8369c029e3e9e6f437))
+* patch argocd resources when oomkilled ([#1814](https://github.com/linode/apl-core/issues/1814)) ([99553f3](https://github.com/linode/apl-core/commit/99553f3aa0ebe5cae3cfbb44e4d53af2f35f4cac))
+* removed uneeded tag ([#1811](https://github.com/linode/apl-core/issues/1811)) ([8cc8441](https://github.com/linode/apl-core/commit/8cc8441c0342b59e678736ff3c0fbe0cfe1c7a80))
+* render only relevant values for team-ns helm chart ([#1872](https://github.com/linode/apl-core/issues/1872)) ([37bdd3c](https://github.com/linode/apl-core/commit/37bdd3c47f0338e552d3cf3f76f3b0a550d6d9ee))
+* update helm secrets ([#1839](https://github.com/linode/apl-core/issues/1839)) ([6ea07ae](https://github.com/linode/apl-core/commit/6ea07aea1caf73466d32982f9f33874f4aea9306))
+* updated cloud-tty tools [TTY][MINOR] ([#1815](https://github.com/linode/apl-core/issues/1815)) ([26f388e](https://github.com/linode/apl-core/commit/26f388e6304c569877349e8b2c69696403c36904))
+* updated release tag generation ([#1816](https://github.com/linode/apl-core/issues/1816)) ([ea936d6](https://github.com/linode/apl-core/commit/ea936d62cf55ff1c755c4265c51787c9cf1dc44b))
+* upgrade Trivy Operator to support k8s version 1.31 ([#1845](https://github.com/linode/apl-core/issues/1845)) ([e78fdb8](https://github.com/linode/apl-core/commit/e78fdb800d94d401bc7d7f7777f19916d158aa28))
+* upgrading cnpg chart and postgresql version ([#1784](https://github.com/linode/apl-core/issues/1784)) ([2e355c5](https://github.com/linode/apl-core/commit/2e355c5e34d74777346367d96678e15dd6b9aae5))
+
+
+### Bug Fixes
+
+* git url encoding in otomi-tasks  ([#1808](https://github.com/linode/apl-core/issues/1808)) ([74a1705](https://github.com/linode/apl-core/commit/74a17050ef930e3fafe6419ddf1744b761ba8105))
+* apl-tools patch image generation ([#1824](https://github.com/linode/apl-core/issues/1824)) ([662db99](https://github.com/linode/apl-core/commit/662db991940e47ae00cd067780e80eb8bfa9971d))
+* broken builds in the input files ([#1838](https://github.com/linode/apl-core/issues/1838)) ([de56ccb](https://github.com/linode/apl-core/commit/de56ccb3b4ab6de3a6cdde9f3ac5d3cffb48e3c6))
+* CNPG object storage endpint URL ([#1812](https://github.com/linode/apl-core/issues/1812)) ([3b79846](https://github.com/linode/apl-core/commit/3b79846f7591dd069b351ac485a738e51e309e64))
+* ensure correct working directory and increase retry timeout ([#1882](https://github.com/linode/apl-core/issues/1882)) ([4ab74e0](https://github.com/linode/apl-core/commit/4ab74e0c9b98ab77364cd9bdbd6db67d90d3c7f4))
+* install minio based on enabled ([#1847](https://github.com/linode/apl-core/issues/1847)) ([f99e49f](https://github.com/linode/apl-core/commit/f99e49f10b2dd2d9744dab22d6a308d5b0d410be))
+* reference to team network policies ([#1888](https://github.com/linode/apl-core/issues/1888)) ([1467a61](https://github.com/linode/apl-core/commit/1467a613426dee8d3a17a80b3098063571d92507))
+* removed external-secrets charts from chart-index ([#1864](https://github.com/linode/apl-core/issues/1864)) ([8a20b29](https://github.com/linode/apl-core/commit/8a20b29bfa60886efa500600462e57fe659ad135))
+* removed repoUrl variable from error message ([#1885](https://github.com/linode/apl-core/issues/1885)) ([1f64773](https://github.com/linode/apl-core/commit/1f647730fb37e2148619dad06d0e97b2e53b4a4a))
+* resource check for argocd controller ([#1836](https://github.com/linode/apl-core/issues/1836)) ([a02a5b8](https://github.com/linode/apl-core/commit/a02a5b82c40a04f3231eccdeaa08d7adab8508a4))
+* skip assignment of team-admin to argocd admin roles ([#1818](https://github.com/linode/apl-core/issues/1818)) ([39a53f9](https://github.com/linode/apl-core/commit/39a53f916a627382bdb744b0f3251790b643d926))
+* update values schema to adhere k8s naming ([#1850](https://github.com/linode/apl-core/issues/1850)) ([8e8e21d](https://github.com/linode/apl-core/commit/8e8e21d9e8b51d3e751b174f6a2a3e58686efec0))
+
+
+### CI
+
+* add dependabot ([#1807](https://github.com/linode/apl-core/issues/1807)) ([497c66d](https://github.com/linode/apl-core/commit/497c66d71e2dc3dd6b00882aedc681c970c84c59))
+* github-actions update ([#1825](https://github.com/linode/apl-core/issues/1825)) ([e0bc42e](https://github.com/linode/apl-core/commit/e0bc42e7237bec58552347c3697aa3ce972e37dd))
+* dependabot ignore >=21 node ([#1823](https://github.com/linode/apl-core/issues/1823)) ([d921978](https://github.com/linode/apl-core/commit/d9219782f07b6288fd5be396b770fcb62dd9f1bf))
+* add script to check for helm chart updates ([#1827](https://github.com/linode/apl-core/issues/1827)) ([d77351d](https://github.com/linode/apl-core/commit/d77351ddb72374bcf90c7b3d4bfd9649b8e500ec))
+* update chart version index for a single chart ([#1867](https://github.com/linode/apl-core/issues/1867)) ([d636aba](https://github.com/linode/apl-core/commit/d636abae840af6bb5662f8ed1941a4996ffd9e7c))
+* **deps:** bump ncipollo/release-action from 1.12.0 to 1.14.0 ([#1821](https://github.com/linode/apl-core/issues/1821)) ([4aa18e6](https://github.com/linode/apl-core/commit/4aa18e6f749e68ebf407a4d16389961bc0ae2e57))
+
+
+### Tests
+
+* set the isPreinstalled flag ([#1887](https://github.com/linode/apl-core/issues/1887)) ([d78625f](https://github.com/linode/apl-core/commit/d78625f34ebb192a496047ef3b824f5b8629aa8d))
+
+
+### Others
+
+* **deps:** bump linode/apl-tools from v2.8.2 to v2.8.5 ([#1820](https://github.com/linode/apl-core/issues/1820)) ([82e3716](https://github.com/linode/apl-core/commit/82e371681a02e5b89d9638c6330a1c446c843d73))
+* update api v3.4.0 ([#1826](https://github.com/linode/apl-core/issues/1826)) ([be6aa6e](https://github.com/linode/apl-core/commit/be6aa6e5eca660de39851e9b936bc610cfcfbdfd))
+* update console ([#1886](https://github.com/linode/apl-core/issues/1886)) ([1ce8700](https://github.com/linode/apl-core/commit/1ce8700559c94f66b398a7aa85350f95130357f2))
+
 ## [4.1.0](https://github.com/linode/apl-core/compare/v4.0.0...v4.1.0) (2024-11-12)
 
 

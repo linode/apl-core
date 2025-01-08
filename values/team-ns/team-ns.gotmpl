@@ -40,7 +40,7 @@ backups: {{- $team | get "backups" list | toYaml | nindent 2 }}
 builds: {{- $team | get "builds" list | toYaml | nindent 2 }}
 policies: {{- $team | get "policies" list | toYaml | nindent 2 }}
 sealedsecrets: {{- $team | get "sealedsecrets" list | toYaml | nindent 2 }}
-networkPolicy: {{- $team | get "networkPolicy" dict | toYaml | nindent 2 }}
+netpols: {{- $team | get "netpols" dict | toYaml | nindent 2 }}
 managedMonitoring: {{- $team | get "managedMonitoring" dict | toYaml | nindent 2 }}
 teamId: {{ $teamId }}
 teamApps: {{- toYaml $teamApps | nindent 2 }}
