@@ -1266,10 +1266,10 @@ environments:
             replicas: 2
             resources:
               limits:
-                cpu: "1"
+                cpu: "200m"
                 memory: 192Mi
               requests:
-                cpu: "1"
+                cpu: "200m"
                 memory: 192Mi
           harbor:
             imageName: null
@@ -1278,10 +1278,10 @@ environments:
             coreDatabase: registry
             resources:
               limits:
-                cpu: "1"
+                cpu: "200m"
                 memory: 192Mi
               requests:
-                cpu: "1"
+                cpu: "200m"
                 memory: 192Mi
           gitea:
             imageName: null
@@ -1291,10 +1291,10 @@ environments:
             replicas: 2
             resources:
               limits:
-                cpu: "1"
+                cpu: "200m"
                 memory: 192Mi
               requests:
-                cpu: "1"
+                cpu: "200m"
                 memory: 192Mi
         obj:
           provider:
