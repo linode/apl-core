@@ -4,9 +4,11 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: "{{ template "harbor.database" . }}"
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
     component: database
+    app.kubernetes.io/component: database
 spec:
   replicas: 1
   serviceName: "{{ template "harbor.database" . }}"
@@ -19,6 +21,10 @@ spec:
       labels:
 {{ include "harbor.labels" . | indent 8 }}
         component: database
+        app.kubernetes.io/component: database
+{{- if .Values.database.podLabels }}
+{{ toYaml .Values.database.podLabels | indent 8 }}
+{{- end }}
       annotations:
         checksum/secret: {{ include (print $.Template.BasePath "/database/database-secret.yaml") . | sha256sum }}
 {{- if .Values.database.podAnnotations }}
@@ -38,23 +44,6 @@ spec:
       automountServiceAccountToken: {{ .Values.database.internal.automountServiceAccountToken | default false }}
       terminationGracePeriodSeconds: 120
       initContainers:
-      # as we change the data directory to a sub folder to support psp, the init container here
-      # is used to migrate the existing data. See https://github.com/goharbor/harbor-helm/issues/756
-      # for more detail.
-      # we may remove it after several releases
-      - name: "data-migrator"
-        image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
-        imagePullPolicy: {{ .Values.imagePullPolicy }}
-        command: ["/bin/sh"]
-        args: ["-c", "[ -e /var/lib/postgresql/data/postgresql.conf ] && [ ! -d /var/lib/postgresql/data/pgdata ] && mkdir -m 0700 /var/lib/postgresql/data/pgdata && mv /var/lib/postgresql/data/* /var/lib/postgresql/data/pgdata/ || true"]
-{{- if .Values.database.internal.initContainer.migrator.resources }}
-        resources:
-{{ toYaml .Values.database.internal.initContainer.migrator.resources | indent 10 }}
-{{- end }}
-        volumeMounts:
-          - name: database-data
-            mountPath: /var/lib/postgresql/data
-            subPath: {{ $database.subPath }}
       # with "fsGroup" set, each time a volume is mounted, Kubernetes must recursively chown() and chmod() all the files and directories inside the volume
       # this causes the postgresql reports the "data directory /var/lib/postgresql/data/pgdata has group or world access" issue when using some CSIs e.g. Ceph
       # use this init container to correct the permission
@@ -62,6 +51,9 @@ spec:
       - name: "data-permissions-ensurer"
         image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
+        {{- end }}
         command: ["/bin/sh"]
         args: ["-c", "chmod -R 700 /var/lib/postgresql/data/pgdata || true"]
 {{- if .Values.database.internal.initContainer.permissions.resources }}
@@ -72,22 +64,30 @@ spec:
           - name: database-data
             mountPath: /var/lib/postgresql/data
             subPath: {{ $database.subPath }}
+      {{- with .Values.database.internal.extrInitContainers }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
       containers:
       - name: database
         image: {{ .Values.database.internal.image.repository }}:{{ .Values.database.internal.image.tag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if not (empty .Values.containerSecurityContext) }}
+        securityContext: {{ .Values.containerSecurityContext | toYaml | nindent 10 }}
+        {{- end }}
         livenessProbe:
           exec:
             command:
             - /docker-healthcheck.sh
           initialDelaySeconds: 300
           periodSeconds: 10
+          timeoutSeconds: {{ .Values.database.internal.livenessProbe.timeoutSeconds }}
         readinessProbe:
           exec:
             command:
             - /docker-healthcheck.sh
           initialDelaySeconds: 1
           periodSeconds: 10
+          timeoutSeconds: {{ .Values.database.internal.readinessProbe.timeoutSeconds }}
 {{- if .Values.database.internal.resources }}
         resources:
 {{ toYaml .Values.database.internal.resources | indent 10 }}
@@ -100,6 +100,9 @@ spec:
           # more detail refer to https://github.com/goharbor/harbor-helm/issues/756
           - name: PGDATA
             value: "/var/lib/postgresql/data/pgdata"
+{{- with .Values.database.internal.extraEnvVars }}
+{{- toYaml . | nindent 10 }}
+{{- end }}
         volumeMounts:
         - name: database-data
           mountPath: /var/lib/postgresql/data
@@ -139,7 +142,7 @@ spec:
   - metadata:
       name: "database-data"
       labels:
-{{ include "harbor.labels" . | indent 8 }}
+{{ include "harbor.legacy.labels" . | indent 8 }}
       annotations:
       {{- range $key, $value := $database.annotations }}
         {{ $key }}: {{ $value | quote }}
