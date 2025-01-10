@@ -19,11 +19,11 @@ All notable changes to this project will be documented in this file. See [standa
 * add prometheus rule to validate db backup executions ([#1866](https://github.com/linode/apl-core/issues/1866)) ([5586cd9](https://github.com/linode/apl-core/commit/5586cd9b522e303cb168a51381f942317a453301))
 * add prometheus rules for cnpg backups ([#1837](https://github.com/linode/apl-core/issues/1837)) ([99e9e20](https://github.com/linode/apl-core/commit/99e9e2061069b405d5e8da844bd52237155ef4ef))
 * add resource configuration for apps to teams ([#1819](https://github.com/linode/apl-core/issues/1819)) ([64a51c3](https://github.com/linode/apl-core/commit/64a51c3e0c95ca54a8a535ddff3d3115dd239f8b))
-* APL-281 lower database memory footprint ([#1856](https://github.com/linode/apl-core/issues/1856)) ([8dfe18b](https://github.com/linode/apl-core/commit/8dfe18b566db5f046c28515c7dbb7f5ca3e53c21))
+* lower database memory footprint ([#1856](https://github.com/linode/apl-core/issues/1856)) ([8dfe18b](https://github.com/linode/apl-core/commit/8dfe18b566db5f046c28515c7dbb7f5ca3e53c21))
 * cnpg upgrade fix ([#1871](https://github.com/linode/apl-core/issues/1871)) ([faa8ac8](https://github.com/linode/apl-core/commit/faa8ac881d423e2302a59c2384f377a95a1891b4))
 * github-actions update ([#1825](https://github.com/linode/apl-core/issues/1825)) ([e0bc42e](https://github.com/linode/apl-core/commit/e0bc42e7237bec58552347c3697aa3ce972e37dd))
 * lower pipeline and db footprint ([#1873](https://github.com/linode/apl-core/issues/1873)) ([3b76352](https://github.com/linode/apl-core/commit/3b76352734294e18b02c75b658bfb1cf54a01ffe))
-* node 20 upgrade ([#1797](https://github.com/linode/apl-core/issues/1797)) ([69d7364](https://github.com/linode/apl-core/commit/69d7364da43f3e1805c9ea8369c029e3e9e6f437))
+* upgrade to node 20  ([#1797](https://github.com/linode/apl-core/issues/1797)) ([69d7364](https://github.com/linode/apl-core/commit/69d7364da43f3e1805c9ea8369c029e3e9e6f437))
 * patch argocd resources when oomkilled ([#1814](https://github.com/linode/apl-core/issues/1814)) ([99553f3](https://github.com/linode/apl-core/commit/99553f3aa0ebe5cae3cfbb44e4d53af2f35f4cac))
 * removed uneeded tag ([#1811](https://github.com/linode/apl-core/issues/1811)) ([8cc8441](https://github.com/linode/apl-core/commit/8cc8441c0342b59e678736ff3c0fbe0cfe1c7a80))
 * render only relevant values for team-ns helm chart ([#1872](https://github.com/linode/apl-core/issues/1872)) ([37bdd3c](https://github.com/linode/apl-core/commit/37bdd3c47f0338e552d3cf3f76f3b0a550d6d9ee))
@@ -36,7 +36,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* APL-356 git url encoding in otomi-tasks  ([#1808](https://github.com/linode/apl-core/issues/1808)) ([74a1705](https://github.com/linode/apl-core/commit/74a17050ef930e3fafe6419ddf1744b761ba8105))
+* git url encoding in otomi-tasks  ([#1808](https://github.com/linode/apl-core/issues/1808)) ([74a1705](https://github.com/linode/apl-core/commit/74a17050ef930e3fafe6419ddf1744b761ba8105))
 * apl-tools patch image generation ([#1824](https://github.com/linode/apl-core/issues/1824)) ([662db99](https://github.com/linode/apl-core/commit/662db991940e47ae00cd067780e80eb8bfa9971d))
 * broken builds in the input files ([#1838](https://github.com/linode/apl-core/issues/1838)) ([de56ccb](https://github.com/linode/apl-core/commit/de56ccb3b4ab6de3a6cdde9f3ac5d3cffb48e3c6))
 * CNPG object storage endpint URL ([#1812](https://github.com/linode/apl-core/issues/1812)) ([3b79846](https://github.com/linode/apl-core/commit/3b79846f7591dd069b351ac485a738e51e309e64))
