@@ -38,7 +38,7 @@ dependencies:
     version: 7.10.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: promtail
-    version: 6.11.2
+    version: 6.16.6
     repository: https://grafana.github.io/helm-charts
   - name: sealed-secrets
     version: 2.14.1
