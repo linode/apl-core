@@ -75,7 +75,7 @@ on:
         options:
           - 'true'
           - 'false'
-        default: 'false'
+        default: 'true'
 
 env:
   CACHE_REGISTRY: ghcr.io
