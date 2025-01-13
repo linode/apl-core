@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.2](https://github.com/linode/apl-core/compare/v4.2.1...v4.2.2) (2025-01-09)
+
+
+### Features
+
+* lowering DBs cpu resources ([#1891](https://github.com/linode/apl-core/issues/1891)) ([df2245a](https://github.com/linode/apl-core/commit/df2245a5e3d1581dacf957fb4855a0d651644a36))
+
 ### [4.2.1](https://github.com/linode/apl-core/compare/v4.1.0...v4.2.1) (2025-01-08)
 
 
