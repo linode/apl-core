@@ -4,6 +4,7 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ template "harbor.jobservice" . }}
+  namespace: {{ .Release.Namespace | quote }}
   annotations:
   {{- range $key, $value := $jobLog.annotations }}
     {{ $key }}: {{ $value | quote }}
@@ -14,6 +15,7 @@ metadata:
   labels:
 {{ include "harbor.labels" . | indent 4 }}
     component: jobservice
+    app.kubernetes.io/component: jobservice
 spec:
   accessModes: 
     - {{ $jobLog.accessMode }}
