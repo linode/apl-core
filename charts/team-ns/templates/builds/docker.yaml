@@ -67,7 +67,7 @@ spec:
     - name: CONTEXT
       value: {{ $context }}
     - name: IMAGE
-      value: harbor.{{ $v.cluster.domainSuffix }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+      value: {{ $v.harborDomain }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
     {{- with (dig "mode" "docker" "envVars" nil . ) }}
     - name: EXTRA_ARGS
       value: 

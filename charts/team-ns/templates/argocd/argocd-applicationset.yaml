@@ -11,7 +11,7 @@ metadata:
 spec:
   generators:
   - git:
-      repoURL: https://gitea.{{ $v.cluster.domainSuffix }}/otomi/values.git
+      repoURL: "{{ $v.gitOps.workloadValuesRepoUrl }}"
       revision: HEAD
       files:
       - path: "env/teams/workloads/{{ $v.teamId }}/{{ .name }}.yaml"
