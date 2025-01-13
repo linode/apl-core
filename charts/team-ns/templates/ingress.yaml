@@ -1,6 +1,5 @@
 {{- $ns := .Release.Namespace }}
 {{- $v := .Values }}
-{{- $k := $v.apps.keycloak | default dict }}
 # split list of services into separate ingress types:
 # - core apps that need path forwarding (apps.*/appName stuff)
 # - public/private?

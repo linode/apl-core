@@ -25,7 +25,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": 4,
+  "id": 5,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -57,228 +57,18 @@
     },
     {
       "datasource": {
+        "default": false,
         "type": "prometheus",
         "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "red",
+            "mode": "fixed"
           },
           "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "blue",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 0,
-        "y": 1
-      },
-      "id": 60,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.2.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "sum(trivy_image_vulnerabilities{severity=\"Low\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\"})",
-          "instant": true,
-          "interval": "$__interval",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "LOW",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$datasource"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 4,
-        "y": 1
-      },
-      "id": 49,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.2.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "sum(trivy_image_vulnerabilities{severity=\"Medium\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\"})",
-          "instant": true,
-          "interval": "$__interval",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "MEDIUM",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$datasource"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 4,
-        "x": 8,
-        "y": 1
-      },
-      "id": 50,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.2.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "sum(trivy_image_vulnerabilities{severity=\"High\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\"})",
-          "instant": true,
-          "interval": "$__interval",
-          "legendFormat": "__auto",
-          "refId": "A"
-        }
-      ],
-      "title": "HIGH",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$datasource"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -299,7 +89,7 @@
       "gridPos": {
         "h": 4,
         "w": 4,
-        "x": 12,
+        "x": 0,
         "y": 1
       },
       "id": 51,
@@ -329,7 +119,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(trivy_image_vulnerabilities{severity=\"Critical\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\"})",
+          "expr": "sum(trivy_image_vulnerabilities{severity=\"Critical\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -341,15 +131,239 @@
     },
     {
       "datasource": {
+        "default": false,
         "type": "prometheus",
         "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "orange",
+            "mode": "fixed"
           },
           "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 50,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(trivy_image_vulnerabilities{severity=\"High\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
+          "instant": true,
+          "interval": "$__interval",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "HIGH",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 49,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(trivy_image_vulnerabilities{severity=\"Medium\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
+          "instant": true,
+          "interval": "$__interval",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "MEDIUM",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 60,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum(trivy_image_vulnerabilities{severity=\"Low\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
+          "instant": true,
+          "interval": "$__interval",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "LOW",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -400,7 +414,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(trivy_image_vulnerabilities{severity=\"Unknown\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\"})",
+          "expr": "sum(trivy_image_vulnerabilities{severity=\"Unknown\", namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -412,15 +426,18 @@
     },
     {
       "datasource": {
+        "default": false,
         "type": "prometheus",
         "uid": "$datasource"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "text",
+            "mode": "fixed"
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -471,7 +488,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(trivy_image_vulnerabilities{namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\"})",
+          "expr": "sum(trivy_image_vulnerabilities{namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
           "instant": true,
           "interval": "$__interval",
           "legendFormat": "__auto",
@@ -483,178 +500,7 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "$datasource"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "left",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "noValue": "-",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "image_repository"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 466
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "image_repository (last)"
-            },
-            "properties": [
-              {
-                "id": "custom.width",
-                "value": 505
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 17,
-        "w": 24,
-        "x": 0,
-        "y": 5
-      },
-      "id": 74,
-      "options": {
-        "cellHeight": "md",
-        "footer": {
-          "countRows": false,
-          "enablePagination": true,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "Image Repository"
-          }
-        ]
-      },
-      "pluginVersion": "11.2.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "editorMode": "code",
-          "expr": "sum by(image_repository, severity, image_tag, vuln_id) (trivy_vulnerability_id{namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\"})",
-          "format": "table",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Vulnerabilities by ID",
-      "transformations": [
-        {
-          "id": "filterFieldsByName",
-          "options": {
-            "include": {
-              "names": [
-                "image_repository",
-                "image_tag",
-                "vuln_id",
-                "severity"
-              ]
-            }
-          }
-        },
-        {
-          "id": "seriesToColumns",
-          "options": {
-            "byField": "vuln_id"
-          }
-        },
-        {
-          "id": "groupBy",
-          "options": {
-            "fields": {
-              "image_repository": {
-                "aggregations": [
-                  "last"
-                ],
-                "operation": "aggregate"
-              },
-              "image_tag": {
-                "aggregations": [
-                  "last"
-                ],
-                "operation": "aggregate"
-              },
-              "severity": {
-                "aggregations": [
-                  "last"
-                ],
-                "operation": "aggregate"
-              },
-              "vuln_id": {
-                "aggregations": [],
-                "operation": "groupby"
-              }
-            }
-          }
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {},
-            "indexByName": {
-              "image_repository (last)": 0,
-              "image_tag (last)": 3,
-              "severity (last)": 1,
-              "vuln_id": 2
-            },
-            "renameByName": {
-              "image_repository (last)": "Image Repository",
-              "image_tag (last)": "Image Tag",
-              "severity (last)": "Severity",
-              "vuln_id": "Vulnerability ID"
-            }
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": {
+        "default": false,
         "type": "prometheus",
         "uid": "$datasource"
       },
@@ -731,7 +577,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 5
       },
       "id": 72,
       "options": {
@@ -756,7 +602,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Critical\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\"})",
+          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Critical\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
           "format": "table",
           "range": true,
           "refId": "A"
@@ -767,7 +613,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"High\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\"})",
+          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"High\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
           "format": "table",
           "hide": false,
           "range": true,
@@ -779,7 +625,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Medium\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\"})",
+          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Medium\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
           "format": "table",
           "hide": false,
           "range": true,
@@ -791,7 +637,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Low\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\"})",
+          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Low\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
           "format": "table",
           "hide": false,
           "range": true,
@@ -803,7 +649,7 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Unknown\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\"})",
+          "expr": "sum by(image_repository, image_tag) (trivy_image_vulnerabilities{severity=\"Unknown\", namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
           "format": "table",
           "hide": false,
           "range": true,
@@ -860,6 +706,498 @@
         }
       ],
       "type": "table"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 61,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "8.5.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum by(image_repository) (trivy_image_vulnerabilities{namespace=~\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus/alertmanager\", image_repository!=\"chainguard/busybox\", image_repository!=\"tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"anchore/grype\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/nop\", image_repository!=\"paketobuildpacks/builder-jammy-full\"})",
+          "instant": false,
+          "interval": "$__interval",
+          "legendFormat": "{{severity}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "All vulnerabilities by severity",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 63,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Summary Resource Config Audit",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 23
+      },
+      "id": 67,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "sum(trivy_resource_configaudits{severity=\"Critical\", namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
+          "instant": true,
+          "interval": "$__interval",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "CRITICAL",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 23
+      },
+      "id": 66,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "sum(trivy_resource_configaudits{severity=\"High\", namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
+          "instant": true,
+          "interval": "$__interval",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "HIGH",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 23
+      },
+      "id": 65,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "sum(trivy_resource_configaudits{severity=\"Medium\", namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
+          "instant": true,
+          "interval": "$__interval",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "MEDIUM",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 23
+      },
+      "id": 64,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "sum(trivy_resource_configaudits{severity=\"Low\", namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
+          "instant": true,
+          "interval": "$__interval",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "LOW",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "$datasource"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "text",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 23
+      },
+      "id": 68,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "sum(trivy_resource_configaudits{namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
+          "instant": true,
+          "interval": "$__interval",
+          "legendFormat": "__auto",
+          "refId": "A"
+        }
+      ],
+      "title": "TOTAL",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -926,9 +1264,9 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 27
       },
-      "id": 61,
+      "id": 70,
       "options": {
         "legend": {
           "calcs": [],
@@ -948,9 +1286,9 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "editorMode": "code",
+          "editorMode": "builder",
           "exemplar": false,
-          "expr": "sum by(severity) (trivy_image_vulnerabilities{namespace=\"$namespace\", image_repository!=\"grafana/grafana\", image_repository!=\"kiwigrid/k8s-sidecar\", image_repository!=\"prometheus/prometheus\", image_repository!=\"tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/git-init\", image_repository!=\"distroless/busybox\", image_repository!=\"library/bash\", image_repository!=\"kaniko-project/executor\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/entrypoint\", image_repository!=\"paketobuildpacks/builder\", image_repository!=\"prometheus-operator/prometheus-config-reloader\", image_repository!=\"tekton-releases/github.com/tektoncd/pipeline/cmd/workingdirinit\"})",
+          "expr": "sum by(severity) (trivy_resource_configaudits{namespace=\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
           "instant": false,
           "interval": "$__interval",
           "legendFormat": "{{severity}}",
@@ -958,466 +1296,8 @@
           "refId": "A"
         }
       ],
-      "title": "All vulnerabilities by severity",
+      "title": "All config audits by severity",
       "type": "timeseries"
-    },
-    {
-      "collapsed": true,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "$datasource"
-      },
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 39
-      },
-      "id": 63,
-      "panels": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "blue",
-                    "value": 1
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 0,
-            "y": 36
-          },
-          "id": 64,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "last"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "9.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "sum(trivy_resource_configaudits{severity=\"Low\", namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
-              "instant": true,
-              "interval": "$__interval",
-              "legendFormat": "__auto",
-              "refId": "A"
-            }
-          ],
-          "title": "LOW",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "yellow",
-                    "value": 1
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 4,
-            "y": 36
-          },
-          "id": 65,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "last"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "9.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "sum(trivy_resource_configaudits{severity=\"Medium\", namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
-              "instant": true,
-              "interval": "$__interval",
-              "legendFormat": "__auto",
-              "refId": "A"
-            }
-          ],
-          "title": "MEDIUM",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "orange",
-                    "value": 1
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 8,
-            "y": 36
-          },
-          "id": 66,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "last"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "9.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "sum(trivy_resource_configaudits{severity=\"High\", namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
-              "instant": true,
-              "interval": "$__interval",
-              "legendFormat": "__auto",
-              "refId": "A"
-            }
-          ],
-          "title": "HIGH",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 1
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 4,
-            "x": 12,
-            "y": 36
-          },
-          "id": 67,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "last"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "9.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "sum(trivy_resource_configaudits{severity=\"Critical\", namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
-              "instant": true,
-              "interval": "$__interval",
-              "legendFormat": "__auto",
-              "refId": "A"
-            }
-          ],
-          "title": "CRITICAL",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "text",
-                    "value": 1
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 8,
-            "x": 16,
-            "y": 36
-          },
-          "id": 68,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "last"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto"
-          },
-          "pluginVersion": "9.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "sum(trivy_resource_configaudits{namespace=~\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
-              "instant": true,
-              "interval": "$__interval",
-              "legendFormat": "__auto",
-              "refId": "A"
-            }
-          ],
-          "title": "TOTAL",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 15,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 2,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "blue",
-                    "value": 1
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 24,
-            "x": 0,
-            "y": 40
-          },
-          "id": 70,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "table",
-              "placement": "right",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "pluginVersion": "8.5.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "editorMode": "builder",
-              "exemplar": false,
-              "expr": "sum by(severity) (trivy_resource_configaudits{namespace=\"$namespace\", name!=\"networkpolicy-default-from-gitea\", name!=\"networkpolicy-default-ingress-deny\", name!=\"networkpolicy-default-ingress-platform\", name!=\"networkpolicy-default-to-alertmanager\", name!=\"networkpolicy-default-to-kube-state-metrics\", name!=\"networkpolicy-default-to-prometheus\", name!=\"resourcequota-team-ns-quota\", name!=\"service-prometheus-operated\"})",
-              "instant": false,
-              "interval": "$__interval",
-              "legendFormat": "{{severity}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "All config audits by severity",
-          "type": "timeseries"
-        }
-      ],
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Summary Resource Config Audit",
-      "type": "row"
     }
   ],
   "refresh": "30s",
@@ -1471,13 +1351,13 @@
     ]
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Container scan results",
   "uid": "trivy_operator",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

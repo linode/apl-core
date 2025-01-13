@@ -1,5 +1,7 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable no-await-in-loop */
+import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
+import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
@@ -16,8 +18,6 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { parser } from './yargs'
 import { askYesNo } from './zx-enhance'
-import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
-import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 
@@ -243,7 +243,7 @@ type WaitTillAvailableOptions = Options & {
 
 export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
   const retryOptions: Options = {
-    retries: 10,
+    retries: 20,
     maxTimeout: 30000,
   }
   const d = terminal('common:k8s:waitTillGitRepoAvailable')
@@ -253,7 +253,7 @@ export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
       // the ls-remote exist with zero even if repo is empty
       await $`git ls-remote ${repoUrl}`
     } catch (e) {
-      d.warn(e.message)
+      d.warn(`The values repository is not yet reachable. Retrying in ${retryOptions.maxTimeout} ms`)
       throw e
     }
   }, retryOptions)

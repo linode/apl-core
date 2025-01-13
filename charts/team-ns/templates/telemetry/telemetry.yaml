@@ -1,6 +1,5 @@
 {{- $v := .Values }}
-{{- $i := $v.apps.istio }}
-{{- if $i.tracing.enabled }}
+{{- if $v.tracingEnabled}}
 apiVersion: telemetry.istio.io/v1alpha1
 kind: Telemetry
 metadata:
