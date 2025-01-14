@@ -14,17 +14,116 @@ describe('saveTeam', () => {
     const dirPath = await saveTeam('test', {}, {}, false, deps)
     const expectedDirPath = `${env.ENV_DIR}/env/teams/test`
     expect(dirPath).toEqual(expectedDirPath)
-    expect(deps.writeValuesToFile).toBeCalledTimes(4)
-    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(1, `${expectedDirPath}/settings.yaml`, { spec: {} }, false)
+    expect(deps.writeValuesToFile).toBeCalledTimes(1)
     expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
-      2,
+      1,
       `${expectedDirPath}/secrets.settings.yaml`,
       { spec: {} },
       false,
     )
-    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(3, `${expectedDirPath}/apps.yaml`, { spec: {} }, false)
-    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(4, `${expectedDirPath}/policies.yaml`, { spec: {} }, false)
   })
+  it('should save a new empty team with empty resources', async () => {
+    const deps = {
+      writeValuesToFile: jest.fn().mockResolvedValue(undefined),
+    }
+    // jest.spyOn(deps, 'writeValuesToFile')
+    const teamSpec = {
+      apps: {},
+      backups: [],
+      policies: {},
+      secrets: [],
+      sealedsecrets: [],
+      services: [],
+      workloads: [],
+      settings: {},
+    }
+
+    const dirPath = await saveTeam('test', teamSpec, {}, false, deps)
+    const expectedDirPath = `${env.ENV_DIR}/env/teams/test`
+    expect(dirPath).toEqual(expectedDirPath)
+    expect(deps.writeValuesToFile).toBeCalledTimes(4)
+    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(1, `${expectedDirPath}/apps.yaml`, { spec: {} }, false)
+    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(2, `${expectedDirPath}/policies.yaml`, { spec: {} }, false)
+    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(3, `${expectedDirPath}/settings.yaml`, { spec: {} }, false)
+    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+      4,
+      `${expectedDirPath}/secrets.settings.yaml`,
+      { spec: {} },
+      false,
+    )
+  })
+})
+
+it('should save a team with resources', async () => {
+  const deps = {
+    writeValuesToFile: jest.fn().mockResolvedValue(undefined),
+  }
+  // jest.spyOn(deps, 'writeValuesToFile')
+  const teamSpec = {
+    apps: {},
+    policies: { policy1: {} },
+    sealedsecrets: [{ name: 'ss1' }],
+    services: [{ name: 'svc1' }, { name: 'svc2' }],
+    settings: { param: 1 },
+    workloads: [{ name: 'w1' }, { name: 'w2' }],
+  }
+  const teamSecretSpec = {
+    secret1: 'abc',
+  }
+
+  const dirPath = await saveTeam('test', teamSpec, teamSecretSpec, false, deps)
+  const expectedDirPath = `${env.ENV_DIR}/env/teams/test`
+  expect(dirPath).toEqual(expectedDirPath)
+  expect(deps.writeValuesToFile).toBeCalledTimes(9)
+  expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(1, `${expectedDirPath}/apps.yaml`, { spec: {} }, false)
+  expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+    2,
+    `${expectedDirPath}/policies.yaml`,
+    { spec: { policy1: {} } },
+    false,
+  )
+  expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+    3,
+    `${expectedDirPath}/sealedsecrets/ss1.yaml`,
+    { spec: { name: 'ss1' } },
+    false,
+  )
+  expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+    4,
+    `${expectedDirPath}/services/svc1.yaml`,
+    { spec: { name: 'svc1' } },
+    false,
+  )
+  expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+    5,
+    `${expectedDirPath}/services/svc2.yaml`,
+    { spec: { name: 'svc2' } },
+    false,
+  )
+  expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+    6,
+    `${expectedDirPath}/settings.yaml`,
+    { spec: { param: 1 } },
+    false,
+  )
+  expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+    7,
+    `${expectedDirPath}/workloads/w1.yaml`,
+    { spec: { name: 'w1' } },
+    false,
+  )
+  expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+    8,
+    `${expectedDirPath}/workloads/w2.yaml`,
+    { spec: { name: 'w2' } },
+    false,
+  )
+  expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+    9,
+    `${expectedDirPath}/secrets.settings.yaml`,
+    { spec: { secret1: 'abc' } },
+    false,
+  )
 })
 
 describe('generateSecrets', () => {

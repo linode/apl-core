@@ -160,10 +160,8 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', inValues)
   hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
-  // on bootstrap no values exist but we need the teamconfig so get it from file
-  const _teamConfig = (await loadYaml(`${env.ENV_DIR}/env/teams.yaml`)) as Record<string, Record<string, any>>
-  const values = overwrite ? inValues : { ..._teamConfig, ...inValues }
-  const teams = Object.keys(values.teamConfig as Record<string, any>)
+  const values = inValues
+  const teams = await getTeamNames()
   // creating secret files
   const schema: any = await getValuesSchema()
   const leaf = 'x-secret'
@@ -371,39 +369,37 @@ export const saveTeam = async (
   },
 ): Promise<string> => {
   const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
-  const settingsPath = path.join(teamDir, 'settings.yaml')
-  const settingsSecretsPath = path.join(teamDir, 'secrets.settings.yaml')
-
-  const listTypes = ['backups', 'builds', 'secrets', 'netpols', 'sealedsecrets', 'services', 'workloads']
-  const mapTypes = ['apps', 'policies']
-  const allTypes = [...listTypes, ...mapTypes]
   const teamPromises: Promise<void>[] = []
+  const teamResourceNames = Object.keys(teamSpec).sort()
+  teamResourceNames.forEach((resourceName) => {
+    const resourceSpec = teamSpec[resourceName]
+    if (Array.isArray(resourceSpec)) {
+      // arrays items are stored as separate file in a dedicated directory
+      const resourceDirPath = path.join(teamDir, resourceName)
+      resourceSpec.forEach((resource) => {
+        const resourceFileName = `${resource.name}.yaml`
+        const resourcePath = path.join(resourceDirPath, resourceFileName)
+        teamPromises.push(deps.writeValuesToFile(resourcePath, { spec: resource }, overwrite))
+      })
+    } else {
+      // maps are stored in a file under team root directory
+      const resourceFileName = `${resourceName}.yaml`
+      const resourcePath = path.join(teamDir, resourceFileName)
+      teamPromises.push(deps.writeValuesToFile(resourcePath, { spec: resourceSpec }, overwrite))
+    }
+  })
 
-  // save team settings
-  const settings = omit(teamSpec, allTypes)
-  teamPromises.push(deps.writeValuesToFile(settingsPath, { spec: settings }, overwrite))
+  // Team secrets needs special treatment
+  const settingsSecretsPath = path.join(teamDir, 'secrets.settings.yaml')
   teamPromises.push(deps.writeValuesToFile(settingsSecretsPath, { spec: teamSecrets }, overwrite))
-
-  // save team resources
-  listTypes.forEach((resourceType): void => {
-    const resourceDirPath = path.join(teamDir, resourceType)
-    const collection: Array<Record<string, any>> = get(teamSpec, resourceType, [])
-    collection.forEach((resource) => {
-      const resourceFileName = `${resource.name}.yaml`
-      const resourcePath = path.join(resourceDirPath, resourceFileName)
-      teamPromises.push(deps.writeValuesToFile(resourcePath, { spec: resource }, overwrite))
-    })
-  })
-
-  // TODO should we store each policy a separate file?
-  mapTypes.forEach((resourceType): void => {
-    const collection: Record<string, any> = get(teamSpec, resourceType, {})
-    const resourceFileName = `${resourceType}.yaml`
-    const resourcePath = path.join(teamDir, resourceFileName)
-    teamPromises.push(deps.writeValuesToFile(resourcePath, { spec: collection }, overwrite))
-  })
-
   await Promise.all(teamPromises)
 
   return teamDir
 }
+
+// export const loadTeam = async (
+//   teamName: string,
+//   deps = {
+//     writeValuesToFile,
+//   },
+// ): Record<string, any> => {}
