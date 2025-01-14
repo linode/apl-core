@@ -41,6 +41,12 @@ export const getK8sVersion = (argv?: HelmArguments): string => {
   return otomiK8sVersion
 }
 
+export const getTeamNames = async (): Promise<Array<string>> => {
+  const teamsDir = path.join(env.ENV_DIR, 'env', 'teams')
+  const teamNames = await getDirNames(teamsDir, { skipHidden: true })
+  return teamNames
+}
+
 /**
  * Find what image tag is defined in configuration for otomi
  * @returns string
@@ -161,7 +167,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('Writing values: ', inValues)
   hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
   const values = inValues
-  const teams = await getTeamNames()
+  const teams = get(inValues, 'teamConfig', {}).keys()
   // creating secret files
   const schema: any = await getValuesSchema()
   const leaf = 'x-secret'
@@ -220,55 +226,14 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   if (plainValues.policies || overwrite)
     promises.push(writeValuesToFile(`${env.ENV_DIR}/env/policies.yaml`, { policies: plainValues.policies }, overwrite))
   if (plainValues.teamConfig || overwrite) {
-    const types = [
-      'apps',
-      'backups',
-      'builds',
-      'secrets',
-      'netpols',
-      'sealedsecrets',
-      'services',
-      'workloads',
-      'policies',
-    ]
-    const teamConfig = plainValues.teamConfig ? cloneDeep(plainValues.teamConfig) : {}
-    // TODO: write each resource to file
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    teams.forEach(async (team) => {
-      const teamPromises: Promise<void>[] = []
-      types.forEach((type): void => {
-        teamPromises.push(
-          writeValuesToFile(
-            `${env.ENV_DIR}/env/teams/${type}.${team}.yaml`,
-            {
-              teamConfig: {
-                [team]: {
-                  [type]: get(
-                    plainValues,
-                    `teamConfig.${team}.${type}`,
-                    type === 'apps' || type === 'policies' ? {} : [],
-                  ),
-                },
-              },
-            },
-            overwrite,
-          ),
-        )
-        // keep the teamConfig but omit the leafs that were just stored in their own teams/* file
-        if (teamConfig[team] && teamConfig[team][type]) delete teamConfig[team][type]
-      })
-      await Promise.all(teamPromises)
+    const teamPromises: Promise<string>[] = []
+    teams.forEach((teamName: string) => {
+      // Should we try catch here?
+      const teamSpec = get(plainValues, `teamConfig.${teamName}`, {})
+      const teamSectesSpec = get(secrets, `teamConfig.${teamName}`, {})
+      teamPromises.push(saveTeam(teamName, teamSpec, teamSectesSpec, overwrite))
     })
-    promises.push(writeValuesToFile(`${env.ENV_DIR}/env/teams.yaml`, { teamConfig }, overwrite))
-  }
-  if (secrets.teamConfig || overwrite) {
-    promises.push(
-      writeValuesToFile(
-        `${env.ENV_DIR}/env/secrets.teams.yaml`,
-        secrets.teamConfig ? { teamConfig: secrets.teamConfig } : undefined,
-        overwrite,
-      ),
-    )
+    await Promise.all(teamPromises)
   }
   await Promise.all(promises)
 
@@ -353,12 +318,6 @@ export const generateSecrets = async (
   return res
 }
 
-export const getTeamNames = async (): Promise<Array<string>> => {
-  const teamsDir = path.join(env.ENV_DIR, 'env', 'teams')
-  const teamNames = await getDirNames(teamsDir, { skipHidden: true })
-  return teamNames
-}
-
 export const saveTeam = async (
   teamName: string,
   teamSpec: Record<string, any>,
@@ -396,10 +355,3 @@ export const saveTeam = async (
 
   return teamDir
 }
-
-// export const loadTeam = async (
-//   teamName: string,
-//   deps = {
-//     writeValuesToFile,
-//   },
-// ): Record<string, any> => {}
