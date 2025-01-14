@@ -167,7 +167,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('Writing values: ', inValues)
   hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
   const values = inValues
-  const teams = get(inValues, 'teamConfig', {}).keys()
+  const teams = Object.keys(get(inValues, 'teamConfig', {}))
   // creating secret files
   const schema: any = await getValuesSchema()
   const leaf = 'x-secret'
