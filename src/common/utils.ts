@@ -55,6 +55,23 @@ export const getDirNames = async (dir: string, opts?: { skipHidden: boolean }): 
   return dirNames
 }
 
+export const enum FileType {
+  Directory = 'directory',
+  File = 'file',
+}
+export const getFiles = async (dir: string, opts?: { skipHidden: boolean; fileType: FileType }): Promise<string[]> => {
+  const dirs = await readdir(dir, { withFileTypes: true })
+  const fileNames: Array<string> = []
+
+  dirs.map((dirOrFile) => {
+    if (opts?.skipHidden && dirOrFile.name.startsWith('.')) return
+
+    if (opts?.fileType == FileType.Directory && dirOrFile.isDirectory()) fileNames.push(dirOrFile.name)
+    if (opts?.fileType == FileType.File && dirOrFile.isFile()) fileNames.push(dirOrFile.name)
+  })
+  return fileNames
+}
+
 export const getEnvFiles = (): Promise<string[]> => {
   return walk({
     path: env.ENV_DIR,

@@ -2,7 +2,7 @@ import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
 import { mkdir, unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
-import path from 'path'
+import path, { dirname } from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
 import { $ } from 'zx'
@@ -12,8 +12,10 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import {
   extract,
+  FileType,
   flattenObject,
   getDirNames,
+  getFiles,
   getValuesSchema,
   gucci,
   loadYaml,
@@ -354,4 +356,53 @@ export const saveTeam = async (
   await Promise.all(teamPromises)
 
   return teamDir
+}
+
+export const loadTeam = async (
+  teamName: string,
+  deps = {
+    getFiles,
+    loadTeamFile,
+  },
+): Promise<void> => {
+  const teamSpec = {}
+  const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
+
+  const teamDirs = await deps.getFiles(teamDir, { skipHidden: true, fileType: FileType.Directory })
+  const teamFiles = await deps.getFiles(teamDir, { skipHidden: true, fileType: FileType.File })
+  const teamPromises: Promise<void>[] = []
+
+  const allPaths: Array<string> = []
+  teamDirs.map(async (resourceName) => {
+    teamSpec[resourceName] = []
+    const resourceDir = path.join(teamDir, resourceName)
+    const resourcePaths = await deps.getFiles(resourceDir, { skipHidden: true, fileType: FileType.Directory })
+    resourcePaths.forEach((fileName) => allPaths.push(path.join(resourceDir, fileName)))
+  })
+
+  teamFiles.forEach((fileName) => {
+    const resourceName = path.basename(fileName, path.extname(fileName))
+    teamSpec[resourceName] = {}
+    allPaths.push(path.join(teamDir, fileName))
+  })
+
+  allPaths.forEach((filePath) => teamPromises.push(deps.loadTeamFile(teamName, teamSpec, filePath)))
+
+  await Promise.all(teamPromises)
+}
+
+const loadTeamFile = async (teamName: string, teamSpec, filePath: string, deps = { loadYaml }) => {
+  const resourceType = dirname(filePath)
+  const spec = teamSpec
+  const content = await deps.loadYaml(filePath)
+
+  // TODO handle secrets
+  if (dirname(resourceType) === teamName) {
+    // a regular file that is at team directory level
+    const resourceName = path.basename(filePath, path.extname(filePath))
+    spec[resourceName] = content?.spec
+  } else {
+    // a regular file that is at team resource collection level
+    spec[resourceType].push(content?.spec)
+  }
 }
