@@ -45,6 +45,16 @@ export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }
   return files.flat()
 }
 
+export const getDirNames = async (dir: string, opts?: { skipHidden: boolean }): Promise<string[]> => {
+  const dirs = await readdir(dir, { withFileTypes: true })
+  const dirNames: Array<string> = []
+  dirs.map((dirOrFile) => {
+    if (opts?.skipHidden && dirOrFile.name.startsWith('.')) return
+    if (dirOrFile.isDirectory()) dirNames.push(dirOrFile.name)
+  })
+  return dirNames
+}
+
 export const getEnvFiles = (): Promise<string[]> => {
   return walk({
     path: env.ENV_DIR,

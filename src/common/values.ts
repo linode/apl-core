@@ -10,7 +10,16 @@ import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
+import {
+  extract,
+  flattenObject,
+  getDirNames,
+  getValuesSchema,
+  gucci,
+  loadYaml,
+  pkg,
+  removeBlankAttributes,
+} from './utils'
 
 import { HelmArguments } from './yargs'
 
@@ -225,6 +234,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
       'policies',
     ]
     const teamConfig = plainValues.teamConfig ? cloneDeep(plainValues.teamConfig) : {}
+    // TODO: write each resource to file
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     teams.forEach(async (team) => {
       const teamPromises: Promise<void>[] = []
@@ -343,4 +353,10 @@ export const generateSecrets = async (
   const res = pick(allSecrets, templatePaths)
   d.debug('generateSecrets result: ', res)
   return res
+}
+
+export const getTeamNames = async (): Promise<Array<string>> => {
+  const teamsDir = path.join(env.ENV_DIR, 'env', 'teams')
+  const teamNames = await getDirNames(teamsDir, { skipHidden: true })
+  return teamNames
 }
