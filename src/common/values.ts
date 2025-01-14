@@ -360,3 +360,50 @@ export const getTeamNames = async (): Promise<Array<string>> => {
   const teamNames = await getDirNames(teamsDir, { skipHidden: true })
   return teamNames
 }
+
+export const saveTeam = async (
+  teamName: string,
+  teamSpec: Record<string, any>,
+  teamSecrets: Record<string, any>,
+  overwrite: boolean,
+  deps = {
+    writeValuesToFile,
+  },
+): Promise<string> => {
+  const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
+  const settingsPath = path.join(teamDir, 'settings.yaml')
+  const settingsSecretsPath = path.join(teamDir, 'secrets.settings.yaml')
+
+  const listTypes = ['backups', 'builds', 'secrets', 'netpols', 'sealedsecrets', 'services', 'workloads']
+  const mapTypes = ['apps', 'policies']
+  const allTypes = [...listTypes, ...mapTypes]
+  const teamPromises: Promise<void>[] = []
+
+  // save team settings
+  const settings = omit(teamSpec, allTypes)
+  teamPromises.push(deps.writeValuesToFile(settingsPath, { spec: settings }, overwrite))
+  teamPromises.push(deps.writeValuesToFile(settingsSecretsPath, { spec: teamSecrets }, overwrite))
+
+  // save team resources
+  listTypes.forEach((resourceType): void => {
+    const resourceDirPath = path.join(teamDir, resourceType)
+    const collection: Array<Record<string, any>> = get(teamSpec, resourceType, [])
+    collection.forEach((resource) => {
+      const resourceFileName = `${resource.name}.yaml`
+      const resourcePath = path.join(resourceDirPath, resourceFileName)
+      teamPromises.push(deps.writeValuesToFile(resourcePath, { spec: resource }, overwrite))
+    })
+  })
+
+  // TODO should we store each policy a separate file?
+  mapTypes.forEach((resourceType): void => {
+    const collection: Record<string, any> = get(teamSpec, resourceType, {})
+    const resourceFileName = `${resourceType}.yaml`
+    const resourcePath = path.join(teamDir, resourceFileName)
+    teamPromises.push(deps.writeValuesToFile(resourcePath, { spec: collection }, overwrite))
+  })
+
+  await Promise.all(teamPromises)
+
+  return teamDir
+}

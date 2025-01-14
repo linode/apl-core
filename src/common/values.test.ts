@@ -1,8 +1,31 @@
 import { cloneDeep, merge, set } from 'lodash'
-import { generateSecrets } from 'src/common/values'
+import { env } from 'process'
+import { generateSecrets, saveTeam } from 'src/common/values'
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
+
+describe('saveTeam', () => {
+  it('should save a new empty team', async () => {
+    const deps = {
+      writeValuesToFile: jest.fn().mockResolvedValue(undefined),
+    }
+    // jest.spyOn(deps, 'writeValuesToFile')
+    const dirPath = await saveTeam('test', {}, {}, false, deps)
+    const expectedDirPath = `${env.ENV_DIR}/env/teams/test`
+    expect(dirPath).toEqual(expectedDirPath)
+    expect(deps.writeValuesToFile).toBeCalledTimes(4)
+    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(1, `${expectedDirPath}/settings.yaml`, { spec: {} }, false)
+    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
+      2,
+      `${expectedDirPath}/secrets.settings.yaml`,
+      { spec: {} },
+      false,
+    )
+    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(3, `${expectedDirPath}/apps.yaml`, { spec: {} }, false)
+    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(4, `${expectedDirPath}/policies.yaml`, { spec: {} }, false)
+  })
+})
 
 describe('generateSecrets', () => {
   const values = { one: 'val', secret: 'prop', apps: { yo: { di: { lo: 'loves you' } } } }

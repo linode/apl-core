@@ -50,6 +50,7 @@
     },
     {
       "name": "Debug current test",
+      "envFile": ".env",
       "type": "node",
       "request": "launch",
       "program": "${workspaceRoot}/node_modules/.bin/jest",
