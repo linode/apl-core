@@ -358,6 +358,32 @@ export const saveTeam = async (
   return teamDir
 }
 
+/**
+ * Loads files for a team directory of the following structure
+ * 
+ * ./
+    ├── id.yaml
+    ├── networkPolicy.yaml
+    ├── secrets.settings.yaml
+    ├── secrets.settings.yaml.dec
+    ├── selfService.yaml
+    ├── builds/
+    │   └── <build-name>.yaml
+    ├── netpols/
+    │   └── <netpol-name>.yaml
+    ├── policies/
+    │   └── <policies-name>.yaml
+    ├── sealedsecrets/
+    │   └── <secret-name>.yaml
+    ├── services/
+    │   └── <service-name>.yaml
+    ├── workloads/
+    │   └── <workload-name>.yaml
+    └── workloads
+        └── <workload-name>.values.yaml
+ * @param teamName
+ * @param deps
+ */
 export const loadTeam = async (
   teamName: string,
   deps = {
@@ -369,9 +395,9 @@ export const loadTeam = async (
   const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
 
   // Get directories and regular files that are at 1st level of team directory
-  // teamDirs - are directories that holds collection of resources
+  // teamDirs - are directories, each holding a collection of a given type of resource
   const teamDirs = await deps.getFiles(teamDir, { skipHidden: true, fileType: FileType.Directory })
-  // teamFiles - are individual resources that contribute to team settings
+  // teamFiles - are individual files, each contributing to the team settings
   const teamFiles = await deps.getFiles(teamDir, { skipHidden: true, fileType: FileType.File })
   const teamPromises: Promise<void>[] = []
 
