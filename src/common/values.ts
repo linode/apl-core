@@ -2,7 +2,7 @@ import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
 import { mkdir, unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
-import path, { dirname } from 'path'
+import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
 import { $ } from 'zx'
@@ -386,23 +386,19 @@ export const loadTeam = async (
     allPaths.push(path.join(teamDir, fileName))
   })
 
-  allPaths.forEach((filePath) => teamPromises.push(deps.loadTeamFile(teamName, teamSpec, filePath)))
+  allPaths.forEach((filePath) => teamPromises.push(deps.loadTeamFile(teamSpec, filePath)))
 
   await Promise.all(teamPromises)
 }
 
-const loadTeamFile = async (teamName: string, teamSpec, filePath: string, deps = { loadYaml }) => {
-  const resourceType = dirname(filePath)
+const loadTeamFile = async (teamSpec, filePath: string, deps = { loadYaml }) => {
   const spec = teamSpec
   const content = await deps.loadYaml(filePath)
-
-  // TODO handle secrets
-  if (dirname(resourceType) === teamName) {
-    // a regular file that is at team directory level
-    const resourceName = path.basename(filePath, path.extname(filePath))
+  const resourceName = path.basename(filePath, path.extname(filePath))
+  if (Array.isArray(spec[resourceName])) {
+    spec[resourceName].push(content?.spec)
+  } else if (typeof spec[resourceName] === 'object' && spec[resourceName] !== null) {
     spec[resourceName] = content?.spec
-  } else {
-    // a regular file that is at team resource collection level
-    spec[resourceType].push(content?.spec)
   }
+  // TODO handle secrets
 }
