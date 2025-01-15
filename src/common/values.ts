@@ -368,7 +368,10 @@ export const loadTeam = async (
   const teamSpec = {}
   const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
 
+  // Get directories and regular files that are at 1st level of team directory
+  // teamDirs - are directories that holds collection of resources
   const teamDirs = await deps.getFiles(teamDir, { skipHidden: true, fileType: FileType.Directory })
+  // teamFiles - are individual resources that contribute to team settings
   const teamFiles = await deps.getFiles(teamDir, { skipHidden: true, fileType: FileType.File })
   const teamPromises: Promise<void>[] = []
 
@@ -381,8 +384,6 @@ export const loadTeam = async (
   })
 
   teamFiles.forEach((fileName) => {
-    const resourceName = path.basename(fileName, path.extname(fileName))
-    teamSpec[resourceName] = {}
     allPaths.push(path.join(teamDir, fileName))
   })
 
@@ -397,7 +398,7 @@ const loadTeamFile = async (teamSpec, filePath: string, deps = { loadYaml }) => 
   const resourceName = path.basename(filePath, path.extname(filePath))
   if (Array.isArray(spec[resourceName])) {
     spec[resourceName].push(content?.spec)
-  } else if (typeof spec[resourceName] === 'object' && spec[resourceName] !== null) {
+  } else {
     spec[resourceName] = content?.spec
   }
   // TODO handle secrets
