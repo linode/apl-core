@@ -1,6 +1,12 @@
 import { cloneDeep, merge, set } from 'lodash'
 import { env } from 'process'
-import { generateSecrets, hasCorrespondingDecryptedFile, loadTeamFileToSpecToSpec, saveTeam } from 'src/common/values'
+import {
+  generateSecrets,
+  hasCorrespondingDecryptedFile,
+  loadTeam,
+  loadTeamFileToSpecToSpec,
+  saveTeam,
+} from 'src/common/values'
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
@@ -39,6 +45,18 @@ describe('loadTeamFileToSpec', () => {
   })
 })
 
+describe('loadTeam', () => {
+  it('should not load anything if there are no files in team direcotry', async () => {
+    const deps = {
+      getFiles: jest.fn().mockResolvedValue([]),
+      loadTeamFileToSpec: jest.fn().mockResolvedValue({ spec: {} }),
+    }
+
+    const spec = {}
+    await loadTeam('alpha', deps)
+    expect(spec).toEqual({})
+  })
+})
 describe('saveTeam', () => {
   it('should save a new empty team', async () => {
     const deps = {
