@@ -364,7 +364,7 @@ export const hasCorrespondingDecryptedFile = (fileName: string, fileList: Array<
 
 /**
  * Loads files for a team directory of the following structure. It should be file and directory name agnostic.
- * 
+ *
  * ./
     ├── <filename-1>.yaml
     ├── <filename-N>.yaml
@@ -374,14 +374,16 @@ export const hasCorrespondingDecryptedFile = (fileName: string, fileList: Array<
     └── <resource-collection-M>/
         ├── <res-M-1>.yaml
         └── <res-M-N>.yaml
-
-    The team directories and files translate into the follwoing spec:
+ * Each file has the 'spec' property which is omitted while loading.
+ *
+ * The team directories and files translate into the follwoing spec:
     {
       "<filename-1>": {}
       "<filename-N>": {}
       "<resource-collection-1>": [{content of <res-1-1>.yaml}, {content of <res-1-N>.yaml}] 
       "<resource-collection-M>": [{content of <res-M-1>.yaml}, {content of <res-M-N>.yaml}] 
     }
+ *
  * @param teamName
  * @param deps
  */
