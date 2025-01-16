@@ -366,23 +366,14 @@ export const hasCorrespondingDecryptedFile = (fileName: string, fileList: Array<
  * Loads files for a team directory of the following structure. It should be file and directory name agnostic.
  * 
  * ./
-    ├── settings.yaml
-    ├── secrets.settings.yaml
-    ├── secrets.settings.yaml.dec
-    ├── builds/
-    │   └── <build-name>.yaml
-    ├── netpols/
-    │   └── <netpol-name>.yaml
-    ├── policies/
-    │   └── <policies-name>.yaml
-    ├── sealedsecrets/
-    │   └── <secret-name>.yaml
-    ├── services/
-    │   └── <service-name>.yaml
-    ├── workloads/
-    │   └── <workload-name>.yaml
-    └── workloads
-        └── <workload-name>.values.yaml
+    ├── <filename-1>.yaml
+    ├── <filename-N>.yaml
+    ├── <resource-collection-1>/
+    │   ├── <res-1-1>.yaml
+    │   └── <res-1-N>.yaml
+    └── <resource-collection-M>/
+        ├── <res-M-1>.yaml
+        └── <res-M-N>.yaml
  * @param teamName
  * @param deps
  */
