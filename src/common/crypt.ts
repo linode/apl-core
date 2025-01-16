@@ -96,6 +96,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   if (files.length === 0) {
     files = await getAllSecretFiles(path)
   }
+  console.log('files', JSON.stringify(files))
   files = files.filter(async (f) => {
     const suffix = crypt.cmd === CryptType.ENCRYPT ? '.dec' : ''
     let file = `${f}${suffix}`
