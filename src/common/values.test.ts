@@ -1,10 +1,16 @@
 import { cloneDeep, merge, set } from 'lodash'
 import { env } from 'process'
-import { generateSecrets, saveTeam } from 'src/common/values'
+import { generateSecrets, hasCorrespondingDecryptedFile, saveTeam } from 'src/common/values'
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
 
+describe('utils', () => {
+  it('should save a new empty team with empty resources', () => {
+    expect(hasCorrespondingDecryptedFile('test.yaml.dec', ['test.yaml.dec', 'test.yaml'])).toEqual(false)
+    expect(hasCorrespondingDecryptedFile('test.yaml', ['test.yaml.dec', 'test.yaml'])).toEqual(true)
+  })
+})
 describe('saveTeam', () => {
   it('should save a new empty team', async () => {
     const deps = {

@@ -358,6 +358,10 @@ export const saveTeam = async (
   return teamDir
 }
 
+export const hasCorrespondingDecryptedFile = (fileName: string, fileList: Array<string>): boolean => {
+  return fileList.includes(`${fileName}.dec`)
+}
+
 /**
  * Loads files for a team directory of the following structure
  * 
@@ -410,6 +414,7 @@ export const loadTeam = async (
   })
 
   teamFiles.forEach((fileName) => {
+    if (hasCorrespondingDecryptedFile(fileName, teamFiles)) return
     allPaths.push(path.join(teamDir, fileName))
   })
 
