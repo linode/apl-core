@@ -40,18 +40,19 @@ apps:
 
 teamConfig:
   demo:
-    password: somesecretvalue
-    id: demo
-    selfService:
-      service:
-        - ingress
-    managedMonitoring:
-      grafana: true
-      prometheus: true
-      alertmanager: true
-    networkPolicy:
-      egressPublic: false
-      ingressPrivate: false
+    settings:
+      password: somesecretvalue
+      id: demo
+      selfService:
+        service:
+          - ingress
+      managedMonitoring:
+        grafana: true
+        prometheus: true
+        alertmanager: true
+      networkPolicy:
+        egressPublic: false
+        ingressPrivate: false
     services:
       - ingressClassName: platform
         ksvc:

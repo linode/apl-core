@@ -1079,8 +1079,43 @@ definitions:
   team:
     additionalProperties: false
     properties:
-      alerts:
-        $ref: '#/definitions/alerts'
+      settings:
+        properties:
+          id:
+            $ref: '#/definitions/idName'
+            description: Must be the same as the name.
+          managedMonitoring:
+            title: Managed monitoring
+            description: Activate managed Grafana, Prometheus or Alertmanager instances
+            properties:
+              grafana:
+                type: boolean
+              alertmanager:
+                type: boolean
+          limitRange:
+            description: 'Kubernetes limit range. As is.'
+            properties:
+              default:
+                $ref: '#/definitions/resource'
+              defaultRequest:
+                $ref: '#/definitions/resource'
+          oidc:
+            additionalProperties: false
+            properties:
+              groupMapping:
+                description: IDP group id to map onto this team.
+                $ref: '#/definitions/wordCharacterPattern'
+          password:
+            description: Will be used to separate team resources.
+            type: string
+            x-secret: ''
+          resourceQuota:
+            description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
+            type: object
+          selfService:
+            $ref: '#/definitions/teamSelfService'
+          alerts:
+            $ref: '#/definitions/alerts'
       apps:
         additionalProperties: true
         alertmanager:
@@ -1121,31 +1156,6 @@ definitions:
         items:
           $ref: '#/definitions/secret'
         type: array
-      id:
-        $ref: '#/definitions/idName'
-        description: Must be the same as the name.
-      limitRange:
-        description: 'Kubernetes limit range. As is.'
-        properties:
-          default:
-            $ref: '#/definitions/resource'
-          defaultRequest:
-            $ref: '#/definitions/resource'
-      oidc:
-        additionalProperties: false
-        properties:
-          groupMapping:
-            description: IDP group id to map onto this team.
-            $ref: '#/definitions/wordCharacterPattern'
-      password:
-        description: Will be used to separate team resources.
-        type: string
-        x-secret: ''
-      resourceQuota:
-        description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
-        type: object
-      selfService:
-        $ref: '#/definitions/teamSelfService'
       services:
         items:
           $ref: '#/definitions/service'
@@ -1154,14 +1164,6 @@ definitions:
         items:
           $ref: '#/definitions/netpol'
         type: array
-      managedMonitoring:
-        title: Managed monitoring
-        description: Activate managed Grafana, Prometheus or Alertmanager instances
-        properties:
-          grafana:
-            type: boolean
-          alertmanager:
-            type: boolean
       networkPolicy:
         ingressPrivate:
           title: Enable filtering of ingress traffic inside the cluster

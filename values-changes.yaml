@@ -336,3 +336,13 @@ changes:
       - databases.harbor.resources.limits.cpu: '200m'
       - databases.harbor.resources.requests.memory: '192Mi'
       - databases.harbor.resources.requests.cpu: '200m'
+  - version: 33
+    relocations:
+      - 'teamConfig.{team}.alerts': 'teamConfig.{team}.settings.alerts'
+      - 'teamConfig.{team}.id': 'teamConfig.{team}.settings.id'
+      - 'teamConfig.{team}.limitRange': 'teamConfig.{team}.settings.limitRange'
+      - 'teamConfig.{team}.networkPolicy': 'teamConfig.{team}.settings.networkPolicy'
+      - 'teamConfig.{team}.oidc': 'teamConfig.{team}.settings.oidc'
+      - 'teamConfig.{team}.password': 'teamConfig.{team}.settings.password'
+      - 'teamConfig.{team}.resourceQuota': 'teamConfig.{team}.settings.resourceQuota'
+      - 'teamConfig.{team}.selfService': 'teamConfig.{team}.settings.selfService'

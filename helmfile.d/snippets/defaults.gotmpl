@@ -72,7 +72,8 @@ environments:
                   requests:
                     cpu: 500m
                     memory: 512Mi
-          managedMonitoring:
-            grafana: true
-            alertmanager: false
+          settings:
+            managedMonitoring:
+              grafana: true
+              alertmanager: false
     {{- end }}
