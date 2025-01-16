@@ -392,9 +392,9 @@ export const loadTeam = async (
   teamName: string,
   deps = {
     getFiles,
-    loadTeamFile,
+    loadTeamFileToSpec: loadTeamFileToSpecToSpec,
   },
-): Promise<void> => {
+): Promise<Record<string, any>> => {
   const teamSpec = {}
   const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
 
@@ -409,7 +409,7 @@ export const loadTeam = async (
   teamDirs.map(async (resourceName) => {
     teamSpec[resourceName] = []
     const resourceDir = path.join(teamDir, resourceName)
-    const resourcePaths = await deps.getFiles(resourceDir, { skipHidden: true, fileType: FileType.Directory })
+    const resourcePaths = await deps.getFiles(resourceDir, { skipHidden: true, fileType: FileType.File })
     resourcePaths.forEach((fileName) => allPaths.push(path.join(resourceDir, fileName)))
   })
 
@@ -418,19 +418,24 @@ export const loadTeam = async (
     allPaths.push(path.join(teamDir, fileName))
   })
 
-  allPaths.forEach((filePath) => teamPromises.push(deps.loadTeamFile(teamSpec, filePath)))
+  allPaths.forEach((filePath) => teamPromises.push(deps.loadTeamFileToSpec(teamSpec, filePath)))
 
   await Promise.all(teamPromises)
+  return teamSpec
 }
 
-const loadTeamFile = async (teamSpec, filePath: string, deps = { loadYaml }) => {
+export const loadTeamFileToSpecToSpec = async (
+  teamSpec: Record<string, any>,
+  filePath: string,
+  deps = { loadYaml },
+) => {
   const spec = teamSpec
   const content = await deps.loadYaml(filePath)
   const resourceName = path.basename(filePath, path.extname(filePath))
   if (Array.isArray(spec[resourceName])) {
     spec[resourceName].push(content?.spec)
   } else {
-    spec[resourceName] = content?.spec
+    // Decrypted secrets may need to be merged with plain text specs
+    spec[resourceName] = merge(cloneDeep(spec[resourceName]), content?.spec)
   }
-  // TODO handle secrets
 }
