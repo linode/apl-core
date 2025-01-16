@@ -376,7 +376,7 @@ export const hasCorrespondingDecryptedFile = (fileName: string, fileList: Array<
         └── <res-M-N>.yaml
  * Each file has the 'spec' property which is omitted while loading.
  *
- * The team directories and files translate into the follwoing spec:
+ * The team directories and files translate into the following object:
     {
       "<filename-1>": {}
       "<filename-N>": {}
