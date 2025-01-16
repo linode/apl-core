@@ -97,6 +97,12 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
     files = await getAllSecretFiles(path)
   }
   console.log('files', JSON.stringify(files))
+  for (const file of files) {
+    const filePath = `${path}/${file}.dec`
+    if (await pathExists(filePath)) {
+      console.log(`${filePath} exists`)
+    }
+  }
   files = files.filter(async (f) => {
     const suffix = crypt.cmd === CryptType.ENCRYPT ? '.dec' : ''
     let file = `${f}${suffix}`
@@ -114,11 +120,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
   d.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const fileChunk of filesChunked) {
-      // eslint-disable-next-line no-await-in-loop
-      await processFileChunk(crypt, fileChunk)
-    }
+    await Promise.all(filesChunked.map((fileChunk) => processFileChunk(crypt, fileChunk)))
     return
   } catch (error) {
     d.error(error)
