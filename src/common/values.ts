@@ -374,6 +374,14 @@ export const hasCorrespondingDecryptedFile = (fileName: string, fileList: Array<
     └── <resource-collection-M>/
         ├── <res-M-1>.yaml
         └── <res-M-N>.yaml
+
+    The team directories and files translate into the follwoing spec:
+    {
+      "<filename-1>": {}
+      "<filename-N>": {}
+      "<resource-collection-1>": [{content of <res-1-1>.yaml}, {content of <res-1-N>.yaml}] 
+      "<resource-collection-M>": [{content of <res-M-1>.yaml}, {content of <res-M-N>.yaml}] 
+    }
  * @param teamName
  * @param deps
  */
