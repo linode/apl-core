@@ -406,12 +406,14 @@ export const loadTeam = async (
   const teamPromises: Promise<void>[] = []
 
   const allPaths: Array<string> = []
-  teamDirs.map(async (resourceName) => {
+  const promisies = teamDirs.map(async (resourceName) => {
     teamSpec[resourceName] = []
     const resourceDir = path.join(teamDir, resourceName)
     const resourcePaths = await deps.getFiles(resourceDir, { skipHidden: true, fileType: FileType.File })
     resourcePaths.forEach((fileName) => allPaths.push(path.join(resourceDir, fileName)))
   })
+
+  await Promise.all(promisies)
 
   teamFiles.forEach((fileName) => {
     if (hasCorrespondingDecryptedFile(fileName, teamFiles)) return

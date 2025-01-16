@@ -8,6 +8,7 @@ import {
   saveTeam,
 } from 'src/common/values'
 import stubs from 'src/test-stubs'
+import { FileType } from './utils'
 
 const { terminal } = stubs
 
@@ -56,7 +57,73 @@ describe('loadTeam', () => {
     await loadTeam('alpha', deps)
     expect(spec).toEqual({})
   })
+  it('should load team spec if there are files in team direcotry', async () => {
+    const deps = {
+      getFiles: jest.fn(),
+      loadTeamFileToSpec: jest.fn(),
+    }
+
+    deps.getFiles
+      .mockResolvedValueOnce(['builds', 'workloads'])
+      .mockResolvedValueOnce(['settings.yaml', 'secrets.settings.yaml', 'secrets.settings.yaml.dec'])
+      .mockResolvedValueOnce(['build1.yaml', 'build2.yaml'])
+      .mockResolvedValueOnce(['workload1.yaml', 'workload2.yaml'])
+
+    deps.loadTeamFileToSpec.mockResolvedValue(undefined)
+    await loadTeam('alpha', deps)
+
+    expect(deps.getFiles).toBeCalledTimes(4)
+    expect(deps.getFiles).toHaveBeenNthCalledWith(1, `${env.ENV_DIR}/env/teams/alpha`, {
+      skipHidden: true,
+      fileType: FileType.Directory,
+    })
+    expect(deps.getFiles).toHaveBeenNthCalledWith(2, `${env.ENV_DIR}/env/teams/alpha`, {
+      skipHidden: true,
+      fileType: FileType.File,
+    })
+    expect(deps.getFiles).toHaveBeenNthCalledWith(3, `${env.ENV_DIR}/env/teams/alpha/builds`, {
+      skipHidden: true,
+      fileType: FileType.File,
+    })
+    expect(deps.getFiles).toHaveBeenNthCalledWith(4, `${env.ENV_DIR}/env/teams/alpha/workloads`, {
+      skipHidden: true,
+      fileType: FileType.File,
+    })
+    // Six times because secrets.settings.yaml should be eommited in favour of secrets.settings.yaml.dec
+    expect(deps.loadTeamFileToSpec).toBeCalledTimes(6)
+    expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
+      1,
+      { builds: [], workloads: [] },
+      `${env.ENV_DIR}/env/teams/alpha/builds/build1.yaml`,
+    )
+    expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
+      2,
+      { builds: [], workloads: [] },
+      `${env.ENV_DIR}/env/teams/alpha/builds/build2.yaml`,
+    )
+    expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
+      3,
+      { builds: [], workloads: [] },
+      `${env.ENV_DIR}/env/teams/alpha/workloads/workload1.yaml`,
+    )
+    expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
+      4,
+      { builds: [], workloads: [] },
+      `${env.ENV_DIR}/env/teams/alpha/workloads/workload2.yaml`,
+    )
+    expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
+      5,
+      { builds: [], workloads: [] },
+      `${env.ENV_DIR}/env/teams/alpha/settings.yaml`,
+    )
+    expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
+      6,
+      { builds: [], workloads: [] },
+      `${env.ENV_DIR}/env/teams/alpha/secrets.settings.yaml.dec`,
+    )
+  })
 })
+
 describe('saveTeam', () => {
   it('should save a new empty team', async () => {
     const deps = {
