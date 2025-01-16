@@ -14,6 +14,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipDecrypt: true, skipKubeContextCheck: true })
-    await decrypt(undefined, ...(argv.files ?? []))
+    await decrypt(undefined, '', ...(argv.files ?? []))
   },
 }

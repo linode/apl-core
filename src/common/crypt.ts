@@ -144,8 +144,8 @@ const matchTimestamps = async (path, file: string) => {
   d.debug(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
 }
 
-export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
-  const d = terminal(`common:crypt:decrypt`)
+export const decrypt = async (path = env.ENV_DIR, requestId = '', ...files: string[]): Promise<void> => {
+  const d = terminal(`common:crypt:decrypt:${requestId}`)
   if (!(await pathExists(`${path}/.sops.yaml`))) {
     d.info('Skipping decryption')
     return
@@ -164,8 +164,8 @@ export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
   d.info('Decryption is done')
 }
 
-export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
-  const d = terminal(`common:crypt:encrypt`)
+export const encrypt = async (path = env.ENV_DIR, requestId = '', ...files: string[]): Promise<void> => {
+  const d = terminal(`common:crypt:encrypt:${requestId}`)
   if (!(await pathExists(`${path}/.sops.yaml`))) {
     d.info('Skipping encryption')
     return
