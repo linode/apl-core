@@ -233,8 +233,12 @@ extraVolumeMounts:
 {{- end }}
 extraVolumes:
   - name: backup
+{{- if ne $v.cluster.provider "custom" }}
     persistentVolumeClaim:
       claimName: gitea-backup
+{{- else }}
+    emptyDir: {}
+{{- end }}
 {{- if $v._derived.untrustedCA }}
   - name: custom-ca
     secret:

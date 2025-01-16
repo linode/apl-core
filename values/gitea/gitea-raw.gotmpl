@@ -39,6 +39,7 @@ resources:
     S3_STORAGE_ACCOUNT: "{{ $obj.linode.accessKeyId | b64enc }}"
     S3_STORAGE_KEY: "{{ $obj.linode.secretAccessKey | b64enc }}"
 {{- end }}
+{{- if ne $v.cluster.provider "custom" }}
 # Application backup resources
 - apiVersion: v1
   kind: PersistentVolumeClaim
@@ -50,6 +51,7 @@ resources:
     resources:
       requests:
         storage: 1Gi
+{{- end }}
 {{- if $giteaBackupConfig.enabled }}
 - apiVersion: v1
   kind: ServiceAccount
