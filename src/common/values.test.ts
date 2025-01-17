@@ -62,6 +62,15 @@ describe('loadTeamFileToSpec', () => {
     await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/builds/b2.yaml', deps)
     expect(teamSpec).toEqual({ builds: [1, 2] })
   })
+
+  it('should load secret files to existing spec', async () => {
+    const deps = {
+      loadYaml: jest.fn().mockResolvedValue({ spec: { password: 2 } }),
+    }
+    const teamSpec = { settings: { id: 1 } }
+    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/secrets.settings.yaml', deps)
+    expect(teamSpec).toEqual({ settings: { id: 1, password: 2 } })
+  })
 })
 
 describe('loadTeam', () => {
