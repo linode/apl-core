@@ -1,12 +1,15 @@
 import { pathExists } from 'fs-extra'
-import { readFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import { has, set } from 'lodash'
+import path from 'path'
 import { parse } from 'yaml'
 import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
+import { getTeamConfig } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, readdirRecurse, rootDir } from './utils'
-import { HelmArguments, getParsedArgs } from './yargs'
+import { objectToYaml } from './values'
+import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
@@ -85,6 +88,11 @@ export const hfValues = async (
     d.info('No teams or cluster info found. ENV_DIR is potentially empty.')
     return undefined
   }
+
+  const teamConfig = await getTeamConfig()
+  const valuesPath = path.join(env.ENV_DIR, 'values-repo.yaml')
+  await writeFile(valuesPath, objectToYaml(teamConfig))
+
   let output: ProcessOutputTrimmed
   if (filesOnly)
     output = await hf(
@@ -106,8 +114,8 @@ export const hfValues = async (
     const schema = await getValuesSchema()
     const allSecrets = extract(schema, 'x-secret')
     const allSecretsPaths = Object.keys(flattenObject(allSecrets))
-    allSecretsPaths.forEach((path) => {
-      if (has(res, path)) set(res, path, '<redacted>')
+    allSecretsPaths.forEach((filePath) => {
+      if (has(res, filePath)) set(res, filePath, '<redacted>')
     })
   }
 
@@ -117,9 +125,9 @@ export const hfValues = async (
     if (await pathExists(tragetDir)) {
       const paths = await readdirRecurse(tragetDir)
       await Promise.allSettled(
-        paths.map(async (path) => {
-          const relativePath = path.replace(`${envDir}/`, '')
-          files[relativePath] = (await readFile(path)).toString()
+        paths.map(async (filePath) => {
+          const relativePath = filePath.replace(`${envDir}/`, '')
+          files[relativePath] = (await readFile(filePath)).toString()
         }),
       )
       res.files = files
