@@ -80,7 +80,7 @@ export const hfValues = async (
   envDir: string = env.ENV_DIR,
 ): Promise<Record<string, any> | undefined> => {
   const d = terminal('common:hf:hfValues')
-  if (!(await Promise.all([pathExists(`${envDir}/env/teams.yaml`), pathExists(`${envDir}/env/settings.yaml`)]))) {
+  if (!(await Promise.all([pathExists(`${envDir}/env/settings.yaml`)]))) {
     // teams and settings file are the minimum needed files to run env.gotmpl and get the values
     d.info('No teams or cluster info found. ENV_DIR is potentially empty.')
     return undefined
