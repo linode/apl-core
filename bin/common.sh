@@ -45,7 +45,7 @@ function err() {
 # skip parsing args for some commands
 caller=${1#./}
 if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
-  ! getopt --test >/dev/null
+  getopt --test >/dev/null && exit 1
   if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
     err '`getopt --test` failed in this environment.'
     exit 1
@@ -53,7 +53,7 @@ if [ "$caller" == 'bin/otomi' ] || [[ ! "x bash bats" == *"$1"* ]]; then
 
   OPTIONS=dtvsp:f:l:
   LONGOPTS=debug,trace,verbose,skip-cleanup,profile:,file:,label:
-  ! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
+  PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@") && exit 1
   if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
     exit 1
   fi
@@ -202,7 +202,7 @@ function crypt() {
         [ -n "$VERBOSE" ] && echo "Found timestamp diff in seconds: $sec_diff"
       fi
       if [ ! -f $file.dec ] || [ $sec_diff -gt 1 ]; then
-        helm secrets encrypt -i $file >$out
+        helm secrets enc $file >$out
         ts=$(stat -c %Y $file)
         chek_ts=$(expr $ts + 1)
         touch -d @$chek_ts $file.dec
@@ -211,7 +211,7 @@ function crypt() {
         [ -n "$VERBOSE" ] && echo "Skipping encryption for $file as it is not changed."
       fi
     else
-      if helm secrets decrypt "$file" > "${file}.dec"; then
+      if helm secrets dec $file >$out; then
         # we correct timestamp of decrypted file to match source file,
         # in order to detect changes for conditional encryption
         [ -n "$VERBOSE" ] && echo "Setting timestamp of decrypted file to that of source file."
