@@ -12,7 +12,7 @@ export interface Arguments extends BasicArguments {
   files?: string[]
 }
 
-EventEmitter.defaultMaxListeners = 20
+EventEmitter.defaultMaxListeners = 50
 
 enum CryptType {
   ENCRYPT = 'helm secrets -q encrypt -i',
@@ -117,7 +117,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
 
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   // EventEmitter.defaultMaxListeners is 10, if we increase chunkSize in the future then this line will prevent it from crashing
-  if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
+  if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = 50
   d.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
     await Promise.all(filesChunked.map((fileChunk) => processFileChunk(crypt, fileChunk)))
@@ -127,7 +127,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
     throw error
   } finally {
     cd(rootDir)
-    EventEmitter.defaultMaxListeners = eventEmitterDefaultListeners
+    EventEmitter.defaultMaxListeners = 50
   }
 }
 
