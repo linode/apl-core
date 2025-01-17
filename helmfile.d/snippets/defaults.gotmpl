@@ -1,15 +1,13 @@
-{{- /* Only dynamic defauts */}}
+{{- /* Only dynamic defaluts */}}
 {{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
-{{- $t := readFile (print $ENV_DIR "/env/teams.yaml") | fromYaml }}
-{{- if not (hasKey $t "teamConfig") }}{{ $_ := set $t "teamConfig" dict }}{{ end }}
-{{- $teams := keys $t.teamConfig}}
+{{- $dirPath := printf "%s/env/teams" $ENV_DIR }}
 
 environments:
   default:
     values:
     - teamConfig:
-    {{- range $team := $teams }}
-        {{ $team }}:
+    {{- range $index,$item := readDirEntries $dirPath }}
+        {{ $item.Name }}:
           apps:
             alertmanager:
               resources:

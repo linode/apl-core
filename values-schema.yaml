@@ -3290,9 +3290,10 @@ properties:
     properties:
       admin:
         properties:
-          password:
-            type: string
-            x-secret: '{{ randAlpha 16 }}'
+          settings:
+            password:
+              type: string
+              x-secret: '{{ randAlpha 16 }}'
   version:
     type: integer
     description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.
