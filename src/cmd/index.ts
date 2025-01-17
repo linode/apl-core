@@ -16,11 +16,11 @@ import { module as lintModule } from './lint'
 import { module as migrateModule } from './migrate'
 import { module as playgroundModule } from './playground'
 import { module as pullModule } from './pull'
+import { module as repoValuesModule } from './repo-values'
 import { module as scoreTemplatesModule } from './score-templates'
 import { module as serverModule } from './server'
 import { module as statusModule } from './status'
 import { module as syncModule } from './sync'
-import { module as teamValuesModule } from './team-values'
 import { module as templateModule } from './template'
 import { module as testModule } from './test'
 import { module as upgradeModule } from './upgrade'
@@ -46,11 +46,11 @@ export { module as hf } from './hf'
 export { module as lint } from './lint'
 export { module as migrate } from './migrate'
 export { module as pull } from './pull'
+export { module as repoValues } from './repo-values'
 export { module as scoreTemplates } from './score-templates'
 export { module as server } from './server'
 export { module as status } from './status'
 export { module as sync } from './sync'
-export { module as teamValues } from './team-values'
 export { module as template } from './template'
 export { module as test } from './test'
 export { module as upgrade } from './upgrade'
@@ -82,7 +82,7 @@ export const commands: CommandModule[] = [
   serverModule,
   statusModule,
   syncModule,
-  teamValuesModule,
+  repoValuesModule,
   templateModule,
   testModule,
   validateClusterModule,
