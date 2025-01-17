@@ -1,5 +1,8 @@
 {{- $v := .Values }}
 {{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
+{{- $domainParts := split $domainSuffix "." -}}
+{{- $clusterID := index $domainParts 0 -}}
+{{- $secondLevelDomain := index $domainParts 1 -}}
 {{- $consoleUrl := printf "https://console.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $name := $domain | replace "." "-" }}
@@ -29,8 +32,15 @@ resources:
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         {{- end }}
         nginx.ingress.kubernetes.io/configuration-snippet: |
-          # rewrite auth redirects to original hosts
-          rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
+          set $redirect_target "";
+
+          if ($request_uri ~* ^/oauth2/redirect/(.*)) {
+            set $redirect_target $1;
+          }
+
+          if ($redirect_target ~* "^([a-zA-Z0-9-]+\.){0,2}{{ $clusterID }}\.{{ $secondLevelDomain }}\.net(%2F)?(/.*)?$") {
+            return 302 https://$redirect_target;
+          }
         {{- with $ingress | get "sourceIpAddressFiltering" nil }}
         nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
         {{- end}}
