@@ -12,7 +12,7 @@ export interface Arguments extends BasicArguments {
   files?: string[]
 }
 
-EventEmitter.defaultMaxListeners = 50
+EventEmitter.defaultMaxListeners = 20
 
 enum CryptType {
   ENCRYPT = 'helm secrets enc',
@@ -80,13 +80,6 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   if (files.length === 0) {
     files = await getAllSecretFiles(path)
   }
-  console.log('files', JSON.stringify(files))
-  for (const file of files) {
-    const filePath = `${path}/${file}.dec`
-    if (await pathExists(filePath)) {
-      console.log(`${filePath} exists`)
-    }
-  }
   files = files.filter(async (f) => {
     const suffix = crypt.cmd === CryptType.ENCRYPT ? '.dec' : ''
     let file = `${f}${suffix}`
@@ -101,7 +94,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
 
   const eventEmitterDefaultListeners = EventEmitter.defaultMaxListeners
   // EventEmitter.defaultMaxListeners is 10, if we increase chunkSize in the future then this line will prevent it from crashing
-  if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = 50
+  if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
   d.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
     await Promise.all(filesChunked.map((fileChunk) => processFileChunk(crypt, fileChunk)))
@@ -111,7 +104,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
     throw error
   } finally {
     cd(rootDir)
-    EventEmitter.defaultMaxListeners = 50
+    EventEmitter.defaultMaxListeners = eventEmitterDefaultListeners
   }
 }
 
@@ -131,8 +124,8 @@ const matchTimestamps = async (path, file: string) => {
   d.debug(`Updated timestamp for ${file}.dec from ${decSec} to ${encSec}`)
 }
 
-export const decrypt = async (path = env.ENV_DIR, requestId = '', ...files: string[]): Promise<void> => {
-  const d = terminal(`common:crypt:decrypt:${requestId}`)
+export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
+  const d = terminal(`common:crypt:decrypt`)
   if (!(await pathExists(`${path}/.sops.yaml`))) {
     d.info('Skipping decryption')
     return
@@ -151,8 +144,8 @@ export const decrypt = async (path = env.ENV_DIR, requestId = '', ...files: stri
   d.info('Decryption is done')
 }
 
-export const encrypt = async (path = env.ENV_DIR, requestId = '', ...files: string[]): Promise<void> => {
-  const d = terminal(`common:crypt:encrypt:${requestId}`)
+export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
+  const d = terminal(`common:crypt:encrypt`)
   if (!(await pathExists(`${path}/.sops.yaml`))) {
     d.info('Skipping encryption')
     return
