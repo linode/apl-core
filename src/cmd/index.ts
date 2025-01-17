@@ -20,6 +20,7 @@ import { module as scoreTemplatesModule } from './score-templates'
 import { module as serverModule } from './server'
 import { module as statusModule } from './status'
 import { module as syncModule } from './sync'
+import { module as teamValuesModule } from './team-values'
 import { module as templateModule } from './template'
 import { module as testModule } from './test'
 import { module as upgradeModule } from './upgrade'
@@ -49,6 +50,7 @@ export { module as scoreTemplates } from './score-templates'
 export { module as server } from './server'
 export { module as status } from './status'
 export { module as sync } from './sync'
+export { module as teamValues } from './team-values'
 export { module as template } from './template'
 export { module as test } from './test'
 export { module as upgrade } from './upgrade'
@@ -80,6 +82,7 @@ export const commands: CommandModule[] = [
   serverModule,
   statusModule,
   syncModule,
+  teamValuesModule,
   templateModule,
   testModule,
   validateClusterModule,

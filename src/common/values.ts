@@ -445,7 +445,6 @@ export const loadTeam = async (
   })
 
   allPaths.forEach((filePath) => teamPromises.push(deps.loadTeamFileToSpec(teamSpec, filePath)))
-
   await Promise.all(teamPromises)
   return teamSpec
 }
@@ -453,11 +452,12 @@ export const loadTeam = async (
 export const loadTeamFileToSpec = async (teamSpec: Record<string, any>, filePath: string, deps = { loadYaml }) => {
   const spec = teamSpec
   const content = await deps.loadYaml(filePath)
-  const resourceName = path.basename(filePath, path.extname(filePath))
-  if (Array.isArray(spec[resourceName])) {
-    spec[resourceName].push(content?.spec)
+  const fileName = path.basename(filePath, path.extname(filePath))
+  const dirName = path.basename(path.dirname(filePath))
+  if (Array.isArray(spec[dirName])) {
+    spec[dirName].push(content?.spec)
   } else {
     // Decrypted secrets may need to be merged with plain text specs
-    spec[resourceName] = merge(cloneDeep(spec[resourceName]), content?.spec)
+    spec[fileName] = merge(cloneDeep(spec[fileName]), content?.spec)
   }
 }
