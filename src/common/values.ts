@@ -416,7 +416,7 @@ export const loadTeam = async (
   teamName: string,
   deps = {
     getFiles,
-    loadTeamFileToSpec: loadTeamFileToSpecToSpec,
+    loadTeamFileToSpec,
   },
 ): Promise<Record<string, any>> => {
   const teamSpec = {}
@@ -450,11 +450,7 @@ export const loadTeam = async (
   return teamSpec
 }
 
-export const loadTeamFileToSpecToSpec = async (
-  teamSpec: Record<string, any>,
-  filePath: string,
-  deps = { loadYaml },
-) => {
+export const loadTeamFileToSpec = async (teamSpec: Record<string, any>, filePath: string, deps = { loadYaml }) => {
   const spec = teamSpec
   const content = await deps.loadYaml(filePath)
   const resourceName = path.basename(filePath, path.extname(filePath))

@@ -5,7 +5,7 @@ import {
   getTeamConfig,
   hasCorrespondingDecryptedFile,
   loadTeam,
-  loadTeamFileToSpecToSpec,
+  loadTeamFileToSpec,
   saveTeam,
 } from 'src/common/values'
 import stubs from 'src/test-stubs'
@@ -39,7 +39,7 @@ describe('getTeamConfig', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: { a: { b: '1' } } }),
     }
     const teamSpec = { settings: { a: { c: '2' } } }
-    await loadTeamFileToSpecToSpec(teamSpec, 'env/teams/alpha/settings.yaml', deps)
+    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/settings.yaml', deps)
     expect(teamSpec).toEqual({ settings: { a: { b: '1', c: '2' } } })
   })
   it('should push value to an array that aleeady exists an item', async () => {
@@ -47,7 +47,7 @@ describe('getTeamConfig', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: 2 }),
     }
     const teamSpec = { builds: [1] }
-    await loadTeamFileToSpecToSpec(teamSpec, 'env/teams/alpha/builds.yaml', deps)
+    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/builds.yaml', deps)
     expect(teamSpec).toEqual({ builds: [1, 2] })
   })
 })
@@ -58,7 +58,7 @@ describe('loadTeamFileToSpec', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: {} }),
     }
     const spec = {}
-    await loadTeamFileToSpecToSpec(spec, 'env/teams/alpha/settings.yaml', deps)
+    await loadTeamFileToSpec(spec, 'env/teams/alpha/settings.yaml', deps)
     expect(spec).toEqual({ settings: {} })
   })
   it('should merge with existing spec an empty spec', async () => {
@@ -66,7 +66,7 @@ describe('loadTeamFileToSpec', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: { a: { b: '1' } } }),
     }
     const teamSpec = { settings: { a: { c: '2' } } }
-    await loadTeamFileToSpecToSpec(teamSpec, 'env/teams/alpha/settings.yaml', deps)
+    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/settings.yaml', deps)
     expect(teamSpec).toEqual({ settings: { a: { b: '1', c: '2' } } })
   })
   it('should push value to an array that aleeady exists an item', async () => {
@@ -74,7 +74,7 @@ describe('loadTeamFileToSpec', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: 2 }),
     }
     const teamSpec = { builds: [1] }
-    await loadTeamFileToSpecToSpec(teamSpec, 'env/teams/alpha/builds.yaml', deps)
+    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/builds.yaml', deps)
     expect(teamSpec).toEqual({ builds: [1, 2] })
   })
 })
