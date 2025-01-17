@@ -457,7 +457,7 @@ export const loadTeamFileToSpec = async (teamSpec: Record<string, any>, filePath
   if (Array.isArray(spec[dirName])) {
     spec[dirName].push(content?.spec)
   } else {
-    const strippedFileName = fileName.replace(/^secrets\.|\.yaml\.dec$/g, '')
+    const strippedFileName = fileName.replace(/^secrets\.|\.yaml|\.dec$/g, '')
     // Decrypted secrets may need to be merged with plain text specs
     spec[strippedFileName] = merge(cloneDeep(spec[strippedFileName]), content?.spec)
   }

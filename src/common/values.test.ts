@@ -68,7 +68,7 @@ describe('loadTeamFileToSpec', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: { password: 2 } }),
     }
     const teamSpec = { settings: { id: 1 } }
-    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/secrets.settings.yaml', deps)
+    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/secrets.settings.yaml.dec', deps)
     expect(teamSpec).toEqual({ settings: { id: 1, password: 2 } })
   })
 })
