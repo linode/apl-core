@@ -59,7 +59,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
   const d = terminal(`common:crypt:processFileChunk`)
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
-      d.debug(`${crypt.cmd} ${file}`)
+      d.warn(`${crypt.cmd} ${file}`)
       const result = $`${crypt.cmd.split(' ')} ${file}`.quiet()
       return result
         .then(async (res) => {
