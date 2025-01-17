@@ -2,7 +2,6 @@ import { prepareEnvironment } from 'src/common/cli'
 import { getFilename } from 'src/common/utils'
 import { getTeamConfig, objectToYaml } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
-import { stringify } from 'yaml'
 import { Argv } from 'yargs'
 
 const cmdName = getFilename(__filename)
@@ -15,7 +14,7 @@ interface Arguments extends BasicArguments {
 
 const values = async (argv: Arguments): Promise<void> => {
   const teamConfig = await getTeamConfig()
-  console.log(stringify(objectToYaml(teamConfig, 2, 1000)))
+  console.log(objectToYaml(teamConfig, 2, 1000))
 }
 
 export const module = {
