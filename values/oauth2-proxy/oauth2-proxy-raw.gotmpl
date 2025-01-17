@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
-{{- $domainParts := split $domainSuffix "." -}}
-{{- $clusterID := index $domainParts 0 -}}
-{{- $secondLevelDomain := index $domainParts 1 -}}
+{{- $domainParts := split "." $domain  }}
+{{- $clusterID := $domainParts._1 }}
+{{- $secondLevelDomain := $domainParts._2 }}
 {{- $consoleUrl := printf "https://console.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $name := $domain | replace "." "-" }}
