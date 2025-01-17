@@ -351,8 +351,11 @@ export const saveTeam = async (
   })
 
   // Team secrets needs special treatment
-  const settingsSecretsPath = path.join(teamDir, 'secrets.settings.yaml')
-  teamPromises.push(deps.writeValuesToFile(settingsSecretsPath, { spec: teamSecrets }, overwrite))
+  Object.keys(teamSecrets).map((key) => {
+    const settingsSecretsPath = path.join(teamDir, `secrets.${key}.yaml`)
+    teamPromises.push(deps.writeValuesToFile(settingsSecretsPath, { spec: teamSecrets[key] }, overwrite))
+  })
+
   await Promise.all(teamPromises)
 
   return teamDir
@@ -380,7 +383,7 @@ export const getTeamConfig = async (
   return spec
 }
 
-export const printTeamConfigAsYaml = (teamConfig): string => {
+export const printTeamConfigAsYaml = (teamConfig: Record<string, any>): string => {
   return objectToYaml(teamConfig, 2, 1000)
 }
 

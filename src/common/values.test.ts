@@ -14,7 +14,7 @@ import { FileType } from './utils'
 const { terminal } = stubs
 
 describe('hasCorrespondingDecryptedFile', () => {
-  it('should save a new empty team with empty resources', () => {
+  it('should filter out encrypted files', () => {
     expect(hasCorrespondingDecryptedFile('test.yaml.dec', ['test.yaml.dec', 'test.yaml'])).toEqual(false)
     expect(hasCorrespondingDecryptedFile('test.yaml', ['test.yaml.dec', 'test.yaml'])).toEqual(true)
   })
@@ -158,7 +158,7 @@ describe('loadTeam', () => {
 })
 
 describe('saveTeam', () => {
-  it('should save a new empty team', async () => {
+  it('should not save a new empty team', async () => {
     const deps = {
       writeValuesToFile: jest.fn().mockResolvedValue(undefined),
     }
@@ -166,13 +166,7 @@ describe('saveTeam', () => {
     const dirPath = await saveTeam('test', {}, {}, false, deps)
     const expectedDirPath = `${env.ENV_DIR}/env/teams/test`
     expect(dirPath).toEqual(expectedDirPath)
-    expect(deps.writeValuesToFile).toBeCalledTimes(1)
-    expect(deps.writeValuesToFile).toHaveBeenNthCalledWith(
-      1,
-      `${expectedDirPath}/secrets.settings.yaml`,
-      { spec: {} },
-      false,
-    )
+    expect(deps.writeValuesToFile).toBeCalledTimes(0)
   })
   it('should save a new empty team with empty resources', async () => {
     const deps = {
@@ -190,7 +184,10 @@ describe('saveTeam', () => {
       settings: {},
     }
 
-    const dirPath = await saveTeam('test', teamSpec, {}, false, deps)
+    const teamSpecSecrets = {
+      settings: {},
+    }
+    const dirPath = await saveTeam('test', teamSpec, teamSpecSecrets, false, deps)
     const expectedDirPath = `${env.ENV_DIR}/env/teams/test`
     expect(dirPath).toEqual(expectedDirPath)
     expect(deps.writeValuesToFile).toBeCalledTimes(4)
@@ -220,7 +217,7 @@ it('should save a team with resources', async () => {
     workloads: [{ name: 'w1' }, { name: 'w2' }],
   }
   const teamSecretSpec = {
-    secret1: 'abc',
+    settings: { secret1: 'abc' },
   }
 
   const dirPath = await saveTeam('test', teamSpec, teamSecretSpec, false, deps)
