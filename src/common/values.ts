@@ -362,6 +362,28 @@ export const hasCorrespondingDecryptedFile = (fileName: string, fileList: Array<
   return fileList.includes(`${fileName}.dec`)
 }
 
+export const getTeamConfig = async (
+  deps = {
+    getTeamNames,
+    loadTeam,
+  },
+): Promise<Record<string, any>> => {
+  const teams = await deps.getTeamNames()
+  const spec = { teamConfig: {} }
+
+  const promises = teams.map(async (teamName) => {
+    spec.teamConfig[teamName] = await deps.loadTeam(teamName)
+  })
+
+  await Promise.all(promises)
+
+  return spec
+}
+
+export const printTeamConfigAsYaml = (teamConfig): string => {
+  return objectToYaml(teamConfig, 2, 1000)
+}
+
 /**
  * Loads files for a team directory of the following structure. It should be file and directory name agnostic.
  *

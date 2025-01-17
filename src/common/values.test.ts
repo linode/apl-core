@@ -2,6 +2,7 @@ import { cloneDeep, merge, set } from 'lodash'
 import { env } from 'process'
 import {
   generateSecrets,
+  getTeamConfig,
   hasCorrespondingDecryptedFile,
   loadTeam,
   loadTeamFileToSpecToSpec,
@@ -16,6 +17,38 @@ describe('hasCorrespondingDecryptedFile', () => {
   it('should save a new empty team with empty resources', () => {
     expect(hasCorrespondingDecryptedFile('test.yaml.dec', ['test.yaml.dec', 'test.yaml'])).toEqual(false)
     expect(hasCorrespondingDecryptedFile('test.yaml', ['test.yaml.dec', 'test.yaml'])).toEqual(true)
+  })
+})
+
+describe('getTeamConfig', () => {
+  it('should getTeamConfig', async () => {
+    const deps = {
+      loadTeam: jest.fn(),
+      getTeamNames: jest.fn(),
+    }
+
+    deps.getTeamNames.mockResolvedValue(['t1', 't2'])
+    deps.loadTeam.mockResolvedValueOnce({ id: 't1' }).mockResolvedValueOnce({ id: 't2' })
+
+    const spec = await getTeamConfig(deps)
+    const expectedSpec = { teamConfig: { t1: { id: 't1' }, t2: { id: 't2' } } }
+    expect(spec).toEqual(expectedSpec)
+  })
+  it('should merge with existing spec an empty spec', async () => {
+    const deps = {
+      loadYaml: jest.fn().mockResolvedValue({ spec: { a: { b: '1' } } }),
+    }
+    const teamSpec = { settings: { a: { c: '2' } } }
+    await loadTeamFileToSpecToSpec(teamSpec, 'env/teams/alpha/settings.yaml', deps)
+    expect(teamSpec).toEqual({ settings: { a: { b: '1', c: '2' } } })
+  })
+  it('should push value to an array that aleeady exists an item', async () => {
+    const deps = {
+      loadYaml: jest.fn().mockResolvedValue({ spec: 2 }),
+    }
+    const teamSpec = { builds: [1] }
+    await loadTeamFileToSpecToSpec(teamSpec, 'env/teams/alpha/builds.yaml', deps)
+    expect(teamSpec).toEqual({ builds: [1, 2] })
   })
 })
 
