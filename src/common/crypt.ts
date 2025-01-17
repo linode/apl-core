@@ -65,12 +65,15 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
         .then(async (res) => {
           if (crypt.cmd === CryptType.DECRYPT) {
             const outputFile = `${file}.dec`
+            console.log(`Decrypting ${file} to ${outputFile}`)
             await $`echo ${res.stdout} > ${outputFile}`
+            console.log(`Decrypted ${file} to ${outputFile}`)
           }
           if (crypt.post) await crypt.post(file)
           return res
         })
         .catch(async (error) => {
+          console.log('processFileChunk error', error)
           if (error.message.includes('Already encrypted')) {
             const res = await $`helm secrets encrypt ${file}.dec`
             await $`echo ${res.stdout} > ${file}`
