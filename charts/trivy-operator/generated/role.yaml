@@ -2,7 +2,6 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   name: trivy-operator
 rules:
 - apiGroups:
@@ -176,6 +175,30 @@ rules:
   - aquasecurity.github.io
   resources:
   - clusterrbacassessmentreports
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - aquasecurity.github.io
+  resources:
+  - clustersbomreports
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - aquasecurity.github.io
+  resources:
+  - clustervulnerabilityreports
   verbs:
   - create
   - delete

@@ -84,7 +84,7 @@
     "standard-version": "9.5.0",
     "ts-auto-mock": "3.6.2",
     "ts-jest": "27.1.5",
-    "ts-node": "10.8.1",
+    "ts-node": "^10.8.1",
     "ts-node-dev": "1.1.8",
     "tsc-alias": "^1.7.0",
     "tsconfig-paths": "3.14.1",
@@ -167,5 +167,5 @@
     }
   },
   "type": "commonjs",
-  "version": "4.1.0"
+  "version": "4.2.0"
 }

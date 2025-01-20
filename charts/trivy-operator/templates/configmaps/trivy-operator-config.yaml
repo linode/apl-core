@@ -1,0 +1,56 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: trivy-operator-config
+  namespace: {{ include "trivy-operator.namespace" . }}
+  labels: {{- include "trivy-operator.labels" . | nindent 4 }}
+data:
+  OPERATOR_LOG_DEV_MODE: {{ .Values.operator.logDevMode | quote }}
+  OPERATOR_SCAN_JOB_TTL: {{ .Values.operator.scanJobTTL | quote }}
+  OPERATOR_SCAN_JOB_TIMEOUT: {{ .Values.operator.scanJobTimeout | quote }}
+  OPERATOR_CONCURRENT_SCAN_JOBS_LIMIT: {{ .Values.operator.scanJobsConcurrentLimit | quote }}
+  OPERATOR_CONCURRENT_NODE_COLLECTOR_LIMIT: {{ .Values.operator.scanNodeCollectorLimit | quote }}
+  OPERATOR_SCAN_JOB_RETRY_AFTER: {{ .Values.operator.scanJobsRetryDelay | quote }}
+  OPERATOR_BATCH_DELETE_LIMIT: {{ .Values.operator.batchDeleteLimit | quote }}
+  OPERATOR_BATCH_DELETE_DELAY: {{ .Values.operator.batchDeleteDelay | quote }}
+  OPERATOR_METRICS_BIND_ADDRESS: ":8080"
+  OPERATOR_METRICS_FINDINGS_ENABLED: {{ .Values.operator.metricsFindingsEnabled | quote }}
+  OPERATOR_METRICS_VULN_ID_ENABLED: {{ .Values.operator.metricsVulnIdEnabled | quote }}
+  OPERATOR_HEALTH_PROBE_BIND_ADDRESS: ":9090"
+  OPERATOR_VULNERABILITY_SCANNER_ENABLED: {{ .Values.operator.vulnerabilityScannerEnabled | quote }}
+  OPERATOR_SBOM_GENERATION_ENABLED: {{ .Values.operator.sbomGenerationEnabled | quote }}
+  OPERATOR_CLUSTER_SBOM_CACHE_ENABLED: {{ .Values.operator.clusterSbomCacheEnabled | quote }}
+  OPERATOR_VULNERABILITY_SCANNER_SCAN_ONLY_CURRENT_REVISIONS: {{ .Values.operator.vulnerabilityScannerScanOnlyCurrentRevisions | quote }}
+  OPERATOR_SCANNER_REPORT_TTL: {{ .Values.operator.scannerReportTTL | quote }}
+  OPERATOR_CACHE_REPORT_TTL: {{ .Values.operator.cacheReportTTL | quote }}
+  CONTROLLER_CACHE_SYNC_TIMEOUT: {{ .Values.operator.controllerCacheSyncTimeout | quote }}
+  OPERATOR_CONFIG_AUDIT_SCANNER_ENABLED: {{ .Values.operator.configAuditScannerEnabled | quote }}
+  OPERATOR_RBAC_ASSESSMENT_SCANNER_ENABLED: {{ .Values.operator.rbacAssessmentScannerEnabled | quote }}
+  OPERATOR_INFRA_ASSESSMENT_SCANNER_ENABLED: {{ .Values.operator.infraAssessmentScannerEnabled | quote }}
+  OPERATOR_CONFIG_AUDIT_SCANNER_SCAN_ONLY_CURRENT_REVISIONS: {{ .Values.operator.configAuditScannerScanOnlyCurrentRevisions | quote }}
+  OPERATOR_EXPOSED_SECRET_SCANNER_ENABLED: {{ .Values.operator.exposedSecretScannerEnabled | quote }}
+  OPERATOR_METRICS_EXPOSED_SECRET_INFO_ENABLED: {{ .Values.operator.metricsExposedSecretInfo | quote }}
+  OPERATOR_METRICS_CONFIG_AUDIT_INFO_ENABLED: {{ .Values.operator.metricsConfigAuditInfo | quote }}
+  OPERATOR_METRICS_RBAC_ASSESSMENT_INFO_ENABLED: {{ .Values.operator.metricsRbacAssessmentInfo | quote }}
+  OPERATOR_METRICS_INFRA_ASSESSMENT_INFO_ENABLED: {{ .Values.operator.metricsInfraAssessmentInfo | quote }}
+  OPERATOR_METRICS_IMAGE_INFO_ENABLED: {{ .Values.operator.metricsImageInfo | quote }}
+  OPERATOR_METRICS_CLUSTER_COMPLIANCE_INFO_ENABLED: {{ .Values.operator.metricsClusterComplianceInfo | quote }}
+  OPERATOR_WEBHOOK_BROADCAST_URL: {{ .Values.operator.webhookBroadcastURL | quote }}
+  OPERATOR_WEBHOOK_BROADCAST_TIMEOUT: {{ .Values.operator.webhookBroadcastTimeout | quote }}
+  OPERATOR_WEBHOOK_BROADCAST_CUSTOM_HEADERS: {{ .Values.operator.webhookBroadcastCustomHeaders | quote }}
+  OPERATOR_SEND_DELETED_REPORTS: {{ .Values.operator.webhookSendDeletedReports | quote }}
+  OPERATOR_PRIVATE_REGISTRY_SCAN_SECRETS_NAMES: {{ .Values.operator.privateRegistryScanSecretsNames | toJson | quote }}
+  OPERATOR_ACCESS_GLOBAL_SECRETS_SERVICE_ACCOUNTS: {{ .Values.operator.accessGlobalSecretsAndServiceAccount | quote }}
+  OPERATOR_BUILT_IN_TRIVY_SERVER: {{ .Values.operator.builtInTrivyServer | quote }}
+  TRIVY_SERVER_HEALTH_CHECK_CACHE_EXPIRATION: {{ .Values.operator.trivyServerHealthCheckCacheExpiration | quote }}
+  OPERATOR_MERGE_RBAC_FINDING_WITH_CONFIG_AUDIT: {{ .Values.operator.mergeRbacFindingWithConfigAudit | quote }}
+  OPERATOR_CLUSTER_COMPLIANCE_ENABLED: {{ .Values.operator.clusterComplianceEnabled | quote }}
+{{- if gt (int .Values.operator.replicas) 1 }}
+  OPERATOR_LEADER_ELECTION_ENABLED: "true"
+  OPERATOR_LEADER_ELECTION_ID: {{ .Values.operator.leaderElectionId | quote }}
+{{- end }}
+{{- if or (or .Values.operator.httpProxy .Values.operator.httpsProxy) .Values.operator.noProxy }}
+  HTTP_PROXY: {{ .Values.operator.httpProxy | quote }}
+  HTTPS_PROXY: {{ .Values.operator.httpsProxy | quote }}
+  NO_PROXY: {{ .Values.operator.noProxy | quote }}
+{{- end }}

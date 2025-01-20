@@ -1260,39 +1260,42 @@ environments:
             _rawValues: {}
         databases:
           keycloak:
+            imageName: null
             imported: false
             size: 5Gi
             replicas: 2
             resources:
               limits:
-                cpu: "1"
-                memory: 1Gi
+                cpu: "200m"
+                memory: 192Mi
               requests:
-                cpu: 50m
-                memory: 512Mi
+                cpu: "200m"
+                memory: 192Mi
           harbor:
+            imageName: null
             size: 5Gi
             replicas: 2
             coreDatabase: registry
             resources:
               limits:
-                cpu: "1"
-                memory: 1Gi
+                cpu: "200m"
+                memory: 192Mi
               requests:
-                cpu: 50m
-                memory: 256Mi
+                cpu: "200m"
+                memory: 192Mi
           gitea:
+            imageName: null
             useOtomiDB: true
             imported: false
             size: 5Gi
             replicas: 2
             resources:
               limits:
-                cpu: "1"
-                memory: 1Gi
+                cpu: "200m"
+                memory: 192Mi
               requests:
-                cpu: 50m
-                memory: 512Mi
+                cpu: "200m"
+                memory: 192Mi
         obj:
           provider:
             type: disabled
@@ -1332,4 +1335,4 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes
-        version: 28
+        version: 32

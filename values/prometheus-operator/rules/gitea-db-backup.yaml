@@ -1,0 +1,11 @@
+groups:
+  - name: gitea-db-backup
+    rules:
+      - alert: BackupGiteaDbFailing
+        # 86400 sec => 24H
+        expr: (time() - max(cnpg_collector_last_available_backup_timestamp{namespace="gitea"}) > 86400)
+        labels:
+          severity: warning
+        annotations:
+          description: 'The Gitea database backup for DB {{ $labels.pod }} failed at {{ $value | humanizeTimestamp }}'
+          summary: Backup of {{ $labels.pod }} failed

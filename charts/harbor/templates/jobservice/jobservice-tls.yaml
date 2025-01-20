@@ -4,6 +4,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: "{{ template "harbor.internalTLS.jobservice.secretName" . }}"
+  namespace: {{ .Release.Namespace | quote }}
   labels:
 {{ include "harbor.labels" . | indent 4 }}
 type: kubernetes.io/tls
