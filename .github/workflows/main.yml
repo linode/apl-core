@@ -177,7 +177,7 @@ jobs:
         run: git config --global --add safe.directory /__w/apl-core/apl-core
       - name: Create and publish otomi chart release
         id: chart_release
-        uses: helm/chart-releaser-action@v1.6.0
+        uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: chart
           skip_existing: true
