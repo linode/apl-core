@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $escapedDomain := $v.cluster.domainSuffix | replace "." "\\." -}}
+{{- $escapedDomain := $v.cluster.domainSuffix | replace "." "\\." }}
 {{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
 {{- $consoleUrl := printf "https://console.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
