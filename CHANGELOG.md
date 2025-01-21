@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.3](https://github.com/linode/apl-core/compare/v4.2.2...v4.2.3) (2025-01-21)
+
+
+### Bug Fixes
+
+* added team networkpolicies to the team-ns values gotemplate ([#1902](https://github.com/linode/apl-core/issues/1902)) ([e9af3ea](https://github.com/linode/apl-core/commit/e9af3eaf2fa6eee24c3bf51e4a7551cfd4fa3538))
+
 ### [4.2.2](https://github.com/linode/apl-core/compare/v4.2.1...v4.2.2) (2025-01-09)
 
 
