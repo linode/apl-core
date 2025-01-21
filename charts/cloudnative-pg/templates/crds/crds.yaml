@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.4
+    controller-gen.kubebuilder.io/version: v0.16.5
     helm.sh/resource-policy: keep
   name: backups.postgresql.cnpg.io
 spec:
@@ -319,6 +319,11 @@ spec:
               phase:
                 description: The last backup status
                 type: string
+              pluginMetadata:
+                additionalProperties:
+                  type: string
+                description: A map containing the plugin metadata
+                type: object
               s3Credentials:
                 description: The credentials to use to upload data to S3
                 properties:
@@ -440,7 +445,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.4
+    controller-gen.kubebuilder.io/version: v0.16.5
     helm.sh/resource-policy: keep
   name: clusterimagecatalogs.postgresql.cnpg.io
 spec:
@@ -522,7 +527,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.4
+    controller-gen.kubebuilder.io/version: v0.16.5
     helm.sh/resource-policy: keep
   name: clusters.postgresql.cnpg.io
 spec:
@@ -2015,6 +2020,12 @@ spec:
                   initdb:
                     description: Bootstrap the cluster via initdb
                     properties:
+                      builtinLocale:
+                        description: |-
+                          Specifies the locale name when the builtin provider is used.
+                          This option requires `localeProvider` to be set to `builtin`.
+                          Available from PostgreSQL 17.
+                        type: string
                       dataChecksums:
                         description: |-
                           Whether the `-k` option should be passed to initdb,
@@ -2028,6 +2039,18 @@ spec:
                         description: The value to be passed as option `--encoding`
                           for initdb (default:`UTF8`)
                         type: string
+                      icuLocale:
+                        description: |-
+                          Specifies the ICU locale when the ICU provider is used.
+                          This option requires `localeProvider` to be set to `icu`.
+                          Available from PostgreSQL 15.
+                        type: string
+                      icuRules:
+                        description: |-
+                          Specifies additional collation rules to customize the behavior of the default collation.
+                          This option requires `localeProvider` to be set to `icu`.
+                          Available from PostgreSQL 16.
+                        type: string
                       import:
                         description: |-
                           Bootstraps the new cluster by importing data from an existing PostgreSQL
@@ -2035,6 +2058,24 @@ spec:
                         properties:
                           databases:
                             description: The databases to import
+                            items:
+                              type: string
+                            type: array
+                          pgDumpExtraOptions:
+                            description: |-
+                              List of custom options to pass to the `pg_dump` command. IMPORTANT:
+                              Use these options with caution and at your own risk, as the operator
+                              does not validate their content. Be aware that certain options may
+                              conflict with the operator's intended functionality or design.
+                            items:
+                              type: string
+                            type: array
+                          pgRestoreExtraOptions:
+                            description: |-
+                              List of custom options to pass to the `pg_restore` command. IMPORTANT:
+                              Use these options with caution and at your own risk, as the operator
+                              does not validate their content. Be aware that certain options may
+                              conflict with the operator's intended functionality or design.
                             items:
                               type: string
                             type: array
@@ -2078,6 +2119,10 @@ spec:
                         - source
                         - type
                         type: object
+                      locale:
+                        description: Sets the default collation order and character
+                          classification in the new database.
+                        type: string
                       localeCType:
                         description: The value to be passed as option `--lc-ctype`
                           for initdb (default:`C`)
@@ -2085,6 +2130,11 @@ spec:
                       localeCollate:
                         description: The value to be passed as option `--lc-collate`
                           for initdb (default:`C`)
+                        type: string
+                      localeProvider:
+                        description: |-
+                          This option sets the locale provider for databases created in the new cluster.
+                          Available from PostgreSQL 16.
                         type: string
                       options:
                         description: |-
@@ -2291,6 +2341,16 @@ spec:
                         minimum: 1
                         type: integer
                     type: object
+                    x-kubernetes-validations:
+                    - message: builtinLocale is only available when localeProvider
+                        is set to `builtin`
+                      rule: '!has(self.builtinLocale) || self.localeProvider == ''builtin'''
+                    - message: icuLocale is only available when localeProvider is
+                        set to `icu`
+                      rule: '!has(self.icuLocale) || self.localeProvider == ''icu'''
+                    - message: icuRules is only available when localeProvider is set
+                        to `icu`
+                      rule: '!has(self.icuRules) || self.localeProvider == ''icu'''
                   pg_basebackup:
                     description: |-
                       Bootstrap the cluster taking a physical backup of another compatible
@@ -3398,6 +3458,26 @@ spec:
                       - key
                       type: object
                       x-kubernetes-map-type: atomic
+                    plugin:
+                      description: |-
+                        The configuration of the plugin that is taking care
+                        of WAL archiving and backups for this external cluster
+                      properties:
+                        enabled:
+                          default: true
+                          description: Enabled is true if this plugin will be used
+                          type: boolean
+                        name:
+                          description: Name is the plugin name
+                          type: string
+                        parameters:
+                          additionalProperties:
+                            type: string
+                          description: Parameters is the configuration of the plugin
+                          type: object
+                      required:
+                      - name
+                      type: object
                     sslCert:
                       description: |-
                         The reference to an SSL certificate to be used to connect to this
@@ -3714,18 +3794,13 @@ spec:
                             It includes the type of service and its associated template specification.
                           properties:
                             selectorType:
-                              allOf:
-                              - enum:
-                                - rw
-                                - r
-                                - ro
-                              - enum:
-                                - rw
-                                - r
-                                - ro
                               description: |-
                                 SelectorType specifies the type of selectors that the service will have.
                                 Valid values are "rw", "r", and "ro", representing read-write, read, and read-only services.
+                              enum:
+                              - rw
+                              - r
+                              - ro
                               type: string
                             serviceTemplate:
                               description: ServiceTemplate is the template specification
@@ -4083,7 +4158,7 @@ spec:
                                         not set, the implementation will apply its default routing strategy. If set
                                         to "PreferClose", implementations should prioritize endpoints that are
                                         topologically close (e.g., same zone).
-                                        This is an alpha field and requires enabling ServiceTrafficDistribution feature.
+                                        This is a beta field and requires enabling ServiceTrafficDistribution feature.
                                       type: string
                                     type:
                                       description: |-
@@ -4414,6 +4489,10 @@ spec:
                     PluginConfiguration specifies a plugin that need to be loaded for this
                     cluster to be reconciled
                   properties:
+                    enabled:
+                      default: true
+                      description: Enabled is true if this plugin will be used
+                      type: boolean
                     name:
                       description: Name is the plugin name
                       type: string
@@ -4574,6 +4653,21 @@ spec:
                     description: Configuration of the PostgreSQL synchronous replication
                       feature
                     properties:
+                      dataDurability:
+                        default: required
+                        description: |-
+                          If set to "required", data durability is strictly enforced. Write operations
+                          with synchronous commit settings (`on`, `remote_write`, or `remote_apply`) will
+                          block if there are insufficient healthy replicas, ensuring data persistence.
+                          If set to "preferred", data durability is maintained when healthy replicas
+                          are available, but the required number of instances will adjust dynamically
+                          if replicas become unavailable. This setting relaxes strict durability enforcement
+                          to allow for operational continuity. This setting is only applicable if both
+                          `standbyNamesPre` and `standbyNamesPost` are unset (empty).
+                        enum:
+                        - required
+                        - preferred
+                        type: string
                       maxStandbyNamesFromCluster:
                         description: |-
                           Specifies the maximum number of local cluster pods that can be
@@ -4618,6 +4712,12 @@ spec:
                     - method
                     - number
                     type: object
+                    x-kubernetes-validations:
+                    - message: dataDurability set to 'preferred' requires empty 'standbyNamesPre'
+                        and empty 'standbyNamesPost'
+                      rule: self.dataDurability!='preferred' || ((!has(self.standbyNamesPre)
+                        || self.standbyNamesPre.size()==0) && (!has(self.standbyNamesPost)
+                        || self.standbyNamesPost.size()==0))
                 type: object
               primaryUpdateMethod:
                 default: restart
@@ -4646,6 +4746,159 @@ spec:
                   https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/#priorityclass
                   for more information
                 type: string
+              probes:
+                description: |-
+                  The configuration of the probes to be injected
+                  in the PostgreSQL Pods.
+                properties:
+                  liveness:
+                    description: The liveness probe configuration
+                    properties:
+                      failureThreshold:
+                        description: |-
+                          Minimum consecutive failures for the probe to be considered failed after having succeeded.
+                          Defaults to 3. Minimum value is 1.
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: |-
+                          Number of seconds after the container has started before liveness probes are initiated.
+                          More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: |-
+                          How often (in seconds) to perform the probe.
+                          Default to 10 seconds. Minimum value is 1.
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: |-
+                          Minimum consecutive successes for the probe to be considered successful after having failed.
+                          Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
+                        format: int32
+                        type: integer
+                      terminationGracePeriodSeconds:
+                        description: |-
+                          Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+                          The grace period is the duration in seconds after the processes running in the pod are sent
+                          a termination signal and the time when the processes are forcibly halted with a kill signal.
+                          Set this value longer than the expected cleanup time for your process.
+                          If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this
+                          value overrides the value provided by the pod spec.
+                          Value must be non-negative integer. The value zero indicates stop immediately via
+                          the kill signal (no opportunity to shut down).
+                          This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
+                          Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
+                        format: int64
+                        type: integer
+                      timeoutSeconds:
+                        description: |-
+                          Number of seconds after which the probe times out.
+                          Defaults to 1 second. Minimum value is 1.
+                          More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+                        format: int32
+                        type: integer
+                    type: object
+                  readiness:
+                    description: The readiness probe configuration
+                    properties:
+                      failureThreshold:
+                        description: |-
+                          Minimum consecutive failures for the probe to be considered failed after having succeeded.
+                          Defaults to 3. Minimum value is 1.
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: |-
+                          Number of seconds after the container has started before liveness probes are initiated.
+                          More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: |-
+                          How often (in seconds) to perform the probe.
+                          Default to 10 seconds. Minimum value is 1.
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: |-
+                          Minimum consecutive successes for the probe to be considered successful after having failed.
+                          Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
+                        format: int32
+                        type: integer
+                      terminationGracePeriodSeconds:
+                        description: |-
+                          Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+                          The grace period is the duration in seconds after the processes running in the pod are sent
+                          a termination signal and the time when the processes are forcibly halted with a kill signal.
+                          Set this value longer than the expected cleanup time for your process.
+                          If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this
+                          value overrides the value provided by the pod spec.
+                          Value must be non-negative integer. The value zero indicates stop immediately via
+                          the kill signal (no opportunity to shut down).
+                          This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
+                          Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
+                        format: int64
+                        type: integer
+                      timeoutSeconds:
+                        description: |-
+                          Number of seconds after which the probe times out.
+                          Defaults to 1 second. Minimum value is 1.
+                          More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+                        format: int32
+                        type: integer
+                    type: object
+                  startup:
+                    description: The startup probe configuration
+                    properties:
+                      failureThreshold:
+                        description: |-
+                          Minimum consecutive failures for the probe to be considered failed after having succeeded.
+                          Defaults to 3. Minimum value is 1.
+                        format: int32
+                        type: integer
+                      initialDelaySeconds:
+                        description: |-
+                          Number of seconds after the container has started before liveness probes are initiated.
+                          More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+                        format: int32
+                        type: integer
+                      periodSeconds:
+                        description: |-
+                          How often (in seconds) to perform the probe.
+                          Default to 10 seconds. Minimum value is 1.
+                        format: int32
+                        type: integer
+                      successThreshold:
+                        description: |-
+                          Minimum consecutive successes for the probe to be considered successful after having failed.
+                          Defaults to 1. Must be 1 for liveness and startup. Minimum value is 1.
+                        format: int32
+                        type: integer
+                      terminationGracePeriodSeconds:
+                        description: |-
+                          Optional duration in seconds the pod needs to terminate gracefully upon probe failure.
+                          The grace period is the duration in seconds after the processes running in the pod are sent
+                          a termination signal and the time when the processes are forcibly halted with a kill signal.
+                          Set this value longer than the expected cleanup time for your process.
+                          If this value is nil, the pod's terminationGracePeriodSeconds will be used. Otherwise, this
+                          value overrides the value provided by the pod spec.
+                          Value must be non-negative integer. The value zero indicates stop immediately via
+                          the kill signal (no opportunity to shut down).
+                          This is a beta field and requires enabling ProbeTerminationGracePeriod feature gate.
+                          Minimum value is 1. spec.terminationGracePeriodSeconds is used if unset.
+                        format: int64
+                        type: integer
+                      timeoutSeconds:
+                        description: |-
+                          Number of seconds after which the probe times out.
+                          Defaults to 1 second. Minimum value is 1.
+                          More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
+                        format: int32
+                        type: integer
+                    type: object
+                type: object
               projectedVolumeTemplate:
                 description: |-
                   Template to be used to define projected volumes, projected volumes will be mounted
@@ -6481,6 +6734,13 @@ spec:
                       items:
                         type: string
                       type: array
+                    restoreJobHookCapabilities:
+                      description: |-
+                        RestoreJobHookCapabilities are the list of capabilities of the
+                        plugin regarding the RestoreJobHook management
+                      items:
+                        type: string
+                      type: array
                     status:
                       description: Status contain the status reported by the plugin
                         through the SetStatusInCluster interface
@@ -6683,7 +6943,270 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.4
+    controller-gen.kubebuilder.io/version: v0.16.5
+    helm.sh/resource-policy: keep
+  name: databases.postgresql.cnpg.io
+spec:
+  group: postgresql.cnpg.io
+  names:
+    kind: Database
+    listKind: DatabaseList
+    plural: databases
+    singular: database
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .spec.cluster.name
+      name: Cluster
+      type: string
+    - jsonPath: .spec.name
+      name: PG Name
+      type: string
+    - jsonPath: .status.applied
+      name: Applied
+      type: boolean
+    - description: Latest reconciliation message
+      jsonPath: .status.message
+      name: Message
+      type: string
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: Database is the Schema for the databases API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              Specification of the desired Database.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+            properties:
+              allowConnections:
+                description: |-
+                  Maps to the `ALLOW_CONNECTIONS` parameter of `CREATE DATABASE` and
+                  `ALTER DATABASE`. If false then no one can connect to this database.
+                type: boolean
+              builtinLocale:
+                description: |-
+                  Maps to the `BUILTIN_LOCALE` parameter of `CREATE DATABASE`. This
+                  setting cannot be changed. Specifies the locale name when the
+                  builtin provider is used. This option requires `localeProvider` to
+                  be set to `builtin`. Available from PostgreSQL 17.
+                type: string
+                x-kubernetes-validations:
+                - message: builtinLocale is immutable
+                  rule: self == oldSelf
+              cluster:
+                description: The name of the PostgreSQL cluster hosting the database.
+                properties:
+                  name:
+                    default: ""
+                    description: |-
+                      Name of the referent.
+                      This field is effectively required, but due to backwards compatibility is
+                      allowed to be empty. Instances of this type with an empty value here are
+                      almost certainly wrong.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
+              collationVersion:
+                description: |-
+                  Maps to the `COLLATION_VERSION` parameter of `CREATE DATABASE`. This
+                  setting cannot be changed.
+                type: string
+                x-kubernetes-validations:
+                - message: collationVersion is immutable
+                  rule: self == oldSelf
+              connectionLimit:
+                description: |-
+                  Maps to the `CONNECTION LIMIT` clause of `CREATE DATABASE` and
+                  `ALTER DATABASE`. How many concurrent connections can be made to
+                  this database. -1 (the default) means no limit.
+                type: integer
+              databaseReclaimPolicy:
+                default: retain
+                description: The policy for end-of-life maintenance of this database.
+                enum:
+                - delete
+                - retain
+                type: string
+              encoding:
+                description: |-
+                  Maps to the `ENCODING` parameter of `CREATE DATABASE`. This setting
+                  cannot be changed. Character set encoding to use in the database.
+                type: string
+                x-kubernetes-validations:
+                - message: encoding is immutable
+                  rule: self == oldSelf
+              ensure:
+                default: present
+                description: Ensure the PostgreSQL database is `present` or `absent`
+                  - defaults to "present".
+                enum:
+                - present
+                - absent
+                type: string
+              icuLocale:
+                description: |-
+                  Maps to the `ICU_LOCALE` parameter of `CREATE DATABASE`. This
+                  setting cannot be changed. Specifies the ICU locale when the ICU
+                  provider is used. This option requires `localeProvider` to be set to
+                  `icu`. Available from PostgreSQL 15.
+                type: string
+                x-kubernetes-validations:
+                - message: icuLocale is immutable
+                  rule: self == oldSelf
+              icuRules:
+                description: |-
+                  Maps to the `ICU_RULES` parameter of `CREATE DATABASE`. This setting
+                  cannot be changed. Specifies additional collation rules to customize
+                  the behavior of the default collation. This option requires
+                  `localeProvider` to be set to `icu`. Available from PostgreSQL 16.
+                type: string
+                x-kubernetes-validations:
+                - message: icuRules is immutable
+                  rule: self == oldSelf
+              isTemplate:
+                description: |-
+                  Maps to the `IS_TEMPLATE` parameter of `CREATE DATABASE` and `ALTER
+                  DATABASE`. If true, this database is considered a template and can
+                  be cloned by any user with `CREATEDB` privileges.
+                type: boolean
+              locale:
+                description: |-
+                  Maps to the `LOCALE` parameter of `CREATE DATABASE`. This setting
+                  cannot be changed. Sets the default collation order and character
+                  classification in the new database.
+                type: string
+                x-kubernetes-validations:
+                - message: locale is immutable
+                  rule: self == oldSelf
+              localeCType:
+                description: |-
+                  Maps to the `LC_CTYPE` parameter of `CREATE DATABASE`. This setting
+                  cannot be changed.
+                type: string
+                x-kubernetes-validations:
+                - message: localeCType is immutable
+                  rule: self == oldSelf
+              localeCollate:
+                description: |-
+                  Maps to the `LC_COLLATE` parameter of `CREATE DATABASE`. This
+                  setting cannot be changed.
+                type: string
+                x-kubernetes-validations:
+                - message: localeCollate is immutable
+                  rule: self == oldSelf
+              localeProvider:
+                description: |-
+                  Maps to the `LOCALE_PROVIDER` parameter of `CREATE DATABASE`. This
+                  setting cannot be changed. This option sets the locale provider for
+                  databases created in the new cluster. Available from PostgreSQL 16.
+                type: string
+                x-kubernetes-validations:
+                - message: localeProvider is immutable
+                  rule: self == oldSelf
+              name:
+                description: The name of the database to create inside PostgreSQL.
+                  This setting cannot be changed.
+                type: string
+                x-kubernetes-validations:
+                - message: name is immutable
+                  rule: self == oldSelf
+                - message: the name postgres is reserved
+                  rule: self != 'postgres'
+                - message: the name template0 is reserved
+                  rule: self != 'template0'
+                - message: the name template1 is reserved
+                  rule: self != 'template1'
+              owner:
+                description: |-
+                  Maps to the `OWNER` parameter of `CREATE DATABASE`.
+                  Maps to the `OWNER TO` command of `ALTER DATABASE`.
+                  The role name of the user who owns the database inside PostgreSQL.
+                type: string
+              tablespace:
+                description: |-
+                  Maps to the `TABLESPACE` parameter of `CREATE DATABASE`.
+                  Maps to the `SET TABLESPACE` command of `ALTER DATABASE`.
+                  The name of the tablespace (in PostgreSQL) that will be associated
+                  with the new database. This tablespace will be the default
+                  tablespace used for objects created in this database.
+                type: string
+              template:
+                description: |-
+                  Maps to the `TEMPLATE` parameter of `CREATE DATABASE`. This setting
+                  cannot be changed. The name of the template from which to create
+                  this database.
+                type: string
+                x-kubernetes-validations:
+                - message: template is immutable
+                  rule: self == oldSelf
+            required:
+            - cluster
+            - name
+            - owner
+            type: object
+            x-kubernetes-validations:
+            - message: builtinLocale is only available when localeProvider is set
+                to `builtin`
+              rule: '!has(self.builtinLocale) || self.localeProvider == ''builtin'''
+            - message: icuLocale is only available when localeProvider is set to `icu`
+              rule: '!has(self.icuLocale) || self.localeProvider == ''icu'''
+            - message: icuRules is only available when localeProvider is set to `icu`
+              rule: '!has(self.icuRules) || self.localeProvider == ''icu'''
+          status:
+            description: |-
+              Most recently observed status of the Database. This data may not be up to
+              date. Populated by the system. Read-only.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
+            properties:
+              applied:
+                description: Applied is true if the database was reconciled correctly
+                type: boolean
+              message:
+                description: Message is the reconciliation output message
+                type: string
+              observedGeneration:
+                description: |-
+                  A sequence number representing the latest
+                  desired state that was synchronized
+                format: int64
+                type: integer
+            type: object
+        required:
+        - metadata
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.5
     helm.sh/resource-policy: keep
   name: imagecatalogs.postgresql.cnpg.io
 spec:
@@ -6764,7 +7287,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.4
+    controller-gen.kubebuilder.io/version: v0.16.5
     helm.sh/resource-policy: keep
   name: poolers.postgresql.cnpg.io
 spec:
@@ -7469,7 +7992,7 @@ spec:
                           not set, the implementation will apply its default routing strategy. If set
                           to "PreferClose", implementations should prioritize endpoints that are
                           topologically close (e.g., same zone).
-                          This is an alpha field and requires enabling ServiceTrafficDistribution feature.
+                          This is a beta field and requires enabling ServiceTrafficDistribution feature.
                         type: string
                       type:
                         description: |-
@@ -8720,7 +9243,8 @@ spec:
                                     More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
                                   properties:
                                     exec:
-                                      description: Exec specifies the action to take.
+                                      description: Exec specifies a command to execute
+                                        in the container.
                                       properties:
                                         command:
                                           description: |-
@@ -8735,7 +9259,7 @@ spec:
                                           x-kubernetes-list-type: atomic
                                       type: object
                                     httpGet:
-                                      description: HTTPGet specifies the http request
+                                      description: HTTPGet specifies an HTTP GET request
                                         to perform.
                                       properties:
                                         host:
@@ -8786,8 +9310,8 @@ spec:
                                       - port
                                       type: object
                                     sleep:
-                                      description: Sleep represents the duration that
-                                        the container should sleep before being terminated.
+                                      description: Sleep represents a duration that
+                                        the container should sleep.
                                       properties:
                                         seconds:
                                           description: Seconds is the number of seconds
@@ -8800,8 +9324,8 @@ spec:
                                     tcpSocket:
                                       description: |-
                                         Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept
-                                        for the backward compatibility. There are no validation of this field and
-                                        lifecycle hooks will fail in runtime when tcp handler is specified.
+                                        for backward compatibility. There is no validation of this field and
+                                        lifecycle hooks will fail at runtime when it is specified.
                                       properties:
                                         host:
                                           description: 'Optional: Host name to connect
@@ -8833,7 +9357,8 @@ spec:
                                     More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
                                   properties:
                                     exec:
-                                      description: Exec specifies the action to take.
+                                      description: Exec specifies a command to execute
+                                        in the container.
                                       properties:
                                         command:
                                           description: |-
@@ -8848,7 +9373,7 @@ spec:
                                           x-kubernetes-list-type: atomic
                                       type: object
                                     httpGet:
-                                      description: HTTPGet specifies the http request
+                                      description: HTTPGet specifies an HTTP GET request
                                         to perform.
                                       properties:
                                         host:
@@ -8899,8 +9424,8 @@ spec:
                                       - port
                                       type: object
                                     sleep:
-                                      description: Sleep represents the duration that
-                                        the container should sleep before being terminated.
+                                      description: Sleep represents a duration that
+                                        the container should sleep.
                                       properties:
                                         seconds:
                                           description: Seconds is the number of seconds
@@ -8913,8 +9438,8 @@ spec:
                                     tcpSocket:
                                       description: |-
                                         Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept
-                                        for the backward compatibility. There are no validation of this field and
-                                        lifecycle hooks will fail in runtime when tcp handler is specified.
+                                        for backward compatibility. There is no validation of this field and
+                                        lifecycle hooks will fail at runtime when it is specified.
                                       properties:
                                         host:
                                           description: 'Optional: Host name to connect
@@ -8942,7 +9467,8 @@ spec:
                                 More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
                               properties:
                                 exec:
-                                  description: Exec specifies the action to take.
+                                  description: Exec specifies a command to execute
+                                    in the container.
                                   properties:
                                     command:
                                       description: |-
@@ -8963,8 +9489,7 @@ spec:
                                   format: int32
                                   type: integer
                                 grpc:
-                                  description: GRPC specifies an action involving
-                                    a GRPC port.
+                                  description: GRPC specifies a GRPC HealthCheckRequest.
                                   properties:
                                     port:
                                       description: Port number of the gRPC service.
@@ -8983,7 +9508,7 @@ spec:
                                   - port
                                   type: object
                                 httpGet:
-                                  description: HTTPGet specifies the http request
+                                  description: HTTPGet specifies an HTTP GET request
                                     to perform.
                                   properties:
                                     host:
@@ -9051,7 +9576,7 @@ spec:
                                   format: int32
                                   type: integer
                                 tcpSocket:
-                                  description: TCPSocket specifies an action involving
+                                  description: TCPSocket specifies a connection to
                                     a TCP port.
                                   properties:
                                     host:
@@ -9157,7 +9682,8 @@ spec:
                                 More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
                               properties:
                                 exec:
-                                  description: Exec specifies the action to take.
+                                  description: Exec specifies a command to execute
+                                    in the container.
                                   properties:
                                     command:
                                       description: |-
@@ -9178,8 +9704,7 @@ spec:
                                   format: int32
                                   type: integer
                                 grpc:
-                                  description: GRPC specifies an action involving
-                                    a GRPC port.
+                                  description: GRPC specifies a GRPC HealthCheckRequest.
                                   properties:
                                     port:
                                       description: Port number of the gRPC service.
@@ -9198,7 +9723,7 @@ spec:
                                   - port
                                   type: object
                                 httpGet:
-                                  description: HTTPGet specifies the http request
+                                  description: HTTPGet specifies an HTTP GET request
                                     to perform.
                                   properties:
                                     host:
@@ -9266,7 +9791,7 @@ spec:
                                   format: int32
                                   type: integer
                                 tcpSocket:
-                                  description: TCPSocket specifies an action involving
+                                  description: TCPSocket specifies a connection to
                                     a TCP port.
                                   properties:
                                     host:
@@ -9616,7 +10141,8 @@ spec:
                                 More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
                               properties:
                                 exec:
-                                  description: Exec specifies the action to take.
+                                  description: Exec specifies a command to execute
+                                    in the container.
                                   properties:
                                     command:
                                       description: |-
@@ -9637,8 +10163,7 @@ spec:
                                   format: int32
                                   type: integer
                                 grpc:
-                                  description: GRPC specifies an action involving
-                                    a GRPC port.
+                                  description: GRPC specifies a GRPC HealthCheckRequest.
                                   properties:
                                     port:
                                       description: Port number of the gRPC service.
@@ -9657,7 +10182,7 @@ spec:
                                   - port
                                   type: object
                                 httpGet:
-                                  description: HTTPGet specifies the http request
+                                  description: HTTPGet specifies an HTTP GET request
                                     to perform.
                                   properties:
                                     host:
@@ -9725,7 +10250,7 @@ spec:
                                   format: int32
                                   type: integer
                                 tcpSocket:
-                                  description: TCPSocket specifies an action involving
+                                  description: TCPSocket specifies a connection to
                                     a TCP port.
                                   properties:
                                     host:
@@ -9940,9 +10465,13 @@ spec:
                                 options of a pod.
                               properties:
                                 name:
-                                  description: Required.
+                                  description: |-
+                                    Name is this DNS resolver option's name.
+                                    Required.
                                   type: string
                                 value:
+                                  description: Value is this DNS resolver option's
+                                    value.
                                   type: string
                               type: object
                             type: array
@@ -10225,7 +10754,8 @@ spec:
                                     More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
                                   properties:
                                     exec:
-                                      description: Exec specifies the action to take.
+                                      description: Exec specifies a command to execute
+                                        in the container.
                                       properties:
                                         command:
                                           description: |-
@@ -10240,7 +10770,7 @@ spec:
                                           x-kubernetes-list-type: atomic
                                       type: object
                                     httpGet:
-                                      description: HTTPGet specifies the http request
+                                      description: HTTPGet specifies an HTTP GET request
                                         to perform.
                                       properties:
                                         host:
@@ -10291,8 +10821,8 @@ spec:
                                       - port
                                       type: object
                                     sleep:
-                                      description: Sleep represents the duration that
-                                        the container should sleep before being terminated.
+                                      description: Sleep represents a duration that
+                                        the container should sleep.
                                       properties:
                                         seconds:
                                           description: Seconds is the number of seconds
@@ -10305,8 +10835,8 @@ spec:
                                     tcpSocket:
                                       description: |-
                                         Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept
-                                        for the backward compatibility. There are no validation of this field and
-                                        lifecycle hooks will fail in runtime when tcp handler is specified.
+                                        for backward compatibility. There is no validation of this field and
+                                        lifecycle hooks will fail at runtime when it is specified.
                                       properties:
                                         host:
                                           description: 'Optional: Host name to connect
@@ -10338,7 +10868,8 @@ spec:
                                     More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
                                   properties:
                                     exec:
-                                      description: Exec specifies the action to take.
+                                      description: Exec specifies a command to execute
+                                        in the container.
                                       properties:
                                         command:
                                           description: |-
@@ -10353,7 +10884,7 @@ spec:
                                           x-kubernetes-list-type: atomic
                                       type: object
                                     httpGet:
-                                      description: HTTPGet specifies the http request
+                                      description: HTTPGet specifies an HTTP GET request
                                         to perform.
                                       properties:
                                         host:
@@ -10404,8 +10935,8 @@ spec:
                                       - port
                                       type: object
                                     sleep:
-                                      description: Sleep represents the duration that
-                                        the container should sleep before being terminated.
+                                      description: Sleep represents a duration that
+                                        the container should sleep.
                                       properties:
                                         seconds:
                                           description: Seconds is the number of seconds
@@ -10418,8 +10949,8 @@ spec:
                                     tcpSocket:
                                       description: |-
                                         Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept
-                                        for the backward compatibility. There are no validation of this field and
-                                        lifecycle hooks will fail in runtime when tcp handler is specified.
+                                        for backward compatibility. There is no validation of this field and
+                                        lifecycle hooks will fail at runtime when it is specified.
                                       properties:
                                         host:
                                           description: 'Optional: Host name to connect
@@ -10443,7 +10974,8 @@ spec:
                               description: Probes are not allowed for ephemeral containers.
                               properties:
                                 exec:
-                                  description: Exec specifies the action to take.
+                                  description: Exec specifies a command to execute
+                                    in the container.
                                   properties:
                                     command:
                                       description: |-
@@ -10464,8 +10996,7 @@ spec:
                                   format: int32
                                   type: integer
                                 grpc:
-                                  description: GRPC specifies an action involving
-                                    a GRPC port.
+                                  description: GRPC specifies a GRPC HealthCheckRequest.
                                   properties:
                                     port:
                                       description: Port number of the gRPC service.
@@ -10484,7 +11015,7 @@ spec:
                                   - port
                                   type: object
                                 httpGet:
-                                  description: HTTPGet specifies the http request
+                                  description: HTTPGet specifies an HTTP GET request
                                     to perform.
                                   properties:
                                     host:
@@ -10552,7 +11083,7 @@ spec:
                                   format: int32
                                   type: integer
                                 tcpSocket:
-                                  description: TCPSocket specifies an action involving
+                                  description: TCPSocket specifies a connection to
                                     a TCP port.
                                   properties:
                                     host:
@@ -10646,7 +11177,8 @@ spec:
                               description: Probes are not allowed for ephemeral containers.
                               properties:
                                 exec:
-                                  description: Exec specifies the action to take.
+                                  description: Exec specifies a command to execute
+                                    in the container.
                                   properties:
                                     command:
                                       description: |-
@@ -10667,8 +11199,7 @@ spec:
                                   format: int32
                                   type: integer
                                 grpc:
-                                  description: GRPC specifies an action involving
-                                    a GRPC port.
+                                  description: GRPC specifies a GRPC HealthCheckRequest.
                                   properties:
                                     port:
                                       description: Port number of the gRPC service.
@@ -10687,7 +11218,7 @@ spec:
                                   - port
                                   type: object
                                 httpGet:
-                                  description: HTTPGet specifies the http request
+                                  description: HTTPGet specifies an HTTP GET request
                                     to perform.
                                   properties:
                                     host:
@@ -10755,7 +11286,7 @@ spec:
                                   format: int32
                                   type: integer
                                 tcpSocket:
-                                  description: TCPSocket specifies an action involving
+                                  description: TCPSocket specifies a connection to
                                     a TCP port.
                                   properties:
                                     host:
@@ -11085,7 +11616,8 @@ spec:
                               description: Probes are not allowed for ephemeral containers.
                               properties:
                                 exec:
-                                  description: Exec specifies the action to take.
+                                  description: Exec specifies a command to execute
+                                    in the container.
                                   properties:
                                     command:
                                       description: |-
@@ -11106,8 +11638,7 @@ spec:
                                   format: int32
                                   type: integer
                                 grpc:
-                                  description: GRPC specifies an action involving
-                                    a GRPC port.
+                                  description: GRPC specifies a GRPC HealthCheckRequest.
                                   properties:
                                     port:
                                       description: Port number of the gRPC service.
@@ -11126,7 +11657,7 @@ spec:
                                   - port
                                   type: object
                                 httpGet:
-                                  description: HTTPGet specifies the http request
+                                  description: HTTPGet specifies an HTTP GET request
                                     to perform.
                                   properties:
                                     host:
@@ -11194,7 +11725,7 @@ spec:
                                   format: int32
                                   type: integer
                                 tcpSocket:
-                                  description: TCPSocket specifies an action involving
+                                  description: TCPSocket specifies a connection to
                                     a TCP port.
                                   properties:
                                     host:
@@ -11733,7 +12264,8 @@ spec:
                                     More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
                                   properties:
                                     exec:
-                                      description: Exec specifies the action to take.
+                                      description: Exec specifies a command to execute
+                                        in the container.
                                       properties:
                                         command:
                                           description: |-
@@ -11748,7 +12280,7 @@ spec:
                                           x-kubernetes-list-type: atomic
                                       type: object
                                     httpGet:
-                                      description: HTTPGet specifies the http request
+                                      description: HTTPGet specifies an HTTP GET request
                                         to perform.
                                       properties:
                                         host:
@@ -11799,8 +12331,8 @@ spec:
                                       - port
                                       type: object
                                     sleep:
-                                      description: Sleep represents the duration that
-                                        the container should sleep before being terminated.
+                                      description: Sleep represents a duration that
+                                        the container should sleep.
                                       properties:
                                         seconds:
                                           description: Seconds is the number of seconds
@@ -11813,8 +12345,8 @@ spec:
                                     tcpSocket:
                                       description: |-
                                         Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept
-                                        for the backward compatibility. There are no validation of this field and
-                                        lifecycle hooks will fail in runtime when tcp handler is specified.
+                                        for backward compatibility. There is no validation of this field and
+                                        lifecycle hooks will fail at runtime when it is specified.
                                       properties:
                                         host:
                                           description: 'Optional: Host name to connect
@@ -11846,7 +12378,8 @@ spec:
                                     More info: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#container-hooks
                                   properties:
                                     exec:
-                                      description: Exec specifies the action to take.
+                                      description: Exec specifies a command to execute
+                                        in the container.
                                       properties:
                                         command:
                                           description: |-
@@ -11861,7 +12394,7 @@ spec:
                                           x-kubernetes-list-type: atomic
                                       type: object
                                     httpGet:
-                                      description: HTTPGet specifies the http request
+                                      description: HTTPGet specifies an HTTP GET request
                                         to perform.
                                       properties:
                                         host:
@@ -11912,8 +12445,8 @@ spec:
                                       - port
                                       type: object
                                     sleep:
-                                      description: Sleep represents the duration that
-                                        the container should sleep before being terminated.
+                                      description: Sleep represents a duration that
+                                        the container should sleep.
                                       properties:
                                         seconds:
                                           description: Seconds is the number of seconds
@@ -11926,8 +12459,8 @@ spec:
                                     tcpSocket:
                                       description: |-
                                         Deprecated. TCPSocket is NOT supported as a LifecycleHandler and kept
-                                        for the backward compatibility. There are no validation of this field and
-                                        lifecycle hooks will fail in runtime when tcp handler is specified.
+                                        for backward compatibility. There is no validation of this field and
+                                        lifecycle hooks will fail at runtime when it is specified.
                                       properties:
                                         host:
                                           description: 'Optional: Host name to connect
@@ -11955,7 +12488,8 @@ spec:
                                 More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
                               properties:
                                 exec:
-                                  description: Exec specifies the action to take.
+                                  description: Exec specifies a command to execute
+                                    in the container.
                                   properties:
                                     command:
                                       description: |-
@@ -11976,8 +12510,7 @@ spec:
                                   format: int32
                                   type: integer
                                 grpc:
-                                  description: GRPC specifies an action involving
-                                    a GRPC port.
+                                  description: GRPC specifies a GRPC HealthCheckRequest.
                                   properties:
                                     port:
                                       description: Port number of the gRPC service.
@@ -11996,7 +12529,7 @@ spec:
                                   - port
                                   type: object
                                 httpGet:
-                                  description: HTTPGet specifies the http request
+                                  description: HTTPGet specifies an HTTP GET request
                                     to perform.
                                   properties:
                                     host:
@@ -12064,7 +12597,7 @@ spec:
                                   format: int32
                                   type: integer
                                 tcpSocket:
-                                  description: TCPSocket specifies an action involving
+                                  description: TCPSocket specifies a connection to
                                     a TCP port.
                                   properties:
                                     host:
@@ -12170,7 +12703,8 @@ spec:
                                 More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
                               properties:
                                 exec:
-                                  description: Exec specifies the action to take.
+                                  description: Exec specifies a command to execute
+                                    in the container.
                                   properties:
                                     command:
                                       description: |-
@@ -12191,8 +12725,7 @@ spec:
                                   format: int32
                                   type: integer
                                 grpc:
-                                  description: GRPC specifies an action involving
-                                    a GRPC port.
+                                  description: GRPC specifies a GRPC HealthCheckRequest.
                                   properties:
                                     port:
                                       description: Port number of the gRPC service.
@@ -12211,7 +12744,7 @@ spec:
                                   - port
                                   type: object
                                 httpGet:
-                                  description: HTTPGet specifies the http request
+                                  description: HTTPGet specifies an HTTP GET request
                                     to perform.
                                   properties:
                                     host:
@@ -12279,7 +12812,7 @@ spec:
                                   format: int32
                                   type: integer
                                 tcpSocket:
-                                  description: TCPSocket specifies an action involving
+                                  description: TCPSocket specifies a connection to
                                     a TCP port.
                                   properties:
                                     host:
@@ -12629,7 +13162,8 @@ spec:
                                 More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
                               properties:
                                 exec:
-                                  description: Exec specifies the action to take.
+                                  description: Exec specifies a command to execute
+                                    in the container.
                                   properties:
                                     command:
                                       description: |-
@@ -12650,8 +13184,7 @@ spec:
                                   format: int32
                                   type: integer
                                 grpc:
-                                  description: GRPC specifies an action involving
-                                    a GRPC port.
+                                  description: GRPC specifies a GRPC HealthCheckRequest.
                                   properties:
                                     port:
                                       description: Port number of the gRPC service.
@@ -12670,7 +13203,7 @@ spec:
                                   - port
                                   type: object
                                 httpGet:
-                                  description: HTTPGet specifies the http request
+                                  description: HTTPGet specifies an HTTP GET request
                                     to perform.
                                   properties:
                                     host:
@@ -12738,7 +13271,7 @@ spec:
                                   format: int32
                                   type: integer
                                 tcpSocket:
-                                  description: TCPSocket specifies an action involving
+                                  description: TCPSocket specifies a connection to
                                     a TCP port.
                                   properties:
                                     host:
@@ -13105,6 +13638,74 @@ spec:
                         x-kubernetes-list-map-keys:
                         - name
                         x-kubernetes-list-type: map
+                      resources:
+                        description: |-
+                          Resources is the total amount of CPU and Memory resources required by all
+                          containers in the pod. It supports specifying Requests and Limits for
+                          "cpu" and "memory" resource names only. ResourceClaims are not supported.
+
+                          This field enables fine-grained control over resource allocation for the
+                          entire pod, allowing resource sharing among containers in a pod.
+
+                          This is an alpha field and requires enabling the PodLevelResources feature
+                          gate.
+                        properties:
+                          claims:
+                            description: |-
+                              Claims lists the names of resources, defined in spec.resourceClaims,
+                              that are used by this container.
+
+                              This is an alpha field and requires enabling the
+                              DynamicResourceAllocation feature gate.
+
+                              This field is immutable. It can only be set for containers.
+                            items:
+                              description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                              properties:
+                                name:
+                                  description: |-
+                                    Name must match the name of one entry in pod.spec.resourceClaims of
+                                    the Pod where this field is used. It makes that resource available
+                                    inside a container.
+                                  type: string
+                                request:
+                                  description: |-
+                                    Request is the name chosen for a request in the referenced claim.
+                                    If empty, everything from the claim is made available, otherwise
+                                    only the result of this request.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                            type: array
+                            x-kubernetes-list-map-keys:
+                            - name
+                            x-kubernetes-list-type: map
+                          limits:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: |-
+                              Limits describes the maximum amount of compute resources allowed.
+                              More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                            type: object
+                          requests:
+                            additionalProperties:
+                              anyOf:
+                              - type: integer
+                              - type: string
+                              pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                              x-kubernetes-int-or-string: true
+                            description: |-
+                              Requests describes the minimum amount of compute resources required.
+                              If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+                              otherwise to an implementation-defined value. Requests cannot exceed Limits.
+                              More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+                            type: object
+                        type: object
                       restartPolicy:
                         description: |-
                           Restart policy for all containers within the pod.
@@ -13229,6 +13830,32 @@ spec:
                               Note that this field cannot be set when spec.os.name is windows.
                             format: int64
                             type: integer
+                          seLinuxChangePolicy:
+                            description: |-
+                              seLinuxChangePolicy defines how the container's SELinux label is applied to all volumes used by the Pod.
+                              It has no effect on nodes that do not support SELinux or to volumes does not support SELinux.
+                              Valid values are "MountOption" and "Recursive".
+
+                              "Recursive" means relabeling of all files on all Pod volumes by the container runtime.
+                              This may be slow for large volumes, but allows mixing privileged and unprivileged Pods sharing the same volume on the same node.
+
+                              "MountOption" mounts all eligible Pod volumes with `-o context` mount option.
+                              This requires all Pods that share the same volume to use the same SELinux label.
+                              It is not possible to share the same volume among privileged and unprivileged Pods.
+                              Eligible volumes are in-tree FibreChannel and iSCSI volumes, and all CSI volumes
+                              whose CSI driver announces SELinux support by setting spec.seLinuxMount: true in their
+                              CSIDriver instance. Other volumes are always re-labelled recursively.
+                              "MountOption" value is allowed only when SELinuxMount feature gate is enabled.
+
+                              If not specified and SELinuxMount feature gate is enabled, "MountOption" is used.
+                              If not specified and SELinuxMount feature gate is disabled, "MountOption" is used for ReadWriteOncePod volumes
+                              and "Recursive" for all other volumes.
+
+                              This field affects only Pods that have SELinux label set, either in PodSecurityContext or in SecurityContext of all containers.
+
+                              All Pods that use the same volume should use the same seLinuxChangePolicy, otherwise some pods can get stuck in ContainerCreating state.
+                              Note that this field cannot be set when spec.os.name is windows.
+                            type: string
                           seLinuxOptions:
                             description: |-
                               The SELinux context to be applied to all containers.
@@ -13635,6 +14262,8 @@ spec:
                               description: |-
                                 awsElasticBlockStore represents an AWS Disk resource that is attached to a
                                 kubelet's host machine and then exposed to the pod.
+                                Deprecated: AWSElasticBlockStore is deprecated. All operations for the in-tree
+                                awsElasticBlockStore type are redirected to the ebs.csi.aws.com CSI driver.
                                 More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore
                               properties:
                                 fsType:
@@ -13666,8 +14295,10 @@ spec:
                               - volumeID
                               type: object
                             azureDisk:
-                              description: azureDisk represents an Azure Data Disk
-                                mount on the host and bind mount to the pod.
+                              description: |-
+                                azureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.
+                                Deprecated: AzureDisk is deprecated. All operations for the in-tree azureDisk type
+                                are redirected to the disk.csi.azure.com CSI driver.
                               properties:
                                 cachingMode:
                                   description: 'cachingMode is the Host Caching mode:
@@ -13706,8 +14337,10 @@ spec:
                               - diskURI
                               type: object
                             azureFile:
-                              description: azureFile represents an Azure File Service
-                                mount on the host and bind mount to the pod.
+                              description: |-
+                                azureFile represents an Azure File Service mount on the host and bind mount to the pod.
+                                Deprecated: AzureFile is deprecated. All operations for the in-tree azureFile type
+                                are redirected to the file.csi.azure.com CSI driver.
                               properties:
                                 readOnly:
                                   description: |-
@@ -13726,8 +14359,9 @@ spec:
                               - shareName
                               type: object
                             cephfs:
-                              description: cephFS represents a Ceph FS mount on the
-                                host that shares a pod's lifetime
+                              description: |-
+                                cephFS represents a Ceph FS mount on the host that shares a pod's lifetime.
+                                Deprecated: CephFS is deprecated and the in-tree cephfs type is no longer supported.
                               properties:
                                 monitors:
                                   description: |-
@@ -13780,6 +14414,8 @@ spec:
                             cinder:
                               description: |-
                                 cinder represents a cinder volume attached and mounted on kubelets host machine.
+                                Deprecated: Cinder is deprecated. All operations for the in-tree cinder type
+                                are redirected to the cinder.csi.openstack.org CSI driver.
                                 More info: https://examples.k8s.io/mysql-cinder-pd/README.md
                               properties:
                                 fsType:
@@ -13891,7 +14527,7 @@ spec:
                             csi:
                               description: csi (Container Storage Interface) represents
                                 ephemeral storage that is handled by certain external
-                                CSI drivers (Beta feature).
+                                CSI drivers.
                               properties:
                                 driver:
                                   description: |-
@@ -14362,6 +14998,7 @@ spec:
                               description: |-
                                 flexVolume represents a generic volume resource that is
                                 provisioned/attached using an exec based plugin.
+                                Deprecated: FlexVolume is deprecated. Consider using a CSIDriver instead.
                               properties:
                                 driver:
                                   description: driver is the name of the driver to
@@ -14407,9 +15044,9 @@ spec:
                               - driver
                               type: object
                             flocker:
-                              description: flocker represents a Flocker volume attached
-                                to a kubelet's host machine. This depends on the Flocker
-                                control service being running
+                              description: |-
+                                flocker represents a Flocker volume attached to a kubelet's host machine. This depends on the Flocker control service being running.
+                                Deprecated: Flocker is deprecated and the in-tree flocker type is no longer supported.
                               properties:
                                 datasetName:
                                   description: |-
@@ -14425,6 +15062,8 @@ spec:
                               description: |-
                                 gcePersistentDisk represents a GCE Disk resource that is attached to a
                                 kubelet's host machine and then exposed to the pod.
+                                Deprecated: GCEPersistentDisk is deprecated. All operations for the in-tree
+                                gcePersistentDisk type are redirected to the pd.csi.storage.gke.io CSI driver.
                                 More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk
                               properties:
                                 fsType:
@@ -14460,7 +15099,7 @@ spec:
                             gitRepo:
                               description: |-
                                 gitRepo represents a git repository at a particular revision.
-                                DEPRECATED: GitRepo is deprecated. To provision a container with a git repo, mount an
+                                Deprecated: GitRepo is deprecated. To provision a container with a git repo, mount an
                                 EmptyDir into an InitContainer that clones the repo using git, then mount the EmptyDir
                                 into the Pod's container.
                               properties:
@@ -14484,6 +15123,7 @@ spec:
                             glusterfs:
                               description: |-
                                 glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime.
+                                Deprecated: Glusterfs is deprecated and the in-tree glusterfs type is no longer supported.
                                 More info: https://examples.k8s.io/volumes/glusterfs/README.md
                               properties:
                                 endpoints:
@@ -14693,9 +15333,9 @@ spec:
                               - claimName
                               type: object
                             photonPersistentDisk:
-                              description: photonPersistentDisk represents a PhotonController
-                                persistent disk attached and mounted on kubelets host
-                                machine
+                              description: |-
+                                photonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine.
+                                Deprecated: PhotonPersistentDisk is deprecated and the in-tree photonPersistentDisk type is no longer supported.
                               properties:
                                 fsType:
                                   description: |-
@@ -14711,8 +15351,11 @@ spec:
                               - pdID
                               type: object
                             portworxVolume:
-                              description: portworxVolume represents a portworx volume
-                                attached and mounted on kubelets host machine
+                              description: |-
+                                portworxVolume represents a portworx volume attached and mounted on kubelets host machine.
+                                Deprecated: PortworxVolume is deprecated. All operations for the in-tree portworxVolume type
+                                are redirected to the pxd.portworx.com CSI driver when the CSIMigrationPortworx feature-gate
+                                is on.
                               properties:
                                 fsType:
                                   description: |-
@@ -15083,8 +15726,9 @@ spec:
                                   x-kubernetes-list-type: atomic
                               type: object
                             quobyte:
-                              description: quobyte represents a Quobyte mount on the
-                                host that shares a pod's lifetime
+                              description: |-
+                                quobyte represents a Quobyte mount on the host that shares a pod's lifetime.
+                                Deprecated: Quobyte is deprecated and the in-tree quobyte type is no longer supported.
                               properties:
                                 group:
                                   description: |-
@@ -15123,6 +15767,7 @@ spec:
                             rbd:
                               description: |-
                                 rbd represents a Rados Block Device mount on the host that shares a pod's lifetime.
+                                Deprecated: RBD is deprecated and the in-tree rbd type is no longer supported.
                                 More info: https://examples.k8s.io/volumes/rbd/README.md
                               properties:
                                 fsType:
@@ -15195,8 +15840,9 @@ spec:
                               - monitors
                               type: object
                             scaleIO:
-                              description: scaleIO represents a ScaleIO persistent
-                                volume attached and mounted on Kubernetes nodes.
+                              description: |-
+                                scaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.
+                                Deprecated: ScaleIO is deprecated and the in-tree scaleIO type is no longer supported.
                               properties:
                                 fsType:
                                   default: xfs
@@ -15329,8 +15975,9 @@ spec:
                                   type: string
                               type: object
                             storageos:
-                              description: storageOS represents a StorageOS volume
-                                attached and mounted on Kubernetes nodes.
+                              description: |-
+                                storageOS represents a StorageOS volume attached and mounted on Kubernetes nodes.
+                                Deprecated: StorageOS is deprecated and the in-tree storageos type is no longer supported.
                               properties:
                                 fsType:
                                   description: |-
@@ -15375,8 +16022,10 @@ spec:
                                   type: string
                               type: object
                             vsphereVolume:
-                              description: vsphereVolume represents a vSphere volume
-                                attached and mounted on kubelets host machine
+                              description: |-
+                                vsphereVolume represents a vSphere volume attached and mounted on kubelets host machine.
+                                Deprecated: VsphereVolume is deprecated. All operations for the in-tree vsphereVolume type
+                                are redirected to the csi.vsphere.vmware.com CSI driver.
                               properties:
                                 fsType:
                                   description: |-
@@ -15497,7 +16146,203 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.4
+    controller-gen.kubebuilder.io/version: v0.16.5
+    helm.sh/resource-policy: keep
+  name: publications.postgresql.cnpg.io
+spec:
+  group: postgresql.cnpg.io
+  names:
+    kind: Publication
+    listKind: PublicationList
+    plural: publications
+    singular: publication
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .spec.cluster.name
+      name: Cluster
+      type: string
+    - jsonPath: .spec.name
+      name: PG Name
+      type: string
+    - jsonPath: .status.applied
+      name: Applied
+      type: boolean
+    - description: Latest reconciliation message
+      jsonPath: .status.message
+      name: Message
+      type: string
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: Publication is the Schema for the publications API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: PublicationSpec defines the desired state of Publication
+            properties:
+              cluster:
+                description: The name of the PostgreSQL cluster that identifies the
+                  "publisher"
+                properties:
+                  name:
+                    default: ""
+                    description: |-
+                      Name of the referent.
+                      This field is effectively required, but due to backwards compatibility is
+                      allowed to be empty. Instances of this type with an empty value here are
+                      almost certainly wrong.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
+              dbname:
+                description: |-
+                  The name of the database where the publication will be installed in
+                  the "publisher" cluster
+                type: string
+                x-kubernetes-validations:
+                - message: dbname is immutable
+                  rule: self == oldSelf
+              name:
+                description: The name of the publication inside PostgreSQL
+                type: string
+                x-kubernetes-validations:
+                - message: name is immutable
+                  rule: self == oldSelf
+              parameters:
+                additionalProperties:
+                  type: string
+                description: |-
+                  Publication parameters part of the `WITH` clause as expected by
+                  PostgreSQL `CREATE PUBLICATION` command
+                type: object
+              publicationReclaimPolicy:
+                default: retain
+                description: The policy for end-of-life maintenance of this publication
+                enum:
+                - delete
+                - retain
+                type: string
+              target:
+                description: Target of the publication as expected by PostgreSQL `CREATE
+                  PUBLICATION` command
+                properties:
+                  allTables:
+                    description: |-
+                      Marks the publication as one that replicates changes for all tables
+                      in the database, including tables created in the future.
+                      Corresponding to `FOR ALL TABLES` in PostgreSQL.
+                    type: boolean
+                    x-kubernetes-validations:
+                    - message: allTables is immutable
+                      rule: self == oldSelf
+                  objects:
+                    description: Just the following schema objects
+                    items:
+                      description: PublicationTargetObject is an object to publish
+                      properties:
+                        table:
+                          description: |-
+                            Specifies a list of tables to add to the publication. Corresponding
+                            to `FOR TABLE` in PostgreSQL.
+                          properties:
+                            columns:
+                              description: The columns to publish
+                              items:
+                                type: string
+                              type: array
+                            name:
+                              description: The table name
+                              type: string
+                            only:
+                              description: Whether to limit to the table only or include
+                                all its descendants
+                              type: boolean
+                            schema:
+                              description: The schema name
+                              type: string
+                          required:
+                          - name
+                          type: object
+                        tablesInSchema:
+                          description: |-
+                            Marks the publication as one that replicates changes for all tables
+                            in the specified list of schemas, including tables created in the
+                            future. Corresponding to `FOR TABLES IN SCHEMA` in PostgreSQL.
+                          type: string
+                      type: object
+                      x-kubernetes-validations:
+                      - message: tablesInSchema and table are mutually exclusive
+                        rule: (has(self.tablesInSchema) && !has(self.table)) || (!has(self.tablesInSchema)
+                          && has(self.table))
+                    maxItems: 100000
+                    type: array
+                    x-kubernetes-validations:
+                    - message: specifying a column list when the publication also
+                        publishes tablesInSchema is not supported
+                      rule: '!(self.exists(o, has(o.table) && has(o.table.columns))
+                        && self.exists(o, has(o.tablesInSchema)))'
+                type: object
+                x-kubernetes-validations:
+                - message: allTables and objects are mutually exclusive
+                  rule: (has(self.allTables) && !has(self.objects)) || (!has(self.allTables)
+                    && has(self.objects))
+            required:
+            - cluster
+            - dbname
+            - name
+            - target
+            type: object
+          status:
+            description: PublicationStatus defines the observed state of Publication
+            properties:
+              applied:
+                description: Applied is true if the publication was reconciled correctly
+                type: boolean
+              message:
+                description: Message is the reconciliation output message
+                type: string
+              observedGeneration:
+                description: |-
+                  A sequence number representing the latest
+                  desired state that was synchronized
+                format: int64
+                type: integer
+            type: object
+        required:
+        - metadata
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.5
     helm.sh/resource-policy: keep
   name: scheduledbackups.postgresql.cnpg.io
 spec:
@@ -15675,6 +16520,153 @@ spec:
                 description: Next time we will run a backup
                 format: date-time
                 type: string
+            type: object
+        required:
+        - metadata
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.16.5
+    helm.sh/resource-policy: keep
+  name: subscriptions.postgresql.cnpg.io
+spec:
+  group: postgresql.cnpg.io
+  names:
+    kind: Subscription
+    listKind: SubscriptionList
+    plural: subscriptions
+    singular: subscription
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .spec.cluster.name
+      name: Cluster
+      type: string
+    - jsonPath: .spec.name
+      name: PG Name
+      type: string
+    - jsonPath: .status.applied
+      name: Applied
+      type: boolean
+    - description: Latest reconciliation message
+      jsonPath: .status.message
+      name: Message
+      type: string
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: Subscription is the Schema for the subscriptions API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: SubscriptionSpec defines the desired state of Subscription
+            properties:
+              cluster:
+                description: The name of the PostgreSQL cluster that identifies the
+                  "subscriber"
+                properties:
+                  name:
+                    default: ""
+                    description: |-
+                      Name of the referent.
+                      This field is effectively required, but due to backwards compatibility is
+                      allowed to be empty. Instances of this type with an empty value here are
+                      almost certainly wrong.
+                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
+              dbname:
+                description: |-
+                  The name of the database where the publication will be installed in
+                  the "subscriber" cluster
+                type: string
+                x-kubernetes-validations:
+                - message: dbname is immutable
+                  rule: self == oldSelf
+              externalClusterName:
+                description: The name of the external cluster with the publication
+                  ("publisher")
+                type: string
+              name:
+                description: The name of the subscription inside PostgreSQL
+                type: string
+                x-kubernetes-validations:
+                - message: name is immutable
+                  rule: self == oldSelf
+              parameters:
+                additionalProperties:
+                  type: string
+                description: |-
+                  Subscription parameters part of the `WITH` clause as expected by
+                  PostgreSQL `CREATE SUBSCRIPTION` command
+                type: object
+              publicationDBName:
+                description: |-
+                  The name of the database containing the publication on the external
+                  cluster. Defaults to the one in the external cluster definition.
+                type: string
+              publicationName:
+                description: |-
+                  The name of the publication inside the PostgreSQL database in the
+                  "publisher"
+                type: string
+              subscriptionReclaimPolicy:
+                default: retain
+                description: The policy for end-of-life maintenance of this subscription
+                enum:
+                - delete
+                - retain
+                type: string
+            required:
+            - cluster
+            - dbname
+            - externalClusterName
+            - name
+            - publicationName
+            type: object
+          status:
+            description: SubscriptionStatus defines the observed state of Subscription
+            properties:
+              applied:
+                description: Applied is true if the subscription was reconciled correctly
+                type: boolean
+              message:
+                description: Message is the reconciliation output message
+                type: string
+              observedGeneration:
+                description: |-
+                  A sequence number representing the latest
+                  desired state that was synchronized
+                format: int64
+                type: integer
             type: object
         required:
         - metadata
