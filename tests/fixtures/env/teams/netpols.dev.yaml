@@ -12,7 +12,7 @@ teamConfig:
                           - fromLabelName: from-name-dev
                             fromLabelValue: from-value-dev
                             fromNamespace: from-namespace-dev
-            - name: allow-ingress-2
+            - name: allow-egress-2
               ruleType:
                   type: egress
                   egress:
