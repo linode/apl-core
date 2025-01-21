@@ -623,6 +623,11 @@ definitions:
         description: 'A unique name for the network policy'
       ruleType:
         properties:
+          type:
+            type: string
+            enum:
+              - ingress
+              - egress
           ingress:
             properties:
               toLabelName:
@@ -683,6 +688,10 @@ definitions:
                     protocol: HTTPS
             required:
               - domain
+        required:
+          - type
+    required:
+      - name
   path:
     description: An absolute path
     type: string
