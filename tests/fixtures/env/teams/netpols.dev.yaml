@@ -1,7 +1,9 @@
 teamConfig:
     dev:
         netpols:
-            - ruleType:
+            - name: allow-ingress-1
+              ruleType:
+                  type: ingress
                   ingress:
                       toLabelName: to-label-dev
                       toLabelValue: to-value-dev
@@ -10,13 +12,17 @@ teamConfig:
                           - fromLabelName: from-name-dev
                             fromLabelValue: from-value-dev
                             fromNamespace: from-namespace-dev
-            - ruleType:
+            - name: allow-ingress-2
+              ruleType:
+                  type: egress
                   egress:
                       domain: dev.local
                       mode: AllowAll
                       ports:
                           - number: 123456
                             protocol: HTTPS
-            - ruleType:
+            - name: allow-egress-2
+              ruleType:
+                  type: egress
                   egress:
                       domain: dev.local

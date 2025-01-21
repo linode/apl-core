@@ -1,7 +1,9 @@
 teamConfig:
     demo:
         netpols:
-            - ruleType:
+            - name: allow-ingress-1
+              ruleType:
+                  type: ingress
                   ingress:
                       toLabelName: to-label-demo
                       toLabelValue: to-value-demo
@@ -10,13 +12,17 @@ teamConfig:
                           - fromLabelName: from-name-demo
                             fromLabelValue: from-value-demo
                             fromNamespace: from-namespace-demo
-            - ruleType:
+            - name: allow-egress-1
+              ruleType:
+                  type: egress
                   egress:
                       domain: demo.local
                       mode: AllowAll
                       ports:
-                          - number: 123456
+                          - number: '123456'
                             protocol: HTTPS
-            - ruleType:
+            - name: allow-egress-2
+              ruleType:
+                  type: egress
                   egress:
                       domain: demo.local
