@@ -83,7 +83,8 @@ gitea:
     oauth2_client:
       ENABLE_AUTO_REGISTRATION: true
       ACCOUNT_LINKING: auto
-      OPENID_CONNECT_SCOPES: openid email profile
+      OPENID_CONNECT_SCOPES: openid email profile transformed-email
+      USERNAME: transformed_email
       USERNAME_CLAIM: transformed_email
       EMAIL_CLAIM: email
     repository:
