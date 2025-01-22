@@ -19,6 +19,7 @@ This chart bootstraps a jaeger-operator deployment on a [Kubernetes](http://kube
 - cert-manager 1.6.1+ installed, or certificate for webhook service in a secret
 
 ## Check compability matrix
+
 See the compatibility matrix [here](./COMPATIBILITY.md).
 
 ## Installing the Chart
@@ -29,7 +30,7 @@ Add the Jaeger Tracing Helm repository:
 $ helm repo add jaegertracing https://jaegertracing.github.io/helm-charts
 ```
 
-To install the chart with the release name `my-release` in `observability` namespace: 
+To install the chart with the release name `my-release` in `observability` namespace:
 
 ```console
 $ helm install my-release jaegertracing/jaeger-operator -n observability
@@ -54,27 +55,30 @@ The command removes all the Kubernetes components associated with the chart and 
 The following table lists the configurable parameters of the jaeger-operator chart and their default values.
 
 | Parameter                  | Description                                                                                                 | Default                         |
-|-:--------------------------|-:-----------------------------------------------------------------------------------------------------------|-:-------------------------------|
-| `serviceExtraLabels`       | Additional labels to jaeger-operator service                                                                | `{}`                            |
-| `extraLabels`              | Additional labels to jaeger-operator deployment                                                             | `{}`                            |
-| `image.repository`         | Controller container image repository                                                                       | `jaegertracing/jaeger-operator` |
-| `image.tag`                | Controller container image tag                                                                              | `1.46.0`                        |
-| `image.pullPolicy`         | Controller container image pull policy                                                                      | `IfNotPresent`                  |
-| `jaeger.create`            | Jaeger instance will be created                                                                             | `false`                         |
-| `jaeger.spec`              | Jaeger instance specification                                                                               | `{}`                            |
-| `rbac.create`              | All required roles and rolebindings will be created                                                         | `true`                          |
-| `serviceAccount.create`    | Service account to use                                                                                      | `true`                          |
-| `rbac.pspEnabled`          | Pod security policy for pod will be created and included in rbac role                                       | `false`                         |
-| `rbac.clusterRole`         | ClusterRole will be used by operator ServiceAccount                                                         | `false`                         |
-| `serviceAccount.name`      | Service account name to use. If not set and create is true, a name is generated using the fullname template | `nil`                           |
-| `extraEnv`                 | Additional environment variables passed to the operator. For example:   name: LOG-LEVEL   value: debug      | `[]`                            |
-| `resources`                | K8s pod resources                                                                                           | `None`                          |
-| `nodeSelector`             | Node labels for pod assignment                                                                              | `{}`                            |
-| `tolerations`              | Toleration labels for pod assignment                                                                        | `[]`                            |
-| `affinity`                 | Affinity settings for pod assignment                                                                        | `{}`                            |
-| `securityContext`          | Security context for pod                                                                                    | `{}`                            |
-| `containerSecurityContext` | Security context for the container                                                                          | `{}`                            |
-| `priorityClassName`        | Priority class name for the pod                                                                             | `None`                          |
+| :-------------------------- | :---------------------------------------------------------------------------------------------------------- |:--------------------------------|
+| `serviceExtraLabels`        | Additional labels to jaeger-operator service                                                                | `{}`                            |
+| `extraLabels`               | Additional labels to jaeger-operator deployment                                                             | `{}`                            |
+| `image.repository`          | Controller container image repository                                                                       | `jaegertracing/jaeger-operator` |
+| `image.tag`                 | Controller container image tag                                                                              | `1.61.0`                        |
+| `image.pullPolicy`          | Controller container image pull policy                                                                      | `IfNotPresent`                  |
+| `jaeger.create`             | Jaeger instance will be created                                                                             | `false`                         |
+| `jaeger.spec`               | Jaeger instance specification                                                                               | `{}`                            |
+| `rbac.create`               | All required roles and rolebindings will be created                                                         | `true`                          |
+| `serviceAccount.create`     | Service account to use                                                                                      | `true`                          |
+| `rbac.pspEnabled`           | Pod security policy for pod will be created and included in rbac role                                       | `false`                         |
+| `rbac.clusterRole`          | ClusterRole will be used by operator ServiceAccount                                                         | `false`                         |
+| `serviceAccount.name`       | Service account name to use. If not set and create is true, a name is generated using the fullname template | `nil`                           |
+| `extraArgs`                 | Additional command line arguments arguments passed to the operator                                          | `{}`                            |
+| `extraEnv`                  | Additional environment variables passed to the operator. For example: name: LOG-LEVEL value: debug          | `[]`                            |
+| `replicaCount`              | Desired number of operator pods                                                                             | `1`                             |
+| `resources`                 | K8s pod resources                                                                                           | `None`                          |
+| `nodeSelector`              | Node labels for pod assignment                                                                              | `{}`                            |
+| `tolerations`               | Toleration labels for pod assignment                                                                        | `[]`                            |
+| `topologySpreadConstraints` | Topology Spread Constraints for pod assignment                                                              | `[]`                            |
+| `affinity`                  | Affinity settings for pod assignment                                                                        | `{}`                            |
+| `securityContext`           | Security context for pod                                                                                    | `{}`                            |
+| `containerSecurityContext`  | Security context for the container                                                                          | `{}`                            |
+| `priorityClassName`         | Priority class name for the pod                                                                             | `None`                          |
 
 Specify each parameter you'd like to override using a YAML file as described above in the [installation](#installing-the-chart) section.
 
