@@ -8,10 +8,10 @@ dependencies:
     version: 6.7.3
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
-    version: v1.16.2
+    version: v1.16.3
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
-    version: 0.22.1
+    version: 0.23.0
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
     version: 6.20.4
@@ -52,3 +52,18 @@ dependencies:
   - name: trivy-operator
     version: 0.25.0
     repository: https://github.com/aquasecurity/trivy-operator/
+  - name: falco
+    version: 3.8.5
+    repository: https://falcosecurity.github.io/charts
+  - name: falco-exporter
+    version: 0.9.7
+    repository: https://falcosecurity.github.io/charts
+  - name: jaeger-operator
+    version: 2.46.0
+    repository: https://jaegertracing.github.io/helm-charts
+  - name: kiali-operator
+    version: 1.86.1
+    repository: https://kiali.org/helm-charts
+  - name: tempo-distributed
+    version: 1.18.5
+    repository: https://grafana.github.io/helm-charts
