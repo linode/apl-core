@@ -82,11 +82,9 @@ gitea:
       ENABLE_OPENID_SIGNUP: true
     oauth2_client:
       ENABLE_AUTO_REGISTRATION: true
-      ACCOUNT_LINKING: auto
+      ACCOUNT_LINKING: disabled
       OPENID_CONNECT_SCOPES: openid email profile transformed-email
-      USERNAME: name
-      USERNAME_CLAIM: name
-      EMAIL_CLAIM: email
+      USERNAME: userid
     repository:
       DEFAULT_BRANCH: main
     service:
