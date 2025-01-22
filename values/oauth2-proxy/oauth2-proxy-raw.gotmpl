@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $escapedDomain := $v.cluster.domainSuffix | replace "." "\\." }}
 {{- $domain := printf "auth.%s" $v.cluster.domainSuffix }}
 {{- $consoleUrl := printf "https://console.%s" $v.cluster.domainSuffix }}
 {{- $cm := $v.apps | get "cert-manager" }}
@@ -29,8 +30,20 @@ resources:
         nginx.ingress.kubernetes.io/auth-response-headers: Authorization
         {{- end }}
         nginx.ingress.kubernetes.io/configuration-snippet: |
-          # rewrite auth redirects to original hosts
-          rewrite ^/oauth2/redirect/(.*) https://$1 redirect;
+          set $redirect_target "";
+
+          # if $request_uri starts with "/oauth2/redirect/", the $redirect_target will be set to whatever comes after that.
+          # e.g. https://auth.lkeid.akamai-apl.net/oauth2/redirect/example.com/ will set $redirect_target to https://example.com/ 
+          if ($request_uri ~* ^/oauth2/redirect/(.*)) {
+            set $redirect_target $1;
+          }
+
+          # if the redirect_target matches a cluster's subdomain it will redirect to the cluster's subdomain with the rest of the path.
+          # e.g. https://auth.lkeid.akamai-apl.net/oauth2/redirect/console.lkeid.akamai-apl.net/ will redirect to console.lkeid.akamai-apl.net/
+          # e.g. https://auth.lkeid.akamai-apl.net/oauth2/redirect/evil.com will not be processed by the ingress controller.
+          if ($redirect_target ~* "^([a-zA-Z0-9-]+\.){{ $escapedDomain }}(%2F)?(/.*)?$") {
+            return 302 https://$redirect_target;
+          }
         {{- with $ingress | get "sourceIpAddressFiltering" nil }}
         nginx.ingress.kubernetes.io/whitelist-source-range: "{{ . }}"
         {{- end}}
