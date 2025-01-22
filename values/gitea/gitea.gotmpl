@@ -102,6 +102,8 @@ gitea:
     session:
       COOKIE_SECURE: true
       DOMAIN: {{ $giteaDomain }}
+      GC_INTERVAL_TIME: 10
+      SESSION_LIFE_TIME: 10
     webhook:
       ALLOWED_HOST_LIST: "*"
     server:
