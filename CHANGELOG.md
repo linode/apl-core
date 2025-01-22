@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.2.4](https://github.com/linode/apl-core/compare/v4.2.3...v4.2.4) (2025-01-22)
+
+
+### Features
+
+* fix open redirect vulnerability ([#1899](https://github.com/linode/apl-core/issues/1899)) ([c2fa51e](https://github.com/linode/apl-core/commit/c2fa51e24cf0052d784d29038b6b912573186d47))
+
 ### [4.2.3](https://github.com/linode/apl-core/compare/v4.2.2...v4.2.3) (2025-01-21)
 
 
