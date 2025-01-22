@@ -56,7 +56,7 @@ dependencies:
     version: 3.8.5
     repository: https://falcosecurity.github.io/charts
   - name: falco-exporter
-    version: 0.9.7
+    version: 0.12.1
     repository: https://falcosecurity.github.io/charts
   - name: jaeger-operator
     version: 2.46.0

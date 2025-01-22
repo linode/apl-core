@@ -2,92 +2,121 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# -- service exposes the exporter service to be accessed from within the cluster.
 service:
+  # -- type denotes the service type. Setting it to "ClusterIP" we ensure that are accessible
+  # from within the cluster.
   type: ClusterIP
+  # -- clusterIP set to none. It's headless service.
   clusterIP: None
+  # -- port is the port on which the Service will listen.
   port: 9376
+  # -- targetPort is the port on which the Pod is listening.
   targetPort: 9376
-  nodePort:
+  # -- labels set of labels to be applied to the service.
   labels: {}
+  # -- annotations set of annotations to be applied to the service.
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "9376"
-  # Enable Mutual TLS for HTTP metrics server
+  # -- mTLS mutual TLS for HTTP metrics server.
   mTLS:
+    # -- enabled specifies whether the mTLS should be enabled.
     enabled: false
 
+# -- healthChecks contains the configuration for liveness and readiness probes.
 healthChecks:
+  # -- livenessProbe is a diagnostic mechanism used to determine weather a container within a Pod is still running and healthy.
   livenessProbe:
-    # liveness probes port
+    # -- probesPort is liveness probes port.
     probesPort: 19376
-    # -- Tells the kubelet that it should wait X seconds before performing the first probe.
+    # -- initialDelaySeconds tells the kubelet that it should wait X seconds before performing the first probe.
     initialDelaySeconds: 60
-    # -- Number of seconds after which the probe times out.
+    # -- timeoutSeconds number of seconds after which the probe times out.
     timeoutSeconds: 5
-    # -- Specifies that the kubelet should perform the check every x seconds.
+    # -- periodSeconds specifies the interval at which the liveness probe will be repeated.
     periodSeconds: 15
+  # -- readinessProbe is a mechanism used to determine whether a container within a Pod is ready to serve traffic.
   readinessProbe:
-    # readiness probes port
+    # probesPort is readiness probes port
     probesPort: 19376
-    # -- Tells the kubelet that it should wait X seconds before performing the first probe.
+    # -- initialDelaySeconds tells the kubelet that it should wait X seconds before performing the first probe.
     initialDelaySeconds: 30
-    # -- Number of seconds after which the probe times out.
+    # -- timeoutSeconds is the number of seconds after which the probe times out.
     timeoutSeconds: 5
-    # -- Specifies that the kubelet should perform the check every x seconds.
+    # -- periodSeconds specifies the interval at which the readiness probe will be repeated.
     periodSeconds: 15
 
+# -- image is the configuration for the exporter image.
 image:
+  # -- registry is the image registry to pull from.
   registry: docker.io
+  # -- repository is the image repository to pull from.
   repository: falcosecurity/falco-exporter
-  tag: 0.8.3
+  # -- tag is image tag to pull.
+  tag: "0.8.3"
+  # -- pullPolicy is the policy used to determine when a node should attempt to pull the container image.
   pullPolicy: IfNotPresent
 
+# -- pullSecrets a list of secrets containing credentials used when pulling from private/secure registries.
 imagePullSecrets: []
+# -- nameOverride is the new name used to override the release name used for exporter's components.
 nameOverride: ""
+# -- fullNameOverride same as nameOverride but for the full name.
 fullnameOverride: ""
 
-priorityClassName:
+# -- priorityClassName specifies the name of the PriorityClass for the pods.
+priorityClassName: ""
 
+# -- falco the configuration to connect falco.
 falco:
+  # -- grpcUnixSocketPath path to the falco's grpc unix socket.
   grpcUnixSocketPath: "unix:///run/falco/falco.sock"
+  # -- grpcTimeout timout value for grpc connection.
   grpcTimeout: 2m
 
+# -- serviceAccount is the configuration for the service account.
 serviceAccount:
-  # Specifies whether a service account should be created
+  # create specifies whether a service account should be created.
   create: true
-  # Annotations to add to the service account
+  # annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
+  # -- name is the name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template.
   # If set and create is false, an already existing serviceAccount must be provided.
-  name:
+  name: ""
 
+# -- podSecurityPolicy holds the security policy settings for the pod.
 podSecurityPolicy:
-  # Specifies whether a PSP, Role and RoleBinding should be created
+  # -- create specifies whether a PSP, Role and RoleBinding should be created
   create: false
-  # Annotations to add to the PSP, Role and RoleBinding
+  # -- annotations to add to the PSP, Role and RoleBinding
   annotations: {}
-  # The name of the PSP, Role and RoleBinding to use.
+  # -- name of the PSP, Role and RoleBinding to use.
   # If not set and create is true, a name is generated using the fullname template
-  name:
+  name: ""
 
+# -- podSecurityPolicy holds the security policy settings for the pod.
 podSecurityContext:
   {}
   # fsGroup: 2000
 
+# -- daemonset holds the configuration for the daemonset.
 daemonset:
-  # Perform rolling updates by default in the DaemonSet agent
+  # updateStrategy perform rolling updates by default in the DaemonSet agent
   # ref: https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/
   updateStrategy:
-    # You can also customize maxUnavailable or minReadySeconds if you
-    # need it
+    # type of the strategy. Can also customize maxUnavailable or minReadySeconds based on your needs.
     type: RollingUpdate
 
-  # Annotations to add to the DaemonSet pods
+  # -- annotations to add to the DaemonSet pods.
   annotations: {}
+  # -- podLabels labels to add to the pods.
   podLabels: {}
 
+# -- securityContext holds the security context for the daemonset.
 securityContext:
+  # -- capabilities to be assigned to the daemonset.
   capabilities:
     drop:
     - ALL
@@ -97,6 +126,8 @@ securityContext:
   seccompProfile:
     type: RuntimeDefault
 
+
+# -- resources defines the computing resources (CPU and memory) that are allocated to the containers running within the Pod.
 resources:
   {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -110,56 +141,82 @@ resources:
   #   cpu: 100m
   #   memory: 128Mi
 
+# -- nodeSelector specifies a set of key-value pairs that must match labels assigned to nodes
+# for the Pod to be eligible for scheduling on that node
 nodeSelector: {}
 
-# Allow falco-exporter to run on Kubernetes 1.6 masters.
+# -- tolerations are applied to pods and allow them to be scheduled on nodes with matching taints.
 tolerations:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/control-plane
 
+# -- affinity allows pod placement based on node characteristics, or any other custom labels assigned to nodes.
 affinity: {}
 
-serviceMonitor:
-  # Enable the deployment of a Service Monitor for the Prometheus Operator.
-  enabled: false
-  # Specify Additional labels to be added on the Service Monitor.
-  additionalLabels: {}
-  # Specify a user defined interval. When not specified Prometheus default interval is used.
-  interval: ""
-  # Specify a user defined scrape timeout. When not specified Prometheus default scrape timeout is used.
-  scrapeTimeout: ""
 
-grafanaDashboard:
+# -- serviceMonitor holds the configuration for the ServiceMonitor CRD.
+# A ServiceMonitor is a custom resource definition (CRD) used to configure how Prometheus should
+# discover and scrape metrics from the exporter service.
+serviceMonitor:
+  # -- enable the deployment of a Service Monitor for the Prometheus Operator.
   enabled: false
-  folder:
+  # -- additionalLabels specifies labels to be added on the Service Monitor.
+  additionalLabels: {}
+  # -- interval specifies the time interval at which Prometheus should scrape metrics from the service.
+  interval: ""
+  # -- scrapeTimeout determines the maximum time Prometheus should wait for a target to respond to a scrape request.
+  # If the target does not respond within the specified timeout, Prometheus considers the scrape as failed for
+  # that target.
+  scrapeTimeout: ""
+    # -- aditionalProperties allows setting additional properties on the endpoint such as relabelings, metricRelabelings etc.
+  additionalProperties: {}
+# -- grafanaDashboard contains the configuration related to grafana dashboards.
+grafanaDashboard:
+  # -- enabled specifies whether the dashboard should be deployed.
+  enabled: false
+  # -- folder creates and set folderAnnotation to specify where the dashboard is stored in grafana.
+  folder: ""
+  # -- folderAnnotation sets the annotation's name used by folderAnnotation in grafana's helm-chart.
+  folderAnnotation: "grafana_dashboard_folder"
+  # -- namespace specifies the namespace for the configmap.
   namespace: default
+  # -- prometheusDatasourceName name of the data source.
   prometheusDatasourceName: Prometheus
+
 scc:
   # true here enabled creation of Security Context Constraints in Openshift
   create: true
 
-# Create PrometheusRules for alerting on priority events
+# prometheusRules holds the configuration for alerting on priority events.
 prometheusRules:
+  # -- enabled specifies whether the prometheus rules should be deployed.
   enabled: false
   alerts:
     warning:
       enabled: true
       rate_interval: "5m"
       threshold: 0
+      for: "15m"
     error:
       enabled: true
       rate_interval: "5m"
       threshold: 0
+      for: "15m"
     critical:
       enabled: true
       rate_interval: "5m"
       threshold: 0
+      for: "15m"
     alert:
       enabled: true
       rate_interval: "5m"
       threshold: 0
+      for: "5m"
     emergency:
       enabled: true
       rate_interval: "1m"
       threshold: 0
+      for: "1m"
     additionalAlerts: {}

@@ -18,6 +18,9 @@ spec:
     {{- if .Values.serviceMonitor.scrapeTimeout }}
     scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
     {{- end }}
+    {{- with .Values.serviceMonitor.additionalProperties }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
   selector:
     matchLabels:
       {{- include "falco-exporter.selectorLabels" . | nindent 6 }}
