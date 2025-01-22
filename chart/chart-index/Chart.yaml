@@ -59,7 +59,7 @@ dependencies:
     version: 0.9.7
     repository: https://falcosecurity.github.io/charts
   - name: jaeger-operator
-    version: 2.46.0
+    version: 2.57.0
     repository: https://jaegertracing.github.io/helm-charts
   - name: kiali-operator
     version: 1.86.1
