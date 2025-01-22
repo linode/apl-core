@@ -51,7 +51,7 @@ dependencies:
     repository: https://vmware-tanzu.github.io/helm-charts/
   - name: trivy-operator
     version: 0.25.0
-    repository: https://github.com/aquasecurity/trivy-operator/
+    repository: https://aquasecurity.github.io/helm-charts/
   - name: falco
     version: 3.8.5
     repository: https://falcosecurity.github.io/charts
