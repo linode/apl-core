@@ -102,6 +102,7 @@ gitea:
     session:
       COOKIE_SECURE: true
       DOMAIN: {{ $giteaDomain }}
+      provider: memory
       GC_INTERVAL_TIME: 10
       SESSION_LIFE_TIME: 10
     webhook:
