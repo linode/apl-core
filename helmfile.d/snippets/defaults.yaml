@@ -1330,10 +1330,6 @@ environments:
           nodeSelector: {}
           isPreInstalled: false
         users: []
-        team:
-          selfService:
-            service:
-            - ingress
         e2e:
           enabled: false
           upgrade:

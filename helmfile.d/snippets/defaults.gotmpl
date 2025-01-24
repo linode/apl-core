@@ -75,4 +75,24 @@ environments:
           managedMonitoring:
             grafana: true
             alertmanager: false
+          alerts:
+              groupInterval: 5m
+              receivers:
+                  - none
+              repeatInterval: 3h
+          managedMonitoring:
+              alertmanager: false
+              grafana: false
+          networkPolicy:
+              egressPublic: true
+              ingressPrivate: true
+          resourceQuota:
+              pods: "50"
+              services.loadbalancers: "0"
+          selfService:
+              apps: []
+              policies:
+                  - edit policies
+              service:
+                  - ingress
     {{- end }}
