@@ -82,9 +82,10 @@ gitea:
       ENABLE_OPENID_SIGNUP: true
     oauth2_client:
       ENABLE_AUTO_REGISTRATION: true
+      {{/*Disabled so that when an user with the same username is created in gitea, it will not be linked to another account*/}}
       ACCOUNT_LINKING: disabled
       OPENID_CONNECT_SCOPES: openid email profile
-      USERNAME: nickname
+      USERNAME: email
     repository:
       DEFAULT_BRANCH: main
     service:
