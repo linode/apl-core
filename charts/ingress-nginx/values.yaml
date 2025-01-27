@@ -2,6 +2,10 @@
 ## Ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/index.md
 ##
 
+global:
+  image:
+    # -- Registry host to pull images from.
+    registry: registry.k8s.io
 ## Overrides for generated resource names
 # See templates/_helpers.tpl
 # nameOverride:
@@ -17,28 +21,30 @@ commonLabels: {}
 
 controller:
   name: controller
-  enableAnnotationValidations: false
+  enableAnnotationValidations: true
   image:
     ## Keep false as default for now!
     chroot: false
-    registry: registry.k8s.io
+    # registry: registry.k8s.io
     image: ingress-nginx/controller
     ## for backwards compatibility consider setting the full image url via the repository value below
     ## use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
     ## repository:
-    tag: "v1.11.2"
-    digest: sha256:d5f8217feeac4887cb1ed21f27c2674e58be06bd8f5184cacea2a69abaf78dce
-    digestChroot: sha256:21b55a2f0213a18b91612a8c0850167e00a8e34391fd595139a708f9c047e7a8
+    tag: "v1.12.0"
+    digest: sha256:e6b8de175acda6ca913891f0f727bca4527e797d52688cbe9fec9040d6f6b6fa
+    digestChroot: sha256:87c88e1c38a6c8d4483c8f70b69e2cca49853bb3ec3124b9b1be648edf139af3
     pullPolicy: IfNotPresent
     runAsNonRoot: true
-    # www-data -> uid 101
+    # -- This value must not be changed using the official image.
+    # uid=101(www-data) gid=82(www-data) groups=82(www-data)
     runAsUser: 101
+    # -- This value must not be changed using the official image.
+    # uid=101(www-data) gid=82(www-data) groups=82(www-data)
+    runAsGroup: 82
     allowPrivilegeEscalation: false
     seccompProfile:
       type: RuntimeDefault
     readOnlyRootFilesystem: false
-  # -- Use an existing PSP instead of creating one
-  existingPsp: ""
   # -- Configures the controller container name
   containerName: controller
   # -- Configures the ports that the nginx-controller listens on
@@ -194,7 +200,7 @@ controller:
     # -- Annotations to be added to the udp config configmap
     annotations: {}
   # -- Maxmind license key to download GeoLite2 Databases.
-  ## https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases
+  ## https://blog.maxmind.com/2019/12/significant-changes-to-accessing-and-using-geolite2-databases/
   maxmindLicenseKey: ""
   # -- Additional command line arguments to pass to Ingress-Nginx Controller
   # E.g. to specify the default SSL certificate you can use
@@ -234,6 +240,9 @@ controller:
   #    maxUnavailable: 1
   #  type: RollingUpdate
 
+  # -- Specifies the number of seconds you want to wait for the controller deployment to progress before the system reports back that it has failed.
+  # Ref.: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds
+  progressDeadlineSeconds: 0
   # -- `minReadySeconds` to avoid killing pods before we are ready
   ##
   minReadySeconds: 0
@@ -299,6 +308,8 @@ controller:
   #       app.kubernetes.io/name: '{{ include "ingress-nginx.name" . }}'
   #       app.kubernetes.io/instance: '{{ .Release.Name }}'
   #       app.kubernetes.io/component: controller
+  #   matchLabelKeys:
+  #   - pod-template-hash
   #   topologyKey: topology.kubernetes.io/zone
   #   maxSkew: 1
   #   whenUnsatisfiable: ScheduleAnyway
@@ -307,6 +318,8 @@ controller:
   #       app.kubernetes.io/name: '{{ include "ingress-nginx.name" . }}'
   #       app.kubernetes.io/instance: '{{ .Release.Name }}'
   #       app.kubernetes.io/component: controller
+  #   matchLabelKeys:
+  #   - pod-template-hash
   #   topologyKey: kubernetes.io/hostname
   #   maxSkew: 1
   #   whenUnsatisfiable: ScheduleAnyway
@@ -372,7 +385,9 @@ controller:
   minAvailable: 1
   # -- Maximum unavailable pods set in PodDisruptionBudget. If set, 'minAvailable' is ignored.
   # maxUnavailable: 1
-
+  # -- Eviction policy for unhealthy pods guarded by PodDisruptionBudget.
+  # Ref: https://kubernetes.io/blog/2023/01/06/unhealthy-pod-eviction-policy-for-pdbs/
+  unhealthyPodEvictionPolicy: ""
   ## Define requests resources to avoid probe issues due to CPU utilization in busy nodes
   ## ref: https://github.com/kubernetes/ingress-nginx/issues/4735#issuecomment-551204903
   ## Ideally, there should be no limits.
@@ -673,11 +688,11 @@ controller:
   #   image: busybox
   #   command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
 
-  # -- Modules, which are mounted into the core nginx image. See values.yaml for a sample to add opentelemetry module
+  # -- Modules, which are mounted into the core nginx image.
   extraModules: []
   # - name: mytestmodule
   #   image:
-  #     registry: registry.k8s.io
+  #     # registry: registry.k8s.io
   #     image: ingress-nginx/mytestmodule
   #     ## for backwards compatibility consider setting the full image url via the repository value below
   #     ## use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
@@ -688,6 +703,7 @@ controller:
   #   containerSecurityContext:
   #     runAsNonRoot: true
   #     runAsUser: <user-id>
+  #     runAsGroup: <group-id>
   #     allowPrivilegeEscalation: false
   #     seccompProfile:
   #       type: RuntimeDefault
@@ -701,30 +717,6 @@ controller:
   # will be executed as initContainers, to move its config files within the
   # mounted volume.
 
-  opentelemetry:
-    enabled: false
-    name: opentelemetry
-    image:
-      registry: registry.k8s.io
-      image: ingress-nginx/opentelemetry-1.25.3
-      ## for backwards compatibility consider setting the full image url via the repository value below
-      ## use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
-      ## repository:
-      tag: v20240813-b933310d
-      digest: sha256:f7604ac0547ed64d79b98d92133234e66c2c8aade3c1f4809fed5eec1fb7f922
-      distroless: true
-    containerSecurityContext:
-      runAsNonRoot: true
-      # -- The image's default user, inherited from its base image `cgr.dev/chainguard/static`.
-      runAsUser: 65532
-      allowPrivilegeEscalation: false
-      seccompProfile:
-        type: RuntimeDefault
-      capabilities:
-        drop:
-          - ALL
-      readOnlyRootFilesystem: true
-    resources: {}
   admissionWebhooks:
     name: admission
     annotations: {}
@@ -752,8 +744,6 @@ controller:
     objectSelector: {}
     # -- Labels to be added to admission webhooks
     labels: {}
-    # -- Use an existing PSP instead of creating one
-    existingPsp: ""
     service:
       annotations: {}
       # clusterIP: ""
@@ -768,6 +758,7 @@ controller:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
+        runAsGroup: 65532
         allowPrivilegeEscalation: false
         seccompProfile:
           type: RuntimeDefault
@@ -788,6 +779,7 @@ controller:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
+        runAsGroup: 65532
         allowPrivilegeEscalation: false
         seccompProfile:
           type: RuntimeDefault
@@ -799,13 +791,13 @@ controller:
     patch:
       enabled: true
       image:
-        registry: registry.k8s.io
+        # registry: registry.k8s.io
         image: ingress-nginx/kube-webhook-certgen
         ## for backwards compatibility consider setting the full image url via the repository value below
         ## use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
         ## repository:
-        tag: v1.4.3
-        digest: sha256:a320a50cc91bd15fd2d6fa6de58bd98c1bd64b9a6f926ce23a600d87043455a3
+        tag: v1.5.0
+        digest: sha256:aaafd456bda110628b2d4ca6296f38731a3aaf0bf7581efae824a41c770a8fc4
         pullPolicy: IfNotPresent
       # -- Provide a priority class name to the webhook patching job
       ##
@@ -853,6 +845,8 @@ controller:
     # if this port is changed, change healthz-port: in extraArgs: accordingly
     enabled: false
     service:
+      # -- Enable the metrics service or not.
+      enabled: true
       annotations: {}
       # prometheus.io/scrape: "true"
       # prometheus.io/port: "10254"
@@ -873,6 +867,7 @@ controller:
     serviceMonitor:
       enabled: false
       additionalLabels: {}
+      # -- Annotations to be added to the ServiceMonitor.
       annotations: {}
       ## The label to use to retrieve the job name from.
       ## jobLabel: "app.kubernetes.io/name"
@@ -890,6 +885,8 @@ controller:
     prometheusRule:
       enabled: false
       additionalLabels: {}
+      # -- Annotations to be added to the PrometheusRule.
+      annotations: {}
       # namespace: ""
       rules: []
       # # These are just examples rules, please adapt them to your needs
@@ -953,7 +950,7 @@ defaultBackend:
   enabled: false
   name: defaultbackend
   image:
-    registry: registry.k8s.io
+    # registry: registry.k8s.io
     image: defaultbackend-amd64
     ## for backwards compatibility consider setting the full image url via the repository value below
     ## use *either* current default registry/image or repository format or installing chart by providing the values.yaml will fail
@@ -963,12 +960,11 @@ defaultBackend:
     runAsNonRoot: true
     # nobody user -> uid 65534
     runAsUser: 65534
+    runAsGroup: 65534
     allowPrivilegeEscalation: false
     seccompProfile:
       type: RuntimeDefault
     readOnlyRootFilesystem: true
-  # -- Use an existing PSP instead of creating one
-  existingPsp: ""
   extraArgs: {}
   serviceAccount:
     create: true
@@ -1062,6 +1058,8 @@ defaultBackend:
   #       app.kubernetes.io/name: '{{ include "ingress-nginx.name" . }}'
   #       app.kubernetes.io/instance: '{{ .Release.Name }}'
   #       app.kubernetes.io/component: default-backend
+  #   matchLabelKeys:
+  #   - pod-template-hash
   #   topologyKey: topology.kubernetes.io/zone
   #   maxSkew: 1
   #   whenUnsatisfiable: ScheduleAnyway
@@ -1070,6 +1068,8 @@ defaultBackend:
   #       app.kubernetes.io/name: '{{ include "ingress-nginx.name" . }}'
   #       app.kubernetes.io/instance: '{{ .Release.Name }}'
   #       app.kubernetes.io/component: default-backend
+  #   matchLabelKeys:
+  #   - pod-template-hash
   #   topologyKey: kubernetes.io/hostname
   #   maxSkew: 1
   #   whenUnsatisfiable: ScheduleAnyway
@@ -1090,7 +1090,14 @@ defaultBackend:
   ##
   podAnnotations: {}
   replicaCount: 1
+  # -- Minimum available pods set in PodDisruptionBudget.
+  # Define either 'minAvailable' or 'maxUnavailable', never both.
   minAvailable: 1
+  # -- Maximum unavailable pods set in PodDisruptionBudget. If set, 'minAvailable' is ignored.
+  # maxUnavailable: 1
+  # -- Eviction policy for unhealthy pods guarded by PodDisruptionBudget.
+  # Ref: https://kubernetes.io/blog/2023/01/06/unhealthy-pod-eviction-policy-for-pdbs/
+  unhealthyPodEvictionPolicy: ""
   resources: {}
   # limits:
   #   cpu: 10m
@@ -1154,10 +1161,6 @@ defaultBackend:
 rbac:
   create: true
   scope: false
-## If true, create & use Pod Security Policy resources
-## https://kubernetes.io/docs/concepts/policy/pod-security-policy/
-podSecurityPolicy:
-  enabled: false
 serviceAccount:
   create: true
   name: ""
