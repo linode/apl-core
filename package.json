@@ -49,7 +49,7 @@
     "@types/jest": "27.5.2",
     "@types/js-yaml": "4.0.5",
     "@types/jsonpath": "0.2.0",
-    "@types/lodash": "4.17.13",
+    "@types/lodash": "4.17.14",
     "@types/node": "16.11.41",
     "@types/node-forge": "0.10.10",
     "@types/retry": "0.12.2",
