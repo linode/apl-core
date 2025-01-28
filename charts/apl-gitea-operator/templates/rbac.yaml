@@ -84,6 +84,6 @@ subjects:
   name: {{ include "apl-gitea-operator.serviceAccountName" . }}
 roleRef:
   kind: Role
-  name: {{ include "apl-gitea-operator.fullname" . }}-pod-exec
+  name: {{ include "apl-gitea-operator.fullname" . }}-service-accounts
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
