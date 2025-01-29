@@ -22,6 +22,9 @@ metadata:
     {{- end }}
 spec:
   type: {{ .Values.service.type }}
+  {{- with .Values.service.loadBalancerClass }}
+  loadBalancerClass: {{ . }}
+  {{- end }}
   ports:
     - name: http
       port: {{ .Values.service.port }}
@@ -54,8 +57,12 @@ metadata:
     {{- if .Values.commonLabels }}
     {{- include "sealed-secrets.render" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
     {{- end }}
+    app.kubernetes.io/component: metrics
 spec:
   type: {{ .Values.metrics.service.type }}
+  {{- with .Values.metrics.service.loadBalancerClass }}
+  loadBalancerClass: {{ . }}
+  {{- end }}
   ports:
     - name: metrics
       port: {{ .Values.metrics.service.port }}
