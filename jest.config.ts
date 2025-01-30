@@ -9,11 +9,8 @@ const config: Config.InitialOptions = {
   moduleDirectories: ['node_modules', __dirname],
   modulePathIgnorePatterns: ['src/cmd/test.ts'],
   testEnvironment: 'node',
-  globals: {
-    'ts-jest': {
-      compiler: 'ttypescript',
-      tsconfig: 'tsconfig.jest.json',
-    },
+  transform: {
+    '^.+.tsx?$': ['ts-jest', { compiler: 'ttypescript', tsconfig: 'tsconfig.jest.json' }],
   },
   silent: false,
   testMatch: ['**/*.test.ts'],
