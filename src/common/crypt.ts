@@ -71,14 +71,11 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
           return res
         })
         .catch(async (error) => {
-          if (error.message.includes('Already encrypted')) {
+          if (error.message.includes('Already encrypted') && (await pathExists(`${file}.dec`))) {
             const res = await $`helm secrets encrypt ${file}.dec`
             await $`echo ${res.stdout} > ${file}`
             if (crypt.post) await crypt.post(file)
             return res
-          } else {
-            d.error(error)
-            throw error
           }
         })
     }
