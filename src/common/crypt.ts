@@ -76,8 +76,6 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
             await $`echo ${res.stdout} > ${file}`
             if (crypt.post) await crypt.post(file)
             return res
-          } else {
-            d.error(error)
           }
         })
     }
