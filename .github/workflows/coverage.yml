@@ -13,6 +13,7 @@ jobs:
           GUCCI_VERSION="1.6.13"
           curl -L -o gucci https://github.com/noqcks/gucci/releases/download/${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64
           chmod +x gucci
+          sudo mv gucci /usr/bin/bash
       - uses: ArtiomTr/jest-coverage-report-action@v2
         env:
           NODE_OPTIONS: '--max_old_space_size=4096'
