@@ -1,8 +1,6 @@
 import type { Config } from '@jest/types'
 
-// Sync object
 const config: Config.InitialOptions = {
-  // automock: true,
   preset: 'ts-jest',
   roots: ['<rootDir>/src'],
   setupFilesAfterEnv: ['<rootDir>/src/test-init.ts'],
@@ -15,6 +13,9 @@ const config: Config.InitialOptions = {
   silent: false,
   testMatch: ['**/*.test.ts'],
   verbose: true,
-  workerIdleMemoryLimit: 0.3,
+  workerIdleMemoryLimit: 0.2,
+  forceExit: true,
+  detectOpenHandles: true,
+  cache: false,
 }
 export default config
