@@ -18,5 +18,6 @@ const config: Config.InitialOptions = {
   silent: false,
   testMatch: ['**/*.test.ts'],
   verbose: true,
+  workerIdleMemoryLimit: 0.2,
 }
 export default config
