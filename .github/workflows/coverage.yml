@@ -8,6 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Use the latest stable Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: v20.x.x
       - name: Install gucci
         run: |
           GUCCI_VERSION="1.6.13"
