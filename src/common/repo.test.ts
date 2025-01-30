@@ -1,5 +1,12 @@
 import { env } from 'process'
-import { getTeamConfig, hasCorrespondingDecryptedFile, loadTeam, loadTeamFileToSpec, saveTeam } from 'src/common/repo'
+import {
+  getTeamConfig,
+  hasCorrespondingDecryptedFile,
+  loadAsArrayPathFilters,
+  loadTeam,
+  loadTeamFileToSpec,
+  saveTeam,
+} from 'src/common/repo'
 import stubs from 'src/test-stubs'
 import { FileType } from './utils'
 
@@ -34,7 +41,7 @@ describe('loadTeamFileToSpec', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: {} }),
     }
     const spec = {}
-    await loadTeamFileToSpec(spec, 'env/teams/alpha/settings.yaml', deps)
+    await loadTeamFileToSpec(spec, 'env/teams/alpha/settings.yaml', loadAsArrayPathFilters, deps)
     expect(spec).toEqual({ settings: {} })
   })
 
@@ -43,7 +50,7 @@ describe('loadTeamFileToSpec', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: { a: { b: '1' } } }),
     }
     const teamSpec = { settings: { a: { c: '2' } } }
-    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/settings.yaml', deps)
+    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/settings.yaml', loadAsArrayPathFilters, deps)
     expect(teamSpec).toEqual({ settings: { a: { b: '1', c: '2' } } })
   })
   it('should push value to an array that already exists an item', async () => {
@@ -51,7 +58,7 @@ describe('loadTeamFileToSpec', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: 2 }),
     }
     const teamSpec = { builds: [1] }
-    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/builds/b2.yaml', deps)
+    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/builds/b2.yaml', loadAsArrayPathFilters, deps)
     expect(teamSpec).toEqual({ builds: [1, 2] })
   })
 
@@ -60,7 +67,7 @@ describe('loadTeamFileToSpec', () => {
       loadYaml: jest.fn().mockResolvedValue({ spec: { password: 2 } }),
     }
     const teamSpec = { settings: { id: 1 } }
-    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/secrets.settings.yaml.dec', deps)
+    await loadTeamFileToSpec(teamSpec, 'env/teams/alpha/secrets.settings.yaml.dec', loadAsArrayPathFilters, deps)
     expect(teamSpec).toEqual({ settings: { id: 1, password: 2 } })
   })
 })
@@ -114,31 +121,37 @@ describe('loadTeam', () => {
       1,
       { builds: [], workloads: [] },
       `${env.ENV_DIR}/env/teams/alpha/builds/build1.yaml`,
+      loadAsArrayPathFilters,
     )
     expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
       2,
       { builds: [], workloads: [] },
       `${env.ENV_DIR}/env/teams/alpha/builds/build2.yaml`,
+      loadAsArrayPathFilters,
     )
     expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
       3,
       { builds: [], workloads: [] },
       `${env.ENV_DIR}/env/teams/alpha/workloads/workload1.yaml`,
+      loadAsArrayPathFilters,
     )
     expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
       4,
       { builds: [], workloads: [] },
       `${env.ENV_DIR}/env/teams/alpha/workloads/workload2.yaml`,
+      loadAsArrayPathFilters,
     )
     expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
       5,
       { builds: [], workloads: [] },
       `${env.ENV_DIR}/env/teams/alpha/settings.yaml`,
+      loadAsArrayPathFilters,
     )
     expect(deps.loadTeamFileToSpec).toHaveBeenNthCalledWith(
       6,
       { builds: [], workloads: [] },
       `${env.ENV_DIR}/env/teams/alpha/secrets.settings.yaml.dec`,
+      loadAsArrayPathFilters,
     )
   })
 })

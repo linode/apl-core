@@ -1,7 +1,7 @@
 import { cloneDeep, merge } from 'lodash'
 import path from 'path'
 import { env } from './envalid'
-import { FileType, getDirNames, getFiles, loadYaml } from './utils'
+import { FileType, getDirNames, getFiles, isPathMatch, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
 
 export const getTeamNames = async (): Promise<Array<string>> => {
@@ -9,6 +9,15 @@ export const getTeamNames = async (): Promise<Array<string>> => {
   const teamNames = await getDirNames(teamsDir, { skipHidden: true })
   return teamNames
 }
+
+// loadAsArrayPathFilters - use '**' to match multiple directories
+export const loadAsArrayPathFilters = [
+  '**/teams/*/builds/*',
+  '**/teams/*/workloads/*',
+  '**/teams/*services/*',
+  '**/teams/*/netpols/*',
+  '**/teams/*/secrets/*',
+]
 
 export const saveTeam = async (
   teamName: string,
@@ -134,17 +143,24 @@ export const loadTeam = async (
     allPaths.push(path.join(teamDir, fileName))
   })
 
-  allPaths.forEach((filePath) => teamPromises.push(deps.loadTeamFileToSpec(teamSpec, filePath)))
+  allPaths.forEach((filePath) => teamPromises.push(deps.loadTeamFileToSpec(teamSpec, filePath, loadAsArrayPathFilters)))
   await Promise.all(teamPromises)
   return teamSpec
 }
 
-export const loadTeamFileToSpec = async (teamSpec: Record<string, any>, filePath: string, deps = { loadYaml }) => {
+export const loadTeamFileToSpec = async (
+  teamSpec: Record<string, any>,
+  filePath: string,
+  loadAsArrayFilters: Array<string>,
+  deps = { loadYaml },
+) => {
   const spec = teamSpec
   const content = await deps.loadYaml(filePath)
   const fileName = path.basename(filePath, path.extname(filePath))
   const dirName = path.basename(path.dirname(filePath))
-  if (Array.isArray(spec[dirName])) {
+
+  if (isPathMatch(filePath, loadAsArrayFilters)) {
+    spec[dirName] = spec[dirName] || []
     spec[dirName].push(content?.spec)
   } else {
     const strippedFileName = fileName.replace(/^secrets\.|\.yaml|\.dec$/g, '')

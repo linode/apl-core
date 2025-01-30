@@ -34,3 +34,23 @@ describe('semverCompare', () => {
     expect(utils.semverCompare('0.1.1', '1.1.3')).toEqual(-1)
   })
 })
+
+describe('isPathMatch', () => {
+  it('should match pattern', () => {
+    expect(utils.isPathMatch('/a/b/c/d.yaml', ['/a/b/*/*'])).toEqual(true)
+  })
+
+  it('should match pattern 2', () => {
+    expect(utils.isPathMatch('env/teams/alpha/builds/b2.yaml', ['**/teams/*/builds/*'])).toEqual(true)
+  })
+
+  it('should match second pattern', () => {
+    expect(utils.isPathMatch('/a/b/c/d.yaml', ['*/g/*', '**/b/*/*'])).toEqual(true)
+  })
+  it('should not match pattern', () => {
+    expect(utils.isPathMatch('/a/b/c/d.yaml', ['*/g/*'])).toEqual(false)
+  })
+  it('should not match empty list pattern', () => {
+    expect(utils.isPathMatch('/a/b/c/d.yaml', [])).toEqual(false)
+  })
+})

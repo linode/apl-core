@@ -219,3 +219,17 @@ export const semverCompare = (a, b) => {
   }
   return 0
 }
+
+const wildcardToRegex = (pattern: string): RegExp => {
+  return new RegExp(
+    `^${pattern
+      .replace(/\./g, '\\.') // Escape `.`
+      .replace(/\*\*/g, '.*') // Match multiple directories
+      .replace(/\*/g, '[^/]*')}$`,
+  ) // Match single segment
+}
+
+export const isPathMatch = (filePath: string, patterns: Array<string>) => {
+  if (patterns.length === 0) return false
+  return patterns.some((pattern) => wildcardToRegex(pattern).test(filePath))
+}
