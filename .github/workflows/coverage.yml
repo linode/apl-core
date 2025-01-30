@@ -8,10 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use the latest stable Node.js
+      - name: Use Node.js from .nvmrc
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: v20.x.x
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install gucci
         run: |
           GUCCI_VERSION="1.6.13"
