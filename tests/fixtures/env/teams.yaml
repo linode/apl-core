@@ -55,3 +55,6 @@ teamConfig:
                     - downloadCertificateAuthority
                 policies:
                     - edit policies
+            networkPolicy:
+                egressPublic: false
+                ingressPrivate: true
