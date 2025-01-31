@@ -1,7 +1,8 @@
+import { glob } from 'glob'
 import { cloneDeep, merge } from 'lodash'
 import path from 'path'
 import { env } from './envalid'
-import { FileType, getDirNames, getFiles, isPathMatch, loadYaml } from './utils'
+import { getDirNames, getFiles, isPathMatch, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
 
 export const getTeamNames = async (): Promise<Array<string>> => {
@@ -52,6 +53,12 @@ const resourceMap = {
   },
 }
 
+export const loadFilesFromRepo = async (env_dir: string, deps = { glob }) => {
+  const envPath = path.join(env_dir, 'env')
+  const data = {}
+
+  data['teamConfig'] = await getTeamConfig()
+}
 export const saveTeam = async (
   teamName: string,
   teamSpec: Record<string, any>,
@@ -93,8 +100,8 @@ export const saveTeam = async (
   return teamDir
 }
 
-export const hasCorrespondingDecryptedFile = (fileName: string, fileList: Array<string>): boolean => {
-  return fileList.includes(`${fileName}.dec`)
+export const hasCorrespondingDecryptedFile = (filePath: string, fileList: Array<string>): boolean => {
+  return fileList.includes(`${filePath}.dec`)
 }
 
 export const getTeamConfig = async (
@@ -149,34 +156,20 @@ export const loadTeam = async (
   deps = {
     getFiles,
     loadTeamFileToSpec,
+    glob,
   },
 ): Promise<Record<string, any>> => {
   const teamSpec = {}
   const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
-
-  // Get directories and regular files that are at 1st level of team directory
-  // teamDirs - are directories, each holding a collection of a given type of resource
-  const teamDirs = await deps.getFiles(teamDir, { skipHidden: true, fileType: FileType.Directory })
-  // teamFiles - are individual files, each contributing to the team settings
-  const teamFiles = await deps.getFiles(teamDir, { skipHidden: true, fileType: FileType.File })
   const teamPromises: Promise<void>[] = []
-
-  const allPaths: Array<string> = []
-  const promisies = teamDirs.map(async (resourceName) => {
-    teamSpec[resourceName] = []
-    const resourceDir = path.join(teamDir, resourceName)
-    const resourcePaths = await deps.getFiles(resourceDir, { skipHidden: true, fileType: FileType.File })
-    resourcePaths.forEach((fileName) => allPaths.push(path.join(resourceDir, fileName)))
+  const teamPaths = await deps.glob(`${teamDir}/**/*.{yaml,yaml.dec}`, {
+    ignore: `${teamDir}/sealedsecrets/**`,
   })
 
-  await Promise.all(promisies)
-
-  teamFiles.forEach((fileName) => {
-    if (hasCorrespondingDecryptedFile(fileName, teamFiles)) return
-    allPaths.push(path.join(teamDir, fileName))
+  teamPaths.forEach((filePath) => {
+    if (hasCorrespondingDecryptedFile(filePath, teamPaths)) return
+    teamPromises.push(deps.loadTeamFileToSpec(teamSpec, filePath, loadAsArrayPathFilters))
   })
-
-  allPaths.forEach((filePath) => teamPromises.push(deps.loadTeamFileToSpec(teamSpec, filePath, loadAsArrayPathFilters)))
   await Promise.all(teamPromises)
   return teamSpec
 }

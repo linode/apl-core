@@ -7,6 +7,7 @@ import { readFile, readdir } from 'fs/promises'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
+import { minimatch } from 'minimatch'
 import { resolve } from 'path'
 import { $, ProcessOutput } from 'zx'
 import { env } from './envalid'
@@ -220,17 +221,7 @@ export const semverCompare = (a, b) => {
   return 0
 }
 
-const wildcardToRegex = (pattern: string): RegExp => {
-  const regexPattern = pattern
-    .replace(/\./g, '\\.') // Escape `.`
-    .replace(/\/\*\*/g, '/.*') // '**/' -> Match multiple directories
-    .replace(/\*\*/g, '.*') // '**' -> Match anything
-    .replace(/\*/g, '[^/]*') // '*' -> Match within a single segment
-
-  return new RegExp(`^/?${regexPattern}$`) // Support leading `/`
-}
-
 export const isPathMatch = (filePath: string, patterns: Array<string>) => {
   if (patterns.length === 0) return false
-  return patterns.some((pattern) => wildcardToRegex(pattern).test(filePath))
+  return patterns.some((pattern) => minimatch(filePath, pattern, { matchBase: true }))
 }

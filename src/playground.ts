@@ -15,7 +15,7 @@ async function play() {
   // )
   // await writeValuesToFile(`/tmp/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
-  const files = await glob('/tmp/otomi-bootstrap-dev/env/**/*.{yaml,yaml.dec}', { ignore: 'node_modules/**' })
+  const files = await glob('/tmp/otomi-bootstrap-dev/env/teams/**/*.{yaml,yaml.dec}', { ignore: 'node_modules/**' })
   console.log(files)
 }
 
