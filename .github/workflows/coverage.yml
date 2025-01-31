@@ -28,10 +28,6 @@ jobs:
         run: |
           npm run test:ts -- --runInBand --ci --json --coverage --testLocationInResults --outputFile=report.json
       - uses: ArtiomTr/jest-coverage-report-action@v2
-        env:
-          NODE_OPTIONS: '--max_old_space_size=4096'
         with:
-          test-script: npm run test:ts -- --runInBand --logHeapUsage
-          skip-step: all
           coverage-file: report.json
           base-coverage-file: report.json
