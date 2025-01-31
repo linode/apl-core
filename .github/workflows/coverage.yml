@@ -16,6 +16,7 @@ jobs:
           nvm use
           node -v
           npm install
+          npm run test:ts -- --runInBand --ci --json --coverage --testLocationInResults --outputFile=report.json
       - name: Install gucci
         run: |
           GUCCI_VERSION="1.6.13"
@@ -28,3 +29,5 @@ jobs:
         with:
           test-script: npm run test:ts -- --runInBand --logHeapUsage
           skip-step: all
+          coverage-file: report.json
+          base-coverage-file: report.json
