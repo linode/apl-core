@@ -16,13 +16,15 @@ jobs:
           nvm use
           node -v
           npm install
-          npm run test:ts -- --runInBand --ci --json --coverage --testLocationInResults --outputFile=report.json
       - name: Install gucci
         run: |
           GUCCI_VERSION="1.6.13"
           curl -L -o gucci https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64
           chmod +x gucci
           sudo mv gucci /usr/local/bin/
+      - name: Run tests
+        run: |
+          npm run test:ts -- --runInBand --ci --json --coverage --testLocationInResults --outputFile=report.json
       - uses: ArtiomTr/jest-coverage-report-action@v2
         env:
           NODE_OPTIONS: '--max_old_space_size=4096'
