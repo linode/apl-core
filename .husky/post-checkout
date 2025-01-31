@@ -23,4 +23,9 @@ source_nvm
 # automatically change node version to the one indicated in .nvmrc
 nvm use
 
-npm run run-if-changed
+# Prevent errors on shallow clones
+if git rev-parse --verify HEAD@{1} >/dev/null 2>&1; then
+  npm run run-if-changed
+else
+  echo "Skipping run-if-changed: Not enough Git history"
+fi
