@@ -20,38 +20,7 @@ export const loadAsArrayPathFilters = [
   '**/teams/*/backups/*',
 ]
 
-const resourceMap = {
-  team: {
-    settings: {
-      globPattern: '**/teams/*/*settings.yaml.*',
-      convertFileTo: 'map',
-    },
-    builds: {
-      globPattern: '**/teams/*/builds/*',
-      convertFileTo: 'array',
-    },
-    workloads: {
-      globPattern: '**/teams/*/workloads/*',
-      convertFileTo: 'array',
-    },
-    services: {
-      globPattern: '**/teams/*/services/*',
-      convertFileTo: 'array',
-    },
-    netpols: {
-      globPattern: '**/teams/*/netpols/*',
-      convertFileTo: 'array',
-    },
-    secrets: {
-      globPattern: '**/teams/*/secrets/*',
-      convertFileTo: 'array',
-    },
-  },
-  platform: {
-    apps: {},
-    settings: {},
-  },
-}
+export const loadIgnorePAthPatterns = ['**/teams/*/sealedsecrets/**', '**/teams/*/workloadsValues/**']
 
 export const saveTeam = async (
   teamName: string,
@@ -62,7 +31,7 @@ export const saveTeam = async (
     writeValuesToFile,
   },
 ): Promise<string> => {
-  const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
+  const teamDir = getTeamDirPath(teamName)
   const teamPromises: Promise<void>[] = []
   const teamResourceNames = Object.keys(teamSpec).sort()
   teamResourceNames.forEach((resourceName) => {
@@ -120,6 +89,10 @@ export const printTeamConfigAsYaml = (teamConfig: Record<string, any>): string =
   return objectToYaml(teamConfig, 2, 1000)
 }
 
+export const getTeamDirPath = (teamName: string): string => {
+  const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
+  return teamDir
+}
 /**
    * Loads files for a team directory of the following structure. It should be file and directory name agnostic.
    *
@@ -153,10 +126,10 @@ export const loadTeam = async (
   },
 ): Promise<Record<string, any>> => {
   const teamSpec = {}
-  const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
+  const teamDir = getTeamDirPath(teamName)
   const teamPromises: Promise<void>[] = []
   const teamPaths = deps.globSync(`${teamDir}/**/*.{yaml,yaml.dec}`, {
-    ignore: [`${teamDir}/sealedsecrets/**`, `${teamDir}/workloadsValues/**`],
+    ignore: loadIgnorePAthPatterns,
   })
 
   teamPaths.forEach((filePath) => {
