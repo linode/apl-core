@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - name: Install Node
         run: |
           export NVM_DIR="$HOME/.nvm"
