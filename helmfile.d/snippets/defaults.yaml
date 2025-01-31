@@ -1308,12 +1308,20 @@ environments:
           database:
             harbor:
               enabled: false
+              retentionPolicy: 7d
+              schedule: 0 0 * * *
             gitea:
               enabled: false
+              retentionPolicy: 7d
+              schedule: 0 0 * * *
             keycloak:
               enabled: false
+              retentionPolicy: 7d
+              schedule: 0 0 * * *
           gitea:
             enabled: false
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
         cluster:
           provider: linode
           name: apl
