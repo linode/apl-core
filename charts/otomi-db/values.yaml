@@ -21,20 +21,6 @@ clusterAffinity:
     topologyKey: kubernetes.io/hostname
     podAntiAffinityType: preferred
 
-# Example for backups: 
-# clusterBackup:
-#   backup:
-#     barmanObjectStore:
-#       destinationPath: s3://bucket/
-#       endpointURL: "http://minio.minio.svc.cluster.local:9000"
-#       s3Credentials:
-#         accessKeyId:
-#           name: minio-creds
-#           key: MINIO_ACCESS_KEY
-#         secretAccessKey:
-#           name: minio-creds
-#           key: MINIO_SECRET_KEY
-
 clusterSpec:
   bootstrap: {}
 

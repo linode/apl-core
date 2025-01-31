@@ -14,7 +14,7 @@ environments:
                   memory: 64Mi
                 limits:
                   cpu: 200m
-                  memory: 256Mi              
+                  memory: 256Mi
             _rawValues: {}
           argocd:
             controllerStatusProcessors: 20
@@ -249,7 +249,7 @@ environments:
                     condition: (
                         container.image.repository in (
                           docker.io/gitea/gitea
-                        ) or (k8s.ns.name = "keycloak")  
+                        ) or (k8s.ns.name = "keycloak")
                       )
                   - macro: user_known_create_files_below_dev_activities
                     condition: (
@@ -881,7 +881,7 @@ environments:
                   cpu: 100m
                   memory: 256Mi
             persistence:
-                master: 
+                master:
                   size: 1Gi
                 sentinel:
                   size: 1Gi
@@ -1037,7 +1037,7 @@ environments:
                   memory: 24Mi
                 limits:
                   cpu: 100m
-                  memory: 128Mi              
+                  memory: 128Mi
             _rawValues: {}
           otel:
             enabled: false
