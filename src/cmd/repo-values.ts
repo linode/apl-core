@@ -1,6 +1,7 @@
 import { prepareEnvironment } from 'src/common/cli'
+import { getTeamConfig } from 'src/common/repo'
 import { getFilename } from 'src/common/utils'
-import { getTeamConfig, objectToYaml } from 'src/common/values'
+import { objectToYaml } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 
