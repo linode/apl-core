@@ -17,7 +17,7 @@ releases:
     namespace: argocd
     labels:
       app: core
-    <<: *default 
+    <<: *default
   - name: otomi-operator
     installed: true
     namespace: otomi-operator
@@ -57,6 +57,12 @@ releases:
       pkg: apl-gitea-operator
       app: core
     <<: *default
+  - name: harbor-artifacts
+    installed: {{ $h | get "enabled" }}
+    namespace: harbor
+    labels:
+      pkg: harbor
+    <<: *raw
   - name: apl-harbor-operator-artifacts
     installed: {{ $a | get "harbor.enabled" }}
     namespace: apl-harbor-operator
