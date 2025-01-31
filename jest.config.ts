@@ -13,9 +13,5 @@ const config: Config.InitialOptions = {
   silent: false,
   testMatch: ['**/*.test.ts'],
   verbose: true,
-  workerIdleMemoryLimit: '100MiB',
-  forceExit: true,
-  detectOpenHandles: true,
-  cache: false,
 }
 export default config
