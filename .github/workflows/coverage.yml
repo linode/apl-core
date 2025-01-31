@@ -15,6 +15,7 @@ jobs:
           nvm install
           nvm use
           node -v
+          npm install
       - name: Install gucci
         run: |
           GUCCI_VERSION="1.6.13"
