@@ -1264,6 +1264,8 @@ environments:
             imported: false
             size: 5Gi
             replicas: 2
+            recovery: {}
+            externalClusters: []
             resources:
               limits:
                 cpu: "200m"
@@ -1276,6 +1278,8 @@ environments:
             size: 5Gi
             replicas: 2
             coreDatabase: registry
+            recovery: {}
+            externalClusters: []
             resources:
               limits:
                 cpu: "200m"
@@ -1286,9 +1290,10 @@ environments:
           gitea:
             imageName: null
             useOtomiDB: true
-            imported: false
             size: 5Gi
             replicas: 2
+            recovery: {}
+            externalClusters: []
             resources:
               limits:
                 cpu: "200m"

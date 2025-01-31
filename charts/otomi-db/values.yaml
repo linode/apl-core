@@ -36,10 +36,7 @@ clusterAffinity:
 #           key: MINIO_SECRET_KEY
 
 clusterSpec:
-  bootstrap:
-    initdb:
-      database: app
-      owner: app
+  bootstrap: {}
 
 backup:
   enabled: false

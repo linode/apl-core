@@ -40,10 +40,17 @@ backup:
 
 clusterSpec:
   bootstrap:
+{{- with $hdb.recovery }}
+    recovery: {{ toYaml . | nindent 6 }}
+{{- else }}
     initdb:
       database: {{ $hdb.coreDatabase }}
       owner: harbor
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
+{{- end }}
+{{- with $hdb.externalClusters }}
+  externalClusters: {{ toYaml . | nindent 4 }}
+{{- end }}
 
 resources: {{- toYaml $hdb.resources | nindent 2 }}

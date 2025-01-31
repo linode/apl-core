@@ -39,37 +39,19 @@ backup:
 {{- end }}
 {{- end }}
 
-{{- if $kdb.imported }}
 clusterSpec:
   bootstrap:
-    initdb:
-      database: keycloak
-      owner: keycloak
-      import:
-        type: microservice
-        databases:
-          - keycloak
-        source:
-          externalCluster: keycloak-postgresql
-  externalClusters:
-  - name: keycloak-postgresql
-    connectionParameters:
-      host: keycloak-postgresql.keycloak.svc.cluster.local
-      user: keycloak
-      dbname: keycloak
-      sslmode: disable
-    password:
-      name: keycloak-postgresql
-      key: postgresql-password
-
+{{- with $kdb.recovery }}
+    recovery: {{ toYaml . | nindent 6 }}
 {{- else }}
-clusterSpec:  
-  bootstrap:
     initdb:
       database: keycloak
       owner: keycloak
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
+{{- end }}
+{{- with $kdb.externalClusters }}
+  externalClusters: {{ toYaml . | nindent 4 }}
 {{- end }}
 
 resources: {{- toYaml $kdb.resources | nindent 2 }}
