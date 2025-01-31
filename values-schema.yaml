@@ -1093,6 +1093,17 @@ definitions:
           id:
             $ref: '#/definitions/idName'
             description: Must be the same as the name.
+          networkPolicy:
+            ingressPrivate:
+              title: Enable filtering of ingress traffic inside the cluster
+              description: When set a user can define ingress from other services for a particular team service
+              type: boolean
+              default: true
+            egressPublic:
+              title: Enable filtering of egress traffic outside the cluster
+              description: When set a user can define egress towards FQDNs and public IPs for a team service
+              type: boolean
+              default: true
           managedMonitoring:
             title: Managed monitoring
             description: Activate managed Grafana, Prometheus or Alertmanager instances
@@ -1157,10 +1168,6 @@ definitions:
                   $ref: '#/definitions/resources'
                 kanikoTask:
                   $ref: '#/definitions/resources'
-      backups:
-        type: array
-        items:
-          $ref: '#/definitions/backup'
       secrets:
         items:
           $ref: '#/definitions/secret'
@@ -1173,17 +1180,6 @@ definitions:
         items:
           $ref: '#/definitions/netpol'
         type: array
-      networkPolicy:
-        ingressPrivate:
-          title: Enable filtering of ingress traffic inside the cluster
-          description: When set a user can define ingress from other services for a particular team service
-          type: boolean
-          default: true
-        egressPublic:
-          title: Enable filtering of egress traffic outside the cluster
-          description: When set a user can define egress towards FQDNs and public IPs for a team service
-          type: boolean
-          default: true
       workloads:
         type: array
         items:

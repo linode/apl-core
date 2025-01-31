@@ -19,6 +19,8 @@ users:
     isTeamAdmin: false
     teams: ['demo']
 teamConfig:
+  alpha:
+    settings: {}
   demo:
     settings:
       id: demo

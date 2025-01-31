@@ -17,7 +17,6 @@ export const loadAsArrayPathFilters = [
   '**/teams/*/workloads/*',
   '**/teams/*/services/*',
   '**/teams/*/netpols/*',
-  '**/teams/*/secrets/*',
 ]
 
 const resourceMap = {
