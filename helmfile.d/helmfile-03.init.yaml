@@ -58,7 +58,7 @@ releases:
       app: core
     <<: *default
   - name: harbor-artifacts
-    installed: {{ $h | get "enabled" }}
+    installed: {{ $a | get "harbor.enabled" }}
     namespace: harbor
     labels:
       pkg: harbor
