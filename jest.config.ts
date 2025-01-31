@@ -12,6 +12,14 @@ const config: Config.InitialOptions = {
   },
   silent: false,
   testMatch: ['**/*.test.ts'],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: -10,
+    },
+  },
   verbose: true,
 }
 export default config
