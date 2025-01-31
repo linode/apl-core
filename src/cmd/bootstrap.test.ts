@@ -27,7 +27,11 @@ describe('Bootstrapping values', () => {
   let deps
   beforeEach(() => {
     deps = {
-      $: jest.fn().mockReturnValue({ nothrow: jest.fn() }),
+      $: jest.fn().mockReturnValue({
+        nothrow: jest.fn().mockReturnValue({
+          quiet: jest.fn(),
+        }),
+      }),
       bootstrapSops: jest.fn(),
       copyBasicFiles: jest.fn(),
       copyFile: jest.fn(),

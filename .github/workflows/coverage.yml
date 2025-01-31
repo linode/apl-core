@@ -1,0 +1,33 @@
+name: 'coverage'
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Node
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install
+          nvm use
+          node -v
+          npm install
+      - name: Install gucci
+        run: |
+          GUCCI_VERSION="1.6.13"
+          curl -L -o gucci https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64
+          chmod +x gucci
+          sudo mv gucci /usr/local/bin/
+      - name: Run tests
+        run: |
+          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=report.json
+      - uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          coverage-file: report.json
+          base-coverage-file: report.json
