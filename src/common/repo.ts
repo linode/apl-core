@@ -1,8 +1,8 @@
-import { glob } from 'glob'
+import { globSync } from 'glob'
 import { cloneDeep, merge } from 'lodash'
 import path from 'path'
 import { env } from './envalid'
-import { getDirNames, getFiles, isPathMatch, loadYaml } from './utils'
+import { getDirNames, isPathMatch, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
 
 export const getTeamNames = async (): Promise<Array<string>> => {
@@ -53,12 +53,6 @@ const resourceMap = {
   },
 }
 
-export const loadFilesFromRepo = async (env_dir: string, deps = { glob }) => {
-  const envPath = path.join(env_dir, 'env')
-  const data = {}
-
-  data['teamConfig'] = await getTeamConfig()
-}
 export const saveTeam = async (
   teamName: string,
   teamSpec: Record<string, any>,
@@ -154,15 +148,14 @@ export const printTeamConfigAsYaml = (teamConfig: Record<string, any>): string =
 export const loadTeam = async (
   teamName: string,
   deps = {
-    getFiles,
     loadTeamFileToSpec,
-    glob,
+    globSync,
   },
 ): Promise<Record<string, any>> => {
   const teamSpec = {}
   const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
   const teamPromises: Promise<void>[] = []
-  const teamPaths = await deps.glob(`${teamDir}/**/*.{yaml,yaml.dec}`, {
+  const teamPaths = deps.globSync(`${teamDir}/**/*.{yaml,yaml.dec}`, {
     ignore: `${teamDir}/sealedsecrets/**`,
   })
 
