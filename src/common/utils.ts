@@ -221,12 +221,13 @@ export const semverCompare = (a, b) => {
 }
 
 const wildcardToRegex = (pattern: string): RegExp => {
-  return new RegExp(
-    `^${pattern
-      .replace(/\./g, '\\.') // Escape `.`
-      .replace(/\*\*/g, '.*') // Match multiple directories
-      .replace(/\*/g, '[^/]*')}$`,
-  ) // Match single segment
+  const regexPattern = pattern
+    .replace(/\./g, '\\.') // Escape `.`
+    .replace(/\/\*\*/g, '/.*') // '**/' -> Match multiple directories
+    .replace(/\*\*/g, '.*') // '**' -> Match anything
+    .replace(/\*/g, '[^/]*') // '*' -> Match within a single segment
+
+  return new RegExp(`^/?${regexPattern}$`) // Support leading `/`
 }
 
 export const isPathMatch = (filePath: string, patterns: Array<string>) => {

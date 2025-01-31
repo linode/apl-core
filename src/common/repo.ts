@@ -14,10 +14,43 @@ export const getTeamNames = async (): Promise<Array<string>> => {
 export const loadAsArrayPathFilters = [
   '**/teams/*/builds/*',
   '**/teams/*/workloads/*',
-  '**/teams/*services/*',
+  '**/teams/*/services/*',
   '**/teams/*/netpols/*',
   '**/teams/*/secrets/*',
 ]
+
+const resourceMap = {
+  team: {
+    settings: {
+      globPattern: '**/teams/*/*settings.yaml.*',
+      convertFileTo: 'map',
+    },
+    builds: {
+      globPattern: '**/teams/*/builds/*',
+      convertFileTo: 'array',
+    },
+    workloads: {
+      globPattern: '**/teams/*/workloads/*',
+      convertFileTo: 'array',
+    },
+    services: {
+      globPattern: '**/teams/*/services/*',
+      convertFileTo: 'array',
+    },
+    netpols: {
+      globPattern: '**/teams/*/netpols/*',
+      convertFileTo: 'array',
+    },
+    secrets: {
+      globPattern: '**/teams/*/secrets/*',
+      convertFileTo: 'array',
+    },
+  },
+  platform: {
+    apps: {},
+    settings: {},
+  },
+}
 
 export const saveTeam = async (
   teamName: string,

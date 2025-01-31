@@ -42,6 +42,10 @@ describe('isPathMatch', () => {
 
   it('should match pattern 2', () => {
     expect(utils.isPathMatch('env/teams/alpha/builds/b2.yaml', ['**/teams/*/builds/*'])).toEqual(true)
+    expect(
+      utils.isPathMatch('/tmp/otomi-bootstrap-dev/env/teams/demo/builds/demo-java-maven.yaml', ['**/teams/*/builds/*']),
+    ).toEqual(true)
+    expect(utils.isPathMatch('env/teams/demo/services/httpbin.yaml', ['**/teams/*/services/*'])).toEqual(true)
   })
 
   it('should match second pattern', () => {
