@@ -1,0 +1,10 @@
+spec:
+    domain: tlspass.dev.linode-apl.net
+    id: cb5149c4-8ea5-4c5a-be04-a37258658bd4
+    ksvc:
+        predeployed: true
+    name: hello-auth
+    ownHost: true
+    paths: []
+    port: 80
+    type: public

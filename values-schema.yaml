@@ -1168,10 +1168,10 @@ definitions:
                   $ref: '#/definitions/resources'
                 kanikoTask:
                   $ref: '#/definitions/resources'
-      secrets:
-        items:
-          $ref: '#/definitions/secret'
+      backups:
         type: array
+        items:
+          $ref: '#/definitions/backup'
       services:
         items:
           $ref: '#/definitions/service'

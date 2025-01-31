@@ -1,0 +1,10 @@
+spec:
+    imageUpdateStrategy:
+        semver:
+            imageRepository: harbor.try-otomi.net/team-orange/green
+            versionConstraint: '1.12'
+        type: semver
+    name: wd2
+    path: ./
+    revision: main
+    url: https://myrepo.local/mychart.git

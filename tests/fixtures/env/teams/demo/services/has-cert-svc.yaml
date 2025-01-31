@@ -1,0 +1,6 @@
+spec:
+    hasCert: true
+    name: has-cert-svc
+    paths:
+        - /jeho
+    type: public

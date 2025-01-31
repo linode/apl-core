@@ -17,6 +17,7 @@ export const loadAsArrayPathFilters = [
   '**/teams/*/workloads/*',
   '**/teams/*/services/*',
   '**/teams/*/netpols/*',
+  '**/teams/*/backups/*',
 ]
 
 const resourceMap = {
@@ -155,7 +156,7 @@ export const loadTeam = async (
   const teamDir = path.join(env.ENV_DIR, 'env', 'teams', teamName)
   const teamPromises: Promise<void>[] = []
   const teamPaths = deps.globSync(`${teamDir}/**/*.{yaml,yaml.dec}`, {
-    ignore: `${teamDir}/sealedsecrets/**`,
+    ignore: [`${teamDir}/sealedsecrets/**`, `${teamDir}/workloadsValues/**`],
   })
 
   teamPaths.forEach((filePath) => {

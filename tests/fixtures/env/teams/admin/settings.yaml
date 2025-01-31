@@ -1,0 +1,8 @@
+spec:
+    id: admin
+    selfService:
+        access:
+            - shell
+            - downloadCertificateAuthority
+        policies:
+            - edit policies

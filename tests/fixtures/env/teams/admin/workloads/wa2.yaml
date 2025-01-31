@@ -1,0 +1,5 @@
+spec:
+    chart: mychart
+    name: wa2
+    revision: 1.2.3
+    url: https://myregistry.local/mychart

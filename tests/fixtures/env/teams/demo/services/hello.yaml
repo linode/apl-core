@@ -1,0 +1,26 @@
+spec:
+    auth: true
+    cname:
+        domain: hello-demo.cname.com
+        tslSecretName: ''
+    domain: hello-demo.dev.linode-apl.net
+    headers:
+        response:
+            set:
+                - name: X-Frame-Options
+                  value: same-origin
+                - name: sander
+                  value: same-origin
+    id: cb5149c4-8ea5-4c5a-be04-a37258658bd3
+    ksvc:
+        predeployed: true
+    name: hello
+    ownHost: true
+    port: 80
+    tlsPass: true
+    trafficControl:
+        enabled: true
+        weightV1: 70
+        weightV2: 30
+    type: public
+    useCname: true

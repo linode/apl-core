@@ -1,0 +1,5 @@
+spec:
+    id: cb5149c4-8ea5-4c5a-be04-a37258658bd6
+    name: some-svc
+    port: 80
+    type: cluster

@@ -1,0 +1,5 @@
+spec:
+    name: wa1
+    path: /
+    revision: HEAD
+    url: https://myrepo.local/mychart.git

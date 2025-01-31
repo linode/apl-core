@@ -1,0 +1,25 @@
+spec:
+    alerts:
+        email: {}
+        receivers:
+            - slack
+        repeatInterval: 3h
+        slack:
+            channel: aaaaa
+            channelCrit: aaaaa
+    id: demo
+    oidc:
+        groupMapping: somesecretvalue
+    resourceQuota:
+        services.loadbalancers: '1'
+    selfService:
+        access:
+            - shell
+            - downloadCertificateAuthority
+        apps: []
+        policies:
+            - edit policies
+        service:
+            - ingress
+        team:
+            - alerts
