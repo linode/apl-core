@@ -55,7 +55,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
     },
     {
       jsonPath: 'teamConfig.{teamName}.settings',
-      pathGlob: `${envDir}/**/teams/*/settings.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/**/teams/*/*settings.{yaml,yaml.dec}`,
       loadAs: 'mapItem',
     },
     {
