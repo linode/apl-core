@@ -1,5 +1,5 @@
 import { globSync } from 'glob'
-import { cloneDeep, merge } from 'lodash'
+import { cloneDeep, get, merge, set } from 'lodash'
 import path from 'path'
 import { env } from './envalid'
 import { getDirNames, isPathMatch, loadYaml } from './utils'
@@ -11,6 +11,60 @@ export const getTeamNames = async (): Promise<Array<string>> => {
   return teamNames
 }
 
+interface FileMap {
+  jsonPath: string
+  pathGlob: string
+  loadAs: 'arrayItem' | 'mapItem' | 'derivedMapItem'
+}
+const getFileMaps = (envDir: string): Array<FileMap> => {
+  return [
+    { jsonPath: 'apps', pathGlob: `${envDir}/**/apps/*.{yaml,yaml.dec}`, loadAs: 'derivedMapItem' },
+    { jsonPath: 'databases', pathGlob: `${envDir}/**/databases/*.{yaml,yaml.dec}`, loadAs: 'derivedMapItem' },
+    { jsonPath: '', pathGlob: `${envDir}/**/settings/*.{yaml,yaml.dec}`, loadAs: 'derivedMapItem' },
+    { jsonPath: 'users', pathGlob: `${envDir}/**/users/*.{yaml,yaml.dec}`, loadAs: 'derivedMapItem' },
+    { jsonPath: 'teamConfig.{teamName}.builds', pathGlob: `${envDir}/**/teams/*/builds/*.yaml`, loadAs: 'arrayItem' },
+    {
+      jsonPath: 'teamConfig.{teamName}.workloads',
+      pathGlob: `${envDir}/**/teams/*/workloads/*.yaml`,
+      loadAs: 'arrayItem',
+    },
+    {
+      jsonPath: 'teamConfig.{teamName}.services',
+      pathGlob: `${envDir}/**/teams/*/services/*.yaml`,
+      loadAs: 'arrayItem',
+    },
+    {
+      jsonPath: 'teamConfig.{teamName}.sealedsecrets',
+      pathGlob: `${envDir}/**/teams/*/sealedsecrets/*.yaml`,
+      loadAs: 'arrayItem',
+    },
+    {
+      jsonPath: 'teamConfig.{teamName}.backups',
+      pathGlob: `${envDir}/**/teams/*/backups/*.yaml`,
+      loadAs: 'arrayItem',
+    },
+    {
+      jsonPath: 'teamConfig.{teamName}.projects',
+      pathGlob: `${envDir}/**/teams/*/projects/*.yaml`,
+      loadAs: 'arrayItem',
+    },
+    {
+      jsonPath: 'teamConfig.{teamName}.netpols',
+      pathGlob: `${envDir}/**/teams/*/netpols/*.yaml`,
+      loadAs: 'arrayItem',
+    },
+    {
+      jsonPath: 'teamConfig.{teamName}.settings',
+      pathGlob: `${envDir}/**/teams/*/settings.{yaml,yaml.dec}`,
+      loadAs: 'mapItem',
+    },
+    {
+      jsonPath: 'teamConfig.{teamName}.policies',
+      pathGlob: `${envDir}/**/teams/*/policies.yaml`,
+      loadAs: 'mapItem',
+    },
+  ]
+}
 // loadAsArrayPathFilters - use '**' to match multiple directories
 export const loadAsArrayPathFilters = [
   '**/teams/*/builds/*',
@@ -159,4 +213,74 @@ export const loadTeamFileToSpec = async (
     // Decrypted secrets may need to be merged with plain text specs
     spec[strippedFileName] = merge(cloneDeep(spec[strippedFileName]), content?.spec)
   }
+}
+
+export const load = async (envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> => {
+  const fileMaps = getFileMaps(envDir)
+  const spec = {}
+
+  await Promise.all(
+    fileMaps.map(async (fileMap) => {
+      await deps.loadToSpec(spec, fileMap)
+    }),
+  )
+  return spec
+}
+
+export const extractTeamDirectory = (filePath: string): string | null => {
+  const match = filePath.match(/\/teams\/([^/]+)/)
+  return match ? match[1] : null
+}
+
+export const getJsonPath = (fileMap: FileMap, filePath: string): string => {
+  const teamName = extractTeamDirectory(filePath)
+  let { jsonPath } = fileMap
+  if (teamName !== null) jsonPath = fileMap.jsonPath.replace('{teamName}', teamName)
+  if (fileMap.loadAs === 'derivedMapItem') {
+    const fileName = path.basename(filePath, path.extname(filePath))
+    const strippedFileName = fileName.replace(/^secrets\.|\.yaml|\.dec$/g, '')
+    jsonPath = `${jsonPath}.${strippedFileName}`
+  }
+
+  return jsonPath
+}
+
+export const loadFileToSpec = async (
+  filePath: string,
+  fileMap: FileMap,
+  spec: Record<string, any>,
+  deps = { loadYaml },
+): Promise<void> => {
+  const jsonPath = getJsonPath(fileMap, filePath)
+  const data = await deps.loadYaml(filePath)
+  if (fileMap.loadAs === 'arrayItem') {
+    const ref: Record<string, any>[] = get(spec, jsonPath)
+    ref.push(data?.spec)
+  } else {
+    const ref: Record<string, any> = get(spec, jsonPath)
+    // Decrypted secrets may need to be merged with plain text specs
+    const newRef = merge(cloneDeep(ref), data?.spec)
+    set(spec, jsonPath, newRef)
+  }
+}
+
+export const loadToSpec = async (
+  spec: Record<string, any>,
+  fileMap: FileMap,
+  deps = { loadFileToSpec },
+): Promise<void> => {
+  const files: string[] = globSync(fileMap.pathGlob)
+  const promises: Promise<void>[] = []
+
+  files.forEach((filePath) => {
+    const jsonPath = getJsonPath(fileMap, filePath)
+    if (fileMap.loadAs === 'arrayItem') {
+      set(spec, jsonPath, [])
+    } else {
+      set(spec, jsonPath, {})
+    }
+    promises.push(deps.loadFileToSpec(filePath, fileMap, spec))
+  })
+
+  await Promise.all(promises)
 }
