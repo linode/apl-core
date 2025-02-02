@@ -28,9 +28,9 @@ describe('extractTeamDirectory', () => {
 describe('getJsonPath', () => {
   it('should get json path for app', () => {
     const fileMap: FileMap = {
-      jsonPath: 'apps.*',
+      jsonPathExpression: 'apps.*',
       pathGlob: '/tmp/values/env/apps/*.{yaml,yaml.dec}',
-      loadAs: 'mapItem',
+      processAs: 'mapItem',
       resourceGroup: 'platformApps',
     }
 
@@ -38,9 +38,9 @@ describe('getJsonPath', () => {
   })
   it('should filter out encrypted files', () => {
     const fileMap: FileMap = {
-      jsonPath: 'teamConfig.*.netpols[*]',
+      jsonPathExpression: 'teamConfig.*.netpols[*]',
       pathGlob: `/tmp/values/env/teams/*/netpols/*.yaml`,
-      loadAs: 'arrayItem',
+      processAs: 'arrayItem',
       resourceGroup: 'team',
     }
 

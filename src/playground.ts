@@ -1,7 +1,7 @@
 #!/usr/bin/env node --nolazy -r ts-node/register
 
 import { glob } from 'glob'
-import { load } from './common/repo'
+import { load } from 'js-yaml'
 
 async function play() {
   // const version = await getCurrentVersion()
@@ -15,6 +15,9 @@ async function play() {
   // )
   // await writeValuesToFile(`/tmp/status.yaml`, { status: { otomi: state, helm: releases } }, true)
   // '/tmp/otomi-bootstrap-dev/**/teams/*/builds/*.yaml'
+
+  const match = 'apps.app1.aaa'.match(/^apps\.([^.]+)\./)
+  console.log(match)
 
   const files = await glob('/tmp/otomi-bootstrap-dev/**/apps/*.{yaml,yaml.dec}', { ignore: 'node_modules/**' })
   console.log(files)
