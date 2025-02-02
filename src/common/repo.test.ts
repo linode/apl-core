@@ -1,5 +1,6 @@
 import { env } from 'process'
 import {
+  extractTeamDirectory,
   FileMap,
   getJsonPath,
   getTeamConfig,
@@ -12,6 +13,17 @@ import {
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
+
+describe('extractTeamDirectory', () => {
+  it('should extract team directory', () => {
+    expect(extractTeamDirectory('/tmp/values/env/teams/team_a/netpols/net1.yaml')).toEqual('team_a')
+  })
+  // it('should throw exception', () => {
+  //   expect(extractTeamDirectory('/tmp/values/env/apps/app1.yaml')).toThrow(
+  //     'Cannot extract team name from /tmp/values/env/apps/app1.yaml string',
+  //   )
+  // })
+})
 
 describe('getJsonPath', () => {
   it('should get json path for app', () => {

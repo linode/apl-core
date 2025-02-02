@@ -317,7 +317,8 @@ export const load = async (envDir: string, deps = { loadToSpec }): Promise<Recor
 
 export const extractTeamDirectory = (filePath: string): string => {
   const match = filePath.match(/\/teams\/([^/]+)/)
-  return match![1]
+  if (match === null) throw new Error(`Cannot extract team name from ${filePath} string`)
+  return match[1]
 }
 
 export const getJsonPath = (fileMap: FileMap, filePath: string): string => {
