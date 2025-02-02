@@ -1,5 +1,7 @@
 import { env } from 'process'
 import {
+  FileMap,
+  getJsonPath,
   getTeamConfig,
   hasCorrespondingDecryptedFile,
   loadAsArrayPathFilters,
@@ -10,6 +12,29 @@ import {
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
+
+describe('getJsonPath', () => {
+  it('should get json path for app', () => {
+    const fileMap: FileMap = {
+      jsonPath: 'apps.*',
+      pathGlob: '/tmp/values/env/apps/*.{yaml,yaml.dec}',
+      loadAs: 'mapItem',
+      resourceGroup: 'platformApps',
+    }
+
+    expect(getJsonPath(fileMap, '/tmp/values/env/apps/app1.yaml')).toEqual('apps.app1')
+  })
+  it('should filter out encrypted files', () => {
+    const fileMap: FileMap = {
+      jsonPath: 'teamConfig.*.netpols[*]',
+      pathGlob: `/tmp/values/env/teams/*/netpols/*.yaml`,
+      loadAs: 'arrayItem',
+      resourceGroup: 'team',
+    }
+
+    expect(getJsonPath(fileMap, '/tmp/values/env/teams/team_a/netpols/net1.yaml')).toEqual('teamConfig.team_a.netpols')
+  })
+})
 
 describe('hasCorrespondingDecryptedFile', () => {
   it('should filter out encrypted files', () => {

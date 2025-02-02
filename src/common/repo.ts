@@ -11,75 +11,145 @@ export const getTeamNames = async (): Promise<Array<string>> => {
   return teamNames
 }
 
-interface FileMap {
+export interface FileMap {
   jsonPath: string
   pathGlob: string
   loadAs: 'arrayItem' | 'mapItem'
+  resourceGroup: 'team' | 'platformSettings' | 'platformApps' | 'platformDatabases' | 'platformBackups' | 'users'
 }
 const getFileMaps = (envDir: string): Array<FileMap> => {
   return [
-    { jsonPath: 'apps.{resourceName}', pathGlob: `${envDir}/env/apps/*.{yaml,yaml.dec}`, loadAs: 'mapItem' },
-
-    { jsonPath: 'alerts', pathGlob: `${envDir}/env/settings/dns.{yaml,yaml.dec}`, loadAs: 'mapItem' },
-    { jsonPath: 'cluster', pathGlob: `${envDir}/env/settings/dns.{yaml,yaml.dec}`, loadAs: 'mapItem' },
     {
-      jsonPath: 'databases.{resourceName}',
+      jsonPath: 'apps.*',
+      pathGlob: `${envDir}/env/apps/*.{yaml,yaml.dec}`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformApps',
+    },
+    {
+      jsonPath: 'alerts',
+      pathGlob: `${envDir}/env/settings/dns.{yaml,yaml.dec}`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+    },
+    {
+      jsonPath: 'cluster',
+      pathGlob: `${envDir}/env/settings/dns.{yaml,yaml.dec}`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+    },
+    {
+      jsonPath: 'databases.*',
       pathGlob: `${envDir}/env/databases/*.{yaml,yaml.dec}`,
       loadAs: 'mapItem',
+      resourceGroup: 'platformDatabases',
     },
-    { jsonPath: 'dns', pathGlob: `${envDir}/env/settings/*dns.{yaml,yaml.dec}`, loadAs: 'mapItem' },
-    { jsonPath: 'ingress', pathGlob: `${envDir}/env/settings/ingress.yaml}`, loadAs: 'mapItem' },
-    { jsonPath: 'kms', pathGlob: `${envDir}/env/settings/*kms.{yaml,yaml.dec}`, loadAs: 'mapItem' },
-    { jsonPath: 'obj', pathGlob: `${envDir}/env/settings/*obj.{yaml,yaml.dec}`, loadAs: 'mapItem' },
-    { jsonPath: 'oidc', pathGlob: `${envDir}/env/settings/*oidc.{yaml,yaml.dec}`, loadAs: 'mapItem' },
-    { jsonPath: 'otomi', pathGlob: `${envDir}/env/settings/*otomi.{yaml,yaml.dec}`, loadAs: 'mapItem' },
+    {
+      jsonPath: 'dns',
+      pathGlob: `${envDir}/env/settings/*dns.{yaml,yaml.dec}`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+    },
+    {
+      jsonPath: 'ingress',
+      pathGlob: `${envDir}/env/settings/ingress.yaml}`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+    },
+    {
+      jsonPath: 'kms',
+      pathGlob: `${envDir}/env/settings/*kms.{yaml,yaml.dec}`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+    },
+    {
+      jsonPath: 'obj',
+      pathGlob: `${envDir}/env/settings/*obj.{yaml,yaml.dec}`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+    },
+    {
+      jsonPath: 'oidc',
+      pathGlob: `${envDir}/env/settings/*oidc.{yaml,yaml.dec}`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+    },
+    {
+      jsonPath: 'otomi',
+      pathGlob: `${envDir}/env/settings/*otomi.{yaml,yaml.dec}`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+    },
     {
       jsonPath: 'platformBackups',
       pathGlob: `${envDir}/env/settings/platformBackups.{yaml,yaml.dec}`,
       loadAs: 'mapItem',
+      resourceGroup: 'platformBackups',
     },
-    { jsonPath: 'users.{resourceName}', pathGlob: `${envDir}/env/users/*.{yaml,yaml.dec}`, loadAs: 'mapItem' },
-    { jsonPath: '', pathGlob: `${envDir}/env/settings/version.yaml`, loadAs: 'mapItem' },
-    { jsonPath: 'teamConfig.{teamName}.builds', pathGlob: `${envDir}/env/teams/*/builds/*.yaml`, loadAs: 'arrayItem' },
     {
-      jsonPath: 'teamConfig.{teamName}.workloads',
+      jsonPath: 'users.*',
+      pathGlob: `${envDir}/env/users/*.{yaml,yaml.dec}`,
+      loadAs: 'arrayItem',
+      resourceGroup: 'users',
+    },
+    {
+      jsonPath: '',
+      pathGlob: `${envDir}/env/settings/version.yaml`,
+      loadAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+    },
+    {
+      jsonPath: 'teamConfig.*.builds[*]',
+      pathGlob: `${envDir}/env/teams/*/builds/*.yaml`,
+      loadAs: 'arrayItem',
+      resourceGroup: 'team',
+    },
+    {
+      jsonPath: 'teamConfig.*.workloads[*]',
       pathGlob: `${envDir}/env/teams/*/workloads/*.yaml`,
       loadAs: 'arrayItem',
+      resourceGroup: 'team',
     },
     {
-      jsonPath: 'teamConfig.{teamName}.services',
+      jsonPath: 'teamConfig.*.services[*]',
       pathGlob: `${envDir}/env/teams/*/services/*.yaml`,
       loadAs: 'arrayItem',
+      resourceGroup: 'team',
     },
     {
-      jsonPath: 'teamConfig.{teamName}.sealedsecrets',
+      jsonPath: 'teamConfig.*.sealedsecrets[*]',
       pathGlob: `${envDir}/env/teams/*/sealedsecrets/*.yaml`,
       loadAs: 'arrayItem',
+      resourceGroup: 'team',
     },
     {
-      jsonPath: 'teamConfig.{teamName}.backups',
+      jsonPath: 'teamConfig.*.backups[*]',
       pathGlob: `${envDir}/env/teams/*/backups/*.yaml`,
       loadAs: 'arrayItem',
+      resourceGroup: 'team',
     },
     {
-      jsonPath: 'teamConfig.{teamName}.projects',
+      jsonPath: 'teamConfig.*.projects[*]',
       pathGlob: `${envDir}/env/teams/*/projects/*.yaml`,
       loadAs: 'arrayItem',
+      resourceGroup: 'team',
     },
     {
-      jsonPath: 'teamConfig.{teamName}.netpols',
+      jsonPath: 'teamConfig.*.netpols[*]',
       pathGlob: `${envDir}/env/teams/*/netpols/*.yaml`,
       loadAs: 'arrayItem',
+      resourceGroup: 'team',
     },
     {
-      jsonPath: 'teamConfig.{teamName}.settings',
+      jsonPath: 'teamConfig.*.settings',
       pathGlob: `${envDir}/env/teams/*/*settings.{yaml,yaml.dec}`,
       loadAs: 'mapItem',
+      resourceGroup: 'team',
     },
     {
-      jsonPath: 'teamConfig.{teamName}.policies',
+      jsonPath: 'teamConfig.*.policies',
       pathGlob: `${envDir}/env/teams/*/policies.yaml`,
       loadAs: 'mapItem',
+      resourceGroup: 'team',
     },
   ]
 }
@@ -252,16 +322,17 @@ export const extractTeamDirectory = (filePath: string): string => {
 
 export const getJsonPath = (fileMap: FileMap, filePath: string): string => {
   let { jsonPath } = fileMap
-  if (jsonPath.includes('{teamName}')) {
+  if (jsonPath.includes('teamConfig.*')) {
     const teamName = extractTeamDirectory(filePath)
-    jsonPath = jsonPath.replace('{teamName}', teamName)
+    jsonPath = jsonPath.replace('teamConfig.*', `teamConfig.${teamName}`)
   }
 
-  if (jsonPath.includes('{resourceName}')) {
+  if (jsonPath.includes('.*')) {
     const fileName = path.basename(filePath, path.extname(filePath))
     const strippedFileName = fileName.replace(/^secrets\.|\.yaml|\.dec$/g, '')
-    jsonPath = jsonPath.replace('{resourceName}', strippedFileName)
+    jsonPath = jsonPath.replace('.*', `.${strippedFileName}`)
   }
+  if (jsonPath.includes('[*]')) jsonPath = jsonPath.replace('[*]', '')
   return jsonPath
 }
 
