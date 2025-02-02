@@ -336,25 +336,6 @@ export const getJsonPath = (fileMap: FileMap, filePath: string): string => {
   return jsonPath
 }
 
-export const loadFileToSpec = async (
-  filePath: string,
-  fileMap: FileMap,
-  spec: Record<string, any>,
-  deps = { loadYaml },
-): Promise<void> => {
-  const jsonPath = getJsonPath(fileMap, filePath)
-  const data = await deps.loadYaml(filePath)
-  if (fileMap.loadAs === 'arrayItem') {
-    const ref: Record<string, any>[] = get(spec, jsonPath)
-    ref.push(data?.spec)
-  } else {
-    const ref: Record<string, any> = get(spec, jsonPath)
-    // Decrypted secrets may need to be merged with plain text specs
-    const newRef = merge(cloneDeep(ref), data?.spec)
-    set(spec, jsonPath, newRef)
-  }
-}
-
 export const loadToSpec = async (
   spec: Record<string, any>,
   fileMap: FileMap,
@@ -374,4 +355,23 @@ export const loadToSpec = async (
   })
 
   await Promise.all(promises)
+}
+
+export const loadFileToSpec = async (
+  filePath: string,
+  fileMap: FileMap,
+  spec: Record<string, any>,
+  deps = { loadYaml },
+): Promise<void> => {
+  const jsonPath = getJsonPath(fileMap, filePath)
+  const data = await deps.loadYaml(filePath)
+  if (fileMap.loadAs === 'arrayItem') {
+    const ref: Record<string, any>[] = get(spec, jsonPath)
+    ref.push(data?.spec)
+  } else {
+    const ref: Record<string, any> = get(spec, jsonPath)
+    // Decrypted secrets may need to be merged with plain text specs
+    const newRef = merge(cloneDeep(ref), data?.spec)
+    set(spec, jsonPath, newRef)
+  }
 }
