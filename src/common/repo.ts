@@ -136,14 +136,14 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceGroup: 'platformBackups',
       resourceDir: 'settings',
     },
-    {
-      envDir,
-      jsonPathExpression: '$.users[*]',
-      pathGlob: `${envDir}/env/users/*.{yaml,yaml.dec}`,
-      processAs: 'arrayItem',
-      resourceGroup: 'users',
-      resourceDir: 'users',
-    },
+    // {
+    //   envDir,
+    //   jsonPathExpression: '$.users[*]',
+    //   pathGlob: `${envDir}/env/users/*.{yaml,yaml.dec}`,
+    //   processAs: 'arrayItem',
+    //   resourceGroup: 'users',
+    //   resourceDir: 'users',
+    // },
     // {
     //   jsonPathExpression: '$',
     //   pathGlob: `${envDir}/env/settings/version.yaml`,
@@ -436,7 +436,8 @@ export const extractTeamDirectory = (filePath: string): string => {
 
 export const getJsonPath = (fileMap: FileMap, filePath: string): string => {
   let { jsonPathExpression: jsonPath } = fileMap
-  if (jsonPath.includes('teamConfig.*')) {
+
+  if (fileMap.resourceGroup === 'team') {
     const teamName = extractTeamDirectory(filePath)
     jsonPath = jsonPath.replace('teamConfig.*', `teamConfig.${teamName}`)
   }
@@ -447,6 +448,7 @@ export const getJsonPath = (fileMap: FileMap, filePath: string): string => {
     jsonPath = jsonPath.replace('.*', `.${strippedFileName}`)
   }
   if (jsonPath.includes('[*]')) jsonPath = jsonPath.replace('[*]', '')
+  jsonPath = jsonPath.replace('$.', '')
   return jsonPath
 }
 
