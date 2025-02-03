@@ -13,7 +13,8 @@ jobs:
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v4
-
+        with:
+          ref: main
       - name: Install Node
         run: |
           export NVM_DIR="$HOME/.nvm"
@@ -40,10 +41,11 @@ jobs:
           name: coverage-report-main
           path: coverage-report-main.json
           overwrite: true
-          retention-days: 14
 
   coverage:
     runs-on: ubuntu-latest
+    needs:
+      - store-coverage
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v4
