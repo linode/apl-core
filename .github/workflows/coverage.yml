@@ -9,7 +9,6 @@ on:
 
 jobs:
   store-coverage:
-    if: github.ref == 'refs/heads/APL-511'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main branch
