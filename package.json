@@ -154,6 +154,7 @@
     "test": "run-s test:ts lint validate-values validate-templates bootstrap-dev",
     "test:opa": "NODE_ENV=test binzx/otomi x opa test policies -v",
     "test:ts": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test jest",
+    "test:ts-ci": "ENV_DIR=$PWD/tests/fixtures jest",
     "test:ts-cov": "jest --coverage",
     "validate-templates": "ENV_DIR=$PWD/tests/fixtures NODE_ENV=test binzx/otomi validate-templates",
     "validate-templates:all": "set -e; i=29; while [ $i -le 32 ]; do NODE_ENV=test binzx/otomi validate-templates -k 1.$i; i=$(($i+1)); done",

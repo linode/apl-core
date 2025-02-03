@@ -34,7 +34,7 @@ jobs:
 
       - name: Run tests
         run: |
-          ENV_DIR=$PWD/tests/fixtures jest --ci --json --coverage --testLocationInResults --outputFile=coverage-report-main.json
+          npm run test:ts-ci -- --ci --json --coverage --testLocationInResults --outputFile=coverage-report-main.json
 
       - name: Upload main branch coverage report
         uses: actions/upload-artifact@v4
