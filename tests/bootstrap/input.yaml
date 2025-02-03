@@ -20,7 +20,6 @@ users:
     teams: ['demo']
 teamConfig:
   demo:
-    password: somesecretvalue
     id: demo
     selfService:
       service:

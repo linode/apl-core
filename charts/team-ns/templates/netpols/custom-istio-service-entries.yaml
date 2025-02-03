@@ -49,8 +49,8 @@ metadata:
 spec:
   hosts:
   - {{ $host }}
-  ports:
 {{- with .ruleType.egress.ports }}
+  ports:
 {{- range . }}
   - number: {{ .number }}
     name: {{ printf "%s-%s" (lower .protocol) (toString .number) }}
