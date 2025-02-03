@@ -62,11 +62,11 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
       d.debug(`${crypt.cmd} ${file}`)
       try {
         d.info(`${crypt.cmd} ${file}`)
-        const result = await $`${crypt.cmd.split(' ')} ${file}`.quiet()
+        const result = await $`${[...crypt.cmd.split(' '), file]}`.quiet()
 
         if (crypt.cmd === CryptType.DECRYPT) {
           const outputFile = `${file}.dec`
-          await $`echo ${result.stdout} > ${outputFile}`
+          await writeFile(outputFile, result.stdout)
         }
 
         if (crypt.post) {
@@ -77,7 +77,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
       } catch (error) {
         if (error.message.includes('Already encrypted') && (await pathExists(`${file}.dec`))) {
           const res = await $`helm secrets encrypt ${file}.dec`
-          await $`echo ${res.stdout} > ${file}`
+          await writeFile(file, res.stdout)
           if (crypt.post) await crypt.post(file)
           return res
         }
