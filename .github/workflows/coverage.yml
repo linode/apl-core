@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -33,7 +33,7 @@ jobs:
           sudo mv gucci /usr/local/bin/
 
       - name: Restore base coverage from main branch
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: coverage-report-main
           path: ./coverage/main/
@@ -41,12 +41,6 @@ jobs:
       - name: Run tests
         run: |
           npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=coverage/pr/report.json
-
-      - name: Upload PR coverage report
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-report-pr
-          path: ./coverage/pr/report.json
 
       - name: Compare Coverage
         uses: ArtiomTr/jest-coverage-report-action@v2
@@ -59,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install Node
         run: |
@@ -82,7 +76,7 @@ jobs:
           npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=coverage/main/report.json
 
       - name: Upload main branch coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report-main
           path: ./coverage/main/report.json
