@@ -15,6 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
+
       - name: Install Node
         run: |
           export NVM_DIR="$HOME/.nvm"
@@ -33,7 +34,7 @@ jobs:
 
       - name: Run tests
         run: |
-          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=coverage-report-main.json
+          ENV_DIR=$PWD/tests/fixtures jest --ci --json --coverage --testLocationInResults --outputFile=coverage-report-main.json
 
       - name: Upload main branch coverage report
         uses: actions/upload-artifact@v4
