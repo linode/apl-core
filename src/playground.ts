@@ -1,7 +1,6 @@
 #!/usr/bin/env node --nolazy -r ts-node/register
 
 import { glob } from 'glob'
-import { load } from 'js-yaml'
 
 async function play() {
   // const version = await getCurrentVersion()
@@ -18,11 +17,15 @@ async function play() {
 
   const match = 'apps.app1.aaa'.match(/^apps\.([^.]+)\./)
   console.log(match)
-
-  const files = await glob('/tmp/otomi-bootstrap-dev/**/apps/*.{yaml,yaml.dec}', { ignore: 'node_modules/**' })
+  const globOptions = {
+    nodir: true, // Exclude directories
+    dot: false,
+    ignore: ['**/.*/**'],
+  }
+  const files = await glob('/tmp/otomi-bootstrap-dev/env/teams/*/*settings{.yaml,.yaml.dec}', globOptions)
   console.log(files)
-  const spec = await load('/tmp/otomi-bootstrap-dev')
-  console.log(JSON.stringify(spec))
+  // const spec = await load('/tmp/otomi-bootstrap-dev')
+  // console.log(JSON.stringify(spec))
 }
 
 play()

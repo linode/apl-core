@@ -7,6 +7,7 @@ environments:
     values:
     - teamConfig:
     {{- range $index,$item := readDirEntries $dirPath }}
+    {{- if $item.IsDir }}
         {{ $item.Name }}:
           apps:
             alertmanager:
@@ -197,4 +198,5 @@ environments:
                 service:
                     - ingress
             password: {{ randAlphaNum 32 }}
+    {{- end }}
     {{- end }}

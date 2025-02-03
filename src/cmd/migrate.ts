@@ -443,7 +443,7 @@ export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
-  const prevVersion: number = (await loadYaml(`${env.ENV_DIR}/env/settings.yaml`))?.version || 0
+  const prevVersion: number = (await loadYaml(`${env.ENV_DIR}/env/settings/settings.yaml`))?.version || 0
   const filteredChanges = filterChanges(prevVersion, changes)
 
   if (filteredChanges.length) {

@@ -26,24 +26,27 @@ export const getFilePath = (
   data: Record<string, any>,
   fileNamePrefix: string,
 ) => {
+  let filePath = ''
   if (fileMap.resourceGroup === 'team') {
     const teamName = jsonPath[2].toString()
     if (fileMap.processAs === 'arrayItem') {
       const resourceName = data.name || data.id
-      return `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
+      filePath = `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
     } else {
       const resourceName = jsonPath[jsonPath.length - 1].toString()
-      return `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
+      filePath = `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
     }
   } else {
     if (fileMap.processAs === 'arrayItem') {
       const resourceName = data.name || data.id
-      return `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
+      filePath = `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
     } else {
       const resourceName = jsonPath[jsonPath.length - 1].toString()
-      return `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
+      filePath = `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
     }
   }
+  // normalize paths like /ab/c/./test/yaml
+  return path.normalize(filePath)
 }
 
 const getFileMaps = (envDir: string): Array<FileMap> => {
@@ -67,7 +70,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
     {
       envDir,
       jsonPathExpression: '$.cluster',
-      pathGlob: `${envDir}/env/settings/dns.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/cluster.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -248,7 +251,6 @@ export const saveResourceGroupToFiles = async (
   valuesPublic: Record<string, any>,
   valuesSecrets: Record<string, any>,
 ): Promise<void> => {
-  console.log(fileMap.jsonPathExpression)
   const jsonPathsValuesPublic = jsonpath.nodes(valuesPublic, fileMap.jsonPathExpression)
   const jsonPathsvaluesSecrets = jsonpath.nodes(valuesSecrets, fileMap.jsonPathExpression)
 
