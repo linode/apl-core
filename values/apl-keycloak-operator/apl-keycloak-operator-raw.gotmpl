@@ -6,7 +6,7 @@
 {{- range $name, $team := omit .Values.teamConfig "admin" }}
 {{- $teamIds = append $teamIds $name }}
 {{- $teamNames = print "team-" $name | append $teamNames }}
-{{- $teamSettings = $team.settings }}
+{{- $teamSettings := $team.settings }}
 {{- if ($teamSettings | get "oidc.groupMapping" nil) }}
 {{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $teamSettings.oidc.groupMapping }}
 {{- end }}

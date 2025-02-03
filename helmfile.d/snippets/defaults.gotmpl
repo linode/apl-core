@@ -176,6 +176,7 @@ environments:
                       - secret
                   severity: medium
           settings:
+            id: {{ $item.Name }}
             managedMonitoring:
               grafana: true
               alertmanager: false

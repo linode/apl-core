@@ -4,7 +4,7 @@
 {{- $k := $c.keycloak }}
 {{- $teamConfig := dict }}
 {{- range $teamId, $team := $v.teamConfig }}
-  {{- $teamSettings = $team.settings }}
+  {{- $teamSettings := $team.settings }}
   {{- $_ := set $teamConfig $teamId (dict "selfService" (dict "apps" ($teamSettings | get "selfService.apps" list))) }}
 {{- end }}
 {{- $teamConfig := $teamConfig | toJson }}
