@@ -35,7 +35,7 @@ jobs:
       - name: Run tests
         run: |
           export ENV_DIR=$PWD/tests/fixtures
-          npm run test:ts-cov -- --ci --json --coverage --testLocationInResults --outputFile=coverage-report-main.json
+          npm run test:ts-cov -- --ci --json --runInBand --testLocationInResults --outputFile=coverage-report-main.json
 
       - name: Upload main branch coverage report
         uses: actions/upload-artifact@v4
