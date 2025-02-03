@@ -336,7 +336,7 @@ changes:
       - databases.harbor.resources.limits.cpu: '200m'
       - databases.harbor.resources.requests.memory: '192Mi'
       - databases.harbor.resources.requests.cpu: '200m'
-  - version: 32
+  - version: 33
     deletions:
       # FIXME: perform migration of to sealedsecrets dir before performin the removal of the property
       - 'teamConfig.{team}.sealedsecrets'
