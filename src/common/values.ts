@@ -104,7 +104,8 @@ export const writeValuesToFile = async (
   overwrite = false,
 ): Promise<void> => {
   const d = terminal('common:values:writeValuesToFile')
-  const filePath = path.dirname(targetPath)
+  const filePath = path.dirname(path.normalize(targetPath))
+
   await mkdir(filePath, { recursive: true })
 
   const isSecretsFile = targetPath.includes('/secrets.') && hasSops
