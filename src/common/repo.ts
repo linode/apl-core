@@ -374,7 +374,7 @@ export const loadTeamFileToSpec = async (
   }
 }
 
-export const save = async (
+export const saveValues = async (
   envDir: string,
   valuesPublic: Record<string, any>,
   valuesSecrets: Record<string, any>,
@@ -392,7 +392,6 @@ export const saveResourceGroupToFiles = async (
   fileMap: FileMap,
   valuesPublic: Record<string, any>,
   valuesSecrets: Record<string, any>,
-  deps = {},
 ): Promise<void> => {
   console.log(fileMap.jsonPathExpression)
   const jsonPathsValuesPublic = jsonpath.nodes(valuesPublic, fileMap.jsonPathExpression)
@@ -417,7 +416,7 @@ export const saveResourceGroupToFiles = async (
   )
 }
 
-export const load = async (envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> => {
+export const loadValues = async (envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> => {
   const fileMaps = getFileMaps(envDir)
   const spec = {}
 

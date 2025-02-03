@@ -12,7 +12,7 @@ import { env } from './envalid'
 import { hfValues } from './hf'
 import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
 
-import { save } from './repo'
+import { saveValues } from './repo'
 import { HelmArguments } from './yargs'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 20): string => {
@@ -180,7 +180,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   d.debug('secrets: ', JSON.stringify(secrets, null, 2))
   // from the plain values
   const plainValues = omit(values, cleanSecretPaths) as any
-  await save(env.ENV_DIR, plainValues, secrets)
+  await saveValues(env.ENV_DIR, plainValues, secrets)
 
   const fieldsToOmit = [
     'cluster',

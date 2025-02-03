@@ -6,7 +6,7 @@ import { parse } from 'yaml'
 import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { load } from './repo'
+import { loadValues } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, readdirRecurse, rootDir } from './utils'
 import { objectToYaml } from './values'
 import { getParsedArgs, HelmArguments } from './yargs'
@@ -89,7 +89,7 @@ export const hfValues = async (
     return undefined
   }
 
-  const allValues = await load(env.ENV_DIR)
+  const allValues = await loadValues(env.ENV_DIR)
   const valuesPath = path.join(env.ENV_DIR, 'values-repo.yaml')
   await writeFile(valuesPath, objectToYaml(allValues))
 
