@@ -68,7 +68,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-report-main
-          path: coverage-report-main.json
 
       - name: Run tests
         run: |
