@@ -38,7 +38,8 @@ export const getFilePath = (
     }
   } else {
     if (fileMap.processAs === 'arrayItem') {
-      const resourceName = data.name || data.id
+      // data.email is used because user object does not have id property
+      const resourceName = data.name || data.id || data.email
       filePath = `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
     } else {
       const resourceName = jsonPath[jsonPath.length - 1].toString()
@@ -139,14 +140,14 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceGroup: 'platformBackups',
       resourceDir: 'settings',
     },
-    // {
-    //   envDir,
-    //   jsonPathExpression: '$.users[*]',
-    //   pathGlob: `${envDir}/env/users/*.{yaml,yaml.dec}`,
-    //   processAs: 'arrayItem',
-    //   resourceGroup: 'users',
-    //   resourceDir: 'users',
-    // },
+    {
+      envDir,
+      jsonPathExpression: '$.users[*]',
+      pathGlob: `${envDir}/env/users/*.{yaml,yaml.dec}`,
+      processAs: 'arrayItem',
+      resourceGroup: 'users',
+      resourceDir: 'users',
+    },
     // {
     //   jsonPathExpression: '$',
     //   pathGlob: `${envDir}/env/settings/version.yaml`,
