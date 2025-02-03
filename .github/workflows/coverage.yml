@@ -6,13 +6,16 @@ on:
   pull_request:
     branches:
       - main
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - name: Install Node
         run: |
           export NVM_DIR="$HOME/.nvm"
@@ -21,16 +24,65 @@ jobs:
           nvm use
           node -v
           npm install
+
       - name: Install gucci
         run: |
           GUCCI_VERSION="1.6.13"
           curl -L -o gucci https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64
           chmod +x gucci
           sudo mv gucci /usr/local/bin/
+
+      - name: Restore base coverage from main branch
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-report-main
+          path: ./coverage/main/
+
       - name: Run tests
         run: |
-          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=report.json
-      - uses: ArtiomTr/jest-coverage-report-action@v2
+          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=coverage/pr/report.json
+
+      - name: Upload PR coverage report
+        uses: actions/upload-artifact@v3
         with:
-          coverage-file: report.json
-          skip-step: install
+          name: coverage-report-pr
+          path: ./coverage/pr/report.json
+
+      - name: Compare Coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          coverage-file: ./coverage/pr/report.json
+          base-coverage-file: ./coverage/main/report.json
+
+  store-coverage:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v3
+
+      - name: Install Node
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install
+          nvm use
+          node -v
+          npm install
+
+      - name: Install gucci
+        run: |
+          GUCCI_VERSION="1.6.13"
+          curl -L -o gucci https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64
+          chmod +x gucci
+          sudo mv gucci /usr/local/bin/
+
+      - name: Run tests
+        run: |
+          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=coverage/main/report.json
+
+      - name: Upload main branch coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report-main
+          path: ./coverage/main/report.json
