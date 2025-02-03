@@ -62,7 +62,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
     {
       envDir,
       jsonPathExpression: '$.alerts',
-      pathGlob: `${envDir}/env/settings/alerts.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/{alerts.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -259,7 +259,7 @@ export const saveResourceGroupToFiles = async (
       try {
         const filePath = getFilePath(fileMap, node.path, node.value, '')
         const data = { spec: node.value }
-        await writeValuesToFile(filePath, data, true)
+        await writeValuesToFile(filePath, data)
       } catch (e) {
         console.log(node.path)
         console.log(fileMap)
@@ -272,7 +272,7 @@ export const saveResourceGroupToFiles = async (
     jsonPathsvaluesSecrets.map(async (node) => {
       const filePath = getFilePath(fileMap, node.path, node.value, 'secrets.')
       const data = { spec: node.value }
-      await writeValuesToFile(filePath, data, true)
+      await writeValuesToFile(filePath, data)
     }),
   )
 }

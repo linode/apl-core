@@ -10,7 +10,7 @@ kms:
     provider: age
 apps:
   metrics-server:
-    enabled: false
+    enabled: true
 users:
   - email: team-member@local.host
     firstName: team-member

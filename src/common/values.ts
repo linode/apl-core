@@ -39,7 +39,7 @@ export const getK8sVersion = (argv?: HelmArguments): string => {
  */
 export const getImageTag = async (envDir = env.ENV_DIR): Promise<string> => {
   if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
-  if (await pathExists(`${envDir}/env/cluster.yaml`)) {
+  if (await pathExists(`${envDir}/env/settings/cluster.yaml`)) {
     const values = await hfValues(undefined, envDir)
     return values!.otomi!.version
   }
@@ -208,7 +208,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   // if (secretSettings || overwrite)
   //   promises.push(writeValuesToFile(`${env.ENV_DIR}/env/secrets.settings.yaml`, secretSettings, overwrite))
   // if (plainValues.cluster || overwrite)
-  //   promises.push(writeValuesToFile(`${env.ENV_DIR}/env/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
+  //   promises.push(writeValuesToFile(`${env.ENV_DIR}/env/settings/cluster.yaml`, { cluster: plainValues.cluster }, overwrite))
   // if (plainValues.bootstrap || overwrite)
   //   promises.push(
   //     writeValuesToFile(`${env.ENV_DIR}/env/bootstrap.yaml`, { bootstrap: plainValues.bootstrap }, overwrite),

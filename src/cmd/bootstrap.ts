@@ -314,7 +314,7 @@ export const processValues = async (
     d.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
     storedSecrets = {}
-    if ((await deps.loadYaml(`${ENV_DIR}/env/cluster.yaml`, { noError: true }))?.cluster?.provider) {
+    if ((await deps.loadYaml(`${ENV_DIR}/env/settings/cluster.yaml`, { noError: true }))?.cluster?.provider) {
       await deps.decrypt()
       originalInput = (await deps.hfValues({ defaultValues: true })) as Record<string, any>
     }
