@@ -310,7 +310,6 @@ export const processValues = async (
     const originalValues = (await deps.loadYaml(VALUES_INPUT)) as Record<string, any>
     storedSecrets = (await deps.getStoredClusterSecrets()) || {}
     originalInput = merge(cloneDeep(storedSecrets || {}), cloneDeep(originalValues))
-    await deps.writeValues(originalInput)
   } else {
     d.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
