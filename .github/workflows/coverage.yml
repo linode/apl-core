@@ -9,7 +9,6 @@ on:
 
 jobs:
   store-coverage:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout main branch
@@ -41,6 +40,7 @@ jobs:
           name: coverage-report-main
           path: coverage-report-main.json
           overwrite: true
+          retention-days: 14
 
   coverage:
     runs-on: ubuntu-latest
