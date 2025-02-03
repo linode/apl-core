@@ -30,4 +30,4 @@ jobs:
       - uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           coverage-file: report.json
-          base-coverage-file: report.json
+          skip-step: install
