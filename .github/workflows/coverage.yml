@@ -32,13 +32,13 @@ jobs:
 
       - name: Run tests
         run: |
-          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=./coverage/main/report.json
+          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=coverage-report-main.json
 
       - name: Upload main branch coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-main
-          path: ./coverage/main/report.json
+          path: coverage-report-main.json
           overwrite: true
 
   coverage:
@@ -69,14 +69,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: coverage-report-main
-          path: ./coverage/main/
+          path: coverage-report-main.json
 
       - name: Run tests
         run: |
-          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=coverage/pr/report.json
+          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=report.json
 
       - name: Compare Coverage
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
-          coverage-file: ./coverage/pr/report.json
-          base-coverage-file: ./coverage/main/report.json
+          coverage-file: report.json
+          base-coverage-file: coverage-report-main.json
