@@ -1310,14 +1310,17 @@ environments:
               enabled: false
               retentionPolicy: 7d
               schedule: 0 0 * * *
+              pathSuffix: harbor
             gitea:
               enabled: false
               retentionPolicy: 7d
               schedule: 0 0 * * *
+              pathSuffix: gitea
             keycloak:
               enabled: false
               retentionPolicy: 7d
               schedule: 0 0 * * *
+              pathSuffix: keycloak
           gitea:
             enabled: false
             retentionPolicy: 7d
