@@ -12,231 +12,215 @@ export const getTeamNames = async (): Promise<Array<string>> => {
 }
 
 export interface FileMap {
+  envDir: string
   jsonPathExpression: string
   pathGlob: string
   processAs: 'arrayItem' | 'mapItem'
   resourceGroup: 'team' | 'platformSettings' | 'platformApps' | 'platformDatabases' | 'platformBackups' | 'users'
-  getFilePath(jsonPath: string, data: Record<string, any>, fileNamePrefix: string): string
+  resourceDir: string
+}
+
+export const getFilePath = (
+  fileMap: FileMap,
+  jsonPath: jsonpath.PathComponent[],
+  data: Record<string, any>,
+  fileNamePrefix: string,
+) => {
+  if (fileMap.resourceGroup === 'team') {
+    const teamName = jsonPath[2].toString()
+    if (fileMap.processAs === 'arrayItem') {
+      const resourceName = data.name || data.id
+      return `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
+    } else {
+      const resourceName = jsonPath[jsonPath.length - 1].toString()
+      return `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
+    }
+  } else {
+    if (fileMap.processAs === 'arrayItem') {
+      const resourceName = data.name || data.id
+      return `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
+    } else {
+      const resourceName = jsonPath[jsonPath.length - 1].toString()
+      return `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
+    }
+  }
 }
 
 const getFileMaps = (envDir: string): Array<FileMap> => {
   return [
     {
-      jsonPathExpression: 'apps.*',
+      envDir,
+      jsonPathExpression: '$.apps.*',
       pathGlob: `${envDir}/env/apps/*.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformApps',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const resourceName = jsonPath.split('.')[1]
-        return `${envDir}/env/apps/${fileNamePrefix}${resourceName}.yaml`
-      },
+      resourceDir: 'apps',
     },
     {
-      jsonPathExpression: 'alerts',
+      envDir,
+      jsonPathExpression: '$.alerts',
       pathGlob: `${envDir}/env/settings/alerts.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/${fileNamePrefix}alerts.yaml`
-      },
+      resourceDir: 'settings',
     },
     {
-      jsonPathExpression: 'cluster',
+      envDir,
+      jsonPathExpression: '$.cluster',
       pathGlob: `${envDir}/env/settings/dns.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/${fileNamePrefix}cluster.yaml`
-      },
+      resourceDir: 'settings',
     },
     {
-      jsonPathExpression: 'databases.*',
+      envDir,
+      jsonPathExpression: '$.databases.*',
       pathGlob: `${envDir}/env/databases/*.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformDatabases',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const resourceName = jsonPath.split('.')[1]
-        return `${envDir}/env/databases/${resourceName}.yaml`
-      },
+      resourceDir: 'databases',
     },
     {
-      jsonPathExpression: 'dns',
+      envDir,
+      jsonPathExpression: '$.dns',
       pathGlob: `${envDir}/env/settings/*dns.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/${fileNamePrefix}dns.yaml`
-      },
+      resourceDir: 'settings',
     },
     {
-      jsonPathExpression: 'ingress',
+      envDir,
+      jsonPathExpression: '$.ingress',
       pathGlob: `${envDir}/env/settings/ingress.yaml}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/ingress.yaml`
-      },
+      resourceDir: 'settings',
     },
     {
-      jsonPathExpression: 'kms',
+      envDir,
+      jsonPathExpression: '$.kms',
       pathGlob: `${envDir}/env/settings/*kms.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/${fileNamePrefix}kms.yaml`
-      },
+      resourceDir: 'settings',
     },
     {
-      jsonPathExpression: 'obj',
+      envDir,
+      jsonPathExpression: '$.obj',
       pathGlob: `${envDir}/env/settings/*obj.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/${fileNamePrefix}obj.yaml`
-      },
+      resourceDir: 'settings',
     },
     {
-      jsonPathExpression: 'oidc',
+      envDir,
+      jsonPathExpression: '$.oidc',
       pathGlob: `${envDir}/env/settings/*oidc.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/${fileNamePrefix}oidc.yaml`
-      },
+      resourceDir: 'settings',
     },
     {
-      jsonPathExpression: 'otomi',
+      envDir,
+      jsonPathExpression: '$.otomi',
       pathGlob: `${envDir}/env/settings/*otomi.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/${fileNamePrefix}otomi.yaml`
-      },
+      resourceDir: 'settings',
     },
     {
-      jsonPathExpression: 'platformBackups',
+      envDir,
+      jsonPathExpression: '$.platformBackups',
       pathGlob: `${envDir}/env/settings/platformBackups.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformBackups',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/platformBackups.yaml`
-      },
+      resourceDir: 'settings',
     },
     {
-      jsonPathExpression: 'users[*]',
+      envDir,
+      jsonPathExpression: '$.users[*]',
       pathGlob: `${envDir}/env/users/*.{yaml,yaml.dec}`,
       processAs: 'arrayItem',
       resourceGroup: 'users',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const resourceName = data.name
-        return `${envDir}/env/users/${fileNamePrefix}${resourceName}`
-      },
+      resourceDir: 'users',
     },
+    // {
+    //   jsonPathExpression: '$',
+    //   pathGlob: `${envDir}/env/settings/version.yaml`,
+    //   processAs: 'mapItem',
+    //   resourceGroup: 'platformSettings',
+    // },
     {
-      jsonPathExpression: '',
-      pathGlob: `${envDir}/env/settings/version.yaml`,
-      processAs: 'mapItem',
-      resourceGroup: 'platformSettings',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        return `${envDir}/env/settings/version.yaml`
-      },
-    },
-    {
-      jsonPathExpression: 'teamConfig.*.builds[*]',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.builds[*]',
       pathGlob: `${envDir}/env/teams/*/builds/*.yaml`,
       processAs: 'arrayItem',
       resourceGroup: 'team',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const fileName = data.name
-        const teamName = jsonPath.split('.')[1]
-        return `${envDir}/env/teams/${teamName}/builds/${fileName}.yaml`
-      },
+      resourceDir: 'builds',
     },
     {
-      jsonPathExpression: 'teamConfig.*.workloads[*]',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.workloads[*]',
       pathGlob: `${envDir}/env/teams/*/workloads/*.yaml`,
       processAs: 'arrayItem',
       resourceGroup: 'team',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const fileName = data.name
-        const teamName = jsonPath.split('.')[1]
-        return `${envDir}/env/teams/${teamName}/workloads/${fileName}.yaml`
-      },
+      resourceDir: 'workloads',
     },
     {
-      jsonPathExpression: 'teamConfig.*.services[*]',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.services[*]',
       pathGlob: `${envDir}/env/teams/*/services/*.yaml`,
       processAs: 'arrayItem',
       resourceGroup: 'team',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const fileName = data.name
-        const teamName = jsonPath.split('.')[1]
-        return `${envDir}/env/teams/${teamName}/services/${fileName}.yaml`
-      },
+      resourceDir: 'services',
     },
     {
-      jsonPathExpression: 'teamConfig.*.sealedsecrets[*]',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.sealedsecrets[*]',
       pathGlob: `${envDir}/env/teams/*/sealedsecrets/*.yaml`,
       processAs: 'arrayItem',
       resourceGroup: 'team',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const fileName = data.name
-        const teamName = jsonPath.split('.')[1]
-        return `${envDir}/env/teams/${teamName}/sealedsecrets/${fileName}.yaml`
-      },
+      resourceDir: 'sealedsecrets',
     },
     {
-      jsonPathExpression: 'teamConfig.*.backups[*]',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.backups[*]',
       pathGlob: `${envDir}/env/teams/*/backups/*.yaml`,
       processAs: 'arrayItem',
       resourceGroup: 'team',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const fileName = data.name
-        const teamName = jsonPath.split('.')[1]
-        return `${envDir}/env/teams/${teamName}/backups/${fileName}.yaml`
-      },
+      resourceDir: 'backups',
     },
     {
-      jsonPathExpression: 'teamConfig.*.projects[*]',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.projects[*]',
       pathGlob: `${envDir}/env/teams/*/projects/*.yaml`,
       processAs: 'arrayItem',
       resourceGroup: 'team',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const fileName = data.name
-        const teamName = jsonPath.split('.')[1]
-        return `${envDir}/env/teams/${teamName}/projects/${fileName}.yaml`
-      },
+      resourceDir: 'projects',
     },
     {
-      jsonPathExpression: 'teamConfig.*.netpols[*]',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.netpols[*]',
       pathGlob: `${envDir}/env/teams/*/netpols/*.yaml`,
       processAs: 'arrayItem',
       resourceGroup: 'team',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const fileName = data.name
-        const teamName = jsonPath.split('.')[1]
-        return `${envDir}/env/teams/${teamName}/netpols/${fileName}.yaml`
-      },
+      resourceDir: 'netpols',
     },
     {
-      jsonPathExpression: 'teamConfig.*.settings',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.settings',
       pathGlob: `${envDir}/env/teams/*/*settings.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'team',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const teamName = jsonPath.split('.')[1]
-        return `${envDir}/env/teams/${teamName}/${fileNamePrefix}settings.yaml`
-      },
+      resourceDir: '.',
     },
     {
-      jsonPathExpression: 'teamConfig.*.policies',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.policies',
       pathGlob: `${envDir}/env/teams/*/policies.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'team',
-      getFilePath: (jsonPath: string, data: Record<string, any>, fileNamePrefix: '') => {
-        const teamName = jsonPath.split('.')[1]
-        return `${envDir}/env/teams/${teamName}/policies.yaml`
-      },
+      resourceDir: '.',
     },
   ]
 }
@@ -404,40 +388,30 @@ export const save = async (
   )
 }
 
-const extractWildcardValue = (jsonPath, pattern) => {
-  // Convert JSONPath pattern to a regex pattern
-  const regexPattern = pattern
-    .replace('.', '\\.') // Escape dots
-    .replace(/\*/g, '([^\\.\\[]+)') // Capture wildcard '*'
-    .replace(/\[\*\]/g, '\\[(\\d+)\\]') // Capture array indices '[]'
-
-  const regex = new RegExp(`^${regexPattern}$`)
-  const match = jsonPath.match(regex)
-
-  return match ? match.slice(1) : null
-}
-
 export const saveResourceGroupToFiles = async (
   fileMap: FileMap,
   valuesPublic: Record<string, any>,
   valuesSecrets: Record<string, any>,
-  deps = { loadToSpec },
+  deps = {},
 ): Promise<void> => {
-  const jsonPathsValuesPublic = jsonpath.paths(valuesPublic, fileMap.jsonPathExpression)
-  const jsonPathsvaluesSecrets = jsonpath.paths(valuesSecrets, fileMap.jsonPathExpression)
+  console.log(fileMap.jsonPathExpression)
+  const jsonPathsValuesPublic = jsonpath.nodes(valuesPublic, fileMap.jsonPathExpression)
+  const jsonPathsvaluesSecrets = jsonpath.nodes(valuesSecrets, fileMap.jsonPathExpression)
 
   await Promise.all(
-    jsonPathsValuesPublic.map(async (jp) => {
-      const data = get(valuesPublic, jp)
-      const filePath = fileMap.getFilePath(jp.toString(), data, '')
+    jsonPathsValuesPublic.map(async (node) => {
+      console.log(node.path)
+      const filePath = getFilePath(fileMap, node.path, node.value, '')
+      console.log(filePath, fileMap)
+      const data = { spec: node.value }
       await writeValuesToFile(filePath, data, true)
     }),
   )
 
   await Promise.all(
-    jsonPathsvaluesSecrets.map(async (jp) => {
-      const data = get(valuesPublic, jp)
-      const filePath = fileMap.getFilePath(jp.toString(), data, 'secrets.')
+    jsonPathsvaluesSecrets.map(async (node) => {
+      const filePath = getFilePath(fileMap, node.path, node.value, 'secrets.')
+      const data = { spec: node.value }
       await writeValuesToFile(filePath, data, true)
     }),
   )
