@@ -8,46 +8,8 @@ on:
       - main
 
 jobs:
-  store-coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout main branch
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Install Node
-        run: |
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          nvm install
-          nvm use
-          node -v
-          npm install
-
-      - name: Install gucci
-        run: |
-          GUCCI_VERSION="1.6.13"
-          curl -L -o gucci https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64
-          chmod +x gucci
-          sudo mv gucci /usr/local/bin/
-
-      - name: Run tests
-        run: |
-          export ENV_DIR=$PWD/tests/fixtures
-          npm run test:ts-cov -- --ci --json --runInBand --testLocationInResults --outputFile=coverage-report-main.json
-
-      - name: Upload main branch coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report-main
-          path: coverage-report-main.json
-          overwrite: true
-
   coverage:
     runs-on: ubuntu-latest
-    needs:
-      - store-coverage
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v4
@@ -68,17 +30,5 @@ jobs:
           chmod +x gucci
           sudo mv gucci /usr/local/bin/
 
-      - name: Restore base coverage from main branch
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report-main
-
-      - name: Run tests
-        run: |
-          npm run test:ts -- --ci --json --coverage --testLocationInResults --outputFile=report.json
-
       - name: Compare Coverage
         uses: ArtiomTr/jest-coverage-report-action@v2
-        with:
-          coverage-file: report.json
-          base-coverage-file: coverage-report-main.json
