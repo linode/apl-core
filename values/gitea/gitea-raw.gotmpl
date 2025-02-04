@@ -64,7 +64,7 @@ resources:
   rules:
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "watch", "list"]  
+    verbs: ["get", "watch", "list"]
   - apiGroups: [""]
     resources: ["pods/exec"]
     verbs: ["create"]
@@ -76,7 +76,7 @@ resources:
   - kind: ServiceAccount
     name: gitea-backup
   roleRef:
-    kind: Role 
+    kind: Role
     name: gitea-backup-operator
     apiGroup: rbac.authorization.k8s.io
 - apiVersion: batch/v1
@@ -117,7 +117,7 @@ resources:
                     echo 'Uploading to object storage...' &&
                     .bin/rclone copy --exclude '\.*/**' /backup gitea:/\$BUCKET_NAME &&
                     echo 'Removing old backups from object storage...' &&
-                    .bin/rclone sync --min-age $RETENTION_TIME --exclude '\.*/**' /backup gitea:/\$BUCKET_NAME &&
+                    .bin/rclone delete --min-age $RETENTION_TIME --exclude '\.*/**' gitea:/\$BUCKET_NAME &&
                     echo 'Cleaning up local backups...' &&
                     find . -type f -iname '*.tar.bz2' -ctime +1 -delete"
                 resources:
