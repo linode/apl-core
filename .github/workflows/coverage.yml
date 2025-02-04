@@ -1,0 +1,34 @@
+name: 'coverage'
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  coverage:
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        run: |
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install
+          nvm use
+          node -v
+          npm install
+
+      - name: Install gucci
+        run: |
+          GUCCI_VERSION="1.6.13"
+          curl -L -o gucci https://github.com/noqcks/gucci/releases/download/v${GUCCI_VERSION}/gucci-v${GUCCI_VERSION}-linux-amd64
+          chmod +x gucci
+          sudo mv gucci /usr/local/bin/
+
+      - name: Compare Coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          test-script: npm run test:ts
