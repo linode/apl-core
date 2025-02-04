@@ -53,7 +53,6 @@ gitea:
     username: {{ $g.adminUsername }}
     password: {{ $g.adminPassword }}
   config:
-    {{- if $gdb.useOtomiDB }}
     database:
       DB_TYPE: postgres
       HOST: gitea-db-rw.gitea.svc.cluster.local:5432
@@ -61,7 +60,6 @@ gitea:
       USER: gitea
       PASSWD: {{ $v.apps.gitea.postgresqlPassword }}
       SCHEMA: public
-    {{- end }}
     admin:
       DISABLE_REGULAR_ORG_CREATION: false
     log:
@@ -112,7 +110,7 @@ gitea:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
       DISABLE_SSH: true
-    
+
   metrics:
     enabled: true
     serviceMonitor:
@@ -141,7 +139,7 @@ statefulset:
       valueFrom:
         secretKeyRef:
           name: minio-creds
-          key: MINIO_SECRET_KEY          
+          key: MINIO_SECRET_KEY
     {{- else if eq $obj.type "linode" }}
     - name: RCLONE_CONFIG_GITEA_PROVIDER
       value: Linode
@@ -159,7 +157,7 @@ statefulset:
           key: S3_STORAGE_KEY
     {{- end }}
     - name: BUCKET_NAME
-      value: {{ $giteaBucketName }}  
+      value: {{ $giteaBucketName }}
 
 memcached:
   # @TODO:
@@ -182,50 +180,7 @@ persistence:
   size: 1Gi
 
 postgresql:
-  {{- if $gdb.useOtomiDB }}
   enabled: false
-  {{- else }}
-  enabled: true
-  {{- end }} 
-  # @TODO:
-  image:
-    tag: {{ $g | get "image.postgresql.tag" "13.5.0" }}
-    pullPolicy:  {{ $g | get "image.postgresql.pullPolicy" "IfNotPresent" }}
-  metrics:
-    image:
-      tag: 0.10.0
-  persistence:
-    size: 1Gi
-  global:
-    postgresql:
-      postgresqlPassword: {{ $g | get "postgresqlPassword" }}
-      postgresqlPostgresPassword: {{ $g | get "postgresqlPassword" }}
-  resources:
-    {{ with $g | get "resources.postgresql" nil }}
-      {{- toYaml . | nindent 4 }}
-    {{- else }}
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 250m
-      memory: 256Mi
-    {{- end }}
-  metrics:
-    enabled: true
-    resources:
-      limits:
-        cpu: 200m
-        memory: 128M
-      requests:
-        cpu: 50m
-        memory: 64M
-    securityContext:
-      enabled: true
-    serviceMonitor:
-      enabled: true
-      additionalLabels:
-        prometheus: system
 
 extraVolumeMounts:
   - name: backup
