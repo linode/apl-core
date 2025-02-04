@@ -1,3 +1,2 @@
-databases:
-    keycloak:
-        imported: false
+spec:
+    imported: false

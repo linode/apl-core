@@ -1,0 +1,5 @@
+spec:
+    auth_username: no-reply@doma.in
+    from: no-reply@doma.in
+    hello: doma.in
+    smarthost: smtp-relay.gmail.com:587

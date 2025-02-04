@@ -1,7 +1,6 @@
-apps:
-    harbor:
-        core: {}
-        enabled: true
-        jobservice: {}
-        registry:
-            credentials: {}
+spec:
+    core: {}
+    enabled: true
+    jobservice: {}
+    registry:
+        credentials: {}

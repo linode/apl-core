@@ -1,21 +1,20 @@
-apps:
-    ingress-nginx-net-a:
-        tracing:
-            enabled: true
-            samplingRatio: '0.01'
-        _rawValues:
-            controller:
-                config:
-                    modsecurity-snippet: |
-                        SecRuleRemoveById 911101
-        maxBodySize: 1024m
-        modsecurity:
-            enabled: true
-        resources:
-            controller:
-                limits:
-                    cpu: 200m
-                    memory: 256Mi
-                requests:
-                    cpu: 100m
-                    memory: 192Mi
+spec:
+    tracing:
+        enabled: true
+        samplingRatio: '0.01'
+    _rawValues:
+        controller:
+            config:
+                modsecurity-snippet: |
+                    SecRuleRemoveById 911101
+    maxBodySize: 1024m
+    modsecurity:
+        enabled: true
+    resources:
+        controller:
+            limits:
+                cpu: 200m
+                memory: 256Mi
+            requests:
+                cpu: 100m
+                memory: 192Mi

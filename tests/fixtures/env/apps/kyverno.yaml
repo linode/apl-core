@@ -1,3 +1,2 @@
-apps:
-    kyverno:
-        enabled: true
+spec:
+    enabled: true

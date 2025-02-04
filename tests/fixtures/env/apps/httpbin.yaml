@@ -1,3 +1,2 @@
-apps:
-    httpbin:
-        enabled: true
+spec:
+    enabled: true

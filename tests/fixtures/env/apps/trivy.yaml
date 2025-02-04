@@ -1,3 +1,2 @@
-apps:
-    trivy:
-        enabled: true
+spec:
+    enabled: true

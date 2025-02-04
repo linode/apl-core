@@ -1,31 +1,30 @@
-apps:
-    prometheus:
-        enabled: false
-        disabledRules:
-            - InfoInhibitor
-            - PrometheusOperatorListErrors
-        remoteWrite:
-            enabled: true
-            rwConfig:
-                basicAuth:
-                    enabled: true
-                    username: testaccount
-                customConfig: |-
-                    writeRelabelConfigs:
-                      - targetLabel: tenant
-                        sourceLabels:
-                        - instance
-                        replacement: otomi-aks-ont
-                      - targetLabel: cluster
-                        sourceLabels:
-                        - instance
-                        replacement: otomi-aks-ont
-                      - targetLabel: customer_id
-                        sourceLabels:
-                        - instance
-                        replacement: "00001"
-                    queueConfig:
-                      capacity: 18000
-                      maxShards: 100
-                      maxSamplesPerSend: 6000
-                target: https://remote.target.io/api/v1/push
+spec:
+    enabled: false
+    disabledRules:
+        - InfoInhibitor
+        - PrometheusOperatorListErrors
+    remoteWrite:
+        enabled: true
+        rwConfig:
+            basicAuth:
+                enabled: true
+                username: testaccount
+            customConfig: |-
+                writeRelabelConfigs:
+                  - targetLabel: tenant
+                    sourceLabels:
+                    - instance
+                    replacement: otomi-aks-ont
+                  - targetLabel: cluster
+                    sourceLabels:
+                    - instance
+                    replacement: otomi-aks-ont
+                  - targetLabel: customer_id
+                    sourceLabels:
+                    - instance
+                    replacement: "00001"
+                queueConfig:
+                  capacity: 18000
+                  maxShards: 100
+                  maxSamplesPerSend: 6000
+            target: https://remote.target.io/api/v1/push

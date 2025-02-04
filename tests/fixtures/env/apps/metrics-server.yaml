@@ -1,11 +1,10 @@
-apps:
-    metrics-server:
-        resources:
-            limits:
-                cpu: 300m
-                memory: 512Mi
-            requests:
-                cpu: 100m
-                memory: 64Mi
-        extraArgs:
-            - --test-extra-arg=true
+spec:
+    resources:
+        limits:
+            cpu: 300m
+            memory: 512Mi
+        requests:
+            cpu: 100m
+            memory: 64Mi
+    extraArgs:
+        - --test-extra-arg=true

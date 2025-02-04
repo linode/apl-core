@@ -1,8 +1,7 @@
-apps:
-    minio:
+spec:
+    enabled: true
+    provisioning:
         enabled: true
-        provisioning:
-            enabled: true
-        persistence:
-            enabled: true
-            size: 20Gi
+    persistence:
+        enabled: true
+        size: 20Gi

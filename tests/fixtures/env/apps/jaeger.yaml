@@ -1,3 +1,2 @@
-apps:
-    jaeger:
-        enabled: true
+spec:
+    enabled: true

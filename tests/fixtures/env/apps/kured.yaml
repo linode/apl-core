@@ -1,10 +1,9 @@
-apps:
-    kured:
-        enabled: true
-        _rawValues:
-            configuration:
-                endTime: '07:00'
-                rebootDays:
-                    - su
-                startTime: '22:00'
-                timeZone: CET
+spec:
+    enabled: true
+    _rawValues:
+        configuration:
+            endTime: '07:00'
+            rebootDays:
+                - su
+            startTime: '22:00'
+            timeZone: CET

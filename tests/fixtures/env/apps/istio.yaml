@@ -1,53 +1,52 @@
-apps:
-    istio:
-        tracing:
-            enabled: true
-            samplingRatio: '0.01'
-        extensionProviders:
-            - name: ext-authz-chain-grpc
-              envoyExtAuthzGrpc:
-                  service: external-authorization-chain.team-demo.svc.cluster.local
-                  port: 80
-                  includeRequestBodyInCheck:
-                      maxRequestBytes: 1000000
-        autoscaling:
-            ingressgateway:
-                maxReplicas: 5
-                minReplicas: 1
-            pilot:
-                maxReplicas: 5
-                minReplicas: 1
-        egressGateway:
-            enabled: false
-        global:
-            logging:
-                level: default:warn
-        resources:
-            ingressgateway:
-                limits:
-                    cpu: 500m
-                    memory: 256Mi
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-            pilot:
-                limits:
-                    cpu: 100m
-                    memory: 256Mi
-                requests:
-                    cpu: 10m
-                    memory: 100Mi
-            prometheus:
-                limits:
-                    cpu: 500m
-                    memory: 1Gi
-                requests:
-                    cpu: 200m
-                    memory: 500Mi
-            proxy:
-                limits:
-                    cpu: 500m
-                    memory: 1Gi
-                requests:
-                    cpu: 20m
-                    memory: 80Mi
+spec:
+    tracing:
+        enabled: true
+        samplingRatio: '0.01'
+    extensionProviders:
+        - name: ext-authz-chain-grpc
+          envoyExtAuthzGrpc:
+              service: external-authorization-chain.team-demo.svc.cluster.local
+              port: 80
+              includeRequestBodyInCheck:
+                  maxRequestBytes: 1000000
+    autoscaling:
+        ingressgateway:
+            maxReplicas: 5
+            minReplicas: 1
+        pilot:
+            maxReplicas: 5
+            minReplicas: 1
+    egressGateway:
+        enabled: false
+    global:
+        logging:
+            level: default:warn
+    resources:
+        ingressgateway:
+            limits:
+                cpu: 500m
+                memory: 256Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        pilot:
+            limits:
+                cpu: 100m
+                memory: 256Mi
+            requests:
+                cpu: 10m
+                memory: 100Mi
+        prometheus:
+            limits:
+                cpu: 500m
+                memory: 1Gi
+            requests:
+                cpu: 200m
+                memory: 500Mi
+        proxy:
+            limits:
+                cpu: 500m
+                memory: 1Gi
+            requests:
+                cpu: 20m
+                memory: 80Mi

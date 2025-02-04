@@ -1,0 +1,6 @@
+spec:
+    email: {}
+    msteams: {}
+    receivers:
+        - msteams
+    slack: {}

@@ -1,3 +1,2 @@
-apps:
-    oauth2-proxy:
-        config: {}
+spec:
+    config: {}

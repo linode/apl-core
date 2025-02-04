@@ -1,4 +1,4 @@
-cluster:
+spec:
     apiServer: https://1.1.1.1:8443
     domainSuffix: dev.linode-apl.net
     k8sContext: linode-dev

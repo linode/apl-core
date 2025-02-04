@@ -1,0 +1,6 @@
+spec:
+    domainFilters:
+        - otomi.cloud
+    provider:
+        linode: {}
+    zoneIdFilters: []

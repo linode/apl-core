@@ -1,0 +1,5 @@
+spec:
+    sops:
+        azure:
+            clientId: somesecretvalue
+            tenantId: somesecretvalue

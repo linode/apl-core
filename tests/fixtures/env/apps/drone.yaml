@@ -1,12 +1,11 @@
-apps:
-    drone:
-        enabled: true
-        adminUser: somesecretvalue
-        debug: false
-        orgsFilter: redkubes
-        repoFilter: redkubes
-        sourceControl:
-            gitea:
-                server: https://gitea.demo.eks.otomi.cloud
-            github: {}
-            provider: gitea
+spec:
+    enabled: true
+    adminUser: somesecretvalue
+    debug: false
+    orgsFilter: redkubes
+    repoFilter: redkubes
+    sourceControl:
+        gitea:
+            server: https://gitea.demo.eks.otomi.cloud
+        github: {}
+        provider: gitea

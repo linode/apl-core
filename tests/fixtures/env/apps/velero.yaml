@@ -1,5 +1,4 @@
-apps:
-    velero:
-        enabled: true
-        restic:
-            enabled: false
+spec:
+    enabled: true
+    restic:
+        enabled: false

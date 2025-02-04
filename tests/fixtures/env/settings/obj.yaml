@@ -1,0 +1,13 @@
+spec:
+    provider:
+        linode:
+            buckets:
+                cnpg: my-clusterid-cnpg
+                gitea: my-clusterid-gitea
+                harbor: my-clusterid-harbor
+                loki: my-clusterid-loki
+                tempo: my-clusterid-tempo
+                thanos: my-clusterid-thanos
+                velero: my-clusterid-velero
+            region: nl-ams-1
+        type: linode

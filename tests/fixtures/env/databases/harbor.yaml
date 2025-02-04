@@ -1,3 +1,2 @@
-databases:
-    harbor:
-        replicas: 2
+spec:
+    replicas: 2

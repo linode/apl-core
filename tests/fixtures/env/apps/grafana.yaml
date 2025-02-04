@@ -1,3 +1,2 @@
-apps:
-    grafana:
-        enabled: false
+spec:
+    enabled: false
