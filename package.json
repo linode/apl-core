@@ -143,7 +143,7 @@
     "lint:ts": "eslint --ext ts src",
     "lint:ts:fix": "eslint --fix --ext ts src",
     "lint:types": "tsc --noEmit",
-    "migrate-values": "ENV_DIR=$PWD/tests/fixtures binzx/otomi migrate -ni",
+    "migrate-values": "ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi migrate -ni",
     "prepare": "husky install",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",

@@ -14,9 +14,9 @@ import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'sr
 import { writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
+import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -406,12 +406,14 @@ export const migrate = async (): Promise<boolean> => {
   if (!(await pathExists(`${env.ENV_DIR}/env/settings/versions.yaml`))) {
     d.log('Detected the old values file structure')
     // TODO perform migration
-    const oldValues = await hf(
+    const output = await hf(
       { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml`, args: 'build' },
       undefined,
       env.ENV_DIR,
     )
-
+    const oldValues = parse(output.stdout).renderedvalues
+    // TODO migrate team settings
+    oldValues.versions = { specVersion: 40 }
     const teamNames = await getTeamNames(env.ENV_DIR)
     const secretPaths = await getSchemaSecretsPaths(teamNames)
     const valuesPublic = omit(oldValues, secretPaths)
@@ -420,6 +422,7 @@ export const migrate = async (): Promise<boolean> => {
     // ensure that all old files are gone
     await $`rm -rf ${env.ENV_DIR}/env`
     await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)
+    await encrypt(env.ENV_DIR)
     return true
   }
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
