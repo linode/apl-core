@@ -3299,9 +3299,11 @@ properties:
             password:
               type: string
               x-secret: '{{ randAlpha 16 }}'
-  version:
-    type: integer
-    description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.
+  versions:
+    properties:
+      specVersion:
+        type: integer
+        description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.
   license:
     type: string
     describe: License in form of JWT

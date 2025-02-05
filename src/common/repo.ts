@@ -156,12 +156,14 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceGroup: 'users',
       resourceDir: 'users',
     },
-    // {
-    //   jsonPathExpression: '$',
-    //   pathGlob: `${envDir}/env/settings/version.yaml`,
-    //   processAs: 'mapItem',
-    //   resourceGroup: 'platformSettings',
-    // },
+    {
+      envDir,
+      jsonPathExpression: '$.versions',
+      pathGlob: `${envDir}/env/settings/versions.yaml`,
+      processAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+      resourceDir: 'settings',
+    },
     {
       envDir,
       jsonPathExpression: '$.teamConfig.*.builds[*]',

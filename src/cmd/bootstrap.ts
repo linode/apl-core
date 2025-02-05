@@ -256,11 +256,6 @@ export const copyBasicFiles = async (
       deps.copyFile(`${rootDir}/.values/${val}`, `${ENV_DIR}/${val}`),
     ),
   )
-  // recursively copy the skeleton files to env if that folder doesn't yet exist
-  if (!(await pathExists(`${ENV_DIR}/env`))) {
-    d.log(`Copying skeleton files`)
-    await deps.copy(`${rootDir}/.values/env`, `${ENV_DIR}/env`, { overwrite: false })
-  }
 
   // copy these files from core
   await Promise.allSettled(['core.yaml'].map((val) => deps.copyFile(`${rootDir}/${val}`, `${ENV_DIR}/${val}`)))

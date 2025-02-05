@@ -403,8 +403,8 @@ export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
-  const platformSettings = await loadYaml(`${env.ENV_DIR}/env/settings/settings.yaml`, { noError: true })
-  const prevVersion: number = platformSettings?.version
+  const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
+  const prevVersion: number = versions?.specVersion
 
   if (!prevVersion) {
     d.log('No changes detected, skipping')

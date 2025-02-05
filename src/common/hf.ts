@@ -82,13 +82,6 @@ export const hfValues = async (
   { filesOnly = false, excludeSecrets = false, withWorkloadValues = false, defaultValues = false }: ValuesArgs = {},
   envDir: string = env.ENV_DIR,
 ): Promise<Record<string, any> | undefined> => {
-  const d = terminal('common:hf:hfValues')
-  if (!(await Promise.all([pathExists(`${envDir}/env/settings/settings.yaml`)]))) {
-    // teams and settings file are the minimum needed files to run env.gotmpl and get the values
-    d.info('No teams or cluster info found. ENV_DIR is potentially empty.')
-    return undefined
-  }
-
   const allValues = await loadValues(env.ENV_DIR)
   const valuesPath = path.join(env.ENV_DIR, 'values-repo.yaml')
   await writeFile(valuesPath, objectToYaml(allValues))
