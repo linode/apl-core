@@ -1,4 +1,3 @@
-import { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import { pathExists } from 'fs-extra'
 import { mkdir, unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
@@ -10,7 +9,16 @@ import { decrypt, encrypt } from './crypt'
 import { terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { extract, flattenObject, getValuesSchema, gucci, loadYaml, pkg, removeBlankAttributes } from './utils'
+import {
+  extract,
+  flattenObject,
+  getSchemaSecretsPaths,
+  getValuesSchema,
+  gucci,
+  loadYaml,
+  pkg,
+  removeBlankAttributes,
+} from './utils'
 
 import { saveValues } from './repo'
 import { HelmArguments } from './yargs'
@@ -155,26 +163,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
   const values = inValues
   const teams = Object.keys(get(inValues, 'teamConfig', {}))
-  // creating secret files
-  const schema: any = await getValuesSchema()
-  const leaf = 'x-secret'
-  const schemaSecrets: JSONSchema = extract(schema as JSONSchema, leaf, (val: any) =>
-    val.length > 0 ? `{{ ${val} }}` : val,
-  )
-  d.debug('schemaSecrets: ', JSON.stringify(schemaSecrets, null, 2))
-  // Get all JSON paths for secrets, without the .x-secret appended
-  const secretPaths = Object.keys(flattenObject(schemaSecrets)).map((v) => v.replaceAll(`.${leaf}`, ''))
-  // now blow up the teamConfig.$team prop as it is determined by a pattern
-  const cleanSecretPaths: string[] = []
-  const teamProp = `teamConfig.patternProperties.${
-    Object.keys(schema.properties.teamConfig.patternProperties as JSONSchema)[0]
-  }`
-  secretPaths.forEach((p) => {
-    teams.forEach((team: string) => {
-      if (p.indexOf(teamProp) === 0) cleanSecretPaths.push(p.replace(teamProp, `teamConfig.${team}`))
-    })
-    if (p.indexOf(teamProp) === -1 && !cleanSecretPaths.includes(p)) cleanSecretPaths.push(p)
-  })
+  const cleanSecretPaths = await getSchemaSecretsPaths(Object.keys(teams))
   d.debug('cleanSecretPaths: ', cleanSecretPaths)
   // separate out the secrets
   const secrets = removeBlankAttributes(pick(values, cleanSecretPaths))

@@ -2,11 +2,10 @@ import { globSync } from 'glob'
 import jsonpath from 'jsonpath'
 import { cloneDeep, get, merge, set } from 'lodash'
 import path from 'path'
-import { env } from './envalid'
 import { getDirNames, loadYaml } from './utils'
 import { writeValuesToFile } from './values'
-export const getTeamNames = async (): Promise<Array<string>> => {
-  const teamsDir = path.join(env.ENV_DIR, 'env', 'teams')
+export const getTeamNames = async (envDir: string): Promise<Array<string>> => {
+  const teamsDir = path.join(envDir, 'env', 'teams')
   const teamNames = await getDirNames(teamsDir, { skipHidden: true })
   return teamNames
 }

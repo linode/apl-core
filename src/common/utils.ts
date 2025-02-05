@@ -216,3 +216,26 @@ export const isPathMatch = (filePath: string, patterns: Array<string>) => {
   if (patterns.length === 0) return false
   return patterns.some((pattern) => minimatch(filePath, pattern, { matchBase: true }))
 }
+
+export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> => {
+  const schema: any = await getValuesSchema()
+  const leaf = 'x-secret'
+  const schemaSecrets: JSONSchema = extract(schema as JSONSchema, leaf, (val: any) =>
+    val.length > 0 ? `{{ ${val} }}` : val,
+  )
+  // Get all JSON paths for secrets, without the .x-secret appended
+  const secretPaths = Object.keys(flattenObject(schemaSecrets)).map((v) => v.replaceAll(`.${leaf}`, ''))
+  // now blow up the teamConfig.$team prop as it is determined by a pattern
+  const cleanSecretPaths: string[] = []
+  const teamProp = `teamConfig.patternProperties.${
+    Object.keys(schema.properties.teamConfig.patternProperties as JSONSchema)[0]
+  }`
+  secretPaths.forEach((p) => {
+    teams.forEach((team: string) => {
+      if (p.indexOf(teamProp) === 0) cleanSecretPaths.push(p.replace(teamProp, `teamConfig.${team}`))
+    })
+    if (p.indexOf(teamProp) === -1 && !cleanSecretPaths.includes(p)) cleanSecretPaths.push(p)
+  })
+
+  return cleanSecretPaths
+}

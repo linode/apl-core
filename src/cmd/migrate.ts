@@ -3,18 +3,19 @@
 /* eslint-disable no-restricted-syntax */
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
-import { cloneDeep, each, get, pull, set, unset } from 'lodash'
+import { cloneDeep, each, get, omit, pick, pull, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hfValues } from 'src/common/hf'
-import { getFilename, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { hf, hfValues } from 'src/common/hf'
+import { getTeamNames, saveValues } from 'src/common/repo'
+import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
 import { Argv } from 'yargs'
-import { cd } from 'zx'
+import { $, cd } from 'zx'
 
 const cmdName = getFilename(__filename)
 
@@ -402,13 +403,29 @@ export const setAtPath = (path: string, values: Record<string, any>, value: stri
 export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
+
+  if (!(await pathExists(`${env.ENV_DIR}/env/settings/versions.yaml`))) {
+    d.log('Detected the old values file structure')
+    // TODO perform migration
+    const oldValues = await hf(
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' },
+      undefined,
+      env.ENV_DIR,
+    )
+
+    const teamNames = await getTeamNames(env.ENV_DIR)
+    const secretPaths = await getSchemaSecretsPaths(teamNames)
+    const valuesPublic = omit(oldValues, secretPaths)
+    const valuesSecrets = pick(oldValues, secretPaths)
+
+    // ensure that all old files are gone
+    await $`rm -rf ${env.ENV_DIR}/env`
+    await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)
+    return true
+  }
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
   const prevVersion: number = versions?.specVersion
-
-  if (await pathExists(`${env.ENV_DIR}/env/settings.yaml`)) {
-    // TODO perform migration
-  }
   if (!prevVersion) {
     d.log('No changes detected, skipping')
     return false
