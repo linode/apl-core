@@ -47,8 +47,7 @@ export const bootstrapSops = async (
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:genSops`)
   const targetPath = `${envDir}/.sops.yaml`
-  const kms = await getKmsSettings(envDir)
-  const values = { kms }
+  const values = await getKmsSettings(envDir)
 
   const provider: string | undefined = values?.kms?.sops?.provider
   if (!provider) {

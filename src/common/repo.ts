@@ -365,3 +365,10 @@ export const loadFileToSpec = async (
     set(spec, jsonPath, newRef)
   }
 }
+export const getKmsSettings = async (envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> => {
+  const fileMap = getFileMaps(envDir)
+  const kmsFiles = fileMap.find((item) => item.jsonPathExpression === '$.kms')
+  const spec = {}
+  await deps.loadToSpec(spec, kmsFiles!)
+  return spec
+}
