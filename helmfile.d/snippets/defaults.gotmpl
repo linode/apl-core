@@ -6,8 +6,8 @@ environments:
   default:
     values:
     - teamConfig:
-    {{- range $index,$item := readDirEntries $dirPath }}
-    {{- if $item.IsDir }}
+      {{- range $index,$item := readDirEntries $dirPath }}
+      {{- if $item.IsDir }}
         {{ $item.Name }}:
           apps:
             alertmanager:
@@ -199,5 +199,7 @@ environments:
                 service:
                     - ingress
             password: {{ randAlphaNum 32 }}
-    {{- end }}
-    {{- end }}
+      {{- end }}
+      {{- end }}
+      otomi:
+        adminPassword: {{ randAlphaNum 32 }}

@@ -508,13 +508,6 @@ export const bootstrap = async (
   }
   await deps.handleFileEntry()
   await deps.bootstrapSops()
-  // if we did not have the admin password before we know we have generated it for the first time
-  // so tell the user about it
-  if (!originalValues?.otomi?.adminPassword) {
-    d.log(
-      '`otomi.adminPassword` has been generated and is stored in the values repository in `env/secrets.settings.yaml`',
-    )
-  }
 
   if (!hasOtomi) {
     d.log('You can now use the otomi CLI')
