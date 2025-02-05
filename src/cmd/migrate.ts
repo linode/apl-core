@@ -406,6 +406,9 @@ export const migrate = async (): Promise<boolean> => {
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
   const prevVersion: number = versions?.specVersion
 
+  if (await pathExists(`${env.ENV_DIR}/env/settings.yaml`)) {
+    // TODO perform migration
+  }
   if (!prevVersion) {
     d.log('No changes detected, skipping')
     return false
