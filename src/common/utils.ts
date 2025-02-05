@@ -194,15 +194,6 @@ const isCoreCheck = (): boolean => {
 
 export const isCore: boolean = isCoreCheck()
 
-export const providerMap = (provider: string): string => {
-  const map = {
-    aws: 'eks',
-    azure: 'aks',
-    google: 'gke',
-  }
-  return map[provider] ?? provider
-}
-
 /**
  * Compare semver version strings, returning -1, 0, or 1.
  * If the semver string a is greater than b, return 1. If the semver string b is greater than a, return -1. If a equals b, return 0

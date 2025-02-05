@@ -12,7 +12,7 @@ import { terminal } from 'src/common/debug'
 import { env, isChart, isCi, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
-import { getFilename, gucci, isCore, loadYaml, providerMap, rootDir } from 'src/common/utils'
+import { getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
 import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -485,27 +485,7 @@ export const bootstrap = async (
     d.log('A new values repo has been created. For next steps follow documentation at https://apl-docs.net')
     return
   }
-  const finalValues = (await deps.hfValues()) as Record<string, any>
-  const {
-    cluster: { k8sContext, name, owner, provider },
-  } = finalValues
-  // we can derive defaults for the following values
-  // that we want to end up in the files, so the api can access them
-  if (!k8sContext || !owner) {
-    const add: Record<string, any> = { cluster: {} }
-    const engine = providerMap(provider as string)
-    const defaultOwner = 'apl'
-    const defaultName = `${owner || defaultOwner}-${engine}-${name}`
-    if (!k8sContext) {
-      d.info(`No value for cluster.k8sContext found, providing default one: ${defaultName}`)
-      add.cluster.k8sContext = defaultName
-    }
-    if (!owner) {
-      d.info(`No value for cluster.owner found, providing default one: ${defaultOwner}`)
-      add.cluster.owner = defaultOwner
-    }
-    await deps.writeValues(add)
-  }
+
   await deps.handleFileEntry()
   await deps.bootstrapSops()
 

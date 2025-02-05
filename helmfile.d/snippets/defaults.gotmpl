@@ -203,3 +203,7 @@ environments:
       {{- end }}
       otomi:
         adminPassword: {{ randAlphaNum 32 }}
+      cluster:
+        owner: customer
+        name: apl
+        k8sContext: customer-apl-admin
