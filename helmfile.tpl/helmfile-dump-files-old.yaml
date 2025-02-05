@@ -1,0 +1,12 @@
+# this release file is used to dump the values used by helmfile, which are found in the env files
+# so no defaults or derived values are dumped!!
+bases:
+  - ../helmfile.d/snippets/env.old.gotmpl
+---
+{{- $v := .Values }}
+
+releases:
+  - name: dump
+    # Never change 'installed' flag to true as you do not want to see release being deployed
+    installed: false
+    chart: ../charts/raw

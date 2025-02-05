@@ -403,12 +403,11 @@ export const setAtPath = (path: string, values: Record<string, any>, value: stri
 export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
-
   if (!(await pathExists(`${env.ENV_DIR}/env/settings/versions.yaml`))) {
     d.log('Detected the old values file structure')
     // TODO perform migration
     const oldValues = await hf(
-      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' },
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml`, args: 'build' },
       undefined,
       env.ENV_DIR,
     )
