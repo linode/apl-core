@@ -63,7 +63,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
     {
       envDir,
       jsonPathExpression: '$.alerts',
-      pathGlob: `${envDir}/env/settings/{alerts.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/*alerts.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -95,7 +95,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
     {
       envDir,
       jsonPathExpression: '$.ingress',
-      pathGlob: `${envDir}/env/settings/ingress.yaml}`,
+      pathGlob: `${envDir}/env/settings/ingress.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
@@ -135,9 +135,17 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
     {
       envDir,
       jsonPathExpression: '$.platformBackups',
-      pathGlob: `${envDir}/env/settings/platformBackups.{yaml,yaml.dec}`,
+      pathGlob: `${envDir}/env/settings/*platformBackups.{yaml,yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'platformBackups',
+      resourceDir: 'settings',
+    },
+    {
+      envDir,
+      jsonPathExpression: '$.smtp',
+      pathGlob: `${envDir}/env/settings/*smtp.{yaml,yaml.dec}`,
+      processAs: 'mapItem',
+      resourceGroup: 'platformSettings',
       resourceDir: 'settings',
     },
     {
@@ -323,7 +331,7 @@ export const loadToSpec = async (
     nodir: true, // Exclude directories
     dot: false,
   }
-  const files: string[] = globSync(fileMap.pathGlob, globOptions)
+  const files: string[] = globSync(fileMap.pathGlob, globOptions).sort()
   const promises: Promise<void>[] = []
 
   files.forEach((filePath) => {
