@@ -1,0 +1,12 @@
+spec:
+    name: allow-ingress-1
+    ruleType:
+        ingress:
+            allow:
+                - fromLabelName: from-name-demo
+                  fromLabelValue: from-value-demo
+                  fromNamespace: from-namespace-demo
+            mode: AllowOnly
+            toLabelName: to-label-demo
+            toLabelValue: to-value-demo
+        type: ingress

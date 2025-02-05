@@ -1,0 +1,10 @@
+spec:
+    name: allow-egress-1
+    ruleType:
+        egress:
+            domain: dev.local
+            mode: AllowAll
+            ports:
+                - number: '123456'
+                  protocol: HTTPS
+        type: egress

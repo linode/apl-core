@@ -1,0 +1,6 @@
+spec:
+    name: allow-egress-2
+    ruleType:
+        egress:
+            domain: dev.local
+        type: egress
