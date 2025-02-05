@@ -341,6 +341,7 @@ export const loadToSpec = async (
     } else {
       set(spec, jsonPath, {})
     }
+    if (hasCorrespondingDecryptedFile(filePath, files)) return
     promises.push(deps.loadFileToSpec(filePath, fileMap, spec))
   })
 

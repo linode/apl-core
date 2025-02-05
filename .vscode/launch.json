@@ -69,6 +69,16 @@
       "cwd": "${workspaceRoot}"
     },
     {
+      "name": "Bootstrap-dev-with-repo",
+      "request": "launch",
+      "runtimeArgs": ["run", "bootstrap-dev-with-repo"],
+      "runtimeExecutable": "npm",
+      "type": "node",
+      "envFile": ".env",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceRoot}"
+    },
+    {
       "name": "Migrate values",
       "request": "launch",
       "runtimeArgs": ["run", "migrate-values"],
