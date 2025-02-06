@@ -1,14 +1,12 @@
 import { pathExists } from 'fs-extra'
-import { readFile, writeFile } from 'fs/promises'
+import { readFile } from 'fs/promises'
 import { has, set } from 'lodash'
-import path from 'path'
 import { parse } from 'yaml'
 import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { loadValues } from './repo'
+import { setValuesFile, unsetValuesFile } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, readdirRecurse, rootDir } from './utils'
-import { objectToYaml } from './values'
 import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -63,11 +61,17 @@ type HFOptions = {
   streams?: Streams
 }
 
-export const hf = async (args: HFParams, opts?: HFOptions, envDir?: string): Promise<ProcessOutputTrimmed> => {
-  const proc: ProcessPromise = hfCore(args, envDir)
-  if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
-  if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
-  return new ProcessOutputTrimmed(await proc)
+export const hf = async (args: HFParams, opts?: HFOptions, envDir = env.ENV_DIR): Promise<ProcessOutputTrimmed> => {
+  await setValuesFile(env.ENV_DIR)
+  try {
+    const proc: ProcessPromise = hfCore(args, envDir)
+    if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
+    if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
+    const res = new ProcessOutputTrimmed(await proc)
+    return res
+  } finally {
+    await unsetValuesFile(envDir)
+  }
 }
 
 export interface ValuesArgs {
@@ -82,10 +86,6 @@ export const hfValues = async (
   { filesOnly = false, excludeSecrets = false, withWorkloadValues = false, defaultValues = false }: ValuesArgs = {},
   envDir: string = env.ENV_DIR,
 ): Promise<Record<string, any> | undefined> => {
-  const allValues = await loadValues(env.ENV_DIR)
-  const valuesPath = path.join(env.ENV_DIR, 'values-repo.yaml')
-  await writeFile(valuesPath, objectToYaml(allValues))
-
   let output: ProcessOutputTrimmed
   if (filesOnly)
     output = await hf(

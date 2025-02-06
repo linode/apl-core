@@ -1,9 +1,10 @@
+import { rm, writeFile } from 'fs/promises'
 import { globSync } from 'glob'
 import jsonpath from 'jsonpath'
 import { cloneDeep, get, merge, set } from 'lodash'
 import path from 'path'
 import { getDirNames, loadYaml } from './utils'
-import { writeValuesToFile } from './values'
+import { objectToYaml, writeValuesToFile } from './values'
 export const getTeamNames = async (envDir: string): Promise<Array<string>> => {
   const teamsDir = path.join(envDir, 'env', 'teams')
   const teamNames = await getDirNames(teamsDir, { skipHidden: true })
@@ -285,6 +286,19 @@ export const saveResourceGroupToFiles = async (
       await writeValuesToFile(filePath, data)
     }),
   )
+}
+
+export const setValuesFile = async (envDir: string): Promise<string> => {
+  const allValues = await loadValues(envDir)
+  const valuesPath = path.join(envDir, 'values-repo.yaml')
+  await writeFile(valuesPath, objectToYaml(allValues))
+  return valuesPath
+}
+
+export const unsetValuesFile = async (envDir: string): Promise<string> => {
+  const valuesPath = path.join(envDir, 'values-repo.yaml')
+  await rm(valuesPath, { force: true })
+  return valuesPath
 }
 
 export const loadValues = async (envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> => {
