@@ -50,6 +50,7 @@ dependencies:
     version: 3.1.4
     repository: https://kyverno.github.io/kyverno/
   - name: loki-distributed
+    alias: loki
     version: 0.79.4
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
@@ -62,6 +63,7 @@ dependencies:
     version: 3.7.4
     repository: https://charts.bitnami.com/bitnami
   - name: opentelemetry-operator
+    alias: otel-operator
     version: 0.33.0
     repository: https://open-telemetry.github.io/opentelemetry-helm-charts
   - name: prometheus-blackbox-exporter
@@ -83,6 +85,7 @@ dependencies:
     version: 1.0.2
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: tempo-distributed
+    alias: tempo
     version: 1.18.5
     repository: https://grafana.github.io/helm-charts
   - name: thanos
