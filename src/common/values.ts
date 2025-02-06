@@ -83,7 +83,7 @@ export const getRepo = (values: Record<string, any>): Repo => {
     branch = otomiApiGit?.branch ?? branch
   } else {
     username = 'otomi-admin'
-    password = values?.apps?.gitea?.adminPassword ?? values?.otomi?.adminPassword
+    password = values?.apps?.gitea?.adminPassword
     email = `pipeline@cluster.local`
     const giteaUrl = `gitea-http.gitea.svc.cluster.local:3000`
     const giteaOrg = 'otomi'
