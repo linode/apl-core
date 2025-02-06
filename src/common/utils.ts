@@ -7,7 +7,6 @@ import { readFile, readdir } from 'fs/promises'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
-import { minimatch } from 'minimatch'
 import { resolve } from 'path'
 import { $, ProcessOutput } from 'zx'
 import { env } from './envalid'
@@ -59,18 +58,6 @@ export const getDirNames = async (dir: string, opts?: { skipHidden: boolean }): 
 export const enum FileType {
   Directory = 'directory',
   File = 'file',
-}
-export const getFiles = async (dir: string, opts?: { skipHidden: boolean; fileType: FileType }): Promise<string[]> => {
-  const dirs = await readdir(dir, { withFileTypes: true })
-  const fileNames: Array<string> = []
-
-  dirs.map((dirOrFile) => {
-    if (opts?.skipHidden && dirOrFile.name.startsWith('.')) return
-
-    if (opts?.fileType == FileType.Directory && dirOrFile.isDirectory()) fileNames.push(dirOrFile.name)
-    if (opts?.fileType == FileType.File && dirOrFile.isFile()) fileNames.push(dirOrFile.name)
-  })
-  return fileNames
 }
 
 export const getEnvFiles = (): Promise<string[]> => {
@@ -210,11 +197,6 @@ export const semverCompare = (a, b) => {
     if (Number.isNaN(na) && !Number.isNaN(nb)) return -1
   }
   return 0
-}
-
-export const isPathMatch = (filePath: string, patterns: Array<string>) => {
-  if (patterns.length === 0) return false
-  return patterns.some((pattern) => minimatch(filePath, pattern, { matchBase: true }))
 }
 
 export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> => {
