@@ -1,7 +1,7 @@
 import { copy, pathExists } from 'fs-extra'
 import { copyFile, mkdir, readFile, writeFile } from 'fs/promises'
 import { generate as generatePassword } from 'generate-password'
-import { cloneDeep, get, merge } from 'lodash'
+import { cloneDeep, get, isEmpty, merge } from 'lodash'
 import { pki } from 'node-forge'
 import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
@@ -37,9 +37,9 @@ export const bootstrapSops = async (
     decrypt,
     encrypt,
     gucci,
-    hfValues,
     loadYaml,
     pathExists,
+    getKmsSettings,
     readFile,
     terminal,
     writeFile,
@@ -47,7 +47,7 @@ export const bootstrapSops = async (
 ): Promise<void> => {
   const d = deps.terminal(`cmd:${cmdName}:genSops`)
   const targetPath = `${envDir}/.sops.yaml`
-  const values = await getKmsSettings(envDir)
+  const values = await deps.getKmsSettings(envDir)
 
   const provider: string | undefined = values?.kms?.sops?.provider
   if (!provider) {
@@ -297,7 +297,7 @@ export const processValues = async (
     d.log(`Loading repo values from ${ENV_DIR}`)
     // we can only read values from ENV_DIR if we can determine cluster.providers
     storedSecrets = {}
-    if ((await deps.loadYaml(`${ENV_DIR}/env/settings/cluster.yaml`, { noError: true }))?.spec?.provider) {
+    if (await deps.pathExists(`${ENV_DIR}/env/settings/cluster.yaml`)) {
       await deps.decrypt()
       originalInput = (await deps.hfValues({ defaultValues: true })) || {}
     }
@@ -329,7 +329,7 @@ export const processValues = async (
   if (deps.isChart) {
     // to support potential failing chart install we store secrets on cluster
     if (!(env.isDev && env.DISABLE_SYNC)) await deps.createK8sSecret(DEPLOYMENT_PASSWORDS_SECRET, 'otomi', allSecrets)
-  } else if (originalInput) {
+  } else if (!isEmpty(originalInput)) {
     // cli: when we are bootstrapping from a non empty values repo, validate the input
     await deps.validateValues()
     // Ensure newly generated secrets stored in .dec file are encrypted
