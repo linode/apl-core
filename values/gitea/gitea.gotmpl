@@ -81,9 +81,10 @@ gitea:
       ENABLE_OPENID_SIGNIN: true
       ENABLE_OPENID_SIGNUP: true
     oauth2_client:
-      OPENID_CONNECT_SCOPES: openid email profile
       ENABLE_AUTO_REGISTRATION: true
-      ACCOUNT_LINKING: auto
+      {{/*Disabled so that when an user with the same username is created in gitea, it will not be linked to another account*/}}
+      ACCOUNT_LINKING: disabled
+      OPENID_CONNECT_SCOPES: openid email profile
       USERNAME: email
     repository:
       DEFAULT_BRANCH: main
@@ -102,6 +103,9 @@ gitea:
     session:
       COOKIE_SECURE: true
       DOMAIN: {{ $giteaDomain }}
+      PROVIDER: memory
+      GC_INTERVAL_TIME: 3600
+      SESSION_LIFE_TIME: 3600
     webhook:
       ALLOWED_HOST_LIST: "*"
     server:
@@ -233,8 +237,12 @@ extraVolumeMounts:
 {{- end }}
 extraVolumes:
   - name: backup
+{{- if ne $v.cluster.provider "custom" }}
     persistentVolumeClaim:
       claimName: gitea-backup
+{{- else }}
+    emptyDir: {}
+{{- end }}
 {{- if $v._derived.untrustedCA }}
   - name: custom-ca
     secret:
