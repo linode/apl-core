@@ -5,6 +5,7 @@ type: library
 version: 0.1.0
 dependencies:
   - name: argo-cd
+    alias: argocd
     version: 6.7.3
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
