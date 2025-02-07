@@ -432,7 +432,7 @@ export const migrate = async (): Promise<boolean> => {
       const newTeam = { ...teamResources, settings: teamSettings }
       oldTeams[teamName] = newTeam
     })
-    const users = get(oldValues, 'teamConfig', [])
+    const users = get(oldValues, 'users', [])
     users.forEach((user) => {
       set(user, 'id', user.id || randomUUID())
     })
