@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto'
+import { rmSync } from 'fs'
 import { pathExists } from 'fs-extra'
 import { rm, writeFile } from 'fs/promises'
 import { globSync } from 'glob'
@@ -380,6 +381,12 @@ export const setValuesFile = async (envDir: string, deps = { pathExists, loadVal
 export const unsetValuesFile = async (envDir: string): Promise<string> => {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
   await rm(valuesPath, { force: true })
+  return valuesPath
+}
+
+export const unsetValuesFileSync = (envDir: string): string => {
+  const valuesPath = path.join(envDir, 'values-repo.yaml')
+  rmSync(valuesPath, { force: true })
   return valuesPath
 }
 
