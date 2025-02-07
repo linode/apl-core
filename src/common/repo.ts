@@ -1,3 +1,4 @@
+import { pathExists } from 'fs-extra'
 import { rm, writeFile } from 'fs/promises'
 import { globSync } from 'glob'
 import jsonpath from 'jsonpath'
@@ -288,10 +289,11 @@ export const saveResourceGroupToFiles = async (
   )
 }
 
-export const setValuesFile = async (envDir: string): Promise<string> => {
-  const allValues = await loadValues(envDir)
+export const setValuesFile = async (envDir: string, deps = { pathExists, loadValues, writeFile }): Promise<string> => {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
-  await writeFile(valuesPath, objectToYaml(allValues))
+  if (await deps.pathExists(valuesPath)) return valuesPath
+  const allValues = await deps.loadValues(envDir)
+  await deps.writeFile(valuesPath, objectToYaml(allValues))
   return valuesPath
 }
 
