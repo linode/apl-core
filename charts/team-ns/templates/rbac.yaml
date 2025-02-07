@@ -231,7 +231,7 @@ rules:
 # Allows the apl-gitea-operator to create, get and list secrets in the team namespace. This is necessary to create service accounts for build in harbor.
 - apiGroups: [""]
   resources: ["secrets"]
-  verbs: ["create", "get", "list"]
+  verbs: ["create", "get", "list", "delete", "update", "patch"]
 ---
 # RoleBinding for the above Role in team namespace
 apiVersion: rbac.authorization.k8s.io/v1
