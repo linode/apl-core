@@ -221,3 +221,30 @@ roleRef:
   kind: Role
   name: tekton-triggers-createwebhook-team-{{ $v.teamId }}
 ---
+# Role for managing service accounts in team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: apl-gitea-operator-service-accounts
+  namespace: team-{{ $v.teamId }}
+rules:
+# Allows the apl-gitea-operator to create, get and list secrets in the team namespace. This is necessary to create service accounts for build in harbor.
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create", "get", "list"]
+---
+# RoleBinding for the above Role in team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: apl-gitea-operator-service-accounts
+  namespace: team-{{ $v.teamId }}
+subjects:
+- kind: ServiceAccount
+  namespace: apl-gitea-operator
+  name: apl-gitea-operator
+roleRef:
+  kind: Role
+  name: apl-gitea-operator-service-accounts
+  apiGroup: rbac.authorization.k8s.io
+---
