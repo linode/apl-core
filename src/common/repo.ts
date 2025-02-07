@@ -85,7 +85,7 @@ export const getResourceName = (fileMap: FileMap, jsonPath: jsonpath.PathCompone
   }
 }
 
-const getTeamNameFromJsonPath = (jsonPath: jsonpath.PathComponent[]): string => {
+export const getTeamNameFromJsonPath = (jsonPath: jsonpath.PathComponent[]): string => {
   const teamName = jsonPath[2].toString()
   return teamName
 }

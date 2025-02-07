@@ -5,6 +5,7 @@ import {
   getJsonPath,
   getResourceFileName,
   getResourceName,
+  getTeamNameFromJsonPath,
   hasCorrespondingDecryptedFile,
 } from 'src/common/repo'
 import stubs from 'src/test-stubs'
@@ -183,5 +184,12 @@ describe('getResourceFileName', () => {
     const data = { id: 'c' }
     const name = getResourceFileName(fileMap, ['$', 'users', '[1]'], data)
     expect(name).toBe('c')
+  })
+})
+
+describe('getTeamNameFromJsonPath', () => {
+  it('should return team name', () => {
+    const name = getTeamNameFromJsonPath(['$', 'teamConfig', 'demo', 'netpols', '[1]'])
+    expect(name).toBe('demo')
   })
 })
