@@ -34,13 +34,13 @@ export const scriptName = 'otomi'
  * Prepare environment when running an otomi command
  */
 export const prepareEnvironment = async (options?: PrepareEnvironmentOptions): Promise<void> => {
+  await unsetValuesFile(env.ENV_DIR)
   if (options?.skipAllPreChecks) return
   const d = terminal('common:prepareEnvironment')
   d.info('Checking environment')
   if (!options?.skipEnvDirCheck && (await isReadyEnvDir())) {
     if (!options?.skipDecrypt) await decrypt()
   }
-  await unsetValuesFile(env.ENV_DIR)
 }
 
 /**
