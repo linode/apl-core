@@ -88,7 +88,7 @@ export const getFilePath = (
   return path.normalize(filePath)
 }
 
-const getFileMaps = (envDir: string): Array<FileMap> => {
+export const getFileMaps = (envDir: string): Array<FileMap> => {
   return [
     {
       kind: 'AplCoreApp',

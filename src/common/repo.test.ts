@@ -1,4 +1,4 @@
-import { FileMap, getFilePath, getJsonPath, hasCorrespondingDecryptedFile } from 'src/common/repo'
+import { FileMap, getFileMaps, getFilePath, getJsonPath, hasCorrespondingDecryptedFile } from 'src/common/repo'
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
@@ -68,5 +68,24 @@ describe('hasCorrespondingDecryptedFile', () => {
   it('should filter out encrypted files', () => {
     expect(hasCorrespondingDecryptedFile('test.yaml.dec', ['test.yaml.dec', 'test.yaml'])).toEqual(false)
     expect(hasCorrespondingDecryptedFile('test.yaml', ['test.yaml.dec', 'test.yaml'])).toEqual(true)
+  })
+})
+
+describe('File map constraints', () => {
+  it('should pass constraints', () => {
+    const maps = getFileMaps('/tmp')
+    maps.forEach((item) => {
+      expect(item.jsonPathExpression.startsWith('$.')).toBe(true)
+      if (item.processAs === 'arrayItem') {
+        expect(item.jsonPathExpression.endsWith('[*]')).toBe(true)
+      }
+      if (item.processAs === 'mapItem') {
+        expect(item.jsonPathExpression.endsWith('[*]')).toBe(false)
+      }
+      if (item.resourceGroup === 'team') {
+        expect(item.jsonPathExpression.startsWith('$.teamConfig.*.')).toBe(true)
+        expect(item.pathGlob.startsWith('/tmp/env/teams/*/')).toBe(true)
+      }
+    })
   })
 })
