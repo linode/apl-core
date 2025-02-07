@@ -23,7 +23,7 @@ import {
 import { saveValues } from './repo'
 import { HelmArguments } from './yargs'
 
-export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 20): string => {
+export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
   return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
 }
 
