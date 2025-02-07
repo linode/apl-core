@@ -47,7 +47,11 @@ export interface FileMap {
   resourceDir: string
 }
 
-export const getFileName = (fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) => {
+export const getResourceFileName = (
+  fileMap: FileMap,
+  jsonPath: jsonpath.PathComponent[],
+  data: Record<string, any>,
+) => {
   let fileName = 'unknown'
   if (fileMap.resourceGroup === 'team') {
     if (fileMap.processAs === 'arrayItem') {
@@ -92,7 +96,7 @@ export const getFilePath = (
   fileNamePrefix: string,
 ) => {
   let filePath = ''
-  const resourceName = getFileName(fileMap, jsonPath, data)
+  const resourceName = getResourceFileName(fileMap, jsonPath, data)
   if (fileMap.resourceGroup === 'team') {
     const teamName = getTeamNameFromJsonPath(jsonPath)
     filePath = `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
