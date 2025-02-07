@@ -48,21 +48,37 @@ export interface FileMap {
 }
 
 export const getFileName = (fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) => {
-  let resourceName = 'unknown'
+  let fileName = 'unknown'
   if (fileMap.resourceGroup === 'team') {
     if (fileMap.processAs === 'arrayItem') {
-      resourceName = data.name || data.id || resourceName
+      fileName = data.name || data.id || fileName
     } else {
-      resourceName = jsonPath[jsonPath.length - 1].toString()
+      fileName = jsonPath[jsonPath.length - 1].toString()
     }
   } else {
     if (fileMap.processAs === 'arrayItem') {
-      resourceName = data.name || data.id || resourceName
+      fileName = data.name || data.id || fileName
     } else {
-      resourceName = jsonPath[jsonPath.length - 1].toString()
+      fileName = jsonPath[jsonPath.length - 1].toString()
     }
   }
-  return resourceName
+  return fileName
+}
+
+export const getResourceName = (fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) => {
+  let resourceName = 'unknown'
+  if (fileMap.processAs === 'arrayItem') {
+    resourceName = data.name || data.id || resourceName
+    return resourceName
+  }
+
+  if (fileMap.resourceGroup === 'team') {
+    resourceName = getTeamNameFromJsonPath(jsonPath)
+    return resourceName
+  } else {
+    resourceName = jsonPath[jsonPath.length - 1].toString()
+    return resourceName
+  }
 }
 
 const getTeamNameFromJsonPath = (jsonPath: jsonpath.PathComponent[]): string => {
@@ -333,7 +349,7 @@ export const saveResourceGroupToFiles = async (
         const data = {
           kind: fileMap.kind,
           metadata: {
-            name: getFileName(fileMap, node.path, node.value),
+            name: getResourceName(fileMap, node.path, node.value),
             labels: {},
           },
           spec: node.value,

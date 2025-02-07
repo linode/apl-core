@@ -1,4 +1,11 @@
-import { FileMap, getFileMaps, getFilePath, getJsonPath, hasCorrespondingDecryptedFile } from 'src/common/repo'
+import {
+  FileMap,
+  getFileMaps,
+  getFilePath,
+  getJsonPath,
+  getResourceName,
+  hasCorrespondingDecryptedFile,
+} from 'src/common/repo'
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
@@ -87,5 +94,49 @@ describe('File map constraints', () => {
         expect(item.pathGlob.startsWith('/tmp/env/teams/*/')).toBe(true)
       }
     })
+  })
+})
+
+describe('getResourceName', () => {
+  let fileMap: FileMap
+  beforeEach(() => {
+    fileMap = {
+      kind: 'AplTeamNetworkControl',
+      envDir: '',
+      jsonPathExpression: '',
+      pathGlob: '',
+      processAs: 'arrayItem',
+      resourceGroup: 'team',
+      resourceDir: '',
+    }
+  })
+  it('should return resource name for team arrayItem', () => {
+    fileMap.jsonPathExpression = 'teamConfig.*.netpols[*]'
+    fileMap.resourceGroup = 'team'
+    fileMap.processAs = 'arrayItem'
+    const data = { name: 'test' }
+    const name = getResourceName(fileMap, ['$', 'teamConfig', 'demo', 'netpols', '[1]'], data)
+    expect(name).toBe('test')
+  })
+  it('should return resource name for team mapItem', () => {
+    fileMap.resourceGroup = 'team'
+    fileMap.processAs = 'mapItem'
+    const data = { name: 'test' }
+    const name = getResourceName(fileMap, ['$', 'teamConfig', 'demo', 'netpols', '[1]'], data)
+    expect(name).toBe('demo')
+  })
+  it('should return resource for platform mapItem', () => {
+    fileMap.resourceGroup = 'platformSettings'
+    fileMap.processAs = 'mapItem'
+    const data = {}
+    const name = getResourceName(fileMap, ['$', 'dns'], data)
+    expect(name).toBe('dns')
+  })
+  it('should return resource for platform arrayItem', () => {
+    fileMap.resourceGroup = 'users'
+    fileMap.processAs = 'arrayItem'
+    const data = { id: 'uuid' }
+    const name = getResourceName(fileMap, ['$', 'users', '[1]'], data)
+    expect(name).toBe('uuid')
   })
 })
