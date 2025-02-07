@@ -5,7 +5,7 @@ import { parse } from 'yaml'
 import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { setValuesFile, unsetValuesFile } from './repo'
+import { setValuesFile } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, readdirRecurse, rootDir } from './utils'
 import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
@@ -63,15 +63,11 @@ type HFOptions = {
 
 export const hf = async (args: HFParams, opts?: HFOptions, envDir = env.ENV_DIR): Promise<ProcessOutputTrimmed> => {
   await setValuesFile(env.ENV_DIR)
-  try {
-    const proc: ProcessPromise = hfCore(args, envDir)
-    if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
-    if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
-    const res = new ProcessOutputTrimmed(await proc)
-    return res
-  } finally {
-    await unsetValuesFile(envDir)
-  }
+  const proc: ProcessPromise = hfCore(args, envDir)
+  if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
+  if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
+  const res = new ProcessOutputTrimmed(await proc)
+  return res
 }
 
 export interface ValuesArgs {
