@@ -193,3 +193,61 @@ describe('getTeamNameFromJsonPath', () => {
     expect(name).toBe('demo')
   })
 })
+
+describe('getFilePath', () => {
+  it('should return team name', () => {
+    const fileMap: FileMap = {
+      kind: 'AplTeamNetworkControl',
+      envDir: '/tmp',
+      jsonPathExpression: '',
+      pathGlob: '',
+      processAs: 'arrayItem',
+      resourceGroup: 'team',
+      resourceDir: 'netpols',
+    }
+    const jsonPath = ['$', 'teamConfig', 'demo', 'netpols', '[1]']
+    const data = { name: 'a' }
+    let filePath = getFilePath(fileMap, jsonPath, data, '')
+    expect(filePath).toBe('/tmp/env/teams/demo/netpols/a.yaml')
+
+    filePath = getFilePath(fileMap, jsonPath, data, 'secrets.')
+    expect(filePath).toBe('/tmp/env/teams/demo/netpols/secrets.a.yaml')
+  })
+
+  it('should return file path for platfrom dns', () => {
+    const fileMap: FileMap = {
+      kind: 'AplDns',
+      envDir: '/tmp',
+      jsonPathExpression: '',
+      pathGlob: '',
+      processAs: 'mapItem',
+      resourceGroup: 'platformSettings',
+      resourceDir: 'settings',
+    }
+    const jsonPath = ['$', 'dns']
+    const data = { name: 'a' }
+    let filePath = getFilePath(fileMap, jsonPath, data, '')
+    expect(filePath).toBe('/tmp/env/settings/dns.yaml')
+
+    filePath = getFilePath(fileMap, jsonPath, data, 'secrets.')
+    expect(filePath).toBe('/tmp/env/settings/secrets.dns.yaml')
+  })
+  it('should return file path for user', () => {
+    const fileMap: FileMap = {
+      kind: 'AplUser',
+      envDir: '/tmp',
+      jsonPathExpression: '',
+      pathGlob: '',
+      processAs: 'arrayItem',
+      resourceGroup: 'users',
+      resourceDir: 'users',
+    }
+    const jsonPath = ['$', 'dns']
+    const data = { id: 'a' }
+    let filePath = getFilePath(fileMap, jsonPath, data, '')
+    expect(filePath).toBe('/tmp/env/users/a.yaml')
+
+    filePath = getFilePath(fileMap, jsonPath, data, 'secrets.')
+    expect(filePath).toBe('/tmp/env/users/secrets.a.yaml')
+  })
+})
