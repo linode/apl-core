@@ -1478,6 +1478,8 @@ definitions:
     type: object
     description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
     properties:
+      id:
+        type: string
       email:
         $ref: '#/definitions/email'
         x-secret: ''
