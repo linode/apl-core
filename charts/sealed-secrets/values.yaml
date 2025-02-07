@@ -39,7 +39,7 @@ commonLabels: {}
 image:
   registry: docker.io
   repository: bitnami/sealed-secrets-controller
-  tag: v0.24.5
+  tag: 0.28.0
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -74,8 +74,20 @@ skipRecreate: false
 ## @param keyrenewperiod Specifies key renewal period. Default 30 days
 ## e.g
 ## keyrenewperiod: "720h30m"
+## To disable use "0", with quotes!
 ##
 keyrenewperiod: ""
+## @param keyttl Specifies the certificate validity duration. Default 10 years.
+## e.g for one year
+## keyttl: "8760h00m00s"
+##
+keyttl: ""
+## @param keycutofftime Specifies a date at which the controller should generate a new certificate. Useful in early key renewal scenarios.
+## Takes a date formated according to RFC1123. Can be obtained with the 'date -R' command on a unix system.
+## e.g 
+## keycutofftime: "Mon, 14 Oct 2024 21:45:30 +0200"
+##
+keycutofftime: ""
 ## @param rateLimit Number of allowed sustained request per second for verify endpoint
 ##
 rateLimit: ""
@@ -94,6 +106,15 @@ privateKeyLabels: {}
 ## @param logInfoStdout Specifies whether the Sealed Secrets controller will log info to stdout
 ##
 logInfoStdout: false
+## @param logLevel Specifies log level of controller (INFO,ERROR)
+##
+logLevel: ""
+## @param logFormat Specifies log format (text,json)
+##
+logFormat: ""
+## @param maxRetries Number of maximum retries
+##
+maxRetries: ""
 ## @param command Override default container command
 ##
 command: []
@@ -223,9 +244,25 @@ additionalVolumes: []
 additionalVolumeMounts: []
 ## @param hostNetwork Sealed Secrets pods' hostNetwork
 hostNetwork: false
+## Sealed Secrets controller ports to open
+## If hostNetwork true: the hostPort is set identical to the containerPort
+## @param containerPorts.http Controller HTTP Port on the Host and Container
+## @param containerPorts.metrics Metrics HTTP Port on the Host and Container
+##
+containerPorts:
+  http: 8080
+  metrics: 8081
+## Sealed Secrets controller ports to be exposed as hostPort
+## If hostNetwork is false, only the ports specified here will be exposed (or not if set to an empty string)
+## @param hostPorts.http Controller HTTP Port on the Host
+## @param hostPorts.metrics Metrics HTTP Port on the Host
+##
+hostPorts:
+  http: ""
+  metrics: ""
+
 ## @param dnsPolicy Sealed Secrets pods' dnsPolicy
 dnsPolicy: ""
-
 ## @section Traffic Exposure Parameters
 
 ## Sealed Secret service parameters
@@ -234,6 +271,9 @@ service:
   ## @param service.type Sealed Secret service type
   ##
   type: ClusterIP
+  ## @param service.loadBalancerClass Sealed Secret service loadBalancerClass
+  ##
+  loadBalancerClass: ""
   ## @param service.port Sealed Secret service HTTP port
   ##
   port: 8080
@@ -398,6 +438,22 @@ rbac:
   ## @param rbac.pspEnabled PodSecurityPolicy
   ##
   pspEnabled: false
+  ## "Proxier" RBAC Role configuration
+  ##
+  serviceProxier:
+    ## @param rbac.serviceProxier.create Specifies whether to create the "proxier" role, to allow external users to access the SealedSecret API
+    ##
+    create: true
+    ## @param rbac.serviceProxier.bind Specifies whether to create a RoleBinding for the "proxier" role
+    ##
+    bind: true
+    ## @param rbac.serviceProxier.subjects Specifies the RBAC subjects to grant the "proxier" role to, in the created RoleBinding
+    ## It is best to change this to something narrower, as the default binding gives `system:authenticated` access, which is very broad
+    ##
+    subjects: |
+      - apiGroup: rbac.authorization.k8s.io
+        kind: Group
+        name: system:authenticated
 
 ## @section Metrics parameters
 
@@ -459,6 +515,9 @@ metrics:
     ## @param metrics.service.type Sealed Secret Metrics service type
     ##
     type: ClusterIP
+    ## @param metrics.service.loadBalancerClass Sealed Secret Metrics service loadBalancerClass
+    ##
+    loadBalancerClass: ""
     ## @param metrics.service.port Sealed Secret service Metrics HTTP port
     ##
     port: 8081
