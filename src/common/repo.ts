@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { pathExists } from 'fs-extra'
 import { rm, writeFile } from 'fs/promises'
 import { globSync } from 'glob'
@@ -14,6 +15,31 @@ export const getTeamNames = async (envDir: string): Promise<Array<string>> => {
 
 export interface FileMap {
   envDir: string
+  kind:
+    | 'AplCoreApp'
+    | 'AplAlerts'
+    | 'AplCluster'
+    | 'AplDatabase'
+    | 'AplDns'
+    | 'AplIngress'
+    | 'AplObjectStorage'
+    | 'AplKms'
+    | 'AplIdentityProvider'
+    | 'AplCapabilities'
+    | 'AplSmtp'
+    | 'AplBackups'
+    | 'AplUser'
+    | 'AplTeamBuild'
+    | 'AplTeamPolicy'
+    | 'AplTeamSettings'
+    | 'AplTeamNetworkControl'
+    | 'AplTeamProject'
+    | 'AplTeamBackup'
+    | 'AplTeamSecret'
+    | 'AplTeamService'
+    | 'AplTeamSettings'
+    | 'AplTeamWorkload'
+    | 'AplVersions'
   jsonPathExpression: string
   pathGlob: string
   processAs: 'arrayItem' | 'mapItem'
@@ -21,6 +47,28 @@ export interface FileMap {
   resourceDir: string
 }
 
+export const getResourceName = (fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) => {
+  let resourceName = randomUUID()
+  if (fileMap.resourceGroup === 'team') {
+    if (fileMap.processAs === 'arrayItem') {
+      resourceName = data.name || data.id || resourceName
+    } else {
+      resourceName = jsonPath[jsonPath.length - 1].toString()
+    }
+  } else {
+    if (fileMap.processAs === 'arrayItem') {
+      resourceName = data.name || data.id || resourceName
+    } else {
+      resourceName = jsonPath[jsonPath.length - 1].toString()
+    }
+  }
+  return resourceName
+}
+
+const getTeamNameFromJsonPath = (jsonPath: jsonpath.PathComponent[]): string => {
+  const teamName = jsonPath[2].toString()
+  return teamName
+}
 export const getFilePath = (
   fileMap: FileMap,
   jsonPath: jsonpath.PathComponent[],
@@ -28,24 +76,12 @@ export const getFilePath = (
   fileNamePrefix: string,
 ) => {
   let filePath = ''
+  const resourceName = getResourceName(fileMap, jsonPath, data)
   if (fileMap.resourceGroup === 'team') {
-    const teamName = jsonPath[2].toString()
-    if (fileMap.processAs === 'arrayItem') {
-      const resourceName = data.name || data.id
-      filePath = `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
-    } else {
-      const resourceName = jsonPath[jsonPath.length - 1].toString()
-      filePath = `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
-    }
+    const teamName = getTeamNameFromJsonPath(jsonPath)
+    filePath = `${fileMap.envDir}/env/teams/${teamName}/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
   } else {
-    if (fileMap.processAs === 'arrayItem') {
-      // data.email is used because user object does not have id property
-      const resourceName = data.name || data.id || data.email
-      filePath = `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
-    } else {
-      const resourceName = jsonPath[jsonPath.length - 1].toString()
-      filePath = `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
-    }
+    filePath = `${fileMap.envDir}/env/${fileMap.resourceDir}/${fileNamePrefix}${resourceName}.yaml`
   }
   // normalize paths like /ab/c/./test/yaml
   return path.normalize(filePath)
@@ -54,6 +90,7 @@ export const getFilePath = (
 const getFileMaps = (envDir: string): Array<FileMap> => {
   return [
     {
+      kind: 'AplCoreApp',
       envDir,
       jsonPathExpression: '$.apps.*',
       pathGlob: `${envDir}/env/apps/*.{yaml,yaml.dec}`,
@@ -63,6 +100,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
     },
     {
       envDir,
+      kind: 'AplAlerts',
       jsonPathExpression: '$.alerts',
       pathGlob: `${envDir}/env/settings/*alerts.{yaml,yaml.dec}`,
       processAs: 'mapItem',
@@ -70,6 +108,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplCluster',
       envDir,
       jsonPathExpression: '$.cluster',
       pathGlob: `${envDir}/env/settings/cluster.{yaml,yaml.dec}`,
@@ -78,6 +117,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplDatabase',
       envDir,
       jsonPathExpression: '$.databases.*',
       pathGlob: `${envDir}/env/databases/*.{yaml,yaml.dec}`,
@@ -86,6 +126,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'databases',
     },
     {
+      kind: 'AplDns',
       envDir,
       jsonPathExpression: '$.dns',
       pathGlob: `${envDir}/env/settings/*dns.{yaml,yaml.dec}`,
@@ -94,6 +135,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplIngress',
       envDir,
       jsonPathExpression: '$.ingress',
       pathGlob: `${envDir}/env/settings/ingress.yaml`,
@@ -102,6 +144,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplKms',
       envDir,
       jsonPathExpression: '$.kms',
       pathGlob: `${envDir}/env/settings/*kms.{yaml,yaml.dec}`,
@@ -110,6 +153,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplObjectStorage',
       envDir,
       jsonPathExpression: '$.obj',
       pathGlob: `${envDir}/env/settings/*obj.{yaml,yaml.dec}`,
@@ -118,6 +162,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplIdentityProvider',
       envDir,
       jsonPathExpression: '$.oidc',
       pathGlob: `${envDir}/env/settings/*oidc.{yaml,yaml.dec}`,
@@ -126,6 +171,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplCapabilities',
       envDir,
       jsonPathExpression: '$.otomi',
       pathGlob: `${envDir}/env/settings/*otomi.{yaml,yaml.dec}`,
@@ -134,6 +180,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplBackups',
       envDir,
       jsonPathExpression: '$.platformBackups',
       pathGlob: `${envDir}/env/settings/*platformBackups.{yaml,yaml.dec}`,
@@ -142,6 +189,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplSmtp',
       envDir,
       jsonPathExpression: '$.smtp',
       pathGlob: `${envDir}/env/settings/*smtp.{yaml,yaml.dec}`,
@@ -150,6 +198,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplUser',
       envDir,
       jsonPathExpression: '$.users[*]',
       pathGlob: `${envDir}/env/users/*.{yaml,yaml.dec}`,
@@ -158,6 +207,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'users',
     },
     {
+      kind: 'AplVersions',
       envDir,
       jsonPathExpression: '$.versions',
       pathGlob: `${envDir}/env/settings/versions.yaml`,
@@ -166,6 +216,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
+      kind: 'AplTeamBuild',
       envDir,
       jsonPathExpression: '$.teamConfig.*.builds[*]',
       pathGlob: `${envDir}/env/teams/*/builds/*.yaml`,
@@ -174,6 +225,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'builds',
     },
     {
+      kind: 'AplTeamWorkload',
       envDir,
       jsonPathExpression: '$.teamConfig.*.workloads[*]',
       pathGlob: `${envDir}/env/teams/*/workloads/*.yaml`,
@@ -182,6 +234,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'workloads',
     },
     {
+      kind: 'AplTeamService',
       envDir,
       jsonPathExpression: '$.teamConfig.*.services[*]',
       pathGlob: `${envDir}/env/teams/*/services/*.yaml`,
@@ -190,6 +243,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'services',
     },
     {
+      kind: 'AplTeamSecret',
       envDir,
       jsonPathExpression: '$.teamConfig.*.sealedsecrets[*]',
       pathGlob: `${envDir}/env/teams/*/sealedsecrets/*.yaml`,
@@ -198,6 +252,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'sealedsecrets',
     },
     {
+      kind: 'AplTeamBackup',
       envDir,
       jsonPathExpression: '$.teamConfig.*.backups[*]',
       pathGlob: `${envDir}/env/teams/*/backups/*.yaml`,
@@ -206,6 +261,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'backups',
     },
     {
+      kind: 'AplTeamProject',
       envDir,
       jsonPathExpression: '$.teamConfig.*.projects[*]',
       pathGlob: `${envDir}/env/teams/*/projects/*.yaml`,
@@ -214,6 +270,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'projects',
     },
     {
+      kind: 'AplTeamNetworkControl',
       envDir,
       jsonPathExpression: '$.teamConfig.*.netpols[*]',
       pathGlob: `${envDir}/env/teams/*/netpols/*.yaml`,
@@ -222,6 +279,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'netpols',
     },
     {
+      kind: 'AplTeamSettings',
       envDir,
       jsonPathExpression: '$.teamConfig.*.settings',
       pathGlob: `${envDir}/env/teams/*/*settings{.yaml,.yaml.dec}`,
@@ -230,6 +288,7 @@ const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: '.',
     },
     {
+      kind: 'AplTeamPolicy',
       envDir,
       jsonPathExpression: '$.teamConfig.*.policies',
       pathGlob: `${envDir}/env/teams/*/policies.yaml`,
@@ -270,7 +329,17 @@ export const saveResourceGroupToFiles = async (
     jsonPathsValuesPublic.map(async (node) => {
       try {
         const filePath = getFilePath(fileMap, node.path, node.value, '')
-        const data = { spec: node.value }
+        const data = {
+          kind: fileMap.kind,
+          metadata: {
+            name: getResourceName(fileMap, node.path, node.value),
+            labels: {},
+          },
+          spec: node.value,
+        }
+        if (fileMap.resourceGroup === 'team') {
+          data.metadata.labels['apl.io/teamId'] = getTeamNameFromJsonPath(node.path)
+        }
         await writeValuesToFile(filePath, data)
       } catch (e) {
         console.log(node.path)
@@ -283,7 +352,18 @@ export const saveResourceGroupToFiles = async (
   await Promise.all(
     jsonPathsvaluesSecrets.map(async (node) => {
       const filePath = getFilePath(fileMap, node.path, node.value, 'secrets.')
-      const data = { spec: node.value }
+      const data = {
+        kind: fileMap.kind,
+        metadata: {
+          name: getResourceName(fileMap, node.path, node.value),
+          labels: {},
+        },
+        spec: node.value,
+      }
+      if (fileMap.resourceGroup === 'team') {
+        data.metadata.labels['apl.io/teamId'] = getTeamNameFromJsonPath(node.path)
+      }
+
       await writeValuesToFile(filePath, data)
     }),
   )

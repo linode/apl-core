@@ -6,6 +6,7 @@ const { terminal } = stubs
 describe('getFilePath', () => {
   it('should get path for apps', () => {
     const fileMap: FileMap = {
+      kind: 'AplCoreApp',
       envDir: '/tmp/values',
       jsonPathExpression: 'apps.*',
       pathGlob: '/tmp/values/env/apps/*.{yaml,yaml.dec}',
@@ -20,6 +21,7 @@ describe('getFilePath', () => {
   })
   it('should get path for teamA', () => {
     const fileMap: FileMap = {
+      kind: 'AplTeamNetworkControl',
       envDir: '/tmp/values',
       jsonPathExpression: 'teamConfig.*.netpols[*]',
       pathGlob: `/tmp/values/env/teams/*/netpols/*.yaml`,
@@ -36,6 +38,7 @@ describe('getFilePath', () => {
 describe('getJsonPath', () => {
   it('should get json path for app', () => {
     const fileMap: FileMap = {
+      kind: 'AplCoreApp',
       envDir: '/tmp/values',
       jsonPathExpression: 'apps.*',
       pathGlob: '/tmp/values/env/apps/*.{yaml,yaml.dec}',
@@ -48,6 +51,7 @@ describe('getJsonPath', () => {
   })
   it('should filter out encrypted files', () => {
     const fileMap: FileMap = {
+      kind: 'AplTeamNetworkControl',
       envDir: '/tmp/values',
       jsonPathExpression: 'teamConfig.*.netpols[*]',
       pathGlob: `/tmp/values/env/teams/*/netpols/*.yaml`,
