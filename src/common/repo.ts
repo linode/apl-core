@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import { rmSync } from 'fs'
 import { pathExists } from 'fs-extra'
 import { rm, writeFile } from 'fs/promises'
@@ -49,7 +48,7 @@ export interface FileMap {
 }
 
 export const getResourceName = (fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) => {
-  let resourceName = randomUUID()
+  let resourceName = 'unknow'
   if (fileMap.resourceGroup === 'team') {
     if (fileMap.processAs === 'arrayItem') {
       resourceName = data.name || data.id || resourceName
@@ -355,14 +354,7 @@ export const saveResourceGroupToFiles = async (
       const filePath = getFilePath(fileMap, node.path, node.value, 'secrets.')
       const data = {
         kind: fileMap.kind,
-        metadata: {
-          name: getResourceName(fileMap, node.path, node.value),
-          labels: {},
-        },
         spec: node.value,
-      }
-      if (fileMap.resourceGroup === 'team') {
-        data.metadata.labels['apl.io/teamId'] = getTeamNameFromJsonPath(node.path)
       }
 
       await writeValuesToFile(filePath, data)

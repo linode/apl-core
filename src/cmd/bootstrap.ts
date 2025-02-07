@@ -1,7 +1,8 @@
+import { randomUUID } from 'crypto'
 import { copy, pathExists } from 'fs-extra'
 import { copyFile, mkdir, readFile, writeFile } from 'fs/promises'
 import { generate as generatePassword } from 'generate-password'
-import { cloneDeep, get, isEmpty, merge } from 'lodash'
+import { cloneDeep, get, isEmpty, merge, set } from 'lodash'
 import { pki } from 'node-forge'
 import path from 'path'
 import { bootstrapGit } from 'src/common/bootstrap'
@@ -222,6 +223,9 @@ export const getUsers = (originalInput: any, deps = { generatePassword, addIniti
     deps.addPlatformAdmin(users, domainSuffix)
   }
   deps.addInitialPasswords(users)
+  users.forEach((user) => {
+    set(user, 'id', user.id || randomUUID())
+  })
   return users
 }
 
