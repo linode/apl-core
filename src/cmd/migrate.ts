@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
+import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { cloneDeep, each, get, omit, pick, pull, set, unset } from 'lodash'
@@ -413,7 +414,29 @@ export const migrate = async (): Promise<boolean> => {
     )
     const oldValues = parse(output.stdout).renderedvalues
     // TODO migrate team settings
-    oldValues.versions = { specVersion: 40 }
+    const oldTeams = get(oldValues, 'teamConfig', {})
+    Object.keys(oldTeams).forEach((teamName) => {
+      const settingsKeys = [
+        'alerts',
+        'id',
+        'limitRange',
+        'networkPolicy',
+        'oidc',
+        'resourceQuota',
+        'selfService',
+        'password',
+      ]
+      const teamSettings = pick(oldTeams[teamName], settingsKeys)
+      const teamResources = omit(oldTeams[teamName], settingsKeys)
+
+      const newTeam = { ...teamResources, settings: teamSettings }
+      oldTeams[teamName] = newTeam
+    })
+    const users = get(oldValues, 'teamConfig', [])
+    users.forEach((user) => {
+      set(user, 'id', user.id || randomUUID())
+    })
+    oldValues.versions = { specVersion: 1 }
     const teamNames = await getTeamNames(env.ENV_DIR)
     const secretPaths = await getSchemaSecretsPaths(teamNames)
     const valuesPublic = omit(oldValues, secretPaths)
