@@ -7,7 +7,7 @@ metadata:
   labels:
     app.kubernetes.io/name: trivy-operator
     app.kubernetes.io/instance: trivy-operator
-    app.kubernetes.io/version: 0.23.0
+    app.kubernetes.io/version: 0.24.0
     app.kubernetes.io/managed-by: kubectl
 spec:
   cron: {{ .Values.compliance.cron | quote}}
