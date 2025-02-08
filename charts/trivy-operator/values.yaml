@@ -20,6 +20,9 @@ targetNamespaces: ""
 # mode, i.e. when the targetNamespaces values is a blank string.
 excludeNamespaces: ""
 
+# -- extraEnv is a list of extra environment variables for the trivy-operator.
+extraEnv: []
+
 # -- targetWorkloads is a comma seperated list of Kubernetes workload resources
 # to be included in the vulnerability and config-audit scans
 # if left blank, all workload resources will be scanned
@@ -340,7 +343,7 @@ trivy:
     # -- repository of the Trivy image
     repository: aquasec/trivy
     # -- tag version of the Trivy image
-    tag: 0.57.1
+    tag: 0.59.1
     # -- imagePullSecret is the secret name to be used when pulling trivy image from private registries example : reg-secret
     # It is the user responsibility to create the secret for the private registry in `trivy-operator` namespace
     imagePullSecret: ~
@@ -636,7 +639,7 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 # -- securityContext security context
 securityContext:
@@ -659,16 +662,17 @@ volumes:
     emptyDir: {}
 
 resources: {}
-  # -- We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# -- We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
+
 # -- nodeSelector set the operator nodeSelector
 nodeSelector: {}
 
@@ -681,7 +685,7 @@ affinity: {}
 # -- priorityClassName set the operator priorityClassName
 priorityClassName: ""
 
-  # -- automountServiceAccountToken the flag to enable automount for service account token
+# -- automountServiceAccountToken the flag to enable automount for service account token
 automountServiceAccountToken: true
 
 policiesBundle:
@@ -691,7 +695,7 @@ policiesBundle:
   repository: aquasec/trivy-checks
   # -- tag version of the policies bundle
   tag: 1
-   # -- registryUser is the user for the registry
+  # -- registryUser is the user for the registry
   registryUser: ~
   # -- registryPassword is the password for the registry
   registryPassword: ~
@@ -702,7 +706,6 @@ policiesBundle:
   existingSecret: false
   # -- insecure is the flag to enable insecure connection to the policy bundle registry
   insecure: false
-
 
 nodeCollector:
   # -- useNodeSelector determine if to use nodeSelector (by auto detecting node name) with node-collector scan job
