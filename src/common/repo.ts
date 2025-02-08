@@ -337,33 +337,50 @@ export const saveValues = async (
   )
 }
 
+export const renderManifest = (fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) => {
+  const manifest = {
+    kind: fileMap.kind,
+    metadata: {
+      name: getResourceName(fileMap, jsonPath, data),
+      labels: {},
+    },
+    spec: data,
+  }
+  if (fileMap.resourceGroup === 'team') {
+    manifest.metadata.labels['apl.io/teamId'] = getTeamNameFromJsonPath(jsonPath)
+  }
+
+  return manifest
+}
+
+export const renderManifestForSecrets = (fileMap: FileMap, data: Record<string, any>) => {
+  const manifest = {
+    kind: fileMap.kind,
+    spec: data,
+  }
+
+  return manifest
+}
+
 export const saveResourceGroupToFiles = async (
   fileMap: FileMap,
   valuesPublic: Record<string, any>,
   valuesSecrets: Record<string, any>,
+  deps = { writeValuesToFile },
 ): Promise<void> => {
   const jsonPathsValuesPublic = jsonpath.nodes(valuesPublic, fileMap.jsonPathExpression)
   const jsonPathsvaluesSecrets = jsonpath.nodes(valuesSecrets, fileMap.jsonPathExpression)
 
   await Promise.all(
     jsonPathsValuesPublic.map(async (node) => {
+      const nodePath = node.path
+      const nodeValue = node.value
       try {
-        const filePath = getFilePath(fileMap, node.path, node.value, '')
-
-        const data = {
-          kind: fileMap.kind,
-          metadata: {
-            name: getResourceName(fileMap, node.path, node.value),
-            labels: {},
-          },
-          spec: node.value,
-        }
-        if (fileMap.resourceGroup === 'team') {
-          data.metadata.labels['apl.io/teamId'] = getTeamNameFromJsonPath(node.path)
-        }
-        await writeValuesToFile(filePath, data)
+        const filePath = getFilePath(fileMap, nodePath, nodeValue, '')
+        const manifest = renderManifest(fileMap, nodePath, nodeValue)
+        await deps.writeValuesToFile(filePath, manifest)
       } catch (e) {
-        console.log(node.path)
+        console.log(nodePath)
         console.log(fileMap)
         throw e
       }
@@ -372,13 +389,17 @@ export const saveResourceGroupToFiles = async (
 
   await Promise.all(
     jsonPathsvaluesSecrets.map(async (node) => {
-      const filePath = getFilePath(fileMap, node.path, node.value, 'secrets.')
-      const data = {
-        kind: fileMap.kind,
-        spec: node.value,
+      const nodePath = node.path
+      const nodeValue = node.value
+      try {
+        const filePath = getFilePath(fileMap, nodePath, nodeValue, 'secrets.')
+        const manifest = renderManifestForSecrets(fileMap, nodeValue)
+        await deps.writeValuesToFile(filePath, manifest)
+      } catch (e) {
+        console.log(nodePath)
+        console.log(fileMap)
+        throw e
       }
-
-      await writeValuesToFile(filePath, data)
     }),
   )
 }
@@ -439,6 +460,14 @@ export const getJsonPath = (fileMap: FileMap, filePath: string): string => {
   return jsonPath
 }
 
+export const initSpec = (fileMap: FileMap, jsonPath: string, spec: Record<string, any>) => {
+  if (fileMap.processAs === 'arrayItem') {
+    set(spec, jsonPath, [])
+  } else {
+    set(spec, jsonPath, {})
+  }
+}
+
 export const loadToSpec = async (
   spec: Record<string, any>,
   fileMap: FileMap,
@@ -453,11 +482,7 @@ export const loadToSpec = async (
 
   files.forEach((filePath) => {
     const jsonPath = getJsonPath(fileMap, filePath)
-    if (fileMap.processAs === 'arrayItem') {
-      set(spec, jsonPath, [])
-    } else {
-      set(spec, jsonPath, {})
-    }
+    initSpec(fileMap, jsonPath, spec)
     if (hasCorrespondingDecryptedFile(filePath, files)) return
     promises.push(deps.loadFileToSpec(filePath, fileMap, spec))
   })
