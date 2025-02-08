@@ -7,6 +7,7 @@ import { cloneDeep, get, merge, set } from 'lodash'
 import path from 'path'
 import { getDirNames, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
+
 export const getTeamNames = async (envDir: string): Promise<Array<string>> => {
   const teamsDir = path.join(envDir, 'env', 'teams')
   const teamNames = await getDirNames(teamsDir, { skipHidden: true })
