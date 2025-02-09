@@ -40,6 +40,7 @@ export interface FileMap {
     | 'AplTeamService'
     | 'AplTeamSettings'
     | 'AplTeamWorkload'
+    | 'AplTeamTools'
     | 'AplVersions'
   jsonPathExpression: string
   pathGlob: string
@@ -304,6 +305,15 @@ export const getFileMaps = (envDir: string): Array<FileMap> => {
       envDir,
       jsonPathExpression: '$.teamConfig.*.settings',
       pathGlob: `${envDir}/env/teams/*/*settings{.yaml,.yaml.dec}`,
+      processAs: 'mapItem',
+      resourceGroup: 'team',
+      resourceDir: '.',
+    },
+    {
+      kind: 'AplTeamTools',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.apps',
+      pathGlob: `${envDir}/env/teams/*/*apps{.yaml,.yaml.dec}`,
       processAs: 'mapItem',
       resourceGroup: 'team',
       resourceDir: '.',
