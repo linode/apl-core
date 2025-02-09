@@ -420,6 +420,7 @@ export const migrate = async (): Promise<boolean> => {
         'alerts',
         'id',
         'limitRange',
+        'managedMonitoring',
         'networkPolicy',
         'oidc',
         'resourceQuota',
