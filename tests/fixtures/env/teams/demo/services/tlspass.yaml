@@ -1,3 +1,8 @@
+kind: AplTeamService
+metadata:
+    name: tlspass
+    labels:
+        apl.io/teamId: demo
 spec:
     id: cb5149c4-8ea5-4c5a-be04-a37258658bd5
     ksvc:

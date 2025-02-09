@@ -1,3 +1,8 @@
+kind: AplTeamWorkload
+metadata:
+    name: wa1
+    labels:
+        apl.io/teamId: admin
 spec:
     name: wa1
     path: /

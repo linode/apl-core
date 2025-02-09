@@ -1,3 +1,7 @@
+kind: AplCoreApp
+metadata:
+    name: opencost
+    labels: {}
 spec:
     alerts:
         costOfAllNodesQuotaPerMonthReached:

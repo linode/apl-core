@@ -1,3 +1,7 @@
+kind: AplCoreApp
+metadata:
+    name: loki
+    labels: {}
 spec:
     autoscaling:
         distributor:

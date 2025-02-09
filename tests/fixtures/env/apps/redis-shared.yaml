@@ -1,3 +1,7 @@
+kind: AplCoreApp
+metadata:
+    name: redis-shared
+    labels: {}
 spec:
     enabled: false
     password: wrrpCKuVJmiqHSylAdtpvbxb

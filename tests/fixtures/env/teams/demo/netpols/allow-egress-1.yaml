@@ -1,3 +1,8 @@
+kind: AplTeamNetworkControl
+metadata:
+    name: allow-egress-1
+    labels:
+        apl.io/teamId: demo
 spec:
     name: allow-egress-1
     ruleType:

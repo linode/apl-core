@@ -1,10 +1,7 @@
+kind: AplCoreApp
+metadata:
+    name: cert-manager
+    labels: {}
 spec:
-    # issuer: letsencrypt
-    # email: test@test.local
-    # stage: staging
-    # issuer: custom-ca
-    issuer: externally-managed-tls-secret
     externallyManagedTlsSecretName: mysecret
-    # issuer: byo-wildcard-cert
-    # byoWildcardCert: byoCert
-    # byoWildcardCertKey: byoCertKey
+    issuer: externally-managed-tls-secret

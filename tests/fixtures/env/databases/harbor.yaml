@@ -1,2 +1,6 @@
+kind: AplDatabase
+metadata:
+    name: harbor
+    labels: {}
 spec:
     replicas: 2

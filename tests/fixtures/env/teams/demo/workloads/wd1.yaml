@@ -1,3 +1,8 @@
+kind: AplTeamWorkload
+metadata:
+    name: wd1
+    labels:
+        apl.io/teamId: demo
 spec:
     imageUpdateStrategy:
         digest:

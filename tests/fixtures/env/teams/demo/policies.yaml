@@ -1,3 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: demo
+    labels:
+        apl.io/teamId: demo
 spec:
     allowed-image-repositories:
         action: Audit

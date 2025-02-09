@@ -1,59 +1,63 @@
+kind: AplCoreApp
+metadata:
+    name: knative
+    labels: {}
 spec:
     enabled: true
     resources:
+        activator:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 50m
+                memory: 32Mi
+        autoscaler:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 50m
+                memory: 64Mi
+        autoscalerHpa:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 50m
+                memory: 64Mi
+        controller:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 50m
+                memory: 64Mi
+        operator:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 50m
+                memory: 64Mi
+        operatorWebhook:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 50m
+                memory: 64Mi
         queueSidecar:
+            limits:
+                cpu: '1'
+                memory: 512Mi
             requests:
                 cpu: 25m
                 memory: 256Mi
-            limits:
-                cpu: '1'
-                memory: 512Mi
-        controller:
-            requests:
-                cpu: 50m
-                memory: 64Mi
-            limits:
-                cpu: '1'
-                memory: 1Gi
-        activator:
-            requests:
-                cpu: 50m
-                memory: 32Mi
-            limits:
-                cpu: 500m
-                memory: 512Mi
         webhook:
-            requests:
-                cpu: 50m
-                memory: 32Mi
             limits:
                 cpu: 500m
                 memory: 512Mi
-        autoscaler:
             requests:
                 cpu: 50m
-                memory: 64Mi
-            limits:
-                cpu: '1'
-                memory: 1Gi
-        autoscalerHpa:
-            requests:
-                cpu: 50m
-                memory: 64Mi
-            limits:
-                cpu: '1'
-                memory: 1Gi
-        operator:
-            requests:
-                cpu: 50m
-                memory: 64Mi
-            limits:
-                cpu: '1'
-                memory: 1Gi
-        operatorWebhook:
-            requests:
-                cpu: 50m
-                memory: 64Mi
-            limits:
-                cpu: '1'
-                memory: 1Gi
+                memory: 32Mi

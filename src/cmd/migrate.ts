@@ -443,6 +443,7 @@ export const migrate = async (): Promise<boolean> => {
     const valuesPublic = omit(oldValues, secretPaths)
     const valuesSecrets = pick(oldValues, secretPaths)
 
+    // FIXME migrate workloadValues folder and change ApplicationSet !!
     // ensure that all old files are gone
     await $`rm -rf ${env.ENV_DIR}/env`
     await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)

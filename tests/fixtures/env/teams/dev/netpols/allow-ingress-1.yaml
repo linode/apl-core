@@ -1,3 +1,8 @@
+kind: AplTeamNetworkControl
+metadata:
+    name: allow-ingress-1
+    labels:
+        apl.io/teamId: dev
 spec:
     name: allow-ingress-1
     ruleType:

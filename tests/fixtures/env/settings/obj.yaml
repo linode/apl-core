@@ -1,6 +1,11 @@
+kind: AplObjectStorage
+metadata:
+    name: obj
+    labels: {}
 spec:
     provider:
         linode:
+            accessKeyId: someaccessKeyId
             buckets:
                 cnpg: my-clusterid-cnpg
                 gitea: my-clusterid-gitea

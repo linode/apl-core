@@ -1,3 +1,8 @@
+kind: AplTeamService
+metadata:
+    name: hello
+    labels:
+        apl.io/teamId: demo
 spec:
     auth: true
     cname:

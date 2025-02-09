@@ -1,3 +1,7 @@
+kind: AplCoreApp
+metadata:
+    name: falco
+    labels: {}
 spec:
-    enabled: true
     driver: ebpf
+    enabled: true

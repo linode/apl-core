@@ -1,3 +1,7 @@
+kind: AplCoreApp
+metadata:
+    name: velero
+    labels: {}
 spec:
     enabled: true
     restic:

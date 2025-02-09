@@ -1,3 +1,8 @@
+kind: AplTeamWorkload
+metadata:
+    name: wd3
+    labels:
+        apl.io/teamId: demo
 spec:
     imageUpdateStrategy:
         type: disabled

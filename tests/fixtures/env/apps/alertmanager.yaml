@@ -1,2 +1,6 @@
+kind: AplCoreApp
+metadata:
+    name: alertmanager
+    labels: {}
 spec:
     enabled: true

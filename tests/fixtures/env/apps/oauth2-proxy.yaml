@@ -1,2 +1,6 @@
+kind: AplCoreApp
+metadata:
+    name: oauth2-proxy
+    labels: {}
 spec:
     config: {}

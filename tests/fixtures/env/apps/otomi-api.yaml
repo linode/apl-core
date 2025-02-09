@@ -1,3 +1,7 @@
+kind: AplCoreApp
+metadata:
+    name: otomi-api
+    labels: {}
 spec:
     editorInactivityTimeout: 5
     git:

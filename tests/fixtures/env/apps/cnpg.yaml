@@ -1,3 +1,7 @@
+kind: AplCoreApp
+metadata:
+    name: cnpg
+    labels: {}
 spec:
     resources:
         limits:

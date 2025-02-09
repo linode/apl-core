@@ -1,2 +1,6 @@
+kind: AplCoreApp
+metadata:
+    name: kiali
+    labels: {}
 spec:
     enabled: true

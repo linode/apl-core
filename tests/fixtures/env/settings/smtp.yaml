@@ -1,3 +1,7 @@
+kind: AplSmtp
+metadata:
+    name: smtp
+    labels: {}
 spec:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in

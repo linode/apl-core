@@ -1,9 +1,13 @@
+kind: AplCoreApp
+metadata:
+    name: kured
+    labels: {}
 spec:
-    enabled: true
     _rawValues:
         configuration:
-            endTime: '07:00'
+            endTime: 07:00
             rebootDays:
                 - su
-            startTime: '22:00'
+            startTime: 22:00
             timeZone: CET
+    enabled: true

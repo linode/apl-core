@@ -1,3 +1,8 @@
+kind: AplTeamSecret
+metadata:
+    name: demo
+    labels:
+        apl.io/teamId: demo
 spec:
     encryptedData:
         foo: bar

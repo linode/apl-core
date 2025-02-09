@@ -1,3 +1,8 @@
+kind: AplTeamBackup
+metadata:
+    name: bu2
+    labels:
+        apl.io/teamId: demo
 spec:
     labelSelector:
         - name: app

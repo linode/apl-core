@@ -1,3 +1,8 @@
+kind: AplTeamService
+metadata:
+    name: has-cert-svc
+    labels:
+        apl.io/teamId: demo
 spec:
     hasCert: true
     name: has-cert-svc

@@ -1,3 +1,7 @@
+kind: AplCluster
+metadata:
+    name: cluster
+    labels: {}
 spec:
     apiServer: https://1.1.1.1:8443
     domainSuffix: dev.linode-apl.net

@@ -1,3 +1,7 @@
+kind: AplIngress
+metadata:
+    name: ingress
+    labels: {}
 spec:
     classes:
         - annotations:

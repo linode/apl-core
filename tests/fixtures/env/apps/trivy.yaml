@@ -1,2 +1,6 @@
+kind: AplCoreApp
+metadata:
+    name: trivy
+    labels: {}
 spec:
     enabled: true

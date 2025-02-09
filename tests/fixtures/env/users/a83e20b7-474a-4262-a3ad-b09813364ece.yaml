@@ -1,0 +1,14 @@
+kind: AplUser
+metadata:
+    name: a83e20b7-474a-4262-a3ad-b09813364ece
+    labels: {}
+spec:
+    email: platform@admin.com
+    firstName: platform
+    initialPassword: platform-admin-password
+    isPlatformAdmin: true
+    isTeamAdmin: true
+    lastName: admin
+    teams:
+        - demo
+    id: a83e20b7-474a-4262-a3ad-b09813364ece

@@ -1,7 +1,8 @@
+kind: AplCoreApp
+metadata:
+    name: ingress-nginx-net-a
+    labels: {}
 spec:
-    tracing:
-        enabled: true
-        samplingRatio: '0.01'
     _rawValues:
         controller:
             config:
@@ -18,3 +19,6 @@ spec:
             requests:
                 cpu: 100m
                 memory: 192Mi
+    tracing:
+        enabled: true
+        samplingRatio: '0.01'

@@ -1,3 +1,8 @@
+kind: AplTeamBuild
+metadata:
+    name: demo-java2
+    labels:
+        apl.io/teamId: demo
 spec:
     externalRepo: false
     mode:

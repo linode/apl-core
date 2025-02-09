@@ -1,2 +1,6 @@
+kind: AplCoreApp
+metadata:
+    name: grafana
+    labels: {}
 spec:
     enabled: false

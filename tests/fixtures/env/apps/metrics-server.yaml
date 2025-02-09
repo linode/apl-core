@@ -1,4 +1,10 @@
+kind: AplCoreApp
+metadata:
+    name: metrics-server
+    labels: {}
 spec:
+    extraArgs:
+        - --test-extra-arg=true
     resources:
         limits:
             cpu: 300m
@@ -6,5 +12,3 @@ spec:
         requests:
             cpu: 100m
             memory: 64Mi
-    extraArgs:
-        - --test-extra-arg=true

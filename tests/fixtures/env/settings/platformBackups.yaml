@@ -1,3 +1,7 @@
+kind: AplBackups
+metadata:
+    name: platformBackups
+    labels: {}
 spec:
     database:
         gitea:

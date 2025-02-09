@@ -1,5 +1,13 @@
+kind: AplTeamSettings
+metadata:
+    name: admin
+    labels:
+        apl.io/teamId: admin
 spec:
     id: admin
+    managedMonitoring:
+        alertmanager: true
+        grafana: true
     selfService:
         access:
             - shell

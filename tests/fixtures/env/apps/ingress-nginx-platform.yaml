@@ -1,12 +1,19 @@
+kind: AplCoreApp
+metadata:
+    name: ingress-nginx-platform
+    labels: {}
 spec:
-    tracing:
-        enabled: true
-        samplingRatio: '0.01'
     _rawValues:
         controller:
             config:
                 modsecurity-snippet: |
                     SecRuleRemoveById 911102
+    autoscaling:
+        enabled: true
+        maxReplicas: 10
+        minReplicas: 1
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80
     maxBodySize: 2048m
     modsecurity:
         enabled: true
@@ -18,9 +25,6 @@ spec:
             requests:
                 cpu: 100m
                 memory: 192Mi
-    autoscaling:
+    tracing:
         enabled: true
-        maxReplicas: 10
-        minReplicas: 1
-        targetCPUUtilizationPercentage: 80
-        targetMemoryUtilizationPercentage: 80
+        samplingRatio: '0.01'

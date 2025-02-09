@@ -1,3 +1,7 @@
+kind: AplCapabilities
+metadata:
+    name: otomi
+    labels: {}
 spec:
     globalPullSecret:
         username: otomi

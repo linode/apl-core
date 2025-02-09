@@ -1,7 +1,11 @@
+kind: AplCoreApp
+metadata:
+    name: drone
+    labels: {}
 spec:
-    enabled: true
     adminUser: somesecretvalue
     debug: false
+    enabled: true
     orgsFilter: redkubes
     repoFilter: redkubes
     sourceControl:

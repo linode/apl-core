@@ -1,17 +1,21 @@
+kind: AplCoreApp
+metadata:
+    name: prometheus-blackbox-exporter
+    labels: {}
 spec:
     _rawValues: {}
     resources:
         blackboxExporter:
-            requests:
-                cpu: 50m
-                memory: 50Mi
             limits:
                 cpu: 250m
                 memory: 300Mi
-        sentinel:
             requests:
-                cpu: 100m
-                memory: 32Mi
+                cpu: 50m
+                memory: 50Mi
+        sentinel:
             limits:
                 cpu: 200m
                 memory: 128Mi
+            requests:
+                cpu: 100m
+                memory: 32Mi

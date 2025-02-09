@@ -1,13 +1,27 @@
+kind: AplTeamSettings
+metadata:
+    name: demo
+    labels:
+        apl.io/teamId: demo
 spec:
     alerts:
-        email: {}
+        email:
+            critical: admins@yourdoma.in
+            nonCritical: admins@yourdoma.in
         receivers:
             - slack
         repeatInterval: 3h
         slack:
             channel: aaaaa
             channelCrit: aaaaa
+            url: https://slack.con
     id: demo
+    managedMonitoring:
+        alertmanager: true
+        grafana: true
+    networkPolicy:
+        egressPublic: true
+        ingressPrivate: false
     oidc:
         groupMapping: somesecretvalue
     resourceQuota:
@@ -23,3 +37,4 @@ spec:
             - ingress
         team:
             - alerts
+    password: somesecretvalue

@@ -1,7 +1,11 @@
+kind: AplCoreApp
+metadata:
+    name: minio
+    labels: {}
 spec:
     enabled: true
-    provisioning:
-        enabled: true
     persistence:
         enabled: true
         size: 20Gi
+    provisioning:
+        enabled: true

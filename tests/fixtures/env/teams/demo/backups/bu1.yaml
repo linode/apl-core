@@ -1,3 +1,8 @@
+kind: AplTeamBackup
+metadata:
+    name: bu1
+    labels:
+        apl.io/teamId: demo
 spec:
     name: bu1
     schedule: 0 0 0 * *

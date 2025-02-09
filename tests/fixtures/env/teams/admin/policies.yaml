@@ -1,3 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: admin
+    labels:
+        apl.io/teamId: admin
 spec:
     allowed-image-repositories:
         action: Audit

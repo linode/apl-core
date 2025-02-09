@@ -1,12 +1,9 @@
+kind: AplCoreApp
+metadata:
+    name: otel
+    labels: {}
 spec:
-    enabled: true
     collector:
-        mode: deployment
-        autoscaler:
-            minReplicas: 2
-            maxReplicas: 6
-            targetCPUUtilizationPercentage: 80
-            targetMemoryUtilizationPercentage: 80
         attributes:
             - k8s.pod.name
             - k8s.pod.uid
@@ -14,27 +11,34 @@ spec:
             - k8s.namespace.name
             - k8s.node.name
             - k8s.pod.start_time
+        autoscaler:
+            maxReplicas: 6
+            minReplicas: 2
+            targetCPUUtilizationPercentage: 80
+            targetMemoryUtilizationPercentage: 80
+        mode: deployment
+    enabled: true
     operator:
         replicaCount: 1
     resources:
         collector:
+            limits:
+                cpu: 500m
+                memory: 128Mi
             requests:
                 cpu: 100m
                 memory: 64Mi
+        kubeRBACProxy:
             limits:
                 cpu: 500m
                 memory: 128Mi
-        manager:
-            requests:
-                cpu: 50m
-                memory: 16Mi
-            limits:
-                cpu: 200m
-                memory: 512Mi
-        kubeRBACProxy:
             requests:
                 cpu: 5m
                 memory: 64Mi
+        manager:
             limits:
-                cpu: 500m
-                memory: 128Mi
+                cpu: 200m
+                memory: 512Mi
+            requests:
+                cpu: 50m
+                memory: 16Mi

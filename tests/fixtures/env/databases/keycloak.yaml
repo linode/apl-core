@@ -1,2 +1,6 @@
+kind: AplDatabase
+metadata:
+    name: keycloak
+    labels: {}
 spec:
     imported: false

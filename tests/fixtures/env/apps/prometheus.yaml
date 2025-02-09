@@ -1,8 +1,12 @@
+kind: AplCoreApp
+metadata:
+    name: prometheus
+    labels: {}
 spec:
-    enabled: false
     disabledRules:
         - InfoInhibitor
         - PrometheusOperatorListErrors
+    enabled: false
     remoteWrite:
         enabled: true
         rwConfig:

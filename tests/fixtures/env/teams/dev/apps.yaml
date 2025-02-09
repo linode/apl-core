@@ -1,1 +1,6 @@
+kind: AplTeamTools
+metadata:
+    name: dev
+    labels:
+        apl.io/teamId: dev
 spec: {}
