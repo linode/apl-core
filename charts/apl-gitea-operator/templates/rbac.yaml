@@ -59,5 +59,4 @@ roleRef:
   kind: Role
   name: {{ include "apl-gitea-operator.fullname" . }}-pod-exec
   apiGroup: rbac.authorization.k8s.io
----
 {{- end }}
