@@ -18,7 +18,6 @@ secrets:
 {{- if $h.enabled }}
 - name: harbor-pushsecret-builds
 {{- end }}
-- name: gitea-credentials
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -105,19 +104,6 @@ rules:
       - '*'
     verbs:
       - '*'
----
-# This secret needs refactoring! When ssh in Gitea is enabled: https://tekton.dev/docs/pipelines/auth/#configuring-ssh-auth-authentication-for-git
-# This is only temporary to support a specif use case
-apiVersion: v1
-kind: Secret
-metadata:
-  name: gitea-credentials
-  annotations:
-    tekton.dev/git-0: "{{ $v.gitOps.globalUrl }}"
-type: kubernetes.io/basic-auth
-stringData:
-  username: {{ $v.gitOps.adminUsername }}
-  password: {{ $v.gitOps.adminPassword }}
 ---
 apiVersion: v1
 kind: ServiceAccount
