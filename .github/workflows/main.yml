@@ -28,7 +28,6 @@ jobs:
           echo "TAG=$tag" >> $GITHUB_ENV
           git config --global user.email $BOT_EMAIL
           git config --global user.name $BOT_USERNAME
-
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Docker Buildx
@@ -87,32 +86,27 @@ jobs:
       - name: Create and push git tag
         id: git_tag
         run: |
+          # Pulling the image from dockerhub and ret-tagging it to `latest` (from `rel-vX.X`)
           TAG=${GITHUB_REF##*/}
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker pull $REPO:$TAG
           docker tag $REPO:$TAG $REPO:latest
           docker push $REPO:latest
+          # Retagging the image to the release tag (e.g. v1.2.3) and pushing it
           release_tag=v$(jq -r '.version' < package.json)
           echo tag=$release_tag >> $GITHUB_OUTPUT
           echo "Releasing $REPO:$release_tag"
           docker tag $REPO:$TAG $REPO:$release_tag
           docker push $REPO:$release_tag
+          # Push the image to the cache registry (ghcr.io)
           docker login -u $BOT_USERNAME -p '${{ secrets.BOT_TOKEN }}' ghcr.io
           docker tag $REPO:$TAG $CACHE_REGISTRY/$CACHE_REPO:$release_tag
           docker push $CACHE_REGISTRY/$CACHE_REPO:$release_tag
-          echo "machine github.com login ${{ env.BOT_USERNAME }} password ${{ secrets.BOT_TOKEN }}" > ~/.netrc
-          git tag -am "$COMMIT_MSG" $release_tag && git push --follow-tags
-          #Cut the CHANGELOG.md file up to the first occurence of the "### \[[0-9]*" (meaning three #, a space,a square bracket and any number after it)
-          sed -n '/### \[[0-9]*/q;p' CHANGELOG.md > NEW_CHANGELOG.md
-      - name: Create GitHub release
-        uses: ncipollo/release-action@v1.14.0
-        env:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: googleapis/release-please-action@v4
         with:
-          tag: ${{ steps.git_tag.outputs.tag }}
-          name: Release ${{ steps.git_tag.outputs.tag }}
-          bodyFile: 'NEW_CHANGELOG.md'
-          generateReleaseNotes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-type: node
+          target-branch: ${{ github.ref_name }}
   chart-release:
     needs: release
     if: always() && contains(needs.release.result, 'success') && !github.event.act
