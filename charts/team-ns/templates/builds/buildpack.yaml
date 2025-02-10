@@ -158,6 +158,8 @@ spec:
     secret:
       {{- if .externalRepo }}
       secretName: {{ .secretName }}
+      {{- else }}
+      secretName: gitea-credentials
       {{- end }}
   - name: docker-credentials
     secret:
