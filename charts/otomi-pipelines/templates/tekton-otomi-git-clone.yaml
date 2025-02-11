@@ -67,7 +67,7 @@ spec:
         git clone -c http.sslVerify=false --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- else }}
         # waiting for the repository to be available
-        while ! curl -s -o /dev/null -w "%{http_code}" http://$url; do
+        while ! curl -s -o /dev/null -w "%{http_code}" https://$url; do
           echo "Waiting for the repository to be available"
           sleep 5s
         done
