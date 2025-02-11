@@ -1,0 +1,10 @@
+kind: AplAlerts
+metadata:
+    name: alerts
+    labels: {}
+spec:
+    email: {}
+    msteams: {}
+    receivers:
+        - msteams
+    slack: {}

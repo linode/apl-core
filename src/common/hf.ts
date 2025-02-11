@@ -5,8 +5,9 @@ import { parse } from 'yaml'
 import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
+import { setValuesFile } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, readdirRecurse, rootDir } from './utils'
-import { HelmArguments, getParsedArgs } from './yargs'
+import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
@@ -60,11 +61,13 @@ type HFOptions = {
   streams?: Streams
 }
 
-export const hf = async (args: HFParams, opts?: HFOptions, envDir?: string): Promise<ProcessOutputTrimmed> => {
+export const hf = async (args: HFParams, opts?: HFOptions, envDir = env.ENV_DIR): Promise<ProcessOutputTrimmed> => {
+  await setValuesFile(env.ENV_DIR)
   const proc: ProcessPromise = hfCore(args, envDir)
   if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
   if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
-  return new ProcessOutputTrimmed(await proc)
+  const res = new ProcessOutputTrimmed(await proc)
+  return res
 }
 
 export interface ValuesArgs {
@@ -79,12 +82,6 @@ export const hfValues = async (
   { filesOnly = false, excludeSecrets = false, withWorkloadValues = false, defaultValues = false }: ValuesArgs = {},
   envDir: string = env.ENV_DIR,
 ): Promise<Record<string, any> | undefined> => {
-  const d = terminal('common:hf:hfValues')
-  if (!(await Promise.all([pathExists(`${envDir}/env/teams.yaml`), pathExists(`${envDir}/env/settings.yaml`)]))) {
-    // teams and settings file are the minimum needed files to run env.gotmpl and get the values
-    d.info('No teams or cluster info found. ENV_DIR is potentially empty.')
-    return undefined
-  }
   let output: ProcessOutputTrimmed
   if (filesOnly)
     output = await hf(
@@ -106,8 +103,8 @@ export const hfValues = async (
     const schema = await getValuesSchema()
     const allSecrets = extract(schema, 'x-secret')
     const allSecretsPaths = Object.keys(flattenObject(allSecrets))
-    allSecretsPaths.forEach((path) => {
-      if (has(res, path)) set(res, path, '<redacted>')
+    allSecretsPaths.forEach((filePath) => {
+      if (has(res, filePath)) set(res, filePath, '<redacted>')
     })
   }
 
@@ -117,9 +114,9 @@ export const hfValues = async (
     if (await pathExists(tragetDir)) {
       const paths = await readdirRecurse(tragetDir)
       await Promise.allSettled(
-        paths.map(async (path) => {
-          const relativePath = path.replace(`${envDir}/`, '')
-          files[relativePath] = (await readFile(path)).toString()
+        paths.map(async (filePath) => {
+          const relativePath = filePath.replace(`${envDir}/`, '')
+          files[relativePath] = (await readFile(filePath)).toString()
         }),
       )
       res.files = files

@@ -12,18 +12,19 @@ apps:
     enabled: true
 teamConfig:
   demo:
-    password: somesecretvalue
-    id: demo
-    selfService:
-      service:
-        - ingress
-    managedMonitoring:
-      grafana: false
-      prometheus: false
-      alertmanager: false
-    networkPolicy:
-      egressPublic: true
-      ingressPrivate: true
+    settings:
+      password: somesecretvalue
+      id: demo
+      selfService:
+        service:
+          - ingress
+      managedMonitoring:
+        grafana: false
+        prometheus: false
+        alertmanager: false
+      networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
     builds:
       - name: nodejs-hello-world
         tag: v0.0.1

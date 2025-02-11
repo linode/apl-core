@@ -1,0 +1,6 @@
+kind: AplVersions
+metadata:
+    name: versions
+    labels: {}
+spec:
+    specVersion: 1
