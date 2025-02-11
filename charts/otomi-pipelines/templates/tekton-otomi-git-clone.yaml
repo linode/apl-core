@@ -59,13 +59,13 @@ spec:
 
         # Cloning the values
         {{- if .Values.cloneUnsecure }}
-        while ! curl -k -s -o /dev/null http://$GITEA_USERNAME:$GITEA_PASSWORD@$url; do
+        while ! curl -m 3 -k -k -s -o /dev/null http://$GITEA_USERNAME:$GITEA_PASSWORD@$url; do
           echo "Waiting for the repository to be available"
           sleep 5s
         done
         git clone -c http.sslVerify=false --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url
         {{- else }}
-        while ! curl -s -o /dev/null https://$GITEA_USERNAME:$GITEA_PASSWORD@$url; do
+        while ! curl -m 3 -k -s -o /dev/null https://$GITEA_USERNAME:$GITEA_PASSWORD@$url; do
           echo "Waiting for the repository to be available"
           sleep 5s
         done
