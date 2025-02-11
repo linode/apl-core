@@ -25,6 +25,8 @@ spec:
       workspace: shared-data
     - name: ssh-directory
       workspace: git-credentials
+    - name: sslVerify
+      value: "false"
     params:
     - name: url
       value: {{ .mode.docker.repoUrl }}
