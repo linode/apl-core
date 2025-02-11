@@ -30,8 +30,6 @@ spec:
       value: {{ .mode.docker.repoUrl }}
     - name: revision
       value: {{ .mode.docker.revision }}
-    - name: sslVerify
-      value: "false"
   {{- if .scanSource }}
   - name: grype-code-scan
     taskRef:
