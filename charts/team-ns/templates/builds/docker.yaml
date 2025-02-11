@@ -25,13 +25,13 @@ spec:
       workspace: shared-data
     - name: ssh-directory
       workspace: git-credentials
-    - name: sslVerify
-      value: "false"
     params:
     - name: url
       value: {{ .mode.docker.repoUrl }}
     - name: revision
       value: {{ .mode.docker.revision }}
+    - name: sslVerify
+      value: "false"
   {{- if .scanSource }}
   - name: grype-code-scan
     taskRef:
