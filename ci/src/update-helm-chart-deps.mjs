@@ -71,7 +71,7 @@ async function main() {
       try {
         // Add the Helm repository (idempotent)
         await $`helm repo add ${dependency.name} ${dependency.repository}`
-        await $`helm repo update`
+        await $`helm repo update ${dependency.name}`
 
         // Get all available versions for the dependency
         const allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -o json`
