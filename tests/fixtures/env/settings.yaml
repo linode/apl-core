@@ -87,7 +87,7 @@ platformBackups:
     gitea:
         enabled: true
         retentionPolicy: 7d
-        schedule: 0 0 0 * * *
+        schedule: 0 0 * * *
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in

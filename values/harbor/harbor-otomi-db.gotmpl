@@ -28,11 +28,11 @@ backup:
   type:  {{ $obj.type }}
 {{- if eq $obj.type "minioLocal" }}
   minioLocal:
-    destinationPath: "s3://cnpg/harbor"
+    destinationPath: "s3://cnpg/{{ $b.pathSuffix }}"
 {{- end }}
 {{- if eq $obj.type "linode" }}
   linode:
-    destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/harbor"
+    destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/{{ $b.pathSuffix }}"
     endpointURL: https://{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}
@@ -40,10 +40,17 @@ backup:
 
 clusterSpec:
   bootstrap:
+{{- with $hdb.recovery }}
+    recovery: {{ toYaml . | nindent 6 }}
+{{- else }}
     initdb:
       database: {{ $hdb.coreDatabase }}
       owner: harbor
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
+{{- end }}
+{{- with $hdb.externalClusters }}
+  externalClusters: {{ toYaml . | nindent 4 }}
+{{- end }}
 
 resources: {{- toYaml $hdb.resources | nindent 2 }}
