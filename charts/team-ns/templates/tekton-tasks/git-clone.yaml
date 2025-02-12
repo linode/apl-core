@@ -187,6 +187,7 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -eu
+        sleep 300
 
         if [ "${PARAM_VERBOSE}" = "true" ] ; then
           set -x
