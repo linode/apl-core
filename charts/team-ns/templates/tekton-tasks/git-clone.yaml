@@ -187,7 +187,6 @@ spec:
       script: |
         #!/usr/bin/env sh
         set -eu
-        sleep 300
 
         if [ "${PARAM_VERBOSE}" = "true" ] ; then
           set -x
@@ -238,6 +237,7 @@ spec:
         test -z "${PARAM_NO_PROXY}" || export NO_PROXY="${PARAM_NO_PROXY}"
 
         git config --global --add safe.directory "${WORKSPACE_OUTPUT_PATH}"
+        sleep 1200
         /ko-app/git-init \
           -url="${PARAM_URL}" \
           -revision="${PARAM_REVISION}" \
