@@ -59,11 +59,6 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
     },
     spec: {
       syncPolicy: {
-        automated: {
-          prune: true,
-          allowEmpty: false,
-          selfHeal: true,
-        },
         syncOptions: ['ServerSideApply=true'],
       },
       project: 'default',
