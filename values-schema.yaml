@@ -1196,10 +1196,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
-      sealedsecrets:
-        type: array
-        items:
-          $ref: '#/definitions/sealedsecret'
       coderepos:
         type: array
         items:
