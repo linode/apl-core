@@ -14,6 +14,7 @@ spec:
   # Allow manifests to deploy from any Git repos
   sourceRepos:
   - {{ $v.gitOps.teamRepoUrl }}
+  - {{ $v.gitOps.valuesRepoUrl }}
   {{- range $v.workloads }}
   - {{ .url }}
   {{- end }}
