@@ -60,24 +60,28 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
   const commands = files.map(async (file) => {
     if (!crypt.condition || (await crypt.condition(file))) {
       d.debug(`${crypt.cmd} ${file}`)
-      const result = $`${crypt.cmd.split(' ')} ${file}`.quiet()
-      return result
-        .then(async (res) => {
-          if (crypt.cmd === CryptType.DECRYPT) {
-            const outputFile = `${file}.dec`
-            await $`echo ${res.stdout} > ${outputFile}`
-          }
+      try {
+        d.info(`${crypt.cmd} ${file}`)
+        const result = await $`${[...crypt.cmd.split(' '), file]}`.quiet()
+
+        if (crypt.cmd === CryptType.DECRYPT) {
+          const outputFile = `${file}.dec`
+          await writeFile(outputFile, result.stdout)
+        }
+
+        if (crypt.post) {
+          await crypt.post(file)
+        }
+
+        return result
+      } catch (error) {
+        if (error.message.includes('Already encrypted') && (await pathExists(`${file}.dec`))) {
+          const res = await $`helm secrets encrypt ${file}.dec`
+          await writeFile(file, res.stdout)
           if (crypt.post) await crypt.post(file)
           return res
-        })
-        .catch(async (error) => {
-          if (error.message.includes('Already encrypted') && (await pathExists(`${file}.dec`))) {
-            const res = await $`helm secrets encrypt ${file}.dec`
-            await $`echo ${res.stdout} > ${file}`
-            if (crypt.post) await crypt.post(file)
-            return res
-          }
-        })
+        }
+      }
     }
     return undefined
   })
