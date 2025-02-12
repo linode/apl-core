@@ -1,11 +1,12 @@
 import { pathExists } from 'fs-extra'
 import { readFile } from 'fs/promises'
+import { glob } from 'glob'
 import { has, set } from 'lodash'
 import { parse } from 'yaml'
 import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { asArray, extract, flattenObject, getValuesSchema, isCore, readdirRecurse, rootDir } from './utils'
+import { asArray, extract, flattenObject, getValuesSchema, isCore, rootDir } from './utils'
 import { HelmArguments, getParsedArgs } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
@@ -70,6 +71,7 @@ export const hf = async (args: HFParams, opts?: HFOptions, envDir?: string): Pro
 export interface ValuesArgs {
   // Only files from values
   filesOnly?: boolean
+  // FIXME: 'withWorkloadValues' should be renamed to 'withFiles' but it needs coordination with changes in apl-api
   withWorkloadValues?: boolean
   excludeSecrets?: boolean
   envDir?: string
@@ -112,19 +114,21 @@ export const hfValues = async (
   }
 
   if (withWorkloadValues) {
-    const tragetDir = `${envDir}/env/teams/workloads`
     const files = {}
-    if (await pathExists(tragetDir)) {
-      const paths = await readdirRecurse(tragetDir)
-      await Promise.allSettled(
-        paths.map(async (path) => {
-          const relativePath = path.replace(`${envDir}/`, '')
-          files[relativePath] = (await readFile(path)).toString()
-        }),
-      )
-      res.files = files
-    }
+    const filePaths = await glob([
+      `${envDir}/env/teams/workloads/**/*.yaml`,
+      `${envDir}/env/teams/*/sealedsecrets/*.yaml`,
+    ])
+
+    await Promise.allSettled(
+      filePaths.map(async (path) => {
+        const relativePath = path.replace(`${envDir}/`, '')
+        files[relativePath] = (await readFile(path)).toString()
+      }),
+    )
+    res.files = files
   }
+
   return res
 }
 
