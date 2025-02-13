@@ -243,6 +243,8 @@ spec:
         test -z "${PARAM_NO_PROXY}" || export NO_PROXY="${PARAM_NO_PROXY}"
 
         git config --global --add safe.directory "${WORKSPACE_OUTPUT_PATH}"
+        echo "==== Git Global Config Before git-init ===="
+        git config --list
 
         /ko-app/git-init \
           -url="${PARAM_URL}" \
