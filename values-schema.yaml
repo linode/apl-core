@@ -1852,7 +1852,7 @@ properties:
             $ref: '#/definitions/rawValues'
           adminPassword:
             type: string
-            x-secret: '{{ randAlphaNum 20 }}'
+            x-secret: ''
           postgresqlPassword:
             type: string
             description: This password was generated and cannot be changed without manual intervention.
