@@ -50,7 +50,21 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
     return
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
-  await $`git push -u origin ${branch}`
+  await retry(
+    async () => {
+      try {
+        cd(env.ENV_DIR)
+        await $`git push -u origin ${branch}`
+      } catch (e) {
+        d.warn(`The values repository is not yet reachable. Retrying.`)
+        throw e
+      }
+    },
+    {
+      retries: 20,
+      maxTimeout: 30000,
+    },
+  )
   d.log('Successfully pushed the updated values')
 }
 
@@ -64,9 +78,9 @@ export const commit = async (initialInstall: boolean): Promise<void> => {
     // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)
   } else {
+    cd(env.ENV_DIR)
     await setIdentity(username, email)
     // the url might need updating (e.g. if credentials changed)
-    cd(env.ENV_DIR)
     await $`git remote set-url origin ${remote}`
   }
   // lets wait until the remote is ready
