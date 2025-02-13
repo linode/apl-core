@@ -29,6 +29,8 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   const argv = getParsedArgs()
   const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
   cd(env.ENV_DIR)
+  d.log('git config:')
+  d.log(await readFile('.git/config', 'utf8'))
   const { email, username, password } = getRepo(values)
   await setIdentity(username, password, email)
   d.log(password)
@@ -55,9 +57,10 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
   d.log('git config:')
-  d.log(await readFile('.git/config'))
-  d.log('moving on')
-  await $`git push -u origin ${branch}`
+  d.log(await readFile('.git/config', 'utf8'))
+  await retry(async () => {
+    await $`git push -u origin ${branch}`
+  })
   d.log('Successfully pushed the updated values')
 }
 
