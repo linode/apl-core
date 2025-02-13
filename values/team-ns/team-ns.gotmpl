@@ -55,6 +55,7 @@ gitOps:
   adminUsername: {{ $a.gitea.adminUsername }}
   globalUrl: "https://{{ $v._derived.giteaDomain }}"
   teamRepoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
+  valuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
   workloadValuesRepoUrl: "https://{{ $v._derived.giteaDomain }}/otomi/values.git"
 
 tlsSecretName: {{ $v._derived.tlsSecretName }}

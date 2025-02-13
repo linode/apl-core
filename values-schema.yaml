@@ -1196,10 +1196,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
-      sealedsecrets:
-        type: array
-        items:
-          $ref: '#/definitions/sealedsecret'
   teamSelfService:
     title: Team permissions
     description: Grant team permissions to modify certain configuration parameters.
