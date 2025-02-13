@@ -23,7 +23,7 @@ spec:
     workspaces:
     - name: output
       workspace: shared-data
-    - name: basic-auth-directory
+    - name: basic-auth
       workspace: git-credentials
     params:
     - name: url
