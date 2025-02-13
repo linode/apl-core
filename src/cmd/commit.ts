@@ -14,6 +14,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
+import { readFile } from 'fs/promises'
 
 const cmdName = getFilename(__filename)
 
@@ -54,7 +55,8 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
   d.log('git config:')
-  await $`cat .git/config`
+  d.log(await readFile('.git/config'))
+  d.log('moving on')
   await $`git push -u origin ${branch}`
   d.log('Successfully pushed the updated values')
 }
