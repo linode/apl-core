@@ -193,13 +193,15 @@ spec:
         fi
 
         if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
-          echo "https://$(cat ${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username):$(cat ${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password)@${PARAM_URL}" > /${PARAM_USER_HOME}/.git-credentials
-          chmod 400 /${PARAM_USER_HOME}/.git-credentials
+          echo "https://$(cat ${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username):$(cat ${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password)@${PARAM_URL}" > ${PARAM_USER_HOME}/.git-credentials
+          chmod 600 ${PARAM_USER_HOME}/.git-credentials
 
           echo "[credential]" > /${PARAM_USER_HOME}/.gitconfig
           echo "  helper = store" >> /${PARAM_USER_HOME}/.gitconfig
-          chmod 400 /${PARAM_USER_HOME}/.gitconfig
+          chmod 600 ${PARAM_USER_HOME}/.gitconfig
 
+          cat ${PARAM_USER_HOME}/.git-credentials
+          cat ${PARAM_USER_HOME}/.gitconfig
           echo "Created .git-credentials and .gitconfig"
         fi
 
