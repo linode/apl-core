@@ -60,10 +60,12 @@ export const commit = async (initialInstall: boolean): Promise<void> => {
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
   const { branch, remote } = getRepo(values)
-  // we call this here again, as we might not have completed (happens upon first install):
   if (initialInstall) {
+    // we call this here again, as we might not have completed (happens upon first install):
     await bootstrapGit(values)
   } else {
+    // the url might need updating (e.g. if credentials changed)
+    cd(env.ENV_DIR)
     await $`git remote set-url origin ${remote}`
   }
   // lets wait until the remote is ready
