@@ -7,9 +7,6 @@
 environments:
   default:
     values:
-    - apps:
-        gitea:
-          adminPassword: {{ randAlphaNum 32 }}
     - teamConfig:
     {{- range $team := $teams }}
         {{ $team }}:

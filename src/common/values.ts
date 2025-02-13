@@ -89,7 +89,6 @@ export const getRepo = (values: Record<string, any>): Repo => {
     const giteaOrg = 'otomi'
     const giteaRepo = 'values'
     remote = `http://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
-    console.log('remote: ', remote)
   }
   return { remote, branch, email, username, password }
 }

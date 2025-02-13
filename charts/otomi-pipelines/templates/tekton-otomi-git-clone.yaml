@@ -57,20 +57,8 @@ spec:
         # Removing the proto part ('http://')
         export url=$(echo $fullRepoUrl|sed 's/http\:\/\///')
 
-        # Cloning the values
-        {{- if .Values.cloneUnsecure }}
-        while ! curl -m 3 -k -k -s -o /dev/null http://$GITEA_USERNAME:$GITEA_PASSWORD@$url; do
-          echo "Waiting for the repository to be available"
-          sleep 5s
-        done
-        git clone -c http.sslVerify=false --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url
-        {{- else }}
-        while ! curl -m 3 -k -s -o /dev/null https://$GITEA_USERNAME:$GITEA_PASSWORD@$url; do
-          echo "Waiting for the repository to be available"
-          sleep 5s
-        done
-        git clone --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url
-        {{- end }}
+        # Cloning the values using the helper
+        {{- include "otomi-pipelines.cloneRepo" (dict "CloneDepth" "2" "Values" .Values) | nindent 8}}
 
         # Checking if the next steps should run or skipped 
         if [[ ! $COMMIT_MESSAGE == *ci\ skip* ]]; then
