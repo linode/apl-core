@@ -111,7 +111,7 @@ teamConfig:
     workloads:
       - name: nodejs-helloworld
         url: https://github.com/linode/apl-nodejs-helloworld.git
-        path: /
+        path: chart/hello-world
         revision: HEAD
       - name: httpbin
         path: charts/httpbin
@@ -120,10 +120,10 @@ teamConfig:
       - name: nginx-deployment
         path: deployment
         revision: main
-        selectedChart: deployment
+        selectedChart: k8s-deployment
         url: https://github.com/linode/apl-charts.git
       - name: nginx-ksvc
-        path: ksvc
+        path: knative-service
         revision: main
         selectedChart: ksvc
         url: https://github.com/linode/apl-charts.git
@@ -132,7 +132,7 @@ teamConfig:
     workloads:
       - name: nodejs-helloworld
         url: https://github.com/linode/apl-nodejs-helloworld.git
-        path: /
+        path: chart/hello-world
         revision: HEAD
 files:
   env/teams/workloads/demo/nodejs-helloworld.yaml: |
