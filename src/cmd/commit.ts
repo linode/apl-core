@@ -28,6 +28,9 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   const argv = getParsedArgs()
   const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
   cd(env.ENV_DIR)
+  const { email, username, password } = getRepo(values)
+  await setIdentity(username, password, email)
+  d.log(password)
   try {
     try {
       await $`git rev-list HEAD --count`
