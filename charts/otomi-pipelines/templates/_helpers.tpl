@@ -60,3 +60,26 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- /*
+  Helper for cloning a repository. It will wait for gitea to come up if not ready yet.
+  Expected parameters:
+    .CloneDepth - The git clone --depth value (e.g., "1" or "2")
+    .DestDir    - (Optional) Destination directory (e.g., "$ENV_DIR")
+    .Values     - The current .Values context
+*/ -}}
+{{- define "otomi-pipelines.cloneRepo" -}}
+{{- if .Values.cloneUnsecure }}
+while ! curl -m 3 -k -s -o /dev/null http://$GITEA_USERNAME:$GITEA_PASSWORD@$url; do
+  echo "Waiting for the repository to be available"
+  sleep 5s
+done
+git clone -c http.sslVerify=false --depth {{ .CloneDepth }}{{ if .DestDir }} http://$GITEA_USERNAME:$GITEA_PASSWORD@$url {{ .DestDir }}{{ else }} http://$GITEA_USERNAME:$GITEA_PASSWORD@$url{{ end }}
+{{- else }}
+while ! curl -m 3 -s -o /dev/null https://$GITEA_USERNAME:$GITEA_PASSWORD@$url; do
+  echo "Waiting for the repository to be available"
+  sleep 5s
+done
+git clone --depth {{ .CloneDepth }}{{ if .DestDir }} http://$GITEA_USERNAME:$GITEA_PASSWORD@$url {{ .DestDir }}{{ else }} http://$GITEA_USERNAME:$GITEA_PASSWORD@$url{{ end }}
+{{- end }}
+{{- end }}
