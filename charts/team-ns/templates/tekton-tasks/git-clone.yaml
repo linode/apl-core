@@ -193,16 +193,10 @@ spec:
         fi
 
         if [ "${WORKSPACE_BASIC_AUTH_DIRECTORY_BOUND}" = "true" ] ; then
-          FILTERED_PARAM_URL=$(echo $PARAM_URL|sed 's/http\:\/\///')
-          echo "https://$(cat ${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/username):$(cat ${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/password)@${FILTERED_PARAM_URL}" > ${PARAM_USER_HOME}/.git-credentials
-          chmod 600 ${PARAM_USER_HOME}/.git-credentials
-
-          git config --global credential.helper store
-          chmod 600 ${PARAM_USER_HOME}/.gitconfig
-
-          cat ${PARAM_USER_HOME}/.git-credentials
-          cat ${PARAM_USER_HOME}/.gitconfig
-          echo "Created .git-credentials and .gitconfig"
+          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.git-credentials" "${PARAM_USER_HOME}/.git-credentials"
+          cp "${WORKSPACE_BASIC_AUTH_DIRECTORY_PATH}/.gitconfig" "${PARAM_USER_HOME}/.gitconfig"
+          chmod 400 "${PARAM_USER_HOME}/.git-credentials"
+          chmod 400 "${PARAM_USER_HOME}/.gitconfig"
         fi
 
         if [ "${WORKSPACE_SSH_DIRECTORY_BOUND}" = "true" ] ; then
@@ -243,7 +237,6 @@ spec:
         test -z "${PARAM_NO_PROXY}" || export NO_PROXY="${PARAM_NO_PROXY}"
 
         git config --global --add safe.directory "${WORKSPACE_OUTPUT_PATH}"
-
         /ko-app/git-init \
           -url="${PARAM_URL}" \
           -revision="${PARAM_REVISION}" \
