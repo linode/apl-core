@@ -1196,10 +1196,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
-      sealedsecrets:
-        type: array
-        items:
-          $ref: '#/definitions/sealedsecret'
   teamSelfService:
     title: Team permissions
     description: Grant team permissions to modify certain configuration parameters.
@@ -1825,7 +1821,7 @@ properties:
             $ref: '#/definitions/rawValues'
           adminPassword:
             type: string
-            x-secret: '{{ randAlphaNum 20 }}'
+            x-secret: ''
           postgresqlPassword:
             type: string
             description: This password was generated and cannot be changed without manual intervention.
