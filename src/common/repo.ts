@@ -17,8 +17,8 @@ export const getTeamNames = async (envDir: string): Promise<Array<string>> => {
 export interface FileMap {
   envDir: string
   kind:
-    | 'AplCoreApp'
-    | 'AplAlerts'
+    | 'AplApp'
+    | 'AplAlertSet'
     | 'AplCluster'
     | 'AplDatabase'
     | 'AplDns'
@@ -26,22 +26,21 @@ export interface FileMap {
     | 'AplObjectStorage'
     | 'AplKms'
     | 'AplIdentityProvider'
-    | 'AplCapabilities'
+    | 'AplCapabilitySet'
     | 'AplSmtp'
-    | 'AplBackups'
+    | 'AplBackupCollection'
     | 'AplUser'
     | 'AplTeamBuild'
     | 'AplTeamPolicy'
-    | 'AplTeamSettings'
+    | 'AplTeamSettingSet'
     | 'AplTeamNetworkControl'
     | 'AplTeamProject'
     | 'AplTeamBackup'
     | 'AplTeamSecret'
     | 'AplTeamService'
-    | 'AplTeamSettings'
     | 'AplTeamWorkload'
-    | 'AplTeamTools'
-    | 'AplVersions'
+    | 'AplTeamTool'
+    | 'AplVersion'
   jsonPathExpression: string
   pathGlob: string
   processAs: 'arrayItem' | 'mapItem'
@@ -112,7 +111,7 @@ export const getFilePath = (
 export const getFileMaps = (envDir: string): Array<FileMap> => {
   return [
     {
-      kind: 'AplCoreApp',
+      kind: 'AplApp',
       envDir,
       jsonPathExpression: '$.apps.*',
       pathGlob: `${envDir}/env/apps/*.{yaml,yaml.dec}`,
@@ -122,7 +121,7 @@ export const getFileMaps = (envDir: string): Array<FileMap> => {
     },
     {
       envDir,
-      kind: 'AplAlerts',
+      kind: 'AplAlertSet',
       jsonPathExpression: '$.alerts',
       pathGlob: `${envDir}/env/settings/*alerts.{yaml,yaml.dec}`,
       processAs: 'mapItem',
@@ -193,7 +192,7 @@ export const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
-      kind: 'AplCapabilities',
+      kind: 'AplCapabilitySet',
       envDir,
       jsonPathExpression: '$.otomi',
       pathGlob: `${envDir}/env/settings/*otomi.{yaml,yaml.dec}`,
@@ -202,7 +201,7 @@ export const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'settings',
     },
     {
-      kind: 'AplBackups',
+      kind: 'AplBackupCollection',
       envDir,
       jsonPathExpression: '$.platformBackups',
       pathGlob: `${envDir}/env/settings/*platformBackups.{yaml,yaml.dec}`,
@@ -229,7 +228,7 @@ export const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'users',
     },
     {
-      kind: 'AplVersions',
+      kind: 'AplVersion',
       envDir,
       jsonPathExpression: '$.versions',
       pathGlob: `${envDir}/env/settings/versions.yaml`,
@@ -301,7 +300,7 @@ export const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: 'netpols',
     },
     {
-      kind: 'AplTeamSettings',
+      kind: 'AplTeamSettingSet',
       envDir,
       jsonPathExpression: '$.teamConfig.*.settings',
       pathGlob: `${envDir}/env/teams/*/*settings{.yaml,.yaml.dec}`,
@@ -310,7 +309,7 @@ export const getFileMaps = (envDir: string): Array<FileMap> => {
       resourceDir: '.',
     },
     {
-      kind: 'AplTeamTools',
+      kind: 'AplTeamTool',
       envDir,
       jsonPathExpression: '$.teamConfig.*.apps',
       pathGlob: `${envDir}/env/teams/*/*apps{.yaml,.yaml.dec}`,
