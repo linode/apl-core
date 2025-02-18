@@ -227,10 +227,10 @@ jobs:
         if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
           # Get the kubeconfig from linode-cli
-          echo -n "Waiting for kubeconfig"
+          echo "Waiting for kubeconfig..."
           while :; do
-            echo -n "."
             linode-cli get-kubeconfig --label "${{ env.LINODE_CLUSTER_NAME }}" 2> /dev/null && break
+            echo "still waiting..."
             sleep 10
           done
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
