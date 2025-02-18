@@ -226,7 +226,6 @@ jobs:
       - name: Save kubectl config with auth token
         if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
-          # Get the kubeconfig from linode-cli
           echo "Waiting for kubeconfig..."
           while :; do
             linode-cli get-kubeconfig --label "${{ env.LINODE_CLUSTER_NAME }}" 2> /dev/null && break
