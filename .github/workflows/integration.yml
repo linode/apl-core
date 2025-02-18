@@ -223,16 +223,15 @@ jobs:
             
             sleep 30
           done
-      - name: Save kubectl config with auth token and Get kubectl environment and create docker secret
+      - name: Save kubectl config with auth token
         if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
           # Get the kubeconfig from linode-cli
           echo -n "Waiting for kubeconfig"
-          KUBECONFIG_RETRIEVED=0
-          while [ $KUBECONFIG_RETRIEVED = 0 ]; do
+          while :; do
             echo -n "."
+            linode-cli get-kubeconfig --label "${{ env.LINODE_CLUSTER_NAME }}" 2> /dev/null && break
             sleep 10
-            linode-cli get-kubeconfig --label "env.LINODE_CLUSTER_NAME" 2> /dev/null && KUBECONFIG_RETRIEVED=1
           done
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
