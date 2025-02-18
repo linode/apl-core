@@ -58,7 +58,7 @@ spec:
         export url=$(echo $fullRepoUrl|sed 's/http\:\/\///')
 
         # Cloning the values using the helper
-        {{- include "otomi-pipelines.cloneRepo" (dict "CloneDepth" "Values" .Values) | nindent 8}}
+        {{- include "otomi-pipelines.cloneRepo" (dict "Values" .Values) | nindent 8}}
 
         # Checking if the next steps should run or skipped 
         if [[ ! $COMMIT_MESSAGE == *ci\ skip* ]]; then

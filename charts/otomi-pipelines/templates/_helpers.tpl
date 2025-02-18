@@ -73,12 +73,12 @@ while ! curl -m 3 -k -s -o /dev/null http://$GITEA_USERNAME:$GITEA_PASSWORD@$url
   echo "Waiting for the repository to be available"
   sleep 5s
 done
-git clone -c http.sslVerify=false --depth 2{{ if .DestDir }} http://$GITEA_USERNAME:$GITEA_PASSWORD@$url {{ .DestDir }}{{ else }} http://$GITEA_USERNAME:$GITEA_PASSWORD@$url{{ end }}
+git clone -c http.sslVerify=false --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url{{ if .DestDir }} {{ .DestDir }}{{ end }}
 {{- else }}
 while ! curl -m 3 -s -o /dev/null https://$GITEA_USERNAME:$GITEA_PASSWORD@$url; do
   echo "Waiting for the repository to be available"
   sleep 5s
 done
-git clone --depth 2{{ if .DestDir }} http://$GITEA_USERNAME:$GITEA_PASSWORD@$url {{ .DestDir }}{{ else }} http://$GITEA_USERNAME:$GITEA_PASSWORD@$url{{ end }}
+git clone --depth 2 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url{{ if .DestDir }} {{ .DestDir }}{{ end }}
 {{- end }}
 {{- end }}
