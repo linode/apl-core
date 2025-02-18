@@ -8,10 +8,9 @@ import path from 'path'
 import { getDirNames, loadYaml } from './utils'
 import { objectToYaml, writeValuesToFile } from './values'
 
-export const getTeamNames = async (envDir: string): Promise<Array<string>> => {
+export async function getTeamNames(envDir: string): Promise<Array<string>> {
   const teamsDir = path.join(envDir, 'env', 'teams')
-  const teamNames = await getDirNames(teamsDir, { skipHidden: true })
-  return teamNames
+  return await getDirNames(teamsDir, { skipHidden: true })
 }
 
 export interface FileMap {
@@ -48,11 +47,7 @@ export interface FileMap {
   resourceDir: string
 }
 
-export const getResourceFileName = (
-  fileMap: FileMap,
-  jsonPath: jsonpath.PathComponent[],
-  data: Record<string, any>,
-) => {
+export function getResourceFileName(fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) {
   let fileName = 'unknown'
   if (fileMap.resourceGroup === 'team') {
     if (fileMap.processAs === 'arrayItem') {
@@ -70,7 +65,7 @@ export const getResourceFileName = (
   return fileName
 }
 
-export const getResourceName = (fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) => {
+export function getResourceName(fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) {
   let resourceName = 'unknown'
   if (fileMap.processAs === 'arrayItem') {
     resourceName = data.name || data.id || resourceName
@@ -86,16 +81,17 @@ export const getResourceName = (fileMap: FileMap, jsonPath: jsonpath.PathCompone
   }
 }
 
-export const getTeamNameFromJsonPath = (jsonPath: jsonpath.PathComponent[]): string => {
+export function getTeamNameFromJsonPath(jsonPath: jsonpath.PathComponent[]): string {
   const teamName = jsonPath[2].toString()
   return teamName
 }
-export const getFilePath = (
+
+export function getFilePath(
   fileMap: FileMap,
   jsonPath: jsonpath.PathComponent[],
   data: Record<string, any>,
   fileNamePrefix: string,
-) => {
+) {
   let filePath = ''
   const resourceName = getResourceFileName(fileMap, jsonPath, data)
   if (fileMap.resourceGroup === 'team') {
@@ -108,7 +104,7 @@ export const getFilePath = (
   return path.normalize(filePath)
 }
 
-export const getFileMaps = (envDir: string): Array<FileMap> => {
+export function getFileMaps(envDir: string): Array<FileMap> {
   return [
     {
       kind: 'AplApp',
@@ -329,16 +325,16 @@ export const getFileMaps = (envDir: string): Array<FileMap> => {
   ]
 }
 
-export const hasCorrespondingDecryptedFile = (filePath: string, fileList: Array<string>): boolean => {
+export function hasCorrespondingDecryptedFile(filePath: string, fileList: Array<string>): boolean {
   return fileList.includes(`${filePath}.dec`)
 }
 
-export const saveValues = async (
+export async function saveValues(
   envDir: string,
   valuesPublic: Record<string, any>,
   valuesSecrets: Record<string, any>,
   deps = { saveResourceGroupToFiles },
-): Promise<void> => {
+): Promise<void> {
   const fileMaps = getFileMaps(envDir)
   await Promise.all(
     fileMaps.map(async (fileMap) => {
@@ -347,7 +343,7 @@ export const saveValues = async (
   )
 }
 
-export const renderManifest = (fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) => {
+export function renderManifest(fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) {
   const manifest = {
     kind: fileMap.kind,
     metadata: {
@@ -363,21 +359,19 @@ export const renderManifest = (fileMap: FileMap, jsonPath: jsonpath.PathComponen
   return manifest
 }
 
-export const renderManifestForSecrets = (fileMap: FileMap, data: Record<string, any>) => {
-  const manifest = {
+export function renderManifestForSecrets(fileMap: FileMap, data: Record<string, any>) {
+  return {
     kind: fileMap.kind,
     spec: data,
   }
-
-  return manifest
 }
 
-export const saveResourceGroupToFiles = async (
+export async function saveResourceGroupToFiles(
   fileMap: FileMap,
   valuesPublic: Record<string, any>,
   valuesSecrets: Record<string, any>,
   deps = { writeValuesToFile },
-): Promise<void> => {
+): Promise<void> {
   const jsonPathsValuesPublic = jsonpath.nodes(valuesPublic, fileMap.jsonPathExpression)
   const jsonPathsvaluesSecrets = jsonpath.nodes(valuesSecrets, fileMap.jsonPathExpression)
 
@@ -414,7 +408,7 @@ export const saveResourceGroupToFiles = async (
   )
 }
 
-export const setValuesFile = async (envDir: string, deps = { pathExists, loadValues, writeFile }): Promise<string> => {
+export async function setValuesFile(envDir: string, deps = { pathExists, loadValues, writeFile }): Promise<string> {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
   if (await deps.pathExists(valuesPath)) return valuesPath
   const allValues = await deps.loadValues(envDir)
@@ -422,19 +416,19 @@ export const setValuesFile = async (envDir: string, deps = { pathExists, loadVal
   return valuesPath
 }
 
-export const unsetValuesFile = async (envDir: string): Promise<string> => {
+export async function unsetValuesFile(envDir: string): Promise<string> {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
   await rm(valuesPath, { force: true })
   return valuesPath
 }
 
-export const unsetValuesFileSync = (envDir: string): string => {
+export function unsetValuesFileSync(envDir: string): string {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
   rmSync(valuesPath, { force: true })
   return valuesPath
 }
 
-export const loadValues = async (envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> => {
+export async function loadValues(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
   const fileMaps = getFileMaps(envDir)
   const spec = {}
 
@@ -446,13 +440,13 @@ export const loadValues = async (envDir: string, deps = { loadToSpec }): Promise
   return spec
 }
 
-export const extractTeamDirectory = (filePath: string): string => {
+export function extractTeamDirectory(filePath: string): string {
   const match = filePath.match(/\/teams\/([^/]+)/)
   if (match === null) throw new Error(`Cannot extract team name from ${filePath} string`)
   return match[1]
 }
 
-export const getJsonPath = (fileMap: FileMap, filePath: string): string => {
+export function getJsonPath(fileMap: FileMap, filePath: string): string {
   let { jsonPathExpression: jsonPath } = fileMap
 
   if (fileMap.resourceGroup === 'team') {
@@ -470,7 +464,7 @@ export const getJsonPath = (fileMap: FileMap, filePath: string): string => {
   return jsonPath
 }
 
-export const initSpec = (fileMap: FileMap, jsonPath: string, spec: Record<string, any>) => {
+export function initSpec(fileMap: FileMap, jsonPath: string, spec: Record<string, any>) {
   if (fileMap.processAs === 'arrayItem') {
     set(spec, jsonPath, [])
   } else {
@@ -478,11 +472,11 @@ export const initSpec = (fileMap: FileMap, jsonPath: string, spec: Record<string
   }
 }
 
-export const loadToSpec = async (
+export async function loadToSpec(
   spec: Record<string, any>,
   fileMap: FileMap,
   deps = { loadFileToSpec },
-): Promise<void> => {
+): Promise<void> {
   const globOptions = {
     nodir: true, // Exclude directories
     dot: false,
@@ -500,12 +494,12 @@ export const loadToSpec = async (
   await Promise.all(promises)
 }
 
-export const loadFileToSpec = async (
+export async function loadFileToSpec(
   filePath: string,
   fileMap: FileMap,
   spec: Record<string, any>,
   deps = { loadYaml },
-): Promise<void> => {
+): Promise<void> {
   const jsonPath = getJsonPath(fileMap, filePath)
   const data = await deps.loadYaml(filePath)
   if (fileMap.processAs === 'arrayItem') {
@@ -518,7 +512,8 @@ export const loadFileToSpec = async (
     set(spec, jsonPath, newRef)
   }
 }
-export const getKmsSettings = async (envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> => {
+
+export async function getKmsSettings(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
   const fileMap = getFileMaps(envDir)
   const kmsFiles = fileMap.find((item) => item.jsonPathExpression === '$.kms')
   const spec = {}

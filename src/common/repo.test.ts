@@ -15,7 +15,7 @@ const { terminal } = stubs
 describe('getFilePath', () => {
   it('should get path for apps', () => {
     const fileMap: FileMap = {
-      kind: 'AplCoreApp',
+      kind: 'AplApp',
       envDir: '/tmp/values',
       jsonPathExpression: 'apps.*',
       pathGlob: '/tmp/values/env/apps/*.{yaml,yaml.dec}',
@@ -47,7 +47,7 @@ describe('getFilePath', () => {
 describe('getJsonPath', () => {
   it('should get json path for app', () => {
     const fileMap: FileMap = {
-      kind: 'AplCoreApp',
+      kind: 'AplApp',
       envDir: '/tmp/values',
       jsonPathExpression: 'apps.*',
       pathGlob: '/tmp/values/env/apps/*.{yaml,yaml.dec}',
