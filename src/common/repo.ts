@@ -65,6 +65,10 @@ export function getResourceFileName(fileMap: FileMap, jsonPath: jsonpath.PathCom
   return fileName
 }
 
+export function getTeamNameFromJsonPath(jsonPath: jsonpath.PathComponent[]): string {
+  return jsonPath[2].toString()
+}
+
 export function getResourceName(fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) {
   let resourceName = 'unknown'
   if (fileMap.processAs === 'arrayItem') {
@@ -79,11 +83,6 @@ export function getResourceName(fileMap: FileMap, jsonPath: jsonpath.PathCompone
     resourceName = jsonPath[jsonPath.length - 1].toString()
     return resourceName
   }
-}
-
-export function getTeamNameFromJsonPath(jsonPath: jsonpath.PathComponent[]): string {
-  const teamName = jsonPath[2].toString()
-  return teamName
 }
 
 export function getFilePath(
