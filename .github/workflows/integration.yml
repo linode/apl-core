@@ -227,20 +227,13 @@ jobs:
         if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
           # Get the kubeconfig from linode-cli
-          kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode)
-
-          # Save the kubeconfig to a file
-          kubeconfigDir="$HOME/.kube"
-          kubeconfigPath="$HOME/.kube/config"
-          mkdir -p "$kubeconfigDir"  # Create the directory if it doesn't exist
-          echo "$kubeconfig" > "$kubeconfigPath"
-          echo "Kubeconfig saved to $kubeconfigPath"
-              
-          # Set the kubectl context to use the new kubeconfig
-          export KUBECONFIG="$kubeconfigPath"
-          contextName=$(kubectl config get-contexts -o name | head -n 1)
-          kubectl config use-context "$contextName"
-          echo "Kubectl context set to linode"
+          echo -n "Waiting for kubeconfig"
+          KUBECONFIG_RETRIEVED=0
+          while [ $KUBECONFIG_RETRIEVED = 0 ]; do
+            echo -n "."
+            sleep 10
+            linode-cli get-kubeconfig --label "env.LINODE_CLUSTER_NAME" 2> /dev/null && KUBECONFIG_RETRIEVED=1
+          done
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
         if: ${{ inputs.install_profile != 'no-apl' }}
