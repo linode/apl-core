@@ -5,14 +5,12 @@ import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getRepo, writeValues } from 'src/common/values'
-import { getParsedArgs } from 'src/common/yargs'
 import { $, cd } from 'zx'
 
 const cmdName = getFilename(__filename)
 
-export const setIdentity = async (username, password, email) => {
+export const setIdentity = async (username, email) => {
   await $`git config --local user.name ${username}`.nothrow().quiet()
-  await $`git config --local user.password ${password}`.nothrow().quiet()
   await $`git config --local user.email ${email}`.nothrow().quiet()
 }
 /**
@@ -24,12 +22,11 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
-  const argv = getParsedArgs()
-  const { remote, branch, email, username, password } = getRepo(values)
+  const { remote, branch, email, username } = getRepo(values)
   cd(env.ENV_DIR)
   if (await pathExists(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
-    await setIdentity(username, password, email)
+    await setIdentity(username, email)
     return
   }
   // we don't care about ssl verification as repo endpoint is either ours or user input
@@ -80,7 +77,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
   }
 
-  await setIdentity(username, password, email)
+  await setIdentity(username, email)
 
   if (!hasCommits) {
     await $`git checkout -b ${branch}`.nothrow().quiet()

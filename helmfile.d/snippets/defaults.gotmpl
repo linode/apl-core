@@ -5,7 +5,10 @@
 environments:
   default:
     values:
-    - teamConfig:
+    - apps:
+        gitea:
+          adminPassword: {{ randAlphaNum 20 }}
+      teamConfig:
       {{- range $index,$item := readDirEntries $dirPath }}
       {{- if $item.IsDir }}
         {{ $item.Name }}:

@@ -206,10 +206,10 @@ export const addInitialPasswords = (users: any[], deps = { generatePassword }) =
       user.initialPassword = deps.generatePassword({
         length: 20,
         numbers: true,
-        symbols: true,
+        symbols: '!@#$%&*',
         lowercase: true,
         uppercase: true,
-        exclude: String(':,;"/=|%\\\''),
+        strict: true,
       })
     }
   }
