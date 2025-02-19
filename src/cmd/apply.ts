@@ -114,7 +114,7 @@ const applyAll = async () => {
 
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
-    await commit()
+    await commit(initialInstall)
     if (initialInstall) {
       await hf(
         {

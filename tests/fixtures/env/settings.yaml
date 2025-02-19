@@ -19,20 +19,19 @@ dns:
     domainFilters:
         - otomi.cloud
     provider:
-        linode:
-            apiToken: xvxvxvxvxvxvxvxvxvxvxvxvx
+        linode: {}
     zoneIdFilters: []
 e2e:
     enabled: false
 ingress:
     classes:
-        - className: net-a
+        - annotations:
+              - key: service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol
+                value: true
+          className: net-a
           entrypoint: ''
           loadBalancerIP: 11.0.0.1
           sourceIpAddressFiltering: 10.0.0.0/24
-          annotations:
-              - key: service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol
-                value: true
     platformClass:
         entrypoint: ''
 kms:
@@ -45,22 +44,22 @@ obj:
     provider:
         linode:
             accessKeyId: someaccessKeyId
-            region: nl-ams-1
             buckets:
                 cnpg: my-clusterid-cnpg
+                gitea: my-clusterid-gitea
                 harbor: my-clusterid-harbor
                 loki: my-clusterid-loki
                 tempo: my-clusterid-tempo
-                velero: my-clusterid-velero
-                gitea: my-clusterid-gitea
                 thanos: my-clusterid-thanos
+                velero: my-clusterid-velero
+            region: nl-ams-1
         type: linode
 oidc:
-    platformAdminGroupID: someAdminGroupID
+    allTeamsAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     clientID: someClientID
     issuer: https://login.microsoftonline.com/xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    platformAdminGroupID: someAdminGroupID
     subClaimMapper: oid
-    allTeamsAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 otomi:
     globalPullSecret:
@@ -88,6 +87,7 @@ platformBackups:
         enabled: true
         retentionPolicy: 7d
         schedule: 0 0 * * *
+    persistentVolumes: {}
 smtp:
     auth_username: no-reply@doma.in
     from: no-reply@doma.in
@@ -120,4 +120,4 @@ status:
         deployingVersion: 0.21.0
         status: deployed
         version: 0.21.0
-version: 32
+version: 33
