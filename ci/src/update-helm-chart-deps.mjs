@@ -71,10 +71,10 @@ async function main() {
       try {
         // Add the Helm repository (idempotent)
         await $`helm repo add ${dependency.name} ${dependency.repository}`
-        await $`helm repo update`
+        await $`helm repo update ${dependency.name}`
 
         // Get all available versions for the dependency
-        const allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -o json`
+        const allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -l -o json`
           .then((output) => JSON.parse(output.stdout))
           .then((results) => results.map((entry) => entry.version).filter((version) => semver.valid(version)))
 
@@ -129,8 +129,15 @@ async function main() {
         const tempDir = `./tmp/charts/${dependency.name}`
         await $`mkdir -p ${tempDir}`
         await $`helm pull ${dependency.name}/${dependency.name} --version ${latestVersion} --destination ${tempDir}`
-        await $`rm -R ${chartsDir}/${dependency.name}`
-        await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
+
+        if (dependency.alias) {
+          await $`rm -R ${chartsDir}/${dependency.alias}`
+          await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${tempDir}`
+          await $`mv ${tempDir}/${dependency.name} ${chartsDir}/${dependency.alias}`
+        } else {
+          await $`rm -R ${chartsDir}/${dependency.name}`
+          await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
+        }
 
         if (ciCreateFeatureBranch) {
           await $`git add ${chartFile}`
