@@ -23,6 +23,7 @@ describe('getFilePath', () => {
       processAs: 'mapItem',
       resourceGroup: 'platformApps',
       resourceDir: 'apps',
+      loadToSpec: true,
     }
     const data = {}
     const jsonPath = ['$', 'apps', 'grafana']
@@ -38,6 +39,7 @@ describe('getFilePath', () => {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: 'netpols',
+      loadToSpec: true,
     }
     const data = { id: 'net1' }
     const jsonPath = ['$', 'teamConfig', 'team-a']
@@ -55,6 +57,7 @@ describe('getJsonPath', () => {
       processAs: 'mapItem',
       resourceGroup: 'platformApps',
       resourceDir: 'apps',
+      loadToSpec: true,
     }
 
     expect(getJsonPath(fileMap, '/tmp/values/env/apps/app1.yaml')).toEqual('apps.app1')
@@ -68,6 +71,7 @@ describe('getJsonPath', () => {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: 'netpols',
+      loadToSpec: true,
     }
 
     expect(getJsonPath(fileMap, '/tmp/values/env/teams/team_a/netpols/net1.yaml')).toEqual('teamConfig.team_a.netpols')
@@ -111,6 +115,7 @@ describe('getResourceName', () => {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: '',
+      loadToSpec: true,
     }
   })
   it('should return resource name for team arrayItem', () => {
@@ -155,6 +160,7 @@ describe('getResourceFileName', () => {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: '',
+      loadToSpec: true,
     }
   })
   it('should return resource name for team arrayItem', () => {
@@ -205,6 +211,7 @@ describe('getFilePath', () => {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: 'netpols',
+      loadToSpec: true,
     }
     const jsonPath = ['$', 'teamConfig', 'demo', 'netpols', '[1]']
     const data = { name: 'a' }
@@ -224,6 +231,7 @@ describe('getFilePath', () => {
       processAs: 'mapItem',
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
+      loadToSpec: true,
     }
     const jsonPath = ['$', 'dns']
     const data = { name: 'a' }
@@ -242,6 +250,7 @@ describe('getFilePath', () => {
       processAs: 'arrayItem',
       resourceGroup: 'users',
       resourceDir: 'users',
+      loadToSpec: true,
     }
     const jsonPath = ['$', 'dns']
     const data = { id: 'a' }
