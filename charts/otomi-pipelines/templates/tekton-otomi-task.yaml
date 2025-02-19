@@ -55,12 +55,9 @@ spec:
         export fullRepoUrl=$(params["repoUrl"])
         export url=$(echo $fullRepoUrl|sed 's/http\:\/\///')
 
-        # Cloning the values
-        {{- if .Values.cloneUnsecure }}
-        git clone -c http.sslVerify=false --depth 1 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
-        {{- else}}
-        git clone --depth 1 http://$GITEA_USERNAME:$GITEA_PASSWORD@$url $ENV_DIR
-        {{- end }}
+        # Cloning the values using the helper
+        {{- include "otomi-pipelines.cloneRepo" (dict "DestDir" "$ENV_DIR" "Values" .Values) | nindent 8 }}
+        
     - name: bootstrap
       computeResources: {}
       command:
