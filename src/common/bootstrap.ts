@@ -30,9 +30,8 @@ export const prepareDomainSuffix = async (inValues: Record<string, any> | undefi
   }
 }
 
-export const setIdentity = async (username, password, email) => {
+export const setIdentity = async (username, email) => {
   await $`git config --local user.name ${username}`.nothrow().quiet()
-  await $`git config --local user.password ${password}`.nothrow().quiet()
   await $`git config --local user.email ${email}`.nothrow().quiet()
 }
 /**
@@ -51,11 +50,11 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     // we couldn't find the domainSuffix in the values, so create it
     await prepareDomainSuffix(values)
   }
-  const { remote, branch, email, username, password } = getRepo(values)
+  const { remote, branch, email, username } = getRepo(values)
   cd(env.ENV_DIR)
   if (await pathExists(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
-    await setIdentity(username, password, email)
+    await setIdentity(username, email)
     return
   }
   // we don't care about ssl verification as repo endpoint is either ours or user input
@@ -106,7 +105,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
   }
 
-  await setIdentity(username, password, email)
+  await setIdentity(username, email)
 
   if (!hasCommits) {
     await $`git checkout -b ${branch}`.nothrow().quiet()
