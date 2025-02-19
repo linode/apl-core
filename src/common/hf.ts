@@ -5,7 +5,7 @@ import { parse } from 'yaml'
 import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { setValuesFile } from './repo'
+import { getFileMap, setValuesFile } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, rootDir } from './utils'
 import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
@@ -111,10 +111,9 @@ export const hfValues = async (
 
   if (withWorkloadValues) {
     const files = {}
-    const filePaths = await glob([
-      `${envDir}/env/teams/*/workloadsValues/*.yaml`,
-      `${envDir}/env/teams/*/sealedsecrets/*.yaml`,
-    ])
+    const workloadValuesGlob = getFileMap('AplTeamSecret', envDir).pathGlob
+    const sealedSecretsGlob = getFileMap('AplTeamSecret', envDir).pathGlob
+    const filePaths = await glob([workloadValuesGlob, sealedSecretsGlob])
 
     await Promise.allSettled(
       filePaths.map(async (path) => {

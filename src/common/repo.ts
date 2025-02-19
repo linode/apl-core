@@ -13,33 +13,36 @@ export async function getTeamNames(envDir: string): Promise<Array<string>> {
   return await getDirNames(teamsDir, { skipHidden: true })
 }
 
+type AplKind =
+  | 'AplApp'
+  | 'AplAlertSet'
+  | 'AplCluster'
+  | 'AplDatabase'
+  | 'AplDns'
+  | 'AplIngress'
+  | 'AplObjectStorage'
+  | 'AplKms'
+  | 'AplIdentityProvider'
+  | 'AplCapabilitySet'
+  | 'AplSmtp'
+  | 'AplBackupCollection'
+  | 'AplUser'
+  | 'AplTeamBuild'
+  | 'AplTeamPolicy'
+  | 'AplTeamSettingSet'
+  | 'AplTeamNetworkControl'
+  | 'AplTeamProject'
+  | 'AplTeamBackup'
+  | 'AplTeamSecret'
+  | 'AplTeamService'
+  | 'AplTeamWorkload'
+  | 'AplTeamWorkloadValues'
+  | 'AplTeamTool'
+  | 'AplVersion'
+
 export interface FileMap {
   envDir: string
-  kind:
-    | 'AplApp'
-    | 'AplAlertSet'
-    | 'AplCluster'
-    | 'AplDatabase'
-    | 'AplDns'
-    | 'AplIngress'
-    | 'AplObjectStorage'
-    | 'AplKms'
-    | 'AplIdentityProvider'
-    | 'AplCapabilitySet'
-    | 'AplSmtp'
-    | 'AplBackupCollection'
-    | 'AplUser'
-    | 'AplTeamBuild'
-    | 'AplTeamPolicy'
-    | 'AplTeamSettingSet'
-    | 'AplTeamNetworkControl'
-    | 'AplTeamProject'
-    | 'AplTeamBackup'
-    | 'AplTeamSecret'
-    | 'AplTeamService'
-    | 'AplTeamWorkload'
-    | 'AplTeamTool'
-    | 'AplVersion'
+  kind: AplKind
   jsonPathExpression: string
   pathGlob: string
   processAs: 'arrayItem' | 'mapItem'
@@ -101,6 +104,12 @@ export function getFilePath(
   }
   // normalize paths like /ab/c/./test/yaml
   return path.normalize(filePath)
+}
+
+export function getFileMap(kind: AplKind, envDir: string): FileMap {
+  const fileMaps = getFileMaps(envDir)
+  const fileMapFiltered = fileMaps.find((fileMap) => fileMap.kind === kind)
+  return fileMapFiltered![0]
 }
 
 export function getFileMaps(envDir: string): Array<FileMap> {
@@ -248,6 +257,15 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: 'workloads',
+    },
+    {
+      kind: 'AplTeamWorkloadValues',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.workloadValues[*]',
+      pathGlob: `${envDir}/env/teams/*/workloadValues/*.yaml`,
+      processAs: 'arrayItem',
+      resourceGroup: 'team',
+      resourceDir: 'workloadValues',
     },
     {
       kind: 'AplTeamService',
