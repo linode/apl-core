@@ -111,7 +111,7 @@ export const hfValues = async (
 
   if (withWorkloadValues) {
     const files = {}
-    const workloadValuesGlob = getFileMap('AplTeamSecret', envDir).pathGlob
+    const workloadValuesGlob = getFileMap('AplTeamWorkloadValues', envDir).pathGlob
     const sealedSecretsGlob = getFileMap('AplTeamSecret', envDir).pathGlob
     const filePaths = await glob([workloadValuesGlob, sealedSecretsGlob])
 

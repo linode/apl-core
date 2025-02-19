@@ -1,5 +1,6 @@
 import {
   FileMap,
+  getFileMap,
   getFileMaps,
   getFilePath,
   getJsonPath,
@@ -249,5 +250,12 @@ describe('getFilePath', () => {
 
     filePath = getFilePath(fileMap, jsonPath, data, 'secrets.')
     expect(filePath).toBe('/tmp/env/users/secrets.a.yaml')
+  })
+})
+
+describe('getFileMap', () => {
+  it('should return filemap for sealedsecrets', () => {
+    const map = getFileMap('AplTeamSecret', '/tmp')
+    expect(map.kind).toBe('AplTeamSecret')
   })
 })

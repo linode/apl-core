@@ -1,0 +1,7 @@
+kind: AplTeamWorkloadValues
+metadata:
+    name: wd3
+    labels:
+        apl.io/teamId: demo
+values: |
+    a: b
