@@ -57,7 +57,6 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
         await $`git push -u origin ${branch}`
       } catch (e) {
         d.warn(`The values repository is not yet reachable. Retrying.`)
-        throw e
       }
     },
     {
