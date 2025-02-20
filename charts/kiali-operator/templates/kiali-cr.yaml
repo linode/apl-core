@@ -18,5 +18,5 @@ metadata:
     {{- end }}
 spec:
   {{- toYaml .Values.cr.spec | nindent 2 }}
----
+...
 {{ end }}

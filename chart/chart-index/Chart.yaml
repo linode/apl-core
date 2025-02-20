@@ -36,7 +36,7 @@ dependencies:
     version: 2.57.0
     repository: https://jaegertracing.github.io/helm-charts
   - name: kiali-operator
-    version: 1.86.1
+    version: 1.89.7
     repository: https://kiali.org/helm-charts
   - name: knative-operator
     version: 0.1.0

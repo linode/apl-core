@@ -13,4 +13,4 @@ roleRef:
   kind: ClusterRole
   name: {{ include "kiali-operator.fullname" . }}
   apiGroup: rbac.authorization.k8s.io
----
+...
