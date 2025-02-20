@@ -188,13 +188,13 @@ async function main() {
     }
 
     console.log('Dependency updates complete.')
-    if (dependencyErrors) {
+    if (Object.keys(dependencyErrors).length > 0) {
       console.log('Summary of errors encountered during the update:')
       Object.entries(dependencyErrors).forEach(([key, value]) => {
         console.log(`${key}:`, value)
       })
     }
-    if (fixedChartVersions && !ciPushtoBranch) {
+    if (Object.keys(fixedChartVersions).length > 0 && !ciPushtoBranch) {
       console.log('Writing mismatching versions to chart index.')
       for (const dependency of chart.dependencies) {
         const fixedVersion = fixedChartVersions[dependency.name]
