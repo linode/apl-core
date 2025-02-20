@@ -3,8 +3,10 @@ replicaCount: 1
 
 image:
   repository: quay.io/prometheusmsteams/prometheus-msteams
-  tag: v1.3.3
+  tag: v1.4.1
   pullPolicy: Always
+
+imagePullSecrets: []
 
 extraEnvs:
 
@@ -30,21 +32,23 @@ tolerations: []
 
 affinity: {}
 
+podSecurityContext:
+  runAsUser: 1000
+  runAsNonRoot: true
+
+priorityClassName: ""
+
 metrics:
   serviceMonitor:
     enabled: false
     additionalLabels: {}
     scrapeInterval: 30s
 
-connectors: {}
-connectors_with_custom_templates: {}
-
+connectors: []
+connectors_with_custom_templates: []
 
 ## Specify the custom message card template for MS teams
 # customCardTemplate: |
 #   {{ define "teams.card" }}
-#   {
-#     
-#   }
+#   {...}
 #   {{ end }}
-
