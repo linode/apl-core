@@ -6,6 +6,9 @@
 nameOverride: argocd
 # -- String to fully override `"argo-cd.fullname"`
 fullnameOverride: ""
+# -- Override the namespace
+# @default -- `.Release.Namespace`
+namespaceOverride: ""
 # -- Override the Kubernetes version, which is used to evaluate certain manifests
 kubeVersionOverride: ""
 # Override APIVersions
@@ -180,6 +183,10 @@ configs:
     # -- Timeout to refresh application data as well as target manifests cache
     timeout.hard.reconciliation: 0s
 
+    # -- Enable Status Badge
+    ## Ref: https://argo-cd.readthedocs.io/en/stable/user-guide/status-badge/
+    statusbadge.enabled: false
+
     # Dex configuration
     # dex.config: |
     #   connectors:
@@ -267,6 +274,12 @@ configs:
     ## The namespace where Argo CD is installed to will always be allowed.
     ## Set comma-separated list. (e.g. app-team-one, app-team-two)
     application.namespaces: ""
+
+    # -- JQ Path expression timeout
+    ## By default, the evaluation of a JQPathExpression is limited to one second.
+    ## If you encounter a "JQ patch execution timed out" error message due to a complex JQPathExpression
+    ## that requires more time to evaluate, you can extend the timeout period.
+    controller.ignore.normalizer.jq.timeout: "1s"
 
   # Argo CD RBAC policy configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/rbac.md
@@ -673,6 +686,13 @@ controller:
   #  - name: custom-tools
   #    emptyDir: {}
 
+  ## Application controller emptyDir volumes
+  emptyDir:
+    # -- EmptyDir size limit for application controller
+    # @default -- `""` (defaults not set if not specified i.e. no size limit)
+    sizeLimit: ""
+    # sizeLimit: "1Gi"
+
   # -- Annotations for the application controller StatefulSet
   statefulsetAnnotations: {}
 
@@ -760,6 +780,9 @@ controller:
     # - maxSkew: 1
     #   topologyKey: topology.kubernetes.io/zone
     #   whenUnsatisfiable: DoNotSchedule
+
+  # -- Automount API credentials for the Service Account into the pod.
+  automountServiceAccountToken: true
 
   serviceAccount:
     # -- Create a service account for the application controller
@@ -989,6 +1012,13 @@ dex:
   # -- Additional volumes to the dex pod
   volumes: []
 
+  ## Dex server emptyDir volumes
+  emptyDir:
+    # -- EmptyDir size limit for Dex server
+    # @default -- `""` (defaults not set if not specified i.e. no size limit)
+    sizeLimit: ""
+    # sizeLimit: "1Gi"
+
   # TLS certificate configuration via Secret
   ## Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/tls/#configuring-tls-to-argocd-dex-server
   ## Note: Issuing certificates via cert-manager in not supported right now because it's not possible to restart Dex automatically without extra controllers.
@@ -1095,6 +1125,9 @@ dex:
 
   # -- terminationGracePeriodSeconds for container lifecycle hook
   terminationGracePeriodSeconds: 30
+
+  # -- Automount API credentials for the Service Account into the pod.
+  automountServiceAccountToken: true
 
   serviceAccount:
     # -- Create dex service account
@@ -1396,6 +1429,9 @@ redis:
   # -- terminationGracePeriodSeconds for container lifecycle hook
   terminationGracePeriodSeconds: 30
 
+  # -- Automount API credentials for the Service Account into the pod.
+  automountServiceAccountToken: true
+
   serviceAccount:
     # -- Create a service account for the redis pod
     create: false
@@ -1491,6 +1527,9 @@ redis-ha:
   haproxy:
     # -- Enabled HAProxy LoadBalancing/Proxy
     enabled: true
+    # --  Custom labels for the haproxy pod. This is relevant for Argo CD CLI.
+    labels:
+      app.kubernetes.io/name: argocd-redis-ha-haproxy
     metrics:
       # -- HAProxy enable prometheus metric scraping
       enabled: true
@@ -1507,6 +1546,12 @@ redis-ha:
     # @default -- See [values.yaml]
     containerSecurityContext:
       readOnlyRootFilesystem: true
+
+  # -- Configures redis-ha with AUTH
+  auth: true
+  # -- Existing Secret to use for redis-ha authentication.
+  # By default the redis-secret-init Job is generating this Secret.
+  existingSecret: argocd-redis
 
   # -- Whether the Redis server pods should be forced to run on separate nodes.
   hardAntiAffinity: true
@@ -1554,6 +1599,82 @@ externalRedis:
   existingSecret: ""
   # -- External Redis Secret annotations
   secretAnnotations: {}
+
+redisSecretInit:
+  # -- Enable Redis secret initialization. If disabled, secret must be provisioned by alternative methods
+  enabled: true
+  # -- Redis secret-init name
+  name: redis-secret-init
+
+  image:
+    # -- Repository to use for the Redis secret-init Job
+    # @default -- `""` (defaults to global.image.repository)
+    repository: "" # defaults to global.image.repository
+    # -- Tag to use for the Redis secret-init Job
+    # @default -- `""` (defaults to global.image.tag)
+    tag: "" # defaults to global.image.tag
+    # -- Image pull policy for the Redis secret-init Job
+    # @default -- `""` (defaults to global.image.imagePullPolicy)
+    imagePullPolicy: "" # IfNotPresent
+
+  # -- Secrets with credentials to pull images from a private registry
+  # @default -- `[]` (defaults to global.imagePullSecrets)
+  imagePullSecrets: []
+
+  # -- Annotations to be added to the Redis secret-init Job
+  jobAnnotations: {}
+
+  # -- Annotations to be added to the Redis secret-init Job
+  podAnnotations: {}
+
+  # -- Labels to be added to the Redis secret-init Job
+  podLabels: {}
+
+  # -- Resource limits and requests for Redis secret-init Job
+  resources: {}
+  #  limits:
+  #    cpu: 200m
+  #    memory: 128Mi
+  #  requests:
+  #    cpu: 100m
+  #    memory: 64Mi
+
+  # -- Application controller container-level security context
+  # @default -- See [values.yaml]
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  # -- Redis secret-init Job pod-level security context
+  securityContext: {}
+
+  serviceAccount:
+    # -- Create a service account for the redis pod
+    create: true
+    # -- Service account name for redis pod
+    name: ""
+    # -- Annotations applied to created service account
+    annotations: {}
+    # -- Automount API credentials for the Service Account
+    automountServiceAccountToken: true
+
+  # -- Priority class for Redis secret-init Job
+  # @default -- `""` (defaults to global.priorityClassName)
+  priorityClassName: ""
+
+  # -- Node selector to be added to the Redis secret-init Job
+  # @default -- `{}` (defaults to global.nodeSelector)
+  nodeSelector: {}
+
+  # -- Tolerations to be added to the Redis secret-init Job
+  # @default -- `[]` (defaults to global.tolerations)
+  tolerations: []
 
 ## Server
 server:
@@ -1656,7 +1777,7 @@ server:
       # -- Repository to use for extension installer image
       repository: "quay.io/argoprojlabs/argocd-extension-installer"
       # -- Tag to use for extension installer image
-      tag: "v0.0.1"
+      tag: "v0.0.5"
       # -- Image pull policy for extensions
       # @default -- `""` (defaults to global.image.imagePullPolicy)
       imagePullPolicy: ""
@@ -1743,6 +1864,13 @@ server:
   volumes: []
   #  - name: custom-tools
   #    emptyDir: {}
+
+  ## Argo CD server emptyDir volumes
+  emptyDir:
+    # -- EmptyDir size limit for the Argo CD server
+    # @default -- `""` (defaults not set if not specified i.e. no size limit)
+    sizeLimit: ""
+    # sizeLimit: "1Gi"
 
   # -- Annotations to be added to server Deployment
   deploymentAnnotations: {}
@@ -1929,18 +2057,22 @@ server:
     servicePortHttpName: http
     # -- Server service https port name, can be used to route traffic via istio
     servicePortHttpsName: https
-    # -- Server service https port appProtocol. (should be upper case - i.e. HTTPS)
-    # servicePortHttpsAppProtocol: HTTPS
+    # -- Server service https port appProtocol
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/service/#application-protocol
+    servicePortHttpsAppProtocol: ""
     # -- LoadBalancer will get created with the IP specified in this field
     loadBalancerIP: ""
     # -- Source IP ranges to allow access to service from
+    ## Ref: https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
     loadBalancerSourceRanges: []
     # -- Server service external IPs
     externalIPs: []
     # -- Denotes if this Service desires to route external traffic to node-local or cluster-wide endpoints
-    externalTrafficPolicy: ""
+    ## Ref: https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+    externalTrafficPolicy: Cluster
     # -- Used to maintain session affinity. Supports `ClientIP` and `None`
-    sessionAffinity: ""
+    ## Ref: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
+    sessionAffinity: None
 
   ## Server metrics service configuration
   metrics:
@@ -1984,6 +2116,9 @@ server:
       additionalLabels: {}
       # -- Prometheus ServiceMonitor annotations
       annotations: {}
+
+  # -- Automount API credentials for the Service Account into the pod.
+  automountServiceAccountToken: true
 
   serviceAccount:
     # -- Create server service account
@@ -2194,6 +2329,14 @@ server:
     # -- Termination policy of Openshift Route
     termination_policy: None
 
+  ## Enable this and set the rules: to whatever custom rules you want for the Cluster Role resource.
+  ## Defaults to off
+  clusterRoleRules:
+    # -- Enable custom rules for the server's ClusterRole resource
+    enabled: false
+    # -- List of custom rules for the server's ClusterRole resource
+    rules: []
+
 ## Repo Server
 repoServer:
   # -- Repo server name
@@ -2357,6 +2500,13 @@ repoServer:
   #  plugins:
   #    persistentVolumeClaim:
   #      claimName: pvc-argocd-repo-server-plugins
+
+  ## RepoServer emptyDir volumes
+  emptyDir:
+    # -- EmptyDir size limit for repo server
+    # @default -- `""` (defaults not set if not specified i.e. no size limit)
+    sizeLimit: ""
+    # sizeLimit: "1Gi"
 
   # -- Toggle the usage of a ephemeral Helm working directory
   useEphemeralHelmWorkingDir: true
@@ -2547,6 +2697,9 @@ repoServer:
     # -- List of custom rules for the Repo server's Cluster Role resource
     rules: []
 
+  # -- Automount API credentials for the Service Account into the pod.
+  automountServiceAccountToken: true
+
   ## Repo server service account
   ## If create is set to true, make sure to uncomment the name and update the rbac section below
   serviceAccount:
@@ -2574,9 +2727,6 @@ repoServer:
 
 ## ApplicationSet controller
 applicationSet:
-  # -- Enable ApplicationSet controller
-  enabled: true
-
   # -- ApplicationSet controller name string
   name: applicationset-controller
 
@@ -2645,6 +2795,13 @@ applicationSet:
   # -- List of extra volumes to add
   extraVolumes: []
 
+  ## ApplicationSet controller emptyDir volumes
+  emptyDir:
+    # -- EmptyDir size limit for applicationSet controller
+    # @default -- `""` (defaults not set if not specified i.e. no size limit)
+    sizeLimit: ""
+    # sizeLimit: "1Gi"
+
   ## Metrics service configuration
   metrics:
     # -- Deploy metrics service
@@ -2700,6 +2857,9 @@ applicationSet:
     port: 7000
     # -- ApplicationSet service port name
     portName: http-webhook
+
+  # -- Automount API credentials for the Service Account into the pod.
+  automountServiceAccountToken: true
 
   serviceAccount:
     # -- Create ApplicationSet controller service account
@@ -3161,6 +3321,9 @@ notifications:
   # -- Priority class for the notifications controller pods
   # @default -- `""` (defaults to global.priorityClassName)
   priorityClassName: ""
+
+  # -- Automount API credentials for the Service Account into the pod.
+  automountServiceAccountToken: true
 
   serviceAccount:
     # -- Create notifications controller service account
