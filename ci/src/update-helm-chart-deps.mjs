@@ -67,6 +67,20 @@ async function main() {
         continue
       }
 
+      console.log(`Pre-check for dependency ${dependency.name}`)
+      try {
+        const dependencyFileName = `${chartsDir}/${dependency.alias || dependency.name}/Chart.yaml`
+        const dependencyFile = await fs.readFile(dependencyFileName, 'utf8')
+        const dependencyChart = yaml.load(dependencyFile)
+        if (dependencyChart.version !== currentDependencyVersion) {
+          console.error(`Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`)
+          continue
+        }
+      } catch (error) {
+        console.error(`Error checking dependency ${dependency.name}:`, error)
+        continue
+      }
+
       console.log(`Checking updates for dependency: ${dependency.name}`)
       try {
         // Add the Helm repository (idempotent)
