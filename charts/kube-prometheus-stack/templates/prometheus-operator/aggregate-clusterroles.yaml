@@ -8,10 +8,11 @@ metadata:
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-view: "true"
-    {{- include "kube-prometheus-stack.prometheus-operator.labels" . | nindent 4 }}
+    app: {{ template "kube-prometheus-stack.name" . }}-operator
+    {{- include "kube-prometheus-stack.labels" . | nindent 4 }}
 rules:
 - apiGroups: ["monitoring.coreos.com"]
-  resources: ["alertmanagers", "alertmanagerconfigs", "podmonitors",  "probes", "prometheuses", "prometheusagents", "prometheusrules", "scrapeconfigs", "servicemonitors"]
+  resources: ["alertmanagers", "alertmanagerconfigs", "prometheuses", "prometheusrules", "servicemonitors", "podmonitors", "probes"]
   verbs: ["get", "list", "watch"]
 ---
 kind: ClusterRole
@@ -21,9 +22,10 @@ metadata:
   labels:
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    {{- include "kube-prometheus-stack.prometheus-operator.labels" . | nindent 4 }}
+    app: {{ template "kube-prometheus-stack.name" . }}-operator
+    {{- include "kube-prometheus-stack.labels" . | nindent 4 }}
 rules:
 - apiGroups: ["monitoring.coreos.com"]
-  resources: ["alertmanagers", "alertmanagerconfigs", "podmonitors",  "probes", "prometheuses", "prometheusagents", "prometheusrules", "scrapeconfigs", "servicemonitors"]
+  resources: ["alertmanagers", "alertmanagerconfigs", "prometheuses", "prometheusrules", "servicemonitors", "podmonitors", "probes"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 {{- end }}

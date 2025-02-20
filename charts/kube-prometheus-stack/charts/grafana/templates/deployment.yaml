@@ -14,7 +14,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if (not .Values.autoscaling.enabled) }}
+  {{- if and (not .Values.autoscaling.enabled) (.Values.replicas) }}
   replicas: {{ .Values.replicas }}
   {{- end }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
@@ -33,16 +33,14 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       annotations:
-        checksum/config: {{ include "grafana.configData" . | sha256sum }}
-        {{- if .Values.dashboards }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/dashboards-json-config: {{ include (print $.Template.BasePath "/dashboards-json-configmap.yaml") . | sha256sum }}
-        {{- end }}
-        checksum/sc-dashboard-provider-config: {{ include "grafana.configDashboardProviderData" . | sha256sum }}
+        checksum/sc-dashboard-provider-config: {{ include (print $.Template.BasePath "/configmap-dashboard-provider.yaml") . | sha256sum }}
         {{- if and (or (and (not .Values.admin.existingSecret) (not .Values.env.GF_SECURITY_ADMIN_PASSWORD__FILE) (not .Values.env.GF_SECURITY_ADMIN_PASSWORD)) (and .Values.ldap.enabled (not .Values.ldap.existingSecret))) (not .Values.env.GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION) }}
-        checksum/secret: {{ include "grafana.secretsData" . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         {{- end }}
         {{- if .Values.envRenderSecret }}
-        checksum/secret-env: {{ tpl (toYaml .Values.envRenderSecret) . | sha256sum }}
+        checksum/secret-env: {{ include (print $.Template.BasePath "/secret-env.yaml") . | sha256sum }}
         {{- end }}
         kubectl.kubernetes.io/default-container: {{ .Chart.Name }}
         {{- with .Values.podAnnotations }}

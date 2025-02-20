@@ -1,18 +1,12 @@
 dependencies:
-- name: crds
-  repository: ""
-  version: 0.0.0
 - name: kube-state-metrics
   repository: https://prometheus-community.github.io/helm-charts
-  version: 5.26.0
+  version: 5.7.0
 - name: prometheus-node-exporter
   repository: https://prometheus-community.github.io/helm-charts
-  version: 4.39.0
+  version: 4.17.5
 - name: grafana
   repository: https://grafana.github.io/helm-charts
-  version: 8.5.5
-- name: prometheus-windows-exporter
-  repository: https://prometheus-community.github.io/helm-charts
-  version: 0.7.0
-digest: sha256:f4113006cd1c16fa72c34e2527d029bf158518162e6fcbdc44a30e788e3dd251
-generated: "2024-10-16T13:42:02.706796+02:00"
+  version: 6.57.1
+digest: sha256:36f070a885c7ea74d5f50644a5c0c660d6a1c2e65914ce0dcd1f55e4ffab4e01
+generated: "2023-06-08T07:36:37.504572174Z"

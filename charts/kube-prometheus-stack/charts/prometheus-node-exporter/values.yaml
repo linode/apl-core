@@ -14,10 +14,6 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-# Number of old history to retain to allow rollback
-# Default Kubernetes value is set to 10
-revisionHistoryLimit: 10
-
 global:
   # To help compatibility with other charts which use global.imagePullSecrets.
   # Allow either an array of {name: pullSecret} maps (k8s-style), or an array of strings (more common helm-style).
@@ -39,17 +35,14 @@ global:
 # The requests are served through the same service but requests are HTTPS.
 kubeRBACProxy:
   enabled: false
-  ## Set environment variables as name/value pairs
-  env: {}
-    # VARIABLE: value
   image:
     registry: quay.io
     repository: brancz/kube-rbac-proxy
-    tag: v0.18.0
+    tag: v0.14.0
     sha: ""
     pullPolicy: IfNotPresent
 
-  # List of additional cli arguments to configure kube-rbac-proxy
+  # List of additional cli arguments to configure kube-rbac-prxy
   # for example: --tls-cipher-suites, --log-file, etc.
   # all the possible args can be found here: https://github.com/brancz/kube-rbac-proxy#usage
   extraArgs: []
@@ -59,19 +52,6 @@ kubeRBACProxy:
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   containerSecurityContext: {}
 
-  # Specify the port used for the Node exporter container (upstream port)
-  port: 8100
-  # Specify the name of the container port
-  portName: http
-  # Configure a hostPort. If true, hostPort will be enabled in the container and set to service.port.
-  enableHostPort: false
-
-  # Configure Proxy Endpoints Port
-  # This is the port being probed for readiness
-  proxyEndpointsPort: 8888
-  # Configure a hostPort. If true, hostPort will be enabled in the container and set to proxyEndpointsPort.
-  enableProxyEndpointsHostPort: false
-
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -80,50 +60,18 @@ kubeRBACProxy:
     # limits:
     #  cpu: 100m
     #  memory: 64Mi
-    # requests:
-    #  cpu: 10m
-    #  memory: 32Mi
+  # requests:
+  #  cpu: 10m
+  #  memory: 32Mi
 
-## Service configuration
 service:
-  ## Creating a service is enabled by default
-  enabled: true
-
-  ## Service type
   type: ClusterIP
-  ## IP address for type ClusterIP
-  clusterIP: ""
-  ## Default service port. Sets the port of the exposed container as well (NE or kubeRBACProxy).
-  ## Use "servicePort" below if changing the service port only is desired.
   port: 9100
-  ## Service port. Use this field if you wish to set a different service port
-  ## without changing the container port ("port" above).
-  servicePort: ""
-  ## Targeted port in the pod. Must refer to an open container port ("port" or "portName").
-  ## (IntOrString)
   targetPort: 9100
-  ## Name of the service port. Sets the port name of the main container (NE) as well.
+  nodePort:
   portName: metrics
-  ## Port number for service type NodePort
-  nodePort: null
-
-  ## If true, node exporter will listen on all interfaces
   listenOnAllInterfaces: true
-
-  ## Additional annotations and labels for the service
-  annotations:
-    prometheus.io/scrape: "true"
-  labels: {}
-
-  ## Dual stack settings for the service
-  ## https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services
-  ipDualStack:
-    enabled: false
-    ipFamilies: ["IPv6", "IPv4"]
-    ipFamilyPolicy: "PreferDualStack"
-
-  ## External traffic policy setting (Cluster, Local)
-  externalTrafficPolicy: ""
+  annotations: {}
 
 # Set a NetworkPolicy with:
 # ingress only on service.port
@@ -301,10 +249,6 @@ resources: {}
   #   cpu: 100m
   #   memory: 30Mi
 
-# Specify the container restart policy passed to the Node Export container
-# Possible Values: Always (default)|OnFailure|Never
-restartPolicy: null
-
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
   create: true
@@ -346,9 +290,6 @@ hostNetwork: true
 # Share the host process ID namespace
 hostPID: true
 
-# Share the host ipc namespace
-hostIPC: false
-
 # Mount the node's root file system (/) at /host/root in the container
 hostRootFsMount:
   enabled: true
@@ -358,16 +299,6 @@ hostRootFsMount:
   # None is used. More information on:
   # https://kubernetes.io/docs/concepts/storage/volumes/#mount-propagation
   mountPropagation: HostToContainer
-
-# Mount the node's proc file system (/proc) at /host/proc in the container
-hostProcFsMount:
-  # Possible values are None, HostToContainer, and Bidirectional
-  mountPropagation: ""
-
-# Mount the node's sys file system (/sys) at /host/sys in the container
-hostSysFsMount:
-  # Possible values are None, HostToContainer, and Bidirectional
-  mountPropagation: ""
 
 ## Assign a group of affinity scheduling rules
 ##
@@ -386,11 +317,8 @@ podAnnotations:
   # Fix for very slow GKE cluster upgrades
   cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
 
-# Extra labels to add to node exporter pods (can be templated)
+# Extra labels to be added to node exporter pods
 podLabels: {}
-
-## Extra labels to attach to all resources (can be templated)
-commonLabels: {}
 
 # Annotations to be added to node exporter daemonset
 daemonsetAnnotations: {}
@@ -416,22 +344,9 @@ nodeSelector:
   kubernetes.io/os: linux
   #  kubernetes.io/arch: amd64
 
-# Specify grace period for graceful termination of pods. Defaults to 30 if null or not specified
-terminationGracePeriodSeconds: null
-
 tolerations:
   - effect: NoSchedule
     operator: Exists
-
-# Enable or disable container termination message settings
-# https://kubernetes.io/docs/tasks/debug/debug-application/determine-reason-pod-failure/
-terminationMessageParams:
-  enabled: false
-  # If enabled, specify the path for termination messages
-  terminationMessagePath: /dev/termination-log
-  # If enabled, specify the policy for termination messages
-  terminationMessagePolicy: File
-
 
 ## Assign a PriorityClassName to pods if set
 # priorityClassName: ""
@@ -447,8 +362,6 @@ extraArgs: []
 extraHostVolumeMounts: []
 #  - name: <mountName>
 #    hostPath: <hostPath>
-#    https://kubernetes.io/docs/concepts/storage/volumes/#hostpath-volume-types
-#    type: "" (Default)|DirectoryOrCreate|Directory|FileOrCreate|File|Socket|CharDevice|BlockDevice
 #    mountPath: <mountPath>
 #    readOnly: true|false
 #    mountPropagation: None|HostToContainer|Bidirectional
@@ -465,21 +378,18 @@ secrets: []
 ##
 namespaceOverride: ""
 
-## Additional containers for export metrics to text file; fields image,imagePullPolicy,securityContext take default value from main container
+## Additional containers for export metrics to text file
 ##
 sidecars: []
-#  - name: nvidia-dcgm-exporter
-#    image: nvidia/dcgm-exporter:1.4.3
-#    volumeMounts:
-#     - name: tmp
-#       mountPath: /tmp
+##  - name: nvidia-dcgm-exporter
+##    image: nvidia/dcgm-exporter:1.4.3
 
 ## Volume for sidecar containers
 ##
 sidecarVolumeMount: []
-#  - name: collector-textfiles
-#    mountPath: /run/prometheus
-#    readOnly: false
+##  - name: collector-textfiles
+##    mountPath: /run/prometheus
+##    readOnly: false
 
 ## Additional mounts from the host to sidecar containers
 ##
@@ -521,17 +431,8 @@ readinessProbe:
 # Enable vertical pod autoscaler support for prometheus-node-exporter
 verticalPodAutoscaler:
   enabled: false
-
-  # Recommender responsible for generating recommendation for the object.
-  # List should be empty (then the default recommender will generate the recommendation)
-  # or contain exactly one recommender.
-  # recommenders:
-  # - name: custom-recommender-performance
-
   # List of resources that the vertical pod autoscaler can control. Defaults to cpu and memory
   controlledResources: []
-  # Specifies which resource values should be controlled: RequestsOnly or RequestsAndLimits.
-  # controlledValues: RequestsAndLimits
 
   # Define the max allowed resources for the pod
   maxAllowed: {}
@@ -543,21 +444,6 @@ verticalPodAutoscaler:
   # memory: 100Mi
 
   # updatePolicy:
-    # Specifies minimal number of replicas which need to be alive for VPA Updater to attempt pod eviction
-    # minReplicas: 1
     # Specifies whether recommended updates are applied when a Pod is started and whether recommended updates
     # are applied during the life of a Pod. Possible values are "Off", "Initial", "Recreate", and "Auto".
     # updateMode: Auto
-
-# Extra manifests to deploy as an array
-extraManifests: []
-  # - |
-  #   apiVersion: v1
-  #   kind: ConfigMap
-  #   metadata:
-  #     name: prometheus-extra
-  #   data:
-  #     extra-data: "value"
-
-# Override version of app, required if image.tag is defined and does not follow semver
-version: ""

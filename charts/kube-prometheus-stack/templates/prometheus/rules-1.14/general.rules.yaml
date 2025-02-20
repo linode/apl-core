@@ -1,5 +1,5 @@
 {{- /*
-Generated from 'general.rules' group from https://github.com/prometheus-operator/kube-prometheus.git
+Generated from 'general.rules' group from https://raw.githubusercontent.com/prometheus-operator/kube-prometheus/main/manifests/kubePrometheus-prometheusRule.yaml
 Do not change in-place! In order to change this file first read following link:
 https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack/hack
 */ -}}
@@ -36,13 +36,10 @@ spec:
         description: '{{`{{`}} printf "%.4g" $value {{`}}`}}% of the {{`{{`}} $labels.job {{`}}`}}/{{`{{`}} $labels.service {{`}}`}} targets in {{`{{`}} $labels.namespace {{`}}`}} namespace are down.'
         runbook_url: {{ .Values.defaultRules.runbookUrl }}/general/targetdown
         summary: One or more targets are unreachable.
-      expr: 100 * (count(up == 0) BY ({{ range $.Values.defaultRules.additionalAggregationLabels }}{{ . }},{{ end }}cluster, job, namespace, service) / count(up) BY ({{ range $.Values.defaultRules.additionalAggregationLabels }}{{ . }},{{ end }}cluster, job, namespace, service)) > 10
-      for: {{ dig "TargetDown" "for" "10m" .Values.customRules }}
-      {{- with .Values.defaultRules.keepFiringFor }}
-      keep_firing_for: "{{ . }}"
-      {{- end }}
+      expr: 100 * (count(up == 0) BY (cluster, job, namespace, service) / count(up) BY (cluster, job, namespace, service)) > 10
+      for: 10m
       labels:
-        severity: {{ dig "TargetDown" "severity" "warning" .Values.customRules }}
+        severity: warning
       {{- if or .Values.defaultRules.additionalRuleLabels .Values.defaultRules.additionalRuleGroupLabels.general }}
         {{- with .Values.defaultRules.additionalRuleLabels }}
           {{- toYaml . | nindent 8 }}
@@ -76,7 +73,7 @@ spec:
         summary: An alert that should always be firing to certify that Alertmanager is working properly.
       expr: vector(1)
       labels:
-        severity: {{ dig "Watchdog" "severity" "none" .Values.customRules }}
+        severity: none
       {{- if or .Values.defaultRules.additionalRuleLabels .Values.defaultRules.additionalRuleGroupLabels.general }}
         {{- with .Values.defaultRules.additionalRuleLabels }}
           {{- toYaml . | nindent 8 }}
@@ -110,9 +107,9 @@ spec:
           '
         runbook_url: {{ .Values.defaultRules.runbookUrl }}/general/infoinhibitor
         summary: Info-level alert inhibition.
-      expr: ALERTS{severity = "info"} == 1 unless on ({{ range $.Values.defaultRules.additionalAggregationLabels }}{{ . }},{{ end }}namespace) ALERTS{alertname != "InfoInhibitor", severity =~ "warning|critical", alertstate="firing"} == 1
+      expr: ALERTS{severity = "info"} == 1 unless on(namespace) ALERTS{alertname != "InfoInhibitor", severity =~ "warning|critical", alertstate="firing"} == 1
       labels:
-        severity: {{ dig "InfoInhibitor" "severity" "none" .Values.customRules }}
+        severity: none
       {{- if or .Values.defaultRules.additionalRuleLabels .Values.defaultRules.additionalRuleGroupLabels.general }}
         {{- with .Values.defaultRules.additionalRuleLabels }}
           {{- toYaml . | nindent 8 }}

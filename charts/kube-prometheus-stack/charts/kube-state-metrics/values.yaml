@@ -37,32 +37,15 @@ autosharding:
 
 replicas: 1
 
-# Change the deployment strategy when autosharding is disabled.
-# ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
-# The default is "RollingUpdate" as per Kubernetes defaults.
-# During a release, 'RollingUpdate' can lead to two running instances for a short period of time while 'Recreate' can create a small gap in data.
-# updateStrategy: Recreate
-
-# Number of old history to retain to allow rollback
-# Default Kubernetes value is set to 10
-revisionHistoryLimit: 10
-
 # List of additional cli arguments to configure kube-state-metrics
 # for example: --enable-gzip-encoding, --log-file, etc.
 # all the possible args can be found here: https://github.com/kubernetes/kube-state-metrics/blob/master/docs/cli-arguments.md
 extraArgs: []
 
-# If false then the user will opt out of automounting API credentials.
-automountServiceAccountToken: true
-
 service:
   port: 8080
   # Default to clusterIP for backward compatibility
   type: ClusterIP
-  ipDualStack:
-    enabled: false
-    ipFamilies: ["IPv6", "IPv4"]
-    ipFamilyPolicy: "PreferDualStack"
   nodePort: 0
   loadBalancerIP: ""
   # Only allow access to the loadBalancerIP from these IPs
@@ -106,7 +89,7 @@ kubeRBACProxy:
   image:
     registry: quay.io
     repository: brancz/kube-rbac-proxy
-    tag: v0.18.0
+    tag: v0.14.0
     sha: ""
     pullPolicy: IfNotPresent
 
@@ -118,12 +101,7 @@ kubeRBACProxy:
   ## Specify security settings for a Container
   ## Allows overrides and additional options compared to (Pod) securityContext
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
-  containerSecurityContext:
-    readOnlyRootFilesystem: true
-    allowPrivilegeEscalation: false
-    capabilities:
-      drop:
-      - ALL
+  containerSecurityContext: {}
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -157,8 +135,6 @@ serviceAccount:
   # Use case: AWS EKS IAM roles for service accounts
   # ref: https://docs.aws.amazon.com/eks/latest/userguide/specify-service-account-role.html
   annotations: {}
-  # If false then the user will opt out of automounting API credentials.
-  automountServiceAccountToken: true
 
 prometheus:
   monitor:
@@ -166,10 +142,10 @@ prometheus:
     annotations: {}
     additionalLabels: {}
     namespace: ""
-    namespaceSelector: []
     jobLabel: ""
     targetLabels: []
     podTargetLabels: []
+    interval: ""
     ## SampleLimit defines per-scrape limit on number of scraped samples that will be accepted.
     ##
     sampleLimit: 0
@@ -189,49 +165,22 @@ prometheus:
     ## Per-scrape limit on length of labels value that will be accepted for a sample. Only valid in Prometheus versions 2.27.0 and newer.
     ##
     labelValueLengthLimit: 0
+    scrapeTimeout: ""
+    proxyUrl: ""
     selectorOverride: {}
-
-    ## kube-state-metrics endpoint
-    http:
-      interval: ""
-      scrapeTimeout: ""
-      proxyUrl: ""
-      ## Whether to enable HTTP2 for servicemonitor
-      enableHttp2: false
-      honorLabels: false
-      metricRelabelings: []
-      relabelings: []
-      scheme: ""
-      ## File to read bearer token for scraping targets
-      bearerTokenFile: ""
-      ## Secret to mount to read bearer token for scraping targets. The secret needs
-      ## to be in the same namespace as the service monitor and accessible by the
-      ## Prometheus Operator
-      bearerTokenSecret: {}
-        # name: secret-name
-        # key:  key-name
-      tlsConfig: {}
-
-    ## selfMonitor endpoint
-    metrics:
-      interval: ""
-      scrapeTimeout: ""
-      proxyUrl: ""
-      ## Whether to enable HTTP2 for servicemonitor
-      enableHttp2: false
-      honorLabels: false
-      metricRelabelings: []
-      relabelings: []
-      scheme: ""
-      ## File to read bearer token for scraping targets
-      bearerTokenFile: ""
-      ## Secret to mount to read bearer token for scraping targets. The secret needs
-      ## to be in the same namespace as the service monitor and accessible by the
-      ## Prometheus Operator
-      bearerTokenSecret: {}
-        # name: secret-name
-        # key:  key-name
-      tlsConfig: {}
+    honorLabels: false
+    metricRelabelings: []
+    relabelings: []
+    scheme: ""
+    ## File to read bearer token for scraping targets
+    bearerTokenFile: ""
+    ## Secret to mount to read bearer token for scraping targets. The secret needs
+    ## to be in the same namespace as the service monitor and accessible by the
+    ## Prometheus Operator
+    bearerTokenSecret: {}
+      # name: secret-name
+      # key:  key-name
+    tlsConfig: {}
 
 ## Specify if a Pod Security Policy for kube-state-metrics must be created
 ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
@@ -286,7 +235,6 @@ securityContext:
 ## Allows overrides and additional options compared to (Pod) securityContext
 ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
 containerSecurityContext:
-  readOnlyRootFilesystem: true
   allowPrivilegeEscalation: false
   capabilities:
     drop:
@@ -313,9 +261,6 @@ annotations: {}
 
 # Annotations to be added to the pod
 podAnnotations: {}
-
-# Labels to be added to the pod
-podLabels: {}
 
 ## Assign a PriorityClassName to pods if set
 # priorityClassName: ""
@@ -389,12 +334,6 @@ kubeconfig:
   # base64 encoded kube-config file
   secret:
 
-# Enabling support for customResourceState, will create a configMap including your config that will be read from kube-state-metrics
-customResourceState:
-  enabled: false
-  # Add (Cluster)Role permissions to list/watch the customResources defined in the config to rbac.extraRules
-  config: {}
-
 # Enable only the release namespace for collecting resources. By default all namespaces are collected.
 # If releaseNamespace and namespaces are both set a merged list will be collected.
 releaseNamespace: false
@@ -439,17 +378,8 @@ selfMonitor:
 # Enable vertical pod autoscaler support for kube-state-metrics
 verticalPodAutoscaler:
   enabled: false
-
-  # Recommender responsible for generating recommendation for the object.
-  # List should be empty (then the default recommender will generate the recommendation)
-  # or contain exactly one recommender.
-  # recommenders: []
-  # - name: custom-recommender-performance
-
   # List of resources that the vertical pod autoscaler can control. Defaults to cpu and memory
   controlledResources: []
-  # Specifies which resource values should be controlled: RequestsOnly or RequestsAndLimits.
-  # controlledValues: RequestsAndLimits
 
   # Define the max allowed resources for the pod
   maxAllowed: {}
@@ -461,8 +391,6 @@ verticalPodAutoscaler:
   # memory: 100Mi
 
   # updatePolicy:
-    # Specifies minimal number of replicas which need to be alive for VPA Updater to attempt pod eviction
-    # minReplicas: 1
     # Specifies whether recommended updates are applied when a Pod is started and whether recommended updates
     # are applied during the life of a Pod. Possible values are "Off", "Initial", "Recreate", and "Auto".
     # updateMode: Auto
@@ -479,64 +407,3 @@ volumes: []
 #  - configMap:
 #      name: cm-for-volume
 #    name: config-volume
-
-# Extra manifests to deploy as an array
-extraManifests: []
-  # - apiVersion: v1
-  #   kind: ConfigMap
-  #   metadata:
-  #   labels:
-  #     name: prometheus-extra
-  #   data:
-  #     extra-data: "value"
-
-## Containers allows injecting additional containers.
-containers: []
-  # - name: crd-init
-  #   image: kiwigrid/k8s-sidecar:latest
-
-## InitContainers allows injecting additional initContainers.
-initContainers: []
-  # - name: crd-sidecar
-  #   image: kiwigrid/k8s-sidecar:latest
-
-## Settings for startup, liveness and readiness probes
-## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-##
-
-## Startup probe can optionally be enabled.
-##
-startupProbe:
-  enabled: false
-  failureThreshold: 3
-  httpGet:
-    httpHeaders: []
-    scheme: http
-  initialDelaySeconds: 0
-  periodSeconds: 10
-  successThreshold: 1
-  timeoutSeconds: 5
-
-## Liveness probe
-##
-livenessProbe:
-  failureThreshold: 3
-  httpGet:
-    httpHeaders: []
-    scheme: http
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  successThreshold: 1
-  timeoutSeconds: 5
-
-## Readiness probe
-##
-readinessProbe:
-  failureThreshold: 3
-  httpGet:
-    httpHeaders: []
-    scheme: http
-  initialDelaySeconds: 5
-  periodSeconds: 10
-  successThreshold: 1
-  timeoutSeconds: 5

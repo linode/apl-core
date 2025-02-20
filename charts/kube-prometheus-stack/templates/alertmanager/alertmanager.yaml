@@ -23,7 +23,7 @@ spec:
   {{- else }}
   image: "{{ $registry }}/{{ .Values.alertmanager.alertmanagerSpec.image.repository }}"
   {{- end }}
-  version: {{ default .Values.alertmanager.alertmanagerSpec.image.tag .Values.alertmanager.alertmanagerSpec.version }}
+  version: {{ .Values.alertmanager.alertmanagerSpec.image.tag }}
   {{- if .Values.alertmanager.alertmanagerSpec.image.sha }}
   sha: {{ .Values.alertmanager.alertmanagerSpec.image.sha }}
   {{- end }}
@@ -31,7 +31,6 @@ spec:
   replicas: {{ .Values.alertmanager.alertmanagerSpec.replicas }}
   listenLocal: {{ .Values.alertmanager.alertmanagerSpec.listenLocal }}
   serviceAccountName: {{ template "kube-prometheus-stack.alertmanager.serviceAccountName" . }}
-  automountServiceAccountToken: {{ .Values.alertmanager.alertmanagerSpec.automountServiceAccountToken }}
 {{- if .Values.alertmanager.alertmanagerSpec.externalUrl }}
   externalUrl: "{{ tpl .Values.alertmanager.alertmanagerSpec.externalUrl . }}"
 {{- else if and .Values.alertmanager.ingress.enabled .Values.alertmanager.ingress.hosts }}
@@ -47,10 +46,6 @@ spec:
   logFormat: {{ .Values.alertmanager.alertmanagerSpec.logFormat | quote  }}
   logLevel:  {{ .Values.alertmanager.alertmanagerSpec.logLevel | quote  }}
   retention: {{ .Values.alertmanager.alertmanagerSpec.retention | quote  }}
-  {{- with .Values.alertmanager.enableFeatures }}
-  enableFeatures:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
 {{- if .Values.alertmanager.alertmanagerSpec.secrets }}
   secrets:
 {{ toYaml .Values.alertmanager.alertmanagerSpec.secrets | indent 4 }}
@@ -178,19 +173,10 @@ spec:
 {{- if .Values.alertmanager.alertmanagerSpec.clusterPushpullInterval }}
   clusterPushpullInterval: {{ .Values.alertmanager.alertmanagerSpec.clusterPushpullInterval }}
 {{- end }}
-{{- if .Values.alertmanager.alertmanagerSpec.clusterLabel }}
-  clusterLabel: {{ .Values.alertmanager.alertmanagerSpec.clusterLabel }}
-{{- end }}
 {{- if .Values.alertmanager.alertmanagerSpec.forceEnableClusterMode }}
   forceEnableClusterMode: {{ .Values.alertmanager.alertmanagerSpec.forceEnableClusterMode }}
 {{- end }}
 {{- if .Values.alertmanager.alertmanagerSpec.minReadySeconds }}
   minReadySeconds: {{ .Values.alertmanager.alertmanagerSpec.minReadySeconds }}
-{{- end }}
-{{- with .Values.alertmanager.alertmanagerSpec.additionalConfig }}
-  {{- tpl (toYaml .) $ | nindent 2 }}
-{{- end }}
-{{- with .Values.alertmanager.alertmanagerSpec.additionalConfigString }}
-  {{- tpl . $ | nindent 2 }}
 {{- end }}
 {{- end }}

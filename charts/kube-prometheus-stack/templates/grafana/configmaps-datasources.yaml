@@ -19,13 +19,10 @@ data:
     deleteDatasources:
 {{ tpl (toYaml .Values.grafana.deleteDatasources | indent 6) . }}
 {{- end }}
-{{- if .Values.grafana.prune }}
-    prune: {{ .Values.grafana.prune }}
-{{- end }}
     datasources:
 {{- $scrapeInterval := .Values.grafana.sidecar.datasources.defaultDatasourceScrapeInterval | default .Values.prometheus.prometheusSpec.scrapeInterval | default "30s" }}
 {{- if .Values.grafana.sidecar.datasources.defaultDatasourceEnabled }}
-    - name: "{{ .Values.grafana.sidecar.datasources.name }}"
+    - name: Prometheus
       type: prometheus
       uid: {{ .Values.grafana.sidecar.datasources.uid }}
       {{- if .Values.grafana.sidecar.datasources.url }}
@@ -48,7 +45,7 @@ data:
 {{- end }}
 {{- if .Values.grafana.sidecar.datasources.createPrometheusReplicasDatasources }}
 {{- range until (int .Values.prometheus.prometheusSpec.replicas) }}
-    - name: "{{ $.Values.grafana.sidecar.datasources.name }}-{{ . }}"
+    - name: Prometheus-{{ . }}
       type: prometheus
       uid: {{ $.Values.grafana.sidecar.datasources.uid }}-replica-{{ . }}
       url: http://prometheus-{{ template "kube-prometheus-stack.prometheus.crname" $ }}-{{ . }}.prometheus-operated:9090/{{ trimPrefix "/" $.Values.prometheus.prometheusSpec.routePrefix }}
@@ -58,13 +55,13 @@ data:
         timeInterval: {{ $scrapeInterval }}
 {{- if $.Values.grafana.sidecar.datasources.exemplarTraceIdDestinations }}
         exemplarTraceIdDestinations:
-        - datasourceUid: {{ $.Values.grafana.sidecar.datasources.exemplarTraceIdDestinations.datasourceUid }}
-          name: {{ $.Values.grafana.sidecar.datasources.exemplarTraceIdDestinations.traceIdLabelName }}
+        - datasourceUid: {{ .Values.grafana.sidecar.datasources.exemplarTraceIdDestinations.datasourceUid }}
+          name: {{ .Values.grafana.sidecar.datasources.exemplarTraceIdDestinations.traceIdLabelName }}
 {{- end }}
 {{- end }}
 {{- end }}
 {{- if .Values.grafana.sidecar.datasources.alertmanager.enabled }}
-    - name: "{{ .Values.grafana.sidecar.datasources.alertmanager.name }}"
+    - name: Alertmanager
       type: alertmanager
       uid: {{ .Values.grafana.sidecar.datasources.alertmanager.uid }}
       {{- if .Values.grafana.sidecar.datasources.alertmanager.url }}

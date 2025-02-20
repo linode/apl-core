@@ -14,10 +14,6 @@ metadata:
     {{- end }}
 spec:
   type: "{{ .Values.service.type }}"
-  {{- if .Values.service.ipDualStack.enabled }}
-  ipFamilies: {{ toYaml .Values.service.ipDualStack.ipFamilies | nindent 4 }}
-  ipFamilyPolicy: {{ .Values.service.ipDualStack.ipFamilyPolicy }}
-  {{- end }}
   ports:
   - name: "http"
     protocol: TCP
