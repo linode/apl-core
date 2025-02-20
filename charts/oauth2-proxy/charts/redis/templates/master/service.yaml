@@ -1,18 +1,18 @@
 {{- /*
-Copyright Broadcom, Inc. All Rights Reserved.
+Copyright VMware, Inc.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
-{{- if and (not .Values.sentinel.enabled) (gt (int64 .Values.master.count) 0) }}
+{{- if not .Values.sentinel.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ printf "%s-master" (include "common.names.fullname" .) }}
-  namespace: {{ include "common.names.namespace" . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
   labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
     app.kubernetes.io/component: master
   {{- if or .Values.master.service.annotations .Values.commonAnnotations }}
-  {{- $annotations := include "common.tplvalues.merge" ( dict "values" ( list .Values.master.service.annotations .Values.commonAnnotations ) "context" . ) }}
+  {{- $annotations := merge .Values.master.service.annotations .Values.commonAnnotations }}
   annotations: {{- include "common.tplvalues.render" ( dict "value" $annotations "context" $) | nindent 4 }}
   {{- end }}
 spec:
@@ -25,9 +25,6 @@ spec:
   {{- end }}
   {{- if and (eq .Values.master.service.type "LoadBalancer") (not (empty .Values.master.service.loadBalancerIP)) }}
   loadBalancerIP: {{ .Values.master.service.loadBalancerIP }}
-  {{- end }}
-  {{- if and (eq .Values.master.service.type "LoadBalancer")  .Values.master.service.loadBalancerClass }}
-  loadBalancerClass: {{ .Values.master.service.loadBalancerClass }}
   {{- end }}
   {{- if and (eq .Values.master.service.type "LoadBalancer") (not (empty .Values.master.service.loadBalancerSourceRanges)) }}
   loadBalancerSourceRanges: {{ toYaml .Values.master.service.loadBalancerSourceRanges | nindent 4 }}
@@ -45,7 +42,7 @@ spec:
   externalIPs: {{- include "common.tplvalues.render" (dict "value" .Values.master.service.externalIPs "context" $) | nindent 4 }}
   {{- end }}
   ports:
-    - name: {{ .Values.master.service.portNames.redis }}
+    - name: tcp-redis
       port: {{ .Values.master.service.ports.redis }}
       targetPort: redis
       {{- if and (or (eq .Values.master.service.type "NodePort") (eq .Values.master.service.type "LoadBalancer")) .Values.master.service.nodePorts.redis}}
@@ -56,7 +53,7 @@ spec:
     {{- if .Values.master.service.extraPorts }}
     {{- include "common.tplvalues.render" (dict "value" .Values.master.service.extraPorts "context" $) | nindent 4 }}
     {{- end }}
-  {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.master.podLabels .Values.commonLabels ) "context" . ) }}
+  {{- $podLabels := merge .Values.master.podLabels .Values.commonLabels }}
   selector: {{- include "common.labels.matchLabels" ( dict "customLabels" $podLabels "context" $ ) | nindent 4 }}
     app.kubernetes.io/component: master
 {{- end }}

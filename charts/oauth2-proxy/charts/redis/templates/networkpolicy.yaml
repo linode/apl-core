@@ -1,5 +1,5 @@
 {{- /*
-Copyright Broadcom, Inc. All Rights Reserved.
+Copyright VMware, Inc.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
@@ -8,7 +8,7 @@ kind: NetworkPolicy
 apiVersion: {{ template "networkPolicy.apiVersion" . }}
 metadata:
   name: {{ template "common.names.fullname" . }}
-  namespace: {{ include "common.names.namespace" . | quote }}
+  namespace: {{ .Release.Namespace | quote }}
   labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
@@ -18,11 +18,8 @@ spec:
     matchLabels: {{- include "common.labels.matchLabels" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 6 }}
   policyTypes:
     - Ingress
+  {{- if or (eq .Values.architecture "replication") .Values.networkPolicy.extraEgress }}
     - Egress
-  {{- if .Values.networkPolicy.allowExternalEgress }}
-  egress:
-    - {}
-  {{- else }}
   egress:
     {{- if eq .Values.architecture "replication" }}
     # Allow dns resolution
@@ -79,28 +76,7 @@ spec:
     {{- if .Values.metrics.enabled }}
     # Allow prometheus scrapes for metrics
     - ports:
-        - port: {{ .Values.metrics.containerPorts.http }}
-      {{- if not .Values.networkPolicy.metrics.allowExternal }}
-      from:
-        {{- if or .Values.networkPolicy.metrics.ingressNSMatchLabels .Values.networkPolicy.metrics.ingressNSPodMatchLabels }}
-        - namespaceSelector:
-            matchLabels:
-              {{- if .Values.networkPolicy.metrics.ingressNSMatchLabels }}
-                {{- range $key, $value := .Values.networkPolicy.metrics.ingressNSMatchLabels }}
-                {{ $key | quote }}: {{ $value | quote }}
-                {{- end }}
-              {{ else }}
-                {}
-              {{- end }}
-          {{- if .Values.networkPolicy.metrics.ingressNSPodMatchLabels }}
-          podSelector:
-            matchLabels:
-              {{- range $key, $value := .Values.networkPolicy.metrics.ingressNSPodMatchLabels }}
-              {{ $key | quote }}: {{ $value | quote }}
-              {{- end }}
-          {{- end }}
-        {{- end }}
-      {{- end }}
+        - port: 9121
     {{- end }}
     {{- if .Values.networkPolicy.extraIngress }}
     {{- include "common.tplvalues.render" ( dict "value" .Values.networkPolicy.extraIngress "context" $ ) | nindent 4 }}

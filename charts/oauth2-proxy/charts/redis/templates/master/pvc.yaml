@@ -1,5 +1,5 @@
 {{- /*
-Copyright Broadcom, Inc. All Rights Reserved.
+Copyright VMware, Inc.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
@@ -8,8 +8,8 @@ kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
   name: {{ printf "redis-data-%s-master" (include "common.names.fullname" .) }}
-  namespace: {{ include "common.names.namespace" . | quote }}
-  {{- $labels := include "common.tplvalues.merge" ( dict "values" ( list .Values.master.persistence.labels .Values.commonLabels ) "context" . ) }}
+  namespace: {{ .Release.Namespace | quote }}
+  {{- $labels := merge .Values.master.persistence.labels .Values.commonLabels }}
   labels: {{- include "common.labels.standard" ( dict "customLabels" $labels "context" $ ) | nindent 4 }}
     app.kubernetes.io/component: master
   {{- if .Values.master.persistence.annotations }}

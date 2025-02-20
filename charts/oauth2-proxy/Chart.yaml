@@ -1,21 +1,26 @@
 annotations:
-  artifacthub.io/changes: |
-    - kind: fixed
-      description: Updated the Redis chart to the latest version.
-      links:
-        - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/243
+  category: Infrastructure
+  images: |
+    - name: oauth2-proxy
+      image: docker.io/bitnami/oauth2-proxy:7.4.0-debian-11-r278
+  licenses: Apache-2.0
 apiVersion: v2
-appVersion: 7.7.0
+appVersion: 7.4.0
 dependencies:
-- alias: redis
-  condition: redis.enabled
+- condition: redis.enabled
   name: redis
-  repository: https://charts.bitnami.com/bitnami
-  version: 20.1.7
-description: A reverse proxy that provides authentication with Google, Github or other
-  providers
-home: https://oauth2-proxy.github.io/oauth2-proxy/
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 17.x.x
+- name: common
+  repository: oci://registry-1.docker.io/bitnamicharts
+  tags:
+  - bitnami-common
+  version: 2.x.x
+description: A reverse proxy and static file server that provides authentication using
+  Providers (Google, GitHub, and others) to validate accounts by email, domain or
+  group.
+home: https://bitnami.com
+icon: https://bitnami.com/assets/stacks/oauth2-proxy/img/oauth2-proxy-stack-220x234.png
 keywords:
 - kubernetes
 - oauth
@@ -23,20 +28,10 @@ keywords:
 - authentication
 - google
 - github
-- redis
-kubeVersion: '>=1.9.0-0'
 maintainers:
-- email: cedric@desaintmartin.fr
-  name: desaintmartin
-- name: tlawrie
-- email: nicholas.meves@gmail.com
-  name: NickMeves
-- email: joel.speed@hotmail.co.uk
-  name: JoelSpeed
-- email: pierluigi.lenoci@gmail.com
-  name: pierluigilenoci
+- name: VMware, Inc.
+  url: https://github.com/bitnami/charts
 name: oauth2-proxy
 sources:
-- https://github.com/oauth2-proxy/oauth2-proxy
-- https://github.com/oauth2-proxy/manifests
-version: 7.7.24
+- https://github.com/bitnami/charts/tree/main/bitnami/oauth2-proxy
+version: 3.7.10

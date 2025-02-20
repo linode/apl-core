@@ -1,5 +1,5 @@
 {{- /*
-Copyright Broadcom, Inc. All Rights Reserved.
+Copyright VMware, Inc.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
@@ -8,7 +8,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ template "common.names.fullname" . }}
-  namespace: {{ default (include "common.names.namespace" .) .Values.metrics.serviceMonitor.namespace | quote }}
+  namespace: {{ default .Release.Namespace .Values.metrics.serviceMonitor.namespace | quote }}
   labels: {{- include "common.labels.standard" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 4 }}
     {{- if .Values.metrics.serviceMonitor.additionalLabels }}
     {{- include "common.tplvalues.render" (dict "value" .Values.metrics.serviceMonitor.additionalLabels "context" $) | nindent 4 }}
@@ -18,7 +18,7 @@ metadata:
   {{- end }}
 spec:
   endpoints:
-    - port: {{ .Values.metrics.serviceMonitor.port }}
+    - port: http-metrics
       {{- if .Values.metrics.serviceMonitor.interval }}
       interval: {{ .Values.metrics.serviceMonitor.interval }}
       {{- end }}
@@ -28,54 +28,24 @@ spec:
       {{- if .Values.metrics.serviceMonitor.honorLabels }}
       honorLabels: {{ .Values.metrics.serviceMonitor.honorLabels }}
       {{- end }}
-      {{- with concat .Values.metrics.serviceMonitor.relabelings .Values.metrics.serviceMonitor.relabellings }}
-      relabelings: {{- toYaml . | nindent 6 }}
+      {{- if .Values.metrics.serviceMonitor.relabellings }}
+      relabelings: {{- toYaml .Values.metrics.serviceMonitor.relabellings | nindent 6 }}
       {{- end }}
       {{- if .Values.metrics.serviceMonitor.metricRelabelings }}
       metricRelabelings: {{- toYaml .Values.metrics.serviceMonitor.metricRelabelings | nindent 6 }}
       {{- end }}
-      {{- range .Values.metrics.serviceMonitor.additionalEndpoints }}
-    - port: {{ .port }}
-      {{- if .interval }}
-      interval: {{ .interval }}
-      {{- end }}
-      {{- if .scrapeTimeout }}
-      scrapeTimeout: {{ .scrapeTimeout }}
-      {{- end }}
-      {{- if .honorLabels }}
-      honorLabels: {{ .honorLabels }}
-      {{- end }}
-      {{- with concat $.Values.metrics.serviceMonitor.relabelings $.Values.metrics.serviceMonitor.relabellings }}
-      relabelings: {{- toYaml . | nindent 6 }}
-      {{- end }}
-      {{- if .metricRelabelings }}
-      metricRelabelings: {{- toYaml .metricRelabelings | nindent 6 }}
-      {{- end }}
-      {{- if .path }}
-      path: {{ .path }}
-      {{- end }}
-      {{- if .params }}
-      params:
-        {{- range $key, $value := .params }}
-        {{ $key }}:
-          {{- range $value }}
-          - {{ . | quote }}
-          {{- end }}
-        {{- end }}
-      {{- end }}
-    {{- end }}
   {{- if .Values.metrics.serviceMonitor.podTargetLabels }}
   podTargetLabels: {{- toYaml .Values.metrics.serviceMonitor.podTargetLabels | nindent 4 }}
   {{- end }}
-  {{- with .Values.metrics.serviceMonitor.sampleLimit }}
+  {{ with .Values.metrics.serviceMonitor.sampleLimit }}
   sampleLimit: {{ . }}
   {{- end }}
-  {{- with .Values.metrics.serviceMonitor.targetLimit }}
+  {{ with .Values.metrics.serviceMonitor.targetLimit }}
   targetLimit: {{ . }}
   {{- end }}
   namespaceSelector:
     matchNames:
-      - {{ include "common.names.namespace" . | quote }}
+      - {{ .Release.Namespace }}
   selector:
     matchLabels: {{- include "common.labels.matchLabels" ( dict "customLabels" .Values.commonLabels "context" $ ) | nindent 6 }}
       app.kubernetes.io/component: metrics

@@ -1,5 +1,0 @@
-extraArgs:
-  - "--pass-authorization-header=true"
-  - "--request-logging=true"
-  - --allowed-role=client_id:client_role_A
-  - --allowed-role=client_id_B:client_role_C
