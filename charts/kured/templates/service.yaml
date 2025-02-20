@@ -20,7 +20,7 @@ spec:
   ports:
     - name: metrics
       port: {{ .Values.service.port }}
-      targetPort: 8080
+      targetPort: {{ .Values.configuration.metricsPort }}
       {{- if eq .Values.service.type "NodePort" }}
       nodePort: {{ .Values.service.nodePort }}
       {{- end }}

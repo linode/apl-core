@@ -65,6 +65,9 @@ spec:
           args:
             - --ds-name={{ template "kured.fullname" . }}
             - --ds-namespace={{ .Release.Namespace }}
+          {{- if .Values.configuration.metricsPort }}
+            - --metrics-port={{ .Values.configuration.metricsPort }}
+          {{- end }}
           {{- if .Values.configuration.lockTtl }}
             - --lock-ttl={{ .Values.configuration.lockTtl }}
           {{- end }}
@@ -173,7 +176,7 @@ spec:
 {{- toYaml .Values.volumeMounts  | nindent 12 }}
 {{- end }}
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.configuration.metricsPort }}
               name: metrics
           env:
             # Pass in the name of the node on which this pod is scheduled
