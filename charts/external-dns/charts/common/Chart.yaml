@@ -2,7 +2,7 @@ annotations:
   category: Infrastructure
   licenses: Apache-2.0
 apiVersion: v2
-appVersion: 2.23.0
+appVersion: 2.18.0
 description: A Library Helm Chart for grouping common logic between bitnami charts.
   This chart is not deployable by itself.
 home: https://bitnami.com
@@ -14,10 +14,10 @@ keywords:
 - function
 - bitnami
 maintainers:
-- name: Broadcom, Inc. All Rights Reserved.
+- name: VMware, Inc.
   url: https://github.com/bitnami/charts
 name: common
 sources:
-- https://github.com/bitnami/charts/tree/main/bitnami/common
+- https://github.com/bitnami/charts
 type: library
-version: 2.23.0
+version: 2.18.0

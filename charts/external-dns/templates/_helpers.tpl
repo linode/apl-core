@@ -1,5 +1,5 @@
 {{/*
-Copyright Broadcom, Inc. All Rights Reserved.
+Copyright VMware, Inc.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
@@ -112,7 +112,7 @@ Return true if a secret object should be created
     {{- true -}}
 {{- else if and (eq .Values.provider "linode") .Values.linode.apiToken (not .Values.linode.secretName) -}}
     {{- true -}}
-{{- else if and (eq .Values.provider "oci") (or .Values.oci.privateKeyFingerprint .Values.oci.useWorkloadIdentity) (not .Values.oci.secretName) -}}
+{{- else if and (eq .Values.provider "oci") .Values.oci.privateKeyFingerprint (not .Values.oci.secretName) -}}
     {{- true -}}
 {{- else if and (eq .Values.provider "rfc2136") (or .Values.rfc2136.tsigSecret (and .Values.rfc2136.kerberosUsername .Values.rfc2136.kerberosPassword)) (not .Values.rfc2136.secretName) -}}
     {{- true -}}
@@ -122,7 +122,7 @@ Return true if a secret object should be created
     {{- true -}}
 {{- else if and (eq .Values.provider "ovh") .Values.ovh.consumerKey (not .Values.ovh.secretName) -}}
     {{- true -}}
-{{- else if and (eq .Values.provider "scaleway") .Values.scaleway.scwAccessKey (not .Values.scaleway.secretName) -}}
+{{- else if and (eq .Values.provider "scaleway") .Values.scaleway.scwAccessKey -}}
     {{- true -}}
 {{- else if and (eq .Values.provider "vinyldns") (or .Values.vinyldns.secretKey .Values.vinyldns.accessKey) -}}
     {{- true -}}
@@ -189,8 +189,6 @@ Return the name of the Secret used to store the passwords
 {{- .Values.civo.secretName }}
 {{- else if and (eq .Values.provider "pihole") .Values.pihole.secretName }}
 {{- .Values.pihole.secretName }}
-{{- else if and (eq .Values.provider "scaleway") .Values.scaleway.secretName }}
-{{- .Values.scaleway.secretName }}
 {{- else -}}
 {{- template "external-dns.fullname" . }}
 {{- end -}}
@@ -259,12 +257,6 @@ region = {{ .Values.aws.region }}
 }
 {{ end }}
 {{- define "external-dns.oci-credentials" -}}
-{{- if .Values.oci.useWorkloadIdentity }}
-auth:
-  region: {{ .Values.oci.region }}
-  useWorkloadIdentity: true
-compartment: {{ .Values.oci.compartmentOCID }}
-{{- else }}
 auth:
   region: {{ .Values.oci.region }}
   tenancy: {{ .Values.oci.tenancyOCID }}
@@ -276,8 +268,7 @@ auth:
   passphrase: {{ .Values.oci.privateKeyPassphrase }}
   {{- end }}
 compartment: {{ .Values.oci.compartmentOCID }}
-{{- end }}
-{{- end }}
+{{ end }}
 
 {{/*
 Compile all warnings into a single message, and call fail if the validation is enabled
@@ -473,7 +464,7 @@ external-dns: pdns.apiKey
 {{- define "external-dns.checkRollingTags" -}}
 {{- if and (contains "bitnami/" .Values.image.repository) (not (.Values.image.tag | toString | regexFind "-r\\d+$|sha256:")) }}
 WARNING: Rolling tag detected ({{ .Values.image.repository }}:{{ .Values.image.tag }}), please note that it is strongly recommended to avoid using rolling tags in a production environment.
-+info https://docs.vmware.com/en/VMware-Tanzu-Application-Catalog/services/tutorials/GUID-understand-rolling-tags-containers-index.html
++info https://docs.bitnami.com/tutorials/understand-rolling-tags-containers
 {{- end }}
 {{- end -}}
 
@@ -809,7 +800,7 @@ Validate values of External DNS:
 - must provide the Scaleway access key when provider is "scaleway"
 */}}
 {{- define "external-dns.validateValues.scaleway.scwAccessKey" -}}
-{{- if and (eq .Values.provider "scaleway") (not .Values.scaleway.scwAccessKey) (not .Values.scaleway.secretName) -}}
+{{- if and (eq .Values.provider "scaleway") (not .Values.scaleway.scwAccessKey) -}}
 external-dns: scaleway.scwAccessKey
     You must provide the Scaleway access key when provider="scaleway".
     Please set the scwAccessKey parameter (--set scaleway.scwAccessKey="xxxx")
@@ -821,7 +812,7 @@ Validate values of External DNS:
 - must provide the scaleway secret key when provider is "scaleway"
 */}}
 {{- define "external-dns.validateValues.scaleway.scwSecretKey" -}}
-{{- if and (eq .Values.provider "scaleway") (not .Values.scaleway.scwSecretKey) (not .Values.scaleway.secretName) -}}
+{{- if and (eq .Values.provider "scaleway") (not .Values.scaleway.scwSecretKey) -}}
 external-dns: scaleway.scwSecretKey
     You must provide the scaleway secret key when provider="scaleway".
     Please set the scwSecretKey parameter (--set scaleway.scwSecretKey="xxxx")

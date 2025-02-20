@@ -1,4 +1,4 @@
-# Copyright Broadcom, Inc. All Rights Reserved.
+# Copyright VMware, Inc.
 # SPDX-License-Identifier: APACHE-2.0
 
 ## @section Global parameters
@@ -25,7 +25,7 @@ global:
     openshift:
       ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
       ##
-      adaptSecurityContext: auto
+      adaptSecurityContext: disabled
 ## @section Common parameters
 ##
 
@@ -54,6 +54,10 @@ kubeVersion: ""
 ## @param watchReleaseNamespace Watch only namepsace used for the release
 ##
 watchReleaseNamespace: false
+## @param useDaemonset Use ExternalDNS in Daemonset mode
+## If set to false, Deployment will be used.
+##
+useDaemonset: false
 ## @section external-dns parameters
 ##
 
@@ -69,7 +73,7 @@ watchReleaseNamespace: false
 image:
   registry: docker.io
   repository: bitnami/external-dns
-  tag: 0.15.0-debian-12-r2
+  tag: 0.14.0-debian-12-r16
   digest: ""
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
@@ -84,9 +88,6 @@ image:
   ##   - myRegistryKeySecretName
   ##
   pullSecrets: []
-## @param revisionHistoryLimit sets number of replicaset to keep in k8s
-##
-revisionHistoryLimit: 10
 ## @param automountServiceAccountToken Mount Service Account token in pod
 ##
 automountServiceAccountToken: true
@@ -121,7 +122,7 @@ provider: aws
 initContainers: []
 ## DNS-Pod services
 ## Ref: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
-## @param dnsPolicy Specifies the DNS policy for the external-dns deployment
+## @param dnsPolicy Specifies the DNS policy for the external-dns deployment or daemonset
 ## DNS policies can be set on a per-Pod basis. Currently Kubernetes supports the following Pod-specific DNS policies.
 ## Available options: Default, ClusterFirst, ClusterFirstWithHostNet, None
 ## Ref: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
@@ -291,9 +292,6 @@ aws:
   ## ref: https://github.com/kubernetes-sigs/external-dns/blob/0483ffde22e60436f16be154b9fe1a388a1400d0/docs/registry/dynamodb.md
   ##
   dynamodbRegion: ""
-  ## @param aws.zoneMatchParent When using the AWS provider, lets a domain filter match subdomains within the same zone by using their parent domain
-  ##
-  zoneMatchParent: false
 ## Azure configuration to be set via arguments/env. variables
 ##
 azure:
@@ -357,10 +355,6 @@ cloudflare:
   ## @param cloudflare.proxied When using the Cloudflare provider, enable the proxy feature (DDOS protection, CDN...) (optional)
   ##
   proxied: true
-  ## @param cloudflare.dnsRecordsPerPage Number of DNS records to fetch per page. (optional)
-  ## When using the Cloudflare provider, specify how many DNS records listed per page, max possible 5,000 (default: 100)
-  ##
-  dnsRecordsPerPage: 100
 ## CoreDNS configuration to be set via arguments/env variables
 ##
 coredns:
@@ -550,9 +544,6 @@ infoblox:
   ## @param infoblox.maxResults When using the Infoblox provider, specify the Infoblox Max Results (optional)
   ##
   maxResults: ""
-  ## @param infoblox.createPtr When using the Infoblox provider, specify the Infoblox create PTR flag (optional)
-  ##
-  createPtr: false
 ## Linode configuration to be set via arguments/env. variables
 ##
 linode:
@@ -585,21 +576,9 @@ pihole:
   ## @param pihole.tlsSkipVerify When using the Pi-hole provider, specify wheter to skip verification of any TLS certificates served by the Pi-hole web server
   ##
   tlsSkipVerify: ""
-  ## @param pihole.password When using the Pi-hole provider, specify a password to use
-  ##
-  password: ""
   ## @param pihole.secretName Use an existing secret with key "pihole_password" defined.
   ##
   secretName: ""
-## Compatibility adaptations for Traefik
-##
-traefik:
-  ## @param traefik.disableNew Disable listeners on Resources under traefik.io
-  ##
-  disableNew: false
-  ## @param traefik.disableLegacy Disable listeners on Resources under traefik.containo.us
-  ##
-  disableLegacy: false
 ## oci configuration to be set via arguments/env. variables
 ##
 oci:
@@ -630,12 +609,6 @@ oci:
   ## Ref: https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/oracle.md#deploy-externaldns
   ##
   secretName: ""
-  ## @param oci.useInstancePrincipal When using the OCI provider, enable IAM Instance Principal
-  ## Ref: https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/oracle.md#oci-iam-instance-principal
-  useInstancePrincipal: false
-  ## @param oci.useWorkloadIdentity When using the OCI provider, enable IAM Workload Identity
-  ## Ref: https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/oracle.md#oci-iam-instance-principal
-  useWorkloadIdentity: false
 ## OVH configuration to be set via arguments/env. variables
 ##
 ovh:
@@ -665,10 +638,6 @@ scaleway:
   ## @param scaleway.scwSecretKey When using the Scaleway provider, specify an existing secret key. (required when provider=scaleway)
   ##
   scwSecretKey: ""
-  ## @param scaleway.secretName Use an existing secret with keys "scaleway_access_key" and "scaleway_secret_key" defined (optional).
-  ## This ignores scaleway.scwAccessKey and scaleway.scwSecretKey
-  ##
-  secretName: ""
 ## RFC 2136 configuration to be set via arguments/env. variables
 ##
 rfc2136:
@@ -801,7 +770,7 @@ logFormat: text
 ##
 policy: upsert-only
 ## @param registry Registry method to use (options: txt, aws-sd, dynamodb, noop)
-## ref: https://github.com/kubernetes-sigs/external-dns/blob/master/docs/registry/registry.md
+## ref: https://github.com/kubernetes-sigs/external-dns/blob/master/docs/proposal/registry.md
 ##
 registry: "txt"
 ## @param txtPrefix When using the TXT registry, a prefix for ownership records that avoids collision with CNAME entries (optional)<CNAME record> (Mutual exclusive with txt-suffix)
@@ -870,6 +839,9 @@ schedulerName: ""
 ## The value is evaluated as a template
 ##
 topologySpreadConstraints: []
+## @param replicaCount Desired number of ExternalDNS replicas
+##
+replicaCount: 1
 ## @param podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
 ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
 ##
@@ -1017,7 +989,7 @@ networkPolicy:
   ## @param networkPolicy.kubeAPIServerPorts [array] List of possible endpoints to kube-apiserver (limit to your cluster settings to increase security)
   ##
   kubeAPIServerPorts: [443, 6443, 8443]
-  ## @param networkPolicy.extraIngress [array] Add extra ingress rules to the NetworkPolicy
+  ## @param networkPolicy.extraIngress [array] Add extra ingress rules to the NetworkPolice
   ## e.g:
   ## extraIngress:
   ##   - ports:
@@ -1110,13 +1082,13 @@ rbac:
 ##
 containerSecurityContext:
   enabled: true
-  seLinuxOptions: {}
+  seLinuxOptions: null
   runAsUser: 1001
-  runAsGroup: 1001
+  runAsGroup: 0
   runAsNonRoot: true
   privileged: false
   allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: true
+  readOnlyRootFilesystem: false
   capabilities:
     drop: ["ALL"]
   seccompProfile:
@@ -1139,10 +1111,10 @@ podSecurityContext:
 ## choice for the user. This also increases chances charts run on environments with little
 ## resources, such as Minikube. If you do want to specify resources, uncomment the following
 ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-## @param resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if resources is set (resources is recommended for production).
+## @param resourcesPreset Set container resources according to one common preset (allowed values: none, nano, small, medium, large, xlarge, 2xlarge). This is ignored if resources is set (resources is recommended for production).
 ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
 ##
-resourcesPreset: "nano"
+resourcesPreset: "none"
 ## @param resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
 ## Example:
 ## resources:
@@ -1217,14 +1189,11 @@ extraVolumes: []
 ## @param extraVolumeMounts A list of volume mounts to be added to the pod
 ##
 extraVolumeMounts: []
-## @param pdb.create Enable/disable a Pod Disruption Budget creation
-## @param pdb.minAvailable Minimum number/percentage of pods that should remain scheduled
-## @param pdb.maxUnavailable Maximum number/percentage of pods that may be made unavailable. Defaults to `1` if both `pdb.minAvailable` and `pdb.maxUnavailable` are empty.
+## @param podDisruptionBudget Configure PodDisruptionBudget
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
 ##
-pdb:
-  create: true
-  minAvailable: ""
-  maxUnavailable: ""
+
+podDisruptionBudget: {}
 ## Prometheus Exporter / Metrics
 ##
 metrics:
@@ -1268,13 +1237,11 @@ metrics:
     ## @param metrics.serviceMonitor.honorLabels Specify honorLabels parameter to add the scrape endpoint
     ##
     honorLabels: false
+    ## DEPRECATED metrics.serviceMonitor.additionalLabels will be removed in a future release - Please use metrics.serviceMonitor.labels instead
     ## @param metrics.serviceMonitor.labels Used to pass Labels that are required by the installed Prometheus Operator
     ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#prometheusspec
     ##
     labels: {}
-    ## @param metrics.serviceMonitor.annotations Additional custom annotations for the ServiceMonitor
-    ##
-    annotations: {}
     ## @param metrics.serviceMonitor.jobLabel The name of the label on the target service to use as the job name in prometheus.
     ##
     jobLabel: ""

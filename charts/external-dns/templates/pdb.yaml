@@ -1,9 +1,9 @@
 {{- /*
-Copyright Broadcom, Inc. All Rights Reserved.
+Copyright VMware, Inc.
 SPDX-License-Identifier: APACHE-2.0
 */}}
 
-{{- if and .Values.pdb.create }}
+{{- if .Values.podDisruptionBudget -}}
 apiVersion: {{ include "common.capabilities.policy.apiVersion" . }}
 kind: PodDisruptionBudget
 metadata:
@@ -14,13 +14,8 @@ metadata:
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.pdb.minAvailable }}
-  minAvailable: {{ .Values.pdb.minAvailable }}
-  {{- end }}
-  {{- if or .Values.pdb.maxUnavailable (not .Values.pdb.minAvailable) }}
-  maxUnavailable: {{ .Values.pdb.maxUnavailable | default 1 }}
-  {{- end }}
   {{- $podLabels := include "common.tplvalues.merge" ( dict "values" ( list .Values.podLabels .Values.commonLabels ) "context" . ) }}
   selector:
     matchLabels: {{- include "common.labels.matchLabels" ( dict "customLabels" $podLabels "context" $ ) | nindent 6 }}
+{{- include "common.tplvalues.render" (dict "value" .Values.podDisruptionBudget "context" $) | nindent 2 }}
 {{- end -}}
