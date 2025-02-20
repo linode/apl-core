@@ -54,6 +54,7 @@ async function main() {
     const chartContent = await fs.readFile(chartFile, 'utf8')
     const chart = yaml.load(chartContent)
     const dependencyErrors = {}
+    const fixedChartVersions = {}
 
     if (!chart.dependencies || !Array.isArray(chart.dependencies)) {
       console.error('No dependencies found in Chart.yaml')
@@ -77,6 +78,7 @@ async function main() {
         if (dependencyChart.version !== currentDependencyVersion) {
           console.error(`Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`)
           dependencyErrors[dependency.name] = 'Indexed version of dependency is not consistent with chart version.'
+          fixedChartVersions[dependency.name] = dependencyChart.version
           continue
         }
       } catch (error) {
@@ -191,6 +193,18 @@ async function main() {
       Object.entries(dependencyErrors).forEach(([key, value]) => {
         console.log(`${key}:`, value)
       })
+    }
+    if (fixedChartVersions && !ciPushtoBranch) {
+      console.log('Writing mismatching versions to chart index.')
+      for (const dependency of chart.dependencies) {
+        const fixedVersion = fixedChartVersions[dependency.name]
+        if (fixedVersion) {
+          dependency.version = fixedVersion
+        }
+      }
+      // Write the updated Chart.yaml file
+      const updatedChart = yaml.dump(chart)
+      await fs.writeFile(chartFile, updatedChart, 'utf8')
     }
   } catch (error) {
     console.error('Error updating dependencies:', error)
