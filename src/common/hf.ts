@@ -5,7 +5,7 @@ import { parse } from 'yaml'
 import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
-import { getFileMap, setValuesFile } from './repo'
+import { getFileMaps, setValuesFile } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, rootDir } from './utils'
 import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
@@ -110,21 +110,29 @@ export const hfValues = async (
   }
 
   if (withWorkloadValues) {
-    const files = {}
-    const workloadValuesGlob = getFileMap('AplTeamWorkloadValues', envDir).pathGlob
-    const sealedSecretsGlob = getFileMap('AplTeamSecret', envDir).pathGlob
-    const filePaths = await glob([workloadValuesGlob, sealedSecretsGlob])
-
-    await Promise.allSettled(
-      filePaths.map(async (path) => {
-        const relativePath = path.replace(`${envDir}/`, '')
-        files[relativePath] = (await readFile(path)).toString()
-      }),
-    )
+    const files = await getStandaloneFiles(envDir)
     res.files = files
   }
 
   return res
+}
+
+// Get file content for those files that are not automatically loaded to the spec
+export const getStandaloneFiles = async (envDir: string): Promise<Record<string, any>> => {
+  const files = {}
+  const maps = getFileMaps(envDir).filter((map) => map.loadToSpec === false)
+  const pathGlobs = maps.map((fileMap) => {
+    return fileMap.pathGlob
+  })
+  const filePaths = await glob(pathGlobs)
+
+  await Promise.allSettled(
+    filePaths.map(async (path) => {
+      const relativePath = path.replace(`${envDir}/`, '')
+      files[relativePath] = (await readFile(path)).toString()
+    }),
+  )
+  return files
 }
 
 export const getHelmArgs = (argv: HelmArguments, args: string[] = []): string[] => {

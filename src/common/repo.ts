@@ -114,7 +114,7 @@ export function getFileMap(kind: AplKind, envDir: string): FileMap {
 }
 
 export function getFileMaps(envDir: string): Array<FileMap> {
-  return [
+  const maps: Array<FileMap> = [
     {
       kind: 'AplApp',
       envDir,
@@ -366,6 +366,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       loadToSpec: true,
     },
   ]
+  return maps
 }
 
 export function hasCorrespondingDecryptedFile(filePath: string, fileList: Array<string>): boolean {
@@ -378,7 +379,7 @@ export async function saveValues(
   valuesSecrets: Record<string, any>,
   deps = { saveResourceGroupToFiles },
 ): Promise<void> {
-  const fileMaps = getFileMaps(envDir)
+  const fileMaps = getFileMaps(envDir).filter((map) => map.loadToSpec === true)
   await Promise.all(
     fileMaps.map(async (fileMap) => {
       await deps.saveResourceGroupToFiles(fileMap, valuesPublic, valuesSecrets)
@@ -472,12 +473,11 @@ export function unsetValuesFileSync(envDir: string): string {
 }
 
 export async function loadValues(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
-  const fileMaps = getFileMaps(envDir)
+  const fileMaps = getFileMaps(envDir).filter((map) => map.loadToSpec === true)
   const spec = {}
 
   await Promise.all(
     fileMaps.map(async (fileMap) => {
-      if (!fileMap.loadToSpec) return
       await deps.loadToSpec(spec, fileMap)
     }),
   )
@@ -558,9 +558,8 @@ export async function loadFileToSpec(
 }
 
 export async function getKmsSettings(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
-  const fileMap = getFileMaps(envDir)
-  const kmsFiles = fileMap.find((item) => item.jsonPathExpression === '$.kms')
+  const kmsFiles = getFileMap('AplKms', envDir)
   const spec = {}
-  await deps.loadToSpec(spec, kmsFiles!)
+  await deps.loadToSpec(spec, kmsFiles)
   return spec
 }

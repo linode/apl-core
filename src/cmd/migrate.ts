@@ -4,12 +4,14 @@
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
+import { writeFile } from 'fs/promises'
 import { cloneDeep, each, get, omit, pick, pull, set, unset } from 'lodash'
+import { basename, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hf, hfValues } from 'src/common/hf'
+import { getStandaloneFiles, hf, hfValues } from 'src/common/hf'
 import { getTeamNames, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
@@ -401,54 +403,81 @@ export const setAtPath = (path: string, values: Record<string, any>, value: stri
   index - when kind === 'A', indicates the array index where the change occurred
   item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
  */
+
+interface FileContent {
+  path: string
+  content: string
+}
+export const migrateLegacyValues = async (envDir: string, deps = { writeFile }): Promise<boolean> => {
+  const output = await hf(
+    { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml`, args: 'build' },
+    undefined,
+    envDir,
+  )
+  const oldValues = parse(output.stdout).renderedvalues
+
+  const files = await getStandaloneFiles(envDir)
+  const newFiles: FileContent[] = []
+  Object.entries(files).forEach(([filePath, fileContent]) => {
+    let newFilePath = filePath
+    if (filePath.includes('workloads')) {
+      const teamName = extractTeamDirectoryFromWorkloadPath(filePath)
+      const workloadFileName = basename(filePath)
+      newFilePath = join(envDir, 'env', 'teams', teamName, 'workloadValues', workloadFileName)
+    }
+    newFiles.push({ path: newFilePath, content: fileContent })
+  })
+
+  await Promise.all(
+    newFiles.map(async (f) => {
+      await deps.writeFile(f.path, f.content)
+    }),
+  )
+
+  const oldTeams = get(oldValues, 'teamConfig', {})
+  Object.keys(oldTeams).forEach((teamName) => {
+    const settingsKeys = [
+      'alerts',
+      'id',
+      'limitRange',
+      'managedMonitoring',
+      'networkPolicy',
+      'oidc',
+      'resourceQuota',
+      'selfService',
+      'password',
+    ]
+
+    const teamSettings = pick(oldTeams[teamName], settingsKeys)
+    const teamResources = omit(oldTeams[teamName], settingsKeys)
+
+    const newTeam = { ...teamResources, settings: teamSettings }
+    oldTeams[teamName] = newTeam
+  })
+  const users = get(oldValues, 'users', [])
+  users.forEach((user) => {
+    set(user, 'id', user.id || randomUUID())
+  })
+  oldValues.versions = { specVersion: 1 }
+  const teamNames = await getTeamNames(env.ENV_DIR)
+  const secretPaths = await getSchemaSecretsPaths(teamNames)
+  const valuesPublic = omit(oldValues, secretPaths)
+  const valuesSecrets = pick(oldValues, secretPaths)
+
+  // FIXME migrate workloadValues folder and change ApplicationSet !!
+  // ensure that all old files are gone
+  await $`rm -rf ${env.ENV_DIR}/env`
+  await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)
+  await encrypt(env.ENV_DIR)
+  return true
+}
+
 export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
   if (await pathExists(`${env.ENV_DIR}/env/settings.yaml`)) {
     d.log('Detected the old values file structure')
-    // TODO perform migration
-    const output = await hf(
-      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml`, args: 'build' },
-      undefined,
-      env.ENV_DIR,
-    )
-    const oldValues = parse(output.stdout).renderedvalues
-    // TODO migrate team settings
-    const oldTeams = get(oldValues, 'teamConfig', {})
-    Object.keys(oldTeams).forEach((teamName) => {
-      const settingsKeys = [
-        'alerts',
-        'id',
-        'limitRange',
-        'managedMonitoring',
-        'networkPolicy',
-        'oidc',
-        'resourceQuota',
-        'selfService',
-        'password',
-      ]
-      const teamSettings = pick(oldTeams[teamName], settingsKeys)
-      const teamResources = omit(oldTeams[teamName], settingsKeys)
-
-      const newTeam = { ...teamResources, settings: teamSettings }
-      oldTeams[teamName] = newTeam
-    })
-    const users = get(oldValues, 'users', [])
-    users.forEach((user) => {
-      set(user, 'id', user.id || randomUUID())
-    })
-    oldValues.versions = { specVersion: 1 }
-    const teamNames = await getTeamNames(env.ENV_DIR)
-    const secretPaths = await getSchemaSecretsPaths(teamNames)
-    const valuesPublic = omit(oldValues, secretPaths)
-    const valuesSecrets = pick(oldValues, secretPaths)
-
-    // FIXME migrate workloadValues folder and change ApplicationSet !!
-    // ensure that all old files are gone
-    await $`rm -rf ${env.ENV_DIR}/env`
-    await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)
-    await encrypt(env.ENV_DIR)
-    return true
+    await migrateLegacyValues(env.ENV_DIR)
   }
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
@@ -475,6 +504,12 @@ export const migrate = async (): Promise<boolean> => {
   }
   d.log('No changes detected, skipping')
   return false
+}
+
+export function extractTeamDirectoryFromWorkloadPath(filePath: string): string {
+  const match = filePath.match(/\/workloads\/([^/]+)/)
+  if (match === null) throw new Error(`Cannot extract team name from ${filePath} string`)
+  return match[1]
 }
 
 export const module = {
