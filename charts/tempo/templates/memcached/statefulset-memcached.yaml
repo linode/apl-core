@@ -81,10 +81,17 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.memcached.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- if .Values.memcachedExporter.enabled }}
         - args:
             - --memcached.address=localhost:11211
             - --web.listen-address=0.0.0.0:9150
+          {{- with .Values.memcachedExporter.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           image: {{ include "tempo.imageReference" (dict "ctx" . "component" "memcached-exporter") }}
           imagePullPolicy: {{ .Values.memcachedExporter.image.pullPolicy }}
           name: exporter
@@ -98,6 +105,10 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         {{- end }}
+          {{- with .Values.memcached.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       {{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.Version }}
       {{- with .Values.memcached.topologySpreadConstraints }}
       topologySpreadConstraints:
@@ -114,6 +125,10 @@ spec:
       {{- end }}
       {{- with .Values.memcached.tolerations }}
       tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.memcached.extraVolumes }}
+      volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
   updateStrategy:
