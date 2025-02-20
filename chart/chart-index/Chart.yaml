@@ -58,7 +58,7 @@ dependencies:
     version: 6.8.0
     repository: https://charts.bitnami.com/bitnami
   - name: minio
-    version: 11.10.13
+    version: 11.10.26
     repository: https://charts.bitnami.com/bitnami
   - name: oauth2-proxy
     version: 3.7.4
