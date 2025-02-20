@@ -120,14 +120,13 @@ async function main() {
           continue
         }
         const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
-        if (ciPushtoBranch) {
-          const remoteBranch = await $`git ls-remote --heads origin ${branchName}`
-          if (remoteBranch.stdout !== '') {
-            console.log(
-              `Skipping  updates for dependency: ${dependency.name}: the remote branch ${branchName} already exists`,
-            )
-            continue
-          }
+        const checkBranchCmd = ciPushtoBranch ? $`git ls-remote --heads origin ${branchName}` : $`git branch --list ${branchName}`
+        const existingBranch = await checkBranchCmd
+        if (existingBranch.stdout !== '') {
+          console.log(
+            `Skipping updates for dependency: ${dependency.name}: the remote branch ${branchName} already exists`,
+          )
+          continue
         }
 
         console.log(`Updating ${dependency.name} from version ${currentVersion} to ${latestVersion}`)
@@ -137,7 +136,7 @@ async function main() {
 
         const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion}`
         if (ciCreateFeatureBranch) {
-          await $`git checkout -b ${branchName}`
+          await $`git checkout -c core.hooksPath=/dev/null -b ${branchName}`
         }
 
         // Write the updated Chart.yaml file
@@ -179,8 +178,8 @@ async function main() {
         dependency.version = currentDependencyVersion
         if (ciCreateFeatureBranch) {
           // Reset to the main branch for the next dependency
-          await $`git checkout ${baseBranch}`
-          await $`git reset --hard origin/${baseBranch}`
+          await $`git checkout -c core.hooksPath=/dev/null ${baseBranch}`
+          await $`git reset --hard ${ciPushtoBranch ? 'origin/' : ''}${baseBranch}`
         }
       }
     }
