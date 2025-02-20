@@ -53,6 +53,11 @@ spec:
           # The argocd template the values parameter is taken from the git generator path
           values: '{{ "{{values}}" }}'
           releaseName: '{{ .name }}'
+          {{- if and (.sidecarInject) (.createNamespace) }}
+          parameters:
+            - name: sidecar.istio.io/inject
+              value: 'true'
+          {{- end }}
       syncPolicy:
         automated:
           allowEmpty: false
@@ -66,6 +71,9 @@ spec:
         {{- if eq $v.teamId "admin" }} 
         syncOptions:
           - RespectIgnoreDifferences=true
+          {{- if .createNamespace }}
+          - CreateNamespace=true
+          {{- end }}
       ignoreDifferences:
         - group: admissionregistration.k8s.io
           kind: ValidatingWebhookConfiguration
