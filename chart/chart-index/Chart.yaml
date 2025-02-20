@@ -15,7 +15,7 @@ dependencies:
     version: 0.23.0
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
-    version: 6.20.4
+    version: 8.3.9
     repository: https://charts.bitnami.com/bitnami
   - name: falco
     version: 3.8.5
@@ -30,10 +30,10 @@ dependencies:
     version: 1.16.2
     repository: https://helm.goharbor.io
   - name: ingress-nginx
-    version: 4.6.1
+    version: 4.11.2
     repository: https://kubernetes.github.io/ingress-nginx
   - name: jaeger-operator
-    version: 2.57.0
+    version: 2.46.0
     repository: https://jaegertracing.github.io/helm-charts
   - name: kiali-operator
     version: 1.86.1
@@ -42,7 +42,7 @@ dependencies:
     version: 0.1.0
     repository: https://knative.github.io/operator
   - name: kube-prometheus-stack
-    version: 46.4.1
+    version: 65.2.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: kured
     version: 4.7.0
@@ -61,7 +61,7 @@ dependencies:
     version: 11.10.13
     repository: https://charts.bitnami.com/bitnami
   - name: oauth2-proxy
-    version: 3.7.4
+    version: 7.7.24
     repository: https://charts.bitnami.com/bitnami
   - name: opentelemetry-operator
     alias: otel-operator
@@ -83,6 +83,7 @@ dependencies:
     version: 2.17.1
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
+    alias: tekton-pipelines
     version: 1.0.2
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: tempo-distributed
