@@ -48,10 +48,13 @@ async function main() {
   const ciCreateGithubPr = !env.CI_GIT_LOCAL_BRANCH_ONLY && env.CI_GH_CREATE_PR && ciCreateFeatureBranch
   const dependencyNameFilter = env.CI_HELM_CHART_NAME_FILTER || []
   const baseBranch = env.CI_GIT_BASELINE_BRANCH
+
   try {
     // Read the Chart.yaml file
     const chartContent = await fs.readFile(chartFile, 'utf8')
     const chart = yaml.load(chartContent)
+    const dependencyErrors = {}
+    const fixedChartVersions = {}
 
     if (!chart.dependencies || !Array.isArray(chart.dependencies)) {
       console.error('No dependencies found in Chart.yaml')
@@ -64,6 +67,23 @@ async function main() {
         console.log(
           `Skipping updates for dependency: ${dependency.name} due to dependencyNameFilter: ${dependencyNameFilter} `,
         )
+        continue
+      }
+
+      console.log(`Pre-check for dependency ${dependency.name}`)
+      try {
+        const dependencyFileName = `${chartsDir}/${dependency.alias || dependency.name}/Chart.yaml`
+        const dependencyFile = await fs.readFile(dependencyFileName, 'utf8')
+        const dependencyChart = yaml.load(dependencyFile)
+        if (dependencyChart.version !== currentDependencyVersion) {
+          console.error(`Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`)
+          dependencyErrors[dependency.name] = 'Indexed version of dependency is not consistent with chart version.'
+          fixedChartVersions[dependency.name] = dependencyChart.version
+          continue
+        }
+      } catch (error) {
+        console.error(`Error checking dependency ${dependency.name}:`, error)
+        dependencyErrors[dependency.name] = error
         continue
       }
 
@@ -80,6 +100,7 @@ async function main() {
 
         if (!allVersions.length) {
           console.error(`No valid versions found for dependency ${dependency.name}`)
+          dependencyErrors[dependency.name] = 'No valid versions found.'
           continue
         }
 
@@ -102,14 +123,13 @@ async function main() {
           continue
         }
         const branchName = `ci-update-${dependency.name}-to-${latestVersion}`
-        if (ciPushtoBranch) {
-          const remoteBranch = await $`git ls-remote --heads origin ${branchName}`
-          if (remoteBranch.stdout !== '') {
-            console.log(
-              `Skipping  updates for dependency: ${dependency.name}: the remote branch ${branchName} already exists`,
-            )
-            continue
-          }
+        const checkBranchCmd = ciPushtoBranch ? $`git ls-remote --heads origin ${branchName}` : $`git branch --list ${branchName}`
+        const existingBranch = await checkBranchCmd
+        if (existingBranch.stdout !== '') {
+          console.log(
+            `Skipping updates for dependency: ${dependency.name}: the feature branch ${branchName} already exists`,
+          )
+          continue
         }
 
         console.log(`Updating ${dependency.name} from version ${currentVersion} to ${latestVersion}`)
@@ -119,7 +139,7 @@ async function main() {
 
         const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion}`
         if (ciCreateFeatureBranch) {
-          await $`git checkout -b ${branchName}`
+          await $`git -c core.hooksPath=/dev/null checkout -b ${branchName}`
         }
 
         // Write the updated Chart.yaml file
@@ -155,18 +175,37 @@ async function main() {
         }
       } catch (error) {
         console.error('Error updating dependencies:', error)
+        dependencyErrors[dependency.name] = error
       } finally {
         // restore this version so it does not populate to the next chart update
         dependency.version = currentDependencyVersion
         if (ciCreateFeatureBranch) {
           // Reset to the main branch for the next dependency
-          await $`git checkout ${baseBranch}`
-          await $`git reset --hard origin/${baseBranch}`
+          await $`git -c core.hooksPath=/dev/null checkout ${baseBranch}`
+          await $`git reset --hard ${ciPushtoBranch ? 'origin/' : ''}${baseBranch}`
         }
       }
     }
 
     console.log('Dependency updates complete.')
+    if (Object.keys(dependencyErrors).length > 0) {
+      console.log('Summary of errors encountered during the update:')
+      Object.entries(dependencyErrors).forEach(([key, value]) => {
+        console.log(`${key}:`, value)
+      })
+    }
+    if (Object.keys(fixedChartVersions).length > 0 && !ciPushtoBranch) {
+      console.log('Writing mismatching versions to chart index.')
+      for (const dependency of chart.dependencies) {
+        const fixedVersion = fixedChartVersions[dependency.name]
+        if (fixedVersion) {
+          dependency.version = fixedVersion
+        }
+      }
+      // Write the updated Chart.yaml file
+      const updatedChart = yaml.dump(chart)
+      await fs.writeFile(chartFile, updatedChart, 'utf8')
+    }
   } catch (error) {
     console.error('Error updating dependencies:', error)
     process.exit(1)
