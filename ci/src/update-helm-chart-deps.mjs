@@ -74,7 +74,7 @@ async function main() {
         await $`helm repo update ${dependency.name}`
 
         // Get all available versions for the dependency
-        const allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -o json`
+        const allVersions = await $`helm search repo ${dependency.name}/${dependency.name} -l -o json`
           .then((output) => JSON.parse(output.stdout))
           .then((results) => results.map((entry) => entry.version).filter((version) => semver.valid(version)))
 

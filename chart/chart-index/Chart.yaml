@@ -9,7 +9,7 @@ dependencies:
     version: 6.7.3
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
-    version: v1.16.3
+    version: v1.17.1
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
     version: 0.23.0
@@ -27,7 +27,7 @@ dependencies:
     version: 5.0.0
     repository: https://dl.gitea.io/charts
   - name: harbor
-    version: 1.16.1
+    version: 1.16.2
     repository: https://helm.goharbor.io
   - name: ingress-nginx
     version: 4.6.1
@@ -52,7 +52,7 @@ dependencies:
     repository: https://kyverno.github.io/kyverno/
   - name: loki-distributed
     alias: loki
-    version: 0.79.3
+    version: 0.79.4
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
     version: 6.8.0
