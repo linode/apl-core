@@ -1,0 +1,41 @@
+---
+# Source: opentelemetry-operator/templates/certmanager.yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.80.2
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: webhook
+  name: example-opentelemetry-operator-serving-cert
+  namespace: default
+spec:
+  dnsNames:
+    - example-opentelemetry-operator-webhook.default.svc
+    - example-opentelemetry-operator-webhook.default.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: example-opentelemetry-operator-selfsigned-issuer
+  secretName: example-opentelemetry-operator-controller-manager-service-cert
+  subject:
+    organizationalUnits:
+      - example-opentelemetry-operator
+---
+# Source: opentelemetry-operator/templates/certmanager.yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.80.2
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: webhook
+  name: example-opentelemetry-operator-selfsigned-issuer
+  namespace: default
+spec:
+  selfSigned: {}

@@ -11,6 +11,11 @@ rules:
       - ""
     resources:
       - configmaps
+      - persistentvolumeclaims
+      - persistentvolumes
+      - pods
+      - serviceaccounts
+      - services
     verbs:
       - create
       - delete
@@ -34,64 +39,10 @@ rules:
       - list
       - watch
   - apiGroups:
-      - ""
-    resources:
-      - serviceaccounts
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - ""
-    resources:
-      - services
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
       - apps
     resources:
       - daemonsets
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - apps
-    resources:
       - deployments
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - apps
-    resources:
-      - replicasets
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - apps
-    resources:
       - statefulsets
     verbs:
       - create
@@ -100,6 +51,15 @@ rules:
       - list
       - patch
       - update
+      - watch
+  - apiGroups:
+      - apps
+      - extensions
+    resources:
+      - replicasets
+    verbs:
+      - get
+      - list
       - watch
   - apiGroups:
       - autoscaling
@@ -113,6 +73,48 @@ rules:
       - patch
       - update
       - watch
+  {{- if .Values.manager.createRbacPermissions }}
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterroles
+      - clusterrolebindings
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+      - namespaces
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  {{- end }}
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - config.openshift.io
+    resources:
+      - infrastructures
+      - infrastructures/status
+    verbs:
+      - get
+      - list
+      - watch
   - apiGroups:
       - coordination.k8s.io
     resources:
@@ -122,6 +124,19 @@ rules:
       - get
       - list
       - update
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - podmonitors
+      - servicemonitors
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - networking.k8s.io
     resources:
@@ -144,6 +159,32 @@ rules:
       - patch
       - update
       - watch
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - opampbridges
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - opampbridges/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - opentelemetry.io
+    resources:
+      - opampbridges/status
+    verbs:
+      - get
+      - patch
+      - update
   - apiGroups:
       - opentelemetry.io
     resources:
@@ -171,25 +212,70 @@ rules:
       - patch
       - update
   - apiGroups:
-    - route.openshift.io
+      - policy
     resources:
-    - routes
+      - poddisruptionbudgets
     verbs:
-    - create
-    - delete
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - route.openshift.io
+    resources:
+      - routes
+      - routes/custom-host
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  {{- if .Values.manager.featureGatesMap }}
+  {{- if ".Values.manager.featureGatesMap.operator.targetAllocatorCR" }}
+  - apiGroups:
+    - opentelemetry.io
+    resources:
+      - targetallocators
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+    - opentelemetry.io
+    resources:
+    - targetallocators/status
+    verbs:
     - get
-    - list
     - patch
     - update
-    - watch
+  {{- end }}
+  {{- if ".Values.manager.featureGatesMap.operator.targetallocator.mtls" }}
   - apiGroups:
-    - discovery.k8s.io
+      - cert-manager.io
     resources:
-    - endpointslices
+      - issuers
+      - certificaterequests
+      - certificates
     verbs:
-    - get
-    - list
-    - watch
+      - create
+      - get
+      - list
+      - watch
+      - update
+      - patch
+      - delete
+  {{- end }}
+  {{- end }}
 
 {{ if .Values.kubeRBACProxy.enabled }}
 ---

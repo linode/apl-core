@@ -1,0 +1,190 @@
+---
+# Source: opentelemetry-operator/templates/admission-webhooks/operator-webhook-with-cert-manager.yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: default/example-opentelemetry-operator-serving-cert
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.80.2
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: webhook
+  name: example-opentelemetry-operator-mutation
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: example-opentelemetry-operator-webhook
+        namespace: default
+        path: /mutate-opentelemetry-io-v1alpha1-instrumentation
+        port: 443
+    failurePolicy: Fail
+    name: minstrumentation.kb.io
+    rules:
+    - apiGroups:
+        - opentelemetry.io
+      apiVersions:
+        - v1alpha1
+      operations:
+        - CREATE
+        - UPDATE
+      resources:
+        - instrumentations
+      scope: Namespaced
+    sideEffects: None
+    timeoutSeconds: 10
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: example-opentelemetry-operator-webhook
+        namespace: default
+        path: /mutate-opentelemetry-io-v1beta1-opentelemetrycollector
+        port: 443
+    failurePolicy: Fail
+    name: mopentelemetrycollectorbeta.kb.io
+    rules:
+      - apiGroups:
+          - opentelemetry.io
+        apiVersions:
+          - v1beta1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - opentelemetrycollectors
+        scope: Namespaced
+    sideEffects: None
+    timeoutSeconds: 10
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: example-opentelemetry-operator-webhook
+        namespace: default
+        path: /mutate-v1-pod
+        port: 443
+    failurePolicy: Ignore
+    name: mpod.kb.io
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+        resources:
+          - pods
+        scope: Namespaced
+    sideEffects: None
+    timeoutSeconds: 10
+---
+# Source: opentelemetry-operator/templates/admission-webhooks/operator-webhook-with-cert-manager.yaml
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: default/example-opentelemetry-operator-serving-cert
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.80.2
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: webhook
+  name: example-opentelemetry-operator-validation
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: example-opentelemetry-operator-webhook
+        namespace: default
+        path: /validate-opentelemetry-io-v1alpha1-instrumentation
+        port: 443
+    failurePolicy: Fail
+    name: vinstrumentationcreateupdate.kb.io
+    rules:
+    - apiGroups:
+        - opentelemetry.io
+      apiVersions:
+        - v1alpha1
+      operations:
+        - CREATE
+        - UPDATE
+      resources:
+        - instrumentations
+      scope: Namespaced
+    sideEffects: None
+    timeoutSeconds: 10
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: example-opentelemetry-operator-webhook
+        namespace: default
+        path: /validate-opentelemetry-io-v1alpha1-instrumentation
+        port: 443
+    failurePolicy: Ignore
+    name: vinstrumentationdelete.kb.io
+    rules:
+      - apiGroups:
+          - opentelemetry.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - DELETE
+        resources:
+          - instrumentations
+        scope: Namespaced
+    sideEffects: None
+    timeoutSeconds: 10
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: example-opentelemetry-operator-webhook
+        namespace: default
+        path: /validate-opentelemetry-io-v1beta1-opentelemetrycollector
+        port: 443
+    failurePolicy: Fail
+    name: vopentelemetrycollectorcreateupdatebeta.kb.io
+    rules:
+      - apiGroups:
+          - opentelemetry.io
+        apiVersions:
+          - v1beta1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - opentelemetrycollectors
+        scope: Namespaced
+    sideEffects: None
+    timeoutSeconds: 10
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: example-opentelemetry-operator-webhook
+        namespace: default
+        path: /validate-opentelemetry-io-v1beta1-opentelemetrycollector
+        port: 443
+    failurePolicy: Ignore
+    name: vopentelemetrycollectordeletebeta.kb.io
+    rules:
+      - apiGroups:
+          - opentelemetry.io
+        apiVersions:
+          - v1beta1
+        operations:
+          - DELETE
+        resources:
+          - opentelemetrycollectors
+        scope: Namespaced
+    sideEffects: None
+    timeoutSeconds: 10
