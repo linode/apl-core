@@ -1,0 +1,53 @@
+{{- if .Values.webui.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "falcosidekick.fullname" . }}-ui
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "falcosidekick.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ui
+  {{- with .Values.webui.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.webui.service.type }}
+  ports:
+    - port: {{ .Values.webui.service.port }}
+      {{ if eq .Values.webui.service.type "NodePort" }}
+      nodePort: {{ .Values.webui.service.nodePort }}
+      {{ end }}   
+      targetPort: {{ .Values.webui.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "falcosidekick.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ui
+{{- if .Values.webui.redis.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "falcosidekick.fullname" . }}-ui-redis
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "falcosidekick.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ui
+  {{- with .Values.webui.redis.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.webui.redis.service.port }}
+      targetPort: {{ .Values.webui.redis.service.targetPort }}
+      protocol: TCP
+      name: redis
+  selector:
+    {{- include "falcosidekick.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: ui-redis
+{{- end }}
+{{- end }}
