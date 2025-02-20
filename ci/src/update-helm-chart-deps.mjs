@@ -48,11 +48,12 @@ async function main() {
   const ciCreateGithubPr = !env.CI_GIT_LOCAL_BRANCH_ONLY && env.CI_GH_CREATE_PR && ciCreateFeatureBranch
   const dependencyNameFilter = env.CI_HELM_CHART_NAME_FILTER || []
   const baseBranch = env.CI_GIT_BASELINE_BRANCH
-  const errors = {}
+
   try {
     // Read the Chart.yaml file
     const chartContent = await fs.readFile(chartFile, 'utf8')
     const chart = yaml.load(chartContent)
+    const dependencyErrors = {}
 
     if (!chart.dependencies || !Array.isArray(chart.dependencies)) {
       console.error('No dependencies found in Chart.yaml')
@@ -75,12 +76,12 @@ async function main() {
         const dependencyChart = yaml.load(dependencyFile)
         if (dependencyChart.version !== currentDependencyVersion) {
           console.error(`Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`)
-          errors[dependency.name] = 'Indexed version of dependency is not consistent with chart version.'
+          dependencyErrors[dependency.name] = 'Indexed version of dependency is not consistent with chart version.'
           continue
         }
       } catch (error) {
         console.error(`Error checking dependency ${dependency.name}:`, error)
-        errors[dependency.name] = error
+        dependencyErrors[dependency.name] = error
         continue
       }
 
@@ -97,7 +98,7 @@ async function main() {
 
         if (!allVersions.length) {
           console.error(`No valid versions found for dependency ${dependency.name}`)
-          errors[dependency.name] = 'No valid versions found.'
+          dependencyErrors[dependency.name] = 'No valid versions found.'
           continue
         }
 
@@ -172,7 +173,7 @@ async function main() {
         }
       } catch (error) {
         console.error('Error updating dependencies:', error)
-        errors[dependency.name] = error
+        dependencyErrors[dependency.name] = error
       } finally {
         // restore this version so it does not populate to the next chart update
         dependency.version = currentDependencyVersion
@@ -185,10 +186,10 @@ async function main() {
     }
 
     console.log('Dependency updates complete.')
-    if (errors) {
-      console.log('Summay of errors encountered during the update:')
-      Object.entries(errors).forEach(([key, value]) => {
-        console.log(key, value)
+    if (dependencyErrors) {
+      console.log('Summary of errors encountered during the update:')
+      Object.entries(dependencyErrors).forEach(([key, value]) => {
+        console.log(`${key}:`, value)
       })
     }
   } catch (error) {
