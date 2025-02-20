@@ -106,19 +106,6 @@ rules:
     verbs:
       - '*'
 ---
-# This secret needs refactoring! When ssh in Gitea is enabled: https://tekton.dev/docs/pipelines/auth/#configuring-ssh-auth-authentication-for-git
-# This is only temporary to support a specif use case
-apiVersion: v1
-kind: Secret
-metadata:
-  name: gitea-credentials
-  annotations:
-    tekton.dev/git-0: "{{ $v.gitOps.globalUrl }}"
-type: kubernetes.io/basic-auth
-stringData:
-  username: {{ $v.gitOps.adminUsername }}
-  password: {{ $v.gitOps.adminPassword }}
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -220,4 +207,31 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: tekton-triggers-createwebhook-team-{{ $v.teamId }}
+---
+# Role for apl-gitea-operator to manage service account in team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: apl-gitea-operator-service-account
+  namespace: team-{{ $v.teamId }}
+rules:
+# Allows the apl-gitea-operator to create, get and list secrets in the team namespace. This is necessary to create service accounts for build in harbor.
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list", "delete", "create", "update"]
+---
+# RoleBinding for the above Role in team namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: apl-gitea-operator-service-account-binding
+  namespace: team-{{ $v.teamId }}
+subjects:
+- kind: ServiceAccount
+  namespace: apl-gitea-operator
+  name: apl-gitea-operator
+roleRef:
+  kind: Role
+  name: apl-gitea-operator-service-account
+  apiGroup: rbac.authorization.k8s.io
 ---
