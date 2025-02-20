@@ -26,6 +26,13 @@ spec:
   externalIPs:
     {{- toYaml .Values.service.ssh.externalIPs | nindent 4 }}
   {{- end }}
+  {{- if .Values.service.ssh.ipFamilyPolicy }}
+  ipFamilyPolicy: {{ .Values.service.ssh.ipFamilyPolicy }}
+  {{- end }}
+  {{- with .Values.service.ssh.ipFamilies }}
+  ipFamilies:
+  {{- toYaml . | nindent 4 }}
+  {{- end -}}
   {{- if .Values.service.ssh.externalTrafficPolicy }}
   externalTrafficPolicy: {{ .Values.service.ssh.externalTrafficPolicy }}
   {{- end }}

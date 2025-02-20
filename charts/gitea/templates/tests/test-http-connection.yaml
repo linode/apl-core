@@ -7,20 +7,9 @@ metadata:
   annotations:
     "helm.sh/hook": test-success
 spec:
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
   containers:
     - name: wget
-      image: busybox:stable
+      image: busybox
       command: ['wget']
       args:  ['{{ include "gitea.fullname" . }}-http:{{ .Values.service.http.port }}']
-      resources:
-        limits:
-          cpu: 100m
-          memory: 64Mi
-        requests:
-          cpu: 10m
-          memory: 16Mi
   restartPolicy: Never

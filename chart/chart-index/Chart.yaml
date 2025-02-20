@@ -24,7 +24,7 @@ dependencies:
     version: 0.9.7
     repository: https://falcosecurity.github.io/charts
   - name: gitea
-    version: 5.0.0
+    version: 5.0.9
     repository: https://dl.gitea.io/charts
   - name: harbor
     version: 1.16.2

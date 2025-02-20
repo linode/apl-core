@@ -239,7 +239,7 @@ service and ingress settings. All defaults can be overwritten in `gitea.config`.
 INSTALL_LOCK is always set to true, since we want to configure Gitea with this
 helm chart and everything is taken care of.
 
-*All default settings are made directly in the generated app.ini, not in the Values.*
+_All default settings are made directly in the generated app.ini, not in the Values._
 
 #### Database defaults
 
@@ -341,6 +341,55 @@ data:
     ENABLED=true
 ```
 
+Or when using a Kubernetes secret, having the same data structure:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitea-security-related-configuration
+type: Opaque
+stringData:
+  security: |
+    PASSWORD_COMPLEXITY=off
+  session: |
+    SAME_SITE=strict
+```
+
+#### User defined environment variables in app.ini
+
+Users are able to define their own environment variables,
+which are loaded into the containers. We also support to
+directly interact with the generated _app.ini_.
+
+To inject self defined variables into the _app.ini_ a
+certain format needs to be honored. This is
+described in detail on the [env-to-ini](https://github.com/go-gitea/gitea/tree/main/contrib/environment-to-ini)
+page.
+
+Note that the Prefix on this helm chart is `ENV_TO_INI`.
+
+For example a database setting needs to have the following
+format:
+
+```yaml
+gitea:
+  additionalConfigFromEnvs:
+    - name: ENV_TO_INI__DATABASE__HOST
+      value: my.own.host
+    - name: ENV_TO_INI__DATABASE__PASSWD
+      valueFrom:
+        secretKeyRef:
+          name: postgres-secret
+          key: password
+```
+
+Priority (highest to lowest) for defining app.ini variables:
+
+1. Environment variables prefixed with `ENV_TO_INI`
+2. Additional config sources
+3. Values defined in `gitea.config`
+
 ### External Database
 
 An external Database can be used instead of builtIn PostgreSQL or MySQL.
@@ -396,7 +445,7 @@ service:
 
 ### SSH and Ingress
 
-If you're using ingress and won't to use SSH, keep in mind, that ingress is not
+If you're using ingress and want to use SSH, keep in mind, that ingress is not
 able to forward SSH Ports. You will need a LoadBalancer like `metallb` and a
 setting in your ssh service annotations.
 
@@ -669,6 +718,7 @@ gitea:
 
 | Parameter                                   | Description                                                          | Default |
 | ------------------------------------------- | -------------------------------------------------------------------- | ------- |
+| `statefulset.annotations`                   | Annotations for the Gitea StatefulSet to be created                  | `{}`    |
 | `statefulset.terminationGracePeriodSeconds` | How long to wait until forcefully kill the pod                       | `60`    |
 | `statefulset.env`                           | Additional environment variables to pass to containers               | `[]`    |
 | `extraVolumes`                              | Additional volumes to mount to the Gitea statefulset                 | `{}`    |
@@ -680,12 +730,12 @@ gitea:
 
 ### Image
 
-| Parameter          | Description                                                                               | Default       |
-| ------------------ | ----------------------------------------------------------------------------------------- | ------------- |
-| `image.repository` | Image to start for this pod                                                               | `gitea/gitea` |
-| `image.tag`        | [Image tag](https://hub.docker.com/r/gitea/gitea/tags?page=1&ordering=last_updated)       | `1.15.8`      |
-| `image.pullPolicy` | Image pull policy                                                                         | `Always`      |
-| `image.rootless`   | Wether or not to pull the rootless version of Gitea, only works on Gitea 1.14.x or higher | `false`       |
+| Parameter          | Description                                                                               | Default                            |
+| ------------------ | ----------------------------------------------------------------------------------------- | ---------------------------------- |
+| `image.repository` | Image to start for this pod                                                               | `gitea/gitea`                      |
+| `image.tag`        | [Image tag](https://hub.docker.com/r/gitea/gitea/tags?page=1&ordering=last_updated)       | see [Chart.AppVersion](Chart.yaml) |
+| `image.pullPolicy` | Image pull policy                                                                         | `Always`                           |
+| `image.rootless`   | Wether or not to pull the rootless version of Gitea, only works on Gitea 1.14.x or higher | `false`                            |
 
 ### Persistence
 
@@ -726,8 +776,12 @@ gitea:
 | `service.http.nodePort`                 | NodePort for http service                                                                                    |             |
 | `service.http.externalTrafficPolicy`    | If `service.http.type` is `NodePort` or `LoadBalancer`, set this to `Local` to enable source IP preservation |             |
 | `service.http.externalIPs`              | http service external IP addresses                                                                           |             |
+| `service.http.ipFamilyPolicy`           | http service dual-stack policy                                                                               |             |
+| `service.http.ipFamilies`               | http service dual-stack familiy selection                                                                    |             |
 | `service.http.loadBalancerSourceRanges` | Source range filter for http loadbalancer                                                                    | `[]`        |
 | `service.http.annotations`              | http service annotations                                                                                     |             |
+
+For dual-stack parameters see official kubernetes [dual-stack concept documentation](https://kubernetes.io/docs/concepts/services-networking/dual-stack/).
 
 #### SSH
 
@@ -737,10 +791,15 @@ gitea:
 | `service.ssh.port`                     | Port for ssh traffic                                                                                        | `22`        |
 | `service.ssh.loadBalancerIP`           | LoadBalancer Ip setting                                                                                     |             |
 | `service.ssh.nodePort`                 | NodePort for ssh service                                                                                    |             |
+| `service.ssh.hostPort`                 | HostPort for ssh service                                                                                    |             |
 | `service.ssh.externalTrafficPolicy`    | If `service.ssh.type` is `NodePort` or `LoadBalancer`, set this to `Local` to enable source IP preservation |             |
 | `service.ssh.externalIPs`              | ssh service external IP addresses                                                                           |             |
+| `service.ssh.ipFamilyPolicy`           | ssh service dual-stack policy                                                                               |             |
+| `service.ssh.ipFamilies`               | ssh service dual-stack familiy selection                                                                    |             |
 | `service.ssh.loadBalancerSourceRanges` | Source range filter for ssh loadbalancer                                                                    | `[]`        |
 | `service.ssh.annotations`              | ssh service annotations                                                                                     |             |
+
+For dual-stack parameters see official kubernetes [dual-stack concept documentation](https://kubernetes.io/docs/concepts/services-networking/dual-stack/).
 
 ### Gitea Configuration
 
