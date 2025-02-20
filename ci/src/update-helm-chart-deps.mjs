@@ -124,7 +124,7 @@ async function main() {
         const existingBranch = await checkBranchCmd
         if (existingBranch.stdout !== '') {
           console.log(
-            `Skipping updates for dependency: ${dependency.name}: the remote branch ${branchName} already exists`,
+            `Skipping updates for dependency: ${dependency.name}: the feature branch ${branchName} already exists`,
           )
           continue
         }
@@ -136,7 +136,7 @@ async function main() {
 
         const commitMessage = `chore(chart-deps): update ${dependency.name} to version ${latestVersion}`
         if (ciCreateFeatureBranch) {
-          await $`git checkout -c core.hooksPath=/dev/null -b ${branchName}`
+          await $`git -c core.hooksPath=/dev/null checkout -b ${branchName}`
         }
 
         // Write the updated Chart.yaml file
@@ -178,7 +178,7 @@ async function main() {
         dependency.version = currentDependencyVersion
         if (ciCreateFeatureBranch) {
           // Reset to the main branch for the next dependency
-          await $`git checkout -c core.hooksPath=/dev/null ${baseBranch}`
+          await $`git -c core.hooksPath=/dev/null checkout ${baseBranch}`
           await $`git reset --hard ${ciPushtoBranch ? 'origin/' : ''}${baseBranch}`
         }
       }
