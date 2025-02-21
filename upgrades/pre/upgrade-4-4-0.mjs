@@ -8,15 +8,25 @@ import envalid, { str } from "envalid";
 
 function createSealedSecret(oldSecret) {
   const { name, namespace, type, immutable, encryptedData } = oldSecret
-  const metadata = oldSecret.metadata || {}
-  metadata.annotations = metadata.annotations || {}
-  metadata.annotations['sealedsecrets.bitnami.com/namespace-wide'] = "true"
-  metadata.name = name
-  metadata.namespace = namespace
+  const annotations = {
+    'sealedsecrets.bitnami.com/namespace-wide': 'true',
+  }
+  for (const annotation of oldSecret.annotations || []) {
+    metadata.annotations[annotation.key] = annotation.value
+  }
+  const labels = {}
+  for (const label of oldSecret.labels || []) {
+    labels[label.key] = label.value
+  }
   return {
     "apiVersion": "bitnami.com/v1alpha1",
     "kind": "SealedSecret",
-    "metadata": metadata,
+    "metadata": {
+      annotations,
+      labels,
+      name,
+      namespace,
+    },
     "spec": {
       "encryptedData": encryptedData,
       "template": {
