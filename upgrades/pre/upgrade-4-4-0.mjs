@@ -7,7 +7,7 @@ import envalid, { str } from "envalid";
 
 
 function createSealedSecret(oldSecret) {
-  const { name, namespace, secretType, immutable, encryptedData } = oldSecret
+  const { name, namespace, type, immutable, encryptedData } = oldSecret
   const metadata = oldSecret.metadata || {}
   metadata.annotations = metadata.annotations || {}
   metadata.annotations['sealedsecrets.bitnami.com/namespace-wide'] = "true"
@@ -25,7 +25,7 @@ function createSealedSecret(oldSecret) {
           "name": name,
           "namespace": namespace,
         },
-        "type": secretType,
+        "type": type || 'kubernetes.io/opaque',
       }
     }
   }
