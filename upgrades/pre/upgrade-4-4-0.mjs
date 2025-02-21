@@ -76,7 +76,7 @@ async function main() {
     await Promise.all(
       Object.entries(oldSecretFile.teamConfig).map(async ([teamName, teamValues]) => {
         const teamSecretList = teamValues.sealedsecrets
-        if (teamSecretList) {
+        if (teamSecretList && teamSecretList.length > 0) {
           for (const oldSecret of teamSecretList) {
             const secretId = oldSecret.id
             const dirName = `${env.ENV_DIR}/env/teams/${teamName}/sealedsecrets`
