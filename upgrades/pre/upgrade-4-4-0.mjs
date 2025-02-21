@@ -74,6 +74,8 @@ async function main() {
         }
       })
     )
+    console.log(`Cleaning up ${secretFile}.`)
+    await fs.rm(secretFile)
   }
   console.log('Finished migrating secret files')
 }
