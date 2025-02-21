@@ -52,7 +52,7 @@ async function main() {
 
   const secretFiles = new Glob(`${env.ENV_DIR}/env/teams/sealedsecrets.*.yaml`, {})
   for await (const secretFile of secretFiles) {
-    console.log('Migrating secret from', secretFile)
+    console.log('Migrating secrets from', secretFile)
     const oldSecretFile = await readSecretFile(secretFile)
     // Team values are wrapped in teamConfig.<teamName>.sealedsecrets
     await Promise.all(
@@ -61,7 +61,7 @@ async function main() {
         if (teamSecretList) {
           for (const oldSecret of teamSecretList) {
             const secretId = oldSecret.id
-            const dirName = `${env.ENV_DIR}/env/teams/${teamName}`
+            const dirName = `${env.ENV_DIR}/env/teams/${teamName}/sealedsecrets`
             await fs.mkdir(dirName, { recursive: true })
             const sealedSecretFilename = `${dirName}/${secretId}.yaml`
             const sealedSecret = createSealedSecret(oldSecret)
