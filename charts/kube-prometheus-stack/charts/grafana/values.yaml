@@ -114,6 +114,10 @@ image:
 
 testFramework:
   enabled: true
+  ## The type of Helm hook used to run this test. Defaults to test.
+  ## ref: https://helm.sh/docs/topics/charts_hooks/#the-available-hooks
+  ##
+  # hookType: test
   image:
     # -- The Docker registry
     registry: docker.io
@@ -923,7 +927,7 @@ sidecar:
     # This is needed if skipReload is true, to load any alerts defined at startup time.
     # Deploy the alert sidecar as an initContainer.
     initAlerts: false
-    # Additional alert sidecar volume mounts
+    # Additional alerts sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the alert sidecar emptyDir volume
     sizeLimit: {}
@@ -1001,7 +1005,7 @@ sidecar:
       allowUiUpdates: false
       # allow Grafana to replicate dashboard structure from filesystem
       foldersFromFilesStructure: false
-    # Additional dashboard sidecar volume mounts
+    # Additional dashboards sidecar volume mounts
     extraMounts: []
     # Sets the size limit of the dashboard sidecar emptyDir volume
     sizeLimit: {}
@@ -1056,6 +1060,8 @@ sidecar:
     # This is needed if skipReload is true, to load any datasources defined at startup time.
     # Deploy the datasources sidecar as an initContainer.
     initDatasources: false
+    # Additional datasources sidecar volume mounts
+    extraMounts: []
     # Sets the size limit of the datasource sidecar emptyDir volume
     sizeLimit: {}
   plugins:
@@ -1096,6 +1102,8 @@ sidecar:
     # Deploy the datasource sidecar as an initContainer in addition to a container.
     # This is needed if skipReload is true, to load any plugins defined at startup time.
     initPlugins: false
+    # Additional plugins sidecar volume mounts
+    extraMounts: []
     # Sets the size limit of the plugin sidecar emptyDir volume
     sizeLimit: {}
   notifiers:
@@ -1136,6 +1144,8 @@ sidecar:
     # Deploy the notifier sidecar as an initContainer in addition to a container.
     # This is needed if skipReload is true, to load any notifiers defined at startup time.
     initNotifiers: false
+    # Additional notifiers sidecar volume mounts
+    extraMounts: []
     # Sets the size limit of the notifier sidecar emptyDir volume
     sizeLimit: {}
 

@@ -649,6 +649,9 @@ containers:
     volumeMounts:
       - name: sc-datasources-volume
         mountPath: "/etc/grafana/provisioning/datasources"
+      {{- with .Values.sidecar.datasources.extraMounts }}
+      {{- toYaml . | trim | nindent 6 }}
+      {{- end }}
 {{- end}}
 {{- if .Values.sidecar.notifiers.enabled }}
   - name: {{ include "grafana.name" . }}-sc-notifiers
@@ -753,6 +756,9 @@ containers:
     volumeMounts:
       - name: sc-notifiers-volume
         mountPath: "/etc/grafana/provisioning/notifiers"
+      {{- with .Values.sidecar.notifiers.extraMounts }}
+      {{- toYaml . | trim | nindent 6 }}
+      {{- end }}
 {{- end}}
 {{- if .Values.sidecar.plugins.enabled }}
   - name: {{ include "grafana.name" . }}-sc-plugins
@@ -857,6 +863,9 @@ containers:
     volumeMounts:
       - name: sc-plugins-volume
         mountPath: "/etc/grafana/provisioning/plugins"
+      {{- with .Values.sidecar.plugins.extraMounts }}
+      {{- toYaml . | trim | nindent 6 }}
+      {{- end }}
 {{- end}}
   - name: {{ .Chart.Name }}
     {{- $registry := .Values.global.imageRegistry | default .Values.image.registry -}}

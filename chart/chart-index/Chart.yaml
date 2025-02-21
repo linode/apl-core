@@ -42,7 +42,7 @@ dependencies:
     version: 0.1.0
     repository: https://knative.github.io/operator
   - name: kube-prometheus-stack
-    version: 65.2.0
+    version: 65.8.1
     repository: https://prometheus-community.github.io/helm-charts
   - name: kured
     version: 4.6.0
