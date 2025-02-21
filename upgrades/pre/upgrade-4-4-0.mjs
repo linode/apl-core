@@ -8,42 +8,40 @@ import envalid, { str } from "envalid";
 
 function createSealedSecret(oldSecret) {
   const { name, namespace, type, immutable, encryptedData } = oldSecret
-  const annotations = {
-    'sealedsecrets.bitnami.com/namespace-wide': 'true',
-  }
-  const metadata = {
-    name,
-    namespace,
-    annotations,
+  const annotations = {}
+  const labels = {}
+
+  const oldMetadata = oldSecret.metadata
+  if (oldMetadata) {
+    for (const annotation of oldMetadata.annotations || []) {
+      annotations[annotation.key] = annotation.value
+    }
+    for (const label of oldMetadata.labels || []) {
+      labels[label.key] = label.value
+    }
   }
 
-  if (oldSecret.metadata) {
-    const oldMetadata = oldSecret.metadata
-    if (oldMetadata.annotations && oldMetadata.annotations.length > 0) {
-      for (const annotation of oldMetadata.annotations) {
-        annotations[annotation.key] = annotation.value
-      }
-    }
-    if (oldMetadata.labels && oldMetadata.labels.length > 0) {
-      metadata.labels = {}
-      for (const label of oldMetadata.labels) {
-        metadata.labels[label.key] = label.value
-      }
-    }
-  }
   return {
-    "apiVersion": "bitnami.com/v1alpha1",
-    "kind": "SealedSecret",
-    "metadata": metadata,
-    "spec": {
-      "encryptedData": encryptedData,
-      "template": {
-        "immutable": immutable || false,
-        "metadata": {
-          "name": name,
-          "namespace": namespace,
+    'apiVersion': 'bitnami.com/v1alpha1',
+    'kind': 'SealedSecret',
+    'metadata': {
+      name,
+      namespace,
+      'annotations': {
+        'sealedsecrets.bitnami.com/namespace-wide': 'true',
+      },
+    },
+    'spec': {
+      'encryptedData': encryptedData,
+      'template': {
+        'immutable': immutable || false,
+        'metadata': {
+          name,
+          namespace,
+          annotations,
+          labels,
         },
-        "type": type || 'kubernetes.io/opaque',
+        'type': type || 'kubernetes.io/opaque',
       }
     }
   }
