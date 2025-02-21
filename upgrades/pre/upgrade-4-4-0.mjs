@@ -81,18 +81,18 @@ async function main() {
             await fs.mkdir(dirName, { recursive: true })
             const sealedSecretFilename = `${dirName}/${secretId}.yaml`
             const sealedSecret = createSealedSecret(oldSecret)
-            console.log(`Writing migrated secret in ${sealedSecretFilename}`)
+            console.log('Writing migrated secret to', sealedSecretFilename)
             await writeSecretFile(sealedSecretFilename, sealedSecret)
           }
-          console.log(`Completed migration of secrets in ${secretFile}.`)
+          console.log('Completed migration of secrets in', secretFile)
         } else {
-          console.log(`No secrets found to migrate in ${secretFile}.`)
+          console.log('No secrets found to migrate in', secretFile)
         }
       })
     )
-    console.log(`Cleaning up ${secretFile}.`)
+    console.log('Cleaning up', secretFile)
     await fs.rm(secretFile)
   }
-  console.log('Finished migrating secret files')
+  console.log('Finished migrating secret files.')
 }
 await main()
