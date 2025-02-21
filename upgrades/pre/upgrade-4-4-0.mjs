@@ -11,22 +11,30 @@ function createSealedSecret(oldSecret) {
   const annotations = {
     'sealedsecrets.bitnami.com/namespace-wide': 'true',
   }
-  for (const annotation of oldSecret.annotations || []) {
-    metadata.annotations[annotation.key] = annotation.value
+  const metadata = {
+    name,
+    namespace,
+    annotations,
   }
-  const labels = {}
-  for (const label of oldSecret.labels || []) {
-    labels[label.key] = label.value
+
+  if (oldSecret.metadata) {
+    const oldMetadata = oldSecret.metadata
+    if (oldMetadata.annotations && oldMetadata.annotations.length > 0) {
+      for (const annotation of oldMetadata.annotations) {
+        annotations[annotation.key] = annotation.value
+      }
+    }
+    if (oldMetadata.labels && oldMetadata.labels.length > 0) {
+      metadata.labels = {}
+      for (const label of oldMetadata.labels) {
+        metadata.labels[label.key] = label.value
+      }
+    }
   }
   return {
     "apiVersion": "bitnami.com/v1alpha1",
     "kind": "SealedSecret",
-    "metadata": {
-      annotations,
-      labels,
-      name,
-      namespace,
-    },
+    "metadata": metadata,
     "spec": {
       "encryptedData": encryptedData,
       "template": {
