@@ -1,0 +1,7 @@
+teamConfig:
+    demo:
+        coderepos:
+            - gitService: github
+              label: buildpacks-samples
+              private: false
+              repositoryUrl: https://github.com/buildpacks/samples
