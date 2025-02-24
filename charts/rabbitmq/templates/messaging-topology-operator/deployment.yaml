@@ -37,6 +37,7 @@ spec:
     spec:
       serviceAccountName: {{ template "rmqco.msgTopologyOperator.serviceAccountName" . }}
       {{- include "rmqco.imagePullSecrets" . | nindent 6 }}
+      automountServiceAccountToken: {{ .Values.msgTopologyOperator.automountServiceAccountToken }}
       {{- if .Values.msgTopologyOperator.hostAliases }}
       hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.msgTopologyOperator.hostAliases "context" $) | nindent 8 }}
       {{- end }}
@@ -64,7 +65,7 @@ spec:
       priorityClassName: {{ .Values.msgTopologyOperator.priorityClassName | quote }}
       {{- end }}
       {{- if .Values.msgTopologyOperator.podSecurityContext.enabled }}
-      securityContext: {{- omit .Values.msgTopologyOperator.podSecurityContext "enabled" | toYaml | nindent 8 }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.msgTopologyOperator.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}
       {{- if .Values.msgTopologyOperator.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.msgTopologyOperator.terminationGracePeriodSeconds }}
@@ -80,11 +81,11 @@ spec:
         {{- include "common.tplvalues.render" (dict "value" .Values.msgTopologyOperator.initContainers "context" $) | nindent 8 }}
         {{- end }}
       containers:
-        - name: rabbitmq
+        - name: rabbitmq-cluster-operator
           image: {{ template "rmqco.msgTopologyOperator.image" . }}
           imagePullPolicy: {{ .Values.msgTopologyOperator.image.pullPolicy }}
           {{- if .Values.msgTopologyOperator.containerSecurityContext.enabled }}
-          securityContext: {{- omit .Values.msgTopologyOperator.containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" .Values.msgTopologyOperator.containerSecurityContext "context" $) | nindent 12 }}
           {{- end }}
           {{- if .Values.msgTopologyOperator.command }}
           command: {{- include "common.tplvalues.render" (dict "value" .Values.msgTopologyOperator.command "context" $) | nindent 12 }}
@@ -103,6 +104,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            {{- if not .Values.msgTopologyOperator.watchAllNamespaces }}      
+            {{- $watchNamespaces := default (list (include "common.names.namespace" .)) .Values.msgTopologyOperator.watchNamespaces }}
+            - name: OPERATOR_SCOPE_NAMESPACE
+              value: {{ join "," $watchNamespaces | quote }}
+            {{- end }}
             {{- if .Values.msgTopologyOperator.extraEnvVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.msgTopologyOperator.extraEnvVars "context" $) | nindent 12 }}
             {{- end }}
@@ -117,6 +123,8 @@ spec:
             {{- end }}
           {{- if .Values.msgTopologyOperator.resources }}
           resources: {{- toYaml .Values.msgTopologyOperator.resources | nindent 12 }}
+          {{- else if ne .Values.msgTopologyOperator.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.msgTopologyOperator.resourcesPreset) | nindent 12 }}
           {{- end }}
           ports:
             - name: http-webhook
