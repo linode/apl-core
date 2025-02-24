@@ -1,8 +1,7 @@
 {{- $v := .Values -}}
 {{- $r := $v.apps | get "rabbitmq" }}
-{{- $teams := keys $v.teamConfig | sortAlpha }}
 {{- $teamNamespaces := list }}
-{{- range $teamName := $teams }}
+{{- range $teamName := keys $v.teamConfig | sortAlpha }}
 {{- $teamNamespaces = append $teamNamespaces (print "team-" $teamName) }}
 {{- end }}
 
