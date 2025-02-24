@@ -5,65 +5,98 @@ type: library
 version: 0.1.0
 dependencies:
   - name: argo-cd
+    alias: argocd
     version: 6.7.3
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
-    version: v1.16.3
+    version: v1.17.1
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
     version: 0.23.0
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
-    version: 6.20.4
+    version: 8.3.9
     repository: https://charts.bitnami.com/bitnami
-  - name: gitea
-    version: 5.0.0
-    repository: https://dl.gitea.io/charts
-  - name: harbor
-    version: 1.16.1
-    repository: https://helm.goharbor.io
-  - name: ingress-nginx
-    version: 4.6.1
-    repository: https://kubernetes.github.io/ingress-nginx
-  - name: kube-prometheus-stack
-    version: 46.4.1
-    repository: https://prometheus-community.github.io/helm-charts
-  - name: metrics-server
-    version: 6.8.0
-    repository: https://charts.bitnami.com/bitnami
-  - name: oauth2-proxy
-    version: 3.7.4
-    repository: https://charts.bitnami.com/bitnami
-  - name: prometheus-blackbox-exporter
-    version: 7.10.0
-    repository: https://prometheus-community.github.io/helm-charts
-  - name: promtail
-    version: 6.16.6
-    repository: https://grafana.github.io/helm-charts
-  - name: sealed-secrets
-    version: 2.17.1
-    repository: https://bitnami-labs.github.io/sealed-secrets/
-  - name: tekton-pipeline
-    version: 1.0.2
-    repository: https://cdfoundation.github.io/tekton-helm-chart/
-  - name: velero
-    version: 5.4.1
-    repository: https://vmware-tanzu.github.io/helm-charts/
-  - name: trivy-operator
-    version: 0.25.0
-    repository: https://aquasecurity.github.io/helm-charts/
   - name: falco
     version: 3.8.5
     repository: https://falcosecurity.github.io/charts
   - name: falco-exporter
     version: 0.9.7
     repository: https://falcosecurity.github.io/charts
+  - name: gitea
+    version: 5.0.0
+    repository: https://dl.gitea.io/charts
+  - name: harbor
+    version: 1.16.2
+    repository: https://helm.goharbor.io
+  - name: ingress-nginx
+    version: 4.11.2
+    repository: https://kubernetes.github.io/ingress-nginx
   - name: jaeger-operator
     version: 2.46.0
     repository: https://jaegertracing.github.io/helm-charts
   - name: kiali-operator
     version: 1.86.1
     repository: https://kiali.org/helm-charts
+  - name: knative-operator
+    version: 0.1.0
+    repository: https://knative.github.io/operator
+  - name: kube-prometheus-stack
+    version: 65.2.0
+    repository: https://prometheus-community.github.io/helm-charts
+  - name: kured
+    version: 4.6.0
+    repository: https://kubereboot.github.io/charts
+  - name: kyverno
+    version: 3.1.4
+    repository: https://kyverno.github.io/kyverno/
+  - name: loki-distributed
+    alias: loki
+    version: 0.79.4
+    repository: https://grafana.github.io/helm-charts
+  - name: metrics-server
+    version: 6.8.0
+    repository: https://charts.bitnami.com/bitnami
+  - name: minio
+    version: 11.10.13
+    repository: https://charts.bitnami.com/bitnami
+  - name: oauth2-proxy
+    version: 7.7.24
+    repository: https://charts.bitnami.com/bitnami
+  - name: opentelemetry-operator
+    alias: otel-operator
+    version: 0.33.0
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+  - name: prometheus-blackbox-exporter
+    version: 7.10.0
+    repository: https://prometheus-community.github.io/helm-charts
+  - name: prometheus-msteams
+    version: 0.4.4
+    repository: https://prometheus-msteams.github.io/prometheus-msteams/
+  - name: promtail
+    version: 6.16.6
+    repository: https://grafana.github.io/helm-charts
+  - name: rabbitmq-cluster-operator
+    alias: rabbitmq
+    version: 3.10.10
+    repository: https://charts.bitnami.com/bitnami
+  - name: sealed-secrets
+    version: 2.17.1
+    repository: https://bitnami-labs.github.io/sealed-secrets/
+  - name: tekton-pipeline
+    alias: tekton-pipelines
+    version: 1.0.2
+    repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: tempo-distributed
+    alias: tempo
     version: 1.18.5
     repository: https://grafana.github.io/helm-charts
+  - name: thanos
+    version: 15.7.25
+    repository: https://charts.bitnami.com/bitnami
+  - name: trivy-operator
+    version: 0.25.0
+    repository: https://aquasecurity.github.io/helm-charts/
+  - name: velero
+    version: 5.4.1
+    repository: https://vmware-tanzu.github.io/helm-charts/
