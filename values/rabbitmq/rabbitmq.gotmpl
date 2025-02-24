@@ -1,15 +1,24 @@
 {{- $v := .Values -}}
-{{- $r:= $v.apps | get "rabbitmq" }}
+{{- $r := $v.apps | get "rabbitmq" }}
+{{- $teams := keys $v.teamConfig | sortAlpha }}
+{{- $teamNamespaces := list }}
+{{- range $teamName := $teams }}
+{{- $teamNamespaces = append $teamNamespaces (print "team-" $teamName) }}
+{{- end }}
 
 clusterOperator:
   resources: {{- $r.resources.clusterOperator | toYaml | nindent 4 }}
+  watchAllNamespaces: false
+  watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
 msgTopologyOperator:
   resources: {{- $r.resources.msgTopologyOperator | toYaml | nindent 4 }}
+  watchAllNamespaces: false
+  watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
 {{- with $v.otomi | get "globalPullSecret" nil }}
 global:
   imagePullSecrets:
     - otomi-pullsecret-global
 {{- end }}
-  
+
