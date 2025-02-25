@@ -94,5 +94,9 @@ async function main() {
     await fs.rm(secretFile)
   }
   console.log('Finished migrating secret files.')
+
+  console.log('Updating kube-prometheus-stack CRDs.')
+  const crdOutput = await $`kubectl apply -f charts/kube-prometheus-stack/charts/crds/crds --server-side --force-conflicts`
+  console.log(crdOutput.stdout)
 }
 await main()
