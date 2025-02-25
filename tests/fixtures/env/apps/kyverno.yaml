@@ -1,3 +1,6 @@
-apps:
-    kyverno:
-        enabled: true
+kind: AplCoreApp
+metadata:
+    name: kyverno
+    labels: {}
+spec:
+    enabled: true

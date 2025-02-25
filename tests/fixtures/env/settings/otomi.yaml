@@ -1,0 +1,12 @@
+kind: AplCapabilities
+metadata:
+    name: otomi
+    labels: {}
+spec:
+    globalPullSecret:
+        username: otomi
+    hasExternalDNS: true
+    hasExternalIDP: true
+    nodeSelector:
+        otomi: otomi-sys
+    version: main

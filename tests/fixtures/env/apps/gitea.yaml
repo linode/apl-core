@@ -1,3 +1,6 @@
-apps:
-    gitea:
-        enabled: true
+kind: AplCoreApp
+metadata:
+    name: gitea
+    labels: {}
+spec:
+    enabled: true

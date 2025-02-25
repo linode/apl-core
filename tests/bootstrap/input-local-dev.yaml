@@ -10,7 +10,7 @@ kms:
     provider: age
 apps:
   metrics-server:
-    enabled: false
+    enabled: true
 users:
   - email: team-member@local.host
     firstName: team-member
@@ -19,14 +19,17 @@ users:
     isTeamAdmin: false
     teams: ['demo']
 teamConfig:
+  alpha:
+    settings: {}
   demo:
-    id: demo
-    selfService:
-      service:
-        - ingress
-    networkPolicy:
-      egressPublic: true
-      ingressPrivate: true
+    settings:
+      id: demo
+      selfService:
+        service:
+          - ingress
+      networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
     builds:
       - name: nodejs-hello-world
         tag: v0.0.1

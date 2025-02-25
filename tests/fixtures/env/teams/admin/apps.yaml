@@ -1,0 +1,6 @@
+kind: AplTeamTools
+metadata:
+    name: admin
+    labels:
+        apl.io/teamId: admin
+spec: {}

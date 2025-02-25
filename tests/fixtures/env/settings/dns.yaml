@@ -1,0 +1,10 @@
+kind: AplDns
+metadata:
+    name: dns
+    labels: {}
+spec:
+    domainFilters:
+        - otomi.cloud
+    provider:
+        linode: {}
+    zoneIdFilters: []

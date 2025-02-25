@@ -1,6 +1,9 @@
-apps:
-    redis-shared:
-        enabled: false
-        password: wrrpCKuVJmiqHSylAdtpvbxb
-        sizes:
-            master: 1Gi
+kind: AplCoreApp
+metadata:
+    name: redis-shared
+    labels: {}
+spec:
+    enabled: false
+    password: wrrpCKuVJmiqHSylAdtpvbxb
+    sizes:
+        master: 1Gi
