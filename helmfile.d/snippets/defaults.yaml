@@ -295,6 +295,7 @@ environments:
                   memory: 512Mi
           gitea:
             adminUsername: otomi-admin
+            existingVolume: false
             _rawValues: {}
             resources:
               gitea:
