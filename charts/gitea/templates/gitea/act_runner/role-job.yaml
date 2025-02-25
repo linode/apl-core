@@ -1,0 +1,25 @@
+{{- if .Values.actions.enabled }}
+{{- if and (and .Values.actions.provisioning.enabled .Values.persistence.enabled) .Values.persistence.mount }}
+{{- $name := include "gitea.workername" (dict "global" . "worker" "actions-token-job") }}
+{{- $secretName := include "gitea.workername" (dict "global" . "worker" "actions-token") }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "gitea.labels" . | nindent 4 }}
+    app.kubernetes.io/component: token-job
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - {{ $secretName }}
+    verbs:
+      - get
+      - update
+      - patch
+{{- end }}
+{{- end }}

@@ -18,3 +18,19 @@
   echo "Visit http://127.0.0.1:{{ .Values.service.http.port }} to use your application"
   kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ .Release.Name }}-http {{ .Values.service.http.port }}:{{ .Values.service.http.port }}
 {{- end }}
+{{- $warnings := list -}}
+{{- if eq (get .Values.gitea.config.cache "ADAPTER") "memory" -}}
+  {{- $warnings = append $warnings "Gitea uses 'memory' for caching which is not recommended for production use. See https://docs.gitea.com/next/administration/config-cheat-sheet#cache-cache for available options." -}}
+{{- end }}
+{{- if eq (get .Values.gitea.config.queue "TYPE") "level" -}}
+  {{- $warnings = append $warnings "Gitea uses 'leveldb' for queue actions which is not recommended for production use. See https://docs.gitea.com/next/administration/config-cheat-sheet#queue-queue-and-queue for available options." -}}
+{{- end }}
+{{- if eq (get .Values.gitea.config.session "PROVIDER") "memory" -}}
+  {{- $warnings = append $warnings "Gitea uses 'memory' for sessions which is not recommended for production use. See https://docs.gitea.com/next/administration/config-cheat-sheet#session-session for available options." -}}
+{{- end }}
+{{- if gt (len $warnings) 0 }}
+2. Review these warnings:
+{{- range $warnings }}
+  - {{ . }}
+{{- end }}
+{{- end }}

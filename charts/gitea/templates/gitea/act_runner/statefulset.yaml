@@ -1,0 +1,117 @@
+{{- if .Values.actions.enabled }}
+{{- $secretName := include "gitea.workername" (dict "global" . "worker" "actions-token") }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    {{- include "gitea.labels.actRunner" . | nindent 4 }}
+    {{- with .Values.actions.statefulset.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- with .Values.actions.statefulset.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  name: {{ include "gitea.fullname" . }}-act-runner
+spec:
+  selector:
+    matchLabels:
+      {{- include "gitea.selectorLabels.actRunner" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "gitea.labels.actRunner" . | nindent 8 }}
+        {{- with .Values.actions.statefulset.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      initContainers:
+        - name: init-gitea
+          image: "{{ .Values.actions.init.image.repository }}:{{ .Values.actions.init.image.tag }}"
+          command:
+            - sh
+            - -c
+            - |
+              while ! nc -z {{ include "gitea.fullname" . }}-http {{ .Values.service.http.port }}; do
+                sleep 5
+              done
+      containers:
+        - name: act-runner
+          image: "{{ .Values.actions.statefulset.actRunner.repository }}:{{ .Values.actions.statefulset.actRunner.tag }}"
+          imagePullPolicy: {{ .Values.actions.statefulset.actRunner.pullPolicy }}
+          workingDir: /data
+          env:
+            - name: DOCKER_HOST
+              value: tcp://127.0.0.1:2376
+            - name: DOCKER_TLS_VERIFY
+              value: "1"
+            - name: DOCKER_CERT_PATH
+              value: /certs/server
+            - name: GITEA_RUNNER_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.actions.existingSecret | default $secretName }}"
+                  key: "{{ .Values.actions.existingSecretKey | default "token" }}"
+            - name: GITEA_INSTANCE_URL
+              value: {{ include "gitea.act_runner.local_root_url" . }}
+            - name: CONFIG_FILE
+              value: /actrunner/config.yaml
+          resources:
+            {{- toYaml .Values.actions.statefulset.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /actrunner/config.yaml
+              name: act-runner-config
+              subPath: config.yaml
+            - mountPath: /certs/server
+              name: docker-certs
+            - mountPath: /data
+              name: data-act-runner
+        - name: dind
+          image: "{{ .Values.actions.statefulset.dind.repository }}:{{ .Values.actions.statefulset.dind.tag }}"
+          imagePullPolicy: {{ .Values.actions.statefulset.dind.pullPolicy }}
+          env:
+            - name: DOCKER_HOST
+              value: tcp://127.0.0.1:2376
+            - name: DOCKER_TLS_VERIFY
+              value: "1"
+            - name: DOCKER_CERT_PATH
+              value: /certs/server
+            {{- if .Values.actions.statefulset.dind.extraEnvs }}
+            {{- toYaml .Values.actions.statefulset.dind.extraEnvs | nindent 12 }}
+            {{- end }}
+          securityContext:
+            privileged: true
+          resources:
+            {{- toYaml .Values.actions.statefulset.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /certs/server
+              name: docker-certs
+      {{- with .Values.actions.statefulset.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.actions.statefulset.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.actions.statefulset.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: act-runner-config
+          configMap:
+            name: {{ include "gitea.fullname" . }}-act-runner-config
+        - name: docker-certs
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: data-act-runner
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        {{- include "gitea.persistence.storageClass" . | nindent 8 }}
+        resources:
+          requests:
+            storage: 1Mi
+{{- end }}

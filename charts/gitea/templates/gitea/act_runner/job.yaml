@@ -1,0 +1,114 @@
+{{- if .Values.actions.enabled }}
+{{- if and (and .Values.actions.provisioning.enabled .Values.persistence.enabled) .Values.persistence.mount }}
+{{- $name := include "gitea.workername" (dict "global" . "worker" "actions-token-job") }}
+{{- $secretName := include "gitea.workername" (dict "global" . "worker" "actions-token") }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "gitea.labels" . | nindent 4 }}
+    {{- with .Values.actions.provisioning.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    app.kubernetes.io/component: token-job
+  annotations:
+    {{- with .Values.actions.provisioning.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ttlSecondsAfterFinished: {{ .Values.actions.provisioning.ttlSecondsAfterFinished }}
+  template:
+    metadata:
+      labels:
+        {{- include "gitea.labels" . | nindent 8 }}
+        {{- with .Values.actions.provisioning.labels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        app.kubernetes.io/component: token-job
+    spec:
+      initContainers:
+        - name: init-gitea
+          image: "{{ .Values.actions.init.image.repository }}:{{ .Values.actions.init.image.tag }}"
+          command:
+            - sh
+            - -c
+            - |
+              while ! nc -z {{ include "gitea.fullname" . }}-http {{ .Values.service.http.port }}; do
+                sleep 5
+              done
+      containers:
+        - name: actions-token-create
+          image: "{{ include "gitea.image" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: GITEA_APP_INI
+              value: /data/gitea/conf/app.ini
+          command:
+            - sh
+            - -c
+            - |
+              echo "Generating act_runner token via 'gitea actions generate-runner-token'..."
+              mkdir -p /data/actions/
+              gitea actions generate-runner-token | grep -E '^.{40}$' | tr -d '\n' > /data/actions/token
+          resources:
+            {{- toYaml .Values.actions.provisioning.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+        - name: actions-token-upload
+          image: "{{ .Values.actions.provisioning.publish.repository }}:{{ .Values.actions.provisioning.publish.tag }}"
+          imagePullPolicy: {{ .Values.actions.provisioning.publish.pullPolicy }}
+          env:
+            - name: SECRET_NAME
+              value: {{ $secretName }}
+          command:
+            - sh
+            - -c
+            - |
+              printf "Checking rights to update kubernetes act_runner secret..."
+              kubectl auth can-i update secret/${SECRET_NAME}
+              /scripts/token.sh
+          resources:
+            {{- toYaml .Values.actions.provisioning.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /scripts
+              name: scripts
+              readOnly: true
+            - mountPath: /data
+              name: data
+              readOnly: true
+              {{- if .Values.persistence.subPath }}
+              subPath: {{ .Values.persistence.subPath }}
+              {{- end }}
+      {{- with .Values.actions.provisioning.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.actions.provisioning.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.actions.provisioning.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+      serviceAccount: {{ $name }}
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ include "gitea.fullname" . }}-scripts
+            defaultMode: 0755
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.claimName }}
+  parallelism: 1
+  completions: 1
+  backoffLimit: 1
+{{- end }}
+{{- end }}
