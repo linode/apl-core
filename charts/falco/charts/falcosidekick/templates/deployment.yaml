@@ -1,0 +1,175 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "falcosidekick.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "falcosidekick.labels" . | nindent 4 }}
+    app.kubernetes.io/component: core
+spec:
+  replicas: {{ .Values.replicaCount }}
+  {{- if .Values.revisionHistoryLimit }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "falcosidekick.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: core
+  template:
+    metadata:
+      labels:
+        {{- include "falcosidekick.labels" . | nindent 8 }}
+        app.kubernetes.io/component: core
+        {{- if and .Values.config.azure.podIdentityClientID .Values.config.azure.podIdentityName }}
+        aadpodidbinding: {{ include "falcosidekick.fullname" . }}
+        {{- end }}
+      {{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+      {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      {{- if .Values.podAnnotations }}
+{{ toYaml .Values.podAnnotations | indent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range .Values.imagePullSecrets }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      serviceAccountName: {{ include "falcosidekick.fullname" . }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: "{{ .Values.priorityClassName }}"
+      {{- end }}
+      {{- if .Values.podSecurityContext }}
+      securityContext:
+      {{- toYaml .Values.podSecurityContext | nindent 8}}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 2801
+              protocol: TCP
+          {{- if .Values.config.tlsserver.deploy }}
+            - name: http-notls
+              containerPort: 2810
+              protocol: TCP
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /ping
+              {{- if .Values.config.tlsserver.deploy }}
+              port: http-notls
+              {{- else }}
+              port: http
+              {{- end }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ping
+              {{- if .Values.config.tlsserver.deploy }}
+              port: http-notls
+              {{- else }}
+              port: http
+              {{- end }}
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          {{- if .Values.securityContext }}
+          securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- end }}
+          {{- if .Values.config.extraArgs }}
+          args:
+          {{ toYaml .Values.config.extraArgs | nindent 12 }}
+          {{- end }}
+          envFrom:
+            - secretRef:
+                {{- if .Values.config.existingSecret }}
+                name: {{ .Values.config.existingSecret }}
+                {{- else }}
+                name: {{ include "falcosidekick.fullname" . }}
+                {{- end }}
+          env:
+            - name: DEBUG
+              value: {{ .Values.config.debug | quote }}
+            - name: CUSTOMFIELDS
+              value: {{ .Values.config.customfields | quote }}
+            - name: TEMPLATEDFIELDS
+              value: {{ .Values.config.templatedfields | quote }}
+            - name: BRACKETREPLACER
+              value: {{ .Values.config.bracketreplacer | quote }}
+            - name: MUTUALTLSFILESPATH
+              value: {{ .Values.config.mutualtlsfilespath | quote }}
+            - name: MUTUALTLSCLIENT_CERTFILE
+              value: {{ .Values.config.mutualtlsclient.certfile | quote }}
+            - name: MUTUALTLSCLIENT_KEYFILE
+              value: {{ .Values.config.mutualtlsclient.keyfile | quote }}
+            - name: MUTUALTLSCLIENT_CACERTFILE
+              value: {{ .Values.config.mutualtlsclient.cacertfile | quote }}
+            {{-  if .Values.config.tlsserver.deploy }}  
+            - name: TLSSERVER_DEPLOY
+              value: {{ .Values.config.tlsserver.deploy | quote }}
+            - name: TLSSERVER_CERTFILE
+              value: {{ .Values.config.tlsserver.certfile | quote }}
+            - name: TLSSERVER_KEYFILE
+              value: {{ .Values.config.tlsserver.keyfile | quote }}
+            - name: TLSSERVER_CACERTFILE
+              value: {{ .Values.config.tlsserver.cacertfile | quote }}
+            - name: TLSSERVER_MUTUALTLS
+              value: {{ .Values.config.tlsserver.mutualtls | quote }}
+            - name: TLSSERVER_NOTLSPORT
+              value: {{ .Values.config.tlsserver.notlsport | quote }}
+            - name: TLSSERVER_NOTLSPATHS
+              value: {{ .Values.config.tlsserver.notlspaths | quote }}
+            {{- end }}
+
+            {{- if .Values.config.extraEnv }}
+            {{ toYaml .Values.config.extraEnv | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        {{- if or .Values.extraVolumeMounts (and .Values.config.tlsserver.deploy (or .Values.config.tlsserver.existingSecret .Values.config.tlsserver.serverkey .Values.config.tlsserver.servercrt .Values.config.tlsserver.cacrt)) }}
+          volumeMounts:
+        {{- if and .Values.config.tlsserver.deploy (or .Values.config.tlsserver.existingSecret .Values.config.tlsserver.serverkey .Values.config.tlsserver.servercrt .Values.config.tlsserver.cacrt) }}
+            - mountPath: /etc/certs/server
+              name: certs-volume
+              readOnly: true
+        {{- end }}  
+        {{- if or .Values.extraVolumeMounts }}   
+{{ toYaml .Values.extraVolumeMounts | indent 12 }}
+        {{- end }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- if or .Values.extraVolumes (and .Values.config.tlsserver.deploy (or .Values.config.tlsserver.existingSecret .Values.config.tlsserver.serverkey .Values.config.tlsserver.servercrt .Values.config.tlsserver.cacrt)) }}
+      volumes:
+    {{- if and .Values.config.tlsserver.deploy (or .Values.config.tlsserver.existingSecret .Values.config.tlsserver.serverkey .Values.config.tlsserver.servercrt .Values.config.tlsserver.cacrt) }}
+        - name: certs-volume
+          secret:
+            {{- if .Values.config.tlsserver.existingSecret }}
+            secretName: {{.Values.config.tlsserver.existingSecret }}
+            {{- else }}
+            secretName: {{ include "falcosidekick.fullname" . }}-certs
+            {{- end }}
+    {{- end }}
+    {{- if or .Values.extraVolumes }}
+{{ toYaml .Values.extraVolumes | indent 8 }}
+    {{- end }}
+    {{- end }}
+
