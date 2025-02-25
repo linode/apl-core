@@ -108,6 +108,7 @@ loki:
           store: memberlist
 
     memberlist:
+      cluster_label: "{{ .Release.Name }}.{{ .Release.Namespace }}"
       join_members:
         - {{ include "loki.fullname" . }}-memberlist
 
@@ -1060,7 +1061,7 @@ gateway:
     # -- The gateway image repository
     repository: nginxinc/nginx-unprivileged
     # -- The gateway image tag
-    tag: 1.20.2-alpine
+    tag: 1.27.3-alpine
     # -- The gateway image pull policy
     pullPolicy: IfNotPresent
   # -- The name of the PriorityClass for gateway pods
