@@ -27,6 +27,7 @@ type AplKind =
   | 'AplSmtp'
   | 'AplBackupCollection'
   | 'AplUser'
+  | 'AplTeamCodeRepo'
   | 'AplTeamBuild'
   | 'AplTeamPolicy'
   | 'AplTeamSettingSet'
@@ -254,6 +255,16 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       resourceGroup: 'platformSettings',
       resourceDir: 'settings',
       loadToSpec: true,
+    },
+    {
+      kind: 'AplTeamCodeRepo',
+      envDir,
+      jsonPathExpression: '$.teamConfig.*.coderepos[*]',
+      pathGlob: `${envDir}/env/teams/*/coderepos/*.yaml`,
+      processAs: 'arrayItem',
+      resourceGroup: 'team',
+      resourceDir: 'coderepos',
+      loadToSpec: false,
     },
     {
       kind: 'AplTeamBuild',
