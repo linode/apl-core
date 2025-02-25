@@ -7,6 +7,7 @@ import { validateValues } from 'src/cmd/validate-values'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { hfValues } from './common/hf'
+import { setValuesFile } from './common/repo'
 import { loadYaml, rootDir } from './common/utils'
 import { objectToYaml } from './common/values'
 
@@ -43,6 +44,7 @@ app.get('/prepare', async (req: Request, res: Response) => {
   try {
     d.log('Request to prepare values repo')
     await bootstrapSops(envDir)
+    await setValuesFile(envDir)
     // Encrypt ensures that a brand new secret file is encrypted in place
     await encrypt(envDir)
     // Decrypt ensures that a brand new encrypted secret file is decrypted to the .dec file
