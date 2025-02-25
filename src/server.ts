@@ -7,7 +7,7 @@ import { validateValues } from 'src/cmd/validate-values'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { hfValues } from './common/hf'
-import { setValuesFile } from './common/repo'
+import { setValuesFile, unsetValuesFile } from './common/repo'
 import { loadYaml, rootDir } from './common/utils'
 import { objectToYaml } from './common/values'
 
@@ -59,6 +59,8 @@ app.get('/prepare', async (req: Request, res: Response) => {
       status = 422
     }
     res.status(status).send(err)
+  } finally {
+    await unsetValuesFile(envDir)
   }
 })
 
