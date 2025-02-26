@@ -1,0 +1,49 @@
+---
+# Source: opentelemetry-operator/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.80.2
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: controller-manager
+  name: example-opentelemetry-operator
+  namespace: default
+spec:
+  ports:
+    - name: https
+      port: 8443
+      protocol: TCP
+      targetPort: https
+    - name: metrics
+      port: 8080
+      protocol: TCP
+      targetPort: metrics
+  selector:
+      app.kubernetes.io/name: opentelemetry-operator
+      app.kubernetes.io/component: controller-manager
+---
+# Source: opentelemetry-operator/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.80.2
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: controller-manager
+  name: example-opentelemetry-operator-webhook
+  namespace: default
+spec:
+  ports:
+    - port: 443
+      protocol: TCP
+      targetPort: webhook-server
+  selector:
+      app.kubernetes.io/name: opentelemetry-operator
+      app.kubernetes.io/component: controller-manager

@@ -1,0 +1,74 @@
+---
+# Source: opentelemetry-operator/templates/tests/test-service-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "example-opentelemetry-operator-metrics"
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.80.2
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: controller-manager
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: "busybox:latest"
+      env:
+        - name: MANAGER_METRICS_SERVICE_CLUSTERIP
+          value: "example-opentelemetry-operator"
+        - name: MANAGER_METRICS_SERVICE_PORT
+          value: "8443"
+      command:
+        - sh
+        - -c
+        # The following shell script tests if the controller-manager-metrics-service is up.
+        # If the service is up, when we try to wget its exposed port, we will get an HTTP error 400.
+        - |
+          wget_output=$(wget -q "$MANAGER_METRICS_SERVICE_CLUSTERIP:$MANAGER_METRICS_SERVICE_PORT")
+          if wget_output=="wget: server returned error: HTTP/1.0 400 Bad Request"
+          then exit 0
+          else exit 1
+          fi
+  restartPolicy: Never
+---
+# Source: opentelemetry-operator/templates/tests/test-service-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "example-opentelemetry-operator-webhook"
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.80.2
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: controller-manager
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: "busybox:latest"
+      env:
+        - name: WEBHOOK_SERVICE_CLUSTERIP
+          value: "example-opentelemetry-operator-webhook"
+        - name: WEBHOOK_SERVICE_PORT
+          value: "443"
+      command:
+        - sh
+        - -c
+        # The following shell script tests if the webhook service is up. If the service is up, when we try
+        # to wget its exposed port, we will get an HTTP error 400.
+        - |
+          wget_output=$(wget -q "$WEBHOOK_SERVICE_CLUSTERIP:$WEBHOOK_SERVICE_PORT")
+          if wget_output=="wget: server returned error: HTTP/1.0 400 Bad Request"
+          then exit 0
+          else exit 1
+          fi
+  restartPolicy: Never

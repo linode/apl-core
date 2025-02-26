@@ -1,0 +1,37 @@
+---
+# Source: opentelemetry-operator/templates/tests/test-certmanager-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "example-opentelemetry-operator-cert-manager"
+  namespace: default
+  labels:
+    helm.sh/chart: opentelemetry-operator-0.80.2
+    app.kubernetes.io/name: opentelemetry-operator
+    app.kubernetes.io/version: "0.117.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/instance: example
+    app.kubernetes.io/component: webhook
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: "busybox:latest"
+      env:
+        - name: CERT_MANAGER_CLUSTERIP
+          value: "cert-manager-webhook"
+        - name: CERT_MANAGER_PORT
+          value: "443"
+      command:
+        - sh
+        - -c
+        # The following shell script tests if the cert-manager service is up. If the service is up, when we try
+        # to wget its exposed port, we will get an HTTP error 400.
+        - |
+          wget_output=$(wget -q "$CERT_MANAGER_CLUSTERIP:$CERT_MANAGER_PORT")
+          if wget_output=="wget: server returned error: HTTP/1.0 400 Bad Request"
+          then exit 0
+          else exit 1
+          fi
+  restartPolicy: Never
