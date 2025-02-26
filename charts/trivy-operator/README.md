@@ -1,6 +1,6 @@
 # trivy-operator
 
-![Version: 0.25.0](https://img.shields.io/badge/Version-0.25.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.23.0](https://img.shields.io/badge/AppVersion-0.23.0-informational?style=flat-square)
+![Version: 0.26.1](https://img.shields.io/badge/Version-0.26.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.24.1](https://img.shields.io/badge/AppVersion-0.24.1-informational?style=flat-square)
 
 Keeps security report resources updated
 
@@ -19,8 +19,10 @@ Keeps security report resources updated
 | compliance.reportType | string | `"summary"` | reportType this flag control the type of report generated (summary or all) |
 | compliance.specs | list | `["k8s-cis-1.23","k8s-nsa-1.0","k8s-pss-baseline-0.1","k8s-pss-restricted-0.1"]` | specs is a list of compliance specs to be used by the cluster compliance scanner  - k8s-cis-1.23  - k8s-nsa-1.0  - k8s-pss-baseline-0.1  - k8s-pss-restricted-0.1  - eks-cis-1.4  - rke2-cis-1.24 |
 | excludeNamespaces | string | `""` | excludeNamespaces is a comma separated list of namespaces (or glob patterns) to be excluded from scanning. Only applicable in the all namespaces install mode, i.e. when the targetNamespaces values is a blank string. |
+| extraEnv | list | `[]` | extraEnv is a list of extra environment variables for the trivy-operator. |
 | fullnameOverride | string | `""` | fullnameOverride override operator full name |
 | global | object | `{"image":{"registry":""}}` | global values provide a centralized configuration for 'image.registry', reducing the potential for errors. If left blank, the chart will default to the individually set 'image.registry' values |
+| hostAliases | list | `[]` | hostAliases for `deployment` (TrivyOperator) and `statefulset` (TrivyServer) |
 | image.pullPolicy | string | `"IfNotPresent"` | pullPolicy set the operator pullPolicy |
 | image.pullSecrets | list | `[]` | pullSecrets set the operator pullSecrets |
 | image.registry | string | `"mirror.gcr.io"` |  |
@@ -145,7 +147,7 @@ Keeps security report resources updated
 | trivy.image.pullPolicy | string | `"IfNotPresent"` | pullPolicy is the imge pull policy used for trivy image , valid values are (Always, Never, IfNotPresent) |
 | trivy.image.registry | string | `"mirror.gcr.io"` | registry of the Trivy image |
 | trivy.image.repository | string | `"aquasec/trivy"` | repository of the Trivy image |
-| trivy.image.tag | string | `"0.57.1"` | tag version of the Trivy image |
+| trivy.image.tag | string | `"0.59.1"` | tag version of the Trivy image |
 | trivy.imageScanCacheDir | string | `"/tmp/trivy/.cache"` | imageScanCacheDir the flag to set custom path for trivy image scan `cache-dir` parameter. Only applicable in image scan mode. |
 | trivy.includeDevDeps | bool | `false` | includeDevDeps include development dependencies in the report (supported: npm, yarn) (default: false) note: this flag is only applicable when trivy.command is set to filesystem |
 | trivy.insecureRegistries | object | `{}` | The registry to which insecure connections are allowed. There can be multiple registries with different keys. |

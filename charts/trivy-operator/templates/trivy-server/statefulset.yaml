@@ -46,6 +46,10 @@ spec:
         app.kubernetes.io/name: trivy-server
         app.kubernetes.io/instance: trivy-server
     spec:
+      {{- if .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml .Values.hostAliases | nindent 8 }}
+      {{- end }}
       {{- with .Values.trivy.priorityClassName }}
       priorityClassName: {{ . }}
       {{- end }}
