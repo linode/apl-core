@@ -6,7 +6,7 @@ metadata:
   {{- with .Values.operator.annotations }}
   annotations: {{- toYaml . | nindent 4 }}
   {{- end }}
-  labels: 
+  labels:
     {{- include "trivy-operator.labels" . | nindent 4 }}
     {{- with .Values.operator.labels }}
       {{- toYaml . | nindent 4 }}
@@ -31,6 +31,10 @@ spec:
           {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml .Values.hostAliases | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "trivy-operator.serviceAccountName" . }}
       automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
       containers:
@@ -50,6 +54,9 @@ spec:
               value: {{ tpl .Values.targetWorkloads . | quote }}
             - name: OPERATOR_SERVICE_ACCOUNT
               value: {{ include "trivy-operator.serviceAccountName" . | quote }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: trivy-operator-config
