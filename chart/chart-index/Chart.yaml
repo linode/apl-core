@@ -76,7 +76,8 @@ dependencies:
   - name: promtail
     version: 6.16.6
     repository: https://grafana.github.io/helm-charts
-  - name: rabbitmq
+  - name: rabbitmq-cluster-operator
+    alias: rabbitmq
     version: 3.10.10
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
