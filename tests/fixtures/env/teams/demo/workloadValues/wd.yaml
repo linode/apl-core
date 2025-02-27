@@ -1,7 +1,2 @@
-kind: AplTeamWorkloadValues
-metadata:
-    name: wd
-    labels:
-        apl.io/teamId: demo
 values: |
     a: b

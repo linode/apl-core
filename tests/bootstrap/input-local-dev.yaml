@@ -84,3 +84,108 @@ teamConfig:
         path: charts/httpbin
         revision: HEAD
         url: https://github.com/linode/apl-core.git
+files:
+  env/teams/demo/workloadValues/nodejs-helloworld.yaml: >
+
+    values: |
+        fullnameOverride: ""
+        image:
+            repository: harbor.lke287297.akamai-apl.net/team-beta/beta-nodejs
+            pullPolicy: IfNotPresent
+            tag: latest
+        containerPorts:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+        env: []
+        podAnnotations: {}
+        podLabels: {}
+        commonLabels: {}
+        serviceAccount:
+            annotations: {}
+            imagePullSecrets: []
+        livenessProbe: {}
+        readinessProbe: {}
+        podSecurityContext: {}
+        containerSecurityContext: {}
+        servicePorts:
+            - port: 80
+              targetPort: http
+              protocol: TCP
+              name: http
+        resources: {}
+        nodeSelector: {}
+        tolerations: []
+        affinity: {}
+        secrets: []
+        command: []
+        args: []
+        initContainers: []
+        volumeMounts: []
+        volumes: []
+        replicaCount: 2
+        autoscaling:
+            enabled: false
+            minReplicas: 2
+            maxReplicas: 10
+            targetCPU: 80
+            targetMemory: 80
+        serviceMonitor:
+            create: false
+            endpoints: []
+        configmap:
+            create: false
+            mountPath: /etc/config
+            data: {}
+  env/teams/demo/workloadValues/httpbin.yaml: >
+
+    values: |
+        fullnameOverride: ""
+        image:
+            repository: harbor.lke287297.akamai-apl.net/team-beta/blue
+            pullPolicy: IfNotPresent
+            tag: latest
+        containerPorts:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+        env: []
+        podAnnotations: {}
+        podLabels: {}
+        commonLabels: {}
+        serviceAccount:
+            annotations: {}
+            imagePullSecrets: []
+        livenessProbe: {}
+        readinessProbe: {}
+        podSecurityContext: {}
+        containerSecurityContext: {}
+        servicePorts:
+            - port: 80
+              targetPort: http
+              protocol: TCP
+              name: http
+        resources: {}
+        nodeSelector: {}
+        tolerations: []
+        affinity: {}
+        secrets: []
+        command: []
+        args: []
+        initContainers: []
+        volumeMounts: []
+        volumes: []
+        replicaCount: 2
+        autoscaling:
+            enabled: false
+            minReplicas: 2
+            maxReplicas: 10
+            targetCPU: 80
+            targetMemory: 80
+        serviceMonitor:
+            create: false
+            endpoints: []
+        configmap:
+            create: false
+            mountPath: /etc/config
+            data: {}
