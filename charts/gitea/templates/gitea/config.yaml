@@ -63,6 +63,41 @@ stringData:
       export "ENV_TO_INI__${masked_section^^}__${setting^^}=${value}"        # '^^' makes the variable content uppercase
     }
 
+    function env2ini::reload_preset_envs() {
+      env2ini::log "Reloading preset envs..."
+
+      while read -r line; do
+        if [[ -z "${line}" ]]; then
+          # skip empty line
+          return
+        fi
+
+        # 'xargs echo -n' trims all leading/trailing whitespaces and a trailing new line
+        local setting="$(awk -F '=' '{print $1}' <<< "${line}" | xargs echo -n)"
+
+        if [[ -z "${setting}" ]]; then
+          env2ini::log '  ! invalid setting'
+          exit 1
+        fi
+
+        local value=''
+        local regex="^${setting}(\s*)=(\s*)(.*)"
+        if [[ $line =~ $regex ]]; then
+          value="${BASH_REMATCH[3]}"
+        else
+          env2ini::log '  ! invalid setting'
+          exit 1
+        fi
+
+        env2ini::log "  + '${setting}'"
+
+        export "${setting^^}=${value}"                           # '^^' makes the variable content uppercase
+      done < "/tmp/existing-envs"
+
+      rm /tmp/existing-envs
+    }
+
+
     function env2ini::process_config_file() {
       local config_file="${1}"
       local section="$(basename "${config_file}")"
@@ -104,11 +139,16 @@ stringData:
       env2ini::log "...Initial secrets generated\n"
     }
 
+    env | (grep ENV_TO_INI || [[ $? == 1 ]]) > /tmp/existing-envs
+    
     # MUST BE CALLED BEFORE OTHER CONFIGURATION
     env2ini::generate_initial_secrets
 
     env2ini::load_config_sources '/env-to-ini-mounts/inlines/'
     env2ini::load_config_sources '/env-to-ini-mounts/additionals/'
+
+    # load existing envs to override auto generated envs
+    env2ini::reload_preset_envs
 
     env2ini::log "=== All configuration sources loaded ===\n"
 

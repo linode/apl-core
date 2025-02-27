@@ -8,7 +8,8 @@ clusterDomain: cluster.local
 
 image:
   repository: gitea/gitea
-  tag: 1.15.8
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
   pullPolicy: Always
   rootless: false # only possible when running 1.14 or later
 
@@ -50,6 +51,8 @@ service:
     #nodePort:
     #externalTrafficPolicy:
     #externalIPs:
+    #ipFamilyPolicy:
+    #ipFamilies:
     loadBalancerSourceRanges: []
     annotations:
   ssh:
@@ -60,6 +63,9 @@ service:
     #nodePort:
     #externalTrafficPolicy:
     #externalIPs:
+    #ipFamilyPolicy:
+    #ipFamilies:
+    #hostPort:
     loadBalancerSourceRanges: []
     annotations:
 
@@ -111,16 +117,7 @@ statefulset:
     #   value: my-value
   terminationGracePeriodSeconds: 60
   labels: {}
-
-# podDns:
-#   dnsPolicy: "None"
-#   dnsConfig: 
-#     options:
-#       - name: ndots
-#         value: "1"
-#     nameservers:
-#       - "8.8.4.4"
-#       - "8.8.8.8"
+  annotations: {}
 
 persistence:
   enabled: true
@@ -220,6 +217,8 @@ gitea:
   #       secretName: gitea-app-ini-oauth
   #   - configMap:
   #       name: gitea-app-ini-plaintext
+
+  additionalConfigFromEnvs: []
 
   podAnnotations: {}
 
