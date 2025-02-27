@@ -1,0 +1,75 @@
+# falco-exporter Helm Chart
+
+[falco-exporter](https://github.com/falcosecurity/falco-exporter) is a Prometheus Metrics Exporter for Falco output events.
+
+Before using this chart, you need [Falco installed](https://falco.org/docs/installation/) and running with the [gRPC Output](https://falco.org/docs/grpc/) enabled (over Unix socket by default).
+
+This chart is compatible with the [Falco Chart](https://github.com/falcosecurity/charts/tree/master/charts/falco) version `v1.2.0` or greater. Instructions to enable the gRPC Output in the Falco Helm Chart can be found [here](https://github.com/falcosecurity/charts/tree/master/charts/falco#enabling-grpc). We also strongly recommend using [gRPC over Unix socket](https://github.com/falcosecurity/charts/tree/master/charts/falco#grpc-over-unix-socket-default).
+
+## Introduction
+
+The chart deploys **falco-exporter** as Daemon Set on your the Kubernetes cluster. If a [Prometheus installation](https://github.com/helm/charts/tree/master/stable/prometheus) is running within your cluster, metrics provided by **falco-exporter** will be automatically discovered.
+
+## Adding `falcosecurity` repository
+
+Prior to installing the chart, add the `falcosecurity` charts repository:
+
+```bash
+helm repo add falcosecurity https://falcosecurity.github.io/charts
+helm repo update
+```
+
+## Installing the Chart
+
+To install the chart with the release name `falco-exporter` run:
+
+```bash
+helm install falco-exporter falcosecurity/falco-exporter
+```
+
+After a few seconds, **falco-exporter** should be running.
+
+> **Tip**: List all releases using `helm list`, a release is a name used to track a specific deployment
+
+## Uninstalling the Chart
+
+To uninstall the `falco-exporter` deployment:
+
+```bash
+helm uninstall falco-exporter
+```
+
+The command removes all the Kubernetes components associated with the chart and deletes the release.
+
+```bash
+helm install falco-exporter --set falco.grpcTimeout=3m falcosecurity/falco-exporter
+```
+
+Alternatively, a YAML file that specifies the parameters' values can be provided while installing the chart. For example,
+
+```bash
+helm install falco-exporter -f values.yaml falcosecurity/falco-exporter
+```
+
+### Enable Mutual TLS
+
+Mutual TLS for `/metrics` endpoint can be enabled to prevent alerts content from being consumed by unauthorized components.
+
+To install falco-exporter with Mutual TLS enabled, you have to:
+
+```shell
+helm install falco-exporter \
+  --set service.mTLS.enabled=true \
+  --set-file service.mTLS.server.key=/path/to/server.key \
+  --set-file service.mTLS.server.crt=/path/to/server.crt \
+  --set-file service.mTLS.ca.crt=/path/to/ca.crt \
+  falcosecurity/falco-exporter
+```
+
+> **Tip**: You can use the default [values.yaml](values.yaml)
+
+## Configuration
+
+The following table lists the main configurable parameters of the {{ template "chart.name" . }} chart v{{ template "chart.version" . }} and their default values. Please, refer to [values.yaml](./values.yaml) for the full list of configurable parameters.
+
+{{ template "chart.valuesSection" . }}
