@@ -1,0 +1,10 @@
+kind: AplKms
+metadata:
+    name: kms
+    labels: {}
+spec:
+    sops:
+        azure:
+            clientId: somesecretvalue
+            keys: somesecretvalue
+            tenantId: somesecretvalue

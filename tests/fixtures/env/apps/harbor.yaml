@@ -1,7 +1,10 @@
-apps:
-    harbor:
-        core: {}
-        enabled: true
-        jobservice: {}
-        registry:
-            credentials: {}
+kind: AplCoreApp
+metadata:
+    name: harbor
+    labels: {}
+spec:
+    core: {}
+    enabled: true
+    jobservice: {}
+    registry:
+        credentials: {}

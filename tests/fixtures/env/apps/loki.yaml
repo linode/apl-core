@@ -1,86 +1,89 @@
-apps:
-    loki:
-        autoscaling:
-            distributor:
-                enabled: true
-                maxReplicas: 3
-                minReplicas: 1
-                targetCPUUtilizationPercentage: 60
-                targetMemoryUtilizationPercentage: 80
-            gateway:
-                enabled: true
-                maxReplicas: 3
-                minReplicas: 1
-                targetCPUUtilizationPercentage: 60
-                targetMemoryUtilizationPercentage: 80
-            ingester:
-                enabled: true
-                maxReplicas: 3
-                minReplicas: 1
-                targetCPUUtilizationPercentage: 60
-                targetMemoryUtilizationPercentage: 80
-            querier:
-                enabled: true
-                maxReplicas: 3
-                minReplicas: 1
-                targetCPUUtilizationPercentage: 60
-                targetMemoryUtilizationPercentage: 80
-            queryFrontend:
-                enabled: true
-                maxReplicas: 3
-                minReplicas: 1
-                targetCPUUtilizationPercentage: 60
-                targetMemoryUtilizationPercentage: 80
-        enabled: true
-        persistence:
-            ingester:
-                size: 20Gi
-            querier:
-                size: 10Gi
-        resources:
-            compactor:
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-            distributor:
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-            gateway:
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-            ingester:
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-            querier:
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-            queryFrontend:
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-        retention:
-            duration: 24h
-            period: 24h
-        v11StartDate: 2021-05-13
+kind: AplCoreApp
+metadata:
+    name: loki
+    labels: {}
+spec:
+    autoscaling:
+        distributor:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 60
+            targetMemoryUtilizationPercentage: 80
+        gateway:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 60
+            targetMemoryUtilizationPercentage: 80
+        ingester:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 60
+            targetMemoryUtilizationPercentage: 80
+        querier:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 60
+            targetMemoryUtilizationPercentage: 80
+        queryFrontend:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 60
+            targetMemoryUtilizationPercentage: 80
+    enabled: true
+    persistence:
+        ingester:
+            size: 20Gi
+        querier:
+            size: 10Gi
+    resources:
+        compactor:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        distributor:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        gateway:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        ingester:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        querier:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        queryFrontend:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+    retention:
+        duration: 24h
+        period: 24h
+    v11StartDate: 2021-05-13

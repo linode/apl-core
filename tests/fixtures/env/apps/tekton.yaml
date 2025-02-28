@@ -1,2 +1,5 @@
-apps:
-    tekton: {}
+kind: AplCoreApp
+metadata:
+    name: tekton
+    labels: {}
+spec: {}

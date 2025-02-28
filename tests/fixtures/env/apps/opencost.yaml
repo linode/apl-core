@@ -1,8 +1,11 @@
-apps:
-    opencost:
-        alerts:
-            costOfAllNodesQuotaPerMonthReached:
-                quota: 500
-            enabled: false
-        enabled: true
-        keys: {}
+kind: AplCoreApp
+metadata:
+    name: opencost
+    labels: {}
+spec:
+    alerts:
+        costOfAllNodesQuotaPerMonthReached:
+            quota: 500
+        enabled: false
+    enabled: true
+    keys: {}
