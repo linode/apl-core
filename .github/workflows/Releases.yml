@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        type: boolean
+        description: 'Dry run: Uncheck if you want to publish a release'
+        default: true
+
+jobs:
+  release-please:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          npm install semantic-release@24 @semantic-release/git @semantic-release/changelog  -D
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release --dry-run=${{ github.event.inputs.dry-run }}
