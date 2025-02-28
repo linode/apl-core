@@ -324,6 +324,16 @@ adminApps:
         namespace: otomi
         type: public
         auth: true
+  - name: api # Used by any client that do not support cookies
+    hide: true
+    isShared: true
+    ownHost: true
+    ingress:
+      - svc: otomi-api
+        namespace: otomi
+        type: public
+        auth: false # The AuthenticationRequest ensure Authorization header validation
+
   - name: prometheus
     tags: [metrics, observability]
     ownHost: true
