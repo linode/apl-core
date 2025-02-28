@@ -4,12 +4,22 @@
 
 replicaCount: 1
 
-## Provide a name in place of opentelemetry-operator.
+## Provide a name in place of opentelemetry-operator (includes the chart's release name).
 ##
 nameOverride: ""
 
+## Fully override the name (excludes the chart's release name).
+##
+fullnameOverride: ""
+
 ## Reference one or more secrets to be used when pulling images from authenticated repositories.
 imagePullSecrets: []
+
+## Kubernetes cluster domain suffix
+clusterDomain: cluster.local
+
+# Common labels to add to all otel-operator resources. Evaluated as a template.
+additionalLabels: {}
 
 ## Pod Disruption Budget configuration
 ##
@@ -29,10 +39,13 @@ pdb:
 manager:
   image:
     repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
-    tag: v0.80.0
+    tag: ""
   collectorImage:
-    repository: otel/opentelemetry-collector-contrib
-    tag: 0.80.0
+    repository: ""
+    tag: 0.118.0
+  opampBridgeImage:
+    repository: ""
+    tag: ""
   targetAllocatorImage:
     repository: ""
     tag: ""
@@ -49,37 +62,65 @@ manager:
     dotnet:
       repository: ""
       tag: ""
-    # The Go instrumentaiton support in the operator is disabled by default.
+    apacheHttpd:
+      repository: ""
+      tag: ""
+    # The Go instrumentation support in the operator is disabled by default.
     # To enable it, use the operator.autoinstrumentation.go feature gate.
     go:
       repository: ""
       tag: ""
-  # Feature Gates are a a comma-delimited list of feature gate identifiers.
+  # Feature Gates are a comma-delimited list of feature gate identifiers.
   # Prefix a gate with '-' to disable support.
   # Prefixing a gate with '+' or no prefix will enable support.
-  # A full list of valud identifiers can be found here: https://github.com/open-telemetry/opentelemetry-operator/blob/main/pkg/featuregate/featuregate.go
+  # A full list of valid identifiers can be found here: https://github.com/open-telemetry/opentelemetry-operator/blob/main/pkg/featuregate/featuregate.go
+  # NOTE: the featureGates value is deprecated and will be replaced by featureGatesMap in the future.
   featureGates: ""
+  # The featureGatesMap will enable or disable specific feature gates in the operator as well as deploy any prerequisites for the feature gate.
+  # If this property is not an empty map, the featureGates property will be ignored.
+  featureGatesMap: {}
+  # operator.targetallocator.mtls: false
+  # operator.targetallocator.fallbackstrategy: false
+  # operator.collector.targetallocatorcr: false
+  # operator.sidecarcontainers.native: false
+  # operator.observability.prometheus: false
+  # operator.golang.flags: false
+  # operator.collector.default.config: false
   ports:
     metricsPort: 8080
     webhookPort: 9443
     healthzPort: 8081
-  resources:
-    limits:
-      cpu: 100m
-      memory: 128Mi
-    requests:
-      cpu: 100m
-      memory: 64Mi
-  ## Adds additional environment variables
+  resources: {}
+  # resources:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #     ephemeral-storage: 50Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 64Mi
+  #     ephemeral-storage: 50Mi
+
+  ## Adds additional environment variables. This property will be deprecated. Please use extraEnvs instead.
   ## e.g ENV_VAR: env_value
   env:
     ENABLE_WEBHOOKS: "true"
+
+
+  # Extra definitions of environment variables.
+  extraEnvs: []
+  # - name: GOMEMLIMIT
+  #   valueFrom:
+  #     resourceFieldRef:
+  #       containerName: manager
+  #       resource: limits.memory
 
   # -- Create the manager ServiceAccount
   serviceAccount:
     create: true
     annotations: {}
-    # name: nameOverride
+    ## Override the default name of the serviceaccount (the name of your installation)
+    name: ""
 
   ## Enable ServiceMonitor for Prometheus metrics scrape
   serviceMonitor:
@@ -89,7 +130,16 @@ manager:
     # add annotations on the ServiceMonitor
     annotations: {}
     metricsEndpoints:
-    - port: metrics
+      - port: metrics
+    # Used to set relabeling and metricRelabeling configs on the ServiceMonitor
+    # https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config
+    relabelings: []
+    metricRelabelings: []
+
+  # Adds additional annotations to the manager Deployment
+  deploymentAnnotations: {}
+  # Adds additional annotations to the manager Service
+  serviceAnnotations: {}
 
   podAnnotations: {}
   podLabels: {}
@@ -100,12 +150,22 @@ manager:
     # Create default rules for monitoring the manager
     defaultRules:
       enabled: false
-    # additional labels on the PrometheusRule
+      ## Additional labels for PrometheusRule alerts
+      additionalRuleLabels: {}
+      ## Additional annotations for PrometheusRule alerts
+      additionalRuleAnnotations: {}
+      ## Alerts are considered firing once they have been returned for this long.
+      duration: 5m
+    # additional labels on the PrometheusRule object
     extraLabels: {}
-    # add annotations on the PrometheusRule
+    # add annotations on the PrometheusRule object
     annotations: {}
+    # change the default runbook urls.
+    # the alert name will get appended at the end of the url as an anchor.
+    runbookUrl: ""
 
-
+  # Whether the operator should create RBAC permissions for collectors. See README.md for more information.
+  createRbacPermissions: false
   ## List of additional cli arguments to configure the manager
   ## for example: --labels, etc.
   extraArgs: []
@@ -118,17 +178,19 @@ manager:
   # Enable vertical pod autoscaler support for the manager
   verticalPodAutoscaler:
     enabled: false
-    # List of resources that the vertical pod autoscaler can control. Defaults to cpu and memory
+    # List of resources that the vertical pod autoscaler can control. Defaults to cpu, memory and ephemeral-storage.
     controlledResources: []
 
     # Define the max allowed resources for the pod
     maxAllowed: {}
     # cpu: 200m
     # memory: 100Mi
+    # ephemeral-storage: 50Mi
     # Define the min allowed resources for the pod
     minAllowed: {}
     # cpu: 200m
     # memory: 100Mi
+    # ephemeral-storage: 50Mi
 
     updatePolicy:
       # Specifies whether recommended updates are applied when a Pod is started and whether recommended updates
@@ -143,10 +205,10 @@ manager:
   ## Container specific securityContext
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   securityContext: {}
-    # allowPrivilegeEscalation: false
-    # capabilities:
-    #   drop:
-    #   - ALL
+  # allowPrivilegeEscalation: false
+  # capabilities:
+  #   drop:
+  #   - ALL
 
 ## Provide OpenTelemetry Operator kube-rbac-proxy container image.
 ##
@@ -154,16 +216,17 @@ kubeRBACProxy:
   enabled: true
   image:
     repository: quay.io/brancz/kube-rbac-proxy
-    tag: v0.14.2
+    tag: v0.18.1
   ports:
     proxyPort: 8443
-  resources:
-    limits:
-      cpu: 500m
-      memory: 128Mi
-    requests:
-      cpu: 5m
-      memory: 64Mi
+  resources: {}
+  # resources:
+  #   limits:
+  #     cpu: 500m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 5m
+  #     memory: 64Mi
 
   ## List of additional cli arguments to configure the kube-rbac-proxy
   ## for example: --tls-cipher-suites, --tls-min-version, etc.
@@ -172,15 +235,16 @@ kubeRBACProxy:
   ## Container specific securityContext
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   securityContext: {}
-    # allowPrivilegeEscalation: false
-    # capabilities:
-    #   drop:
-    #   - ALL
+  # allowPrivilegeEscalation: false
+  # capabilities:
+  #   drop:
+  #   - ALL
 
 ## Admission webhooks make sure only requests with correctly formatted rules will get into the Operator.
 ## They also enable the sidecar injection for OpenTelemetryCollector and Instrumentation CR's
 admissionWebhooks:
   create: true
+  servicePort: 443
   failurePolicy: Fail
   secretName: ""
 
@@ -190,7 +254,7 @@ admissionWebhooks:
   pods:
     failurePolicy: Ignore
 
-  ## Adds a prefix to the mutating webook name.
+  ## Adds a prefix to the mutating webhook name.
   ## This can be used to order this mutating webhook with all your cluster's mutating webhooks.
   namePrefix: ""
 
@@ -203,36 +267,59 @@ admissionWebhooks:
 
   ## https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/README.md#tls-certificate-requirement
   ## TLS Certificate Option 1: Use certManager to generate self-signed certificate.
-  ## certManager must be enabled. If enabled, always takes precendence over options 2 and 3.
+  ## certManager must be enabled. If enabled, always takes precedence over options 2 and 3.
   certManager:
     enabled: true
     ## Provide the issuer kind and name to do the cert auth job.
     ## By default, OpenTelemetry Operator will use self-signer issuer.
     issuerRef: {}
-      # kind:
-      # name:
+    # kind:
+    # name:
     ## Annotations for the cert and issuer if cert-manager is enabled.
     certificateAnnotations: {}
     issuerAnnotations: {}
+    # duration must be specified by a Go time.Duration (ending in s, m or h)
+    duration: ""
+    # renewBefore must be specified by a Go time.Duration (ending in s, m or h)
+    # Take care when setting the renewBefore field to be very close to the duration
+    # as this can lead to a renewal loop, where the Certificate is always in the renewal period.
+    renewBefore: ""
 
   ## TLS Certificate Option 2: Use Helm to automatically generate self-signed certificate.
   ## certManager must be disabled and autoGenerateCert must be enabled.
-  ## If true and certManager.enabled is false, Helm will automatically create a self-signd cert and secret for you.
-  autoGenerateCert: true
+  ## If true and certManager.enabled is false, Helm will automatically create a self-signed cert and secret for you.
+  autoGenerateCert:
+    enabled: true
+    # If set to true, new webhook key/certificate is generated on helm upgrade.
+    recreate: true
+    # Cert period time in days. The default is 365 days.
+    certPeriodDays: 365
 
   ## TLS Certificate Option 3: Use your own self-signed certificate.
-  ## certManager and autoGenerateCert must be disabled and cert_file, key_file, and ca_file must be set.
+  ## certManager and autoGenerateCert must be disabled and certFile, keyFile, and caFile must be set.
+  ## The chart reads the contents of the file paths with the helm .Files.Get function.
+  ## Refer to this doc https://helm.sh/docs/chart_template_guide/accessing_files/ to understand
+  ## limitations of file paths accessible to the chart.
   ## Path to your own PEM-encoded certificate.
-  cert_file: ""
+  certFile: ""
   ## Path to your own PEM-encoded private key.
-  key_file: ""
+  keyFile: ""
   ## Path to the CA cert.
-  ca_file: ""
+  caFile: ""
+
+  # Adds additional annotations to the admissionWebhook Service
+  serviceAnnotations: {}
 
   ## Secret annotations
   secretAnnotations: {}
   ## Secret labels
   secretLabels: {}
+
+## Install CRDS with the right webhook settings
+## These are installed as templates, so they will clash with existing OpenTelemetry Operator CRDs in your cluster that are not already managed by the helm chart.
+## See https://github.com/open-telemetry/opentelemetry-helm-charts/blob/main/charts/opentelemetry-operator/UPGRADING.md#0560-to-0570 for more details.
+crds:
+  create: true
 
 ## Create the provided Roles and RoleBindings
 ##
