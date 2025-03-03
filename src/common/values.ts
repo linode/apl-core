@@ -164,6 +164,8 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   const values = inValues
   const teams = Object.keys(get(inValues, 'teamConfig', {}))
   const cleanSecretPaths = await getSchemaSecretsPaths(Object.keys(teams))
+  // treat every user as secret
+  cleanSecretPaths.push('users')
   d.debug('cleanSecretPaths: ', cleanSecretPaths)
   // separate out the secrets
   const secrets = removeBlankAttributes(pick(values, cleanSecretPaths))
