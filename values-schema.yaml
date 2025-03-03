@@ -1057,14 +1057,6 @@ definitions:
           tlsSecretName:
             description: Kubernetes secret name of type TLS (not required if the tlsPass flag is set to true).
             $ref: '#/definitions/idName'
-      type:
-        nullable: true
-        default: public
-        description: Will determine the ingress routing.
-        enum:
-          - public
-          - cluster
-        type: string
       removeRequestHeaders:
         description: >-
           Strip selected headers from HTTP request.
@@ -1073,7 +1065,6 @@ definitions:
           type: string
     required:
       - name
-      - type
   size:
     description: Disk size. Valid units are E|P|T|G|Ti|Gi.
     examples:
