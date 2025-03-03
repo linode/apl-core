@@ -71,6 +71,7 @@ spec:
         {{- if eq $v.teamId "admin" }} 
         syncOptions:
           - RespectIgnoreDifferences=true
+          - ServerSideApply=true
           {{- if .createNamespace }}
           - CreateNamespace=true
           {{- end }}
