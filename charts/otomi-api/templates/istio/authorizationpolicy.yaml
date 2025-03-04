@@ -1,5 +1,5 @@
 apiVersion: security.istio.io/v1
-kind: RequestAuthentication
+kind: AuthorizationPolicy
 metadata:
   name: {{ include "otomi-api.fullname" . }}
   labels:
@@ -9,11 +9,12 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  jwtRules:
-    - issuer: {{ .Values.sso.issuer | quote }}
-      jwksUri: {{ .Values.sso.jwksUri | quote }}
-      forwardOriginalToken: true
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "otomi-api.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            requestPrincipals: ["*"]
