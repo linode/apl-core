@@ -1,22 +1,22 @@
+{{- $fullName := include "otomi-api.fullname" . -}}
 apiVersion: security.istio.io/v1
-kind: RequestAuthentication 
+kind: RequestAuthentication
 metadata:
+  name: {{ $fullName }}
+  labels:
+{{ include "otomi-api.labels" . | indent 4 }}
+  {{- with .Values.ingress.annotations }}
   annotations:
-    argocd.argoproj.io/tracking-id: team-admin-team-ns-admin:security.istio.io/RequestAuthentication:team-admin/otomi-tty
-  creationTimestamp: "2024-12-13T12:59:17Z"
-  generation: 1
-  name: otomi-tty
-  namespace: team-admin
-  resourceVersion: "5804"
-  uid: e9cff205-f873-4e98-877d-4fa392b574d8
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   jwtRules:
-  - issuer: https://keycloak.lke287297.akamai-apl.net/realms/otomi
-    jwksUri: https://keycloak.lke287297.akamai-apl.net/realms/otomi/protocol/openid-connect/certs
+    - issuer: {{ .Values.sso.issuer | quote }}
+      jwksUri: {{ .Values.sso.jwksUri | quote }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "otomi-api.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   fromHeaders:
   - name: path
-    prefix: "/v "
+    prefix: "/v1"
