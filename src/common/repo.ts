@@ -260,7 +260,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       kind: 'AplTeamCodeRepo',
       envDir,
       jsonPathExpression: '$.teamConfig.*.coderepos[*]',
-      pathGlob: `${envDir}/env/teams/*/coderepos/*.yaml`,
+      pathGlob: `${envDir}/env/teams/*/codeRepos/*.yaml`,
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: 'coderepos',
