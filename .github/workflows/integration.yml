@@ -43,7 +43,7 @@ on:
           - g6-dedicated-48
           - g6-dedicated-50
           - g6-dedicated-56
-        default: g6-dedicated-8
+        default: g6-dedicated-4
       kubernetes_versions:
         description: 'Kubernetes version'
         type: choice
