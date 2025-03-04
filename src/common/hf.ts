@@ -129,7 +129,7 @@ export const getStandaloneFiles = async (envDir: string): Promise<Record<string,
   await Promise.allSettled(
     filePaths.map(async (path) => {
       const relativePath = path.replace(`${envDir}/`, '')
-      files[relativePath] = (await readFile(path)).toString()
+      files[relativePath] = await readFile(path, 'utf8')
     }),
   )
   return files
