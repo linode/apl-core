@@ -17,6 +17,4 @@ spec:
     matchLabels:
       app.kubernetes.io/name: {{ include "otomi-api.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
-  fromHeaders:
-  - name: path
-    prefix: "/v1"
+
