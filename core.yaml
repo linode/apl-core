@@ -332,7 +332,8 @@ adminApps:
       - svc: otomi-api
         namespace: otomi
         type: public
-        auth: false # The AuthenticationRequest ensure Authorization header validation
+        # RequestAuthentication and AuthorizationPolicy ensure Authorization header validation
+        auth: false
 
   - name: prometheus
     tags: [metrics, observability]
