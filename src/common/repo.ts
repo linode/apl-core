@@ -469,7 +469,7 @@ export async function saveResourceGroupToFiles(
 
 export async function setValuesFile(envDir: string, deps = { pathExists, loadValues, writeFile }): Promise<string> {
   const valuesPath = path.join(envDir, 'values-repo.yaml')
-  if (await deps.pathExists(valuesPath)) return valuesPath
+  // if (await deps.pathExists(valuesPath)) return valuesPath
   const allValues = await deps.loadValues(envDir)
   await deps.writeFile(valuesPath, objectToYaml(allValues))
   return valuesPath
