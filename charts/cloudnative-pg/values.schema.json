@@ -246,6 +246,9 @@
         "tolerations": {
             "type": "array"
         },
+        "updateStrategy": {
+            "type": "object"
+        },
         "webhook": {
             "type": "object",
             "properties": {

@@ -22,4 +22,4 @@ name: cloudnative-pg
 sources:
 - https://github.com/cloudnative-pg/charts
 type: application
-version: 0.23.0
+version: 0.23.1
