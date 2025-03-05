@@ -219,5 +219,6 @@ export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> 
     if (p.indexOf(teamProp) === -1 && !cleanSecretPaths.includes(p)) cleanSecretPaths.push(p)
   })
 
+  cleanSecretPaths.push('users')
   return cleanSecretPaths
 }
