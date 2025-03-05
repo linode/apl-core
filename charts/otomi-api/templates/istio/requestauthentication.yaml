@@ -4,10 +4,6 @@ metadata:
   name: {{ include "otomi-api.fullname" . }}
   labels:
 {{ include "otomi-api.labels" . | indent 4 }}
-  {{- with .Values.ingress.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
 spec:
   jwtRules:
     - issuer: {{ .Values.sso.issuer | quote }}
