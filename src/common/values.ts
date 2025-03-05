@@ -163,7 +163,7 @@ export const writeValues = async (inValues: Record<string, any>, overwrite = fal
   hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
   const values = inValues
   const teams = Object.keys(get(inValues, 'teamConfig', {}))
-  const cleanSecretPaths = await getSchemaSecretsPaths(Object.keys(teams))
+  const cleanSecretPaths = await getSchemaSecretsPaths(teams)
   // treat every user as secret
   cleanSecretPaths.push('users')
   d.debug('cleanSecretPaths: ', cleanSecretPaths)
