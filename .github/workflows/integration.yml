@@ -2,6 +2,10 @@ name: Deploy APL
 on:
   workflow_call:
     inputs:
+      linode_types:
+        description: 'Linode instance types'
+        type: string
+        default: g6-dedicated-8
       kubernetes_versions:
         description: 'Kubernetes version'
         type: string
@@ -28,14 +32,26 @@ on:
         default: 'false'
   workflow_dispatch:
     inputs:
+      linode_types:
+        description: 'Linode instance types'
+        type: choice
+        options:
+          - g6-dedicated-4
+          - g6-dedicated-8
+          - g6-dedicated-16
+          - g6-dedicated-32
+          - g6-dedicated-48
+          - g6-dedicated-50
+          - g6-dedicated-56
+        default: g6-dedicated-4
       kubernetes_versions:
         description: 'Kubernetes version'
         type: choice
         options:
-          - "['1.29']"
           - "['1.30']"
           - "['1.31']"
-        default: "['1.31']"
+          - "['1.32']"
+        default: "['1.32']"
       install_profile:
         description: APL installation profile
         default: minimal-with-team
@@ -198,7 +214,7 @@ jobs:
             --region nl-ams \
             --k8s_version ${{ env.LINODE_K8S_VERSION }} \
             --control_plane.high_availability true \
-            --node_pools.type g6-dedicated-8 --node_pools.count 3 \
+            --node_pools.type ${{ inputs.linode_types }} --node_pools.count 3 \
             --node_pools.autoscaler.enabled true \
             --node_pools.autoscaler.max 3 \
             --node_pools.autoscaler.min 3 \
@@ -223,24 +239,15 @@ jobs:
             
             sleep 30
           done
-      - name: Save kubectl config with auth token and Get kubectl environment and create docker secret
+      - name: Save kubectl config with auth token
         if: ${{ inputs.install_profile != 'no-apl' }}
         run: |
-          # Get the kubeconfig from linode-cli
-          kubeconfig=$(linode-cli lke kubeconfig-view ${{ env.LINODE_CLUSTER_ID }} --text | sed 1d | base64 --decode)
-
-          # Save the kubeconfig to a file
-          kubeconfigDir="$HOME/.kube"
-          kubeconfigPath="$HOME/.kube/config"
-          mkdir -p "$kubeconfigDir"  # Create the directory if it doesn't exist
-          echo "$kubeconfig" > "$kubeconfigPath"
-          echo "Kubeconfig saved to $kubeconfigPath"
-              
-          # Set the kubectl context to use the new kubeconfig
-          export KUBECONFIG="$kubeconfigPath"
-          contextName=$(kubectl config get-contexts -o name | head -n 1)
-          kubectl config use-context "$contextName"
-          echo "Kubectl context set to linode"
+          echo "Waiting for kubeconfig..."
+          while :; do
+            linode-cli get-kubeconfig --label "${{ env.LINODE_CLUSTER_NAME }}" 2> /dev/null && break
+            echo "still waiting..."
+            sleep 10
+          done
           echo LINODE_CLUSTER_CONTEXT=`kubectl config current-context` >> $GITHUB_ENV
       - name: Create image pull secret on test cluster
         if: ${{ inputs.install_profile != 'no-apl' }}

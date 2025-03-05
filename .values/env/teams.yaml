@@ -1,13 +1,3 @@
 teamConfig:
     admin:
         id: admin
-        managedMonitoring:
-            alertmanager: true
-            grafana: true
-            prometheus: true
-        selfService:
-            access:
-                - shell
-                - downloadCertificateAuthority
-            policies:
-                - edit policies

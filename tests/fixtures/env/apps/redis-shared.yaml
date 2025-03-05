@@ -1,5 +1,6 @@
 apps:
     redis-shared:
         enabled: false
+        password: wrrpCKuVJmiqHSylAdtpvbxb
         sizes:
             master: 1Gi

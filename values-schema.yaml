@@ -1196,10 +1196,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
-      sealedsecrets:
+      coderepos:
         type: array
         items:
-          $ref: '#/definitions/sealedsecret'
+          $ref: '#/definitions/coderepo'
   teamSelfService:
     title: Team permissions
     description: Grant team permissions to modify certain configuration parameters.
@@ -1507,6 +1507,33 @@ definitions:
       - email
       - firstName
       - lastName
+  coderepo:
+    type: object
+    description: Define location of code repository to build
+    properties:
+      label:
+        $ref: '#/definitions/idName'
+      gitService:
+        description: Git service provider
+        type: string
+        default: gitea
+        enum:
+          - gitea
+          - github
+          - gitlab
+      repositoryUrl:
+        description: URL of the Git repository holding the application code.
+        $ref: '#/definitions/repoUrl'
+      private:
+        type: boolean
+        default: false
+      secret:
+        description: The name of the secret with the credentials of the external private Git repository
+        type: string
+    required:
+      - label
+      - gitService
+      - repositoryUrl
 
 properties:
   alerts:
@@ -1825,7 +1852,7 @@ properties:
             $ref: '#/definitions/rawValues'
           adminPassword:
             type: string
-            x-secret: ''
+            x-secret: '{{ randAlphaNum 20 }}'
           postgresqlPassword:
             type: string
             description: This password was generated and cannot be changed without manual intervention.
