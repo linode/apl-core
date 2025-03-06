@@ -33,6 +33,15 @@ namespaceOverride: ""
 hostNetwork: false
 dnsPolicy: ""
 
+# -- Update strategy for the operator.
+# ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+# For example:
+#  type: RollingUpdate
+#  rollingUpdate:
+#    maxSurge: 25%
+#    maxUnavailable: 25%
+updateStrategy: {}
+
 crds:
   # -- Specifies whether the CRDs should be created when installing the chart.
   create: true
@@ -50,6 +59,9 @@ webhook:
     initialDelaySeconds: 3
   readinessProbe:
     initialDelaySeconds: 3
+  startupProbe:
+    failureThreshold: 6
+    periodSeconds: 5
 
 # Operator configuration.
 config:
