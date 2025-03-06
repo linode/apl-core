@@ -30,6 +30,10 @@ spec:
   selector:
     matchLabels:
       {{- include "cloudnative-pg.selectorLabels" . | nindent 6 }}
+  {{- if .Values.updateStrategy }}
+  strategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- end }}
   template:
     metadata:
       annotations:
@@ -84,7 +88,7 @@ spec:
           value: "{{ .Values.monitoringQueriesConfigMap.name }}"
         {{- if not .Values.config.clusterWide }}
         - name: WATCH_NAMESPACE
-          value: "{{ .Release.Namespace }}"
+          value: "{{ include "cloudnative-pg.namespace" . }}"
         {{- end }}
         {{- if .Values.additionalEnv }}
         {{- tpl (.Values.additionalEnv | toYaml) . | nindent 8 }}
@@ -119,6 +123,17 @@ spec:
           {{- toYaml .Values.resources | nindent 10 }}
         securityContext:
           {{- toYaml .Values.containerSecurityContext | nindent 10 }}
+        startupProbe:
+          {{- if .Values.webhook.startupProbe.failureThreshold }}
+          failureThreshold: {{ .Values.webhook.startupProbe.failureThreshold }}
+          {{- end }}
+          httpGet:
+            path: /readyz
+            port: {{ .Values.webhook.port }}
+            scheme: HTTPS
+          {{- if .Values.webhook.startupProbe.periodSeconds }}
+          periodSeconds: {{ .Values.webhook.startupProbe.periodSeconds }}
+          {{- end }}
         volumeMounts:
         - mountPath: /controller
           name: scratch-data
