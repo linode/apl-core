@@ -106,7 +106,7 @@ resources:
                   - >-
                     kubectl exec gitea-0 -- /bin/sh -ec "
                     echo 'Verifying Rclone...' &&
-                    ( test ! -f '/backup/.bin/rclone' || echo '{{ $rcloneBinSha512 }}  .bin/rclone' | sha512sum -c - || rm '/backup/.bin/rclone' ) &&
+                    ( test ! -f '/backup/.bin/rclone' || echo '{{ $rcloneBinSha512 }}  /backup/.bin/rclone' | sha512sum -c - || rm '/backup/.bin/rclone' ) &&
                     if [ ! -f '/backup/.bin/rclone' ]; then
                       echo 'Installing RClone...' &&
                       mkdir -p /backup/.bin &&
@@ -114,7 +114,7 @@ resources:
                       curl -fsSL -o rclone.zip https://github.com/rclone/rclone/releases/download/v{{ $rcloneVersion }}/rclone-v{{ $rcloneVersion }}-linux-amd64.zip &&
                       echo '{{ $rcloneZipSha512 }}  rclone.zip' | sha512sum -c - &&
                       unzip -oj rclone.zip &&
-                      echo '{{ $rcloneBinSha512 }}  .bin/rclone' | sha512sum -c -
+                      echo '{{ $rcloneBinSha512 }}  rclone' | sha512sum -c -
                     fi &&
                     cd /backup &&
                     echo 'Creating backup...' &&
