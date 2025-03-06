@@ -2,6 +2,9 @@
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
 {{- $giteaBackupConfig := $v.platformBackups.gitea }}
+{{- $rcloneVersion := "1.69.0" }}
+{{- $rcloneZipSha512 := "35ee43f2c52599f80fcd753f7fef3fd8ad7ddcc4d22025ab67cbcfb9cf516bb819a303f3fe9d79b38593c392fd6c4748cdbc24c87ba2a93fd42c6ebfef0908b0" }}
+{{- $rcloneBinSha512 := "cb5de4f3d5a5f03791c19fe25304eac874fa1a5db30867c1b7919bc9a99f1fb30d709b1ad16a18f5ef878952282f376b97001ba48578f2006d8a400a130ee542" }}
 
 resources:
 {{- if $v._derived.untrustedCA }}
@@ -95,25 +98,27 @@ resources:
           spec:
             serviceAccountName: gitea-backup
             containers:
-              - image: bitnami/kubectl:1.30
+              - image: bitnami/kubectl:1.31
                 name: kubectl
                 command:
                   - /bin/sh
                   - -ec
                   - >-
                     kubectl exec gitea-0 -- /bin/sh -ec "
+                    echo 'Verifying Rclone...' &&
+                    ( test ! -f '/backup/.bin/rclone' || echo '{{ $rcloneBinSha512 }}  .bin/rclone' | sha512sum -c - || rm '/backup/.bin/rclone' ) &&
                     if [ ! -f '/backup/.bin/rclone' ]; then
                       echo 'Installing RClone...' &&
                       mkdir -p /backup/.bin &&
                       cd /backup/.bin &&
-                      curl -fsSL -o rclone.zip https://github.com/rclone/rclone/releases/download/v1.69.0/rclone-v1.69.0-linux-amd64.zip &&
-                      echo '35ee43f2c52599f80fcd753f7fef3fd8ad7ddcc4d22025ab67cbcfb9cf516bb819a303f3fe9d79b38593c392fd6c4748cdbc24c87ba2a93fd42c6ebfef0908b0  rclone.zip' | sha512sum -c - &&
-                      unzip -oj rclone.zip
+                      curl -fsSL -o rclone.zip https://github.com/rclone/rclone/releases/download/v{{ $rcloneVersion }}/rclone-v{{ $rcloneVersion }}-linux-amd64.zip &&
+                      echo '{{ $rcloneZipSha512 }}  rclone.zip' | sha512sum -c - &&
+                      unzip -oj rclone.zip &&
+                      echo '{{ $rcloneBinSha512 }}  .bin/rclone' | sha512sum -c -
                     fi &&
                     cd /backup &&
                     echo 'Creating backup...' &&
                     gitea dump --type tar.bz2 &&
-                    echo 'cb5de4f3d5a5f03791c19fe25304eac874fa1a5db30867c1b7919bc9a99f1fb30d709b1ad16a18f5ef878952282f376b97001ba48578f2006d8a400a130ee542  .bin/rclone' | sha512sum -c - &&
                     echo 'Uploading to object storage...' &&
                     .bin/rclone copy --exclude '\.*/**' /backup gitea:/\$BUCKET_NAME &&
                     echo 'Removing old backups from object storage...' &&
