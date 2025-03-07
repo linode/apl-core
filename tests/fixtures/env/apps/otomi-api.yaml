@@ -1,7 +1,10 @@
-apps:
-    otomi-api:
-        editorInactivityTimeout: 5
-        git:
-            email: some@secret.value
-            repoUrl: github.com/redkubes/otomi-values-demo.git
-            user: someuser
+kind: AplCoreApp
+metadata:
+    name: otomi-api
+    labels: {}
+spec:
+    editorInactivityTimeout: 5
+    git:
+        email: some@secret.value
+        repoUrl: github.com/redkubes/otomi-values-demo.git
+        user: someuser

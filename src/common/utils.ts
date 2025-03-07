@@ -45,6 +45,21 @@ export const readdirRecurse = async (dir: string, opts?: { skipHidden: boolean }
   return files.flat()
 }
 
+export const getDirNames = async (dir: string, opts?: { skipHidden: boolean }): Promise<string[]> => {
+  const dirs = await readdir(dir, { withFileTypes: true })
+  const dirNames: Array<string> = []
+  dirs.map((dirOrFile) => {
+    if (opts?.skipHidden && dirOrFile.name.startsWith('.')) return
+    if (dirOrFile.isDirectory()) dirNames.push(dirOrFile.name)
+  })
+  return dirNames
+}
+
+export const enum FileType {
+  Directory = 'directory',
+  File = 'file',
+}
+
 export const getEnvFiles = (): Promise<string[]> => {
   return walk({
     path: env.ENV_DIR,
@@ -166,15 +181,6 @@ const isCoreCheck = (): boolean => {
 
 export const isCore: boolean = isCoreCheck()
 
-export const providerMap = (provider: string): string => {
-  const map = {
-    aws: 'eks',
-    azure: 'aks',
-    google: 'gke',
-  }
-  return map[provider] ?? provider
-}
-
 /**
  * Compare semver version strings, returning -1, 0, or 1.
  * If the semver string a is greater than b, return 1. If the semver string b is greater than a, return -1. If a equals b, return 0
@@ -191,4 +197,28 @@ export const semverCompare = (a, b) => {
     if (Number.isNaN(na) && !Number.isNaN(nb)) return -1
   }
   return 0
+}
+
+export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> => {
+  const schema: any = await getValuesSchema()
+  const leaf = 'x-secret'
+  const schemaSecrets: JSONSchema = extract(schema as JSONSchema, leaf, (val: any) =>
+    val.length > 0 ? `{{ ${val} }}` : val,
+  )
+  // Get all JSON paths for secrets, without the .x-secret appended
+  const secretPaths = Object.keys(flattenObject(schemaSecrets)).map((v) => v.replaceAll(`.${leaf}`, ''))
+  // now blow up the teamConfig.$team prop as it is determined by a pattern
+  const cleanSecretPaths: string[] = []
+  const teamProp = `teamConfig.patternProperties.${
+    Object.keys(schema.properties.teamConfig.patternProperties as JSONSchema)[0]
+  }`
+  secretPaths.forEach((p) => {
+    teams.forEach((team: string) => {
+      if (p.indexOf(teamProp) === 0) cleanSecretPaths.push(p.replace(teamProp, `teamConfig.${team}`))
+    })
+    if (p.indexOf(teamProp) === -1 && !cleanSecretPaths.includes(p)) cleanSecretPaths.push(p)
+  })
+
+  cleanSecretPaths.push('users')
+  return cleanSecretPaths
 }
