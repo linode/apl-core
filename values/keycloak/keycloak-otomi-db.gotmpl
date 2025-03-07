@@ -29,47 +29,29 @@ backup:
   type:  {{ $obj.type }}
 {{- if eq $obj.type "minioLocal" }}
   minioLocal:
-    destinationPath: "s3://cnpg/keycloak"
+    destinationPath: "s3://cnpg/{{ $b.pathSuffix }}"
 {{- end }}
 {{- if eq $obj.type "linode" }}
   linode:
-    destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/keycloak"
+    destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/{{ $b.pathSuffix }}"
     endpointURL: https://{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}
 {{- end }}
 
-{{- if $kdb.imported }}
 clusterSpec:
   bootstrap:
-    initdb:
-      database: keycloak
-      owner: keycloak
-      import:
-        type: microservice
-        databases:
-          - keycloak
-        source:
-          externalCluster: keycloak-postgresql
-  externalClusters:
-  - name: keycloak-postgresql
-    connectionParameters:
-      host: keycloak-postgresql.keycloak.svc.cluster.local
-      user: keycloak
-      dbname: keycloak
-      sslmode: disable
-    password:
-      name: keycloak-postgresql
-      key: postgresql-password
-
+{{- with $kdb.recovery }}
+    recovery: {{ toYaml . | nindent 6 }}
 {{- else }}
-clusterSpec:  
-  bootstrap:
     initdb:
       database: keycloak
       owner: keycloak
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
+{{- end }}
+{{- with $kdb.externalClusters }}
+  externalClusters: {{ toYaml . | nindent 4 }}
 {{- end }}
 
 resources: {{- toYaml $kdb.resources | nindent 2 }}
