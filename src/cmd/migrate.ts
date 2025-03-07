@@ -12,7 +12,7 @@ import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, hfValues } from 'src/common/hf'
-import { getFileMaps, getTeamNames, saveValues } from 'src/common/repo'
+import { getFileMap, getTeamNames, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -412,13 +412,7 @@ interface FileContent {
 
 export async function getStandaloneFilesToMigrate(envDir: string): Promise<Record<string, any>> {
   const files: Record<string, any> = {}
-  const maps = getFileMaps(envDir).filter((map) => map.loadToSpec === false)
-  const pathGlobs = maps.map((fileMap) => {
-    if (fileMap.kind === 'AplTeamWorkloadValues') {
-      return `${envDir}/env/teams/workloads/*/*.yaml`
-    }
-    return fileMap.pathGlob
-  })
+  const pathGlobs = [getFileMap('AplTeamSecret', envDir).pathGlob, `${envDir}/env/teams/workloads/*/*.yaml`]
   const filePaths = await glob(pathGlobs)
 
   await Promise.allSettled(
