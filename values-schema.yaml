@@ -1194,10 +1194,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
-      coderepos:
+      codeRepos:
         type: array
         items:
-          $ref: '#/definitions/coderepo'
+          $ref: '#/definitions/codeRepo'
   teamSelfService:
     title: Team permissions
     description: Grant team permissions to modify certain configuration parameters.
@@ -1513,7 +1513,7 @@ definitions:
       - email
       - firstName
       - lastName
-  coderepo:
+  codeRepo:
     type: object
     description: Define location of code repository to build
     properties:
