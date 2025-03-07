@@ -80,6 +80,10 @@ spec:
           kind: ValidatingWebhookConfiguration
           jqPathExpressions:
           - '.webhooks[]?.clientConfig.caBundle'
+        - group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          jqPathExpressions:
+          - '.webhooks[]?.clientConfig.caBundle'
         {{- end }}
       destination:
         server: 'https://kubernetes.default.svc'
