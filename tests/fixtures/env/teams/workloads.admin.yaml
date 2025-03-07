@@ -5,6 +5,9 @@ teamConfig:
               url: https://myrepo.local/mychart.git
               path: /
               revision: HEAD
+              namespace: kserve
+              createNamespace: true
+              sidecarInject: true
             - name: wa2
               url: https://myregistry.local/mychart
               chart: mychart
