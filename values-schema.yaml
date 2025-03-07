@@ -1517,7 +1517,7 @@ definitions:
     type: object
     description: Define location of code repository to build
     properties:
-      label:
+      name:
         $ref: '#/definitions/idName'
       gitService:
         description: Git service provider
@@ -1537,7 +1537,7 @@ definitions:
         description: The name of the secret with the credentials of the external private Git repository
         type: string
     required:
-      - label
+      - name
       - gitService
       - repositoryUrl
 
