@@ -264,7 +264,7 @@ export function getFileMaps(envDir: string): Array<FileMap> {
       processAs: 'arrayItem',
       resourceGroup: 'team',
       resourceDir: 'codeRepos',
-      loadToSpec: false,
+      loadToSpec: true,
     },
     {
       kind: 'AplTeamBuild',
@@ -438,6 +438,11 @@ export async function saveResourceGroupToFiles(
     jsonPathsValuesPublic.map(async (node) => {
       const nodePath = node.path
       const nodeValue = node.value
+      //TODO remove this custom workaround for codeRepo once we release codeRepo instead of coderepo
+      if (fileMap.kind === 'AplTeamCodeRepo' && nodeValue.label && !nodeValue.name) {
+        nodeValue.name = nodeValue.label
+        delete nodeValue.label
+      }
       try {
         const filePath = getFilePath(fileMap, nodePath, nodeValue, '')
         const manifest = renderManifest(fileMap, nodePath, nodeValue)

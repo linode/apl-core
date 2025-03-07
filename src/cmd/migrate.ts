@@ -4,15 +4,15 @@
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
-import { writeFile } from 'fs/promises'
-import { cloneDeep, each, get, omit, pick, pull, set, unset } from 'lodash'
-import { basename, join } from 'path'
+import { mkdir, readFile, writeFile } from 'fs/promises'
+import { cloneDeep, each, get, isObject, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
+import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { getStandaloneFiles, hf, hfValues } from 'src/common/hf'
-import { getTeamNames, saveValues } from 'src/common/repo'
+import { hf, hfValues } from 'src/common/hf'
+import { getFileMaps, getTeamNames, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -20,6 +20,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
+import { glob } from 'glob'
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -408,31 +409,75 @@ interface FileContent {
   path: string
   content: string
 }
+
+export async function getStandaloneFilesToMigrate(envDir: string): Promise<Record<string, any>> {
+  const files: Record<string, any> = {}
+  const maps = getFileMaps(envDir).filter((map) => map.loadToSpec === false)
+  const pathGlobs = maps.map((fileMap) => {
+    if (fileMap.kind === 'AplTeamWorkloadValues') {
+      return `${envDir}/env/teams/workloads/*/*.yaml`
+    }
+    return fileMap.pathGlob
+  })
+  const filePaths = await glob(pathGlobs)
+
+  await Promise.allSettled(
+    filePaths.map(async (path) => {
+      try {
+        const relativePath = path.replace(`${envDir}/`, '')
+        const fileContent = await readFile(path, 'utf8')
+        // Get sealed secret name from the file and use it as the filename
+        if (path.includes('sealedsecrets')) {
+          const parsedYaml = parse(fileContent)
+          const newRelativePath = relativePath.replace(
+            /sealedsecrets\/[^/]+\.yaml$/,
+            `sealedsecrets/${parsedYaml.metadata.name}.yaml`,
+          )
+          files[newRelativePath] = fileContent
+        } else {
+          files[relativePath] = fileContent
+        }
+      } catch (error) {
+        console.error(`Error processing file ${path}:`, error)
+      }
+    }),
+  )
+  return files
+}
+
+function renameKeyDeep(obj: any, oldKey: string, newKey: string): any {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => renameKeyDeep(item, oldKey, newKey))
+  } else if (isObject(obj)) {
+    return mapValues(
+      mapKeys(obj, (value, key) => (key === oldKey ? newKey : key)),
+      (value) => renameKeyDeep(value, oldKey, newKey),
+    )
+  }
+  return obj
+}
+
 export const migrateLegacyValues = async (envDir: string, deps = { writeFile }): Promise<boolean> => {
   const output = await hf(
     { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml`, args: 'build' },
     undefined,
     envDir,
   )
-  const oldValues = parse(output.stdout).renderedvalues
+  const jsonValues = parse(output.stdout).renderedvalues
+  //TODO remove this renaming of coderepo to codeRepo to adhere camelCase
+  const oldValues = renameKeyDeep(jsonValues, 'coderepos', 'codeRepos')
 
-  const files = await getStandaloneFiles(envDir)
+  const files = await getStandaloneFilesToMigrate(envDir)
   const newFiles: FileContent[] = []
   Object.entries(files).forEach(([filePath, fileContent]) => {
     let newFilePath = filePath
     if (filePath.includes('workloads')) {
       const teamName = extractTeamDirectoryFromWorkloadPath(filePath)
       const workloadFileName = basename(filePath)
-      newFilePath = join(envDir, 'env', 'teams', teamName, 'workloadValues', workloadFileName)
+      newFilePath = join('env', 'teams', teamName, 'workloadValues', workloadFileName)
     }
     newFiles.push({ path: newFilePath, content: fileContent })
   })
-
-  await Promise.all(
-    newFiles.map(async (f) => {
-      await deps.writeFile(f.path, f.content)
-    }),
-  )
 
   const oldTeams = get(oldValues, 'teamConfig', {})
   Object.keys(oldTeams).forEach((teamName) => {
@@ -467,6 +512,15 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
   // FIXME migrate workloadValues folder and change ApplicationSet !!
   // ensure that all old files are gone
   await $`rm -rf ${env.ENV_DIR}/env`
+
+  //Write standalone files
+  await Promise.all(
+    newFiles.map(async (f) => {
+      const path = `${env.ENV_DIR}/${f.path}`
+      await mkdir(dirname(path), { recursive: true })
+      await deps.writeFile(path, f.content)
+    }),
+  )
   await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)
   await encrypt(env.ENV_DIR)
   return true
@@ -475,6 +529,7 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
 export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
+  d.log('Migrating values')
   if (await pathExists(`${env.ENV_DIR}/env/settings.yaml`)) {
     d.log('Detected the old values file structure')
     await migrateLegacyValues(env.ENV_DIR)
