@@ -61,3 +61,7 @@ podSecurityContext:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
+
+sso:
+  issuer: {{ $v._derived.oidcBaseUrl }}
+  jwksUri: {{ $v._derived.oidcBaseUrl }}/protocol/openid-connect/certs
