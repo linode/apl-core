@@ -89,7 +89,7 @@ dependencies:
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: tempo-distributed
     alias: tempo
-    version: 1.18.5
+    version: 1.32.3
     repository: https://grafana.github.io/helm-charts
   - name: thanos
     version: 15.7.25
