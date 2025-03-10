@@ -16,7 +16,6 @@ teamConfig:
               name: hello
               ownHost: true
               port: 80
-              type: public
               tlsPass: true
               useCname: true
               cname:
@@ -34,32 +33,24 @@ teamConfig:
               ownHost: true
               paths: []
               port: 80
-              type: public
             - id: cb5149c4-8ea5-4c5a-be04-a37258658bd5
               ksvc:
                   predeployed: true
               name: tlspass
               port: 443
               tlsPass: true
-              type: public
             - id: cb5149c4-8ea5-4c5a-be04-a37258658bd6
               name: some-svc
               port: 80
-              type: cluster
             - hasCert: true
               name: has-cert-svc
               paths:
                   - /jeho
-              type: public
             - name: service-a
-              type: cluster
             - name: service-b
-              type: cluster
             - name: service-d
-              type: cluster
             - ingressClassName: net-a
               name: service-e
-              type: public
               headers:
                   response:
                       set:
@@ -87,7 +78,6 @@ teamConfig:
               useCname: false
               paths: []
               port: 80
-              type: public
               trafficControl:
                   enabled: true
                   weightV1: 90
