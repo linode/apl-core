@@ -15,4 +15,4 @@ name: falco-exporter
 sources:
 - https://github.com/falcosecurity/falco-exporter
 type: application
-version: 0.9.7
+version: 0.12.1
