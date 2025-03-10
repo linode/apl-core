@@ -427,7 +427,7 @@ kind: ConfigMap
 metadata:
   name: sample-grafana-dashboard
   labels:
-     grafana_dashboard: "1"
+    grafana_dashboard: "1"
 data:
   k8s-dashboard.json: |-
   [...]
@@ -588,7 +588,7 @@ kind: ConfigMap
 metadata:
   name: sample-grafana-alert
   labels:
-     grafana_alert: "1"
+    grafana_alert: "1"
 data:
   k8s-alert.yml: |-
     apiVersion: 1
