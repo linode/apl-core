@@ -48,7 +48,7 @@ dependencies:
     version: 4.6.0
     repository: https://kubereboot.github.io/charts
   - name: kyverno
-    version: 3.1.4
+    version: 3.3.7
     repository: https://kyverno.github.io/kyverno/
   - name: loki-distributed
     alias: loki
