@@ -1,14 +1,22 @@
 apiVersion: v2
-appVersion: 1.15.8
+appVersion: 1.16.8
 dependencies:
 - condition: memcached.enabled
   name: memcached
-  repository: https://charts.bitnami.com/bitnami
+  repository: https://raw.githubusercontent.com/bitnami/charts/eb5f9a9513d987b519f0ecd732e7031241c50328/bitnami
   version: 5.9.0
+- condition: mysql.enabled
+  name: mysql
+  repository: https://raw.githubusercontent.com/bitnami/charts/eb5f9a9513d987b519f0ecd732e7031241c50328/bitnami
+  version: 6.14.10
 - condition: postgresql.enabled
   name: postgresql
-  repository: https://charts.bitnami.com/bitnami
+  repository: https://raw.githubusercontent.com/bitnami/charts/eb5f9a9513d987b519f0ecd732e7031241c50328/bitnami
   version: 10.3.17
+- condition: mariadb.enabled
+  name: mariadb
+  repository: https://raw.githubusercontent.com/bitnami/charts/eb5f9a9513d987b519f0ecd732e7031241c50328/bitnami
+  version: 9.3.6
 description: Gitea Helm chart for Kubernetes
 icon: https://docs.gitea.io/images/gitea.png
 keywords:
@@ -35,4 +43,4 @@ sources:
 - https://github.com/go-gitea/gitea
 - https://hub.docker.com/r/gitea/gitea/
 type: application
-version: 5.0.0
+version: 5.0.9

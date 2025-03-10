@@ -36,7 +36,7 @@ Create image name and tag used by the deployment.
 */}}
 {{- define "gitea.image" -}}
 {{- $name := .Values.image.repository -}}
-{{- $tag := ternary .Values.image.version .Values.image.tag (hasKey .Values.image "version") -}}
+{{- $tag := .Values.image.tag | default .Chart.AppVersion -}}
 {{- $rootless := ternary "-rootless" "" (.Values.image.rootless) -}}
 {{- printf "%s:%s%s" $name $tag $rootless -}}
 {{- end -}}
@@ -48,10 +48,8 @@ Common labels
 helm.sh/chart: {{ include "gitea.chart" . }}
 app: {{ include "gitea.name" . }}
 {{ include "gitea.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-version: {{ .Chart.AppVersion | quote }}
-{{- end }}
+app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
+version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
@@ -61,30 +59,6 @@ Selector labels
 {{- define "gitea.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "gitea.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end -}}
-
-{{- define "db.servicename" -}}
-{{- if .Values.postgresql.enabled -}}
-{{- printf "%s-postgresql" .Release.Name -}}
-{{- else if .Values.mysql.enabled -}}
-{{- printf "%s-mysql" .Release.Name -}}
-{{- else if .Values.mariadb.enabled -}}
-{{- printf "%s-mariadb" .Release.Name -}}
-{{- else if ne .Values.gitea.config.database.DB_TYPE "sqlite3" -}}
-{{- $parts := split ":" .Values.gitea.config.database.HOST -}}
-{{- printf "%s %s" $parts._0 $parts._1 -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "db.port" -}}
-{{- if .Values.postgresql.enabled -}}
-{{ .Values.postgresql.global.postgresql.servicePort }}
-{{- else if .Values.mysql.enabled -}}
-{{ .Values.mysql.service.port }}
-{{- else if .Values.mariadb.enabled -}}
-{{ .Values.mariadb.primary.service.port }}
-{{- else -}}
-{{- end -}}
 {{- end -}}
 
 {{- define "postgresql.dns" -}}
