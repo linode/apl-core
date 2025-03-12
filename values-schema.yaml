@@ -1196,6 +1196,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
+      coderepos:
+        type: array
+        items:
+          $ref: '#/definitions/coderepo'
   teamSelfService:
     title: Team permissions
     description: Grant team permissions to modify certain configuration parameters.
@@ -1420,6 +1424,12 @@ definitions:
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/idName'
+      createNamespace:
+        type: boolean
+        default: false
+      sidecarInject:
+        type: boolean
+        default: false
       imageUpdateStrategy:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
@@ -1506,6 +1516,33 @@ definitions:
       - email
       - firstName
       - lastName
+  coderepo:
+    type: object
+    description: Define location of code repository to build
+    properties:
+      label:
+        $ref: '#/definitions/idName'
+      gitService:
+        description: Git service provider
+        type: string
+        default: gitea
+        enum:
+          - gitea
+          - github
+          - gitlab
+      repositoryUrl:
+        description: URL of the Git repository holding the application code.
+        $ref: '#/definitions/repoUrl'
+      private:
+        type: boolean
+        default: false
+      secret:
+        description: The name of the secret with the credentials of the external private Git repository
+        type: string
+    required:
+      - label
+      - gitService
+      - repositoryUrl
 
 properties:
   alerts:

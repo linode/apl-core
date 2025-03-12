@@ -18,8 +18,9 @@ spec:
   template:
     metadata:
       name: 'team-{{ $v.teamId }}-{{ .name }}'
-      {{- if or (eq $a.type "digest") (eq $a.type "semver") }}
       annotations:
+        argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+      {{- if or (eq $a.type "digest") (eq $a.type "semver") }}
         argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.force-update: 'true'
         argocd-image-updater.argoproj.io/team-{{ $v.teamId }}-{{ .name }}.pull-secret: 'pullsecret:argocd/copy-team-{{ $v.teamId }}-harbor-pullsecret'
         argocd-image-updater.argoproj.io/git-branch: main
@@ -52,6 +53,11 @@ spec:
           # The argocd template the values parameter is taken from the git generator path
           values: '{{ "{{values}}" }}'
           releaseName: '{{ .name }}'
+          {{- if and (.sidecarInject) (.createNamespace) }}
+          parameters:
+            - name: sidecar.istio.io/inject
+              value: 'true'
+          {{- end }}
       syncPolicy:
         automated:
           allowEmpty: false
@@ -62,7 +68,19 @@ spec:
             duration: 10s
             factor: 3
           limit: 3
-        syncOptions: []
+        {{- if eq $v.teamId "admin" }} 
+        syncOptions:
+          - RespectIgnoreDifferences=true
+          - ServerSideApply=true
+          {{- if .createNamespace }}
+          - CreateNamespace=true
+          {{- end }}
+      ignoreDifferences:
+        - group: admissionregistration.k8s.io
+          kind: ValidatingWebhookConfiguration
+          jqPathExpressions:
+          - '.webhooks[]?.clientConfig.caBundle'
+        {{- end }}
       destination:
         server: 'https://kubernetes.default.svc'
         {{- if and ( eq $v.teamId "admin" ) .namespace }} 
