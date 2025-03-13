@@ -319,6 +319,7 @@ changes:
   - version: 32
     deletions:
       - 'teamConfig.{team}.managedMonitoring.prometheus'
+      - 'teamConfig.{team}.services[].type'
     additions:
       - databases.keycloak.imageName: ghcr.io/cloudnative-pg/postgresql:15.3
       - databases.gitea.imageName: ghcr.io/cloudnative-pg/postgresql:15.3
@@ -336,6 +337,3 @@ changes:
       - databases.harbor.resources.limits.cpu: '200m'
       - databases.harbor.resources.requests.memory: '192Mi'
       - databases.harbor.resources.requests.cpu: '200m'
-  - version: 33
-    deletions:
-      - 'teamConfig.{team}.services[].type'
