@@ -116,6 +116,8 @@ spec:
                 requests:
                   storage: 1Gi
             status: {}
+        - name: build-details
+          value: {{ .mode.buildpack.repoUrl }}
         - name: git-credentials
           secret:
             {{- if .externalRepo }}
