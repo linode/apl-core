@@ -68,6 +68,7 @@ extraArgs:
   - --insecure-oidc-allow-unverified-email=true
   - --show-debug-on-error=true
   - --custom-templates-dir=/etc/oauth2-proxy
+  - --backend-logout-url=https://{{ $v._derived.oidcBaseUrl }}/protocol/openid-connect/logout?post_logout_redirect_uri=https://auth.{{ $v.cluster.domainSuffix }}/oauth2/sign_out
 
 extraVolumes:
   - name: error-page
