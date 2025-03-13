@@ -1,0 +1,1493 @@
+apps:
+    alertmanager:
+        enabled: true
+    argocd:
+        autoscaling:
+            repoServer:
+                enabled: true
+                maxReplicas: 5
+                minReplicas: 1
+            server:
+                enabled: true
+                maxReplicas: 5
+                minReplicas: 1
+        resources:
+            applicationSet:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 100m
+                    memory: 256M
+            controller:
+                limits:
+                    cpu: '2'
+                    memory: 2Gi
+                requests:
+                    cpu: 500m
+                    memory: 1Gi
+            imageUpdater:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 50m
+                    memory: 50Mi
+            notifications:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 100m
+                    memory: 64M
+            redis:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 50m
+                    memory: 64Mi
+            repo:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 100m
+                    memory: 512M
+            server:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 50m
+                    memory: 256M
+    cert-manager:
+        externallyManagedTlsSecretName: mysecret
+        issuer: externally-managed-tls-secret
+        customRootCA: |
+            -----BEGIN CERTIFICATE-----
+            MIIDdDCCAlygAwIBAgIBATANBgkqhkiG9w0BAQUFADBuMRUwEwYDVQQDEwxyZWRr
+            dWJlcy5jb20xCzAJBgNVBAYTAk5MMRAwDgYDVQQIEwdVdHJlY2h0MRAwDgYDVQQH
+            EwdVdHJlY2h0MQ4wDAYDVQQKEwVPdG9taTEUMBIGA1UECxMLU2VsZi1TaWduZWQw
+            HhcNMjExMTAzMTAxOTAyWhcNMzExMTAzMTAxOTAyWjBuMRUwEwYDVQQDEwxyZWRr
+            dWJlcy5jb20xCzAJBgNVBAYTAk5MMRAwDgYDVQQIEwdVdHJlY2h0MRAwDgYDVQQH
+            EwdVdHJlY2h0MQ4wDAYDVQQKEwVPdG9taTEUMBIGA1UECxMLU2VsZi1TaWduZWQw
+            ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQD4quPwHrharZhmqVQx/75N
+            M7Vp3ZmSd3gR2u8Dc1PkmEa6W9CiheVAB5KCzdN5sWaOlFKTy5sHg/zvyYZjvNGX
+            xaHCa4i6OyRgiTOC4NCrxuN5010G0vAxYaM1aIFcqObXuLcaK6miOybDLRfDxoHl
+            g/TKqdiPOMEb2ZgphFxL7oYXjkobOggH+wzwwMIc/1nA3eBjEPsIkQehmb0R0Kxw
+            K5VHPCvbPQb3USVqUs+NmsuCxmqkTtI32WqR0IuNAVqjaD9oNqcsKBgUOPYLYXM8
+            xsTzIn0QPysJIKUCRn1quHwvCQc1RnQBB8UG6iJboVdRe0GNS13vu5ikhoCb0oyV
+            AgMBAAGjHTAbMAwGA1UdEwQFMAMBAf8wCwYDVR0PBAQDAgL0MA0GCSqGSIb3DQEB
+            BQUAA4IBAQBJWHPGnTqXME/MGwG2nAG/JqiCQ0ZOOyKgwN97wrQIlbra2BaUT1K4
+            tMDOjZlft1Luipg/IkzzMXt4eAmqGMxLIweqbve6aLm8KTpHkLdxLm3VPnhK8zzg
+            ysRRRjtkMo9KUOSvrS2dFsY+fQnbGUzpRcK8RrzM6CpgIaf29neP1xLUWQuUsy5y
+            yKCb6OQ9vaJBf/uvz73rQq0ym4Kx0FCFssshaja6lbz/jqCJmppdZE5pe5jvMVVv
+            ae5UQLbva0JyLY8Rc1vSY/epIHMLrV90GEagSkF/ejgF3uh8cliLuUYFAFyU8TnN
+            FWG+enMJfR04aWjp8M3MQ1IoCPVxoXxI
+            -----END CERTIFICATE-----
+        customRootCAKey: |
+            -----BEGIN RSA PRIVATE KEY-----
+            MIIEpQIBAAKCAQEA+Krj8B64Wq2YZqlUMf++TTO1ad2Zknd4EdrvA3NT5JhGulvQ
+            ooXlQAeSgs3TebFmjpRSk8ubB4P878mGY7zRl8WhwmuIujskYIkzguDQq8bjedNd
+            BtLwMWGjNWiBXKjm17i3Giupojsmwy0Xw8aB5YP0yqnYjzjBG9mYKYRcS+6GF45K
+            GzoIB/sM8MDCHP9ZwN3gYxD7CJEHoZm9EdCscCuVRzwr2z0G91ElalLPjZrLgsZq
+            pE7SN9lqkdCLjQFao2g/aDanLCgYFDj2C2FzPMbE8yJ9ED8rCSClAkZ9arh8LwkH
+            NUZ0AQfFBuoiW6FXUXtBjUtd77uYpIaAm9KMlQIDAQABAoIBAQCTsIuotdYwpSH6
+            9172Qzq3h5qbwe3QO/yoPivvFLQi9P4s+RM1M+kw2k5+Odj8UgzjadyRwz/UeuPj
+            VwHmguLJDaxBWLTgRvgYDeT2Oqg1He9FD/AUeXwHGEJjGiqa6gYQ4bh+Zqhdnlwr
+            V8DhmijUNEdThwUEK2UmMVpabi6TOW/dfO6sbnOHYwx326qF3LhYcUrmdeowEGLT
+            UhxdXJQQUsfD+zft6dcPnqucIxd5OEsn3L8/pcumOxHUGFBHDMuB5nTpcZyDxKaN
+            joC0zQy0BDQIMN1F7wNRukSiSYqvRvmvztF2Ka0yEWAdvBBXVVN8nKQw69oGoe9B
+            EQ5HSkKBAoGBAP0KnCE19jW9jq1CWFkFwd1BALWA3GOuxJqSX6M5APM+JRBR4UOZ
+            AUOogvGlrc1ns58q7oNoc1CHiMHd2lNFgfqWqopfVz1Tt9qHqU6VoJnkmJlJRriE
+            57F08RTjslTFzYEsE9zMlL1xa5pq1aGAFB0/mYuxopRw39mS14ugxF1pAoGBAPuT
+            MFLfp2wttGe2WhVepOnhD13sEMGCS6GE16jinjP3qAWIPM/Wdy+Ab8n+KWQkYPLw
+            UsQVi+41LWFIexjzdrq9rG5LQbZdjDCyR4eomDGZhc0Vtsu79NbVrnSmjH8w6psa
+            DXB1uN9/VcCzae/hRpk2Q6zFiMcPE8utUU5RvFRNAoGBAJ19+wsYoPN11dW0k3Rl
+            BvKEwMI3P/SzFB74t5nJovPCXCM6MzB1jLnlqgppCjHsN3n7qJQVcKBQmye+w2JM
+            wseK+v5AtPWwo5/aC+CjdGAUTX4qg1/ZKLPkiyBrT9U/f9bD7mDg3DrE2yozEGAC
+            bYJ+0TyHBR/K2Sh8Irf/CfjxAoGBAM4wuwCRkpUVeLEwQfEV2zBdZ8zg+HLBqd8+
+            E8u1wVhyeOHf4YevDYx/RiBWEfKj5ln3Ir7XshKQvxrm3w16Liur3bGgOMGRNp+K
+            3xmO0v6EB6gpTeL5sBiMlinBf5GXtBFfbvhnZBi6Mrx30DHtf4F/ekQWup37+4uK
+            CAOa9jJZAoGAYbU4CoCxktBECxAVAjtpvYW5176cxiitd75s1ANhXGiOH1A6/y6H
+            rnZ+fMAuvPjrDXbtmqJsq0RXq1E07ng4ZDIjN+0pShVFQdakJRFo1y+d3b82lBYX
+            EZrfMBCWVj31dXeGEHfVvOpwrQ5ffTzs2lVmTh7Ft61gs4TJ7gNTDbE=
+            -----END RSA PRIVATE KEY-----
+    cnpg:
+        resources:
+            limits:
+                cpu: 1000m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 200Mi
+    drone:
+        adminUser: somesecretvalue
+        debug: false
+        enabled: true
+        orgsFilter: redkubes
+        repoFilter: redkubes
+        sourceControl:
+            gitea:
+                server: https://gitea.demo.eks.otomi.cloud
+            github:
+                clientSecretValue: somesecretvalue
+            provider: gitea
+        sharedSecret: somesecretvalue
+    falco:
+        driver: ebpf
+        enabled: true
+    gitea:
+        enabled: true
+        adminPassword: giteaAdminPassword
+        postgresqlPassword: postgresqlPassword
+    grafana:
+        enabled: false
+        adminPassword: somesecretvalue
+    harbor:
+        core:
+            secret: vQFMm9Qk0pTUF3MK
+            xsrfKey: txS2sHQGqiJmmhFf15oCUfF5BgbchIsi
+        enabled: true
+        jobservice:
+            secret: CfpanIkcGWz3wGLO
+        registry:
+            credentials:
+                htpasswd: admin:$2a$10$zXwH8y4snDAtV4mZmgyylOqfX2AOPNaUL5e6yPm2EqPyy2G2OQsX6
+                username: admin
+                password: TJmTw62K9y4fZ83wgt0xmXzLwxpTHoJ4
+            secret: PjHGEdmPhrmNrEkj
+        adminPassword: harborsomesecretvalue
+        secretKey: somesecretvalue
+    httpbin:
+        enabled: true
+    ingress-nginx-net-a:
+        _rawValues:
+            controller:
+                config:
+                    modsecurity-snippet: |
+                        SecRuleRemoveById 911101
+        maxBodySize: 1024m
+        modsecurity:
+            enabled: true
+        resources:
+            controller:
+                limits:
+                    cpu: 200m
+                    memory: 256Mi
+                requests:
+                    cpu: 100m
+                    memory: 192Mi
+        tracing:
+            enabled: true
+            samplingRatio: '0.01'
+    ingress-nginx-platform:
+        _rawValues:
+            controller:
+                config:
+                    modsecurity-snippet: |
+                        SecRuleRemoveById 911102
+        autoscaling:
+            enabled: true
+            maxReplicas: 10
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 80
+            targetMemoryUtilizationPercentage: 80
+        maxBodySize: 2048m
+        modsecurity:
+            enabled: true
+        resources:
+            controller:
+                limits:
+                    cpu: 200m
+                    memory: 256Mi
+                requests:
+                    cpu: 100m
+                    memory: 192Mi
+        tracing:
+            enabled: true
+            samplingRatio: '0.01'
+    istio:
+        autoscaling:
+            ingressgateway:
+                maxReplicas: 5
+                minReplicas: 1
+            pilot:
+                maxReplicas: 5
+                minReplicas: 1
+        egressGateway:
+            enabled: false
+        extensionProviders:
+            - envoyExtAuthzGrpc:
+                  includeRequestBodyInCheck:
+                      maxRequestBytes: 1000000
+                  port: 80
+                  service: external-authorization-chain.team-demo.svc.cluster.local
+              name: ext-authz-chain-grpc
+        global:
+            logging:
+                level: default:warn
+        resources:
+            ingressgateway:
+                limits:
+                    cpu: 500m
+                    memory: 256Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            pilot:
+                limits:
+                    cpu: 100m
+                    memory: 256Mi
+                requests:
+                    cpu: 10m
+                    memory: 100Mi
+            prometheus:
+                limits:
+                    cpu: 500m
+                    memory: 1Gi
+                requests:
+                    cpu: 200m
+                    memory: 500Mi
+            proxy:
+                limits:
+                    cpu: 500m
+                    memory: 1Gi
+                requests:
+                    cpu: 20m
+                    memory: 80Mi
+        tracing:
+            enabled: true
+            samplingRatio: '0.01'
+    jaeger:
+        enabled: true
+    keycloak:
+        idp:
+            alias: redkubes-azure
+            clientID: otomi
+            clientSecret: somsecretvalue
+        resources:
+            keycloak:
+                limits:
+                    cpu: 200m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 256Mi
+            operator:
+                limits:
+                    cpu: 200m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 256Mi
+        theme: otomi
+    kiali:
+        enabled: true
+    knative:
+        enabled: true
+        resources:
+            activator:
+                limits:
+                    cpu: 500m
+                    memory: 512Mi
+                requests:
+                    cpu: 50m
+                    memory: 32Mi
+            autoscaler:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 50m
+                    memory: 64Mi
+            autoscalerHpa:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 50m
+                    memory: 64Mi
+            controller:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 50m
+                    memory: 64Mi
+            operator:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 50m
+                    memory: 64Mi
+            operatorWebhook:
+                limits:
+                    cpu: '1'
+                    memory: 1Gi
+                requests:
+                    cpu: 50m
+                    memory: 64Mi
+            queueSidecar:
+                limits:
+                    cpu: '1'
+                    memory: 512Mi
+                requests:
+                    cpu: 25m
+                    memory: 256Mi
+            webhook:
+                limits:
+                    cpu: 500m
+                    memory: 512Mi
+                requests:
+                    cpu: 50m
+                    memory: 32Mi
+    kured:
+        _rawValues:
+            configuration:
+                endTime: 07:00
+                rebootDays:
+                    - su
+                startTime: 22:00
+                timeZone: CET
+        enabled: true
+    kyverno:
+        enabled: true
+    loki:
+        autoscaling:
+            distributor:
+                enabled: true
+                maxReplicas: 3
+                minReplicas: 1
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            gateway:
+                enabled: true
+                maxReplicas: 3
+                minReplicas: 1
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            ingester:
+                enabled: true
+                maxReplicas: 3
+                minReplicas: 1
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            querier:
+                enabled: true
+                maxReplicas: 3
+                minReplicas: 1
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            queryFrontend:
+                enabled: true
+                maxReplicas: 3
+                minReplicas: 1
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+        enabled: true
+        persistence:
+            ingester:
+                size: 20Gi
+            querier:
+                size: 10Gi
+        resources:
+            compactor:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            distributor:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            gateway:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            ingester:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            querier:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            queryFrontend:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+        retention:
+            duration: 24h
+            period: 24h
+        v11StartDate: 2021-05-13T00:00:00.000Z
+        adminPassword: somesecretvalue
+    metrics-server:
+        extraArgs:
+            - --test-extra-arg=true
+        resources:
+            limits:
+                cpu: 300m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 64Mi
+    minio:
+        enabled: true
+        persistence:
+            enabled: true
+            size: 20Gi
+        provisioning:
+            enabled: true
+    oauth2-proxy-redis:
+        password: gkhugxJsPjhbCybH
+    oauth2-proxy:
+        config:
+            cookieSecret: gkhugxJsPjhbCybH
+    opencost:
+        alerts:
+            costOfAllNodesQuotaPerMonthReached:
+                quota: 500
+            enabled: false
+        enabled: true
+        keys: {}
+    otel:
+        collector:
+            attributes:
+                - k8s.pod.name
+                - k8s.pod.uid
+                - k8s.deployment.name
+                - k8s.namespace.name
+                - k8s.node.name
+                - k8s.pod.start_time
+            autoscaler:
+                maxReplicas: 6
+                minReplicas: 2
+                targetCPUUtilizationPercentage: 80
+                targetMemoryUtilizationPercentage: 80
+            mode: deployment
+        enabled: true
+        operator:
+            replicaCount: 1
+        resources:
+            collector:
+                limits:
+                    cpu: 500m
+                    memory: 128Mi
+                requests:
+                    cpu: 100m
+                    memory: 64Mi
+            kubeRBACProxy:
+                limits:
+                    cpu: 500m
+                    memory: 128Mi
+                requests:
+                    cpu: 5m
+                    memory: 64Mi
+            manager:
+                limits:
+                    cpu: 200m
+                    memory: 512Mi
+                requests:
+                    cpu: 50m
+                    memory: 16Mi
+    otomi-api:
+        editorInactivityTimeout: 5
+        git:
+            email: some@secret.value
+            repoUrl: github.com/redkubes/otomi-values-demo.git
+            user: someuser
+            password: somesecretvalue
+    prometheus-blackbox-exporter:
+        _rawValues: {}
+        resources:
+            blackboxExporter:
+                limits:
+                    cpu: 250m
+                    memory: 300Mi
+                requests:
+                    cpu: 50m
+                    memory: 50Mi
+            sentinel:
+                limits:
+                    cpu: 200m
+                    memory: 128Mi
+                requests:
+                    cpu: 100m
+                    memory: 32Mi
+    prometheus:
+        disabledRules:
+            - InfoInhibitor
+            - PrometheusOperatorListErrors
+        enabled: false
+        remoteWrite:
+            enabled: true
+            rwConfig:
+                basicAuth:
+                    enabled: true
+                    username: testaccount
+                    password: blalalalalal
+                customConfig: |-
+                    writeRelabelConfigs:
+                      - targetLabel: tenant
+                        sourceLabels:
+                        - instance
+                        replacement: otomi-aks-ont
+                      - targetLabel: cluster
+                        sourceLabels:
+                        - instance
+                        replacement: otomi-aks-ont
+                      - targetLabel: customer_id
+                        sourceLabels:
+                        - instance
+                        replacement: "00001"
+                    queueConfig:
+                      capacity: 18000
+                      maxShards: 100
+                      maxSamplesPerSend: 6000
+                target: https://remote.target.io/api/v1/push
+    rabbitmq:
+        enabled: true
+        resources:
+            clusterOperator:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            msgTopologyOperator:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+    redis-shared:
+        enabled: false
+        password: wrrpCKuVJmiqHSylAdtpvbxb
+        sizes:
+            master: 1Gi
+    sealed-secrets: {}
+    tekton: {}
+    tempo:
+        autoscaling:
+            distributor:
+                enabled: true
+                maxReplicas: 3
+                minReplicas: 1
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            ingester:
+                enabled: true
+                maxReplicas: 3
+                minReplicas: 1
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            querier:
+                enabled: true
+                maxReplicas: 3
+                minReplicas: 1
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+            queryFrontend:
+                enabled: true
+                maxReplicas: 3
+                minReplicas: 1
+                targetCPUUtilizationPercentage: 60
+                targetMemoryUtilizationPercentage: 80
+        enabled: true
+        persistence:
+            ingester:
+                size: 10Gi
+        resources:
+            compactor:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            distributor:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            ingester:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            memcached:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            metricsGenerator:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            querier:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            queryFrontend:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+    thanos:
+        compactor:
+            retentionResolution1h: 10y
+            retentionResolution5m: 30d
+            retentionResolutionRaw: 30d
+        enabled: true
+        persistence:
+            compactor:
+                size: 10Gi
+            storegateway:
+                size: 10Gi
+        query:
+            replicaCount: 1
+        resources:
+            compactor:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            query:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+            storegateway:
+                limits:
+                    cpu: 900m
+                    memory: 512Mi
+                requests:
+                    cpu: 100m
+                    memory: 128Mi
+    trivy:
+        enabled: true
+    velero:
+        enabled: true
+        restic:
+            enabled: false
+alerts:
+    email:
+        critical: admins@yourdoma.in
+        nonCritical: admins@yourdoma.in
+    msteams:
+        highPrio: https://xxxxxxx.com
+        lowPrio: https://xxxxxxxx.com
+    receivers:
+        - msteams
+    slack:
+        url: https://hooks.slack.com/services/id
+cluster:
+    apiServer: https://1.1.1.1:8443
+    domainSuffix: dev.linode-apl.net
+    k8sContext: linode-dev
+    name: demo
+    owner: akamai
+    provider: linode
+databases:
+    harbor:
+        replicas: 2
+    keycloak:
+        imported: false
+dns:
+    provider:
+        linode:
+            apiToken: xvxvxvxvxvxvxvxvxvxvxvxvx
+    domainFilters:
+        - otomi.cloud
+    zoneIdFilters: []
+ingress:
+    classes:
+        - annotations:
+              - key: service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol
+                value: true
+          className: net-a
+          entrypoint: ''
+          loadBalancerIP: 11.0.0.1
+          sourceIpAddressFiltering: 10.0.0.0/24
+    platformClass:
+        entrypoint: ''
+kms:
+    sops:
+        azure:
+            clientSecret: somesecretvalue
+            clientId: somesecretvalue
+            keys: somesecretvalue
+            tenantId: somesecretvalue
+obj:
+    provider:
+        linode:
+            accessKeyId: someaccessKeyId
+            buckets:
+                cnpg: my-clusterid-cnpg
+                gitea: my-clusterid-gitea
+                harbor: my-clusterid-harbor
+                loki: my-clusterid-loki
+                tempo: my-clusterid-tempo
+                thanos: my-clusterid-thanos
+                velero: my-clusterid-velero
+            region: nl-ams-1
+            secretAccessKey: somesecretvalue
+        type: linode
+oidc:
+    allTeamsAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clientID: someClientID
+    issuer: https://login.microsoftonline.com/xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    platformAdminGroupID: someAdminGroupID
+    subClaimMapper: oid
+    teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clientSecret: somesecretvalue
+otomi:
+    adminPassword: bladibla
+    globalPullSecret:
+        password: blablabla
+        username: otomi
+    hasExternalDNS: true
+    hasExternalIDP: true
+    nodeSelector:
+        otomi: otomi-sys
+    version: main
+platformBackups:
+    database:
+        gitea:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
+        harbor:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
+        keycloak:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
+    gitea:
+        enabled: true
+        retentionPolicy: 7d
+        schedule: 0 0 0 * * *
+    persistentVolumes:
+        linodeApiToken: justanapitokenhere
+smtp:
+    auth_password: somesecretvalue
+    auth_username: no-reply@doma.in
+    from: no-reply@doma.in
+    hello: doma.in
+    smarthost: smtp-relay.gmail.com:587
+users:
+    - email: platform@admin.com
+      firstName: platform
+      initialPassword: platform-admin-password
+      isPlatformAdmin: true
+      isTeamAdmin: true
+      lastName: admin
+      id: a83e20b7-474a-4262-a3ad-b09813364ece
+    - email: team@member.com
+      firstName: team
+      initialPassword: team-member-password
+      isPlatformAdmin: false
+      isTeamAdmin: false
+      lastName: member
+      teams:
+          - demo
+      id: 9a3a478b-a747-4b4a-be69-a9abf1979df2
+    - email: team@admin.com
+      firstName: team
+      initialPassword: team-admin-password
+      isPlatformAdmin: false
+      isTeamAdmin: true
+      lastName: admin
+      teams:
+          - demo
+      id: 23d63558-49ed-48ba-bc28-8037a7236ddf
+versions:
+    specVersion: 1
+teamConfig:
+    demo:
+        codeRepos:
+            - gitService: github
+              name: buildpacks-samples
+              private: false
+              repositoryUrl: https://github.com/buildpacks/samples
+              teamId: demo
+        builds:
+            - externalRepo: false
+              mode:
+                  docker:
+                      path: ./Dockerfile
+                      repoUrl: https://github.com/buildpacks/samples
+                      revision: HEAD
+                  type: docker
+              name: demo-java1
+              scanSource: true
+              tag: v.0.0.1
+              trigger: false
+            - externalRepo: false
+              mode:
+                  buildpacks:
+                      envVars:
+                          - name: TEST1
+                            value: test1
+                          - name: TEST2
+                            value: test2
+                      path: apps/java-maven
+                      repoUrl: https://github.com/buildpacks/samples
+                      revision: HEAD
+                  type: buildpacks
+              name: demo-java2
+              scanSource: false
+              tag: v.0.0.1
+              trigger: false
+            - externalRepo: true
+              mode:
+                  docker:
+                      envVars:
+                          - name: TEST1
+                            value: test1
+                          - name: TEST2
+                            value: test2
+                      path: ./test/Docker
+                      repoUrl: https://github.com/buildpacks/samples
+                      revision: HEAD
+                  type: docker
+              name: demo-java3
+              scanSource: true
+              secretName: my-secret
+              tag: v_0_0_1
+              trigger: true
+        workloads:
+            - imageUpdateStrategy:
+                  digest:
+                      imageParameter: v2.image.name
+                      imageRepository: harbor.try-otomi.net/team-orange/blue
+                      tag: latest
+                      tagParameter: v2.image.tag
+                  type: digest
+              name: wd1
+              path: ./
+              revision: main
+              url: https://myrepo.local/mychart.git
+            - imageUpdateStrategy:
+                  type: disabled
+              name: wd3
+              path: ./
+              revision: main
+              url: https://myrepo.local/mychart.git
+            - imageUpdateStrategy:
+                  semver:
+                      imageRepository: harbor.try-otomi.net/team-orange/green
+                      versionConstraint: '1.12'
+                  type: semver
+              name: wd2
+              path: ./
+              revision: main
+              url: https://myrepo.local/mychart.git
+            - imageUpdateStrategy:
+                  type: disabled
+              name: wd
+              path: ./
+              revision: main
+              url: https://myrepo.local/mychart.git
+        services:
+            - hasCert: true
+              name: has-cert-svc
+              paths:
+                  - /jeho
+              type: public
+            - ingressClassName: platform
+              ksvc:
+                  predeployed: false
+              name: hello-blue-green
+              ownHost: true
+              paths: []
+              port: 80
+              trafficControl:
+                  enabled: true
+                  weightV1: 90
+                  weightV2: 10
+              type: public
+              useCname: false
+            - domain: tlspass.dev.linode-apl.net
+              ksvc:
+                  predeployed: true
+              name: hello-auth
+              ownHost: true
+              paths: []
+              port: 80
+              type: public
+            - name: service-d
+              type: cluster
+            - name: service-b
+              type: cluster
+            - name: service-a
+              type: cluster
+            - auth: true
+              cname:
+                  domain: hello-demo.cname.com
+                  tslSecretName: ''
+              domain: hello-demo.dev.linode-apl.net
+              headers:
+                  response:
+                      set:
+                          - name: X-Frame-Options
+                            value: same-origin
+                          - name: sander
+                            value: same-origin
+              ksvc:
+                  predeployed: true
+              name: hello
+              ownHost: true
+              port: 80
+              tlsPass: true
+              trafficControl:
+                  enabled: true
+                  weightV1: 70
+                  weightV2: 30
+              type: public
+              useCname: true
+            - name: some-svc
+              port: 80
+              type: cluster
+            - ksvc:
+                  predeployed: true
+              name: tlspass
+              port: 443
+              tlsPass: true
+              type: public
+            - cname:
+                  domain: net-a-demo.cname.com
+                  tslSecretName: ''
+              headers:
+                  request:
+                      set:
+                          - name: someheader
+                            value: somevalue
+                  response:
+                      set:
+                          - name: X-Frame-Options
+                            value: same-origin
+                          - name: sander
+                            value: same-origin
+              ingressClassName: net-a
+              name: service-e
+              trafficControl:
+                  enabled: true
+                  weightV1: 50
+                  weightV2: 50
+              type: public
+              useCname: true
+        backups:
+            - name: bu1
+              schedule: 0 0 0 * *
+              snapshotVolumes: true
+              ttl: 8h
+            - labelSelector:
+                  - name: app
+                    value: hello
+                  - name: backup
+                    value: all
+              name: bu2
+              schedule: 0 0 0 * *
+              snapshotVolumes: true
+              ttl: 8h
+        netpols:
+            - name: allow-egress-1
+              ruleType:
+                  egress:
+                      domain: demo.local
+                      mode: AllowAll
+                      ports:
+                          - number: '123456'
+                            protocol: HTTPS
+                  type: egress
+            - name: allow-ingress-1
+              ruleType:
+                  ingress:
+                      allow:
+                          - fromLabelName: from-name-demo
+                            fromLabelValue: from-value-demo
+                            fromNamespace: from-namespace-demo
+                      mode: AllowOnly
+                      toLabelName: to-label-demo
+                      toLabelValue: to-value-demo
+                  type: ingress
+            - name: allow-egress-2
+              ruleType:
+                  egress:
+                      domain: demo.local
+                  type: egress
+        settings:
+            alerts:
+                email:
+                    critical: admins@yourdoma.in
+                    nonCritical: admins@yourdoma.in
+                receivers:
+                    - slack
+                repeatInterval: 3h
+                slack:
+                    channel: aaaaa
+                    channelCrit: aaaaa
+                    url: https://slack.con
+            id: demo
+            managedMonitoring:
+                alertmanager: true
+                grafana: true
+            networkPolicy:
+                egressPublic: true
+                ingressPrivate: false
+            oidc:
+                groupMapping: somesecretvalue
+            resourceQuota:
+                services.loadbalancers: '1'
+            selfService:
+                access:
+                    - shell
+                    - downloadCertificateAuthority
+                apps: []
+                policies:
+                    - edit policies
+                service:
+                    - ingress
+                team:
+                    - alerts
+            password: somesecretvalue
+        apps:
+            tekton:
+                resources:
+                    buildpacksTask:
+                        limits:
+                            cpu: '2'
+                            memory: 1Gi
+                        requests:
+                            cpu: 500m
+                            memory: 512Mi
+                    dashboard:
+                        limits:
+                            cpu: 100m
+                            memory: 128Mi
+                        requests:
+                            cpu: 10m
+                            memory: 64Mi
+                    gitCloneTask:
+                        limits:
+                            cpu: '2'
+                            memory: 1Gi
+                        requests:
+                            cpu: 500m
+                            memory: 512Mi
+                    grypeTask:
+                        limits:
+                            cpu: '2'
+                            memory: 1Gi
+                        requests:
+                            cpu: 500m
+                            memory: 512Mi
+                    kanikoTask:
+                        limits:
+                            cpu: '2'
+                            memory: 1Gi
+                        requests:
+                            cpu: 500m
+                            memory: 512Mi
+        policies:
+            allowed-image-repositories:
+                action: Audit
+                customValues: []
+                severity: medium
+            disallow-capabilities:
+                action: Audit
+                customValues:
+                    - AUDIT_WRITE
+                    - CHOWN
+                    - DAC_OVERRIDE
+                    - FOWNER
+                    - FSETID
+                    - KILL
+                    - MKNOD
+                    - NET_BIND_SERVICE
+                    - SETFCAP
+                    - SETGID
+                    - SETPCAP
+                    - SETUID
+                    - SYS_CHROOT
+                    - '""'
+                severity: medium
+            disallow-capabilities-strict:
+                action: Audit
+                severity: medium
+            disallow-host-namespaces:
+                action: Audit
+                severity: medium
+            disallow-host-path:
+                action: Audit
+                severity: medium
+            disallow-host-ports:
+                action: Audit
+                severity: medium
+            disallow-host-process:
+                action: Audit
+                severity: medium
+            disallow-latest-tag:
+                action: Audit
+                severity: medium
+            disallow-privilege-escalation:
+                action: Audit
+                severity: medium
+            disallow-privileged-containers:
+                action: Audit
+                severity: medium
+            disallow-proc-mount:
+                action: Audit
+                severity: medium
+            disallow-selinux:
+                action: Audit
+                severity: medium
+            require-labels:
+                action: Audit
+                customValues:
+                    - otomi.io/app
+                severity: medium
+            require-limits:
+                action: Audit
+                severity: medium
+            require-requests:
+                action: Audit
+                severity: medium
+            require-run-as-non-root-user:
+                action: Audit
+                severity: medium
+            require-run-as-nonroot:
+                action: Audit
+                severity: medium
+            restrict-apparmor-profiles:
+                action: Audit
+                severity: medium
+            restrict-seccomp:
+                action: Audit
+                severity: medium
+            restrict-seccomp-strict:
+                action: Audit
+                severity: medium
+            restrict-sysctls:
+                action: Audit
+                severity: medium
+            restrict-volume-types:
+                action: Audit
+                customValues:
+                    - configMap
+                    - csi
+                    - downwardAPI
+                    - emptyDir
+                    - ephemeral
+                    - persistentVolumeClaim
+                    - projected
+                    - secret
+                severity: medium
+    admin:
+        workloads:
+            - chart: crossplane
+              name: crossplane-custom-namespace
+              namespace: crossplane
+              revision: 1.11.2
+              url: https://charts.crossplane.io/stable
+            - name: wa1
+              path: /
+              revision: HEAD
+              url: https://myrepo.local/mychart.git
+            - chart: crossplane
+              name: crossplane-team-namespace
+              revision: 1.11.2
+              url: https://charts.crossplane.io/stable
+            - chart: mychart
+              name: wa2
+              revision: 1.2.3
+              url: https://myregistry.local/mychart
+        services:
+            - auth: true
+              domain: hello.team-admin.dev.linode-apl.net
+              name: hello-admin
+              ownHost: true
+              port: 80
+              type: public
+        settings:
+            id: admin
+            managedMonitoring:
+                alertmanager: true
+                grafana: true
+            selfService:
+                access:
+                    - shell
+                    - downloadCertificateAuthority
+                policies:
+                    - edit policies
+            password: YTrnkdUsKPcGATfg
+        apps: {}
+        policies:
+            allowed-image-repositories:
+                action: Audit
+                customValues: []
+                severity: medium
+            disallow-capabilities:
+                action: Audit
+                customValues:
+                    - AUDIT_WRITE
+                    - CHOWN
+                    - DAC_OVERRIDE
+                    - FOWNER
+                    - FSETID
+                    - KILL
+                    - MKNOD
+                    - NET_BIND_SERVICE
+                    - SETFCAP
+                    - SETGID
+                    - SETPCAP
+                    - SETUID
+                    - SYS_CHROOT
+                    - '""'
+                severity: medium
+            disallow-capabilities-strict:
+                action: Audit
+                severity: medium
+            disallow-host-namespaces:
+                action: Audit
+                severity: medium
+            disallow-host-path:
+                action: Audit
+                severity: medium
+            disallow-host-ports:
+                action: Audit
+                severity: medium
+            disallow-host-process:
+                action: Audit
+                severity: medium
+            disallow-latest-tag:
+                action: Audit
+                severity: medium
+            disallow-privilege-escalation:
+                action: Audit
+                severity: medium
+            disallow-privileged-containers:
+                action: Audit
+                severity: medium
+            disallow-proc-mount:
+                action: Audit
+                severity: medium
+            disallow-selinux:
+                action: Audit
+                severity: medium
+            require-labels:
+                action: Audit
+                customValues:
+                    - otomi.io/app
+                severity: medium
+            require-limits:
+                action: Audit
+                severity: medium
+            require-requests:
+                action: Audit
+                severity: medium
+            require-run-as-non-root-user:
+                action: Audit
+                severity: medium
+            require-run-as-nonroot:
+                action: Audit
+                severity: medium
+            restrict-apparmor-profiles:
+                action: Audit
+                severity: medium
+            restrict-seccomp:
+                action: Audit
+                severity: medium
+            restrict-seccomp-strict:
+                action: Audit
+                severity: medium
+            restrict-sysctls:
+                action: Audit
+                severity: medium
+            restrict-volume-types:
+                action: Audit
+                customValues:
+                    - configMap
+                    - csi
+                    - downwardAPI
+                    - emptyDir
+                    - ephemeral
+                    - persistentVolumeClaim
+                    - projected
+                    - secret
+                severity: medium
+    dev:
+        netpols:
+            - name: allow-ingress-1
+              ruleType:
+                  ingress:
+                      allow:
+                          - fromLabelName: from-name-dev
+                            fromLabelValue: from-value-dev
+                            fromNamespace: from-namespace-dev
+                      mode: AllowOnly
+                      toLabelName: to-label-dev
+                      toLabelValue: to-value-dev
+                  type: ingress
+            - name: allow-egress-2
+              ruleType:
+                  type: egress
+                  egress:
+                      domain: dev.local
+                      mode: AllowAll
+                      ports:
+                          - number: 123456
+                            protocol: HTTPS
+        settings:
+            id: dev
+            managedMonitoring:
+                alertmanager: true
+                grafana: true
+            networkPolicy:
+                egressPublic: false
+                ingressPrivate: true
+            selfService:
+                access:
+                    - shell
+                    - downloadCertificateAuthority
+                policies:
+                    - edit policies
+            password: IkdUsKPcGAdanjas
+        apps: {}
+        policies:
+            allowed-image-repositories:
+                action: Audit
+                customValues: []
+                severity: medium
+            disallow-capabilities:
+                action: Audit
+                customValues:
+                    - AUDIT_WRITE
+                    - CHOWN
+                    - DAC_OVERRIDE
+                    - FOWNER
+                    - FSETID
+                    - KILL
+                    - MKNOD
+                    - NET_BIND_SERVICE
+                    - SETFCAP
+                    - SETGID
+                    - SETPCAP
+                    - SETUID
+                    - SYS_CHROOT
+                    - '""'
+                severity: medium
+            disallow-capabilities-strict:
+                action: Audit
+                severity: medium
+            disallow-host-namespaces:
+                action: Audit
+                severity: medium
+            disallow-host-path:
+                action: Audit
+                severity: medium
+            disallow-host-ports:
+                action: Audit
+                severity: medium
+            disallow-host-process:
+                action: Audit
+                severity: medium
+            disallow-latest-tag:
+                action: Audit
+                severity: medium
+            disallow-privilege-escalation:
+                action: Audit
+                severity: medium
+            disallow-privileged-containers:
+                action: Audit
+                severity: medium
+            disallow-proc-mount:
+                action: Audit
+                severity: medium
+            disallow-selinux:
+                action: Audit
+                severity: medium
+            require-labels:
+                action: Audit
+                customValues:
+                    - otomi.io/app
+                severity: medium
+            require-limits:
+                action: Audit
+                severity: medium
+            require-requests:
+                action: Audit
+                severity: medium
+            require-run-as-non-root-user:
+                action: Audit
+                severity: medium
+            require-run-as-nonroot:
+                action: Audit
+                severity: medium
+            restrict-apparmor-profiles:
+                action: Audit
+                severity: medium
+            restrict-seccomp:
+                action: Audit
+                severity: medium
+            restrict-seccomp-strict:
+                action: Audit
+                severity: medium
+            restrict-sysctls:
+                action: Audit
+                severity: medium
+            restrict-volume-types:
+                action: Audit
+                customValues:
+                    - configMap
+                    - csi
+                    - downwardAPI
+                    - emptyDir
+                    - ephemeral
+                    - persistentVolumeClaim
+                    - projected
+                    - secret
+                severity: medium

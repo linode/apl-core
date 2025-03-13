@@ -55,7 +55,7 @@ extraArgs:
   - --cookie-secure=true
   # - # cookie-httponly=true
   - --reverse-proxy=true
-  - --cookie-refresh=0h1m0s # set to the same as keycloak realm's accessCodeLifespan 
+  - --cookie-refresh=1m
   - --pass-authorization-header=true
   # - # pass-basic-auth=true
   - --skip-auth-regex='/manifest.json'
@@ -68,7 +68,8 @@ extraArgs:
   - --insecure-oidc-allow-unverified-email=true
   - --show-debug-on-error=true
   - --custom-templates-dir=/etc/oauth2-proxy
-  - --backend-logout-url=https://{{ $v._derived.oidcBaseUrl }}/protocol/openid-connect/logout?post_logout_redirect_uri=https://auth.{{ $v.cluster.domainSuffix }}/oauth2/sign_out
+  - --session-cookie-minimal=true
+  - --cookie-expire=0
 
 extraVolumes:
   - name: error-page
