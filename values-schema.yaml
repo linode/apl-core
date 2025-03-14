@@ -1286,9 +1286,6 @@ definitions:
       trigger:
         type: boolean
         default: false
-      giteaWebHookId:
-        type: integer
-        description: Id of the webhook which is used to trigger the build
       externalRepo:
         type: boolean
         description: Select when using an external private Git repository.

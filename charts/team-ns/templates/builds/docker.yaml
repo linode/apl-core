@@ -115,7 +115,8 @@ spec:
                   storage: 1Gi
             status: {}
         - name: build-details
-          value: {{ .mode.docker.repoUrl }}
+          buildName: {{ .name }}
+          repoUrl: {{ .mode.docker.repoUrl }}
         - name: git-credentials
           secret:
             {{- if .externalRepo }}
