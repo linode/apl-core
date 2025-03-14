@@ -2,6 +2,60 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.4.0](https://github.com/linode/apl-core/compare/v4.3.0...v4.4.0) (2025-03-14)
+
+
+### Features
+
+* add coderepository schema & fixtures ([#1945](https://github.com/linode/apl-core/issues/1945)) ([0382ee1](https://github.com/linode/apl-core/commit/0382ee1ecef527cd9b813299a96964fcf9df85fd))
+* added semantic-release gh-actions ([#1933](https://github.com/linode/apl-core/issues/1933)) ([8b379fa](https://github.com/linode/apl-core/commit/8b379fae329bc16b046d92291a479c2591ad32c8))
+* added upgrade script for secrets ([#1967](https://github.com/linode/apl-core/issues/1967)) ([86b8ae0](https://github.com/linode/apl-core/commit/86b8ae05cac57b44239f444ca58cb4f55fbe5e8f))
+* api endpoint ([#1982](https://github.com/linode/apl-core/issues/1982)) ([24b45e9](https://github.com/linode/apl-core/commit/24b45e934b07e1ddf10ad9419e7e50fb8f29cf61))
+* APL-556, Add self-service option for admins to add external helm charts to the catalog ([#1979](https://github.com/linode/apl-core/issues/1979)) ([fb993e1](https://github.com/linode/apl-core/commit/fb993e10f05d0ee0d85fa17223c46c4e836ae490))
+* create service accounts for gitea organizations ([#1929](https://github.com/linode/apl-core/issues/1929)) ([40a3d20](https://github.com/linode/apl-core/commit/40a3d2004b63e6565adb36013b1140b6b5a85984))
+* deploy sealed secrets from the values repo ([#1924](https://github.com/linode/apl-core/issues/1924)) ([f70c855](https://github.com/linode/apl-core/commit/f70c855071e97d5ff4d8c71b3019259c182c1862))
+* update versions.yaml ([#1989](https://github.com/linode/apl-core/issues/1989)) ([69224d6](https://github.com/linode/apl-core/commit/69224d63759866442c9ce459a65d8f5751ce7fc0))
+
+
+### Bug Fixes
+
+* check for helm secrets version and update it ([#1927](https://github.com/linode/apl-core/issues/1927)) ([b74377c](https://github.com/linode/apl-core/commit/b74377cf6cc3ed25f5652f1b17f99a09d366472a))
+* checking if gitea is ready in git-clone tasks ([#1936](https://github.com/linode/apl-core/issues/1936)) ([a3dfb4a](https://github.com/linode/apl-core/commit/a3dfb4a3a4a969677ab96954a47407e5077b05a2))
+* falco dashboard title ([#1928](https://github.com/linode/apl-core/issues/1928)) ([d0fb19c](https://github.com/linode/apl-core/commit/d0fb19cb7bdcc4c0c4b2d2457ef90b0a595b31ac))
+* generate password with special characters ([#1938](https://github.com/linode/apl-core/issues/1938)) ([f16ce6b](https://github.com/linode/apl-core/commit/f16ce6bd00459d769a466a04dccc2de122ea1167))
+* ignoreDifferences for apps created by team-admin ([#1995](https://github.com/linode/apl-core/issues/1995)) ([80e260e](https://github.com/linode/apl-core/commit/80e260e353914b74b1b2d4dd2f5c0bda8771195b))
+* removed git error which can expose credentials ([#1944](https://github.com/linode/apl-core/issues/1944)) ([4c00fa1](https://github.com/linode/apl-core/commit/4c00fa19abbe7277796273e7bcb5e87912f61ed2))
+* unique admin password for gitea ([#1910](https://github.com/linode/apl-core/issues/1910)) ([a2f1349](https://github.com/linode/apl-core/commit/a2f1349b02ab309fa6c20f869964ab09347c4b13))
+* unique admin password for gitea ([#1940](https://github.com/linode/apl-core/issues/1940)) ([eea8299](https://github.com/linode/apl-core/commit/eea82990099125b83c8434b26254acd5d0f14914))
+* workload with validatingwebhookcfg ([#1942](https://github.com/linode/apl-core/issues/1942)) ([70d6aee](https://github.com/linode/apl-core/commit/70d6aee6ff09d4bb9c76fb09ba004693d96b3ff3))
+
+
+### Reverts
+
+* fix - unique admin password for gitea ([#1939](https://github.com/linode/apl-core/issues/1939)) ([7d8bf90](https://github.com/linode/apl-core/commit/7d8bf908d2d5e55a718bc4eef292c6cc9fb3e977))
+
+
+### CI
+
+* add charts and alias ([#1931](https://github.com/linode/apl-core/issues/1931)) ([57c74ec](https://github.com/linode/apl-core/commit/57c74ec67890cb205d23c89a6c6671aeac9cb6da))
+* added alias for rabbitmq operator ([#1966](https://github.com/linode/apl-core/issues/1966)) ([c557cbf](https://github.com/linode/apl-core/commit/c557cbfd6f915a30432d1b3c4db1fb6cab733d42))
+* added more linode types to the integration workflow ([#1976](https://github.com/linode/apl-core/issues/1976)) ([2c6e084](https://github.com/linode/apl-core/commit/2c6e084bcca9a309597c6e018273cd15733bdfd6))
+* update chart index and improve checks ([#1963](https://github.com/linode/apl-core/issues/1963)) ([0ee8cd2](https://github.com/linode/apl-core/commit/0ee8cd27b1d9c47a47145254dc301fca1736bb0e))
+* update chart references ([#1937](https://github.com/linode/apl-core/issues/1937)) ([fea5c4c](https://github.com/linode/apl-core/commit/fea5c4c2c29443c75217d5068b85ec298ae8d079))
+* update workflow to support k8s 1.32 and wait for kubeconfig ([#1943](https://github.com/linode/apl-core/issues/1943)) ([ab7b631](https://github.com/linode/apl-core/commit/ab7b6311dac8eee3a72dc2c7632829df04b021b1))
+
+
+### Others
+
+* **chart-deps:** update cert-manager to version v1.17.1 ([#1941](https://github.com/linode/apl-core/issues/1941)) ([e634d34](https://github.com/linode/apl-core/commit/e634d3468c4c0e86eb9451eee1906932e958d89d))
+* **chart-deps:** update harbor to version 1.16.2 ([#1903](https://github.com/linode/apl-core/issues/1903)) ([af1a3a0](https://github.com/linode/apl-core/commit/af1a3a02a1137df6e7922ff76ffd04c0b5e98efd))
+* **chart-deps:** update rabbitmq-cluster-operator to version 3.20.1 ([#1969](https://github.com/linode/apl-core/issues/1969)) ([d3f8a2f](https://github.com/linode/apl-core/commit/d3f8a2f923f51eb52e35c23942c3ff5414100495))
+* **deps:** bump helm/chart-releaser-action from 1.6.0 to 1.7.0 ([#1901](https://github.com/linode/apl-core/issues/1901)) ([d759673](https://github.com/linode/apl-core/commit/d75967368303bb72626ddbb399fd790f30b7d837))
+* **deps:** bump ncipollo/release-action from 1.14.0 to 1.15.0 ([#1893](https://github.com/linode/apl-core/issues/1893)) ([abdee3d](https://github.com/linode/apl-core/commit/abdee3d9c187d456849cf99e6e9fd6e73b4b20db))
+* tasks version to 3.7.0 ([#1977](https://github.com/linode/apl-core/issues/1977)) ([cfa5608](https://github.com/linode/apl-core/commit/cfa5608c8060a641cee08b50fc05e38198b5a101))
+* updated api and console versions ([#1999](https://github.com/linode/apl-core/issues/1999)) ([753e480](https://github.com/linode/apl-core/commit/753e480388c650e1114f7f062cfbb5e47c731284))
+* versions ([#1970](https://github.com/linode/apl-core/issues/1970)) ([40ef843](https://github.com/linode/apl-core/commit/40ef843a930683215ce271571dfcad8a601caf0e))
+
 ## [4.3.0](https://github.com/linode/apl-core/compare/v4.2.0...v4.3.0) (2025-02-10)
 
 
