@@ -44,7 +44,7 @@ extraArgs:
   # - # supported=oidc, google, azure, github
   - --provider=oidc
   - --whitelist-domain={{ $domainList }}
-  - --scope={{ $o | get "scope" "openid email profile" }}
+  - --scope={{ $o | get "scope" "openid email profile offline_access" }}
   - --session-store-type=redis
   - --redis-connection-url=redis://oauth2-proxy-redis-master
   - --redis-password={{ $r | get "password" }}
