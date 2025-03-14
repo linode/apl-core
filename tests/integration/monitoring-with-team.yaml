@@ -62,7 +62,6 @@ teamConfig:
             mode: DenyAll
         ownHost: true
         port: 80
-        type: public
     workloads:
       - name: petclinic
         path: otomi-deployment
