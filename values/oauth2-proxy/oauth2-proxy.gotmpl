@@ -68,7 +68,7 @@ extraArgs:
   - --insecure-oidc-allow-unverified-email=true
   - --show-debug-on-error=true
   - --custom-templates-dir=/etc/oauth2-proxy
-  - --cookie-expire=0
+  - --cookie-expire=5m
 
 extraVolumes:
   - name: error-page
