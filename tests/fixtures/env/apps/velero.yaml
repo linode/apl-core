@@ -1,5 +1,8 @@
-apps:
-    velero:
-        enabled: true
-        restic:
-            enabled: false
+kind: AplCoreApp
+metadata:
+    name: velero
+    labels: {}
+spec:
+    enabled: true
+    restic:
+        enabled: false

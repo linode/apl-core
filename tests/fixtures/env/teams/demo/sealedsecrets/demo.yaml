@@ -1,0 +1,19 @@
+kind: AplTeamSecret
+metadata:
+    name: demo
+    labels:
+        apl.io/teamId: demo
+spec:
+    encryptedData:
+        foo: bar
+    metadata:
+        annotations:
+            - key: test
+              value: annotation
+        finalizers:
+            - sealedsecrets.bitnami.com/finalizer-sealedsecret-v1alpha1
+        labels:
+            - key: test
+              value: label
+    name: demo
+    type: kubernetes.io/opaque

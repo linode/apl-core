@@ -1,4 +1,3 @@
-import { pathExists } from 'fs-extra'
 import { readFile } from 'fs/promises'
 import { glob } from 'glob'
 import { has, set } from 'lodash'
@@ -6,8 +5,9 @@ import { parse } from 'yaml'
 import { $, ProcessPromise } from 'zx'
 import { logLevels, terminal } from './debug'
 import { env } from './envalid'
+import { getFileMaps, setValuesFile } from './repo'
 import { asArray, extract, flattenObject, getValuesSchema, isCore, rootDir } from './utils'
-import { HelmArguments, getParsedArgs } from './yargs'
+import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
@@ -61,11 +61,13 @@ type HFOptions = {
   streams?: Streams
 }
 
-export const hf = async (args: HFParams, opts?: HFOptions, envDir?: string): Promise<ProcessOutputTrimmed> => {
+export const hf = async (args: HFParams, opts?: HFOptions, envDir = env.ENV_DIR): Promise<ProcessOutputTrimmed> => {
+  await setValuesFile(env.ENV_DIR)
   const proc: ProcessPromise = hfCore(args, envDir)
   if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
   if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
-  return new ProcessOutputTrimmed(await proc)
+  const res = new ProcessOutputTrimmed(await proc)
+  return res
 }
 
 export interface ValuesArgs {
@@ -81,12 +83,6 @@ export const hfValues = async (
   { filesOnly = false, excludeSecrets = false, withWorkloadValues = false, defaultValues = false }: ValuesArgs = {},
   envDir: string = env.ENV_DIR,
 ): Promise<Record<string, any> | undefined> => {
-  const d = terminal('common:hf:hfValues')
-  if (!(await Promise.all([pathExists(`${envDir}/env/teams.yaml`), pathExists(`${envDir}/env/settings.yaml`)]))) {
-    // teams and settings file are the minimum needed files to run env.gotmpl and get the values
-    d.info('No teams or cluster info found. ENV_DIR is potentially empty.')
-    return undefined
-  }
   let output: ProcessOutputTrimmed
   if (filesOnly)
     output = await hf(
@@ -108,28 +104,35 @@ export const hfValues = async (
     const schema = await getValuesSchema()
     const allSecrets = extract(schema, 'x-secret')
     const allSecretsPaths = Object.keys(flattenObject(allSecrets))
-    allSecretsPaths.forEach((path) => {
-      if (has(res, path)) set(res, path, '<redacted>')
+    allSecretsPaths.forEach((filePath) => {
+      if (has(res, filePath)) set(res, filePath, '<redacted>')
     })
   }
 
   if (withWorkloadValues) {
-    const files = {}
-    const filePaths = await glob([
-      `${envDir}/env/teams/workloads/**/*.yaml`,
-      `${envDir}/env/teams/*/sealedsecrets/*.yaml`,
-    ])
-
-    await Promise.allSettled(
-      filePaths.map(async (path) => {
-        const relativePath = path.replace(`${envDir}/`, '')
-        files[relativePath] = (await readFile(path)).toString()
-      }),
-    )
+    const files = await getStandaloneFiles(envDir)
     res.files = files
   }
 
   return res
+}
+
+// Get file content for those files that are not automatically loaded to the spec
+export const getStandaloneFiles = async (envDir: string): Promise<Record<string, any>> => {
+  const files = {}
+  const maps = getFileMaps(envDir).filter((map) => map.loadToSpec === false)
+  const pathGlobs = maps.map((fileMap) => {
+    return fileMap.pathGlob
+  })
+  const filePaths = await glob(pathGlobs)
+
+  await Promise.allSettled(
+    filePaths.map(async (path) => {
+      const relativePath = path.replace(`${envDir}/`, '')
+      files[relativePath] = await readFile(path, 'utf8')
+    }),
+  )
+  return files
 }
 
 export const getHelmArgs = (argv: HelmArguments, args: string[] = []): string[] => {

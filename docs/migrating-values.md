@@ -36,7 +36,7 @@ Let's take a look at an example:
 changes:
   - version: 3
     renamings:
-      - env/base.yaml: env/settings.yaml
+      - env/base.yaml: env/settings/otomi.yaml
     deletions:
       # The key at (json)path charts.bla.someProp gets removed from ENV_DIR
       - charts.bla.someProp
