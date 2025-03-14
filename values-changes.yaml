@@ -337,4 +337,5 @@ changes:
       - databases.harbor.resources.requests.memory: '192Mi'
       - databases.harbor.resources.requests.cpu: '200m'
   - version: 34
+    deletions:
       - 'teamConfig.{team}.services[].type'
