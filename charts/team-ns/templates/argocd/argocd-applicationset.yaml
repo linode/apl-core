@@ -80,6 +80,15 @@ spec:
           kind: ValidatingWebhookConfiguration
           jqPathExpressions:
           - '.webhooks[]?.clientConfig.caBundle'
+        - group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          jqPathExpressions:
+          - '.webhooks[]?.clientConfig.caBundle'
+        - group: "apps"
+          kind: "StatefulSet"
+          jqPathExpressions:
+            - ".spec.volumeClaimTemplates[].apiVersion"
+            - ".spec.volumeClaimTemplates[].kind"
         {{- end }}
       destination:
         server: 'https://kubernetes.default.svc'
