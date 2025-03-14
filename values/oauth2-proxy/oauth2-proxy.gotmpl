@@ -44,8 +44,8 @@ extraArgs:
   # - # supported=oidc, google, azure, github
   - --provider=oidc
   - --whitelist-domain={{ $domainList }}
-  - --scope={{ $o | get "scope" "openid email profile" }}
-  - --session-store-type=redis
+  - --scope={{ $o | get "scope" "openid email profile offline_access" }}
+  - --session-store-type=cookie
   - --redis-connection-url=redis://oauth2-proxy-redis-master
   - --redis-password={{ $r | get "password" }}
   - --redirect-url=https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
@@ -55,7 +55,7 @@ extraArgs:
   - --cookie-secure=true
   # - # cookie-httponly=true
   - --reverse-proxy=true
-  - --cookie-refresh=0h1m0s # set to the same as keycloak realm's accessCodeLifespan 
+  - --cookie-refresh=1m
   - --pass-authorization-header=true
   # - # pass-basic-auth=true
   - --skip-auth-regex='/manifest.json'
@@ -68,6 +68,7 @@ extraArgs:
   - --insecure-oidc-allow-unverified-email=true
   - --show-debug-on-error=true
   - --custom-templates-dir=/etc/oauth2-proxy
+  - --cookie-expire=5m
 
 extraVolumes:
   - name: error-page
