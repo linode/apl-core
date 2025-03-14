@@ -1,5 +1,5 @@
-api: APL-650
-console: fc-fix-errors
+api: 3.7.2
+console: APL-651
 consoleLogin: v3.5.0
 tasks: 3.7.0
 tools: 2.8.7
