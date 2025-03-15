@@ -21,7 +21,7 @@ dependencies:
     version: 3.8.5
     repository: https://falcosecurity.github.io/charts
   - name: falco-exporter
-    version: 0.9.7
+    version: 0.12.2
     repository: https://falcosecurity.github.io/charts
   - name: gitea
     version: 5.0.0

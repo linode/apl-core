@@ -31,7 +31,7 @@ spec:
         summary: Falco is experiencing high rate of warning events
         description: A high rate of warning events are being detected by Falco
       expr: rate(falco_events{priority="4"}[{{ .Values.prometheusRules.alerts.warning.rate_interval }}]) > {{ .Values.prometheusRules.alerts.warning.threshold }}
-      for: 15m
+      for: {{ .Values.prometheusRules.alerts.warning.for }}
       labels:
         severity: warning
     {{- end }}
@@ -41,7 +41,7 @@ spec:
         summary: Falco is experiencing high rate of error events
         description: A high rate of error events are being detected by Falco
       expr: rate(falco_events{priority="3"}[{{ .Values.prometheusRules.alerts.error.rate_interval }}]) > {{ .Values.prometheusRules.alerts.error.threshold }}
-      for: 15m
+      for: {{ .Values.prometheusRules.alerts.error.for }}
       labels:
         severity: warning
     {{- end }}
@@ -51,7 +51,7 @@ spec:
         summary: Falco is experiencing high rate of critical events
         description: A high rate of critical events are being detected by Falco
       expr: rate(falco_events{priority="2"}[{{ .Values.prometheusRules.alerts.critical.rate_interval }}]) > {{ .Values.prometheusRules.alerts.critical.threshold }}
-      for: 15m
+      for: {{ .Values.prometheusRules.alerts.critical.for }}
       labels:
         severity: critical
     {{- end }}
@@ -61,7 +61,7 @@ spec:
         summary: Falco is experiencing high rate of alert events
         description: A high rate of alert events are being detected by Falco
       expr: rate(falco_events{priority="1"}[{{ .Values.prometheusRules.alerts.alert.rate_interval }}]) > {{ .Values.prometheusRules.alerts.alert.threshold }}
-      for: 5m
+      for: {{ .Values.prometheusRules.alerts.alert.for }}
       labels:
         severity: critical
     {{- end }}
@@ -71,7 +71,7 @@ spec:
         summary: Falco is experiencing high rate of emergency events
         description: A high rate of emergency events are being detected by Falco
       expr: rate(falco_events{priority="0"}[{{ .Values.prometheusRules.alerts.emergency.rate_interval }}]) > {{ .Values.prometheusRules.alerts.emergency.threshold }}
-      for: 1m
+      for: {{ .Values.prometheusRules.alerts.emergency.for }}
       labels:
         severity: critical
     {{- end }}

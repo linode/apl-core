@@ -1,6 +1,7 @@
 apiVersion: v2
-appVersion: 0.8.3
-description: Prometheus Metrics Exporter for Falco output events
+appVersion: 0.8.7
+deprecated: true
+description: DEPRECATED Prometheus Metrics Exporter for Falco output events
 keywords:
 - monitoring
 - security
@@ -15,4 +16,4 @@ name: falco-exporter
 sources:
 - https://github.com/falcosecurity/falco-exporter
 type: application
-version: 0.9.7
+version: 0.12.2
