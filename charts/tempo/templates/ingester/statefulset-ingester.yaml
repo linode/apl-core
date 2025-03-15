@@ -1,5 +1,7 @@
 {{- $dict := dict "ctx" . "component" "ingester" "memberlist" true -}}
 {{- $zonesMap := include "ingester.zoneAwareReplicationMap" $dict | fromYaml -}}
+{{- $storageClass := .Values.ingester.persistence.storageClass | default .Values.global.storageClass }}
+{{- if eq $storageClass "-" }}{{- $storageClass = "" }}{{- end }}
 {{- range $zoneName, $rolloutZone := $zonesMap -}}
 {{- with $ -}}
 {{- $_ := set $dict "rolloutZoneName" $zoneName -}}
@@ -32,17 +34,13 @@ spec:
     {{- if .Values.ingester.zoneAwareReplication.enabled }}
     type: OnDelete
     {{- else }}
-    rollingUpdate:
-      partition: 0
+    {{- toYaml .Values.ingester.statefulStrategy | nindent 4 }}
     {{- end }}
   template:
     metadata:
       labels:
         {{- include "ingester.podLabels" $dict | nindent 8 }}
         {{- with .Values.tempo.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- with .Values.ingester.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
       annotations:
@@ -75,6 +73,9 @@ spec:
             - -target=ingester
             - -config.file=/conf/tempo.yaml
             - -mem-ballast-size-mbs=1024
+            {{- if ne $zoneName ""}}
+            - -ingester.availability-zone={{ $zoneName }}
+            {{- end }}
             {{- with .Values.ingester.extraArgs }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
@@ -176,6 +177,11 @@ spec:
             sizeLimit: {{ .Values.ingester.persistence.size }}
         {{- end }}
   {{- else }}
+  {{- if .Values.ingester.persistentVolumeClaimRetentionPolicy.enabled }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.ingester.persistentVolumeClaimRetentionPolicy.whenDeleted }}
+    whenScaled: {{ .Values.ingester.persistentVolumeClaimRetentionPolicy.whenScaled }}
+  {{- end }}
   volumeClaimTemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -188,9 +194,7 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        {{- with .Values.ingester.persistence.storageClass }}
-        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
-        {{- end }}
+        storageClassName: {{ if $storageClass }}{{ $storageClass }}{{ else }}{{- "" }}{{ end }}
         resources:
           requests:
             storage: {{ .Values.ingester.persistence.size | quote }}
