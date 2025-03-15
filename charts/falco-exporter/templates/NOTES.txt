@@ -1,3 +1,9 @@
+The falco-exporter project is currently being DEPRECATED. 
+Contributions are not accepted, and the repository will be fully archived in the future. 
+Starting from Falco version 0.38, Falco can expose Prometheus metrics directly, 
+eliminating the need for a separate exporter. 
+For further details, please refer to the https://falco.org/docs/metrics/.
+
 Get the falco-exporter metrics URL by running these commands:
 {{- if contains "NodePort" .Values.service.type }}
   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "falco-exporter.fullname" . }})
