@@ -19,6 +19,8 @@ global:
   # -- Common environment variables to add to all pods directly managed by this chart.
   # scope: admin-api, compactor, distributor, enterprise-federation-frontend, gateway, ingester, memcached, metrics-generator, querier, query-frontend, tokengen
   extraEnv: []
+  # -- Global storage class to be used for persisted components
+  storageClass: null
 fullnameOverride: ''
 # fullnameOverride: tempo
 
@@ -85,7 +87,18 @@ tempo:
   memberlist:
     # -- Adds the appProtocol field to the memberlist service. This allows memberlist to work with istio protocol selection. Set the optional service protocol. Ex: "tcp", "http" or "https".
     appProtocol: null
-
+    # -- Adds the service field to the memberlist service
+    service:
+      # -- Sets optional annotations to the service field of the memberlist service.
+      annotations: {}
+  service:
+    # -- Configure the IP families for all tempo services
+    # See the Service spec for details: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#servicespec-v1-core
+    ipFamilies:
+      - 'IPv4'
+    #   - 'IPv6'
+    # -- Configure the IP family policy for all tempo services.  SingleStack, PreferDualStack or RequireDualStack
+    ipFamilyPolicy: 'SingleStack'
 serviceAccount:
   # -- Specifies whether a ServiceAccount should be created
   create: true
@@ -192,6 +205,7 @@ ingester:
   extraVolumeMounts: []
   # -- Extra volumes for ingester deployment
   extraVolumes: []
+  # -- Persistence configuration for ingester
   persistence:
     # -- Enable creating PVCs which is required when using boltdb-shipper
     enabled: false
@@ -207,6 +221,18 @@ ingester:
     storageClass: null
     # -- Annotations for ingester's persist volume claim
     annotations: {}
+
+  # -- updateStrategy of the ingester statefulset. This is ignored when ingester.zoneAwareReplication.enabled=true.
+  statefulStrategy:
+    rollingUpdate:
+      partition: 0
+  persistentVolumeClaimRetentionPolicy:
+    # -- Enable Persistent volume retention policy for StatefulSet
+    enabled: false
+    # -- Volume retention behavior when the replica count of the StatefulSet is reduced
+    whenScaled: Retain
+    # -- Volume retention behavior that applies when the StatefulSet is deleted
+    whenDeleted: Retain
   config:
     # -- Number of copies of spans to store in the ingester ring
     replication_factor: 3
@@ -225,6 +251,10 @@ ingester:
   service:
     # -- Annotations for ingester service
     annotations: {}
+    # -- Type of the service: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+    type: ClusterIP
+    # -- https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/
+    internalTrafficPolicy: Cluster
   # -- Adds the appProtocol field to the ingester service. This allows ingester to work with istio protocol selection.
   appProtocol:
     # -- Set the optional grpc service protocol. Ex: "grpc", "http2" or "https"
@@ -377,6 +407,13 @@ metricsGenerator:
   extraVolumeMounts: []
   # -- Extra volumes for metrics-generator deployment
   extraVolumes: []
+  persistentVolumeClaimRetentionPolicy:
+    # -- Enable Persistent volume retention policy for StatefulSet
+    enabled: false
+    # -- Volume retention behavior when the replica count of the StatefulSet is reduced
+    whenScaled: Retain
+    # -- Volume retention behavior that applies when the StatefulSet is deleted
+    whenDeleted: Retain
   # -- Default ports
   ports:
     - name: grpc
@@ -395,10 +432,10 @@ metricsGenerator:
       external_labels: {}
       stale_duration: 15m
     processor:
-      # -- For processors to be enabled and generate metrics, pass the names of the processors to overrides.metrics_generator_processors value like [service-graphs, span-metrics]
+      # -- For processors to be enabled and generate metrics, pass the names of the processors to `global_overrides.defaults.metrics_generator_processors` value like `[service-graphs, span-metrics]`.
       service_graphs:
-        # -- Additional dimensions to add to the metrics. Dimensions are searched for in the
-        # -- resource and span attributes and are added to the metrics if present.
+        # -- Additional dimensions to add to the metrics along with the default dimensions.
+        # -- The resource and span attributes to be added to the service graph metrics, if present.
         dimensions: []
         histogram_buckets: [0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 6.4, 12.8]
         max_items: 10000
@@ -406,7 +443,7 @@ metricsGenerator:
         workers: 10
       span_metrics:
         # -- Additional dimensions to add to the metrics along with the default dimensions.
-        # -- Dimensions are searched for in the resource and span attributes and are added to the metrics if present.
+        # -- The resource and span attributes to be added to the span metrics, if present.
         dimensions: []
         histogram_buckets: [0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.256, 0.512, 1.02, 2.05, 4.10]
     storage:
@@ -453,13 +490,13 @@ distributor:
     # -- Target memory utilisation percentage for the distributor
     targetMemoryUtilizationPercentage:
   image:
-    # -- The Docker registry for the ingester image. Overrides `tempo.image.registry`
+    # -- The Docker registry for the distributor image. Overrides `tempo.image.registry`
     registry: null
     # -- Optional list of imagePullSecrets. Overrides `tempo.image.pullSecrets`
     pullSecrets: []
-    # -- Docker image repository for the ingester image. Overrides `tempo.image.repository`
+    # -- Docker image repository for the distributor image. Overrides `tempo.image.repository`
     repository: null
-    # -- Docker image tag for the ingester image. Overrides `tempo.image.tag`
+    # -- Docker image tag for the distributor image. Overrides `tempo.image.tag`
     tag: null
   service:
     # -- Annotations for distributor service
@@ -474,6 +511,8 @@ distributor:
     loadBalancerSourceRanges: []
     # -- If type is LoadBalancer you can set it to 'Local' [preserve the client source IP](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip)
     externalTrafficPolicy: null
+    # -- https://kubernetes.io/docs/concepts/services-networking/service-traffic-policy/
+    internalTrafficPolicy: Cluster
   serviceDiscovery:
     # -- Annotations for distributorDiscovery service
     annotations: {}
@@ -536,6 +575,10 @@ distributor:
     log_received_traces: null
     # -- Enable to log every received span to help debug ingestion or calculate span error distributions using the logs
     log_received_spans:
+      enabled: false
+      include_all_attributes: false
+      filter_by_status_error: false
+    log_discarded_spans:
       enabled: false
       include_all_attributes: false
       filter_by_status_error: false
@@ -606,12 +649,32 @@ compactor:
   podLabels: {}
   # -- Annotations for compactor pods
   podAnnotations: {}
+  # -- Affinity for compactor pods. Passed through `tpl` and, thus, to be configured as string
+  # @default -- Hard node and soft zone anti-affinity
+  affinity: |
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              {{- include "tempo.selectorLabels" (dict "ctx" . "component" "compactor") | nindent 10 }}
+          topologyKey: kubernetes.io/hostname
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                {{- include "tempo.selectorLabels" (dict "ctx" . "component" "compactor") | nindent 12 }}
+            topologyKey: topology.kubernetes.io/zone
   # -- Additional CLI args for the compactor
   extraArgs: []
   # -- Environment variables to add to the compactor pods
   extraEnv: []
   # -- Environment variables from secrets or configmaps to add to the compactor pods
   extraEnvFrom: []
+  # -- Init containers to add to the compactor pod
+  initContainers: []
+  # -- Containers to add to the compactor pod
+  extraContainers: []
   # -- Resource requests and limits for the compactor
   resources: {}
   # -- Grace period to allow the compactor to shutdown before it is killed
@@ -734,6 +797,8 @@ querier:
             topologyKey: topology.kubernetes.io/zone
   # -- Pod Disruption Budget maxUnavailable
   maxUnavailable: 1
+  # -- Max Surge for querier pods
+  maxSurge: 0
   # -- Node selector for querier pods
   nodeSelector: {}
   # -- Tolerations for querier pods
@@ -752,20 +817,6 @@ querier:
     search:
       # -- Timeout for search requests
       query_timeout: 30s
-      # -- If search_external_endpoints is set then the querier will primarily act as a proxy for whatever serverless backend you have configured. This setting allows the operator to have the querier prefer itself for a configurable number of subqueries.
-      prefer_self: 10
-      # -- If set to a non-zero value a second request will be issued at the provided duration. Recommended to be set to p99 of external search requests to reduce long tail latency.
-      external_hedge_requests_at: 8s
-      # -- The maximum number of requests to execute when hedging. Requires hedge_requests_at to be set.
-      external_hedge_requests_up_to: 2
-      # -- A list of external endpoints that the querier will use to offload backend search requests
-      external_endpoints: []
-      # -- The serverless backend to use. The default value of "" omits
-      # -- credentials when querying the external backend.
-      external_backend: ""
-      # -- Google Cloud Run configuration. Will be used only if the value of
-      # -- external_backend is "google_cloud_run".
-      google_cloud_run: {}
     # -- This value controls the overall number of simultaneous subqueries that the querier will service at once. It does not distinguish between the types of queries.
     max_concurrent_queries: 20
 
@@ -783,13 +834,13 @@ queryFrontend:
     # -- Required for grafana version <7.5 for compatibility with jaeger-ui. Doesn't work on ARM arch
     enabled: false
     image:
-      # -- The Docker registry for the query-frontend image. Overrides `tempo.image.registry`
+      # -- The Docker registry for the tempo-query image. Overrides `tempo.image.registry`
       registry: null
       # -- Optional list of imagePullSecrets. Overrides `tempo.image.pullSecrets`
       pullSecrets: []
-      # -- Docker image repository for the query-frontend image. Overrides `tempo.image.repository`
+      # -- Docker image repository for the tempo-query image. Overrides `tempo.image.repository`
       repository: grafana/tempo-query
-      # -- Docker image tag for the query-frontend image. Overrides `tempo.image.tag`
+      # -- Docker image tag for the tempo-query image. Overrides `tempo.image.tag`
       tag: null
     # -- Resource requests and limits for the query
     resources: {}
@@ -826,6 +877,27 @@ queryFrontend:
     trace_by_id:
       # -- The number of shards to split a trace by id query into.
       query_shards: 50
+    metrics:
+      # -- The number of concurrent jobs to execute when querying the backend.
+      concurrent_jobs: 1000
+      # -- The target number of bytes for each job to handle when querying the backend.
+      target_bytes_per_job: 104857600
+      # -- The maximum allowed time range for a metrics query.
+      # 0 disables this limit.
+      max_duration: 3h
+      # -- query_backend_after controls where the query-frontend searches for traces.
+      # Time ranges older than query_backend_after will be searched in the backend/object storage only.
+      # Time ranges between query_backend_after and now will be queried from the metrics-generators.
+      query_backend_after: 30m
+      # -- The target length of time for each job to handle when querying the backend.
+      interval: 5m
+      # -- If set to a non-zero value, it's value will be used to decide if query is within SLO or not.
+      # Query is within SLO if it returned 200 within duration_slo seconds OR processed throughput_slo bytes/s data.
+      # NOTE: `duration_slo` and `throughput_bytes_slo` both must be configured for it to work
+      duration_slo: 0s
+      # -- If set to a non-zero value, it's value will be used to decide if query is within SLO or not.
+      # Query is within SLO if it returned 200 within duration_slo seconds OR processed throughput_slo bytes/s data.
+      throughput_bytes_slo: 0
   autoscaling:
     # -- Enable autoscaling for the query-frontend
     enabled: false
@@ -953,7 +1025,7 @@ enterpriseFederationFrontend:
   #  - ip: 1.2.3.4
   #    hostnames:
   #      - domain.tld
-  # proxy_targets:
+  proxy_targets: []
   #   - name: own-data-center
   #     url: http://get/tempo
   #   - name: grafana-cloud
@@ -961,7 +1033,6 @@ enterpriseFederationFrontend:
   #     basic_auth:
   #       username: <instance-id>
   #       password: <token>
-  proxy_targets: []
   autoscaling:
     # -- Enable autoscaling for the federation-frontend
     enabled: false
@@ -1115,6 +1186,7 @@ traces:
 # -- Memberlist configuration. Please refer to https://grafana.com/docs/tempo/latest/configuration/#memberlist
 memberlist:
   node_name: ""
+  cluster_label: "{{ .Release.Name }}.{{ .Release.Namespace }}"
   randomize_node_name: true
   stream_timeout: "10s"
   retransmit_factor: 2
@@ -1305,6 +1377,12 @@ config: |
       kafka:
         {{- toYaml .Values.traces.kafka | nindent 6 }}
       {{- end }}
+    {{- if .Values.distributor.config.log_discarded_spans.enabled }}
+    log_discarded_spans:
+      enabled: {{ .Values.distributor.config.log_discarded_spans.enabled }}
+      include_all_attributes: {{ .Values.distributor.config.log_discarded_spans.include_all_attributes }}
+      filter_by_status_error: {{ .Values.distributor.config.log_discarded_spans.filter_by_status_error }}
+    {{- end }}
     {{- if or .Values.distributor.config.log_received_traces .Values.distributor.config.log_received_spans.enabled }}
     log_received_spans:
       enabled: {{ or .Values.distributor.config.log_received_traces .Values.distributor.config.log_received_spans.enabled }}
@@ -1324,16 +1402,7 @@ config: |
     trace_by_id:
       query_timeout: {{ .Values.querier.config.trace_by_id.query_timeout }}
     search:
-      external_endpoints: {{- toYaml .Values.querier.config.search.external_endpoints | nindent 6 }}
       query_timeout: {{ .Values.querier.config.search.query_timeout }}
-      prefer_self: {{ .Values.querier.config.search.prefer_self }}
-      external_hedge_requests_at: {{ .Values.querier.config.search.external_hedge_requests_at }}
-      external_hedge_requests_up_to: {{ .Values.querier.config.search.external_hedge_requests_up_to }}
-      external_backend: {{ .Values.querier.config.search.external_backend }}
-      {{- if .Values.querier.config.search.google_cloud_run }}
-      google_cloud_run:
-        {{- toYaml .Values.querier.config.search.google_cloud_run | nindent 6 }}
-      {{- end }}
     max_concurrent_queries: {{ .Values.querier.config.max_concurrent_queries }}
   query_frontend:
     max_outstanding_per_tenant: {{ .Values.queryFrontend.config.max_outstanding_per_tenant }}
@@ -1343,7 +1412,14 @@ config: |
       concurrent_jobs: {{ .Values.queryFrontend.config.search.concurrent_jobs }}
     trace_by_id:
       query_shards: {{ .Values.queryFrontend.config.trace_by_id.query_shards }}
-
+    metrics:
+      concurrent_jobs:  {{ .Values.queryFrontend.config.metrics.concurrent_jobs }}
+      target_bytes_per_job:  {{ .Values.queryFrontend.config.metrics.target_bytes_per_job }}
+      max_duration: {{ .Values.queryFrontend.config.metrics.max_duration }}
+      query_backend_after: {{ .Values.queryFrontend.config.metrics.query_backend_after }}
+      interval: {{ .Values.queryFrontend.config.metrics.interval }}
+      duration_slo: {{ .Values.queryFrontend.config.metrics.duration_slo }}
+      throughput_bytes_slo: {{ .Values.queryFrontend.config.metrics.throughput_bytes_slo }}
   ingester:
     lifecycler:
       ring:
@@ -1427,7 +1503,7 @@ config: |
 server:
   # --  HTTP server listen host
   httpListenPort: 3100
-  # -- Log level. Can be set to trace, debug, info (default), warn, error, fatal, panic
+  # -- Log level. Can be set to debug, info (default), warn, error
   logLevel: info
   # -- Log format. Can be set to logfmt (default) or json.
   logFormat: logfmt
@@ -1473,7 +1549,7 @@ storage:
       dedicated_columns: []
     # -- The supported storage backends are gcs, s3 and azure, as specified in https://grafana.com/docs/tempo/latest/configuration/#storage
     backend: local
-    # The worker pool is used primarily when finding traces by id, but is also used by other.
+    # The worker pool is used primarily when finding traces by id, but is also used by others.
     pool:
       # -- Total number of workers pulling jobs from the queue
       max_workers: 400
@@ -1484,11 +1560,11 @@ storage:
     # -- The supported storage backends are gcs, s3 and azure, as specified in https://grafana.com/docs/enterprise-traces/latest/configure/reference/#admin_client_config
     backend: filesystem
 
-# Global overrides
+# -- The standard overrides configuration section. This can include a `defaults` object for applying to all tenants (not to be confused with the `global` property of the same name, which overrides `max_byte_per_trace` for all tenants). For an example on how to enable the metrics generator using the `global_overrides` object, see the 'Activate metrics generator' section below. Refer to [Standard overrides](https://grafana.com/docs/tempo/latest/configuration/#standard-overrides) for more details.
 global_overrides:
   per_tenant_override_config: /runtime-config/overrides.yaml
 
-# Per tenants overrides
+# -- The runtime overrides to write to the `per_tenant_override_config` file for Tempo (see `global_overrides` and the `per_tenant_override_config` property). This allows overriding the `ingestion` and `global` values on a per-tenant basis. Note that *all* values must be given for each per-tenant configuration block. Refer to [Runtime overrides](https://grafana.com/docs/tempo/latest/configuration/#runtime-overrides) documentation for more details.
 overrides: {}
 
 # memcached is for all of the Tempo pieces to coordinate with each other.
@@ -1504,7 +1580,7 @@ memcached:
     # -- Memcached Docker image repository
     repository: memcached
     # -- Memcached Docker image tag
-    tag: 1.6.29-alpine
+    tag: 1.6.33-alpine
     # -- Memcached Docker image pull policy
     pullPolicy: IfNotPresent
   host: memcached
@@ -1512,6 +1588,8 @@ memcached:
   replicas: 1
   # -- Additional CLI args for memcached
   extraArgs: []
+  # -- Toleration for memcached pods
+  tolerations: []
   # -- Environment variables to add to memcached pods
   extraEnv: []
   # -- Environment variables from secrets or configmaps to add to memcached pods
@@ -1523,7 +1601,7 @@ memcached:
   # -- Resource requests and limits for memcached
   resources: {}
   # -- topologySpread for memcached pods. Passed through `tpl` and, thus, to be configured as string
-  # @default -- Defaults to allow skew no more then 1 node per AZ
+  # @default -- Defaults to allow skew no more than 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
       topologyKey: topology.kubernetes.io/zone
@@ -1549,10 +1627,13 @@ memcached:
             topologyKey: topology.kubernetes.io/zone
   # -- Pod Disruption Budget maxUnavailable
   maxUnavailable: 1
+  # -- Extra volumes for memcached pods
+  extraVolumeMounts: []
+  # -- Extra volumes for memcached statefulSet
+  extraVolumes: []
   service:
     # -- Annotations for memcached service
     annotations: {}
-
 memcachedExporter:
   # -- Specifies whether the Memcached Exporter should be enabled
   enabled: false
@@ -1574,7 +1655,8 @@ memcachedExporter:
     pullPolicy: IfNotPresent
     # -- Memcached Exporter resource requests and limits
   resources: {}
-
+  # -- Additional CLI args for the memcached exporter
+  extraArgs: []
 metaMonitoring:
   # ServiceMonitor configuration
   serviceMonitor:
@@ -1788,7 +1870,7 @@ gateway:
   # -- Grace period to allow the gateway to shutdown before it is killed
   terminationGracePeriodSeconds: 30
   # -- topologySpread for gateway pods. Passed through `tpl` and, thus, to be configured as string
-  # @default -- Defaults to allow skew no more then 1 node per AZ
+  # @default -- Defaults to allow skew no more than 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
       topologyKey: topology.kubernetes.io/zone
@@ -1828,13 +1910,13 @@ gateway:
     clusterIP: null
     # -- Node port if service type is NodePort
     nodePort: null
-    # -- Load balancer IPO address if service type is LoadBalancer
+    # -- Load balancer IP address if service type is LoadBalancer
     loadBalancerIP: null
     # -- Annotations for the gateway service
     annotations: {}
     # -- Labels for gateway service
     labels: {}
-    # -- Additional ports to be opneed on gateway service (e.g. for RPC connections)
+    # -- Additional ports to be opened on gateway service (e.g. for RPC connections)
     additionalPorts: []
   # Gateway ingress configuration
   ingress:
@@ -2016,10 +2098,10 @@ enterprise:
   enabled: false
 
   image:
-    # -- Grafana Enterprise Metrics container image repository. Note: for Grafana Tempo use the value 'image.repository'
+    # -- Grafana Enterprise Traces container image repository. Note: for Grafana Tempo use the value 'image.repository'
     repository: grafana/enterprise-traces
-    # -- Grafana Enterprise Metrics container image tag. Note: for Grafana Tempo use the value 'image.tag'
-    tag: v2.4.0
+    # -- Grafana Enterprise Traces container image tag. Note: for Grafana Tempo use the value 'image.tag'
+    tag: v2.6.1
     # Note: pullPolicy and optional pullSecrets are set in toplevel 'image' section, not here
 
 # In order to use Grafana Enterprise Traces features, you will need to provide the contents of your Grafana Enterprise Traces
@@ -2044,6 +2126,9 @@ tokengenJob:
   env: []
   extraEnvFrom: []
   annotations: {}
+  storeTokenInSecret: false
+  # -- Name of the secret to store the admin token. If not specified, defaults to "<release-name>-admin-token"
+  adminTokenSecret: "admin-token"
   image:
     # -- The Docker registry for the tokengenJob image. Overrides `tempo.image.registry`
     registry: null
@@ -2057,6 +2142,65 @@ tokengenJob:
   # -- The SecurityContext for tokenjobgen containers
   containerSecurityContext:
     readOnlyRootFilesystem: true
+
+provisioner:
+  # -- Whether the job should be part of the deployment
+  enabled: false
+  # -- Name of the secret to store provisioned tokens in
+  provisionedSecretPrefix: null
+  # -- Hook type(s) to customize when the job runs.  defaults to post-install
+  hookType: "post-install"
+  # -- URL for the admin API service. Must be set to a valid URL.
+  # Example: "http://tempo-admin-api.namespace.svc:3100"
+  apiUrl: ""
+  # -- Additional tenants to be created. Each tenant will get a read and write policy
+  # and associated token. Tenant must have a name and a namespace for the secret containting
+  # the token to be created in. For example
+  # additionalTenants:
+  #   - name: tempo
+  #     secretNamespace: grafana
+  additionalTenants: []
+  # -- Additional arguments for the provisioner command
+  extraArgs: {}
+  # -- Additional Kubernetes environment
+  env: []
+  # -- Additional labels for the `provisioner` Job
+  labels: {}
+  # -- Additional annotations for the `provisioner` Job
+  annotations: {}
+  # -- Affinity for tokengen Pods
+  affinity: {}
+  # -- Node selector for tokengen Pods
+  nodeSelector: {}
+  # -- Tolerations for tokengen Pods
+  tolerations: []
+  # -- The name of the PriorityClass for provisioner Job
+  priorityClassName: null
+  # -- Run containers as nonroot user (uid=10001)`
+  securityContext:
+    runAsNonRoot: true
+    runAsGroup: 10001
+    runAsUser: 10001
+  # -- Provisioner image to Utilize
+  image:
+    # -- The Docker registry
+    registry: us-docker.pkg.dev
+    # -- Docker image repository
+    repository: grafanalabs-global/docker-enterprise-provisioner-prod/enterprise-provisioner
+    # -- Overrides the image tag whose default is the chart's appVersion
+    tag: null
+    # -- Overrides the image tag with an image digest
+    digest: null
+    # -- Docker image pull policy
+    pullPolicy: IfNotPresent
+  # -- Volume mounts to add to the provisioner pods
+  extraVolumeMounts: []
+
+
+kubectlImage:
+  repository: bitnami/kubectl
+  tag: latest
+  pullPolicy: IfNotPresent
 
 # Settings for the admin_api service providing authentication and authorization service.
 # Can only be enabled if enterprise.enabled is true - requires license.
@@ -2096,7 +2240,7 @@ adminApi:
 
   nodeSelector: {}
   # -- topologySpread for admin-api pods. Passed through `tpl` and, thus, to be configured as string
-  # @default -- Defaults to allow skew no more then 1 node per AZ
+  # @default -- Defaults to allow skew no more than 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
       topologyKey: topology.kubernetes.io/zone
@@ -2188,7 +2332,7 @@ enterpriseGateway:
     type: ClusterIP
     # -- ClusterIP of the enterprise gateway service
     clusterIP: null
-    # -- Load balancer IPO address if service type is LoadBalancer for enterprise gateway service
+    # -- Load balancer IP address if service type is LoadBalancer for enterprise gateway service
     loadBalancerIP: null
     # -- Annotations for the enterprise gateway service
     annotations: {}
@@ -2209,7 +2353,7 @@ enterpriseGateway:
 
   nodeSelector: {}
   # -- topologySpread for enterprise-gateway pods. Passed through `tpl` and, thus, to be configured as string
-  # @default -- Defaults to allow skew no more then 1 node per AZ
+  # @default -- Defaults to allow skew no more than 1 node per AZ
   topologySpreadConstraints: |
     - maxSkew: 1
       topologyKey: topology.kubernetes.io/zone
@@ -2238,7 +2382,7 @@ enterpriseGateway:
   securityContext:
     {}
 
-    # -- The SecurityContext for gateway containers
+    # -- The SecurityContext for enterprise-gateway containers
   containerSecurityContext:
     readOnlyRootFilesystem: true
 
@@ -2271,20 +2415,20 @@ enterpriseGateway:
 
   # Ingress configuration
   ingress:
-    # -- Specifies whether an ingress for the gateway should be created
+    # -- Specifies whether an ingress for the enterprise-gateway should be created
     enabled: false
     # -- Ingress Class Name. MAY be required for Kubernetes versions >= 1.18
     # ingressClassName: gateway
-    # -- Annotations for the gateway ingress
+    # -- Annotations for the enterprise-gateway ingress
     annotations: {}
-    # -- Hosts configuration for the gateway ingress
+    # -- Hosts configuration for the enterprise-gateway ingress
     hosts:
       - host: gateway.gem.example.com
         paths:
           - path: /
             # -- pathType (e.g. ImplementationSpecific, Prefix, .. etc.) might also be required by some Ingress Controllers
             # pathType: Prefix
-    # -- TLS configuration for the gateway ingress
+    # -- TLS configuration for the enterprise-gateway ingress
     tls:
       - secretName: gem-gateway-tls
         hosts:
