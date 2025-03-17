@@ -219,6 +219,14 @@ rules:
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["get", "watch", "list", "delete", "create", "update"]
+- apiGroups:
+    - triggers.tekton.dev
+  resources:
+    - triggertemplates
+  verbs:
+    - get
+    - list
+    - watch
 ---
 # RoleBinding for the above Role in team namespace
 apiVersion: rbac.authorization.k8s.io/v1
