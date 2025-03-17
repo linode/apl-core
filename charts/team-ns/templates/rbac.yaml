@@ -219,14 +219,16 @@ rules:
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["get", "watch", "list", "delete", "create", "update"]
-- apiGroups:
-    - triggers.tekton.dev
-  resources:
-    - triggertemplates
-  verbs:
-    - get
-    - list
-    - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: apl-gitea-operator-trigger-template-watcher
+  namespace: team-{{ $v.teamId }}
+rules:
+  - apiGroups: ["triggers.tekton.dev"]
+    resources: ["triggertemplates"]
+    verbs: ["watch", "list", "get"]
 ---
 # RoleBinding for the above Role in team namespace
 apiVersion: rbac.authorization.k8s.io/v1
@@ -241,5 +243,19 @@ subjects:
 roleRef:
   kind: Role
   name: apl-gitea-operator-service-account
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: apl-gitea-operator-trigger-template-binding
+  namespace: team-{{ $v.teamId }}
+subjects:
+  - kind: ServiceAccount
+    namespace: apl-gitea-operator
+    name: apl-gitea-operator
+roleRef:
+  kind: Role
+  name: apl-gitea-operator-trigger-template-watcher
   apiGroup: rbac.authorization.k8s.io
 ---
