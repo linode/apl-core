@@ -1,0 +1,15 @@
+kind: AplIngress
+metadata:
+    name: ingress
+    labels: {}
+spec:
+    classes:
+        - annotations:
+              - key: service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol
+                value: true
+          className: net-a
+          entrypoint: ''
+          loadBalancerIP: 11.0.0.1
+          sourceIpAddressFiltering: 10.0.0.0/24
+    platformClass:
+        entrypoint: ''

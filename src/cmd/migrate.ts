@@ -1,22 +1,26 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
+import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
-import { unlink } from 'fs/promises'
-import { cloneDeep, each, get, pull, set, unset } from 'lodash'
+import { mkdir, readFile, writeFile } from 'fs/promises'
+import { cloneDeep, each, get, isObject, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
+import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hfValues } from 'src/common/hf'
-import { getFilename, gucci, loadYaml, rootDir } from 'src/common/utils'
+import { hf, hfValues } from 'src/common/hf'
+import { getFileMap, getTeamNames, saveValues } from 'src/common/repo'
+import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
+import { parse } from 'yaml'
 import { Argv } from 'yargs'
-import { cd } from 'zx'
-
+import { $, cd } from 'zx'
+import { glob } from 'glob'
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -385,46 +389,7 @@ export const setAtPath = (path: string, values: Record<string, any>, value: stri
   const paths = unparsePaths(path, values)
   paths.forEach((p) => set(values, p, Array.isArray(value) ? [...value] : value))
 }
-export const preserveIngressControllerConfig = async (
-  dryRun = false,
-  deps = {
-    pathExists,
-    loadYaml,
-    writeValuesToFile,
-  },
-): Promise<boolean> => {
-  const d = terminal(`cmd:${cmdName}:preserveIngressControllerConfig`)
-  d.log('Migrate nginx-ingress config')
-  const sourcePath = `${env.ENV_DIR}/env/apps/ingress-nginx-platform.yaml`
-  if (!(await deps.pathExists(sourcePath))) return false
-  const ingressClasses = (await loadYaml(`${env.ENV_DIR}/env/settings.yaml`))?.ingress?.classes || []
-  const origSpec = await loadYaml(sourcePath)
 
-  ingressClasses.forEach(async (entry) => {
-    const targetPath = `${env.ENV_DIR}/env/apps/ingress-nginx-${entry.className}.yaml`
-    if (await deps.pathExists(targetPath)) return
-    const targetJsonPath = `apps.ingress-nginx-${entry.className}`
-    const sourceJsonPath = `apps.ingress-nginx-platform`
-    d.info(`Generating ${targetJsonPath} from ${sourceJsonPath}`)
-    if (dryRun) {
-      d.info('Dry run skipping')
-      return
-    }
-    d.info(`Cloning configuration from ${sourceJsonPath} to ${targetJsonPath}`)
-    const spec = cloneDeep(origSpec) as Record<string, any>
-    moveGivenJsonPath(spec, sourceJsonPath, targetJsonPath)
-    await deps.writeValuesToFile(targetPath, spec, true)
-  })
-
-  const path = `${env.ENV_DIR}/env/apps/ingress-nginx.yaml`
-  if (await deps.pathExists(path)) {
-    d.info(`Removing the old ${path} file`)
-    await unlink(path)
-  }
-  d.info(`Success`)
-
-  return true
-}
 /**
  * Differences are reported as one or more change records. Change records have the following structure:
 
@@ -439,11 +404,138 @@ export const preserveIngressControllerConfig = async (
   index - when kind === 'A', indicates the array index where the change occurred
   item - when kind === 'A', contains a nested change record indicating the change that occurred at the array index
  */
+
+interface FileContent {
+  path: string
+  content: string
+}
+
+export async function getStandaloneFilesToMigrate(envDir: string): Promise<Record<string, any>> {
+  const files: Record<string, any> = {}
+  const pathGlobs = [getFileMap('AplTeamSecret', envDir).pathGlob, `${envDir}/env/teams/workloads/*/*.yaml`]
+  const filePaths = await glob(pathGlobs)
+
+  await Promise.allSettled(
+    filePaths.map(async (path) => {
+      try {
+        const relativePath = path.replace(`${envDir}/`, '')
+        const fileContent = await readFile(path, 'utf8')
+        // Get sealed secret name from the file and use it as the filename
+        if (path.includes('sealedsecrets')) {
+          const parsedYaml = parse(fileContent)
+          const newRelativePath = relativePath.replace(
+            /sealedsecrets\/[^/]+\.yaml$/,
+            `sealedsecrets/${parsedYaml.metadata.name}.yaml`,
+          )
+          files[newRelativePath] = fileContent
+        } else {
+          files[relativePath] = fileContent
+        }
+      } catch (error) {
+        console.error(`Error processing file ${path}:`, error)
+      }
+    }),
+  )
+  return files
+}
+
+function renameKeyDeep(obj: any, oldKey: string, newKey: string): any {
+  if (Array.isArray(obj)) {
+    return obj.map((item) => renameKeyDeep(item, oldKey, newKey))
+  } else if (isObject(obj)) {
+    return mapValues(
+      mapKeys(obj, (value, key) => (key === oldKey ? newKey : key)),
+      (value) => renameKeyDeep(value, oldKey, newKey),
+    )
+  }
+  return obj
+}
+
+export const migrateLegacyValues = async (envDir: string, deps = { writeFile }): Promise<boolean> => {
+  const output = await hf(
+    { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml`, args: 'build' },
+    undefined,
+    envDir,
+  )
+  const jsonValues = parse(output.stdout).renderedvalues
+  //TODO remove this renaming of coderepo to codeRepo to adhere camelCase
+  const oldValues = renameKeyDeep(jsonValues, 'coderepos', 'codeRepos')
+
+  const files = await getStandaloneFilesToMigrate(envDir)
+  const newFiles: FileContent[] = []
+  Object.entries(files).forEach(([filePath, fileContent]) => {
+    let newFilePath = filePath
+    if (filePath.includes('workloads')) {
+      const teamName = extractTeamDirectoryFromWorkloadPath(filePath)
+      const workloadFileName = basename(filePath)
+      newFilePath = join('env', 'teams', teamName, 'workloadValues', workloadFileName)
+    }
+    newFiles.push({ path: newFilePath, content: fileContent })
+  })
+
+  const oldTeams = get(oldValues, 'teamConfig', {})
+  Object.keys(oldTeams).forEach((teamName) => {
+    const settingsKeys = [
+      'alerts',
+      'id',
+      'limitRange',
+      'managedMonitoring',
+      'networkPolicy',
+      'oidc',
+      'resourceQuota',
+      'selfService',
+      'password',
+    ]
+
+    const teamSettings = pick(oldTeams[teamName], settingsKeys)
+    const teamResources = omit(oldTeams[teamName], settingsKeys)
+
+    const newTeam = { ...teamResources, settings: teamSettings }
+    oldTeams[teamName] = newTeam
+  })
+  const users = get(oldValues, 'users', [])
+  users.forEach((user) => {
+    set(user, 'id', user.id || randomUUID())
+  })
+  oldValues.versions = { specVersion: 1 }
+  const teamNames = await getTeamNames(env.ENV_DIR)
+  const secretPaths = await getSchemaSecretsPaths(teamNames)
+  const valuesPublic = omit(oldValues, secretPaths)
+  const valuesSecrets = pick(oldValues, secretPaths)
+
+  // FIXME migrate workloadValues folder and change ApplicationSet !!
+  // ensure that all old files are gone
+  await $`rm -rf ${env.ENV_DIR}/env`
+
+  //Write standalone files
+  await Promise.all(
+    newFiles.map(async (f) => {
+      const path = `${env.ENV_DIR}/${f.path}`
+      await mkdir(dirname(path), { recursive: true })
+      await deps.writeFile(path, f.content)
+    }),
+  )
+  await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)
+  await encrypt(env.ENV_DIR)
+  return true
+}
+
 export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
+  d.log('Migrating values')
+  if (await pathExists(`${env.ENV_DIR}/env/settings.yaml`)) {
+    d.log('Detected the old values file structure')
+    await migrateLegacyValues(env.ENV_DIR)
+  }
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
-  const prevVersion: number = (await loadYaml(`${env.ENV_DIR}/env/settings.yaml`))?.version || 0
+  const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
+  const prevVersion: number = versions?.specVersion
+  if (!prevVersion) {
+    d.log('No changes detected, skipping')
+    return false
+  }
+
   const filteredChanges = filterChanges(prevVersion, changes)
 
   if (filteredChanges.length) {
@@ -453,7 +545,6 @@ export const migrate = async (): Promise<boolean> => {
       } version`,
     )
     const diffedValues = await applyChanges(filteredChanges, argv.dryRun)
-    if (prevVersion < 6) await preserveIngressControllerConfig(argv.dryRun)
     // encrypt and decrypt to
     await encrypt()
     await decrypt()
@@ -462,6 +553,12 @@ export const migrate = async (): Promise<boolean> => {
   }
   d.log('No changes detected, skipping')
   return false
+}
+
+export function extractTeamDirectoryFromWorkloadPath(filePath: string): string {
+  const match = filePath.match(/\/workloads\/([^/]+)/)
+  if (match === null) throw new Error(`Cannot extract team name from ${filePath} string`)
+  return match[1]
 }
 
 export const module = {
