@@ -66,8 +66,13 @@ spec:
           else
             echo -n "0" > $(results.CI.path) && export CI="0" && echo "Finished"
         fi
-        
-        echo -n "$(yq '.spec.version' values/env/settings/otomi.yaml)" > $(results.OTOMI_VERSION.path)
+
+        if [ -f values/env/settings/otomi.yaml ]; then
+          echo -n "$(yq '.spec.version' values/env/settings/otomi.yaml)" > $(results.OTOMI_VERSION.path)
+        else
+          echo -n "$(yq '.otomi.version' values/env/settings.yaml)" > $(results.OTOMI_VERSION.path)
+        fi
+
         cd values
         # Check if team files has been changed
         if git diff --name-only  HEAD~1 | grep  -e "env/.*.teams" -e "env/teams"; then
