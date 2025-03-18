@@ -1,0 +1,20 @@
+kind: AplTeamSettings
+metadata:
+    name: dev
+    labels:
+        apl.io/teamId: dev
+spec:
+    id: dev
+    managedMonitoring:
+        alertmanager: true
+        grafana: true
+    networkPolicy:
+        egressPublic: false
+        ingressPrivate: true
+    selfService:
+        access:
+            - shell
+            - downloadCertificateAuthority
+        policies:
+            - edit policies
+    password: IkdUsKPcGAdanjas

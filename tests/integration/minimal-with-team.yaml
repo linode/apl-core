@@ -12,18 +12,19 @@ apps:
     enabled: true
 teamConfig:
   demo:
-    password: somesecretvalue
-    id: demo
-    selfService:
-      service:
-        - ingress
-    managedMonitoring:
-      grafana: false
-      prometheus: false
-      alertmanager: false
-    networkPolicy:
-      egressPublic: true
-      ingressPrivate: true
+    settings:
+      password: somesecretvalue
+      id: demo
+      selfService:
+        service:
+          - ingress
+      managedMonitoring:
+        grafana: false
+        prometheus: false
+        alertmanager: false
+      networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
     builds:
       - name: nodejs-hello-world
         tag: v0.0.1
@@ -93,12 +94,12 @@ teamConfig:
         path: chart/hello-world
         revision: HEAD
 files:
-  env/teams/workloads/demo/nodejs-helloworld.yaml: |
+  env/teams/demo/workloadsValues/nodejs-helloworld.yaml: |
     values: |
       image:
         repository: otomi/nodejs-helloworld
         tag: v1.2.13
-  env/teams/workloads/demo/nginx-deployment.yaml: |
+  env/teams/demo/workloadsValues/nginx-deployment.yaml: |
     values: |
       fullnameOverride: nginx-deployment
       image:
@@ -115,7 +116,7 @@ files:
       autoscaling:
         minReplicas: 2
         maxReplicas: 10
-  env/teams/workloads/demo/nginx-ksvc.yaml: |
+  env/teams/demo/workloadsValues/nginx-ksvc.yaml: |
     values: |
       fullnameOverride: nginx-ksvc
       image:
@@ -136,10 +137,10 @@ files:
       autoscaling:
         minReplicas: 0
         maxReplicas: 10
-  env/teams/workloads/demo/httpbin.yaml: |
+  env/teams/demo/workloadsValues/httpbin.yaml: |
     values: |
       {}
-  env/teams/workloads/admin/nodejs-helloworld.yaml: |
+  env/teams/admin/workloadsValues/nodejs-helloworld.yaml: |
     values: |
       image:
         repository: otomi/nodejs-helloworld

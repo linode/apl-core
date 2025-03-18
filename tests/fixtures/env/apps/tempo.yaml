@@ -1,82 +1,84 @@
-apps:
-    tempo:
-        enabled: true
-        autoscaling:
-            ingester:
-                enabled: true
-                minReplicas: 1
-                maxReplicas: 3
-                targetCPUUtilizationPercentage: 60
-                targetMemoryUtilizationPercentage: 80
-            querier:
-                enabled: true
-                minReplicas: 1
-                maxReplicas: 3
-                targetCPUUtilizationPercentage: 60
-                targetMemoryUtilizationPercentage: 80
-            distributor:
-                enabled: true
-                minReplicas: 1
-                maxReplicas: 3
-                targetCPUUtilizationPercentage: 60
-                targetMemoryUtilizationPercentage: 80
-            queryFrontend:
-                enabled: true
-                minReplicas: 1
-                maxReplicas: 3
-                targetCPUUtilizationPercentage: 60
-                targetMemoryUtilizationPercentage: 80
-        resources:
-            compactor:
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-            ingester:
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-            querier:
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-            distributor:
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-            queryFrontend:
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-            memcached:
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-            metricsGenerator:
-                requests:
-                    cpu: 100m
-                    memory: 128Mi
-                limits:
-                    cpu: 900m
-                    memory: 512Mi
-
-        persistence:
-            ingester:
-                size: 10Gi
+kind: AplCoreApp
+metadata:
+    name: tempo
+    labels: {}
+spec:
+    autoscaling:
+        distributor:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 60
+            targetMemoryUtilizationPercentage: 80
+        ingester:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 60
+            targetMemoryUtilizationPercentage: 80
+        querier:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 60
+            targetMemoryUtilizationPercentage: 80
+        queryFrontend:
+            enabled: true
+            maxReplicas: 3
+            minReplicas: 1
+            targetCPUUtilizationPercentage: 60
+            targetMemoryUtilizationPercentage: 80
+    enabled: true
+    persistence:
+        ingester:
+            size: 10Gi
+    resources:
+        compactor:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        distributor:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        ingester:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        memcached:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        metricsGenerator:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        querier:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        queryFrontend:
+            limits:
+                cpu: 900m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi

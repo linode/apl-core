@@ -1,9 +1,0 @@
-teamConfig:
-    admin:
-        services:
-            - auth: true
-              domain: hello.team-admin.dev.linode-apl.net
-              id: cb5149c4-8ea5-4c5a-be04-a37258658bd0
-              name: hello-admin
-              ownHost: true
-              port: 80

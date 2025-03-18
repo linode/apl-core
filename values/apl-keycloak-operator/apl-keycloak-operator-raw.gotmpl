@@ -6,8 +6,9 @@
 {{- range $name, $team := omit .Values.teamConfig "admin" }}
 {{- $teamIds = append $teamIds $name }}
 {{- $teamNames = print "team-" $name | append $teamNames }}
-{{- if ($team | get "oidc.groupMapping" nil) }}
-{{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $team.oidc.groupMapping }}
+{{- $teamSettings := $team.settings }}
+{{- if ($teamSettings | get "oidc.groupMapping" nil) }}
+{{- $teamsMapping = set $teamsMapping (printf "team-%s" $name) $teamSettings.oidc.groupMapping }}
 {{- end }}
 {{- end }}
 {{- $c := $v.apps }}
@@ -23,7 +24,7 @@
   {{ $groups := list }}
   {{- if $user.isPlatformAdmin }}{{ $groups = append $groups "platform-admin" }}{{ end }}
   {{- if $user.isTeamAdmin }}{{ $groups = append $groups "team-admin" }}{{ end }}
-  {{- range $team := $user.teams }}{{ $groups = append $groups (print "team-" $team) }}{{ end }}
+  {{- range $team := $user | get "teams" list }}{{ $groups = append $groups (print "team-" $team) }}{{ end }}
   {{- $users = append $users (dict "email" $user.email "firstName" $user.firstName "lastName" $user.lastName "initialPassword" $user.initialPassword "groups" $groups) }}
 {{- end }}
 {{- $users := $users | toJson }}

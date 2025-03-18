@@ -26,7 +26,9 @@
     "generate-password": "^1.7.1",
     "glob": "^11.0.1",
     "ignore-walk": "7.0.0",
+    "jsonpath": "^1.1.1",
     "lodash": "4.17.21",
+    "minimatch": "^10.0.1",
     "node-fetch": "2.7.0",
     "node-forge": "1.3.1",
     "semver": "7.5.2",
@@ -80,7 +82,6 @@
     "jest-ts-auto-mock": "2.1.0",
     "json-schema-to-typescript": "10.1.5",
     "json2ts": "0.0.7",
-    "jsonpath": "^1.1.1",
     "lint-staged": "10.5.4",
     "npm-run-all": "4.1.5",
     "prettier": "2.7.1",
@@ -96,8 +97,7 @@
     "typescript": "4.7.4"
   },
   "engines": {
-    "node": ">=20 <21",
-    "npm": "^10"
+    "node": ">=20 <21"
   },
   "homepage": "https://github.com/linode/apl-core#readme",
   "license": "Apache-2.0",
@@ -145,7 +145,7 @@
     "lint:ts": "eslint --ext ts src",
     "lint:ts:fix": "eslint --fix --ext ts src",
     "lint:types": "tsc --noEmit",
-    "migrate-values": "ENV_DIR=$PWD/tests/fixtures binzx/otomi migrate -ni",
+    "migrate-values": "ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi migrate -ni",
     "prepare": "husky install",
     "release": "standard-version",
     "release:github": "github-release-from-changelog",
@@ -171,5 +171,5 @@
     }
   },
   "type": "commonjs",
-  "version": "4.3.0"
+  "version": "4.4.0"
 }

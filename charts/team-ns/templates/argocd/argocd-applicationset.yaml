@@ -14,7 +14,7 @@ spec:
       repoURL: "{{ $v.gitOps.workloadValuesRepoUrl }}"
       revision: HEAD
       files:
-      - path: "env/teams/workloads/{{ $v.teamId }}/{{ .name }}.yaml"
+      - path: "env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.yaml"
   template:
     metadata:
       name: 'team-{{ $v.teamId }}-{{ .name }}'

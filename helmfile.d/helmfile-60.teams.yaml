@@ -18,11 +18,11 @@ bases:
 releases:
 {{- range $teamId, $team := omit $tc "admin" }} 
   {{- $teamServices := ($team | get "services" list) }}
+  {{- $teamSettings := $team.settings }}
   {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
   {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
   {{- $prometheusDomain := printf "prometheus-%s.%s" $teamId $domain }}
   {{- $grafanaDomain := printf "grafana-%s.%s" $teamId $domain }}
-  {{- $azure := $team | get "azure" dict }}
   {{- $teamApps := index $tc $teamId "apps" | default dict }}
   - name: tekton-dashboard-{{ $teamId }}
     installed: true
@@ -37,7 +37,7 @@ releases:
       - resources:
           {{- $teamApps.tekton.resources.dashboard | toYaml | nindent 10 }}
   - name: prometheus-{{ $teamId }}
-    installed: {{ or ($team | get "managedMonitoring.grafana" false) ($team | get "managedMonitoring.alertmanager" false) }}
+    installed: {{ or ($teamSettings | get "managedMonitoring.grafana" false) ($teamSettings | get "managedMonitoring.alertmanager" false) }}
     namespace: team-{{ $teamId }}
     chart: ../charts/kube-prometheus-stack
     labels:
@@ -50,7 +50,7 @@ releases:
       - nameOverride: {{ $teamId }}-po
         fullnameOverride: {{ $teamId }}-po
         alertmanager:
-          enabled: {{ $team | get "managedMonitoring.alertmanager" false }}
+          enabled: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
           namespaceOverride: null
           alertmanagerSpec:
             externalUrl: "https://alertmanager-{{ $teamId }}.{{ $domain }}"
@@ -62,7 +62,7 @@ releases:
             resources:
               {{- $teamApps.alertmanager.resources | toYaml | nindent 14 }}
           # to do: load slackTpl and opsgenieTpl only if alerts.receicers = true
-          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $team "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
+          config: {{- tpl (readFile "../helmfile.d/snippets/alertmanager-teams.gotmpl") (dict "instance" $teamSettings "root" $v "slackTpl" $slackTpl "opsgenieTpl" $opsgenieTpl) | nindent 12 }}
         defaultRules:
           rules:
             general: false
@@ -72,7 +72,7 @@ releases:
           enabled: false
           prometheusSpec: {}
         grafana:
-          enabled: {{ $team | get "managedMonitoring.grafana" false }}
+          enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
           resources:
             {{- $teamApps.grafana.resources.grafana | toYaml | nindent 12 }}
           namespaceOverride: null # team-{{ $teamId }}
@@ -135,7 +135,7 @@ releases:
               basicAuth: true
               basicAuthUser: {{ $teamId }}
               secureJsonData: 
-                basicAuthPassword: {{ $team.password | quote }}
+                basicAuthPassword: {{ $teamSettings.password | quote }}
               jsonData:
                 derivedFields:
                   - datasourceName: Tempo
@@ -181,9 +181,9 @@ releases:
                   tag: 'http.path'
                 lokiSearch:
                   datasourceUid: 'loki'
-    {{- if has "msteams" ($team | get "alerts.receivers" list) }}
+    {{- if has "msteams" ($teamSettings | get "alerts.receivers" list) }}
   - name: prometheus-msteams-{{ $teamId }}
-    installed: {{ $team | get "managedMonitoring.alertmanager" false }}
+    installed: {{ $teamSettings | get "managedMonitoring.alertmanager" false }}
     namespace: team-{{ $teamId }}
     chart: ../charts/prometheus-msteams
     labels:
@@ -199,11 +199,11 @@ releases:
             additionalLabels:
               release: prometheus-{{ $teamId }}
         connectors:
-          - high_priority_channel: {{ $team | get "msteams.highPrio" }}
-          - low_priority_channel: {{ $team | get "msteams.lowPrio" }}
+          - high_priority_channel: {{ $teamSettings | get "msteams.highPrio" }}
+          - low_priority_channel: {{ $teamSettings | get "msteams.lowPrio" }}
     {{- end }}
   - name: grafana-dashboards-{{ $teamId }}
-    installed: {{ $team | get "managedMonitoring.grafana" false }}
+    installed: {{ $teamSettings | get "managedMonitoring.grafana" false }}
     namespace: team-{{ $teamId }}
     chart: ../charts/grafana-dashboards
     labels:
@@ -217,9 +217,6 @@ releases:
           - k8s-teams
           {{- if $v.apps.falco.enabled }}
           - falco-teams
-          {{- end }}
-          {{- if and (eq $v.cluster.provider "azure") ($team | get "azureMonitor" ($v | get "azure.monitor" nil)) }}
-          - azure
           {{- end }}
           {{- if $v.apps.trivy.enabled }}
           - trivy-teams
