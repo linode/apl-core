@@ -50,6 +50,7 @@
     },
     {
       "name": "Debug current test",
+      "envFile": ".env",
       "type": "node",
       "request": "launch",
       "program": "${workspaceRoot}/node_modules/.bin/jest",
@@ -61,6 +62,16 @@
       "name": "Bootstrap-dev",
       "request": "launch",
       "runtimeArgs": ["run", "bootstrap-dev"],
+      "runtimeExecutable": "npm",
+      "type": "node",
+      "envFile": ".env",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceRoot}"
+    },
+    {
+      "name": "Bootstrap-dev-with-repo",
+      "request": "launch",
+      "runtimeArgs": ["run", "bootstrap-dev-with-repo"],
       "runtimeExecutable": "npm",
       "type": "node",
       "envFile": ".env",

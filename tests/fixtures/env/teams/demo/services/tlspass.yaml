@@ -1,0 +1,12 @@
+kind: AplTeamService
+metadata:
+    name: tlspass
+    labels:
+        apl.io/teamId: demo
+spec:
+    ksvc:
+        predeployed: true
+    name: tlspass
+    port: 443
+    tlsPass: true
+    type: public

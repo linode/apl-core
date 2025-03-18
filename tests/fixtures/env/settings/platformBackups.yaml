@@ -1,0 +1,23 @@
+kind: AplBackups
+metadata:
+    name: platformBackups
+    labels: {}
+spec:
+    database:
+        gitea:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
+        harbor:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
+        keycloak:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
+    gitea:
+        enabled: true
+        retentionPolicy: 7d
+        schedule: 0 0 0 * * *
+    persistentVolumes: {}
