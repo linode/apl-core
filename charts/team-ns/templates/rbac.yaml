@@ -246,10 +246,9 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   name: apl-gitea-operator-trigger-template-binding
-  namespace: team-{{ $v.teamId }}
 subjects:
   - kind: ServiceAccount
     namespace: apl-gitea-operator
