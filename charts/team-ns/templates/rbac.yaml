@@ -253,7 +253,7 @@ subjects:
     namespace: apl-gitea-operator
     name: apl-gitea-operator
 roleRef:
-  kind: Role
+  kind: ClusterRole
   name: apl-gitea-operator-trigger-template-watcher
   apiGroup: rbac.authorization.k8s.io
 ---
