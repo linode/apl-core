@@ -1,0 +1,17 @@
+kind: AplTeamWorkload
+metadata:
+    name: wd1
+    labels:
+        apl.io/teamId: demo
+spec:
+    imageUpdateStrategy:
+        digest:
+            imageParameter: v2.image.name
+            imageRepository: harbor.try-otomi.net/team-orange/blue
+            tag: latest
+            tagParameter: v2.image.tag
+        type: digest
+    name: wd1
+    path: ./
+    revision: main
+    url: https://myrepo.local/mychart.git
