@@ -15,5 +15,8 @@ spec:
   {{- with .Values.ruler.maxUnavailable }}
   maxUnavailable: {{ . }}
   {{- end }}
+  {{- with .Values.ruler.minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
 {{- end }}
 {{- end }}

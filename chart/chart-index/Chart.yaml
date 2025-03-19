@@ -52,7 +52,7 @@ dependencies:
     repository: https://kyverno.github.io/kyverno/
   - name: loki-distributed
     alias: loki
-    version: 0.79.4
+    version: 0.80.2
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
     version: 6.8.0

@@ -16,5 +16,8 @@ spec:
   {{- with .Values.querier.maxUnavailable }}
   maxUnavailable: {{ . }}
   {{- end }}
+  {{- with .Values.querier.minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
 {{- end }}
 {{- end }}
