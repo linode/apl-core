@@ -16,5 +16,8 @@ spec:
   {{- with .Values.memcachedFrontend.maxUnavailable }}
   maxUnavailable: {{ . }}
   {{- end }}
+  {{- with .Values.memcachedFrontend.minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
 {{- end }}
 {{- end }}
