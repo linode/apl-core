@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.4.1](https://github.com/linode/apl-core/compare/v4.3.0...v4.4.1) (2025-03-19)
+
+
+### Features
+
+* cnpg recovery options ([#1926](https://github.com/linode/apl-core/issues/1926)) ([7be41e2](https://github.com/linode/apl-core/commit/7be41e29e0657a35d9b1daa982f79942aafb0cb2))
+
+### Bug Fixes
+
+* get envDir path from the function argument ([056c97b](https://github.com/linode/apl-core/commit/056c97be3ce5ab5be92337295b0a623dfe9e6898))
+
+
 ## [4.4.0](https://github.com/linode/apl-core/compare/v4.3.0...v4.4.0) (2025-03-14)
 
 
