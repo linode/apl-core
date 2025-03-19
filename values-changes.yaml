@@ -336,6 +336,9 @@ changes:
       - databases.harbor.resources.limits.cpu: '200m'
       - databases.harbor.resources.requests.memory: '192Mi'
       - databases.harbor.resources.requests.cpu: '200m'
-  - version: 34
+  - version: 33
     deletions:
+      - 'databases.keycloak.imported'
+      - 'databases.gitea.imported'
+      - 'databases.gitea.useOtomiDB'
       - 'teamConfig.{team}.services[].type'
