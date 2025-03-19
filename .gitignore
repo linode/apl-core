@@ -18,3 +18,4 @@ workflow/
 otomi.cpuprofile
 /.idea/
 tmp
+**values-repo.yaml

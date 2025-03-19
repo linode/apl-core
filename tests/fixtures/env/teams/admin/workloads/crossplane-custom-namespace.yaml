@@ -1,0 +1,11 @@
+kind: AplTeamWorkload
+metadata:
+    name: crossplane-custom-namespace
+    labels:
+        apl.io/teamId: admin
+spec:
+    chart: crossplane
+    name: crossplane-custom-namespace
+    namespace: crossplane
+    revision: 1.11.2
+    url: https://charts.crossplane.io/stable

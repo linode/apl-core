@@ -14,7 +14,7 @@ spec:
       repoURL: "{{ $v.gitOps.workloadValuesRepoUrl }}"
       revision: HEAD
       files:
-      - path: "env/teams/workloads/{{ $v.teamId }}/{{ .name }}.yaml"
+      - path: "env/teams/{{ $v.teamId }}/workloadValues/{{ .name }}.yaml"
   template:
     metadata:
       name: 'team-{{ $v.teamId }}-{{ .name }}'
@@ -80,6 +80,15 @@ spec:
           kind: ValidatingWebhookConfiguration
           jqPathExpressions:
           - '.webhooks[]?.clientConfig.caBundle'
+        - group: admissionregistration.k8s.io
+          kind: MutatingWebhookConfiguration
+          jqPathExpressions:
+          - '.webhooks[]?.clientConfig.caBundle'
+        - group: "apps"
+          kind: "StatefulSet"
+          jqPathExpressions:
+            - ".spec.volumeClaimTemplates[].apiVersion"
+            - ".spec.volumeClaimTemplates[].kind"
         {{- end }}
       destination:
         server: 'https://kubernetes.default.svc'

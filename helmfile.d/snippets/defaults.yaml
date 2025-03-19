@@ -1349,4 +1349,5 @@ environments:
           upgrade:
             version: main
         # TODO: update this when schema version changes
-        version: 33
+        versions:
+          specVersion: 40
