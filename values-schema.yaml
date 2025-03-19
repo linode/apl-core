@@ -1655,7 +1655,7 @@ properties:
             $ref: '#/definitions/email'
           issuer:
             description: |
-              Indicates the origin of the wildcard certificate. 
+              Indicates the origin of the wildcard certificate.
               The custom-ca - cert-manager uses the customRootCA to generate wildcard certificate.
               The letsencrypt - cert-manager requests certificate from letsencrypt endpoint.
               The byo-wildcard-cert allows users to bring their own trusted wildcard certificate (cert-manager not involved)
@@ -3168,6 +3168,10 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: harbor
           gitea:
             title: Gitea
             properties:
@@ -3180,6 +3184,10 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: gitea
           keycloak:
             title: Keycloak
             properties:
@@ -3192,6 +3200,10 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: keycloak
       persistentVolumes:
         type: object
         description: Create backups of persistent volumes
@@ -3293,9 +3305,16 @@ properties:
           replicas:
             type: integer
             default: 2
-          imported:
-            type: boolean
-            default: false
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
       harbor:
         title: Harbor
         properties:
@@ -3306,12 +3325,19 @@ properties:
           replicas:
             type: integer
             default: 2
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
       gitea:
         title: gitea
         properties:
-          useOtomiDB:
-            type: boolean
-            default: false
           size:
             type: string
           resources:
@@ -3319,9 +3345,16 @@ properties:
           replicas:
             type: integer
             default: 2
-          imported:
-            type: boolean
-            default: false
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
   teamConfig:
     additionalProperties: false
     patternProperties:
