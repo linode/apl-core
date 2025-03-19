@@ -9,4 +9,3 @@ spec:
     name: hello-admin
     ownHost: true
     port: 80
-    type: public

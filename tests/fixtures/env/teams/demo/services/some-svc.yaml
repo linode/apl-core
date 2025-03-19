@@ -6,4 +6,3 @@ metadata:
 spec:
     name: some-svc
     port: 80
-    type: cluster

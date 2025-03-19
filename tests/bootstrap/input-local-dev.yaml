@@ -58,14 +58,12 @@ teamConfig:
         name: httpbin
         ownHost: true
         port: 80
-        type: public
       - id: a106eb22-8c06-41b6-ab15-97aafb0888b5
         ingressClassName: platform
         name: nginx-deployment
         ownHost: true
         paths: []
         port: 80
-        type: public
       - id: 91f6af98-ad8e-4111-b916-cf1b5bdcafb0
         ingressClassName: platform
         ksvc:
@@ -74,7 +72,6 @@ teamConfig:
         ownHost: true
         paths: []
         port: 80
-        type: public
     workloads:
       - name: nodejs-helloworld
         url: https://github.com/linode/apl-nodejs-helloworld.git
