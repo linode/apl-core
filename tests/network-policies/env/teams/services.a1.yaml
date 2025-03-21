@@ -3,76 +3,28 @@ teamConfig:
     services:
       - name: ce1
         port: 8080
-        networkPolicy:
-          ingressPrivate:
-            mode: DenyAll
-          egressPublic:
-            - domain: 'httpbin.org'
-              ports:
-                - protocol: HTTPS
-                  number: 443
-            - domain: '116.203.255.68'
-              ports:
-                - protocol: TCP
-                  number: 443
         id: 2bb00d03-7d9d-4590-961c-425423291a35
-        type: cluster
       - name: ce2
         port: 8080
         id: 2bb00d03-7d9d-4590-961c-425423291a34
-        type: cluster
       - name: s1
         port: 8080
         id: 6c901b91-e8a4-4422-8c9e-b12e077692f1
-        type: cluster
-        networkPolicy:
-          ingressPrivate:
-            mode: AllowAll
       - name: s2
         port: 8080
         id: 6c901b91-e8a4-4422-8c9e-b12e077692f2
-        type: cluster
-        networkPolicy:
-          ingressPrivate:
-            mode: AllowOnly
-            allow:
-              - team: a1
       - name: s3
         port: 8080
         id: 6c901b91-e8a4-4422-8c9e-b12e077692f3
-        type: cluster
-        networkPolicy:
-          ingressPrivate:
-            mode: AllowOnly
-            allow:
-              - team: a2
       - name: s4
         port: 8080
         id: 6c901b91-e8a4-4422-8c9e-b12e077692f4
-        type: cluster
-        networkPolicy:
-          ingressPrivate:
-            mode: DenyAll
       - name: s5
         port: 8080
         id: 6c901b91-e8a4-4422-8c9e-b12e077692f5
-        type: cluster
-        networkPolicy:
-          ingressPrivate:
-            mode: AllowOnly
-            allow:
-              - team: a1
-              - team: a2
       - name: s6
         port: 8080
         id: 6c901b91-e8a4-4422-8c9e-b12e077692f6
-        type: cluster
-        networkPolicy:
-          ingressPrivate:
-            mode: AllowOnly
-            allow:
-              - team: a1
-                service: c6
       - name: s7
         id: 6d4a4710-f7ac-4586-9940-7969cfe30b67
         ksvc:
@@ -93,10 +45,3 @@ teamConfig:
               memory: 64Mi
           containerPort: 8080
         ownHost: true
-        type: public
-        networkPolicy:
-          ingressPrivate:
-            mode: AllowOnly
-            allow:
-              - team: a1
-                service: c7
