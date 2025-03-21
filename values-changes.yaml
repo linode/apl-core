@@ -343,4 +343,4 @@ changes:
       - 'databases.gitea.useOtomiDB'
   - version: 34
     deletions:
-      - 'teamConfig.{team}.services.{service}.type'
+      - 'teamConfig.{team}.services[].type'

@@ -13,8 +13,8 @@ describe('Upgrading values', () => {
     teamConfig: {
       teamA: {
         services: [
-          { name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] },
-          { name: 'svc1', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }] },
+          { name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }], type: 'cluster' },
+          { name: 'svc1', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }], type: 'public' },
         ],
       },
     },
@@ -40,11 +40,19 @@ describe('Upgrading values', () => {
       ],
       renamings: [{ 'somefile.yaml': 'newloc.yaml' }],
     },
+    {
+      version: 4,
+      deletions: [
+        // { 'some.k8sVersion': 'printf "v%s" .prev' },
+        'teamConfig.{team}.services[].type',
+        // { 'teamConfig.{team}.services[].bla[].ok': 'print .prev "ee"' },
+      ],
+    },
   ]
 
   describe('Filter changes', () => {
     it('should only select changes whose version >= current version', () => {
-      expect(filterChanges(oldVersion, mockChanges)).toEqual(mockChanges.slice(1, 3))
+      expect(filterChanges(oldVersion, mockChanges)).toEqual(mockChanges.slice(1, 4))
     })
   })
   describe('Apply changes to values', () => {
@@ -68,7 +76,7 @@ describe('Upgrading values', () => {
             },
           },
           some: { bla: {}, k8sVersion: '1.18' },
-          version: 3,
+          version: 4,
         },
         true,
       )
