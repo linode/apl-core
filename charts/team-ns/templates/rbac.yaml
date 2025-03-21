@@ -223,10 +223,10 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-template-watcher
+  name: apl-gitea-operator-team-{{ $v.teamId }}-pipeline-watcher
 rules:
-  - apiGroups: ["triggers.tekton.dev"]
-    resources: ["triggertemplates"]
+  - apiGroups: ["tekton.dev"]
+    resources: ["pipelines"]
     verbs: ["watch", "list", "get"]
 ---
 # RoleBinding for the above Role in team namespace
@@ -247,7 +247,7 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-template-binding
+  name: apl-gitea-operator-team-{{ $v.teamId }}-pipeline-binding
 subjects:
   - kind: ServiceAccount
     namespace: apl-gitea-operator
