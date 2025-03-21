@@ -341,7 +341,6 @@ changes:
       - 'databases.keycloak.imported'
       - 'databases.gitea.imported'
       - 'databases.gitea.useOtomiDB'
-      - 'teamConfig.{team}.services[].type'
   - version: 34
     deletions:
-      - 'teamConfig.{team}.services[].type'
+      - 'teamConfig.{team}.services.{service}.type'
