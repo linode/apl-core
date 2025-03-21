@@ -946,10 +946,6 @@ environments:
                   memory: 1Gi
             _rawValues: {}
           apl-keycloak-operator:
-            extraEnv:
-            - name: KEYCLOAK_TOKEN_TTL
-              value: "1h"
-            - 
             resources:
               operator:
                 requests:
