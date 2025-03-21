@@ -102,8 +102,8 @@ gitea:
       COOKIE_SECURE: true
       DOMAIN: {{ $giteaDomain }}
       PROVIDER: memory
-      GC_INTERVAL_TIME: 900
-      SESSION_LIFE_TIME: 1800
+      GC_INTERVAL_TIME: 3600
+      SESSION_LIFE_TIME: 600
     webhook:
       ALLOWED_HOST_LIST: "*"
     server:
