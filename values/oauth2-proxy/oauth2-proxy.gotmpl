@@ -55,7 +55,8 @@ extraArgs:
   - --cookie-secure=true
   # - # cookie-httponly=true
   - --reverse-proxy=true
-  - --cookie-refresh=0h1m0s # set to the same as keycloak realm's accessCodeLifespan 
+  - --cookie-refresh=1m # set to the same as keycloak realm's accessCodeLifespan
+  - --cookie-expire=3m
   - --pass-authorization-header=true
   # - # pass-basic-auth=true
   - --skip-auth-regex='/manifest.json'
