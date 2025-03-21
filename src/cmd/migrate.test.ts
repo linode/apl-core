@@ -14,7 +14,7 @@ describe('Upgrading values', () => {
       teamA: {
         services: [
           { name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }], type: 'cluster' },
-          { name: 'svc1', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }], type: 'public' },
+          { name: 'svc2', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }], type: 'public' },
         ],
       },
     },
@@ -71,7 +71,7 @@ describe('Upgrading values', () => {
             teamA: {
               services: [
                 { name: 'svc1', prop: 'replaced', bla: [{ ok: 'replaceMe' }] },
-                { name: 'svc1', prop: 'replaced', di: [{ ok: 'replaceMeNot' }] },
+                { name: 'svc2', prop: 'replaced', di: [{ ok: 'replaceMeNot' }] },
               ],
             },
           },
