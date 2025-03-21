@@ -31,34 +31,19 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          
-          command:
           {{- if (not (empty .Values.configs.tls.certificates)) }}
-            - '/bin/sh'
-            - '-c'
-          {{- else }}
-            - 'npm'
-            - 'run'
-            - 'operator:keycloak'
-          {{- end }}
-          args:
-          {{- if (not (empty .Values.configs.tls.certificates)) }}
-            - 'export NODE_EXTRA_CA_CERTS=/app/config/tls/certificate.crt'
-            - '&&'
-            - 'npm run operator:keycloak'
-          {{- end }}
+          command: ['/bin/sh', '-c']
+          args: ['export NODE_EXTRA_CA_CERTS=/app/config/tls/certificate.crt && npm run operator:keycloak']
           env:
-          {{- if (not (empty .Values.configs.tls.certificates)) }}
           - name: NODE_EXTRA_CA_CERTS
             value: "/app/config/tls/certificate.crt"
-          {{- end }}
-          {{- with .Values.extraEnv }}
-          {{- toYaml . | nindent 12 }}
+          {{- else }}
+          command: ['npm', 'run', 'operator:keycloak']
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          volumeMounts:
           {{- if (not (empty .Values.configs.tls.certificates)) }}
+          volumeMounts:
           - name: tls-certs
             mountPath: /app/config/tls/certificate.crt
             subPath: certificate.crt
