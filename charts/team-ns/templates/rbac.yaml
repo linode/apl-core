@@ -223,7 +223,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-pipeline-watcher
+  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-template-pipeline-watcher
 rules:
   - apiGroups: ["tekton.dev"]
     resources: ["pipelines"]
@@ -250,13 +250,13 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-pipeline-binding
+  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-template-pipeline-binding
 subjects:
   - kind: ServiceAccount
     namespace: apl-gitea-operator
     name: apl-gitea-operator
 roleRef:
   kind: ClusterRole
-  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-template-watcher
+  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-template-pipeline-watcher
   apiGroup: rbac.authorization.k8s.io
 ---
