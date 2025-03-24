@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.4.2](https://github.com/linode/apl-core/compare/v4.4.1...v4.4.2) (2025-03-24)
+
+### Bug Fixes
+
+* api form validation error & update services files to handle deep merge operations
+
+
+### Others
+
+* api versions update ([77a5fcb](https://github.com/linode/apl-core/commit/77a5fcb6c01772823742040c7f6b1adb9de9ae39))
+
 ### [4.4.1](https://github.com/linode/apl-core/compare/v4.3.0...v4.4.1) (2025-03-19)
 
 
