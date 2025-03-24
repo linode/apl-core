@@ -270,7 +270,7 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
           servicePermissions.filter((s: any) => s !== 'networkPolicy'),
         )
 
-      createFileSync(`${env.ENV_DIR}/teams/netpols.${teamName}.yaml`)
+      createFileSync(`${env.ENV_DIR}/env/teams/netpols.${teamName}.yaml`)
       let services = get(values, `teamConfig.${teamName}.services`)
       if (!services || services.length === 0) return
       const valuesToWrite = {
@@ -287,7 +287,7 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
         })
 
       valuesToWrite.teamConfig[teamName] = { netpols }
-      await writeValuesToFile(`${env.ENV_DIR}/teams/netpols.${teamName}.yaml`, valuesToWrite, true)
+      await writeValuesToFile(`${env.ENV_DIR}/env/teams/netpols.${teamName}.yaml`, valuesToWrite, true)
       set(values, `teamConfig.${teamName}.netpols`, netpols)
       services = services.map((service: any) => {
         if (service.networkPolicy) {
@@ -531,7 +531,7 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
 
   // FIXME migrate workloadValues folder and change ApplicationSet !!
   // ensure that all old files are gone
-  await $`rm -rf ${env.ENV_DIR}`
+  await $`rm -rf ${env.ENV_DIR}/env`
 
   //Write standalone files
   await Promise.all(
@@ -550,21 +550,22 @@ export const migrate = async (): Promise<boolean> => {
   const d = terminal(`cmd:${cmdName}:migrate`)
   const argv: Arguments = getParsedArgs()
   d.log('Migrating values')
-  if (await pathExists(`${env.ENV_DIR}/settings.yaml`)) {
+  if (await pathExists(`${env.ENV_DIR}/env/settings.yaml`)) {
     d.log('Detected the old values file structure')
     await migrateLegacyValues(env.ENV_DIR)
   }
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
-  const versions = await loadYaml(`${env.ENV_DIR}/settings/versions.yaml`, { noError: true })
-  d.log('VERSIONS PATH: ', `${env.ENV_DIR}/settings/versions.yaml`)
+  const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
+  d.log('VERSIONS PATH: ', `${env.ENV_DIR}/env/settings/versions.yaml`)
   d.log('VERSIONS: ', versions)
-  const prevVersion: number = versions?.specVersion
+  const prevVersion: number = versions?.spec?.specVersion
   if (!prevVersion) {
     d.log('No previous version detected')
     d.log('No changes detected, skipping')
     return false
   }
   d.log('PREVIOUS VERSION: ', prevVersion)
+  d.log('CHANGES: ', changes)
   const filteredChanges = filterChanges(prevVersion, changes)
   d.log('FILTEREDCHANGES', filteredChanges)
   if (filteredChanges.length) {
