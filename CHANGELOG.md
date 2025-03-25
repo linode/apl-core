@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.4.3](https://github.com/linode/apl-core/compare/v4.4.1...v4.4.3) (2025-03-25)
+
+
+### Features
+
+* security patch for critical vulnerability in ingress-nginx-controller (CVE-2025-1974). ([#2011](https://github.com/linode/apl-core/issues/2011)) ([59980d1](https://github.com/linode/apl-core/commit/59980d1289c515f52c12902e333a4a48f8d8bae2))
+
+
+### Others
+
+* api versions update ([77a5fcb](https://github.com/linode/apl-core/commit/77a5fcb6c01772823742040c7f6b1adb9de9ae39))
+* **release:** 4.4.2 ([aa3f687](https://github.com/linode/apl-core/commit/aa3f687d63ff71d8ccef4193d44195179c87327e))
+
 ### [4.4.2](https://github.com/linode/apl-core/compare/v4.4.1...v4.4.2) (2025-03-24)
 
 ### Bug Fixes
