@@ -130,6 +130,9 @@ export const writeValuesToFile = async (
     if (await pathExists(`${targetPath}.dec`)) await unlink(`${targetPath}.dec`)
     return
   }
+  d.info('ORIGINAL VALUES: ', originalValues)
+  d.info('NEW VALUES: ', values)
+  d.info('MERGERESULT: ', mergeResult)
   const useValues = overwrite ? values : mergeResult
   if (!(await pathExists(targetPath)) || overwrite) {
     // create the non-suffixed file for encryption to not skip this later on
@@ -145,6 +148,8 @@ export const writeValuesToFile = async (
       return
     }
   }
+
+  d.info('USE VALUES: ', useValues)
   if (isEqual(originalValues, useValues)) {
     d.info(`No changes for ${targetPath}${suffix}, skipping...`)
     return
