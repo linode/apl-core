@@ -17,3 +17,5 @@ spec:
       protocol: TCP
   selector:
     {{- include "tempo.selectorLabels" (dict "ctx" . "component" "compactor") | nindent 4 }}
+  ipFamilies: {{ .Values.tempo.service.ipFamilies }}
+  ipFamilyPolicy: {{ .Values.tempo.service.ipFamilyPolicy }}
