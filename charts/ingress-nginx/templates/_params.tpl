@@ -1,7 +1,7 @@
 {{- define "ingress-nginx.params" -}}
 - /nginx-ingress-controller
-{{- if not .Values.controller.enableAnnotationValidations }}
-- --enable-annotation-validation=false
+{{- if .Values.controller.enableAnnotationValidations }}
+- --enable-annotation-validation=true
 {{- end }}
 {{- if .Values.defaultBackend.enabled }}
 - --default-backend-service=$(POD_NAMESPACE)/{{ include "ingress-nginx.defaultBackend.fullname" . }}
@@ -54,7 +54,7 @@
 {{- if .Values.controller.watchIngressWithoutClass }}
 - --watch-ingress-without-class=true
 {{- end }}
-{{- if .Values.controller.metrics.enabled }}
+{{- if not .Values.controller.metrics.enabled }}
 - --enable-metrics={{ .Values.controller.metrics.enabled }}
 {{- end }}
 {{- if .Values.controller.enableTopologyAwareRouting }}

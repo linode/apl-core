@@ -20,4 +20,14 @@ rules:
     verbs:
       - get
       - update
+{{- if .Values.podSecurityPolicy.enabled }}
+  - apiGroups:      [{{ template "podSecurityPolicy.apiGroup" . }}]
+    resources:      ['podsecuritypolicies']
+    verbs:          ['use']
+    {{- with .Values.controller.admissionWebhooks.existingPsp }}
+    resourceNames:  [{{ . }}]
+    {{- else }}
+    resourceNames:  [{{ include "ingress-nginx.admissionWebhooks.fullname" . }}]
+    {{- end }}
+{{- end }}
 {{- end }}

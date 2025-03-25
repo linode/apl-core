@@ -13,9 +13,7 @@ metadata:
   name: {{ include "ingress-nginx.controller.fullname" . }}
   namespace: {{ include "ingress-nginx.namespace" . }}
 data:
-{{- if .Values.controller.allowSnippetAnnotations }}
-  allow-snippet-annotations: "true"
-{{- end }}
+  allow-snippet-annotations: "{{ .Values.controller.allowSnippetAnnotations }}"
 {{- if .Values.controller.addHeaders }}
   add-headers: {{ include "ingress-nginx.namespace" . }}/{{ include "ingress-nginx.fullname" . }}-custom-add-headers
 {{- end }}
