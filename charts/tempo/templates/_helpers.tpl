@@ -189,7 +189,7 @@ Renders the overrides config
 */}}
 {{- define "tempo.overridesConfig" -}}
 overrides:
-{{ toYaml .Values.overrides | indent 2 }}
+{{ toYaml .Values.per_tenant_overrides | indent 2 }}
 {{- end -}}
 
 {{/*
