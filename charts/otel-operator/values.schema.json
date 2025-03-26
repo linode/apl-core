@@ -8,10 +8,12 @@
         "replicaCount",
         "nameOverride",
         "imagePullSecrets",
+        "clusterDomain",
         "pdb",
         "manager",
         "kubeRBACProxy",
         "admissionWebhooks",
+        "crds",
         "role",
         "clusterRole",
         "affinity",
@@ -21,9 +23,18 @@
         "hostNetwork",
         "priorityClassName",
         "securityContext",
-        "testFramework"
+        "testFramework",
+        "additionalLabels"
     ],
+    "additionalProperties": false,
     "properties": {
+        "enabled": {
+            "description": "Usually used when using Opentelemetry-operator as a subchart.",
+            "type": "boolean"
+        },
+        "global": {
+            "type": "object"
+        },
         "replicaCount": {
             "type": "integer",
             "default": 0,
@@ -40,6 +51,14 @@
                 ""
             ]
         },
+        "fullnameOverride": {
+            "type": "string",
+            "default": "",
+            "title": "The fullnameOverride Schema",
+            "examples": [
+                ""
+            ]
+        },
         "imagePullSecrets": {
             "type": "array",
             "default": [],
@@ -48,6 +67,11 @@
             "examples": [
                 []
             ]
+        },
+        "clusterDomain": {
+            "type": "string",
+            "default": "cluster.local",
+            "title": "Kubernetes cluster domain suffix"
         },
         "pdb": {
             "type": "object",
@@ -58,6 +82,7 @@
                 "minAvailable",
                 "maxUnavailable"
             ],
+            "additionalProperties": false,
             "properties": {
                 "create": {
                     "type": "boolean",
@@ -101,21 +126,27 @@
             "required": [
                 "image",
                 "collectorImage",
+                "opampBridgeImage",
                 "targetAllocatorImage",
                 "autoInstrumentationImage",
+                "featureGates",
                 "ports",
-                "resources",
                 "env",
+                "extraEnvs",
                 "serviceAccount",
                 "serviceMonitor",
+                "deploymentAnnotations",
+                "serviceAnnotations",
                 "podAnnotations",
                 "podLabels",
                 "prometheusRule",
                 "extraArgs",
                 "leaderElection",
                 "verticalPodAutoscaler",
-                "rolling"
+                "rolling",
+                "securityContext"
             ],
+            "additionalProperties": false,
             "properties": {
                 "image": {
                     "type": "object",
@@ -125,6 +156,7 @@
                         "repository",
                         "tag"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "repository": {
                             "type": "string",
@@ -139,13 +171,13 @@
                             "default": "",
                             "title": "The tag Schema",
                             "examples": [
-                                "v0.80.0"
+                                "v0.93.0"
                             ]
                         }
                     },
                     "examples": [{
                         "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
-                        "tag": "v0.80.0"
+                        "tag": "v0.93.0"
                     }]
                 },
                 "collectorImage": {
@@ -156,6 +188,7 @@
                         "repository",
                         "tag"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "repository": {
                             "type": "string",
@@ -170,13 +203,45 @@
                             "default": "",
                             "title": "The tag Schema",
                             "examples": [
-                                "0.77.0"
+                                "0.93.0"
                             ]
                         }
                     },
                     "examples": [{
                         "repository": "otel/opentelemetry-collector-contrib",
-                        "tag": "0.77.0"
+                        "tag": "0.93.0"
+                    }]
+                },
+                "opampBridgeImage": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The opampBridgeImage Schema",
+                    "required": [
+                        "repository",
+                        "tag"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "repository": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The repository Schema",
+                            "examples": [
+                                ""
+                            ]
+                        },
+                        "tag": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The tag Schema",
+                            "examples": [
+                                ""
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "repository": "",
+                        "tag": ""
                     }]
                 },
                 "targetAllocatorImage": {
@@ -187,6 +252,7 @@
                         "repository",
                         "tag"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "repository": {
                             "type": "string",
@@ -218,8 +284,11 @@
                         "java",
                         "nodejs",
                         "python",
-                        "dotnet"
+                        "dotnet",
+                        "go",
+                        "apacheHttpd"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "java": {
                             "type": "object",
@@ -229,6 +298,7 @@
                                 "repository",
                                 "tag"
                             ],
+                            "additionalProperties": false,
                             "properties": {
                                 "repository": {
                                     "type": "string",
@@ -260,6 +330,7 @@
                                 "repository",
                                 "tag"
                             ],
+                            "additionalProperties": false,
                             "properties": {
                                 "repository": {
                                     "type": "string",
@@ -291,6 +362,7 @@
                                 "repository",
                                 "tag"
                             ],
+                            "additionalProperties": false,
                             "properties": {
                                 "repository": {
                                     "type": "string",
@@ -322,6 +394,7 @@
                                 "repository",
                                 "tag"
                             ],
+                            "additionalProperties": false,
                             "properties": {
                                 "repository": {
                                     "type": "string",
@@ -348,11 +421,44 @@
                         "go": {
                             "type": "object",
                             "default": {},
-                            "title": "The Go Schema",
+                            "title": "The go Schema",
                             "required": [
                                 "repository",
                                 "tag"
                             ],
+                            "additionalProperties": false,
+                            "properties": {
+                                "repository": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The repository Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                },
+                                "tag": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The tag Schema",
+                                    "examples": [
+                                        ""
+                                    ]
+                                }
+                            },
+                            "examples": [{
+                                "repository": "",
+                                "tag": ""
+                            }]
+                        },
+                        "apacheHttpd": {
+                            "type": "object",
+                            "default": {},
+                            "title": "The apache-httpd Schema",
+                            "required": [
+                                "repository",
+                                "tag"
+                            ],
+                            "additionalProperties": false,
                             "properties": {
                                 "repository": {
                                     "type": "string",
@@ -393,15 +499,88 @@
                         "dotnet": {
                             "repository": "",
                             "tag": ""
+                        },
+                        "go": {
+                            "repository": "",
+                            "tag": ""
+                        },
+                        "apacheHttpd": {
+                            "repository": "",
+                            "tag": ""
                         }
                     }]
                 },
                 "featureGates": {
                     "type": "string",
-                    "default": "operator.autoinstrumentation.go",
+                    "default": "",
+                    "title": "The featureGates to enable",
+                    "examples": ""
+                },
+                "featureGatesMap": {
+                    "type": "object",
+                    "default": {},
                     "title": "The featureGates Schema",
+                    "additionalProperties": false,
+                    "properties": {
+                        "operator.targetallocator.mtls": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "Whether to enable MTLS for Target Allocator communication",
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "operator.targetallocator.fallbackstrategy": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "Whether to enable fallback allocation strategy the Target Allocator",
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "operator.collector.targetallocatorcr": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "Whether to create TargetAllocator custom resource",
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "operator.sidecarcontainers.native": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "Inject sidecar containers using native K8s API",
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "operator.observability.prometheus": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "Whether the Prometheus Operator is installed",
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "operator.golang.flags": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "Set GOMEMLIMIT and GOMAXPROCS for collector automatically",
+                            "examples": [
+                                false
+                            ]
+                        },
+                        "operator.collector.default.config": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "Set default endpoints for known components",
+                            "examples": [
+                                false
+                            ]
+                        }
+                    },
                     "examples": [
-                        "-operator.autoinstrumentation.go,-operator.autoinstrumentation.go"
+                        {}
                     ]
                 },
                 "ports": {
@@ -413,6 +592,7 @@
                         "webhookPort",
                         "healthzPort"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "metricsPort": {
                             "type": "integer",
@@ -449,19 +629,15 @@
                     "type": "object",
                     "default": {},
                     "title": "The resources Schema",
-                    "required": [
-                        "limits",
-                        "requests"
-                    ],
+                    "required": [],
+                    "additionalProperties": false,
                     "properties": {
                         "limits": {
                             "type": "object",
                             "default": {},
                             "title": "The limits Schema",
-                            "required": [
-                                "cpu",
-                                "memory"
-                            ],
+                            "required": [],
+                            "additionalProperties": true,
                             "properties": {
                                 "cpu": {
                                     "type": "string",
@@ -478,6 +654,14 @@
                                     "examples": [
                                         "128Mi"
                                     ]
+                                },
+                                "ephemeral-storage": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The ephemeral-storage Schema",
+                                    "examples": [
+                                        "50Mi"
+                                    ]
                                 }
                             },
                             "examples": [{
@@ -489,10 +673,8 @@
                             "type": "object",
                             "default": {},
                             "title": "The requests Schema",
-                            "required": [
-                                "cpu",
-                                "memory"
-                            ],
+                            "required": [],
+                            "additionalProperties": true,
                             "properties": {
                                 "cpu": {
                                     "type": "string",
@@ -508,6 +690,14 @@
                                     "title": "The memory Schema",
                                     "examples": [
                                         "64Mi"
+                                    ]
+                                },
+                                "ephemeral-storage": {
+                                    "type": "string",
+                                    "default": "",
+                                    "title": "The ephemeral-storage Schema",
+                                    "examples": [
+                                        "50Mi"
                                     ]
                                 }
                             },
@@ -532,21 +722,25 @@
                     "type": "object",
                     "default": {},
                     "title": "The env Schema",
-                    "required": [
-                        "ENABLE_WEBHOOKS"
-                    ],
-                    "properties": {
-                        "ENABLE_WEBHOOKS": {
-                            "type": "string",
-                            "default": "",
-                            "title": "The ENABLE_WEBHOOKS Schema",
-                            "examples": [
-                                "true"
-                            ]
-                        }
+                    "additionalProperties": {
+                      "type": "string"
                     },
                     "examples": [{
                         "ENABLE_WEBHOOKS": "true"
+                    }]
+                },
+                "extraEnvs": {
+                    "type": "array",
+                    "default": [],
+                    "title": "Extra definitions of environment variables",
+                    "examples": [{
+                      "name": "GOMEMLIMIT",
+                      "valueFrom": {
+                        "resourceFieldRef": {
+                          "containerName": "manager",
+                          "resource": "limits.memory"
+                        }
+                      }
                     }]
                 },
                 "serviceAccount": {
@@ -557,6 +751,7 @@
                         "create",
                         "annotations"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "create": {
                             "type": "boolean",
@@ -573,6 +768,14 @@
                             "required": [],
                             "properties": {},
                             "examples": [{}]
+                        },
+                        "name": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The name of the service account",
+                            "examples": [
+                                "opentelemetry-operator"
+                            ]
                         }
                     },
                     "examples": [{
@@ -581,80 +784,118 @@
                     }]
                 },
                 "serviceMonitor": {
+                  "type": "object",
+                  "default": {},
+                  "title": "The serviceMonitor Schema",
+                  "required": [
+                      "enabled",
+                      "extraLabels",
+                      "annotations",
+                      "metricsEndpoints",
+                      "relabelings",
+                      "metricRelabelings"
+                  ],
+                  "properties": {
+                      "enabled": {
+                          "type": "boolean",
+                          "default": false,
+                          "title": "The enabled Schema",
+                          "examples": [
+                              true
+                          ]
+                      },
+                      "extraLabels": {
+                          "type": "object",
+                          "default": {},
+                          "title": "The extraLabels Schema",
+                          "required": [],
+                          "properties": {},
+                          "examples": [{}]
+                      },
+                      "annotations": {
+                          "type": "object",
+                          "default": {},
+                          "title": "The annotations Schema",
+                          "required": [],
+                          "properties": {},
+                          "examples": [{}]
+                      },
+                      "metricsEndpoints": {
+                          "type": "array",
+                          "default": [],
+                          "title": "The metricsEndpoints Schema",
+                          "items": {
+                              "type": "object",
+                              "default": {},
+                              "title": "A Schema",
+                              "required": [
+                                  "port"
+                              ],
+                              "properties": {
+                                  "port": {
+                                      "type": "string",
+                                      "default": "",
+                                      "title": "The port Schema",
+                                      "examples": [
+                                          "metrics"
+                                      ]
+                                  }
+                              },
+                              "examples": [{
+                                  "port": "metrics"
+                              }]
+                          },
+                          "examples": [
+                              [{
+                                  "port": "metrics"
+                              }]
+                          ]
+                      },
+                      "relabelings": {
+                          "type": "array",
+                          "description": "Specify general relabeling",
+                          "default": [],
+                          "items": {}
+                      },
+                      "metricRelabelings": {
+                        "type": "array",
+                        "description": "Specify additional relabeling of metrics",
+                        "default": [],
+                        "items": {}
+                      }
+                  },
+                  "examples": [{
+                      "enabled": true,
+                      "extraLabels": {},
+                      "annotations": {},
+                      "metricsEndpoints": [{
+                          "port": "metrics"
+                      }],
+                      "relabelings": [{
+                          "sourceLabels": [
+                              "__meta_kubernetes_pod_node_name"
+                          ],
+                          "targetLabel": "node",
+                          "replacement": "${1}"
+                      }],
+                      "metricRelabelings": []
+                  }]
+              },
+                "deploymentAnnotations": {
                     "type": "object",
                     "default": {},
-                    "title": "The serviceMonitor Schema",
-                    "required": [
-                        "enabled",
-                        "extraLabels",
-                        "annotations",
-                        "metricsEndpoints"
-                    ],
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean",
-                            "default": false,
-                            "title": "The enabled Schema",
-                            "examples": [
-                                false
-                            ]
-                        },
-                        "extraLabels": {
-                            "type": "object",
-                            "default": {},
-                            "title": "The extraLabels Schema",
-                            "required": [],
-                            "properties": {},
-                            "examples": [{}]
-                        },
-                        "annotations": {
-                            "type": "object",
-                            "default": {},
-                            "title": "The annotations Schema",
-                            "required": [],
-                            "properties": {},
-                            "examples": [{}]
-                        },
-                        "metricsEndpoints": {
-                            "type": "array",
-                            "default": [],
-                            "title": "The metricsEndpoints Schema",
-                            "items": {
-                                "type": "object",
-                                "default": {},
-                                "title": "A Schema",
-                                "required": [
-                                    "port"
-                                ],
-                                "properties": {
-                                    "port": {
-                                        "type": "string",
-                                        "default": "",
-                                        "title": "The port Schema",
-                                        "examples": [
-                                            "metrics"
-                                        ]
-                                    }
-                                },
-                                "examples": [{
-                                    "port": "metrics"
-                                }]
-                            },
-                            "examples": [
-                                [{
-                                    "port": "metrics"
-                                }]
-                            ]
-                        }
-                    },
-                    "examples": [{
-                        "enabled": false,
-                        "extraLabels": {},
-                        "annotations": {},
-                        "metricsEndpoints": [{
-                            "port": "metrics"
-                        }]
-                    }]
+                    "title": "The deploymentAnnotations Schema",
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
+                },
+                "serviceAnnotations": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The serviceAnnotations Schema",
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 },
                 "podAnnotations": {
                     "type": "object",
@@ -683,6 +924,7 @@
                         "extraLabels",
                         "annotations"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -706,7 +948,9 @@
                             "default": {},
                             "title": "The defaultRules Schema",
                             "required": [
-                                "enabled"
+                                "enabled",
+                                "additionalRuleLabels",
+                                "additionalRuleAnnotations"
                             ],
                             "properties": {
                                 "enabled": {
@@ -716,10 +960,36 @@
                                     "examples": [
                                         false
                                     ]
+                                },
+                                "additionalRuleLabels": {
+                                    "type": "object",
+                                    "default": {},
+                                    "title": "The additionalRuleLabels Schema",
+                                    "required": [],
+                                    "properties": {},
+                                    "examples": [{}]
+                                },
+                                "additionalRuleAnnotations": {
+                                    "type": "object",
+                                    "default": {},
+                                    "title": "The additionalRuleAnnotations Schema",
+                                    "required": [],
+                                    "properties": {},
+                                    "examples": [{}]
+                                },
+                                "duration": {
+                                    "type": "string",
+                                    "default": {},
+                                    "title": "The prometheusRule duration to be considered firing",
+                                    "required": [],
+                                    "properties": {},
+                                    "examples": [{}]
                                 }
                             },
                             "examples": [{
-                                "enabled": false
+                                "enabled": false,
+                                "additionalRuleLabels": {},
+                                "additionalRuleAnnotations": {}
                             }]
                         },
                         "extraLabels": {
@@ -737,17 +1007,35 @@
                             "required": [],
                             "properties": {},
                             "examples": [{}]
+                        },
+                        "runbookUrl": {
+                            "type": "string",
+                            "default": "",
+                            "title": "The runbookUrl Schema",
+                            "required": [],
+                            "properties": {},
+                            "examples": [{}]
                         }
                     },
                     "examples": [{
                         "enabled": false,
                         "groups": [],
                         "defaultRules": {
-                            "enabled": false
+                            "enabled": false,
+                            "additionalRuleLabels": {},
+                            "additionalRuleAnnotations": {}
                         },
                         "extraLabels": {},
                         "annotations": {}
                     }]
+                },
+                "createRbacPermissions": {
+                    "type": "boolean",
+                    "default": false,
+                    "title": "Whether the operator should create RBAC permissions for collector deployments",
+                    "examples": [
+                        false
+                    ]
                 },
                 "extraArgs": {
                     "type": "array",
@@ -765,6 +1053,7 @@
                     "required": [
                         "enabled"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -790,6 +1079,7 @@
                         "minAllowed",
                         "updatePolicy"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -843,7 +1133,7 @@
                                 },
                                 "minReplicas": {
                                     "type": "integer",
-                                    "default": 2,
+                                    "default": 0,
                                     "title": "The minReplicas Schema",
                                     "examples": [
                                         2
@@ -874,16 +1164,28 @@
                     "examples": [
                         false
                     ]
+                },
+                "securityContext": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The securityContext Schema",
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 }
             },
             "examples": [{
                 "image": {
                     "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
-                    "tag": "v0.80.0"
+                    "tag": "v0.93.0"
                 },
                 "collectorImage": {
                     "repository": "otel/opentelemetry-collector-contrib",
-                    "tag": "0.77.0"
+                    "tag": "0.93.0"
+                },
+                "opampBridgeImage": {
+                    "repository": "",
+                    "tag": ""
                 },
                 "targetAllocatorImage": {
                     "repository": "",
@@ -909,8 +1211,13 @@
                     "go": {
                         "repository": "",
                         "tag": ""
+                    },
+                    "apacheHttpd": {
+                        "repository": "",
+                        "tag": ""
                     }
                 },
+                "featureGates": "",
                 "ports": {
                     "metricsPort": 8080,
                     "webhookPort": 9443,
@@ -947,7 +1254,9 @@
                     "enabled": false,
                     "groups": [],
                     "defaultRules": {
-                        "enabled": false
+                        "enabled": false,
+                        "additionalRuleLabels": {},
+                        "additionalRuleAnnotations": {}
                     },
                     "extraLabels": {},
                     "annotations": {}
@@ -966,7 +1275,8 @@
                         "minReplicas": 2
                     }
                 },
-                "rolling": false
+                "rolling": false,
+                "securityContext": {}
             }]
         },
         "kubeRBACProxy": {
@@ -977,9 +1287,10 @@
                 "enabled",
                 "image",
                 "ports",
-                "resources",
-                "extraArgs"
+                "extraArgs",
+                "securityContext"
             ],
+            "additionalProperties": false,
             "properties": {
                 "enabled": {
                     "type": "boolean",
@@ -997,6 +1308,7 @@
                         "repository",
                         "tag"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "repository": {
                             "type": "string",
@@ -1011,13 +1323,13 @@
                             "default": "",
                             "title": "The tag Schema",
                             "examples": [
-                                "v0.14.1"
+                                "v0.15.0"
                             ]
                         }
                     },
                     "examples": [{
                         "repository": "quay.io/brancz/kube-rbac-proxy",
-                        "tag": "v0.14.1"
+                        "tag": "v0.15.0"
                     }]
                 },
                 "ports": {
@@ -1027,6 +1339,7 @@
                     "required": [
                         "proxyPort"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "proxyPort": {
                             "type": "integer",
@@ -1045,19 +1358,15 @@
                     "type": "object",
                     "default": {},
                     "title": "The resources Schema",
-                    "required": [
-                        "limits",
-                        "requests"
-                    ],
+                    "required": [],
+                    "additionalProperties": false,
                     "properties": {
                         "limits": {
                             "type": "object",
                             "default": {},
                             "title": "The limits Schema",
-                            "required": [
-                                "cpu",
-                                "memory"
-                            ],
+                            "required": [],
+                            "additionalProperties": true,
                             "properties": {
                                 "cpu": {
                                     "type": "string",
@@ -1085,10 +1394,8 @@
                             "type": "object",
                             "default": {},
                             "title": "The requests Schema",
-                            "required": [
-                                "cpu",
-                                "memory"
-                            ],
+                            "required": [],
+                            "additionalProperties": true,
                             "properties": {
                                 "cpu": {
                                     "type": "string",
@@ -1132,13 +1439,21 @@
                     "examples": [
                         []
                     ]
+                },
+                "securityContext": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The securityContext Schema",
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 }
             },
             "examples": [{
                 "enabled": true,
                 "image": {
                     "repository": "quay.io/brancz/kube-rbac-proxy",
-                    "tag": "v0.14.1"
+                    "tag": "v0.15.0"
                 },
                 "ports": {
                     "proxyPort": 8443
@@ -1153,7 +1468,8 @@
                         "memory": "64Mi"
                     }
                 },
-                "extraArgs": []
+                "extraArgs": [],
+                "securityContext": {}
             }]
         },
         "admissionWebhooks": {
@@ -1171,11 +1487,14 @@
                 "objectSelector",
                 "certManager",
                 "autoGenerateCert",
+                "certFile",
+                "keyFile",
+                "caFile",
+                "serviceAnnotations",
                 "secretAnnotations",
-                "cert_file",
-                "key_file",
-                "ca_file"
+                "secretLabels"
             ],
+            "additionalProperties": false,
             "properties": {
                 "create": {
                     "type": "boolean",
@@ -1183,6 +1502,14 @@
                     "title": "The create Schema",
                     "examples": [
                         true
+                    ]
+                },
+                "servicePort": {
+                    "type": "integer",
+                    "default": 443,
+                    "title": "The port for the webhook service",
+                    "examples": [
+                        9443
                     ]
                 },
                 "failurePolicy": {
@@ -1208,17 +1535,20 @@
                     "required": [
                         "failurePolicy"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "failurePolicy": {
                             "type": "string",
-                            "default": "Ignore",
+                            "default": "",
                             "title": "The failurePolicy Schema",
                             "examples": [
-                                "Ignore",
-                                "Fail"
+                                "Ignore"
                             ]
                         }
-                    }
+                    },
+                    "examples": [{
+                        "failurePolicy": "Ignore"
+                    }]
                 },
                 "namePrefix": {
                     "type": "string",
@@ -1262,6 +1592,7 @@
                         "certificateAnnotations",
                         "issuerAnnotations"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "enabled": {
                             "type": "boolean",
@@ -1280,20 +1611,34 @@
                             "examples": [{}]
                         },
                         "certificateAnnotations": {
-                          "type": "object",
-                          "default": {},
-                          "title": "The certificateAnnotations Schema",
-                          "required": [],
-                          "properties": {},
-                          "examples": [{}]
+                            "type": "object",
+                            "default": {},
+                            "title": "The certificateAnnotations Schema",
+                            "required": [],
+                            "properties": {},
+                            "examples": [{}]
                         },
                         "issuerAnnotations": {
-                          "type": "object",
-                          "default": {},
-                          "title": "The issuerAnnotations Schema",
+                            "type": "object",
+                            "default": {},
+                            "title": "The issuerAnnotations Schema",
+                            "required": [],
+                            "properties": {},
+                            "examples": [{}]
+                        },
+                        "duration": {
+                          "type": "string",
+                          "default": "",
+                          "title": "The duration for the Certificate",
                           "required": [],
-                          "properties": {},
-                          "examples": [{}]
+                          "examples": ["2160h"]
+                        },
+                        "renewBefore": {
+                          "type": "string",
+                          "default": "",
+                          "title": "The renewBefore time for the Certificate",
+                          "required": [],
+                          "examples": ["360h"]
                         }
                     },
                     "examples": [{
@@ -1304,12 +1649,77 @@
                     }]
                 },
                 "autoGenerateCert": {
-                    "type": "boolean",
-                    "default": true,
-                    "title": "The autoGenerateCert schema",
+                    "type": "object",
+                    "default": {},
+                    "title": "The autoGenerateCert Schema",
+                    "required": [
+                        "enabled",
+                        "recreate"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "The enabled Schema",
+                            "examples": [
+                                true
+                            ]
+                        },
+                        "recreate": {
+                            "type": "boolean",
+                            "default": false,
+                            "title": "The recreate Schema",
+                            "examples": [
+                                true
+                            ]
+                        },
+                        "certPeriodDays": {
+                            "type": "integer",
+                            "default": 365,
+                            "title": "Cert period time in days.",
+                            "examples": [
+                                365
+                            ]
+                        }
+                    },
+                    "examples": [{
+                        "enabled": true,
+                        "recreate": true,
+                        "certPeriodDays": 365
+                    }]
+                },
+                "certFile": {
+                    "type": "string",
+                    "default": "",
+                    "title": "File path to self-managed TLS certificate.",
                     "examples": [
-                        true
+                        ""
                     ]
+                },
+                "keyFile": {
+                    "type": "string",
+                    "default": "",
+                    "title": "File path to self-managed TLS key.",
+                    "examples": [
+                        ""
+                    ]
+                },
+                "caFile": {
+                    "type": "string",
+                    "default": "",
+                    "title": "File path to self-managed CA bundle.",
+                    "examples": [
+                        ""
+                    ]
+                },
+                "serviceAnnotations": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The serviceAnnotations Schema",
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 },
                 "secretAnnotations": {
                     "type": "object",
@@ -1319,35 +1729,22 @@
                     "properties": {},
                     "examples": [{}]
                 },
-                "cert_file": {
-                    "type": "string",
-                    "default": "",
-                    "title": "The cert_file Schema",
-                    "examples": [
-                        ""
-                    ]
-                },
-                "key_file": {
-                    "type": "string",
-                    "default": "",
-                    "title": "The key_file Schema",
-                    "examples": [
-                        ""
-                    ]
-                },
-                "ca_file": {
-                    "type": "string",
-                    "default": "",
-                    "title": "The ca_file Schema",
-                    "examples": [
-                        ""
-                    ]
+                "secretLabels": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The secretLabels Schema",
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 }
             },
             "examples": [{
                 "create": true,
                 "failurePolicy": "Fail",
                 "secretName": "",
+                "pods": {
+                    "failurePolicy": "Ignore"
+                },
                 "namePrefix": "",
                 "timeoutSeconds": 10,
                 "namespaceSelector": {},
@@ -1358,11 +1755,37 @@
                     "certificateAnnotations": {},
                     "issuerAnnotations": {}
                 },
-                "autoGenerateCert": true,
+                "autoGenerateCert": {
+                    "enabled": true,
+                    "recreate": true
+                },
+                "certFile": "",
+                "keyFile": "",
+                "caFile": "",
                 "secretAnnotations": {},
-                "cert_file": "",
-                "key_file": "",
-                "ca_file": ""
+                "secretLabels": {}
+            }]
+        },
+        "crds": {
+            "type": "object",
+            "default": {},
+            "title": "The CRDs Schema",
+            "required": [
+                "create"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "create": {
+                    "type": "boolean",
+                    "default": true,
+                    "title": "Create CRDs",
+                    "examples": [
+                        true
+                    ]
+                }
+            },
+            "examples": [{
+                "create": true
             }]
         },
         "role": {
@@ -1372,6 +1795,7 @@
             "required": [
                 "create"
             ],
+            "additionalProperties": false,
             "properties": {
                 "create": {
                     "type": "boolean",
@@ -1393,6 +1817,7 @@
             "required": [
                 "create"
             ],
+            "additionalProperties": false,
             "properties": {
                 "create": {
                     "type": "boolean",
@@ -1458,63 +1883,22 @@
             ]
         },
         "securityContext": {
-            "type": "object",
-            "default": {},
-            "title": "The securityContext Schema",
-            "required": [
-                "runAsGroup",
-                "runAsNonRoot",
-                "runAsUser",
-                "fsGroup"
-            ],
-            "properties": {
-                "runAsGroup": {
-                    "type": "integer",
-                    "default": 0,
-                    "title": "The runAsGroup Schema",
-                    "examples": [
-                        65532
-                    ]
-                },
-                "runAsNonRoot": {
-                    "type": "boolean",
-                    "default": false,
-                    "title": "The runAsNonRoot Schema",
-                    "examples": [
-                        true
-                    ]
-                },
-                "runAsUser": {
-                    "type": "integer",
-                    "default": 0,
-                    "title": "The runAsUser Schema",
-                    "examples": [
-                        65532
-                    ]
-                },
-                "fsGroup": {
-                    "type": "integer",
-                    "default": 0,
-                    "title": "The fsGroup Schema",
-                    "examples": [
-                        65532
-                    ]
-                }
-            },
-            "examples": [{
-                "runAsGroup": 65532,
-                "runAsNonRoot": true,
-                "runAsUser": 65532,
-                "fsGroup": 65532
-            }]
+          "type": "object",
+          "default": {},
+          "title": "The securityContext Schema",
+          "required": [],
+          "properties": {},
+          "examples": [{}]
         },
         "testFramework": {
             "type": "object",
             "default": {},
             "title": "The testFramework Schema",
             "required": [
-                "image"
+                "image",
+                "securityContext"
             ],
+            "additionalProperties": false,
             "properties": {
                 "image": {
                     "type": "object",
@@ -1524,6 +1908,7 @@
                         "repository",
                         "tag"
                     ],
+                    "additionalProperties": false,
                     "properties": {
                         "repository": {
                             "type": "string",
@@ -1546,6 +1931,14 @@
                         "repository": "busybox",
                         "tag": "latest"
                     }]
+                },
+                "securityContext": {
+                    "type": "object",
+                    "default": {},
+                    "title": "The securityContext Schema",
+                    "required": [],
+                    "properties": {},
+                    "examples": [{}]
                 }
             },
             "examples": [{
@@ -1554,6 +1947,14 @@
                     "tag": "latest"
                 }
             }]
+        },
+        "additionalLabels": {
+            "type": "object",
+            "default": {},
+            "title": "The additionalLabels Schema",
+            "required": [],
+            "properties": {},
+            "examples": [{}]
         }
     },
     "examples": [{
@@ -1568,11 +1969,15 @@
         "manager": {
             "image": {
                 "repository": "ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator",
-                "tag": "v0.80.0"
+                "tag": "v0.93.0"
             },
             "collectorImage": {
                 "repository": "otel/opentelemetry-collector-contrib",
-                "tag": "0.77.0"
+                "tag": "0.93.0"
+            },
+            "opampBridgeImage": {
+                "repository": "",
+                "tag": ""
             },
             "targetAllocatorImage": {
                 "repository": "",
@@ -1594,8 +1999,18 @@
                 "dotnet": {
                     "repository": "",
                     "tag": ""
+                },
+                "go": {
+                    "repository": "",
+                    "tag": ""
+                },
+                "apacheHttpd":
+                {
+                    "repository": "",
+                    "tag": ""
                 }
             },
+            "featureGates": "",
             "ports": {
                 "metricsPort": 8080,
                 "webhookPort": 9443,
@@ -1632,7 +2047,9 @@
                 "enabled": false,
                 "groups": [],
                 "defaultRules": {
-                    "enabled": false
+                    "enabled": false,
+                    "additionalRuleLabels": {},
+                    "additionalRuleAnnotations": {}
                 },
                 "extraLabels": {},
                 "annotations": {}
@@ -1651,13 +2068,14 @@
                     "minReplicas": 2
                 }
             },
-            "rolling": false
+            "rolling": false,
+            "securityContext": {}
         },
         "kubeRBACProxy": {
             "enabled": true,
             "image": {
                 "repository": "quay.io/brancz/kube-rbac-proxy",
-                "tag": "v0.14.1"
+                "tag": "v0.15.0"
             },
             "ports": {
                 "proxyPort": 8443
@@ -1672,12 +2090,16 @@
                     "memory": "64Mi"
                 }
             },
-            "extraArgs": []
+            "extraArgs": [],
+            "securityContext": {}
         },
         "admissionWebhooks": {
             "create": true,
             "failurePolicy": "Fail",
             "secretName": "",
+            "pods": {
+                "failurePolicy": "Ignore"
+            },
             "namePrefix": "",
             "timeoutSeconds": 10,
             "namespaceSelector": {},
@@ -1688,11 +2110,15 @@
                 "certificateAnnotations": {},
                 "issuerAnnotations": {}
             },
-            "autoGenerateCert": true,
+            "autoGenerateCert": {
+                "enabled": true,
+                "recreate": true
+            },
+            "certFile": "",
+            "keyFile": "",
+            "caFile": "",
             "secretAnnotations": {},
-            "cert_file": "",
-            "key_file": "",
-            "ca_file": ""
+            "secretLabels": {}
         },
         "role": {
             "create": true
