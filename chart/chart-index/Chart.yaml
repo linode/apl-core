@@ -85,7 +85,7 @@ dependencies:
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines
-    version: 1.0.2
+    version: 1.0.5
     repository: https://cdfoundation.github.io/tekton-helm-chart/
   - name: tempo-distributed
     alias: tempo
