@@ -4,6 +4,7 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 
 image:
+  repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/apl-tasks"
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 

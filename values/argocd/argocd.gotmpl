@@ -2,6 +2,8 @@
 {{- $a := $v.apps.argocd }}
 {{- $k := $v.apps.keycloak }}
 global:
+  image:
+    repository: "{{ .Values.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
   domain: argocd.{{ $v.cluster.domainSuffix }}
   {{- with $v.otomi | get "nodeSelector" nil }}
   nodeSelector:

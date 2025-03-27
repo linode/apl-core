@@ -1,8 +1,9 @@
 {{- $v := .Values }}
-{{- $o := $v.apps | get "apl-gitea-operator" }}
+{{- $o := $v.apps | get "apl-gitea-operator" }}  
 {{- $version := $v.versions.tasks }}
 {{- $isSemver := regexMatch "^[0-9.]+" $version }}
 image:
+  repository: "{{ .Values.otomi.linodeLkeImageRepository }}/docker/apl-tasks"
   tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
   pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
 
