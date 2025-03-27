@@ -17,7 +17,6 @@ spec:
     namespace: team-{{ $v.teamId }}
   syncPolicy:
     automated:
-      allowEmpty: false
       prune: true
       selfHeal: true
     retry:
@@ -27,5 +26,4 @@ spec:
         # maxDuration - Max retry backoff duration. Input needs to be a duration (e.g. 2m, 1h) (default 3m0s)
         duration: 10s
         factor: 2
-    syncOptions: []
 {{- end }}
