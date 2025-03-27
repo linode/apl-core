@@ -56,13 +56,13 @@ definitions:
           channel:
             default: mon-otomi
             description: The Slack channel for non-critical notifications.
-            $ref: '#/definitions/wordCharacterPattern'
+            type: string
           channelCrit:
             default: mon-otomi-crit
             description: The Slack channel for critical notifications.
-            $ref: '#/definitions/wordCharacterPattern'
+            type: string
           url:
-            $ref: '#/definitions/url'
+            type: string
             description: A Slack webhook URL.
             x-secret: ''
       opsgenie:
