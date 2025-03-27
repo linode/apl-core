@@ -19,7 +19,7 @@ export const validateValues = async (envDir = env.ENV_DIR): Promise<void> => {
   // TODO: Make this return true or error tree
   // Create an end point function (when running otomi validate-values) to print current messages.
   const argv: HelmArguments = getParsedArgs()
-  d.log('Values validation STARTED')
+  d.log('Values validation STARTED on %s', envDir)
 
   if (argv.l || argv.label) {
     const labelOpts = [...new Set([...(argv.l ?? []), ...(argv.label ?? [])])]

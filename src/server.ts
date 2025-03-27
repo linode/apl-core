@@ -42,7 +42,7 @@ app.get('/init', async (req: Request, res: Response) => {
 app.get('/prepare', async (req: Request, res: Response) => {
   const { envDir } = req.query as QueryParams
   try {
-    d.log('Request to prepare values repo')
+    d.log('Request to prepare values repo on', envDir)
     await bootstrapSops(envDir)
     await setValuesFile(envDir)
     // Encrypt ensures that a brand new secret file is encrypted in place
