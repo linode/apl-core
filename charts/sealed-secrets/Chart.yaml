@@ -1,7 +1,7 @@
 annotations:
   category: DeveloperTools
 apiVersion: v2
-appVersion: 0.28.0
+appVersion: 0.29.0
 description: Helm chart for the sealed-secrets controller.
 home: https://github.com/bitnami-labs/sealed-secrets
 icon: https://bitnami.com/assets/stacks/sealed-secrets/img/sealed-secrets-stack-220x234.png
@@ -16,4 +16,4 @@ name: sealed-secrets
 sources:
 - https://github.com/bitnami-labs/sealed-secrets
 type: application
-version: 2.17.1
+version: 2.17.2
