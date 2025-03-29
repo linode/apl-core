@@ -30,7 +30,21 @@ spec:
           then exit 0
           else exit 1
           fi
+      {{- with .Values.testFramework.securityContext }}
+      securityContext: {{ toYaml . | nindent 12 }}
+      {{- end }}
   restartPolicy: Never
+  {{- with .Values.affinity }}
+  affinity: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+  tolerations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.nodeSelector }}
+  nodeSelector: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  securityContext:
+{{ toYaml .Values.securityContext | indent 4 }}
 {{- end }}
 ---
 apiVersion: v1
@@ -51,7 +65,7 @@ spec:
         - name: WEBHOOK_SERVICE_CLUSTERIP
           value: "{{ include "opentelemetry-operator.fullname" . }}-webhook"
         - name: WEBHOOK_SERVICE_PORT
-          value: "443"
+          value: "{{ .Values.admissionWebhooks.servicePort }}"
       command:
         - sh
         - -c
@@ -63,4 +77,18 @@ spec:
           then exit 0
           else exit 1
           fi
+      {{- with .Values.testFramework.securityContext }}
+      securityContext: {{ toYaml . | nindent 12 }}
+      {{- end }}
   restartPolicy: Never
+  {{- with .Values.affinity }}
+  affinity: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.tolerations }}
+  tolerations: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.nodeSelector }}
+  nodeSelector: {{ toYaml . | nindent 4 }}
+  {{- end }}
+  securityContext:
+{{ toYaml .Values.securityContext | indent 4 }}
