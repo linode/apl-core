@@ -2,10 +2,10 @@
 {{- $a := $v.apps.argocd }}
 {{- $k := $v.apps.keycloak }}
 global:
+  {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-  {{ if .Values.otomi.linodeLkeImageRepository }}
-  repository: "{{ .Values.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
-  {{ end }}
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
+  {{- end }}
   domain: argocd.{{ $v.cluster.domainSuffix }}
   {{- with $v.otomi | get "nodeSelector" nil }}
   nodeSelector:
