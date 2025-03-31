@@ -18,7 +18,7 @@ describe('Upgrading values', () => {
         ],
       },
     },
-    version: oldVersion,
+    versions: { specVersion: oldVersion },
     some: { json: { path: 'bla' }, k8sVersion: '1.18' },
   }
   const mockChanges: Changes = [
@@ -68,7 +68,7 @@ describe('Upgrading values', () => {
             },
           },
           some: { bla: {}, k8sVersion: '1.18' },
-          version: 3,
+          versions: { specVersion: 3 },
         },
         true,
       )
@@ -93,9 +93,11 @@ describe('Values migrations', () => {
           monitoringStack: false,
         },
       },
+      versions: { specVersion: 1 },
     }
 
     valuesChanges = {
+      version: 2,
       deletions: ['teamConfig.{team}.monitoringStack'],
       additions: [
         { 'teamConfig.{team}.managedMonitoring.grafana': 'true' },
@@ -133,6 +135,7 @@ describe('Values migrations', () => {
             },
           },
         },
+        versions: { specVersion: 2 },
       },
       true,
     )
