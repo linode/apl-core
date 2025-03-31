@@ -5,7 +5,7 @@
 {{- $cm := $v.apps | get "cert-manager" }}
 {{- $d := $v.apps.drone }}
 {{- $sops := $v | get "kms.sops" dict }}
-{{- $giteaValuesUrl := "gitea-http.gitea.svc.cluster.local:3000/otomi/values" }}
+{{- $giteaValuesUrl := "http://gitea-http.gitea.svc.cluster.local:3000/otomi/values" }}
 {{- $helmChartCatalog := printf "https://gitea.%s/otomi/charts.git" $v.cluster.domainSuffix }}
 {{- $defaultPlatformAdminEmail := printf "platform-admin@%s" $v.cluster.domainSuffix }}
 {{- $sopsEnv := tpl (readFile "../../helmfile.d/snippets/sops-env.gotmpl") $sops }}
