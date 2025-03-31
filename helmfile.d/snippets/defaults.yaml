@@ -1343,7 +1343,6 @@ environments:
           isMultitenant: true
           nodeSelector: {}
           isPreInstalled: false
-          linodeLkeImageRepository: ""
         users: []
         e2e:
           enabled: false
