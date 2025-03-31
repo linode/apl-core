@@ -143,6 +143,7 @@ describe('Values migrations', () => {
 })
 
 const getMockValues = () => ({
+  versions: { specVersion: 1 },
   teamConfig: {
     teamA: {
       selfService: { service: ['ingress', 'networkPolicy'] },
@@ -252,6 +253,7 @@ const getMockValues = () => ({
 })
 
 const getExpectedValues = () => ({
+  versions: { specVersion: 2 },
   teamConfig: {
     teamA: {
       selfService: { service: ['ingress'] },
@@ -403,6 +405,7 @@ const getExpectedValues = () => ({
 describe('Network policies migrations', () => {
   const values: any = getMockValues()
   const valuesChanges: any = {
+    version: 2,
     networkPoliciesMigration: true,
   }
   const deps: any = {
