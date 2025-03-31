@@ -3105,9 +3105,6 @@ properties:
         default: latest
         description: 'Best pin this to a valid release version found in the repo.'
         pattern: '(v[0-9]+.[0-9]+.[0-9]+|[a-zA-Z]+[a-zA-Z0-9-])'
-      linodeLkeImageRepository:
-        type: string
-        description: 'Linode LKE image repository'
   ingress:
     properties:
       platformClass:
