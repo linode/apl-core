@@ -1276,6 +1276,9 @@ definitions:
     description: Define location of code to build
     properties:
       name:
+        description: Name of the build
+        type: string
+      imageName:
         description: Name of the image
         $ref: '#/definitions/idName'
       tag:
