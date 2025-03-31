@@ -1343,7 +1343,7 @@ environments:
           isMultitenant: true
           nodeSelector: {}
           isPreInstalled: false
-          linodeLkeImageRepository: mirror.registry.linodelke.net
+          linodeLkeImageRepository: ""
         users: []
         e2e:
           enabled: false

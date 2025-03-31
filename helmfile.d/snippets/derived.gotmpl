@@ -213,5 +213,8 @@ environments:
           {{- end }}
         otomi:
           version: {{ $otomiTag }}
+          {{- if eq $provider "linode" }}
+          linodeLkeImageRepository: mirror.registry.linodelke.net
+          {{- end }}
         versions: {{- $versions | toYaml | nindent 10 }}
       - ../core.yaml
