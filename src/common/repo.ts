@@ -448,8 +448,7 @@ export async function saveResourceGroupToFiles(
         const manifest = renderManifest(fileMap, nodePath, nodeValue)
         console.log('filepath: ', filePath)
         console.log('manifest: ', manifest)
-        const overwrite = manifest.kind === 'AplTeamService' ? true : false
-        await deps.writeValuesToFile(filePath, manifest, overwrite)
+        await deps.writeValuesToFile(filePath, manifest)
       } catch (e) {
         console.log(nodePath)
         console.log(fileMap)

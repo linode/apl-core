@@ -1,6 +1,6 @@
 import { pathExists } from 'fs-extra'
 import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
+import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, omit, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
@@ -102,6 +102,12 @@ export const getRepo = (values: Record<string, any>): Repo => {
   return { remote, branch, email, username, password }
 }
 
+function mergeCustomizer(prev, next) {
+  console.info('PREVIOUS: ', prev)
+  console.info('NEXT: ', next)
+  return next
+}
+
 let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
@@ -121,7 +127,7 @@ export const writeValuesToFile = async (
   const values = cloneDeep(inValues)
   const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
-  const mergeResult = merge(cloneDeep(originalValues), values)
+  const mergeResult = mergeWith(cloneDeep(originalValues), values, mergeCustomizer)
   const cleanedValues = removeBlankAttributes(values)
   const cleanedMergeResult = removeBlankAttributes(mergeResult)
   if (((overwrite && isEmpty(cleanedValues)) || (!overwrite && isEmpty(cleanedMergeResult))) && isSecretsFile) {
