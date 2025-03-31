@@ -142,73 +142,204 @@ describe('Values migrations', () => {
   })
 })
 
-const getMockValues = () => ({
-  versions: { specVersion: 1 },
-  teamConfig: {
-    teamA: {
-      selfService: { service: ['ingress', 'networkPolicy'] },
-      services: [
-        { id: 'my-fixed-uuid', name: 'svc1', networkPolicy: { ingressPrivate: { mode: 'AllowAll' } } },
-        {
-          id: 'my-fixed-uuid',
-          name: 'svc2',
-          networkPolicy: {
-            ingressPrivate: {
-              mode: 'AllowOnly',
+describe('Network policies migrations', () => {
+  const getMockValues = () => ({
+    versions: { specVersion: 1 },
+    teamConfig: {
+      teamA: {
+        selfService: { service: ['ingress', 'networkPolicy'] },
+        services: [
+          { id: 'my-fixed-uuid', name: 'svc1', networkPolicy: { ingressPrivate: { mode: 'AllowAll' } } },
+          {
+            id: 'my-fixed-uuid',
+            name: 'svc2',
+            networkPolicy: {
+              ingressPrivate: {
+                mode: 'AllowOnly',
+              },
             },
           },
-        },
-        {
-          id: 'my-fixed-uuid',
-          name: 'svc3',
-          networkPolicy: {
-            ingressPrivate: {
-              mode: 'DenyAll',
+          {
+            id: 'my-fixed-uuid',
+            name: 'svc3',
+            networkPolicy: {
+              ingressPrivate: {
+                mode: 'DenyAll',
+              },
             },
           },
-        },
-        { id: 'my-fixed-uuid', name: 'svc4' },
-        { id: 'my-fixed-uuid', name: 'svc5', networkPolicy: { ingressPrivate: { mode: 'AllowAll' } } },
-        {
-          id: 'my-fixed-uuid',
-          name: 'svc6',
-          networkPolicy: {
-            ingressPrivate: {
-              mode: 'AllowOnly',
-              allow: [
+          { id: 'my-fixed-uuid', name: 'svc4' },
+          { id: 'my-fixed-uuid', name: 'svc5', networkPolicy: { ingressPrivate: { mode: 'AllowAll' } } },
+          {
+            id: 'my-fixed-uuid',
+            name: 'svc6',
+            networkPolicy: {
+              ingressPrivate: {
+                mode: 'AllowOnly',
+                allow: [
+                  {
+                    team: 'team1',
+                  },
+                  {
+                    team: 'team2',
+                    service: 'svc6',
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+      teamB: {
+        services: [
+          {
+            id: 'my-fixed-uuid',
+            name: 'svc7',
+            networkPolicy: {
+              ingressPrivate: {
+                mode: 'AllowOnly',
+                allow: [
+                  {
+                    team: 'team1',
+                  },
+                  {
+                    team: 'team2',
+                    service: 'svc7',
+                  },
+                ],
+              },
+              egressPublic: [
                 {
-                  team: 'team1',
+                  domain: 'domain1.com',
+                  ports: [
+                    {
+                      number: 8443,
+                      protocol: 'TCP',
+                    },
+                  ],
                 },
                 {
-                  team: 'team2',
-                  service: 'svc6',
+                  domain: 'domain2.com',
+                  ports: [
+                    {
+                      number: 443,
+                      protocol: 'HTTPS',
+                    },
+                  ],
+                },
+                {
+                  domain: '185.199.110.153',
+                  ports: [
+                    {
+                      number: 443,
+                      protocol: 'TCP',
+                    },
+                  ],
+                },
+                {
+                  domain: 'ae::1',
+                  ports: [
+                    {
+                      number: 443,
+                      protocol: 'TCP',
+                    },
+                  ],
                 },
               ],
             },
           },
-        },
-      ],
+        ],
+      },
     },
-    teamB: {
-      services: [
-        {
-          id: 'my-fixed-uuid',
-          name: 'svc7',
-          networkPolicy: {
-            ingressPrivate: {
-              mode: 'AllowOnly',
-              allow: [
-                {
-                  team: 'team1',
-                },
-                {
-                  team: 'team2',
-                  service: 'svc7',
-                },
-              ],
+  })
+
+  const getExpectedValues = () => ({
+    versions: { specVersion: 2 },
+    teamConfig: {
+      teamA: {
+        selfService: { service: ['ingress'] },
+        services: [
+          { id: 'my-fixed-uuid', name: 'svc1' },
+          { id: 'my-fixed-uuid', name: 'svc2' },
+          { id: 'my-fixed-uuid', name: 'svc3' },
+          { id: 'my-fixed-uuid', name: 'svc4' },
+          { id: 'my-fixed-uuid', name: 'svc5' },
+          { id: 'my-fixed-uuid', name: 'svc6' },
+        ],
+        netpols: [
+          {
+            id: 'my-fixed-uuid',
+            name: 'svc1',
+            ruleType: {
+              type: 'ingress',
+              ingress: { mode: 'AllowAll', toLabelName: 'otomi.io/app', toLabelValue: 'svc1' },
             },
-            egressPublic: [
-              {
+          },
+          {
+            id: 'my-fixed-uuid',
+            name: 'svc2',
+            ruleType: {
+              type: 'ingress',
+              ingress: { mode: 'AllowOnly', toLabelName: 'otomi.io/app', toLabelValue: 'svc2' },
+            },
+          },
+          {
+            id: 'my-fixed-uuid',
+            name: 'svc5',
+            ruleType: {
+              type: 'ingress',
+              ingress: { mode: 'AllowAll', toLabelName: 'otomi.io/app', toLabelValue: 'svc5' },
+            },
+          },
+          {
+            id: 'my-fixed-uuid',
+            name: 'svc6',
+            ruleType: {
+              type: 'ingress',
+              ingress: {
+                mode: 'AllowOnly',
+                allow: [
+                  { fromNamespace: 'team-team1' },
+                  { fromNamespace: 'team-team2', fromLabelName: 'otomi.io/app', fromLabelValue: 'svc6' },
+                ],
+                toLabelName: 'otomi.io/app',
+                toLabelValue: 'svc6',
+              },
+            },
+          },
+        ],
+      },
+      teamB: {
+        services: [{ id: 'my-fixed-uuid', name: 'svc7' }],
+        netpols: [
+          {
+            id: 'my-fixed-uuid',
+            name: 'svc7',
+            ruleType: {
+              type: 'ingress',
+              ingress: {
+                mode: 'AllowOnly',
+                allow: [
+                  {
+                    fromNamespace: 'team-team1',
+                  },
+                  {
+                    fromNamespace: 'team-team2',
+                    fromLabelName: 'otomi.io/app',
+                    fromLabelValue: 'svc7',
+                  },
+                ],
+                toLabelName: 'otomi.io/app',
+                toLabelValue: 'svc7',
+              },
+            },
+          },
+          {
+            id: 'my-fixed-uuid',
+            name: 'domain1-com',
+            ruleType: {
+              type: 'egress',
+              egress: {
                 domain: 'domain1.com',
                 ports: [
                   {
@@ -217,7 +348,14 @@ const getMockValues = () => ({
                   },
                 ],
               },
-              {
+            },
+          },
+          {
+            id: 'my-fixed-uuid',
+            name: 'domain2-com',
+            ruleType: {
+              type: 'egress',
+              egress: {
                 domain: 'domain2.com',
                 ports: [
                   {
@@ -226,7 +364,14 @@ const getMockValues = () => ({
                   },
                 ],
               },
-              {
+            },
+          },
+          {
+            id: 'my-fixed-uuid',
+            name: '185-199-110-153',
+            ruleType: {
+              type: 'egress',
+              egress: {
                 domain: '185.199.110.153',
                 ports: [
                   {
@@ -235,7 +380,14 @@ const getMockValues = () => ({
                   },
                 ],
               },
-              {
+            },
+          },
+          {
+            id: 'my-fixed-uuid',
+            name: 'ae--1',
+            ruleType: {
+              type: 'egress',
+              egress: {
                 domain: 'ae::1',
                 ports: [
                   {
@@ -244,169 +396,125 @@ const getMockValues = () => ({
                   },
                 ],
               },
-            ],
+            },
           },
-        },
-      ],
+        ],
+      },
     },
-  },
-})
-
-const getExpectedValues = () => ({
-  versions: { specVersion: 2 },
-  teamConfig: {
-    teamA: {
-      selfService: { service: ['ingress'] },
-      services: [
-        { id: 'my-fixed-uuid', name: 'svc1' },
-        { id: 'my-fixed-uuid', name: 'svc2' },
-        { id: 'my-fixed-uuid', name: 'svc3' },
-        { id: 'my-fixed-uuid', name: 'svc4' },
-        { id: 'my-fixed-uuid', name: 'svc5' },
-        { id: 'my-fixed-uuid', name: 'svc6' },
-      ],
-      netpols: [
-        {
-          id: 'my-fixed-uuid',
-          name: 'svc1',
-          ruleType: {
-            type: 'ingress',
-            ingress: { mode: 'AllowAll', toLabelName: 'otomi.io/app', toLabelValue: 'svc1' },
-          },
-        },
-        {
-          id: 'my-fixed-uuid',
-          name: 'svc2',
-          ruleType: {
-            type: 'ingress',
-            ingress: { mode: 'AllowOnly', toLabelName: 'otomi.io/app', toLabelValue: 'svc2' },
-          },
-        },
-        {
-          id: 'my-fixed-uuid',
-          name: 'svc5',
-          ruleType: {
-            type: 'ingress',
-            ingress: { mode: 'AllowAll', toLabelName: 'otomi.io/app', toLabelValue: 'svc5' },
-          },
-        },
-        {
-          id: 'my-fixed-uuid',
-          name: 'svc6',
-          ruleType: {
-            type: 'ingress',
-            ingress: {
-              mode: 'AllowOnly',
-              allow: [
-                { fromNamespace: 'team-team1' },
-                { fromNamespace: 'team-team2', fromLabelName: 'otomi.io/app', fromLabelValue: 'svc6' },
-              ],
-              toLabelName: 'otomi.io/app',
-              toLabelValue: 'svc6',
-            },
-          },
-        },
-      ],
-    },
-    teamB: {
-      services: [{ id: 'my-fixed-uuid', name: 'svc7' }],
-      netpols: [
-        {
-          id: 'my-fixed-uuid',
-          name: 'svc7',
-          ruleType: {
-            type: 'ingress',
-            ingress: {
-              mode: 'AllowOnly',
-              allow: [
-                {
-                  fromNamespace: 'team-team1',
-                },
-                {
-                  fromNamespace: 'team-team2',
-                  fromLabelName: 'otomi.io/app',
-                  fromLabelValue: 'svc7',
-                },
-              ],
-              toLabelName: 'otomi.io/app',
-              toLabelValue: 'svc7',
-            },
-          },
-        },
-        {
-          id: 'my-fixed-uuid',
-          name: 'domain1-com',
-          ruleType: {
-            type: 'egress',
-            egress: {
-              domain: 'domain1.com',
-              ports: [
-                {
-                  number: 8443,
-                  protocol: 'TCP',
-                },
-              ],
-            },
-          },
-        },
-        {
-          id: 'my-fixed-uuid',
-          name: 'domain2-com',
-          ruleType: {
-            type: 'egress',
-            egress: {
-              domain: 'domain2.com',
-              ports: [
-                {
-                  number: 443,
-                  protocol: 'HTTPS',
-                },
-              ],
-            },
-          },
-        },
-        {
-          id: 'my-fixed-uuid',
-          name: '185-199-110-153',
-          ruleType: {
-            type: 'egress',
-            egress: {
-              domain: '185.199.110.153',
-              ports: [
-                {
-                  number: 443,
-                  protocol: 'TCP',
-                },
-              ],
-            },
-          },
-        },
-        {
-          id: 'my-fixed-uuid',
-          name: 'ae--1',
-          ruleType: {
-            type: 'egress',
-            egress: {
-              domain: 'ae::1',
-              ports: [
-                {
-                  number: 443,
-                  protocol: 'TCP',
-                },
-              ],
-            },
-          },
-        },
-      ],
-    },
-  },
-})
-
-describe('Network policies migrations', () => {
+  })
   const values: any = getMockValues()
   const valuesChanges: any = {
     version: 2,
     networkPoliciesMigration: true,
+  }
+  const deps: any = {
+    cd: jest.fn(),
+    rename: jest.fn(),
+    hfValues: jest.fn().mockReturnValue(values),
+    terminal,
+    writeValues: jest.fn(),
+  }
+  it('should apply changes to services and create netpols ', async () => {
+    await applyChanges([valuesChanges], false, deps)
+    const expectedValues = getExpectedValues()
+    expect(deps.writeValues).toBeCalledWith(expectedValues, true)
+  }, 20000)
+})
+
+describe('Build image name migration', () => {
+  const getMockValues = () => ({
+    versions: { specVersion: 1 },
+    teamConfig: {
+      teamA: {
+        builds: [
+          {
+            name: 'build-1',
+            tag: 'latest',
+            scanSource: true,
+            externalRepo: false,
+            mode: {
+              docker: {
+                path: './Dockerfile',
+                repoUrl: 'https://github.com/tests',
+                revision: 'HEAD',
+              },
+              type: 'docker',
+            },
+            trigger: false,
+          },
+        ],
+      },
+      teamB: {
+        builds: [
+          {
+            name: 'build-2',
+            tag: 'main',
+            scanSource: true,
+            externalRepo: false,
+            mode: {
+              docker: {
+                path: './Dockerfile',
+                repoUrl: 'https://github.com/tests',
+                revision: 'HEAD',
+              },
+              type: 'docker',
+            },
+            trigger: false,
+          },
+        ],
+      },
+    },
+  })
+
+  const getExpectedValues = () => ({
+    versions: { specVersion: 2 },
+    teamConfig: {
+      teamA: {
+        builds: [
+          {
+            name: 'build-1-latest',
+            imageName: 'build-1',
+            tag: 'latest',
+            scanSource: true,
+            externalRepo: false,
+            mode: {
+              docker: {
+                path: './Dockerfile',
+                repoUrl: 'https://github.com/tests',
+                revision: 'HEAD',
+              },
+              type: 'docker',
+            },
+            trigger: false,
+          },
+        ],
+      },
+      teamB: {
+        builds: [
+          {
+            name: 'build-2-main',
+            imageName: 'build-2',
+            tag: 'main',
+            scanSource: true,
+            externalRepo: false,
+            mode: {
+              docker: {
+                path: './Dockerfile',
+                repoUrl: 'https://github.com/tests',
+                revision: 'HEAD',
+              },
+              type: 'docker',
+            },
+            trigger: false,
+          },
+        ],
+      },
+    },
+  })
+  const values: any = getMockValues()
+  const valuesChanges: any = {
+    version: 2,
+    buildImageNameMigration: true,
   }
   const deps: any = {
     cd: jest.fn(),
