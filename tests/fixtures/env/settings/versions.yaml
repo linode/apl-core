@@ -1,4 +1,4 @@
-kind: AplVersions
+kind: AplVersion
 metadata:
     name: versions
     labels: {}
