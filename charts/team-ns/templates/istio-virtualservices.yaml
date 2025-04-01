@@ -57,8 +57,9 @@ spec:
         - uri:
             prefix: /logout-otomi
       redirect:
-        authority: {{ $v.authDomain }}
-        uri: {{ $v.sso.logoutUri }}
+        authority: {{ $v.authDomain | quote }}
+        uri: {{ $v.sso.logoutUri | quote }}
+        redirectCode: 301
     -
         {{- with $s.paths | default (list "/") }}
       match:
@@ -205,8 +206,9 @@ spec:
         - uri:
             prefix: /logout-otomi
       redirect:
-        authority: "{{ $v.authDomain }}"
-        uri: "{{ $v.sso.logoutUri }}"
+        authority: {{ $v.authDomain | quote }}
+        uri: {{ $v.sso.logoutUri | quote }}
+        redirectCode: 301
     -
         {{- with $s.paths | default (list "/") }}
       match:
