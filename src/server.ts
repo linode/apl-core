@@ -49,7 +49,6 @@ app.get('/prepare', async (req: Request, res: Response) => {
     await encrypt(envDir, ...(files ?? []))
     // Decrypt ensures that a brand new encrypted secret file is decrypted to the .dec file
     await decrypt(envDir, ...(files ?? []))
-    // await validateValues(envDir)
     res.status(200).send('ok')
   } catch (error) {
     const err = `${error}`
