@@ -1,0 +1,53 @@
+kind: AplBackups
+metadata:
+    name: platformBackups
+    labels: {}
+spec:
+    database:
+        gitea:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
+            pathSuffix: gitea
+        harbor:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
+            pathSuffix: harbor-1
+            recovery:
+                source: harbor-backup
+                database: registry
+                owner: harbor
+            externalClusters:
+                - name: harbor-backup
+                  barmanObjectStore:
+                      serverName: harbor-otomi-db
+                      destinationPath: s3://my-clusterid-harbor/harbor
+                      endpointURL: https://nl-ams-1.linodeobjects.com
+                      s3Credentials:
+                          accessKeyId:
+                              name: linode-creds
+                              key: S3_STORAGE_ACCOUNT
+                          secretAccessKey:
+                              name: linode-creds
+                              key: S3_STORAGE_KEY
+                      wal:
+                          compression: gzip
+                          maxParallel: 8
+                      data:
+                          compression: gzip
+        keycloak:
+            enabled: true
+            retentionPolicy: 7d
+            schedule: 0 0 * * *
+            pathSuffix: keycloak-1
+            recovery:
+                backup:
+                    name: keycloak-backup
+                database: keycloak
+                owner: keycloak
+    gitea:
+        enabled: true
+        retentionPolicy: 7d
+        schedule: 0 0 * * *
+    persistentVolumes: {}

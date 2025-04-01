@@ -1,3 +1,6 @@
-apps:
-    httpbin:
-        enabled: true
+kind: AplCoreApp
+metadata:
+    name: httpbin
+    labels: {}
+spec:
+    enabled: true

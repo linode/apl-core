@@ -1,3 +1,6 @@
-databases:
-    keycloak:
-        imported: false
+kind: AplDatabase
+metadata:
+    name: keycloak
+    labels: {}
+spec:
+    imported: false

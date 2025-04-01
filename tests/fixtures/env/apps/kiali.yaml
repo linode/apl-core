@@ -1,3 +1,6 @@
-apps:
-    kiali:
-        enabled: true
+kind: AplCoreApp
+metadata:
+    name: kiali
+    labels: {}
+spec:
+    enabled: true
