@@ -42,9 +42,10 @@ const preCrypt = async (path): Promise<void> => {
 
 const getAllSecretFiles = async (path) => {
   const d = terminal(`common:crypt:getAllSecretFiles`)
-  const files = (await readdirRecurse(`${path}/env`, { skipHidden: true }))
-    .filter((file) => file.endsWith('.yaml') && file.includes('/secrets.'))
-    .map((file) => file.replace(`${path}/`, ''))
+  const files = (await readdirRecurse(`${path}/env`, { skipHidden: true })).filter(
+    (file) => file.endsWith('.yaml') && file.includes('/secrets.'),
+  )
+
   d.debug('getAllSecretFiles: ', files)
   return files
 }
@@ -91,8 +92,6 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
 const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = []): Promise<void> => {
   const d = terminal(`common:crypt:runOnSecretFiles`)
   let files: string[] = filesArgs
-
-  cd(path)
 
   if (files.length === 0) {
     files = await getAllSecretFiles(path)
