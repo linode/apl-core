@@ -92,7 +92,7 @@ dependencies:
     version: 1.18.5
     repository: https://grafana.github.io/helm-charts
   - name: thanos
-    version: 15.7.25
+    version: 15.14.0
     repository: https://charts.bitnami.com/bitnami
   - name: trivy-operator
     version: 0.25.0
