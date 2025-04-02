@@ -3,7 +3,6 @@ import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
 import { bootstrapSops } from 'src/cmd/bootstrap'
-import { validateValues } from 'src/cmd/validate-values'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { hfValues } from './common/hf'
@@ -25,12 +24,13 @@ app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
 
 type QueryParams = {
   envDir: string
+  files?: string[]
 }
 
 app.get('/init', async (req: Request, res: Response) => {
   const { envDir } = req.query as QueryParams
   try {
-    d.log('Request to initialize values repo')
+    d.log('Request to initialize values repo on', envDir)
     await decrypt(envDir)
     res.status(200).send('ok')
   } catch (error) {
@@ -40,21 +40,20 @@ app.get('/init', async (req: Request, res: Response) => {
 })
 
 app.get('/prepare', async (req: Request, res: Response) => {
-  const { envDir } = req.query as QueryParams
+  const { envDir, files } = req.query as QueryParams
   try {
-    d.log('Request to prepare values repo')
+    d.log('Request to prepare values repo on', envDir)
     await bootstrapSops(envDir)
     await setValuesFile(envDir)
     // Encrypt ensures that a brand new secret file is encrypted in place
-    await encrypt(envDir)
+    await encrypt(envDir, ...(files ?? []))
     // Decrypt ensures that a brand new encrypted secret file is decrypted to the .dec file
-    await decrypt(envDir)
-    await validateValues(envDir)
+    await decrypt(envDir, ...(files ?? []))
     res.status(200).send('ok')
   } catch (error) {
     const err = `${error}`
     let status = 500
-    d.error(err)
+    d.error(`Request to prepare values went wrong: ${err}`)
     if (err.includes('Values validation FAILED')) {
       status = 422
     }
