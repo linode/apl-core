@@ -1,4 +1,4 @@
-kind: AplTeamSettings
+kind: AplTeamSettingSet
 metadata:
     name: dev
     labels:
