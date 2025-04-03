@@ -1,31 +1,12 @@
 apiVersion: v2
-name: trivy-operator
+appVersion: 0.25.0
 description: Keeps security report resources updated
-type: application
-
-# This is the chart version. This version number should be incremented each time you make changes
-# to the chart and its templates, including the app version.
-# Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.25.0
-
-# This is the version number of the application being deployed. This version number should be
-# incremented each time you make changes to the application. Versions are not expected to
-# follow Semantic Versioning. They should reflect the version the application is using.
-appVersion: 0.23.0
-
-# kubeVersion: A SemVer range of compatible Kubernetes versions (optional)
-
 keywords:
-  - aquasecurity
-  - trivyoperator
-  - trivy
-# home: https://github.com/aquasecurity/trivy-operator
+- aquasecurity
+- trivyoperator
+- trivy
+name: trivy-operator
 sources:
-  - https://github.com/aquasecurity/trivy-operator
-# maintainers: # (optional)
-#   - name: The maintainers name (required for each maintainer)
-#     email: The maintainers email (optional for each maintainer)
-#     url: A URL for the maintainer (optional for each maintainer)
-# icon: A URL to an SVG or PNG image to be used as an icon (optional).
-# annotations:
-#   example: A list of annotations keyed by name (optional).
+- https://github.com/aquasecurity/trivy-operator
+type: application
+version: 0.27.0
