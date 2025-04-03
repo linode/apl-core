@@ -18,7 +18,7 @@ spec:
     scrapeTimeout: {{ .Values.metrics.scrapeTimeout }}
     {{- end }}
     honorLabels: true
-    targetPort: 8080
+    port: metrics
     path: /metrics
     scheme: http
   jobLabel: "{{ .Release.Name }}"
