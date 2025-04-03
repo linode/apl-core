@@ -71,7 +71,7 @@ dependencies:
     version: 7.10.0
     repository: https://prometheus-community.github.io/helm-charts
   - name: prometheus-msteams
-    version: 0.4.4
+    version: 0.7.1
     repository: https://prometheus-msteams.github.io/prometheus-msteams/
   - name: promtail
     version: 6.16.6
