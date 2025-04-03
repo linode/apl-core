@@ -22,7 +22,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
-  const { remote, branch, email, username } = getRepo(values)
+  const { remote, branch, email, username, password } = getRepo(values)
   cd(env.ENV_DIR)
   if (await pathExists(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
@@ -57,7 +57,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     // decrypt the freshly cloned repo
     await decrypt()
   } catch (e) {
-    d.debug(e)
+    d.debug(e.replace(password, '****').replace(username, '****'))
     d.info('Remote does not exist yet. Expecting first commit to come later.')
   } finally {
     const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
