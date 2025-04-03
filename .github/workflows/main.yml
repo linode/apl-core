@@ -105,7 +105,7 @@ jobs:
           #Cut the CHANGELOG.md file up to the first occurence of the "### \[[0-9]*" (meaning three #, a space,a square bracket and any number after it)
           sed -n '/### \[[0-9]*/q;p' CHANGELOG.md > NEW_CHANGELOG.md
       - name: Create GitHub release
-        uses: ncipollo/release-action@v1.15.0
+        uses: ncipollo/release-action@v1.16.0
         env:
           token: ${{ secrets.GITHUB_TOKEN }}
         with:
