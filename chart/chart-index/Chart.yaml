@@ -15,7 +15,7 @@ dependencies:
     version: 0.23.0
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
-    version: 8.7.8
+    version: 8.7.9
     repository: https://charts.bitnami.com/bitnami
   - name: falco
     version: 3.8.5
