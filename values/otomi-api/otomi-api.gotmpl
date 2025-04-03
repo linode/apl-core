@@ -27,7 +27,7 @@ secrets:
 env:
   HELM_CHART_CATALOG: {{ $helmChartCatalog }}
   DEFAULT_PLATFORM_ADMIN_EMAIL: {{ $defaultPlatformAdminEmail }}
-  DEBUG: 'otomi:*'
+  DEBUG: 'otomi:*,-otomi:authz'
   VERBOSITY: '1'
   GIT_REPO_URL: {{ $o | get "git.repoUrl" $giteaValuesUrl }}
   GIT_REPO_PUBLIC_URL: {{ $giteaValuesPublilcUrl }}
