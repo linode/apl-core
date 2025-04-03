@@ -3,6 +3,47 @@
 This file documents all notable changes to `falco-exporter` Helm Chart. The release
 numbering uses [semantic versioning](http://semver.org).
 
+## v0.12.2
+
+* add deprecation notice
+
+## v0.12.1
+
+* fix bug in 'for' for falco exporter prometheus rules
+
+## v0.12.0
+
+* make 'for' configurable for falco exporter prometheus rules
+
+## v0.11.0
+
+* updated grafana dashboard
+
+## v0.10.1
+
+* Enhanced the service Monitor to support additional Properties.
+
+## v0.10.0
+
+* added ability to set the grafana folder annotation name
+
+## v0.9.11
+
+* fix dead links in README.md
+
+## v0.9.10
+
+* update configuration values in README.md
+* introduce helm docs for the chart
+
+## v0.9.9
+
+* update tolerations
+
+## v0.9.8
+
+* add annotation for set of folder's grafana-chart
+
 ## v0.9.7
 
 * noop change just to test the ci
