@@ -2,6 +2,10 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ include "gitea.fullname" . }}
+  annotations:
+    {{- if .Values.statefulset.annotations }}
+    {{- toYaml .Values.statefulset.annotations | nindent 4 }}
+    {{- end }}
   labels:
     {{- include "gitea.labels" . | nindent 4 }}
 spec:
@@ -41,14 +45,10 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- with .Values.podDns }}
-      {{- . | toYaml | nindent 6 }}
-      {{- end }}
       initContainers:
         - name: init-directories
           image: "{{ include "gitea.image" . }}"
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/usr/sbin/init_directory_structure.sh"]
           env:
             - name: GITEA_APP_INI
@@ -79,8 +79,7 @@ spec:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
         - name: init-app-ini
           image: "{{ include "gitea.image" . }}"
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/usr/sbin/config_environment.sh"]
           env:
             - name: GITEA_APP_INI
@@ -93,6 +92,9 @@ spec:
               value: /tmp/gitea
             {{- if .Values.statefulset.env }}
             {{- toYaml .Values.statefulset.env | nindent 12 }}
+            {{- end }}
+            {{- if .Values.gitea.additionalConfigFromEnvs }}
+            {{- toYaml .Values.gitea.additionalConfigFromEnvs | nindent 12 }}
             {{- end }}
           volumeMounts:
             - name: config
@@ -117,9 +119,8 @@ spec:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
         - name: configure-gitea
           image: "{{ include "gitea.image" . }}"
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
           command: ["/usr/sbin/configure_gitea.sh"]
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
             {{- /* By default this container runs as user 1000 unless otherwise stated */ -}}
             {{- $csc := deepCopy .Values.containerSecurityContext -}}
@@ -237,6 +238,9 @@ spec:
           ports:
             - name: ssh
               containerPort: {{ .Values.gitea.config.server.SSH_LISTEN_PORT }}
+            {{- if .Values.service.ssh.hostPort }}
+              hostPort: {{ .Values.service.ssh.hostPort }}
+            {{- end }}
             - name: http
               containerPort: {{ .Values.gitea.config.server.HTTP_PORT }}
             {{- if .Values.gitea.config.server.ENABLE_PPROF }}
@@ -319,9 +323,7 @@ spec:
           emptyDir: {}
   {{- else if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
   volumeClaimTemplates:
-    - apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
+    - metadata:
         name: data
       {{- with .Values.persistence.annotations }}
         annotations:

@@ -40,31 +40,15 @@ stringData:
 
     set -euo pipefail
 
-    {{- if include "db.servicename" . }}
-    # Connection retry inspired by https://gist.github.com/dublx/e99ea94858c07d2ca6de
-    function test_db_connection() {
-      local RETRY=0
-      local MAX=30
-
-      echo 'Wait for database to become avialable...'
-      until [ "${RETRY}" -ge "${MAX}" ]; do
-        nc -vz -w2 {{ include "db.servicename" . }} {{ include "db.port" . }} && break
-        RETRY=$[${RETRY}+1]
-        echo "...not ready yet (${RETRY}/${MAX})"
-      done
-
-      if [ "${RETRY}" -ge "${MAX}" ]; then
-        echo "Database not reachable after '${MAX}' attempts!"
-        exit 1
-      fi
-    }
-
-    test_db_connection
-    {{- end }}
-
     echo '==== BEGIN GITEA CONFIGURATION ===='
 
-    gitea migrate
+    { # try
+      gitea migrate
+    } || { # catch
+      echo "Gitea migrate might fail due to database connection...This init-container will try again in a few seconds"
+      exit 1
+    }
+    
 
     {{- if or .Values.gitea.admin.existingSecret (and .Values.gitea.admin.username .Values.gitea.admin.password) }}
     function configure_admin_user() {
@@ -112,16 +96,13 @@ stringData:
       local OAUTH_NAME={{ (printf "%s" $value.name) | squote }}
       local AUTH_ID=$(gitea admin auth list --vertical-bars | grep -E "\|${OAUTH_NAME}\s+\|" | grep -iE '\|OAuth2\s+\|' | awk -F " "  "{print \$1}")
 
-      {{- $autoDiscoverUrlBackchannel := index $value "autoDiscoverUrlBackchannel" }}
-      {{- $valueMod := set (omit $value "autoDiscoverUrl" "autoDiscoverUrlBackchannel") "autoDiscoverUrl" $autoDiscoverUrlBackchannel }}
-      {{- $auth := list $idx $valueMod }}
       if [[ -z "${AUTH_ID}" ]]; then
         echo "No oauth configuration found with name '${OAUTH_NAME}'. Installing it now..."
-        gitea admin auth add-oauth {{- include "gitea.oauth_settings" $auth | indent 1 }}
+        gitea admin auth add-oauth {{- include "gitea.oauth_settings" (list $idx $value) | indent 1 }}
         echo '...installed.'
       else
         echo "Existing oauth configuration with name '${OAUTH_NAME}': '${AUTH_ID}'. Running update to sync settings..."
-        gitea admin auth update-oauth --id "${AUTH_ID}" {{- include "gitea.oauth_settings" $auth | indent 1 }}
+        gitea admin auth update-oauth --id "${AUTH_ID}" {{- include "gitea.oauth_settings" (list $idx $value) | indent 1 }}
         echo '...sync settings done.'
       fi
       {{- end }}

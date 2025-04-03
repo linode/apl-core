@@ -10,14 +10,14 @@ platform:
 steps:
 - name: helm lint
   pull: always
-  image: alpine:3.13
+  image: alpine:3.15
   commands:
   - apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing helm
   - helm lint
 
 - name: helm template
   pull: always
-  image: alpine:3.13
+  image: alpine:3.15
   commands:
   - apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing helm
   - helm dependency update
@@ -58,7 +58,7 @@ trigger:
 steps:
 - name: generate-chart
   pull: always
-  image: alpine:3.13
+  image: alpine:3.15
   commands:
     - apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing helm
     - apk add --no-cache curl
@@ -74,8 +74,7 @@ steps:
   image: plugins/s3:latest
   settings:
     bucket: gitea-artifacts
-    endpoint: https://storage.gitea.io
-    path_style: true
+    endpoint: https://ams3.digitaloceanspaces.com
     access_key:
       from_secret: aws_access_key_id
     secret_key:
