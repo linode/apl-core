@@ -46,7 +46,8 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
     }
     await $`git commit -m ${message} --no-verify`
   } catch (e) {
-    d.log(e)
+    const { username, password } = getRepo(values)
+    d.log('commit and push error:', e.replace(password, '****').replace(username, '****'))
     return
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
@@ -127,7 +128,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`git config http.sslVerify false`
     await $`git push -u origin main`
   } catch (error) {
-    d.info('CloneOtomiChartsInGitea Error:', error)
+    d.info('CloneOtomiChartsInGitea Error:', error.replace(password, '****').replace(username, '****'))
   }
   d.info('Cloned apl-charts in Gitea')
 }
