@@ -1,5 +1,8 @@
 # OpenTelemetry Operator Helm Chart
 
+> [!WARNING]
+> Version 0.58.0 of this Chart includes a new version of the `OpenTelemetryCollector` CRD. See [this document][v1beta1_migration] for upgrade instructions for the new Operator CRD. Please make sure you also follow the [helm upgrade instructions](./UPGRADING.md#0560-to-0570) for helm chart 0.57.0.
+
 The Helm chart installs [OpenTelemetry Operator](https://github.com/open-telemetry/opentelemetry-operator) in Kubernetes cluster.
 The OpenTelemetry Operator is an implementation of a [Kubernetes Operator](https://www.openshift.com/learn/topics/operators).
 At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetry/opentelemetry-collector) as the only managed component.
@@ -14,14 +17,14 @@ At this point, it has [OpenTelemetry Collector](https://github.com/open-telemetr
 In Kubernetes, in order for the API server to communicate with the webhook component, the webhook requires a TLS
 certificate that the API server is configured to trust. There are a few different ways you can use to generate/configure the required TLS certificate.
 
-  - The easiest and default method is to install the [cert-manager](https://cert-manager.io/docs/) and set `admissionWebhooks.certManager.create` to `true`.
+  - The easiest and default method is to install the [cert-manager](https://cert-manager.io/docs/) and set `admissionWebhooks.certManager.enabled` to `true`.
     In this way, cert-manager will generate a self-signed certificate. _See [cert-manager installation](https://cert-manager.io/docs/installation/kubernetes/) for more details._
   - You can provide your own Issuer by configuring the `admissionWebhooks.certManager.issuerRef` value. You will need
     to specify the `kind` (Issuer or ClusterIssuer) and the `name`. Note that this method also requires the installation of cert-manager.
-  - You can use an automatically generated self-signed certificate by setting `admissionWebhooks.certManager.enabled` to `false` and `admissionWebhooks.autoGenerateCert` to `true`. Helm will create a self-signd cert and a secret for you.
-  - You can use your own generated self-signed certificate by setting both `admissionWebhooks.certManager.enabled` and `admissionWebhooks.autoGenerateCert` to `false`. You should provide the necessary values to `admissionWebhooks.cert_file`, `admissionWebhooks.key_file`, and `admissionWebhooks.ca_file`.
+  - You can use an automatically generated self-signed certificate by setting `admissionWebhooks.certManager.enabled` to `false` and `admissionWebhooks.autoGenerateCert.enabled` to `true`. Helm will create a self-signed cert and a secret for you.
+  - You can use your own generated self-signed certificate by setting both `admissionWebhooks.certManager.enabled` and `admissionWebhooks.autoGenerateCert.enabled` to `false`. You should provide the necessary values to `admissionWebhooks.certFile`, `admissionWebhooks.keyFile`, and `admissionWebhooks.caFile`.
   - You can sideload custom webhooks and certificate by disabling `.Values.admissionWebhooks.create` and `admissionWebhooks.certManager.enabled` while setting your custom cert secret name in `admissionWebhooks.secretName`
-  - You can disable webhooks alltogether by disabling `.Values.admissionWebhooks.create` and setting env var to `ENABLE_WEBHOOKS: "false"`
+  - You can disable webhooks altogether by disabling `.Values.admissionWebhooks.create` and setting env var to `ENABLE_WEBHOOKS: "false"`
 
 ## Add Repository
 
@@ -34,16 +37,29 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ## Install Chart
 
+> [!NOTE]
+> This Chart uses templated CRDs, and therefore does not support `--skip-crds`. Use `crds.create=false` instead if you do not want the chart to install the OpenTelemetry Operator's CRDs.
+
 ```console
-$ helm install \
-  opentelemetry-operator open-telemetry/opentelemetry-operator
+$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+--set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s"
 ```
 
 If you created a custom namespace, like in the TLS Certificate Requirement section above, you will need to specify the namespace with the `--namespace` helm option:
 
 ```console
-$ helm install --namespace opentelemetry-operator-system \
-  opentelemetry-operator open-telemetry/opentelemetry-operator
+$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+--namespace opentelemetry-operator-system \
+--set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s"
+```
+
+If you wish for helm to create an automatically generated self-signed certificate, make sure to set the appropriate values when installing the chart:
+
+```console
+$ helm install opentelemetry-operator open-telemetry/opentelemetry-operator \
+--set "manager.collectorImage.repository=otel/opentelemetry-collector-k8s" \
+--set admissionWebhooks.certManager.enabled=false \
+--set admissionWebhooks.autoGenerateCert.enabled=true
 ```
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
@@ -64,6 +80,9 @@ The OpenTelemetry Collector CRD created by this chart won't be removed by defaul
 
 ```console
 $ kubectl delete crd opentelemetrycollectors.opentelemetry.io
+$ kubectl delete crd opampbridges.opentelemetry.io
+$ kubectl delete crd instrumentations.opentelemetry.io
+$ kubectl delete crd targetallocators.opentelemetry.io
 ```
 
 ## Upgrade Chart
@@ -88,6 +107,20 @@ The following command will show all the configurable options with detailed comme
 $ helm show values open-telemetry/opentelemetry-operator
 ```
 
+When using this chart as a subchart, you may want to unset certain default values. Since Helm v3.13 values handling is improved and null can now consistently be used to remove values (e.g. to remove the default CPU limits).
+
+### Role-based Access Control (RBAC) Configuration
+
+The OpenTelemetry Collector requires specific RBAC permissions to function correctly, especially when using the `k8sattributesprocessor`. Depending on your deployment's scope, you may need to configure Cluster-scoped or Namespace-scoped RBAC permissions.
+
+- **Cluster-scoped RBAC**: Necessary if the collector is to receive telemetry from across multiple namespaces. This setup requires `get`, `watch`, and `list` permissions on `pods`, `namespaces`, and `nodes`, plus `replicasets` if using deployment-related attributes.
+
+- **Namespace-scoped RBAC**: Suitable for collecting telemetry within a specific namespace. This requires setting up a `Role` and `RoleBinding` to grant access to `pods` and `replicasets` within the target namespace. This setup limits the collector's access to resources within the specified namespace only.
+
+**Important**: The `manager.createRbacPermissions` flag in the Helm chart values should be set to `false` if you are manually configuring RBAC permissions for the collector. Manual configuration allows for more granular control over the permissions granted to the OpenTelemetry Collector, ensuring it has exactly the access it needs based on your specific deployment requirements. Conversely, setting `manager.createRbacPermissions` to `true` will allow the operator to automatically configure RBAC for your collectors.
+
+For detailed instructions and examples on configuring RBAC permissions, please refer to the [official documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md).
+
 ## Install OpenTelemetry Collector
 
 _See [OpenTelemetry website](https://opentelemetry.io/docs/collector/) for more details about the Collector_
@@ -106,68 +139,69 @@ to an early version if anything unexpected happens, pause the Collector, etc. In
 instance just as an application.
 
 The following example configuration deploys the Collector as Deployment resource. The receiver is Jaeger receiver and
-the exporter is logging exporter.
+the exporter is [debug exporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/debugexporter).
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: my-collector
 spec:
   mode: deployment # This configuration is omittable.
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          grpc:
-    processors:
+          grpc: {}
+    processors: {}
 
     exporters:
-      logging:
+      debug: {}
 
     service:
       pipelines:
         traces:
           receivers: [jaeger]
           processors: []
-          exporters: [logging]
+          exporters: [debug]
 EOF
 ```
 
 ### DaemonSet Mode
 
-DaemonSet should satisfy your needs if you want the Collector run as an agent in your Kubernetes nodes.
+DaemonSet should satisfy your needs if you want the Collector to run as an agent on your Kubernetes nodes.
 In this case, every Kubernetes node will have its own Collector copy which would monitor the pods in it.
 
 The following example configuration deploys the Collector as DaemonSet resource. The receiver is Jaeger receiver and
-the exporter is logging exporter.
+the exporter is debug exporter.
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: my-collector
 spec:
   mode: daemonset
-  config: |
+  hostNetwork: true
+  config:
     receivers:
       jaeger:
         protocols:
-          grpc:
-    processors:
+          grpc: {}
+    processors: {}
 
     exporters:
-      logging:
-        loglevel: debug
+      debug:
+        verbosity: detailed
 
     service:
       pipelines:
         traces:
           receivers: [jaeger]
           processors: []
-          exporters: [logging]
+          exporters: [debug]
 EOF
 ```
 
@@ -181,33 +215,33 @@ There are basically three main advantages to deploy the Collector as the Statefu
   to attach the same sticky identity (e.g., volumes) to the new pod.
 
 The following example configuration deploys the Collector as StatefulSet resource with three replicas. The receiver
-is Jaeger receiver and the exporter is logging exporter.
+is Jaeger receiver and the exporter is debug exporter.
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: my-collector
 spec:
   mode: statefulset
   replicas: 3
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          grpc:
-    processors:
+          grpc: {}
+    processors: {}
 
     exporters:
-      logging:
+      debug: {}
 
     service:
       pipelines:
         traces:
           receivers: [jaeger]
           processors: []
-          exporters: [logging]
+          exporters: [debug]
 EOF
 ```
 
@@ -223,28 +257,28 @@ _See the [OpenTelemetry Operator github repository](https://github.com/open-tele
 
 ```console
 $ kubectl apply -f - <<EOF
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: sidecar-for-my-app
 spec:
   mode: sidecar
-  config: |
+  config:
     receivers:
       jaeger:
         protocols:
-          thrift_compact:
-    processors:
+          thrift_compact: {}
+    processors: {}
 
     exporters:
-      logging:
+      debug: {}
 
     service:
       pipelines:
         traces:
           receivers: [jaeger]
           processors: []
-          exporters: [logging]
+          exporters: [debug]
 EOF
 
 $ kubectl apply -f - <<EOF
@@ -263,3 +297,5 @@ spec:
         protocol: TCP
 EOF
 ```
+
+[v1beta1_migration]: https://github.com/open-telemetry/opentelemetry-operator/blob/main/docs/crd-changelog.md#opentelemetrycollectoropentelemetryiov1beta1

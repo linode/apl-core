@@ -1,6 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  {{- with .Values.manager.deploymentAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   labels:
     {{- include "opentelemetry-operator.labels" . | nindent 4 }}
     app.kubernetes.io/component: controller-manager
@@ -23,7 +27,7 @@ spec:
         {{- include "opentelemetry-operator.podAnnotations" . | nindent 8 }}
         {{- end }}
       labels:
-        {{- include "opentelemetry-operator.selectorLabels" . | nindent 8 }}
+        {{- include "opentelemetry-operator.labels" . | nindent 8 }}
         {{- if .Values.manager.podLabels }}
         {{- include "opentelemetry-operator.podLabels" . | nindent 8 }}
         {{- end }}
@@ -46,6 +50,9 @@ spec:
             {{- if and .Values.manager.collectorImage.repository .Values.manager.collectorImage.tag }}
             - --collector-image={{ .Values.manager.collectorImage.repository }}:{{ .Values.manager.collectorImage.tag }}
             {{- end }}
+            {{- if and .Values.manager.opampBridgeImage.repository .Values.manager.opampBridgeImage.tag }}
+            - --operator-opamp-bridge-image={{ .Values.manager.opampBridgeImage.repository }}:{{ .Values.manager.opampBridgeImage.tag }}
+            {{- end }}
             {{- if and .Values.manager.targetAllocatorImage.repository .Values.manager.targetAllocatorImage.tag }}
             - --target-allocator-image={{ .Values.manager.targetAllocatorImage.repository }}:{{ .Values.manager.targetAllocatorImage.tag }}
             {{- end }}
@@ -64,7 +71,12 @@ spec:
             {{- if and .Values.manager.autoInstrumentationImage.go.repository .Values.manager.autoInstrumentationImage.go.tag }}
             - --auto-instrumentation-go-image={{ .Values.manager.autoInstrumentationImage.go.repository }}:{{ .Values.manager.autoInstrumentationImage.go.tag }}
             {{- end }}
-            {{- if .Values.manager.featureGates }}
+            {{- if and .Values.manager.autoInstrumentationImage.apacheHttpd.repository .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
+            - --auto-instrumentation-apache-httpd-image={{ .Values.manager.autoInstrumentationImage.apacheHttpd.repository }}:{{ .Values.manager.autoInstrumentationImage.apacheHttpd.tag }}
+            {{- end }}
+            {{- if .Values.manager.featureGatesMap }}
+            - --feature-gates={{ include "opentelemetry-operator.featureGatesMap" . }}
+            {{- else if ne .Values.manager.featureGates "" }}
             - --feature-gates={{ .Values.manager.featureGates }}
             {{- end }}
             {{-  if .Values.manager.extraArgs  }}
@@ -72,14 +84,21 @@ spec:
             {{-  end  }}
           command:
             - /manager
-          {{- if .Values.manager.env }}
           env:
+            - name: SERVICE_ACCOUNT_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            {{- if or .Values.manager.env .Values.manager.extraEnvs }}
             {{- range $name, $value := .Values.manager.env }}
             - name: {{ $name }}
-              value: {{ $value | quote -}}
+              value: {{ $value | quote }}
             {{- end }}
-          {{- end }}
-          image: "{{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}"
+            {{- with .Values.manager.extraEnvs }}
+              {{- . | toYaml | nindent 12 }}
+            {{- end }}
+            {{- end }}
+          image: {{ include "opentelemetry-operator.image" . | quote }}
           name: manager
           ports:
             - containerPort: {{ .Values.manager.ports.metricsPort }}
@@ -116,7 +135,6 @@ spec:
         - args:
             - --secure-listen-address=0.0.0.0:{{ .Values.kubeRBACProxy.ports.proxyPort }}
             - --upstream=http://127.0.0.1:{{ .Values.manager.ports.metricsPort }}/
-            - --logtostderr=true
             - --v=0
             {{-  if .Values.kubeRBACProxy.extraArgs  }}
             {{- .Values.kubeRBACProxy.extraArgs | toYaml | nindent 12 }}
