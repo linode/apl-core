@@ -15,7 +15,6 @@ spec:
             channel: aaaaa
             channelCrit: aaaaa
             url: https://slack.con
-    id: demo
     managedMonitoring:
         alertmanager: true
         grafana: true
