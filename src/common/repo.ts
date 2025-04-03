@@ -554,7 +554,6 @@ export async function loadToSpec(
     if (hasCorrespondingDecryptedFile(filePath, files)) return
     promises.push(deps.loadFileToSpec(filePath, fileMap, spec))
   })
-
   await Promise.all(promises)
 }
 
@@ -565,18 +564,30 @@ export async function loadFileToSpec(
   deps = { loadYaml },
 ): Promise<void> {
   const jsonPath = getJsonPath(fileMap, filePath)
-  const data = await deps.loadYaml(filePath)
-  if (fileMap.processAs === 'arrayItem') {
-    const ref: Record<string, any>[] = get(spec, jsonPath)
-    ref.push(data?.spec)
-  } else {
-    const ref: Record<string, any> = get(spec, jsonPath)
-    // Decrypted secrets may need to be merged with plain text specs
-    const newRef = merge(cloneDeep(ref), data?.spec)
-    set(spec, jsonPath, newRef)
+  const data = (await deps.loadYaml(filePath)) || {}
+
+  try {
+    if (!filePath.includes('secrets.')) {
+      data.id = data.metadata.name
+      if (fileMap.resourceGroup === 'team') {
+        data.teamId = data.metadata.labels['apl.io/teamId']
+      }
+    }
+    if (fileMap.processAs === 'arrayItem') {
+      const ref: Record<string, any>[] = get(spec, jsonPath)
+      ref.push(data?.spec)
+    } else {
+      const ref: Record<string, any> = get(spec, jsonPath)
+      // Decrypted secrets may need to be merged with plain text specs
+      const newRef = merge(cloneDeep(ref), data?.spec)
+      set(spec, jsonPath, newRef)
+    }
+  } catch (e) {
+    console.log(filePath)
+    console.log(fileMap)
+    throw e
   }
 }
-
 export async function getKmsSettings(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
   const kmsFiles = getFileMap('AplKms', envDir)
   const spec = {}
