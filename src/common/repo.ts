@@ -569,6 +569,7 @@ export async function loadFileToSpec(
   try {
     if (!filePath.includes('secrets.')) {
       data.id = data.metadata.name
+      data.name = data.metadata.name
       if (fileMap.resourceGroup === 'team') {
         data.teamId = data.metadata.labels['apl.io/teamId']
       }
