@@ -4,7 +4,6 @@ metadata:
     labels:
         apl.io/teamId: dev
 spec:
-    name: allow-egress-2
     ruleType:
         type: egress
         egress:

@@ -16,7 +16,6 @@ spec:
             repoUrl: https://github.com/buildpacks/samples
             revision: HEAD
         type: buildpacks
-    name: demo-java2
     scanSource: false
     tag: v.0.0.1
     trigger: false

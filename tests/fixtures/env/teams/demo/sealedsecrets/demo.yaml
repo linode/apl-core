@@ -15,5 +15,4 @@ spec:
         labels:
             - key: test
               value: label
-    name: demo
     type: kubernetes.io/opaque

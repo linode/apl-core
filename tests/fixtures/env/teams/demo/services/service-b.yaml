@@ -4,5 +4,4 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    name: service-b
     type: cluster

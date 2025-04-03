@@ -9,7 +9,6 @@ spec:
           value: hello
         - name: backup
           value: all
-    name: bu2
     schedule: 0 0 0 * *
     snapshotVolumes: true
     ttl: 8h

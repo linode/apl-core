@@ -5,7 +5,6 @@ metadata:
     name: buildpacks-samples
 spec:
     gitService: github
-    name: buildpacks-samples
     private: false
     repositoryUrl: https://github.com/buildpacks/samples
     teamId: demo
