@@ -568,10 +568,14 @@ export async function loadFileToSpec(
 
   try {
     if (!filePath.includes('secrets.')) {
-      data.id = data.metadata.name
-      data.name = data.metadata.name
+      // data.spec.id = data.metadata.name
+
       if (fileMap.resourceGroup === 'team') {
-        data.teamId = data.metadata.labels['apl.io/teamId']
+        data.spec.name = data.metadata.name
+        // data.spec.teamId = data.metadata.labels['apl.io/teamId']
+      }
+      if (fileMap.resourceGroup === 'users') {
+        data.spec.id = data.metadata.name
       }
     }
     if (fileMap.processAs === 'arrayItem') {
