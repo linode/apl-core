@@ -7,4 +7,3 @@ spec:
     gitService: github
     private: false
     repositoryUrl: https://github.com/buildpacks/samples
-    teamId: demo
