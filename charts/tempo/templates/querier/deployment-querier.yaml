@@ -21,7 +21,7 @@ spec:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
   strategy:
     rollingUpdate:
-      maxSurge: 0
+      maxSurge: {{ .Values.querier.maxSurge }}
       maxUnavailable: 1
   template:
     metadata:
