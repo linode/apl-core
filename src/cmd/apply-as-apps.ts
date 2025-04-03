@@ -1,16 +1,16 @@
+import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 import { mkdirSync, rmdirSync } from 'fs'
 import { pathExists } from 'fs-extra'
 import { writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
-import { patchContainerResourcesOfSts, isResourcePresent, k8s } from 'src/common/k8s'
+import { isResourcePresent, k8s, patchContainerResourcesOfSts } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
-import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -66,6 +66,13 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
         },
         syncOptions: ['ServerSideApply=true'],
       },
+      ignoreDifferences: [
+        {
+          group: 'admissionregistration.k8s.io',
+          kind: 'ValidatingWebhookConfiguration',
+          jqPathExpressions: ['.webhooks[]?.clientConfig.caBundle'],
+        },
+      ],
       project: 'default',
       source: {
         path: release.chart.replace('../', ''),
