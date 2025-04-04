@@ -6,7 +6,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: docker-build-{{ .name }}
+  name: docker-build-{{ .imageName }}
   annotations:
     sidecar.istio.io/inject: "false"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
@@ -41,7 +41,7 @@ spec:
       - name: ARGS
         value:
           - dir:.
-          - --name={{ .name }}
+          - --name={{ .imageName }}
     workspaces:
       - name: source-dir
         workspace: shared-data
@@ -67,7 +67,7 @@ spec:
     - name: CONTEXT
       value: {{ $context }}
     - name: IMAGE
-      value: {{ $v.harborDomain }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+      value: {{ $v.harborDomain }}/team-{{ $v.teamId }}/{{ .imageName }}:{{ .tag }}
     {{- with (dig "mode" "docker" "envVars" nil . ) }}
     - name: EXTRA_ARGS
       value: 
@@ -80,7 +80,7 @@ spec:
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
-  name: trigger-template-{{ .name }}
+  name: trigger-template-{{ .imageName }}
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   resourcetemplates:
@@ -129,14 +129,14 @@ spec:
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: docker-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
+  name: docker-build-{{ .imageName }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
   annotations:
     sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   pipelineRef:
-    name: docker-build-{{ .name }}
+    name: docker-build-{{ .imageName }}
   taskRunTemplate:
     serviceAccountName: sa-team-{{ $v.teamId }}
     podTemplate:
@@ -170,7 +170,7 @@ spec:
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
-  name: gitea-triggerbinding-{{ .name }}
+  name: gitea-triggerbinding-{{ .imageName }}
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   params:
@@ -182,19 +182,19 @@ spec:
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
-  name: gitea-webhook-{{ .name }}
+  name: gitea-webhook-{{ .imageName }}
   labels:
-    tekton.dev/pipeline: docker-build-{{ .name }}
+    tekton.dev/pipeline: docker-build-{{ .imageName }}
     {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
   triggers:
-    - name: tekton-webhook-{{ .name }}
+    - name: tekton-webhook-{{ .imageName }}
       bindings:
         - kind: TriggerBinding
-          ref: gitea-triggerbinding-{{ .name }}
+          ref: gitea-triggerbinding-{{ .imageName }}
       template:
-        ref: trigger-template-{{ .name }}
+        ref: trigger-template-{{ .imageName }}
 ---
 {{- end }}
 {{- end }}

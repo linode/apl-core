@@ -1,22 +1,24 @@
 kind: AplTeamBuild
 metadata:
-    name: demo-java2
+    name: demo-java3-v_0_0_1
     labels:
         apl.io/teamId: demo
 spec:
-    externalRepo: false
+    externalRepo: true
     mode:
-        buildpacks:
+        docker:
             envVars:
                 - name: TEST1
                   value: test1
                 - name: TEST2
                   value: test2
-            path: apps/java-maven
+            path: ./test/Docker
             repoUrl: https://github.com/buildpacks/samples
             revision: HEAD
-        type: buildpacks
-    name: demo-java2
-    scanSource: false
-    tag: v.0.0.1
-    trigger: false
+        type: docker
+    name: demo-java3-v_0_0_1
+    imageName: demo-java3
+    scanSource: true
+    secretName: my-secret
+    tag: v_0_0_1
+    trigger: true

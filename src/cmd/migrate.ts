@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
+import { glob } from 'glob'
 import { cloneDeep, each, get, isObject, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
@@ -20,7 +21,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { glob } from 'glob'
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -51,6 +51,7 @@ interface Change {
     [mutation: string]: string
   }>
   networkPoliciesMigration?: boolean
+  buildImageNameMigration?: boolean
 }
 
 export type Changes = Array<Change>
@@ -300,6 +301,21 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
+const buildImageNameMigration = async (values: Record<string, any>): Promise<void> => {
+  const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+  await Promise.all(
+    teams.map(async (teamName) => {
+      const builds = get(values, `teamConfig.${teamName}.builds`, [])
+      if (!builds || builds.length === 0) return
+      for (const build of builds) {
+        set(build, 'imageName', build.name)
+        set(build, 'name', `${build.name}-${build.tag}`)
+        await deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
+      }
+    }),
+  )
+}
+
 const bulkAddition = (path: string, values: any, filePath: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const val = require(filePath)
@@ -362,8 +378,9 @@ export const applyChanges = async (
     }
 
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
+    if (c.buildImageNameMigration) await buildImageNameMigration(values)
 
-    Object.assign(values, { version: c.version })
+    Object.assign(values.versions, { specVersion: c.version })
   }
   if (!dryRun) await deps.writeValues(values, true)
   // @ts-ignore
@@ -530,8 +547,9 @@ export const migrate = async (): Promise<boolean> => {
   }
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
-  const prevVersion: number = versions?.specVersion
-  if (!prevVersion) {
+  const prevVersion: number = versions?.spec?.specVersion
+  // TODO: modify this after discussion with the team
+  if (!prevVersion || prevVersion < 40) {
     d.log('No changes detected, skipping')
     return false
   }

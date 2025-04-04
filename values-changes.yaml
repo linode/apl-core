@@ -341,3 +341,5 @@ changes:
       - 'databases.keycloak.imported'
       - 'databases.gitea.imported'
       - 'databases.gitea.useOtomiDB'
+  - version: 41
+    buildImageNameMigration: true
