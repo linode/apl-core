@@ -1350,4 +1350,4 @@ environments:
             version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 40
+          specVersion: 41

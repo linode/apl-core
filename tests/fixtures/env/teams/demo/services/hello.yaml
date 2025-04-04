@@ -26,5 +26,4 @@ spec:
         enabled: true
         weightV1: 70
         weightV2: 30
-    type: public
     useCname: true
