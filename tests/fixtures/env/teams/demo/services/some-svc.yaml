@@ -4,6 +4,5 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    name: some-svc
     port: 80
     type: cluster

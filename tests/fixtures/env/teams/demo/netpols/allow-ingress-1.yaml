@@ -4,7 +4,6 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    name: allow-ingress-1
     ruleType:
         ingress:
             allow:

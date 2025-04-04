@@ -6,7 +6,6 @@ metadata:
 spec:
     imageUpdateStrategy:
         type: disabled
-    name: wd3
     path: ./
     revision: main
     url: https://myrepo.local/mychart.git

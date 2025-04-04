@@ -6,7 +6,6 @@ metadata:
 spec:
     auth: true
     domain: hello.team-admin.dev.linode-apl.net
-    name: hello-admin
     ownHost: true
     port: 80
     type: public

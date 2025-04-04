@@ -4,7 +4,6 @@ metadata:
     labels:
         apl.io/teamId: admin
 spec:
-    name: wa1
     path: /
     revision: HEAD
     url: https://myrepo.local/mychart.git
