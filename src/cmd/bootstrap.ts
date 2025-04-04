@@ -117,8 +117,8 @@ export const bootstrapSops = async (
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later
-    await deps.encrypt()
-    await deps.decrypt()
+    await deps.encrypt(envDir)
+    await deps.decrypt(envDir)
   }
 }
 
