@@ -1,4 +1,4 @@
-kind: AplTeamTools
+kind: AplTeamTool
 metadata:
     name: dev
     labels:
