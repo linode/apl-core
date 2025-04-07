@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
+import { glob } from 'glob'
 import { cloneDeep, each, get, isObject, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
@@ -20,7 +21,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { glob } from 'glob'
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -372,16 +372,46 @@ export const applyChanges = async (
 
 export const unparsePaths = (path: string, values: Record<string, any>): Array<string> => {
   if (path.includes('{team}')) {
-    const paths: Array<string> = []
+    let paths: Array<string> = []
     const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
     teams.forEach((teamName) => paths.push(path.replace('{team}', teamName)))
+    paths = isArray(paths, values)
     return paths.sort()
   } else {
-    return [path]
+    const paths = isArray([path], values)
+    return paths
   }
+}
+
+function isArray(paths: string[], values: Record<string, any>): string[] {
+  console.info('PATHS:', paths)
+  console.info('VALUES: ', values)
+  console.info('VALUES: ', values?.teamConfig?.demo?.services)
+  const transformedPaths: string[] = []
+
+  paths.forEach((path) => {
+    const match = path.match(/^(.*)\.(\w+)\[\](.*)$/)
+    if (!match) {
+      transformedPaths.push(path)
+      return
+    }
+
+    const [, beforeArrayPath, arrayKey, afterArrayPath] = match
+
+    const objectPath = beforeArrayPath.split('.').reduce((obj, key) => obj?.[key], values)
+
+    if (objectPath && objectPath[arrayKey]) {
+      objectPath[arrayKey].forEach((_item: any, index: number) => {
+        transformedPaths.push(`${beforeArrayPath}.${arrayKey}[${index}]${afterArrayPath}`)
+      })
+    }
+  })
+
+  return transformedPaths
 }
 export const unsetAtPath = (path: string, values: Record<string, any>): void => {
   const paths = unparsePaths(path, values)
+  console.info('UNSET PATHS: ', paths)
   paths.forEach((p) => unset(values, p))
 }
 
@@ -530,14 +560,17 @@ export const migrate = async (): Promise<boolean> => {
   }
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
-  const prevVersion: number = versions?.specVersion
+  d.log('VERSIONS PATH: ', `${env.ENV_DIR}/env/settings/versions.yaml`)
+  d.log('VERSIONS: ', versions)
+  const prevVersion: number = versions?.spec?.specVersion
   if (!prevVersion) {
+    d.log('No previous version detected')
     d.log('No changes detected, skipping')
     return false
   }
-
+  d.log('PREVIOUS VERSION: ', prevVersion)
   const filteredChanges = filterChanges(prevVersion, changes)
-
+  d.log('FILTEREDCHANGES', filteredChanges)
   if (filteredChanges.length) {
     d.log(
       `Changes detected, migrating from ${prevVersion} to ${
