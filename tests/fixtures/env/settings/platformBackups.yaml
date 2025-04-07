@@ -1,4 +1,4 @@
-kind: AplBackups
+kind: AplBackupCollection
 metadata:
     name: platformBackups
     labels: {}

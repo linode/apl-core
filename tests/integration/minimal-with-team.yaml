@@ -97,12 +97,12 @@ teamConfig:
         path: chart/hello-world
         revision: HEAD
 files:
-  env/teams/demo/workloadsValues/nodejs-helloworld.yaml: |
+  env/teams/demo/workloadValues/nodejs-helloworld.yaml: |
     values: |
       image:
         repository: otomi/nodejs-helloworld
         tag: v1.2.13
-  env/teams/demo/workloadsValues/nginx-deployment.yaml: |
+  env/teams/demo/workloadValues/nginx-deployment.yaml: |
     values: |
       fullnameOverride: nginx-deployment
       image:
@@ -119,7 +119,7 @@ files:
       autoscaling:
         minReplicas: 2
         maxReplicas: 10
-  env/teams/demo/workloadsValues/nginx-ksvc.yaml: |
+  env/teams/demo/workloadValues/nginx-ksvc.yaml: |
     values: |
       fullnameOverride: nginx-ksvc
       image:
@@ -140,10 +140,10 @@ files:
       autoscaling:
         minReplicas: 0
         maxReplicas: 10
-  env/teams/demo/workloadsValues/httpbin.yaml: |
+  env/teams/demo/workloadValues/httpbin.yaml: |
     values: |
       {}
-  env/teams/admin/workloadsValues/nodejs-helloworld.yaml: |
+  env/teams/admin/workloadValues/nodejs-helloworld.yaml: |
     values: |
       image:
         repository: otomi/nodejs-helloworld
