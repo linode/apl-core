@@ -1,7 +1,6 @@
 import retry, { Options } from 'async-retry'
 import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
 import { cloneDeep } from 'lodash'
-import { prepareDomainSuffix } from 'src/common/bootstrap'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
@@ -86,7 +85,6 @@ const applyAll = async () => {
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
-  await prepareDomainSuffix()
 
   let labelOpts = ['']
   if (initialInstall) {
@@ -114,7 +112,7 @@ const applyAll = async () => {
 
   await upgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
-    await commit()
+    await commit(initialInstall)
     if (initialInstall) {
       await hf(
         {

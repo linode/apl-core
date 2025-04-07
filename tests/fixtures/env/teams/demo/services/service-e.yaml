@@ -1,0 +1,28 @@
+kind: AplTeamService
+metadata:
+    name: service-e
+    labels:
+        apl.io/teamId: demo
+spec:
+    cname:
+        domain: net-a-demo.cname.com
+        tslSecretName: ''
+    headers:
+        request:
+            set:
+                - name: someheader
+                  value: somevalue
+        response:
+            set:
+                - name: X-Frame-Options
+                  value: same-origin
+                - name: sander
+                  value: same-origin
+    ingressClassName: net-a
+    name: service-e
+    trafficControl:
+        enabled: true
+        weightV1: 50
+        weightV2: 50
+    type: public
+    useCname: true

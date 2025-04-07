@@ -17,7 +17,7 @@ fi
 LOG_LEVEL='--log-level warn'
 
 # Common vars
-readonly otomi_settings="$ENV_DIR/env/settings.yaml"
+readonly otomi_settings="$ENV_DIR/env/settings/otomi.yaml"
 readonly otomi_tools_image="linode/apl-core:latest"
 [ $(uname -s) == 'Linux' ] && readonly LINUX_WORKAROUND='--user=root:root'
 
@@ -148,7 +148,7 @@ function get_k8s_version() {
 
 function otomi_image_tag() {
   local otomi_version=$OTOMI_VERSION
-  [ -z "$otomi_version" ] && [ -f $otomi_settings ] && otomi_version=$(yq '.otomi.version' $otomi_settings)
+  [ -z "$otomi_version" ] && [ -f $otomi_settings ] && otomi_version=$(yq '.spec.version' $otomi_settings)
   [ -z "$otomi_version" ] && otomi_version=$(cat $PWD/package.json | jq -r .version)
   [ -z "$otomi_version" ] && otomi_version='main'
   echo $otomi_version
@@ -211,7 +211,7 @@ function crypt() {
         [ -n "$VERBOSE" ] && echo "Skipping encryption for $file as it is not changed."
       fi
     else
-      if helm secrets decrypt "$file" > "${file}.dec"; then
+      if helm secrets decrypt "$file" >"${file}.dec"; then
         # we correct timestamp of decrypted file to match source file,
         # in order to detect changes for conditional encryption
         [ -n "$VERBOSE" ] && echo "Setting timestamp of decrypted file to that of source file."

@@ -338,5 +338,6 @@ changes:
       - databases.harbor.resources.requests.cpu: '200m'
   - version: 33
     deletions:
-      # FIXME: perform migration of to sealedsecrets dir before performin the removal of the property
-      - 'teamConfig.{team}.sealedsecrets'
+      - 'databases.keycloak.imported'
+      - 'databases.gitea.imported'
+      - 'databases.gitea.useOtomiDB'

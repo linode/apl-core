@@ -1,0 +1,9 @@
+kind: AplTeamService
+metadata:
+    name: some-svc
+    labels:
+        apl.io/teamId: demo
+spec:
+    name: some-svc
+    port: 80
+    type: cluster

@@ -1088,8 +1088,54 @@ definitions:
   team:
     additionalProperties: false
     properties:
-      alerts:
-        $ref: '#/definitions/alerts'
+      settings:
+        properties:
+          id:
+            $ref: '#/definitions/idName'
+            description: Must be the same as the name.
+          networkPolicy:
+            ingressPrivate:
+              title: Enable filtering of ingress traffic inside the cluster
+              description: When set a user can define ingress from other services for a particular team service
+              type: boolean
+              default: true
+            egressPublic:
+              title: Enable filtering of egress traffic outside the cluster
+              description: When set a user can define egress towards FQDNs and public IPs for a team service
+              type: boolean
+              default: true
+          managedMonitoring:
+            title: Managed monitoring
+            description: Activate managed Grafana, Prometheus or Alertmanager instances
+            properties:
+              grafana:
+                type: boolean
+              alertmanager:
+                type: boolean
+          limitRange:
+            description: 'Kubernetes limit range. As is.'
+            properties:
+              default:
+                $ref: '#/definitions/resource'
+              defaultRequest:
+                $ref: '#/definitions/resource'
+          oidc:
+            additionalProperties: false
+            properties:
+              groupMapping:
+                description: IDP group id to map onto this team.
+                $ref: '#/definitions/wordCharacterPattern'
+          password:
+            description: Will be used to separate team resources.
+            type: string
+            x-secret: ''
+          resourceQuota:
+            description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
+            type: object
+          selfService:
+            $ref: '#/definitions/teamSelfService'
+          alerts:
+            $ref: '#/definitions/alerts'
       apps:
         additionalProperties: true
         alertmanager:
@@ -1126,35 +1172,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/backup'
-      secrets:
-        items:
-          $ref: '#/definitions/secret'
-        type: array
-      id:
-        $ref: '#/definitions/idName'
-        description: Must be the same as the name.
-      limitRange:
-        description: 'Kubernetes limit range. As is.'
-        properties:
-          default:
-            $ref: '#/definitions/resource'
-          defaultRequest:
-            $ref: '#/definitions/resource'
-      oidc:
-        additionalProperties: false
-        properties:
-          groupMapping:
-            description: IDP group id to map onto this team.
-            $ref: '#/definitions/wordCharacterPattern'
-      password:
-        description: Will be used to separate team resources.
-        type: string
-        x-secret: ''
-      resourceQuota:
-        description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
-        type: object
-      selfService:
-        $ref: '#/definitions/teamSelfService'
       services:
         items:
           $ref: '#/definitions/service'
@@ -1163,25 +1180,6 @@ definitions:
         items:
           $ref: '#/definitions/netpol'
         type: array
-      managedMonitoring:
-        title: Managed monitoring
-        description: Activate managed Grafana, Prometheus or Alertmanager instances
-        properties:
-          grafana:
-            type: boolean
-          alertmanager:
-            type: boolean
-      networkPolicy:
-        ingressPrivate:
-          title: Enable filtering of ingress traffic inside the cluster
-          description: When set a user can define ingress from other services for a particular team service
-          type: boolean
-          default: true
-        egressPublic:
-          title: Enable filtering of egress traffic outside the cluster
-          description: When set a user can define egress towards FQDNs and public IPs for a team service
-          type: boolean
-          default: true
       workloads:
         type: array
         items:
@@ -1196,6 +1194,10 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/build'
+      codeRepos:
+        type: array
+        items:
+          $ref: '#/definitions/codeRepo'
   teamSelfService:
     title: Team permissions
     description: Grant team permissions to modify certain configuration parameters.
@@ -1417,6 +1419,12 @@ definitions:
       namespace:
         description: Workload namespace. Applicable only for team-admin. Default value is 'team-<team_id>'
         $ref: '#/definitions/idName'
+      createNamespace:
+        type: boolean
+        default: false
+      sidecarInject:
+        type: boolean
+        default: false
       imageUpdateStrategy:
         description: Automatically update the image. Only supported wit Helm charts in local Gitea repository and images stored in Harbor.
         title: Auto Image Updater
@@ -1476,6 +1484,8 @@ definitions:
     type: object
     description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
     properties:
+      id:
+        type: string
       email:
         $ref: '#/definitions/email'
         x-secret: ''
@@ -1503,6 +1513,33 @@ definitions:
       - email
       - firstName
       - lastName
+  codeRepo:
+    type: object
+    description: Define location of code repository to build
+    properties:
+      name:
+        $ref: '#/definitions/idName'
+      gitService:
+        description: Git service provider
+        type: string
+        default: gitea
+        enum:
+          - gitea
+          - github
+          - gitlab
+      repositoryUrl:
+        description: URL of the Git repository holding the application code.
+        $ref: '#/definitions/repoUrl'
+      private:
+        type: boolean
+        default: false
+      secret:
+        description: The name of the secret with the credentials of the external private Git repository
+        type: string
+    required:
+      - name
+      - gitService
+      - repositoryUrl
 
 properties:
   alerts:
@@ -1618,7 +1655,7 @@ properties:
             $ref: '#/definitions/email'
           issuer:
             description: |
-              Indicates the origin of the wildcard certificate. 
+              Indicates the origin of the wildcard certificate.
               The custom-ca - cert-manager uses the customRootCA to generate wildcard certificate.
               The letsencrypt - cert-manager requests certificate from letsencrypt endpoint.
               The byo-wildcard-cert allows users to bring their own trusted wildcard certificate (cert-manager not involved)
@@ -3131,6 +3168,10 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: harbor
           gitea:
             title: Gitea
             properties:
@@ -3143,6 +3184,10 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: gitea
           keycloak:
             title: Keycloak
             properties:
@@ -3155,6 +3200,10 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: keycloak
       persistentVolumes:
         type: object
         description: Create backups of persistent volumes
@@ -3256,9 +3305,16 @@ properties:
           replicas:
             type: integer
             default: 2
-          imported:
-            type: boolean
-            default: false
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
       harbor:
         title: Harbor
         properties:
@@ -3269,12 +3325,19 @@ properties:
           replicas:
             type: integer
             default: 2
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
       gitea:
         title: gitea
         properties:
-          useOtomiDB:
-            type: boolean
-            default: false
           size:
             type: string
           resources:
@@ -3282,9 +3345,16 @@ properties:
           replicas:
             type: integer
             default: 2
-          imported:
-            type: boolean
-            default: false
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
   teamConfig:
     additionalProperties: false
     patternProperties:
@@ -3293,12 +3363,15 @@ properties:
     properties:
       admin:
         properties:
-          password:
-            type: string
-            x-secret: '{{ randAlpha 16 }}'
-  version:
-    type: integer
-    description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.
+          settings:
+            password:
+              type: string
+              x-secret: '{{ randAlpha 16 }}'
+  versions:
+    properties:
+      specVersion:
+        type: integer
+        description: DO NOT CHANGE! Holds the values-schema version. For more details, see `otomi migrate`.
   license:
     type: string
     describe: License in form of JWT

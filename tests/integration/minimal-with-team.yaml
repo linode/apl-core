@@ -12,18 +12,19 @@ apps:
     enabled: true
 teamConfig:
   demo:
-    password: somesecretvalue
-    id: demo
-    selfService:
-      service:
-        - ingress
-    managedMonitoring:
-      grafana: false
-      prometheus: false
-      alertmanager: false
-    networkPolicy:
-      egressPublic: true
-      ingressPrivate: true
+    settings:
+      password: somesecretvalue
+      id: demo
+      selfService:
+        service:
+          - ingress
+      managedMonitoring:
+        grafana: false
+        prometheus: false
+        alertmanager: false
+      networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
     builds:
       - name: nodejs-hello-world
         tag: v0.0.1
@@ -72,36 +73,36 @@ teamConfig:
     workloads:
       - name: nodejs-helloworld
         url: https://github.com/linode/apl-nodejs-helloworld.git
-        path: ./
+        path: chart/hello-world
         revision: HEAD
       - name: httpbin
         path: charts/httpbin
         revision: HEAD
         url: https://github.com/linode/apl-core.git
       - name: nginx-deployment
-        path: deployment
+        path: k8s-deployment
         revision: main
-        selectedChart: deployment
+        selectedChart: k8s-deployment
         url: https://github.com/linode/apl-charts.git
       - name: nginx-ksvc
-        path: ksvc
+        path: knative-service
         revision: main
-        selectedChart: ksvc
+        selectedChart: knative-service
         url: https://github.com/linode/apl-charts.git
   admin:
     services: []
     workloads:
       - name: nodejs-helloworld
         url: https://github.com/linode/apl-nodejs-helloworld.git
-        path: ./
+        path: chart/hello-world
         revision: HEAD
 files:
-  env/teams/workloads/demo/nodejs-helloworld.yaml: |
+  env/teams/demo/workloadValues/nodejs-helloworld.yaml: |
     values: |
       image:
         repository: otomi/nodejs-helloworld
         tag: v1.2.13
-  env/teams/workloads/demo/nginx-deployment.yaml: |
+  env/teams/demo/workloadValues/nginx-deployment.yaml: |
     values: |
       fullnameOverride: nginx-deployment
       image:
@@ -118,7 +119,7 @@ files:
       autoscaling:
         minReplicas: 2
         maxReplicas: 10
-  env/teams/workloads/demo/nginx-ksvc.yaml: |
+  env/teams/demo/workloadValues/nginx-ksvc.yaml: |
     values: |
       fullnameOverride: nginx-ksvc
       image:
@@ -139,10 +140,10 @@ files:
       autoscaling:
         minReplicas: 0
         maxReplicas: 10
-  env/teams/workloads/demo/httpbin.yaml: |
+  env/teams/demo/workloadValues/httpbin.yaml: |
     values: |
       {}
-  env/teams/workloads/admin/nodejs-helloworld.yaml: |
+  env/teams/admin/workloadValues/nodejs-helloworld.yaml: |
     values: |
       image:
         repository: otomi/nodejs-helloworld

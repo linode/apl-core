@@ -50,20 +50,39 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
     return
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
-  d.log('git config:')
-  await $`cat .git/config`
-  await $`git push -u origin ${branch}`
+  await retry(
+    async () => {
+      try {
+        cd(env.ENV_DIR)
+        await $`git push -u origin ${branch}`
+      } catch (e) {
+        d.warn(`The values repository is not yet reachable.`)
+        throw new Error('Could not commit and push. Retrying...')
+      }
+    },
+    {
+      retries: 20,
+      maxTimeout: 30000,
+    },
+  )
   d.log('Successfully pushed the updated values')
 }
 
-export const commit = async (): Promise<void> => {
+export const commit = async (initialInstall: boolean): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   await validateValues()
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
-  // we call this here again, as we might not have completed (happens upon first install):
-  await bootstrapGit(values)
-  const { branch, remote } = getRepo(values)
+  const { branch, remote, username, email } = getRepo(values)
+  if (initialInstall) {
+    // we call this here again, as we might not have completed (happens upon first install):
+    await bootstrapGit(values)
+  } else {
+    cd(env.ENV_DIR)
+    await setIdentity(username, email)
+    // the url might need updating (e.g. if credentials changed)
+    await $`git remote set-url origin ${remote}`
+  }
   // lets wait until the remote is ready
   if (values?.apps!.gitea!.enabled ?? true) {
     await waitTillGitRepoAvailable(remote)
@@ -100,7 +119,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`rm -f .gitignore`
     await $`rm -f LICENSE`
     await $`git init`
-    await setIdentity(username, password, email)
+    await setIdentity(username, email)
     await $`git checkout -b main`
     await $`git add .`
     await $`git commit -m "first commit"`
@@ -222,6 +241,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await commit()
+    await commit(true)
   },
 }

@@ -188,7 +188,6 @@ environments:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
           gitea:
             enabled: true
-            adminPassword: {{ $a | get "gitea.adminPassword" $v.otomi.adminPassword }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}

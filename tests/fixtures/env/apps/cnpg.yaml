@@ -1,9 +1,12 @@
-apps:
-    cnpg:
-        resources:
-            limits:
-                cpu: 1000m
-                memory: 512Mi
-            requests:
-                cpu: 100m
-                memory: 200Mi
+kind: AplApp
+metadata:
+    name: cnpg
+    labels: {}
+spec:
+    resources:
+        limits:
+            cpu: 1000m
+            memory: 512Mi
+        requests:
+            cpu: 100m
+            memory: 200Mi
