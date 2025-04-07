@@ -1,0 +1,15 @@
+kind: AplTeamNetworkControl
+metadata:
+    name: allow-egress-2
+    labels:
+        apl.io/teamId: dev
+spec:
+    name: allow-egress-2
+    ruleType:
+        type: egress
+        egress:
+            domain: dev.local
+            mode: AllowAll
+            ports:
+                - number: 123456
+                  protocol: HTTPS

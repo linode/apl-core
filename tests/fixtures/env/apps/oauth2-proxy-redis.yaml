@@ -1,2 +1,5 @@
-apps:
-    oauth2-proxy-redis: {}
+kind: AplApp
+metadata:
+    name: oauth2-proxy-redis
+    labels: {}
+spec: {}

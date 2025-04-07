@@ -29,44 +29,21 @@ backup:
   type:  {{ $obj.type }}
 {{- if eq $obj.type "minioLocal" }}
   minioLocal:
-    destinationPath: "s3://cnpg/gitea"
+    destinationPath: "s3://cnpg/{{ $b.pathSuffix }}"
 {{- end }}
 {{- if eq $obj.type "linode" }}
   linode:
-    destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/gitea"
+    destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/{{ $b.pathSuffix }}"
     endpointURL: https://{{ $obj.linode.region }}.linodeobjects.com
 {{- end }}
 {{- end }}
 {{- end }}
 
-{{- if $gdb.imported }}
 clusterSpec:
   bootstrap:
-    initdb:
-      database: gitea
-      owner: gitea
-      secret:
-        name: gitea-db-secret
-      import:
-        type: microservice
-        databases:
-          - gitea
-        source:
-          externalCluster: gitea-postgresql
-  externalClusters:
-  - name: gitea-postgresql
-    connectionParameters:
-      host: gitea-postgresql.gitea.svc.cluster.local
-      user: gitea
-      dbname: gitea
-      sslmode: disable
-    password:
-      name: gitea-postgresql
-      key: postgresql-password
-
+{{- if $gdb.recovery }}
+    recovery: {{ toYaml $gdb.recovery | nindent 6 }}
 {{- else }}
-clusterSpec:  
-  bootstrap:
     initdb:
       database: gitea
       owner: gitea
@@ -74,6 +51,9 @@ clusterSpec:
         name: gitea-db-secret
       localeCollate: 'en_US.UTF-8'
       localeCType: 'en_US.UTF-8'
+{{- end }}
+{{- if $gdb.externalClusters }}
+  externalClusters: {{ toYaml $gdb.externalClusters | nindent 4 }}
 {{- end }}
 
 resources: {{- toYaml $gdb.resources | nindent 2 }}

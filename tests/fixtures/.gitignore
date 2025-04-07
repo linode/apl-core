@@ -11,3 +11,4 @@ core.yaml
 *.sample
 .env
 env/status.yaml
+values-repo.yaml

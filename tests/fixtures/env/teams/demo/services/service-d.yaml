@@ -1,0 +1,8 @@
+kind: AplTeamService
+metadata:
+    name: service-d
+    labels:
+        apl.io/teamId: demo
+spec:
+    name: service-d
+    type: cluster

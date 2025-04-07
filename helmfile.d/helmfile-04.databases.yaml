@@ -27,7 +27,7 @@ releases:
       pkg: keycloak
     <<: *otomiDb
   - name: gitea-otomi-db
-    installed: {{ or $v.databases.gitea.useOtomiDB  $v.databases.gitea.imported }}
+    installed: true
     namespace: gitea
     labels:
       pkg: gitea

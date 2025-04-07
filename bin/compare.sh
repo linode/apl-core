@@ -14,8 +14,9 @@ targetDirA="tmp/${branchA}"
 targetDirB="tmp/${branchB}"
 
 export NODE_ENV=test
+otomi values
 helmfile template $templateArgs --output-dir-template="../$targetDirB/{{.Release.Namespace}}-{{.Release.Name }}"
-
+rm tests/fixtures/values-repo.yaml
 git checkout $branchA
 # we remove previously rendered manifests so they are not mixed up with newly rendered
 rm -rf $targetDirA
