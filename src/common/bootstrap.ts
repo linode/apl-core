@@ -1,38 +1,16 @@
 import { copyFile, pathExists } from 'fs-extra'
-import { isIPv6 } from 'net'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { getOtomiLoadBalancerIP } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getRepo, writeValues } from 'src/common/values'
-import { getParsedArgs } from 'src/common/yargs'
 import { $, cd } from 'zx'
 
 const cmdName = getFilename(__filename)
 
-export const prepareDomainSuffix = async (inValues: Record<string, any> | undefined = undefined): Promise<void> => {
-  const d = terminal(`cmd:${cmdName}:setDomainSuffix`)
-  const values = inValues ?? (await hfValues())
-  if (values && !values.cluster.domainSuffix) {
-    d.info('cluster.domainSuffix was not found, creating $loadbalancerIp.nip.io as fallback')
-    const ingressIP: string = values?.ingress?.platformClass?.loadBalancerIP ?? (await getOtomiLoadBalancerIP())
-    // When ingressIP is V6, we need to use sslip.io as they resolve it, otherwise use nip.io as it uses PowerDNS
-    const domainSuffix = isIPv6(ingressIP) ? `${ingressIP.replaceAll(':', '-')}.sslip.io` : `${ingressIP}.nip.io`
-    await writeValues({
-      cluster: {
-        domainSuffix,
-      },
-    })
-  } else {
-    d.info('cluster.domainSuffix is already set')
-  }
-}
-
-export const setIdentity = async (username, password, email) => {
+export const setIdentity = async (username, email) => {
   await $`git config --local user.name ${username}`.nothrow().quiet()
-  await $`git config --local user.password ${password}`.nothrow().quiet()
   await $`git config --local user.email ${email}`.nothrow().quiet()
 }
 /**
@@ -44,18 +22,11 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   const d = terminal(`cmd:${cmdName}:bootstrapGit`)
   // inValues indicates that there is no values repo file structure that helmfile expects
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
-  const argv = getParsedArgs()
-  // use case for nip.io when we are waiting for LoadBalancerIP address do derive the domainSuffix
-  if (!values?.cluster?.domainSuffix && !argv.destroy) return // too early, commit will handle it
-  if (!values?.cluster?.domainSuffix && argv.destroy) {
-    // we couldn't find the domainSuffix in the values, so create it
-    await prepareDomainSuffix(values)
-  }
-  const { remote, branch, email, username, password } = getRepo(values)
+  const { remote, branch, email, username } = getRepo(values)
   cd(env.ENV_DIR)
   if (await pathExists(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
-    await setIdentity(username, password, email)
+    await setIdentity(username, email)
     return
   }
   // we don't care about ssl verification as repo endpoint is either ours or user input
@@ -106,7 +77,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
   }
 
-  await setIdentity(username, password, email)
+  await setIdentity(username, email)
 
   if (!hasCommits) {
     await $`git checkout -b ${branch}`.nothrow().quiet()

@@ -1,3 +1,6 @@
-apps:
-    alertmanager:
-        enabled: true
+kind: AplApp
+metadata:
+    name: alertmanager
+    labels: {}
+spec:
+    enabled: true

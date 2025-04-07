@@ -1,3 +1,6 @@
-apps:
-    trivy:
-        enabled: true
+kind: AplApp
+metadata:
+    name: trivy
+    labels: {}
+spec:
+    enabled: true

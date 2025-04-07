@@ -1,0 +1,17 @@
+kind: AplTeamNetworkControl
+metadata:
+    name: allow-ingress-1
+    labels:
+        apl.io/teamId: dev
+spec:
+    name: allow-ingress-1
+    ruleType:
+        ingress:
+            allow:
+                - fromLabelName: from-name-dev
+                  fromLabelValue: from-value-dev
+                  fromNamespace: from-namespace-dev
+            mode: AllowOnly
+            toLabelName: to-label-dev
+            toLabelValue: to-value-dev
+        type: ingress
