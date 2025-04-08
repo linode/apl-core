@@ -104,7 +104,7 @@ jobs:
           cd values
 
           echo "Create an empty commit to trigger the pipeline and push it to the main branch"
-          git commit --allow-empty -m "Triggering pipeline for ${{ github.sha }}" -m "${{ github.event.head_commit.message }}"
+          git commit --allow-empty -m "Triggering pipeline for ${{ github.sha }}"
           git push origin main
 
   release:
