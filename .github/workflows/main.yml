@@ -12,7 +12,6 @@ env:
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
   DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
   DEV_KUBECONFIG_64: ${{ secrets.DEV_KUBECONFIG }}
-  GIT_USER: svcAPLBot
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
 
@@ -20,10 +19,6 @@ jobs:
   build-test-cache:
     if: (!contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/') && !github.event.act)
     runs-on: ubuntu-22.04
-    env:
-      COMMIT_MSG: ${{ github.event.head_commit.message }}
-      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Set env
         run: |
@@ -55,9 +50,6 @@ jobs:
     needs: build-test-cache
     if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-22.04
-    env:
-      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Push to docker hub
         run: |
@@ -86,14 +78,17 @@ jobs:
           echo "Restart deployments for apl-api and apl-console"
           kubectl -n otomi rollout restart deployment/otomi-api
           kubectl -n otomi rollout restart deployment/otomi-console
-
+          kubectl rollout restart deployment -n apl-harbor-operator apl-harbor-operator
+          kubectl rollout restart deployment -n apl-keycloak-operator apl-keycloak-operator
+          kubectl rollout restart deployment -n apl-gitea-operator apl-gitea-operator
+          kubectl rollout restart deployment -n otomi-operator otomi-operator
           echo "Extract Gitea username, password, and values repo git url"
           export USERNAME=$(kubectl get secret -n otomi-pipelines gitea-credentials -ojsonpath='{.data.username}'| base64 -d)
           export PASSWORD=$(kubectl get secret -n otomi-pipelines gitea-credentials -ojsonpath='{.data.password}'| base64 -d)
           export URL=$(kubectl get ingress nginx-team-admin-platform-public-open -n istio-system -o json | jq -r '.spec.rules[] | select(.host | startswith("gitea")) | .host')
 
           echo "Configure Git user details for committing changes"
-          git config --global user.name "${{ env.GIT_USER }}"
+          git config --global user.name "$BOT_USERNAME"
           git config --global user.email "${{ env.BOT_EMAIL }}"
 
           echo "Clone the values repository using the decoded credentials"
@@ -110,8 +105,6 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
-      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -155,10 +148,6 @@ jobs:
     container:
       image: linode/apl-tools:v2.8.2
       options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
-    env:
-      COMMIT_MSG: ${{ github.event.head_commit.message }}
-      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
