@@ -11,15 +11,15 @@ env:
   REPO: linode/apl-core
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
   DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
+  DEV_KUBECONFIG_64: ${{ secrets.DEV_KUBECONFIG }}
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+  COMMIT_SHA: ${{ github.sha }}
 
 jobs:
   build-test-cache:
     if: (!contains(github.event.head_commit.message, 'ci skip') && !startsWith(github.ref, 'refs/tags/') && !github.event.act)
     runs-on: ubuntu-22.04
-    env:
-      COMMIT_MSG: ${{ github.event.head_commit.message }}
-      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Set env
         run: |
@@ -51,9 +51,6 @@ jobs:
     needs: build-test-cache
     if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-22.04
-    env:
-      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Push to docker hub
         run: |
@@ -68,6 +65,15 @@ jobs:
       - name: Show me the logic
         run: |
           echo github.ref == ${{ github.ref }}
+  deploy-to-dev:
+    needs: push-to-docker
+    if: always() && (startsWith(github.ref, 'refs/heads/main')) && !github.event.act
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy to dev
+        run: ci/scripts/trigger_dev.sh
 
   release:
     needs: push-to-docker
@@ -75,8 +81,6 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       COMMIT_MSG: ${{ github.event.head_commit.message }}
-      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -120,10 +124,6 @@ jobs:
     container:
       image: linode/apl-tools:v2.8.2
       options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
-    env:
-      COMMIT_MSG: ${{ github.event.head_commit.message }}
-      BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-      BOT_USERNAME: ${{ vars.BOT_USERNAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
