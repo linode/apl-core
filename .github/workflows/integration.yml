@@ -55,5 +55,7 @@ jobs:
     if: ${{ inputs.deploy_to_dev }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: Deploy to dev
-        run: pwd && ls && cd ci/scripts && ./trigger_dev.sh
+        run: cd ci/scripts && ./trigger_dev.sh
