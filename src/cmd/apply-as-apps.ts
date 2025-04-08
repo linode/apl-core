@@ -72,6 +72,11 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
           kind: 'ValidatingWebhookConfiguration',
           jqPathExpressions: ['.webhooks[]?.clientConfig.caBundle'],
         },
+        {
+          group: 'admissionregistration.k8s.io',
+          kind: 'MutatingWebhookConfiguration',
+          jqPathExpressions: ['.webhooks[]?.clientConfig.caBundle'],
+        },
       ],
       project: 'default',
       source: {
