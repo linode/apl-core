@@ -90,7 +90,7 @@ jobs:
           echo "Extract Gitea username, password, and values repo git url"
           export USERNAME=$(kubectl get secret -n otomi-pipelines gitea-credentials -ojsonpath='{.data.username}'| base64 -d)
           export PASSWORD=$(kubectl get secret -n otomi-pipelines gitea-credentials -ojsonpath='{.data.password}'| base64 -d)
-          export URL=$(kubectl get vs -n team-admin otomi-forbidden-urls -ojsonpath='{.spec.hosts[0]}')
+          export URL=$(kubectl get ingress nginx-team-admin-platform-public-open -n istio-system -o json | jq -r '.spec.rules[] | select(.host | startswith("gitea")) | .host')
 
           echo "Configure Git user details for committing changes"
           git config --global user.name "${{ env.GIT_USER }}"
