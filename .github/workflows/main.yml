@@ -12,7 +12,6 @@ env:
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
   DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
   DEV_KUBECONFIG_64: ${{ secrets.DEV_KUBECONFIG }}
-  DEV_GITEA_CREDS_64: ${{ secrets.DEV_GITEA_CREDS }}
   GIT_USER: svcAPLBot
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
@@ -88,19 +87,17 @@ jobs:
           kubectl -n otomi rollout restart deployment/otomi-api
           kubectl -n otomi rollout restart deployment/otomi-console
 
-          echo "Decode Gitea credentials and extract username, password, and git URL"
-          export USERNAME=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.username')
-          export PASSWORD=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.password')
-          export URL=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.git_url')
-          # Remove the protocol (https://) from the URL
-          URL=${URL#https://}
+          echo "Extract Gitea username, password, and values repo git url"
+          export USERNAME=$(kubectl get secret -n otomi-pipelines gitea-credentials -ojsonpath='{.data.username}'| base64 -d)
+          export PASSWORD=$(kubectl get secret -n otomi-pipelines gitea-credentials -ojsonpath='{.data.password}'| base64 -d)
+          export URL=$(kubectl get vs -n team-admin otomi-forbidden-urls -ojsonpath='{.spec.hosts[0]}')
 
           echo "Configure Git user details for committing changes"
           git config --global user.name "${{ env.GIT_USER }}"
           git config --global user.email "${{ env.BOT_EMAIL }}"
 
           echo "Clone the values repository using the decoded credentials"
-          git clone --depth 2 https://$USERNAME:$PASSWORD@$URL 2>/dev/null
+          git clone --depth 2 https://$USERNAME:$PASSWORD@$URL/otomi/values.git 2>/dev/null
           cd values
 
           echo "Create an empty commit to trigger the pipeline and push it to the main branch"
