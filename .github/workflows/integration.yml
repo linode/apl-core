@@ -89,3 +89,4 @@ jobs:
           echo "Pushing an empty commit to trigger the pipeline"
           echo "Triggering pipeline for ${{ github.ref }}"
           git commit --allow-empty -m "Triggering pipeline for ${{ github.ref }}"
+          git push origin HEAD:${{ github.ref }}
