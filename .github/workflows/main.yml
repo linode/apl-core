@@ -70,7 +70,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Deploy to dev
-        run: /bin/bash -c "chmod + x ../../ci/scripts/trigger_dev.sh && ../../ci/scripts/trigger_dev.sh"
+        run: chmod +x ../../ci/scripts/trigger_dev.sh && ../../ci/scripts/trigger_dev.sh
 
   release:
     needs: push-to-docker
