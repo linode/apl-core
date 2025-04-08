@@ -32,66 +32,10 @@ on:
         default: 'false'
   workflow_dispatch:
     inputs:
-      linode_types:
-        description: 'Linode instance types'
-        type: choice
-        options:
-          - g6-dedicated-4
-          - g6-dedicated-8
-          - g6-dedicated-16
-          - g6-dedicated-32
-          - g6-dedicated-48
-          - g6-dedicated-50
-          - g6-dedicated-56
-        default: g6-dedicated-4
-      kubernetes_versions:
-        description: 'Kubernetes version'
-        type: choice
-        options:
-          - "['1.30']"
-          - "['1.31']"
-          - "['1.32']"
-        default: "['1.32']"
-      install_profile:
-        description: APL installation profile
-        default: minimal-with-team
-        type: choice
-        options:
-          - minimal
-          - minimal-with-team
-          - full
-          - upgrade
-          - no-apl
-      domain_zone:
-        type: choice
-        description: 'Select Domain Zone'
-        options:
-          - Zone-1
-          - Zone-2
-          - Random
-          - DNS-Integration
-      kms:
-        type: choice
-        description: Should APL encrypt secrets in values repo (DNS or KMS is turned on)?
-        options:
-          - age
-          - no_kms
-        default: age
-      certificate:
-        type: choice
-        description: Select certificate issuer
-        options:
-          - gen_custom_ca
-          - letsencrypt_staging
-          - letsencrypt_production
-        default: letsencrypt_production
-      is_pre_installed:
-        type: choice
-        description: Fake if Otomi is pre-installed by Installer
-        options:
-          - 'true'
-          - 'false'
-        default: 'true'
+      deploy_to_dev:
+        description: 'Deploy to dev'
+        type: boolean
+        default: false
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -392,3 +336,39 @@ jobs:
           SLACK_ICON: https://github.com/redkubes.png?size=48
           SLACK_TITLE: Scheduled integration tests
           SLACK_USERNAME: RedKubesBot
+
+  deploy-to-dev:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Deploy to dev
+        if: ${{ inputs.deploy_to_dev }}
+        run: |
+          echo ${{ secrets.DEV_KUBECONFIG }} > .kubeconfig
+          export KUBECONFIG=$(pwd)/.kubeconfig
+
+          echo "Testing the dev cluster kubeapi connection"
+          if ! kubectl version; then
+            echo "Failed to connect to the dev cluster"
+            exit 1
+          fi
+          echo "Connected to the dev cluster successfully"
+
+          echo "Restarting apl-console and apl-api"
+          kubectl -n otomi rollout restart deployment/otomi-api
+          kubectl -n otomi rollout restart deployment/otomi-console
+
+          echo "Configuring git credentials for the values repo"
+          USERNAME= jq -r '.username' ${{ secrets.DEV_GITEA_CREDS }}
+          PASSWORD= jq -r '.password' ${{ secrets.DEV_GITEA_CREDS }}
+          URL= jq -r '.git_url' ${{ secrets.DEV_GITEA_CREDS }}
+
+          echo "Cloning the values repo using basic auth"
+          git clone --depth 2 http://$USERNAME:$PASSWORD@$URL 2>/dev/null
+          if [ $? -ne 0 ]; then
+            echo "Failed to clone the repository."
+            exit 1
+          fi
+          cd values
+          echo "Pushing an empty commit to trigger the pipeline"
+          echo "Triggering pipeline for ${{ github.ref }}"
+          git commit --allow-empty -m "Triggering pipeline for ${{ github.ref }}"
