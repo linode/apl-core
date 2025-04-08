@@ -54,6 +54,8 @@ jobs:
     name: Preprocess input variables
     if: ${{ inputs.deploy_to_dev }}
     runs-on: ubuntu-latest
+    env:
+      COMMIT_SHA: ${{ github.sha }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -30,5 +30,5 @@ git clone --depth 2 https://$USERNAME:$PASSWORD@$URL/otomi/values.git 2>/dev/nul
 cd values
 
 echo "Create an empty commit to trigger the pipeline and push it to the main branch"
-git commit --allow-empty -m "Triggering pipeline for ${{ github.sha }}"
+git commit --allow-empty -m "Triggering pipeline for ${COMMIT_SHA}"
 git push origin main
