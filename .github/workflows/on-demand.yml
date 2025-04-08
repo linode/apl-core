@@ -25,7 +25,7 @@ jobs:
           echo "Configuring git credentials for the values repo"
           USERNAME= jq -r '.username' ${{ secrets.DEV_GITEA_CREDS }}
           PASSWORD= jq -r '.password' ${{ secrets.DEV_GITEA_CREDS }}
-          URL= jq -r '.url' ${{ secrets.DEV_GITEA_CREDS }}
+          URL= jq -r '.git_url' ${{ secrets.DEV_GITEA_CREDS }}
 
           echo "Cloning the values repo using basic auth"
           git clone --depth 2 http://$USERNAME:$PASSWORD@$URL 2>/dev/null
