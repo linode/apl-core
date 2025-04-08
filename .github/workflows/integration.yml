@@ -47,7 +47,7 @@ env:
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
   DEV_DOMAINS: ${{ secrets.DEV_DOMAINS }}
-  DEV_KUBECONFIG: ${{ secrets.DEV_KUBECONFIG }}
+  DEV_KUBECONFIG_64: ${{ secrets.DEV_KUBECONFIG }}
   DEV_GITEA_CREDS: ${{ secrets.DEV_GITEA_CREDS }}
 
 jobs:
@@ -59,7 +59,8 @@ jobs:
         if: ${{ inputs.deploy_to_dev }}
         run: |
 
-          export KUBECONFIG=${{ env.DEV_KUBECONFIG }}
+          echo ${{ env.DEV_KUBECONFIG_64 }} | base64 -d > .kubeconfig
+          export KUBECONFIG=$(pwd)/.kubeconfig
 
           echo "Testing the dev cluster kubeapi connection"
           if ! kubectl version; then
