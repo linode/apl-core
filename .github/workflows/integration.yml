@@ -56,4 +56,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to dev
-        run: bash ci/scripts/trigger_dev.sh
+        run: cd ci/scripts && ./trigger_dev.sh
