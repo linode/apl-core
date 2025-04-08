@@ -77,9 +77,11 @@ jobs:
           export USERNAME=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.username')
           export PASSWORD=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.git_url')
           export URL=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.git_url')
+          # remove https:// from the URL
+          URL=${URL#https://}
 
           echo "Cloning the values repo using basic auth"
-          git clone --depth 2 http://$USERNAME:$PASSWORD@$URL 2>/dev/null
+          git clone --depth 2 https://$USERNAME:$PASSWORD@$URL 2>/dev/null
           if [ $? -ne 0 ]; then
             echo "Failed to clone the repository."
             exit 1
