@@ -75,16 +75,15 @@ jobs:
 
           echo "Configuring git credentials for the values repo"
           export USERNAME=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.username')
-          export PASSWORD=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.git_url')
+          export PASSWORD=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.password')
           export URL=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.git_url')
           # remove https:// from the URL
           URL=${URL#https://}
 
           echo "Cloning the values repo using basic auth"
-          git clone --depth 2 https://$USERNAME:$PASSWORD@$URL 
-
-
+          git clone --depth 2 https://$USERNAME:$PASSWORD@$URL 2>/dev/null
           cd values
+
           echo "Pushing an empty commit to trigger the pipeline"
           echo "Triggering pipeline for ${{ github.ref }}"
           git commit --allow-empty -m "Triggering pipeline for ${{ github.ref }}"
