@@ -8,5 +8,5 @@
 
 ## 🧹 Checklist
 
-- [ ] Code is readable, maintainable and robust.
+- [ ] Code is readable, maintainable, and robust.
 - [ ] Unit tests added/updated
