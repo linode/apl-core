@@ -59,7 +59,7 @@ jobs:
         if: ${{ inputs.deploy_to_dev }}
         run: |
 
-          KUBECONFIG=$(echo "${{ env.DEV_KUBECONFIG }}")
+          KUBECONFIG=${{ env.DEV_KUBECONFIG }}
 
           echo "Testing the dev cluster kubeapi connection"
           if ! kubectl version; then
