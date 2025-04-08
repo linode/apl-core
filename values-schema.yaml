@@ -7,104 +7,102 @@ definitions:
     type: object
   alerts:
     additionalProperties: false
+    type: object
     properties:
-      email:
-        additionalProperties: false
-        properties:
-          critical:
-            $ref: '#/definitions/email'
-            description: One or more email addresses (comma separated) for critical events.
-            x-secret: ''
-          nonCritical:
-            $ref: '#/definitions/email'
-            description: One or more email addresses (comma separated) for non-critical events.
-            x-secret: ''
+      repeatInterval:
+        default: 3h
+        description: Waiting time before sending a notification again after it was sent successfully for an alert.
+        title: Repeat Interval
+        type: string
       groupInterval:
         default: 5m
-        description: How long to wait before sending a notification about new alerts that are added to a group of alerts for which an initial notification has already been sent. (Usually ~5m or more.)
-        $ref: '#/definitions/duration'
-      msteams:
-        additionalProperties: false
-        properties:
-          highPrio:
-            description: The high prio web hook.
-            $ref: '#/definitions/wordCharacterPattern'
-            x-secret: ''
-          lowPrio:
-            description: The low prio web hook.
-            $ref: '#/definitions/wordCharacterPattern'
-            x-secret: ''
+        description: Waiting time before sending a notification about new alerts that are added to a group of alerts.
+        title: Group Interval
+        type: string
       receivers:
-        description: Notification receivers.
+        description: Select notification channel(s) for receiving alerts. Use 'none' if no channel available.
+        title: Notification receivers
+        type: array
         items:
           enum:
             - slack
             - msteams
-            - opsgenie
-            - email
+            # - email
             - none
           type: string
-        type: array
         uniqueItems: true
-      repeatInterval:
-        default: 3h
-        description: How long to wait before sending a notification again if it has already been sent successfully for an alert. (Usually ~3h or more).
-        $ref: '#/definitions/duration'
       slack:
+        title: Slack
+        description: Configure Slack endpoints for alerts.
         additionalProperties: false
         properties:
           channel:
-            default: mon-otomi
+            default: mon-apl
             description: The Slack channel for non-critical notifications.
+            title: Non-critical
             type: string
           channelCrit:
-            default: mon-otomi-crit
+            default: mon-apl-crit
             description: The Slack channel for critical notifications.
+            title: Critical
             type: string
           url:
             type: string
             description: A Slack webhook URL.
-            x-secret: ''
-      opsgenie:
+            x-acl:
+              platformAdmin: [read-any, update-any]
+              teamAdmin: []
+              teamMember: []
+            x-secret: true
+        # TODO: Enable again when form rework is done
+        # required:
+        #   - url
+        type: object
+      msteams:
         additionalProperties: false
+        description: Configure Microsoft Teams endpoints for alerts.
         properties:
-          apiKey:
-            description: The api key to use for authn
-            $ref: '#/definitions/wordCharacterPattern'
-            x-secret: ''
-          url:
-            $ref: '#/definitions/url'
-            description: A Slack webhook URL.
-            x-secret: ''
-          responders:
-            type: array
-            items:
-              allOf:
-                - properties:
-                    type:
-                      type: string
-                      enum:
-                        - team
-                        - user
-                        - escalation
-                        - schedule
-                - oneOf:
-                    - title: ID
-                      required: [id]
-                      properties:
-                        id:
-                          $ref: '#/definitions/wordCharacterPattern'
-                    - title: Name
-                      required: [name]
-                      properties:
-                        name:
-                          $ref: '#/definitions/idName'
-                    - title: Username
-                      required: [username]
-                      properties:
-                        username:
-                          $ref: '#/definitions/wordCharacterPattern'
-              required: [type]
+          highPrio:
+            title: High prio web hook
+            type: string
+            x-acl:
+              platformAdmin: [read-any, update-any]
+              teamAdmin: []
+              teamMember: []
+            x-secret: true
+          lowPrio:
+            title: Low prio web hook
+            type: string
+            x-acl:
+              platformAdmin: [read-any, update-any]
+              teamAdmin: []
+              teamMember: []
+            x-secret: true
+        # TODO: Enable again when form rework is done
+        # required:
+        #   - highPrio
+        #   - lowPrio
+        title: Microsoft Teams
+        type: object
+      # NOTE: keep this in case email alertReceiver gets re-enabled again
+      # email:
+      #   title: Email
+      #   description: Configure email endpoints for alerts.
+      #   additionalProperties: false
+      #   properties:
+      #     critical:
+      #       title: Critical Events
+      #       $ref: '#/email'
+      #       description: One or more email addresses (comma separated) for critical events.
+      #     nonCritical:
+      #       title: Non-critical Events
+      #       $ref: '#/email'
+      #       description: One or more email addresses (comma separated) for non-critical events.
+      #   # TODO: Enable again when form rework is done
+      #   # required:
+      #   #   - critical
+      #   #   - nonCritical
+      #   type: object
 
   annotations:
     $ref: '#/definitions/labelsAnnotations'
@@ -1130,8 +1128,105 @@ definitions:
             type: string
             x-secret: ''
           resourceQuota:
-            description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
+            title: Resource Quota
+            description: >
+              Kubernetes resource quota. Should adhere to the format described at:
+              https://kubernetes.io/docs/concepts/policy/resource-quotas/.
             type: object
+            properties:
+              enabled:
+                type: boolean
+                title: Enabled
+                default: true
+                description: Whether resource quotas are enabled.
+              countQuota:
+                type: array
+                title: Count Quota
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      title: Key
+                    value:
+                      type: number
+                      title: Value
+                    mutable:
+                      type: boolean
+                      title: Mutable
+                    decorator:
+                      type: string
+                      title: Decorator
+                  required:
+                    - key
+                    - value
+                    - mutable
+                    - decorator
+                default:
+                  - key: 'loadbalancers'
+                    value: 0
+                    mutable: false
+                    decorator: 'lbs'
+                  - key: 'nodeports'
+                    value: 0
+                    mutable: false
+                    decorator: 'nprts'
+                  - key: 'count'
+                    value: 5
+                    mutable: true
+                    decorator: 'pods'
+              computeResourceQuota:
+                type: array
+                title: Compute Resource Quota
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      title: Key
+                    value:
+                      type: number
+                      title: Value
+                    decorator:
+                      type: string
+                      title: Decorator
+                  required:
+                    - key
+                    - value
+                    - decorator
+                default:
+                  - key: 'limits.cpu'
+                    value: 500
+                    decorator: 'mCPUs'
+                  - key: 'requests.cpu'
+                    value: 250
+                    decorator: 'mCPUs'
+                  - key: 'limits.memory'
+                    value: 500
+                    decorator: 'Mi'
+                  - key: 'requests.memory'
+                    value: 500
+                    decorator: 'Mi'
+              customQuota:
+                type: array
+                title: Custom Quota
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      title: Key
+                    value:
+                      type: number
+                      title: Value
+                  required:
+                    - key
+                    - value
+                default: []
+            required:
+              - enabled
+              - countQuota
+              - computeResourceQuota
           selfService:
             $ref: '#/definitions/teamSelfService'
           alerts:
@@ -1198,39 +1293,50 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/codeRepo'
-  teamSelfService:
-    title: Team permissions
+  TeamSelfService:
+    title: Team Permissions
     description: Grant team permissions to modify certain configuration parameters.
     type: object
     properties:
-      service:
-        title: Service
-        type: array
-        items:
-          type: string
-          enum: [ingress]
-        uniqueItems: true
-      team:
-        title: Team settings
-        type: array
-        items:
-          type: string
-          enum: [oidc, managedMonitoring, alerts, resourceQuota, networkPolicy]
-        uniqueItems: true
-      apps:
-        title: Apps
-        type: array
-        items:
-          type: string
-          enum: [argocd, gitea]
-        uniqueItems: true
-      access:
-        title: Access
-        type: array
-        items:
-          type: string
-          enum: [shell, downloadKubeConfig, downloadDockerConfig, downloadCertificateAuthority]
-        uniqueItems: true
+      teamMembers:
+        title: Team Members Permissions
+        type: object
+        properties:
+          createServices:
+            title: Create Services
+            type: boolean
+            default: false
+            description: Permission to create services.
+          editSecurityPolicies:
+            title: Edit Security Policies
+            type: boolean
+            default: false
+            description: Permission to edit security policies.
+          useCloudShell:
+            title: Use Cloud Shell
+            type: boolean
+            default: false
+            description: Permission to use the cloud shell.
+          downloadKubeconfig:
+            title: Download Kubeconfig
+            type: boolean
+            default: false
+            description: Permission to download the kubeconfig.
+          downloadDockerLogin:
+            title: Download Docker Login
+            type: boolean
+            default: false
+            description: Permission to download the docker login configuration.
+        required:
+          - createServices
+          - editSecurityPolicies
+          - useCloudShell
+          - downloadKubeconfig
+          - downloadDockerLogin
+  x-acl:
+    platformAdmin: [read-any, update-any]
+    teamAdmin: [read]
+    teamMember: [read]
   backupTtl:
     default: 168h
     description: Expiration of the backup. Defaults to 7 days.
