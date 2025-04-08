@@ -1293,7 +1293,7 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/codeRepo'
-  TeamSelfService:
+  teamSelfService:
     title: Team Permissions
     description: Grant team permissions to modify certain configuration parameters.
     type: object

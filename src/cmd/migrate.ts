@@ -323,12 +323,6 @@ const teamSettingsMigration = async (values: Record<string, any>): Promise<void>
       const servicePermissions = get(selfService, 'service', [])
       if (Array.isArray(servicePermissions) && servicePermissions.includes('ingress')) {
         teamMembers.createServices = true
-        // Remove "ingress" from the original service array
-        set(
-          selfService,
-          'service',
-          servicePermissions.filter((s: string) => s !== 'ingress'),
-        )
       }
 
       // Map selfService.access keys to corresponding teamMembers fields
@@ -346,14 +340,6 @@ const teamSettingsMigration = async (values: Record<string, any>): Promise<void>
         if (accessPermissions.includes('shell')) {
           teamMembers.useCloudShell = true
         }
-        // Remove the migrated keys from the access array
-        set(
-          selfService,
-          'access',
-          accessPermissions.filter(
-            (s: string) => s !== 'downloadKubeConfig' && s !== 'downloadDockerConfig' && s !== 'shell',
-          ),
-        )
       }
 
       // Map selfService.policies.edit_policies -> teamMembers.editSecurityPolicies.
@@ -361,21 +347,15 @@ const teamSettingsMigration = async (values: Record<string, any>): Promise<void>
       const policies = get(selfService, 'policies', [])
       if (Array.isArray(policies) && policies.includes('edit policies')) {
         teamMembers.editSecurityPolicies = true
-        // Remove "edit policies" from the original policies array
-        set(
-          selfService,
-          'policies',
-          policies.filter((s: string) => s !== 'edit policies'),
-        )
       }
 
       // Set the new teamMembers object on selfService
       set(selfService, 'teamMembers', teamMembers)
 
-      unset(`teamConfig.${teamName}.settings.selfService`, 'apps')
-      unset(`teamConfig.${teamName}.settings.selfService`, 'policies')
-      unset(`teamConfig.${teamName}.settings.selfService`, 'service')
-      unset(`teamConfig.${teamName}.settings.selfService`, 'access')
+      unset(selfService, 'service')
+      unset(selfService, 'access')
+      unset(selfService, 'policies')
+      unset(selfService, 'apps')
     }),
   )
 }
