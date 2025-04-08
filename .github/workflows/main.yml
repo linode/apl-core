@@ -70,6 +70,8 @@ jobs:
     if: always() && (startsWith(github.ref, 'refs/heads/main')) && !github.event.act
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Deploy to dev
         run: ci/scripts/trigger_dev.sh
 
