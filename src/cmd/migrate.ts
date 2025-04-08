@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
+import { glob } from 'glob'
 import { cloneDeep, each, get, isObject, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
@@ -20,7 +21,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { glob } from 'glob'
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -51,6 +51,7 @@ interface Change {
     [mutation: string]: string
   }>
   networkPoliciesMigration?: boolean
+  teamSettingsMigration?: boolean
 }
 
 export type Changes = Array<Change>
@@ -300,6 +301,85 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
+const teamSettingsMigration = async (values: Record<string, any>): Promise<void> => {
+  const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+  await Promise.all(
+    // eslint-disable-next-line @typescript-eslint/require-await
+    teams.map(async (teamName) => {
+      // Get the selfService block for the team
+      const selfService = get(values, `teamConfig.${teamName}.settings.selfService`)
+      if (!selfService) return
+
+      // Initialize the new teamMembers structure with default boolean values
+      const teamMembers = {
+        createServices: false,
+        editSecurityPolicies: false,
+        useCloudShell: false,
+        downloadKubeconfig: false,
+        downloadDockerLogin: false,
+      }
+
+      // Map selfService.service.ingress -> teamMembers.createServices
+      const servicePermissions = get(selfService, 'service', [])
+      if (Array.isArray(servicePermissions) && servicePermissions.includes('ingress')) {
+        teamMembers.createServices = true
+        // Remove "ingress" from the original service array
+        set(
+          selfService,
+          'service',
+          servicePermissions.filter((s: string) => s !== 'ingress'),
+        )
+      }
+
+      // Map selfService.access keys to corresponding teamMembers fields
+      // - downloadKubeConfig -> downloadKubeconfig
+      // - downloadDockerConfig -> downloadDockerLogin
+      // - shell -> useCloudShell
+      const accessPermissions = get(selfService, 'access', [])
+      if (Array.isArray(accessPermissions)) {
+        if (accessPermissions.includes('downloadKubeConfig')) {
+          teamMembers.downloadKubeconfig = true
+        }
+        if (accessPermissions.includes('downloadDockerConfig')) {
+          teamMembers.downloadDockerLogin = true
+        }
+        if (accessPermissions.includes('shell')) {
+          teamMembers.useCloudShell = true
+        }
+        // Remove the migrated keys from the access array
+        set(
+          selfService,
+          'access',
+          accessPermissions.filter(
+            (s: string) => s !== 'downloadKubeConfig' && s !== 'downloadDockerConfig' && s !== 'shell',
+          ),
+        )
+      }
+
+      // Map selfService.policies.edit_policies -> teamMembers.editSecurityPolicies.
+      // Note: In the source schema, the string "edit policies" is used.
+      const policies = get(selfService, 'policies', [])
+      if (Array.isArray(policies) && policies.includes('edit policies')) {
+        teamMembers.editSecurityPolicies = true
+        // Remove "edit policies" from the original policies array
+        set(
+          selfService,
+          'policies',
+          policies.filter((s: string) => s !== 'edit policies'),
+        )
+      }
+
+      // Set the new teamMembers object on selfService
+      set(selfService, 'teamMembers', teamMembers)
+
+      unset(`teamConfig.${teamName}.settings.selfService`, 'apps')
+      unset(`teamConfig.${teamName}.settings.selfService`, 'policies')
+      unset(`teamConfig.${teamName}.settings.selfService`, 'service')
+      unset(`teamConfig.${teamName}.settings.selfService`, 'access')
+    }),
+  )
+}
+
 const bulkAddition = (path: string, values: any, filePath: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const val = require(filePath)
@@ -362,6 +442,7 @@ export const applyChanges = async (
     }
 
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
+    if (c.teamSettingsMigration) await teamSettingsMigration(values)
 
     Object.assign(values, { version: c.version })
   }
@@ -530,7 +611,7 @@ export const migrate = async (): Promise<boolean> => {
   }
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
-  const prevVersion: number = versions?.specVersion
+  const prevVersion: number = versions?.spec?.specVersion
   if (!prevVersion) {
     d.log('No changes detected, skipping')
     return false
