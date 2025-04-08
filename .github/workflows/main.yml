@@ -11,6 +11,11 @@ env:
   REPO: linode/apl-core
   DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
   DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
+  DEV_KUBECONFIG_64: ${{ secrets.DEV_KUBECONFIG }}
+  DEV_GITEA_CREDS_64: ${{ secrets.DEV_GITEA_CREDS }}
+  GIT_USER: svcAPLBot
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
 
 jobs:
   build-test-cache:
@@ -75,35 +80,32 @@ jobs:
     steps:
       - name: Deploy to dev
         run: |
-          echo ${{ secrets.DEV_KUBECONFIG }} > .kubeconfig
+          echo "Decode and set the Kubernetes configuration for the dev environment"
+          echo ${{ env.DEV_KUBECONFIG_64 }} | base64 -d > .kubeconfig
           export KUBECONFIG=$(pwd)/.kubeconfig
 
-          echo "Testing the dev cluster kubeapi connection"
-          if ! kubectl version; then
-            echo "Failed to connect to the dev cluster"
-            exit 1
-          fi
-          echo "Connected to the dev cluster successfully"
-
-          echo "Restarting apl-console and apl-api"
+          echo "Restart deployments for apl-api and apl-console"
           kubectl -n otomi rollout restart deployment/otomi-api
           kubectl -n otomi rollout restart deployment/otomi-console
 
-          echo "Configuring git credentials for the values repo"
-          USERNAME= jq -r '.username' ${{ secrets.DEV_GITEA_CREDS }}
-          PASSWORD= jq -r '.password' ${{ secrets.DEV_GITEA_CREDS }}
-          URL= jq -r '.git_url' ${{ secrets.DEV_GITEA_CREDS }}
+          echo "Decode Gitea credentials and extract username, password, and git URL"
+          export USERNAME=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.username')
+          export PASSWORD=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.password')
+          export URL=$(echo "${{ env.DEV_GITEA_CREDS_64 }}" | base64 -d | jq -r '.git_url')
+          # Remove the protocol (https://) from the URL
+          URL=${URL#https://}
 
-          echo "Cloning the values repo using basic auth"
-          git clone --depth 2 http://$USERNAME:$PASSWORD@$URL 2>/dev/null
-          if [ $? -ne 0 ]; then
-            echo "Failed to clone the repository."
-            exit 1
-          fi
+          echo "Configure Git user details for committing changes"
+          git config --global user.name "${{ env.GIT_USER }}"
+          git config --global user.email "${{ env.BOT_EMAIL }}"
+
+          echo "Clone the values repository using the decoded credentials"
+          git clone --depth 2 https://$USERNAME:$PASSWORD@$URL 2>/dev/null
           cd values
-          echo "Pushing an empty commit to trigger the pipeline"
-          echo "Triggering pipeline for ${{ github.ref }}"
-          git commit --allow-empty -m "Triggering pipeline for ${{ github.ref }}"
+
+          echo "Create an empty commit to trigger the pipeline and push it to the main branch"
+          git commit --allow-empty -m "Triggering pipeline for ${{ github.sha }}" -m "${{ github.event.head_commit.message }}"
+          git push origin main
 
   release:
     needs: push-to-docker
