@@ -57,7 +57,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     // decrypt the freshly cloned repo
     await decrypt()
   } catch (e) {
-    d.debug(e.message?.replace(password, '****'))
+    d.debug(e?.message?.replace(password, '****'))
     d.info('Remote does not exist yet. Expecting first commit to come later.')
   } finally {
     const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
