@@ -74,11 +74,11 @@ jobs:
           kubectl -n otomi rollout restart deployment/otomi-console
 
           echo "Configuring git credentials for the values repo"
-          echo ${{ env.DEV_GITEA_CREDS }} | jq -r '.username'
-          echo ${{ env.DEV_GITEA_CREDS }} | jq -r '.git_url'
-          export USERNAME=$(echo ${{ env.DEV_GITEA_CREDS }} | jq -r '.username')
-          export PASSWORD=$(echo ${{ env.DEV_GITEA_CREDS }} | jq -r '.password')
-          export URL=$(echo ${{ env.DEV_GITEA_CREDS }} | jq -r '.git_url')
+          echo "${{ env.DEV_GITEA_CREDS }}" | jq -r '.username'
+          echo "${{ env.DEV_GITEA_CREDS }}" | jq -r '.git_url'
+          export USERNAME=$(echo "${{ env.DEV_GITEA_CREDS }}" | jq -r '.username')
+          export PASSWORD=$(echo "${{ env.DEV_GITEA_CREDS }}" | jq -r '.password')
+          export URL=$(echo "${{ env.DEV_GITEA_CREDS }}" | jq -r '.git_url')
 
           echo "Cloning the values repo using basic auth"
           git clone --depth 2 http://$USERNAME:$PASSWORD@$URL 2>/dev/null
