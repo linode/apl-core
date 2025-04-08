@@ -14,6 +14,7 @@ env:
   DEV_KUBECONFIG_64: ${{ secrets.DEV_KUBECONFIG }}
   BOT_EMAIL: ${{ vars.BOT_EMAIL }}
   BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+  COMMIT_SHA: ${{ github.sha }}
 
 jobs:
   build-test-cache:
@@ -70,7 +71,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Deploy to dev
-        run: chmod +x ../../ci/scripts/trigger_dev.sh && ../../ci/scripts/trigger_dev.sh
+        run: ci/scripts/trigger_dev.sh
 
   release:
     needs: push-to-docker
