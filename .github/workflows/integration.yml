@@ -81,11 +81,9 @@ jobs:
           URL=${URL#https://}
 
           echo "Cloning the values repo using basic auth"
-          git clone --depth 2 https://$USERNAME:$PASSWORD@$URL 2>/dev/null
-          if [ $? -ne 0 ]; then
-            echo "Failed to clone the repository."
-            exit 1
-          fi
+          git clone --depth 2 https://$USERNAME:$PASSWORD@$URL 
+
+
           cd values
           echo "Pushing an empty commit to trigger the pipeline"
           echo "Triggering pipeline for ${{ github.ref }}"
