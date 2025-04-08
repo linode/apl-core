@@ -68,6 +68,42 @@ jobs:
       - name: Show me the logic
         run: |
           echo github.ref == ${{ github.ref }}
+  deploy-to-dev:
+    needs: push-to-docker
+    if: always() && (startsWith(github.ref, 'refs/heads/main')) && !github.event.act
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Deploy to dev
+        run: |
+          echo ${{ secrets.DEV_KUBECONFIG }} > .kubeconfig
+          export KUBECONFIG=$(pwd)/.kubeconfig
+
+          echo "Testing the dev cluster kubeapi connection"
+          if ! kubectl version; then
+            echo "Failed to connect to the dev cluster"
+            exit 1
+          fi
+          echo "Connected to the dev cluster successfully"
+
+          echo "Restarting apl-console and apl-api"
+          kubectl -n otomi rollout restart deployment/otomi-api
+          kubectl -n otomi rollout restart deployment/otomi-console
+
+          echo "Configuring git credentials for the values repo"
+          USERNAME= jq -r '.username' ${{ secrets.DEV_GITEA_CREDS }}
+          PASSWORD= jq -r '.password' ${{ secrets.DEV_GITEA_CREDS }}
+          URL= jq -r '.url' ${{ secrets.DEV_GITEA_CREDS }}
+
+          echo "Cloning the values repo using basic auth"
+          git clone --depth 2 http://$USERNAME:$PASSWORD@$URL 2>/dev/null
+          if [ $? -ne 0 ]; then
+            echo "Failed to clone the repository."
+            exit 1
+          fi
+          cd values
+          echo "Pushing an empty commit to trigger the pipeline"
+          echo "Triggering pipeline for ${{ github.ref }}"
+          git commit --allow-empty -m "Triggering pipeline for ${{ github.ref }}"
 
   release:
     needs: push-to-docker
