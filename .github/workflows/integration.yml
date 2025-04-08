@@ -67,8 +67,8 @@ jobs:
             echo "Failed to connect to the dev cluster"
             exit 1
           fi
-          echo "Connected to the dev cluster successfully"
 
+          echo "Connected to the dev cluster successfully"
           echo "Restarting apl-console and apl-api"
           kubectl -n otomi rollout restart deployment/otomi-api
           kubectl -n otomi rollout restart deployment/otomi-console
@@ -81,6 +81,8 @@ jobs:
           URL=${URL#https://}
 
           echo "Cloning the values repo using basic auth"
+          git config --global user.name "${{ env.GIT_USER }}"
+          git config --global user.email "${{ env.BOT_EMAIL }}"
           git clone --depth 2 https://$USERNAME:$PASSWORD@$URL 2>/dev/null
           cd values
 
