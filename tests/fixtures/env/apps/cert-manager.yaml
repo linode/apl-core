@@ -5,3 +5,33 @@ metadata:
 spec:
     externallyManagedTlsSecretName: mysecret
     issuer: externally-managed-tls-secret
+    _rawValues: {}
+    resources:
+        cainjector:
+            limits:
+                cpu: 200m
+                memory: 1Gi
+            requests:
+                cpu: 50m
+                memory: 384Mi
+        certManager:
+            limits:
+                cpu: '1'
+                memory: 512Mi
+            requests:
+                cpu: 50m
+                memory: 128Mi
+        startupapicheck:
+            limits:
+                cpu: 200m
+                memory: 384Mi
+            requests:
+                cpu: 50m
+                memory: 64Mi
+        webhook:
+            limits:
+                cpu: 100m
+                memory: 256Mi
+            requests:
+                cpu: 50m
+                memory: 64Mi

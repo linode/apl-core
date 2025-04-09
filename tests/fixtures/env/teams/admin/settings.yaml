@@ -13,3 +13,17 @@ spec:
             - downloadCertificateAuthority
         policies:
             - edit policies
+        apps: []
+        service:
+            - ingress
+    alerts:
+        groupInterval: 5m
+        receivers:
+            - none
+        repeatInterval: 3h
+    networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
+    resourceQuota:
+        pods: '50'
+        services.loadbalancers: '0'

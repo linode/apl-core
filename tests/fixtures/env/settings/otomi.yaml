@@ -10,3 +10,5 @@ spec:
     nodeSelector:
         otomi: otomi-sys
     version: main
+    isMultitenant: true
+    isPreInstalled: false

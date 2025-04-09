@@ -16,4 +16,15 @@ spec:
             - downloadCertificateAuthority
         policies:
             - edit policies
+        apps: []
+        service:
+            - ingress
     password: IkdUsKPcGAdanjas
+    alerts:
+        groupInterval: 5m
+        receivers:
+            - none
+        repeatInterval: 3h
+    resourceQuota:
+        pods: '50'
+        services.loadbalancers: '0'
