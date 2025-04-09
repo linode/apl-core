@@ -1,5 +1,5 @@
 api: main
 console: main
 consoleLogin: main
-tasks: main
+tasks: client-node-1.0.0
 tools: main
