@@ -29,8 +29,8 @@ if [ -n "$BOT_USERNAME" ] && [ -n "$BOT_EMAIL" ]; then
 fi
 
 echo "Clone the values repository using the decoded credentials"
-git clone --depth 2 https://$USERNAME:$PASSWORD@$URL/otomi/values.git 2>/dev/null
-cd values
+git clone --depth 2 https://$USERNAME:$PASSWORD@$URL/otomi/values.git dev-values 2>/dev/null
+cd dev-values
 
 echo "Create an empty commit to trigger the pipeline and push it to the main branch"
 git commit --allow-empty -m "Triggering pipeline for ${COMMIT_SHA}"
