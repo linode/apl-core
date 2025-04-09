@@ -482,7 +482,10 @@ export async function saveResourceGroupToFiles(
 }
 
 export function getUserNameFromFilePath(filePath: string): string {
-  return path.basename(filePath, path.extname(filePath)).replace(/^secrets\./, '')
+  return path
+    .basename(filePath)
+    .replace(/^secrets\./, '')
+    .replace(/\.yaml\.dec$/, '')
 }
 
 export async function setValuesFile(envDir: string, deps = { pathExists, loadValues, writeFile }): Promise<string> {

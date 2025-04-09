@@ -1485,7 +1485,7 @@ definitions:
     description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
     properties:
       name:
-        $ref: '#/definitions/idName'
+        type: string
       email:
         $ref: '#/definitions/email'
         x-secret: ''
