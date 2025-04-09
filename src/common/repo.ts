@@ -486,6 +486,7 @@ export function getUserNameFromFilePath(filePath: string): string {
     .basename(filePath)
     .replace(/^secrets\./, '')
     .replace(/\.yaml\.dec$/, '')
+    .replace(/\.yaml$/, '')
 }
 
 export async function setValuesFile(envDir: string, deps = { pathExists, loadValues, writeFile }): Promise<string> {
