@@ -5,16 +5,12 @@ metadata:
         apl.io/teamId: demo
 spec:
     alerts:
-        email:
-            critical: admins@yourdoma.in
-            nonCritical: admins@yourdoma.in
         receivers:
             - slack
         repeatInterval: 3h
         slack:
             channel: aaaaa
             channelCrit: aaaaa
-            url: https://slack.con
     id: demo
     managedMonitoring:
         alertmanager: true
@@ -25,16 +21,39 @@ spec:
     oidc:
         groupMapping: somesecretvalue
     resourceQuota:
-        services.loadbalancers: '1'
+        enabled: 'true'
+        computeResourceQuota:
+            - key: limits.cpu
+              value: '500'
+              decorator: mCPUs
+            - key: requests.cpu
+              value: '250'
+              decorator: mCPUs
+            - key: limits.memory
+              value: '500'
+              decorator: Mi
+            - key: requests.memory
+              value: '500'
+              decorator: Mi
+        countQuota:
+            - key: loadbalancers
+              value: '0'
+              mutable: 'false'
+              decorator: lbs
+            - key: nodeports
+              value: '0'
+              mutable: 'false'
+              decorator: nprts
+            - key: count
+              value: '5'
+              mutable: 'true'
+              decorator: pods
     selfService:
-        access:
-            - shell
-            - downloadCertificateAuthority
-        apps: []
-        policies:
-            - edit policies
-        service:
-            - ingress
         team:
             - alerts
-    password: somesecretvalue
+        teamMembers:
+            createServices: true
+            editSecurityPolicies: true
+            useCloudShell: true
+            downloadKubeconfig: false
+            downloadDockerLogin: false

@@ -12,9 +12,37 @@ spec:
         egressPublic: false
         ingressPrivate: true
     selfService:
-        access:
-            - shell
-            - downloadCertificateAuthority
-        policies:
-            - edit policies
-    password: IkdUsKPcGAdanjas
+        teamMembers:
+            createServices: false
+            editSecurityPolicies: true
+            useCloudShell: true
+            downloadKubeconfig: false
+            downloadDockerLogin: false
+    resourceQuota:
+        enabled: 'true'
+        computeResourceQuota:
+            - key: limits.cpu
+              value: '500'
+              decorator: mCPUs
+            - key: requests.cpu
+              value: '250'
+              decorator: mCPUs
+            - key: limits.memory
+              value: '500'
+              decorator: Mi
+            - key: requests.memory
+              value: '500'
+              decorator: Mi
+        countQuota:
+            - key: loadbalancers
+              value: '0'
+              mutable: 'false'
+              decorator: lbs
+            - key: nodeports
+              value: '0'
+              mutable: 'false'
+              decorator: nprts
+            - key: count
+              value: '5'
+              mutable: 'true'
+              decorator: pods
