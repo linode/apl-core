@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
+import { glob } from 'glob'
 import { cloneDeep, each, get, isObject, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
@@ -20,7 +21,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { glob } from 'glob'
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -495,7 +495,7 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
   })
   const users = get(oldValues, 'users', [])
   users.forEach((user) => {
-    set(user, 'id', user.id || randomUUID())
+    set(user, 'name', user.id || randomUUID())
   })
   oldValues.versions = { specVersion: 1 }
   const teamNames = await getTeamNames(env.ENV_DIR)

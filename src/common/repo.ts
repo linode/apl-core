@@ -569,14 +569,11 @@ export async function loadFileToSpec(
 
   try {
     if (!filePath.includes('secrets.')) {
-      // data.spec.id = data.metadata.name
-
       if (fileMap.resourceGroup === 'team' && fileMap.processAs === 'arrayItem') {
         data.spec.name = data.metadata.name
-        // data.spec.teamId = data.metadata.labels['apl.io/teamId']
       }
       if (fileMap.resourceGroup === 'users') {
-        data.spec.id = data.metadata.name
+        data.spec.name = data.metadata.name
       }
     }
     if (fileMap.processAs === 'arrayItem') {
