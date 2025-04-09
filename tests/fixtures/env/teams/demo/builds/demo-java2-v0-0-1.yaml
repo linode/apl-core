@@ -1,6 +1,6 @@
 kind: AplTeamBuild
 metadata:
-    name: demo-java2-v-0-0-1
+    name: demo-java2-v0-0-1
     labels:
         apl.io/teamId: demo
 spec:
@@ -16,8 +16,8 @@ spec:
             repoUrl: https://github.com/buildpacks/samples
             revision: HEAD
         type: buildpacks
-    name: demo-java2-v-0-0-1
+    name: demo-java2-v0-0-1
     imageName: demo-java2
     scanSource: false
-    tag: v.0.0.1
+    tag: v0.0.1
     trigger: false
