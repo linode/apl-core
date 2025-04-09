@@ -419,9 +419,12 @@ export function renderManifest(fileMap: FileMap, jsonPath: jsonpath.PathComponen
   return manifest
 }
 
-export function renderManifestForSecrets(fileMap: FileMap, data: Record<string, any>) {
+export function renderManifestForSecrets(fileMap: FileMap, resourceName: string, data: Record<string, any>) {
   return {
     kind: fileMap.kind,
+    metadata: {
+      name: resourceName,
+    },
     spec: data,
   }
 }
@@ -462,7 +465,8 @@ export async function saveResourceGroupToFiles(
       const nodeValue = node.value
       try {
         const filePath = getFilePath(fileMap, nodePath, nodeValue, 'secrets.')
-        const manifest = renderManifestForSecrets(fileMap, nodeValue)
+        const resourceName = getResourceName(fileMap, nodePath, nodeValue)
+        const manifest = renderManifestForSecrets(fileMap, resourceName, nodeValue)
         await deps.writeValuesToFile(filePath, manifest)
       } catch (e) {
         console.log(nodePath)
@@ -572,9 +576,9 @@ export async function loadFileToSpec(
       if (fileMap.resourceGroup === 'team' && fileMap.processAs === 'arrayItem') {
         data.spec.name = data.metadata.name
       }
-      if (fileMap.resourceGroup === 'users') {
-        data.spec.name = data.metadata.name
-      }
+    }
+    if (fileMap.resourceGroup === 'users') {
+      data.spec.name = data.metadata.name
     }
     if (fileMap.processAs === 'arrayItem') {
       const ref: Record<string, any>[] = get(spec, jsonPath)
