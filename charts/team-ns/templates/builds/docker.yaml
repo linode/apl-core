@@ -6,7 +6,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: docker-build-{{ .imageName }}
+  name: docker-build-{{ .name }}
   annotations:
     sidecar.istio.io/inject: "false"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
@@ -41,7 +41,7 @@ spec:
       - name: ARGS
         value:
           - dir:.
-          - --name={{ .imageName }}
+          - --name={{ .name }}
     workspaces:
       - name: source-dir
         workspace: shared-data
@@ -80,7 +80,7 @@ spec:
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
-  name: trigger-template-{{ .imageName }}
+  name: trigger-template-{{ .name }}
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   resourcetemplates:
@@ -129,14 +129,14 @@ spec:
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: docker-build-{{ .imageName }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
+  name: docker-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
   annotations:
     sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   pipelineRef:
-    name: docker-build-{{ .imageName }}
+    name: docker-build-{{ .name }}
   taskRunTemplate:
     serviceAccountName: sa-team-{{ $v.teamId }}
     podTemplate:
@@ -170,7 +170,7 @@ spec:
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
-  name: gitea-triggerbinding-{{ .imageName }}
+  name: gitea-triggerbinding-{{ .name }}
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   params:
@@ -182,19 +182,19 @@ spec:
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
-  name: gitea-webhook-{{ .imageName }}
+  name: gitea-webhook-{{ .name }}
   labels:
-    tekton.dev/pipeline: docker-build-{{ .imageName }}
+    tekton.dev/pipeline: docker-build-{{ .name }}
     {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   serviceAccountName: tekton-triggers-team-{{ $v.teamId }}
   triggers:
-    - name: tekton-webhook-{{ .imageName }}
+    - name: tekton-webhook-{{ .name }}
       bindings:
         - kind: TriggerBinding
-          ref: gitea-triggerbinding-{{ .imageName }}
+          ref: gitea-triggerbinding-{{ .name }}
       template:
-        ref: trigger-template-{{ .imageName }}
+        ref: trigger-template-{{ .name }}
 ---
 {{- end }}
 {{- end }}

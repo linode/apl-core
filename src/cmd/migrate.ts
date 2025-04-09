@@ -309,7 +309,12 @@ const buildImageNameMigration = async (values: Record<string, any>): Promise<voi
       if (!builds || builds.length === 0) return
       for (const build of builds) {
         set(build, 'imageName', build.name)
-        set(build, 'name', `${build.name}-${build.tag}`)
+        const buildName = `${build.name}-${build.tag}`
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/gi, '-') // Replace invalid characters with hyphens
+          .replace(/-+/g, '-') // Replace multiple consecutive hyphens with a single hyphen
+          .replace(/^-|-$/g, '') // Remove leading or trailing hyphens
+        set(build, 'name', buildName)
         await deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
       }
     }),
