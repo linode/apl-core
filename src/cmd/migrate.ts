@@ -306,6 +306,10 @@ const teamSettingsMigration = async (values: Record<string, any>): Promise<void>
   await Promise.all(
     // eslint-disable-next-line @typescript-eslint/require-await
     teams.map(async (teamName) => {
+      // Get the alerts block for the team and remove email and opsgenie
+      const alerts = get(values, `teamConfig.${teamName}.settings.alerts`)
+      if (alerts?.email) unset(alerts, 'email')
+      if (alerts?.opsgenie) unset(alerts, 'opsgenie')
       // Get the selfService block for the team
       const selfService = get(values, `teamConfig.${teamName}.settings.selfService`)
       if (!selfService) return
