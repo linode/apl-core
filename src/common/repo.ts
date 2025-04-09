@@ -420,12 +420,16 @@ export function renderManifest(fileMap: FileMap, jsonPath: jsonpath.PathComponen
 }
 
 export function renderManifestForSecrets(fileMap: FileMap, resourceName: string, data: Record<string, any>) {
+  let spec = data
+  if (fileMap.resourceGroup === 'users') {
+    spec = omit(data, ['id', 'name'])
+  }
   return {
     kind: fileMap.kind,
     metadata: {
       name: resourceName,
     },
-    spec: data,
+    spec,
   }
 }
 
@@ -475,6 +479,10 @@ export async function saveResourceGroupToFiles(
       }
     }),
   )
+}
+
+export function getUserNameFromFilePath(filePath: string): string {
+  return path.basename(filePath, path.extname(filePath)).replace(/^secrets\./, '')
 }
 
 export async function setValuesFile(envDir: string, deps = { pathExists, loadValues, writeFile }): Promise<string> {
@@ -578,7 +586,7 @@ export async function loadFileToSpec(
       }
     }
     if (fileMap.resourceGroup === 'users') {
-      data.spec.name = data.metadata.name
+      data.spec.name = getUserNameFromFilePath(filePath)
     }
     if (fileMap.processAs === 'arrayItem') {
       const ref: Record<string, any>[] = get(spec, jsonPath)
