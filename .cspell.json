@@ -89,7 +89,9 @@
     "Paketo",
     "tekton",
     "cnpg",
-    "dockercfg"
+    "dockercfg",
+    "nprts",
+    "CPUs"
   ],
   "language": "en",
   "words": [
