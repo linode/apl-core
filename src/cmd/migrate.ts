@@ -553,8 +553,7 @@ export const migrate = async (): Promise<boolean> => {
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
   const prevVersion: number = versions?.spec?.specVersion
-  // TODO: modify this after discussion with the team
-  if (!prevVersion || prevVersion < 40) {
+  if (!prevVersion) {
     d.log('No changes detected, skipping')
     return false
   }
