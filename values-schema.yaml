@@ -1277,7 +1277,7 @@ definitions:
     properties:
       name:
         description: Name of the build
-        type: string
+        $ref: '#/definitions/idName'
       imageName:
         description: Name of the image
         $ref: '#/definitions/idName'
