@@ -51,6 +51,8 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        {{- toYaml .Values.metricsGenerator.initContainers | nindent 8 }}
       containers:
         - args:
             - -target=metrics-generator

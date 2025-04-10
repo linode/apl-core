@@ -1,5 +1,7 @@
 {{- if and (.Values.metricsGenerator.enabled) (eq .Values.metricsGenerator.kind "StatefulSet") }}
 {{ $dict := dict "ctx" . "component" "metrics-generator" "memberlist" true }}
+{{- $storageClass := .Values.metricsGenerator.persistence.storageClass | default .Values.global.storageClass }}
+{{- if eq $storageClass "-" }}{{- $storageClass = "" }}{{- end }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -144,6 +146,11 @@ spec:
         - name: wal
           emptyDir: {{- toYaml .Values.metricsGenerator.walEmptyDir | nindent 12 }}
   {{- else }}
+  {{- if .Values.metricsGenerator.persistentVolumeClaimRetentionPolicy.enabled }}
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: {{ .Values.metricsGenerator.persistentVolumeClaimRetentionPolicy.whenDeleted }}
+    whenScaled: {{ .Values.metricsGenerator.persistentVolumeClaimRetentionPolicy.whenScaled }}
+  {{- end }}
   volumeClaimTemplates:
     - apiVersion: v1
       kind: PersistentVolumeClaim
@@ -156,9 +163,7 @@ spec:
       spec:
         accessModes:
           - ReadWriteOnce
-        {{- with .Values.metricsGenerator.persistence.storageClass }}
-        storageClassName: {{ if (eq "-" .) }}""{{ else }}{{ . }}{{ end }}
-        {{- end }}
+        storageClassName: {{ if $storageClass }}{{ $storageClass }}{{ else }}{{- "" }}{{ end }}
         resources:
           requests:
             storage: {{ .Values.metricsGenerator.persistence.size | quote }}
