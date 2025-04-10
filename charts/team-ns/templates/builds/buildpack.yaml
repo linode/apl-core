@@ -89,7 +89,7 @@ spec:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
-        generateName: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}-
+        generateName: buildpacks-build-{{ .name }}-
         labels:
           tekton.dev/pipeline: buildpacks-build-{{ .name }}
           {{- include "team-ns.chart-labels" $ | nindent 10 }}
@@ -131,7 +131,7 @@ spec:
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: buildpacks-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
+  name: buildpacks-build-{{ .name }}
   annotations:
     sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
