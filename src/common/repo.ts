@@ -481,7 +481,7 @@ export async function saveResourceGroupToFiles(
   )
 }
 
-export function getUserNameFromFilePath(filePath: string): string {
+export function getUniqueIdentifierFromFilePath(filePath: string): string {
   return path
     .basename(filePath)
     .replace(/^secrets\./, '')
@@ -590,7 +590,7 @@ export async function loadFileToSpec(
       }
     }
     if (fileMap.resourceGroup === 'users') {
-      data.spec.name = getUserNameFromFilePath(filePath)
+      data.spec.name = getUniqueIdentifierFromFilePath(filePath)
     }
     if (fileMap.processAs === 'arrayItem') {
       const ref: Record<string, any>[] = get(spec, jsonPath)
