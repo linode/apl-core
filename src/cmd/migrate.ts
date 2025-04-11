@@ -5,8 +5,7 @@ import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
-import { glob } from 'glob'
-import { cloneDeep, each, get, isObject, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
+import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
@@ -20,7 +19,7 @@ import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
 import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
-import { $, cd } from 'zx'
+import { $, cd, glob } from 'zx'
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -51,6 +50,7 @@ interface Change {
     [mutation: string]: string
   }>
   networkPoliciesMigration?: boolean
+  teamResourceQuotaMigration?: boolean
   buildImageNameMigration?: boolean
 }
 
@@ -330,6 +330,23 @@ const buildImageNameMigration = async (values: Record<string, any>): Promise<voi
   )
 }
 
+const teamResourceQuotaMigration = (values: Record<string, any>) => {
+  Object.entries(values?.teamConfig as Record<string, any>).forEach(([teamName, teamValues]) => {
+    const resourceQuota = teamValues?.settings?.resourceQuota
+    if (!isUndefined(resourceQuota) && !Array.isArray(resourceQuota)) {
+      set(
+        teamValues,
+        'settings.resourceQuota',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        Object.entries(resourceQuota || {}).map(([name, value]) => ({ name, value })),
+      )
+      console.log('Completed migration of resourceQuota for team', teamName)
+    } else {
+      console.log('No migration needed of resourceQuota for team', teamName)
+    }
+  })
+}
+
 const bulkAddition = (path: string, values: any, filePath: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const val = require(filePath)
@@ -392,6 +409,7 @@ export const applyChanges = async (
     }
 
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
+    if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
     if (c.buildImageNameMigration) await buildImageNameMigration(values)
 
     Object.assign(values.versions, { specVersion: c.version })
