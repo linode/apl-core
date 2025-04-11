@@ -59,10 +59,18 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
       } catch (e) {
         if (e.message.includes('You may want to first integrate the remote changes')) {
           d.warn('Non-fast-forward error detected. Pulling latest changes...')
-          await $`git pull --rebase origin ${branch}`
-          d.info('Rebase completed. Retrying push...')
+          try {
+            await $`git pull --rebase origin ${branch}`
+            d.info('Rebase completed. Retrying push...')
+          } catch (rebaseError) {
+            if (rebaseError.message.includes('CONFLICT')) {
+              d.error('Merge conflict detected during rebase. Aborting retries.')
+              throw new Error('Merge conflict during rebase. Stopping retries.')
+            }
+            throw rebaseError
+          }
         } else {
-          d.warn(`The values repository is not yet reachable.`)
+          d.warn(`Git push failed. Retrying...`)
           throw new Error('Could not commit and push. Retrying...')
         }
       }
