@@ -1,4 +1,4 @@
-import { applyChanges, Changes, filterChanges } from 'src/cmd/migrate'
+import { applyChanges, Changes, filterChanges, getBuildName } from 'src/cmd/migrate'
 import stubs from 'src/test-stubs'
 
 jest.mock('uuid', () => ({
@@ -421,6 +421,44 @@ describe('Network policies migrations', () => {
   }, 20000)
 })
 
+describe('getBuildName', () => {
+  it('should generate a valid build name by combining name and tag', () => {
+    const result = getBuildName('my-build', 'v1.0')
+    expect(result).toBe('my-build-v1-0')
+  })
+
+  it('should convert the build name to lowercase', () => {
+    const result = getBuildName('My-Build', 'V1.0')
+    expect(result).toBe('my-build-v1-0')
+  })
+
+  it('should replace invalid characters with hyphens', () => {
+    const result = getBuildName('my@build!', 'v1.0#')
+    expect(result).toBe('my-build-v1-0')
+  })
+
+  it('should replace multiple consecutive hyphens with a single hyphen', () => {
+    const result = getBuildName('my--build', 'v1--0')
+    expect(result).toBe('my-build-v1-0')
+  })
+
+  it('should remove leading and trailing hyphens', () => {
+    const result = getBuildName('-my-build-', '-v1.0-')
+    expect(result).toBe('my-build-v1-0')
+  })
+
+  it('should handle empty name or tag gracefully', () => {
+    const result = getBuildName('', 'v1.0')
+    expect(result).toBe('v1-0')
+
+    const result2 = getBuildName('my-build', '')
+    expect(result2).toBe('my-build')
+
+    const result3 = getBuildName('', '')
+    expect(result3).toBe('')
+  })
+})
+
 describe('Build image name migration', () => {
   const getMockValues = () => ({
     versions: { specVersion: 1 },
@@ -523,7 +561,7 @@ describe('Build image name migration', () => {
     terminal,
     writeValues: jest.fn(),
   }
-  it('should apply changes to services and create netpols ', async () => {
+  it('should apply changes to build values ', async () => {
     await applyChanges([valuesChanges], false, deps)
     const expectedValues = getExpectedValues()
     expect(deps.writeValues).toBeCalledWith(expectedValues, true)

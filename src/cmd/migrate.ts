@@ -301,19 +301,28 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
+export const getBuildName = (name: string, tag: string): string => {
+  return `${name}-${tag}`
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/gi, '-') // Replace invalid characters with hyphens
+    .replace(/-+/g, '-') // Replace multiple consecutive hyphens with a single hyphen
+    .replace(/^-|-$/g, '') // Remove leading or trailing hyphens
+}
+
 const buildImageNameMigration = async (values: Record<string, any>): Promise<void> => {
   const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+  type Build = {
+    name: string
+    tag: string
+    imageName?: string
+  }
   await Promise.all(
     teams.map(async (teamName) => {
-      const builds = get(values, `teamConfig.${teamName}.builds`, [])
+      const builds: Build[] = get(values, `teamConfig.${teamName}.builds`, [])
       if (!builds || builds.length === 0) return
       for (const build of builds) {
         set(build, 'imageName', build.name)
-        const buildName = `${build.name}-${build.tag}`
-          .toLowerCase()
-          .replace(/[^a-z0-9-]/gi, '-') // Replace invalid characters with hyphens
-          .replace(/-+/g, '-') // Replace multiple consecutive hyphens with a single hyphen
-          .replace(/^-|-$/g, '') // Remove leading or trailing hyphens
+        const buildName = getBuildName(build.name, build.tag)
         set(build, 'name', buildName)
         await deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
       }
