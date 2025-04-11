@@ -1,6 +1,6 @@
 kind: AplTeamBuild
 metadata:
-    name: demo-java3
+    name: demo-java3-v0-0-1
     labels:
         apl.io/teamId: demo
 spec:
@@ -16,8 +16,9 @@ spec:
             repoUrl: https://github.com/buildpacks/samples
             revision: HEAD
         type: docker
-    name: demo-java3
+    name: demo-java3-v0-0-1
+    imageName: demo-java3
     scanSource: true
     secretName: my-secret
-    tag: v_0_0_1
+    tag: v0.0.1
     trigger: true
