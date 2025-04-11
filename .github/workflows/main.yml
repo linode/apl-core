@@ -65,7 +65,6 @@ jobs:
       - name: Show me the logic
         run: |
           echo github.ref == ${{ github.ref }}
-
   deploy-to-dev:
     needs: push-to-docker
     if: always() && (startsWith(github.ref, 'refs/heads/main')) && !github.event.act
