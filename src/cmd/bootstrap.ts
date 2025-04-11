@@ -224,7 +224,7 @@ export const getUsers = (originalInput: any, deps = { generatePassword, addIniti
   }
   deps.addInitialPasswords(users)
   users.forEach((user) => {
-    set(user, 'id', user.id || randomUUID())
+    set(user, 'name', user.name || randomUUID())
   })
   return users
 }

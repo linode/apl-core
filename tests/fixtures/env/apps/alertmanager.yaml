@@ -4,3 +4,12 @@ metadata:
     labels: {}
 spec:
     enabled: true
+    _rawValues: {}
+    resources:
+        alertmanager:
+            limits:
+                cpu: 200m
+                memory: 256Mi
+            requests:
+                cpu: 10m
+                memory: 64Mi

@@ -42,3 +42,4 @@ spec:
             requests:
                 cpu: 50m
                 memory: 16Mi
+    _rawValues: {}
