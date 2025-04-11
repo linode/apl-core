@@ -47,6 +47,48 @@ jobs:
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
+  pr-autoupdate:
+    runs-on: ubuntu-22.04
+    needs: build-test-cache
+    if: (startsWith(github.ref, 'refs/heads/main')) && !github.event.act
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Configure Git
+        run: |
+          git config --global user.email $BOT_EMAIL
+          git config --global user.name $BOT_USERNAME
+
+      - name: Authenticate GitHub CLI
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Update PR branches
+        run: |
+          prs=$(gh pr list --state open --base main --json number,headRefName -q '.[] | [.number, .headRefName] | @tsv')
+
+          while IFS=$'\t' read -r number branch; do
+            echo "Updating PR #$number (branch: $branch)"
+
+            git fetch origin "$branch"
+            git checkout "$branch"
+
+            if git merge origin/main --no-edit; then
+              git push origin HEAD:$branch
+              echo "✅ Updated $branch"
+            else
+              echo "❌ Merge conflict on $branch — skipped."
+              git merge --abort
+            fi
+          done <<< "$prs"
+
   push-to-docker:
     needs: build-test-cache
     if: always() && ((contains(needs.build-test-cache.result, 'success') && !contains(needs.integration.outputs.started, 'true')) || (contains(needs.integration.result, 'success'))) && !github.event.act && github.actor != 'dependabot[bot]'
@@ -65,6 +107,7 @@ jobs:
       - name: Show me the logic
         run: |
           echo github.ref == ${{ github.ref }}
+
   deploy-to-dev:
     needs: push-to-docker
     if: always() && (startsWith(github.ref, 'refs/heads/main')) && !github.event.act
