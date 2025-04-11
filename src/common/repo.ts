@@ -412,7 +412,7 @@ export function renderManifest(fileMap: FileMap, jsonPath: jsonpath.PathComponen
     },
     spec,
   }
-  if (fileMap.resourceGroup === 'team' && fileMap.kind !== 'AplTeamWorkloadValues') {
+  if (fileMap.resourceGroup === 'team') {
     manifest.metadata.labels['apl.io/teamId'] = getTeamNameFromJsonPath(jsonPath)
   }
 
@@ -581,9 +581,9 @@ export async function loadFileToSpec(
   deps = { loadYaml },
 ): Promise<void> {
   const jsonPath = getJsonPath(fileMap, filePath)
-  const data = (await deps.loadYaml(filePath)) || {}
-
   try {
+    const data = (await deps.loadYaml(filePath)) || {}
+
     if (!filePath.includes('secrets.')) {
       if (fileMap.resourceGroup === 'team' && fileMap.processAs === 'arrayItem') {
         data.spec.name = data.metadata.name
