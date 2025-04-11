@@ -81,7 +81,8 @@ export function getResourceName(fileMap: FileMap, jsonPath: jsonpath.PathCompone
     return resourceName
   }
 
-  if (fileMap.resourceGroup === 'team') {
+  //Custom workaround for teamPolicy because it is a mapItem
+  if (fileMap.resourceGroup === 'team' && fileMap.kind !== 'AplTeamPolicy') {
     resourceName = getTeamNameFromJsonPath(jsonPath)
     return resourceName
   } else {
@@ -369,11 +370,11 @@ export function getFileMaps(envDir: string): Array<FileMap> {
     {
       kind: 'AplTeamPolicy',
       envDir,
-      jsonPathExpression: '$.teamConfig.*.policies',
-      pathGlob: `${envDir}/env/teams/*/policies.yaml`,
+      jsonPathExpression: '$.teamConfig.*.policies[*]',
+      pathGlob: `${envDir}/env/teams/*/policies/*.yaml`,
       processAs: 'mapItem',
       resourceGroup: 'team',
-      resourceDir: '.',
+      resourceDir: 'policies',
       loadToSpec: true,
     },
   ]
