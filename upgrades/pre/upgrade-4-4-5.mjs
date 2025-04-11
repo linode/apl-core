@@ -27,7 +27,7 @@ async function main() {
   for await (const settingsFile of settingsFiles) {
     console.log('Migrating settings from', settingsFile)
     const settings = await readFile(settingsFile)
-    if (!Array.isArray(settings.spec?.resourceQuota)) {
+    if (settings.spec?.resourceQuota !== undefined && !Array.isArray(settings.spec?.resourceQuota)) {
       settings.spec.resourceQuota = Object.entries(settings.spec?.resourceQuota || {}).map(([name, value]) => ({ name, value }))
       await writeFile(settingsFile, settings)
       console.log('Completed migration of settings in', settingsFile)
