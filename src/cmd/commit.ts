@@ -57,8 +57,14 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
         cd(env.ENV_DIR)
         await $`git push -u origin ${branch}`
       } catch (e) {
-        d.warn(`The values repository is not yet reachable.`)
-        throw new Error('Could not commit and push. Retrying...')
+        if (e.message.includes('You may want to first integrate the remote changes')) {
+          d.warn('Non-fast-forward error detected. Pulling latest changes...')
+          await $`git pull --rebase origin ${branch}`
+          d.info('Rebase completed. Retrying push...')
+        } else {
+          d.warn(`The values repository is not yet reachable.`)
+          throw new Error('Could not commit and push. Retrying...')
+        }
       }
     },
     {
