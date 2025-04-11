@@ -52,6 +52,7 @@ interface Change {
   }>
   networkPoliciesMigration?: boolean
   teamResourceQuotaMigration?: boolean
+  buildImageNameMigration?: boolean
 }
 
 export type Changes = Array<Change>
@@ -301,6 +302,35 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
+export const getBuildName = (name: string, tag: string): string => {
+  return `${name}-${tag}`
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/gi, '-') // Replace invalid characters with hyphens
+    .replace(/-+/g, '-') // Replace multiple consecutive hyphens with a single hyphen
+    .replace(/^-|-$/g, '') // Remove leading or trailing hyphens
+}
+
+const buildImageNameMigration = async (values: Record<string, any>): Promise<void> => {
+  const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+  type Build = {
+    name: string
+    tag: string
+    imageName?: string
+  }
+  await Promise.all(
+    teams.map(async (teamName) => {
+      const builds: Build[] = get(values, `teamConfig.${teamName}.builds`, [])
+      if (!builds || builds.length === 0) return
+      for (const build of builds) {
+        set(build, 'imageName', build.name)
+        const buildName = getBuildName(build.name, build.tag)
+        set(build, 'name', buildName)
+        await deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
+      }
+    }),
+  )
+}
+
 const teamResourceQuotaMigration = (values: Record<string, any>) => {
   Object.entries(values?.teamConfig as Record<string, any>).forEach(([teamName, teamValues]) => {
     const resourceQuota = teamValues?.settings?.resourceQuota
@@ -381,8 +411,9 @@ export const applyChanges = async (
 
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
     if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
+    if (c.buildImageNameMigration) await buildImageNameMigration(values)
 
-    Object.assign(values, { version: c.version })
+    Object.assign(values.versions, { specVersion: c.version })
   }
   if (!dryRun) await deps.writeValues(values, true)
   // @ts-ignore
