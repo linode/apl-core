@@ -4,7 +4,7 @@
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { unlink } from 'fs/promises'
-import { cloneDeep, each, get, pull, set, unset } from 'lodash'
+import { cloneDeep, each, get, isUndefined, pull, set, unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
@@ -47,6 +47,7 @@ interface Change {
     [mutation: string]: string
   }>
   networkPoliciesMigration?: boolean
+  teamResourceQuotaMigration?: boolean
 }
 
 export type Changes = Array<Change>
@@ -296,6 +297,22 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
+const teamResourceQuotaMigration = (values: Record<string, any>) => {
+  Object.entries(values?.teamConfig as Record<string, any>).forEach(([teamName, teamValues]) => {
+    if (!isUndefined(teamValues?.resourceQuota) && !Array.isArray(teamValues?.resourceQuota)) {
+      set(
+        teamValues,
+        'resourceQuota',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        Object.entries(teamValues?.resourceQuota || {}).map(([name, value]) => ({ name, value })),
+      )
+      console.log('Completed migration of resourceQuota for team', teamName)
+    } else {
+      console.log('No migration needed of resourceQuota for team', teamName)
+    }
+  })
+}
+
 const bulkAddition = (path: string, values: any, filePath: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const val = require(filePath)
@@ -358,6 +375,7 @@ export const applyChanges = async (
     }
 
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
+    if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
 
     Object.assign(values, { version: c.version })
   }

@@ -1151,8 +1151,18 @@ definitions:
         type: string
         x-secret: ''
       resourceQuota:
-        description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
-        type: object
+        description: 'List of kubernetes resource quota. Names and values should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/.'
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              type: string
+            value:
+              type: string
+          required:
+            - name
+            - value
       selfService:
         $ref: '#/definitions/teamSelfService'
       services:

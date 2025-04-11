@@ -87,8 +87,10 @@ environments:
               egressPublic: true
               ingressPrivate: true
           resourceQuota:
-              pods: "50"
-              services.loadbalancers: "0"
+              - name: pods
+                value: "50"
+              - name: services.loadbalancers
+                value: "0"
           selfService:
               apps: []
               policies:
