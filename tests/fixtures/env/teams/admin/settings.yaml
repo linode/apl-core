@@ -14,3 +14,4 @@ spec:
             - downloadCertificateAuthority
         policies:
             - edit policies
+    resourceQuota: []

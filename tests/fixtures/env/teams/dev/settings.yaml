@@ -18,3 +18,4 @@ spec:
         policies:
             - edit policies
     password: IkdUsKPcGAdanjas
+    resourceQuota: []
