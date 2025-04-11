@@ -63,13 +63,15 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
             await $`git pull --rebase origin ${branch}`
             d.info('Rebase completed. Retrying push...')
           } catch (rebaseError) {
-            if (rebaseError.message.includes('CONFLICT')) {
+            if (rebaseError.message.includes('Failed to merge')) {
               d.error('Merge conflict detected during rebase. Aborting retries.')
+              d.info('Inspecting the issue with git status and git am --show-current-patch...')
+              await $`git status`
+              await $`git am --show-current-patch`
               throw new Error('Merge conflict during rebase. Stopping retries.')
             }
             throw rebaseError
           }
-          await $`git am --show-current-patch`
         } else {
           d.warn(`Git push failed. Retrying...`)
           throw new Error('Could not commit and push. Retrying...')
