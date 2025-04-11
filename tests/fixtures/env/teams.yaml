@@ -29,7 +29,8 @@ teamConfig:
         oidc:
             groupMapping: somesecretvalue
         resourceQuota:
-            services.loadbalancers: '1'
+            - name: services.loadbalancers
+              value: '1'
         selfService:
             access:
                 - shell
