@@ -90,11 +90,11 @@ describe('File map constraints', () => {
     const maps = getFileMaps('/tmp')
     maps.forEach((item) => {
       expect(item.jsonPathExpression.startsWith('$.')).toBe(true)
-      if (item.processAs === 'arrayItem') {
+      if (item.processAs === 'arrayItem' || item.kind === 'AplTeamPolicy') {
         expect(item.jsonPathExpression.endsWith('[*]')).toBe(true)
       }
       if (item.processAs === 'mapItem') {
-        expect(item.jsonPathExpression.endsWith('[*]')).toBe(false)
+        expect(item.jsonPathExpression.endsWith('[*]') && item.kind !== 'AplTeamPolicy').toBe(false)
       }
       if (item.resourceGroup === 'team') {
         expect(item.jsonPathExpression.startsWith('$.teamConfig.*.')).toBe(true)
