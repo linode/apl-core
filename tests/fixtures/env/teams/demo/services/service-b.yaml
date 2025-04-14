@@ -3,5 +3,4 @@ metadata:
     name: service-b
     labels:
         apl.io/teamId: demo
-spec:
-    name: service-b
+spec: {}

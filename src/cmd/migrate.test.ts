@@ -76,7 +76,7 @@ describe('Upgrading values', () => {
             },
           },
           some: { bla: {}, k8sVersion: '1.18' },
-          versions: { specVersion: 3 },
+          versions: { specVersion: 4 },
         },
         true,
       )

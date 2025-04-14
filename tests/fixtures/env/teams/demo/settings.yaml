@@ -5,17 +5,14 @@ metadata:
         apl.io/teamId: demo
 spec:
     alerts:
-        email:
-            critical: admins@yourdoma.in
-            nonCritical: admins@yourdoma.in
+        email: {}
+        groupInterval: 5m
         receivers:
             - slack
         repeatInterval: 3h
         slack:
             channel: aaaaa
             channelCrit: aaaaa
-            url: https://slack.con
-        groupInterval: 5m
     managedMonitoring:
         alertmanager: true
         grafana: true
@@ -40,4 +37,3 @@ spec:
             - ingress
         team:
             - alerts
-    password: somesecretvalue
