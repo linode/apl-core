@@ -10,6 +10,9 @@ spec:
         pilot:
             maxReplicas: 5
             minReplicas: 1
+        egressgateway:
+            maxReplicas: 10
+            minReplicas: 2
     egressGateway:
         enabled: false
     extensionProviders:
@@ -51,6 +54,21 @@ spec:
             requests:
                 cpu: 20m
                 memory: 80Mi
+        egressgateway:
+            limits:
+                cpu: '1'
+                memory: 256Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        operator:
+            limits:
+                cpu: 200m
+                memory: 256Mi
+            requests:
+                cpu: 20m
+                memory: 128Mi
     tracing:
         enabled: true
         samplingRatio: '0.01'
+    _rawValues: {}

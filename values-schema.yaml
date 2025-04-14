@@ -1122,7 +1122,17 @@ definitions:
             x-secret: ''
           resourceQuota:
             description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
-            type: object
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                value:
+                  type: string
+              required:
+                - name
+                - value
           selfService:
             $ref: '#/definitions/teamSelfService'
           alerts:
@@ -1267,6 +1277,9 @@ definitions:
     description: Define location of code to build
     properties:
       name:
+        description: Name of the build
+        $ref: '#/definitions/idName'
+      imageName:
         description: Name of the image
         $ref: '#/definitions/idName'
       tag:
@@ -1475,7 +1488,7 @@ definitions:
     type: object
     description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
     properties:
-      id:
+      name:
         type: string
       email:
         $ref: '#/definitions/email'

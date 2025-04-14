@@ -19,7 +19,6 @@ spec:
                 - name: sander
                   value: same-origin
     ingressClassName: net-a
-    name: service-e
     trafficControl:
         enabled: true
         weightV1: 50

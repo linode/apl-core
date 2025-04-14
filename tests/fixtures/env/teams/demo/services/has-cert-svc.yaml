@@ -5,6 +5,5 @@ metadata:
         apl.io/teamId: demo
 spec:
     hasCert: true
-    name: has-cert-svc
     paths:
         - /jeho

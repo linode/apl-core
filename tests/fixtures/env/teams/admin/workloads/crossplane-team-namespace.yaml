@@ -5,6 +5,5 @@ metadata:
         apl.io/teamId: admin
 spec:
     chart: crossplane
-    name: crossplane-team-namespace
     revision: 1.11.2
     url: https://charts.crossplane.io/stable
