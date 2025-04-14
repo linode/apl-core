@@ -1128,105 +1128,18 @@ definitions:
             type: string
             x-secret: ''
           resourceQuota:
-            title: Resource Quota
-            description: >
-              Kubernetes resource quota. Should adhere to the format described at:
-              https://kubernetes.io/docs/concepts/policy/resource-quotas/.
-            type: object
-            properties:
-              enabled:
-                type: boolean
-                title: Enabled
-                default: true
-                description: Whether resource quotas are enabled.
-              countQuota:
-                type: array
-                title: Count Quota
-                items:
-                  type: object
-                  properties:
-                    key:
-                      type: string
-                      title: Key
-                    value:
-                      type: number
-                      title: Value
-                    mutable:
-                      type: boolean
-                      title: Mutable
-                    decorator:
-                      type: string
-                      title: Decorator
-                  required:
-                    - key
-                    - value
-                    - mutable
-                    - decorator
-                default:
-                  - key: 'loadbalancers'
-                    value: 0
-                    mutable: false
-                    decorator: 'lbs'
-                  - key: 'nodeports'
-                    value: 0
-                    mutable: false
-                    decorator: 'nprts'
-                  - key: 'count'
-                    value: 5
-                    mutable: true
-                    decorator: 'pods'
-              computeResourceQuota:
-                type: array
-                title: Compute Resource Quota
-                items:
-                  type: object
-                  properties:
-                    key:
-                      type: string
-                      title: Key
-                    value:
-                      type: number
-                      title: Value
-                    decorator:
-                      type: string
-                      title: Decorator
-                  required:
-                    - key
-                    - value
-                    - decorator
-                default:
-                  - key: 'limits.cpu'
-                    value: 500
-                    decorator: 'mCPUs'
-                  - key: 'requests.cpu'
-                    value: 250
-                    decorator: 'mCPUs'
-                  - key: 'limits.memory'
-                    value: 500
-                    decorator: 'Mi'
-                  - key: 'requests.memory'
-                    value: 500
-                    decorator: 'Mi'
-              customQuota:
-                type: array
-                title: Custom Quota
-                items:
-                  type: object
-                  properties:
-                    key:
-                      type: string
-                      title: Key
-                    value:
-                      type: number
-                      title: Value
-                  required:
-                    - key
-                    - value
-                default: []
-            required:
-              - enabled
-              - countQuota
-              - computeResourceQuota
+            description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                value:
+                  type: string
+              required:
+                - name
+                - value
           selfService:
             $ref: '#/definitions/teamSelfService'
           alerts:
