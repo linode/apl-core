@@ -401,28 +401,36 @@ export async function saveValues(
 
 export function renderManifest(fileMap: FileMap, jsonPath: jsonpath.PathComponent[], data: Record<string, any>) {
   //TODO remove this custom workaround for workloadValues
-  const manifest =
-    fileMap.kind === 'AplTeamWorkloadValues'
-      ? omit(data, ['id', 'name', 'teamId'])
-      : {
-          kind: fileMap.kind,
-          metadata: {
-            name: getResourceName(fileMap, jsonPath, data),
-            labels: {},
-          },
-          spec: data,
-        }
-  if (fileMap.resourceGroup === 'team' && fileMap.kind !== 'AplTeamWorkloadValues') {
+  let spec = data
+  if (fileMap.resourceGroup === 'team') {
+    spec = omit(data, ['id', 'name', 'teamId'])
+  }
+  const manifest = {
+    kind: fileMap.kind,
+    metadata: {
+      name: getResourceName(fileMap, jsonPath, data),
+      labels: {},
+    },
+    spec,
+  }
+  if (fileMap.resourceGroup === 'team') {
     manifest.metadata.labels['apl.io/teamId'] = getTeamNameFromJsonPath(jsonPath)
   }
 
   return manifest
 }
 
-export function renderManifestForSecrets(fileMap: FileMap, data: Record<string, any>) {
+export function renderManifestForSecrets(fileMap: FileMap, resourceName: string, data: Record<string, any>) {
+  let spec = data
+  if (fileMap.resourceGroup === 'users') {
+    spec = omit(data, ['id', 'name'])
+  }
   return {
     kind: fileMap.kind,
-    spec: data,
+    metadata: {
+      name: resourceName,
+    },
+    spec,
   }
 }
 
@@ -462,7 +470,8 @@ export async function saveResourceGroupToFiles(
       const nodeValue = node.value
       try {
         const filePath = getFilePath(fileMap, nodePath, nodeValue, 'secrets.')
-        const manifest = renderManifestForSecrets(fileMap, nodeValue)
+        const resourceName = getResourceName(fileMap, nodePath, nodeValue)
+        const manifest = renderManifestForSecrets(fileMap, resourceName, nodeValue)
         await deps.writeValuesToFile(filePath, manifest)
       } catch (e) {
         console.log(nodePath)
@@ -471,6 +480,14 @@ export async function saveResourceGroupToFiles(
       }
     }),
   )
+}
+
+export function getUniqueIdentifierFromFilePath(filePath: string): string {
+  return path
+    .basename(filePath)
+    .replace(/^secrets\./, '')
+    .replace(/\.yaml\.dec$/, '')
+    .replace(/\.yaml$/, '')
 }
 
 export async function setValuesFile(envDir: string, deps = { pathExists, loadValues, writeFile }): Promise<string> {
@@ -555,7 +572,6 @@ export async function loadToSpec(
     if (hasCorrespondingDecryptedFile(filePath, files)) return
     promises.push(deps.loadFileToSpec(filePath, fileMap, spec))
   })
-
   await Promise.all(promises)
 }
 
@@ -566,25 +582,39 @@ export async function loadFileToSpec(
   deps = { loadYaml },
 ): Promise<void> {
   const jsonPath = getJsonPath(fileMap, filePath)
-  const data = await deps.loadYaml(filePath)
-  if (fileMap.processAs === 'arrayItem') {
-    const ref: Record<string, any>[] = get(spec, jsonPath)
-    ref.push(data?.spec)
-  } else if (fileMap.kind === 'AplTeamPolicy') {
-    const ref: Record<string, any> = get(spec, jsonPath)
-    const policy = {
-      [data?.metadata?.name]: data?.spec,
+  try {
+    const data = (await deps.loadYaml(filePath)) || {}
+
+    if (!filePath.includes('secrets.')) {
+      if (fileMap.resourceGroup === 'team' && fileMap.processAs === 'arrayItem') {
+        data.spec.name = data.metadata.name
+      }
     }
-    const newRef = merge(cloneDeep(ref), policy)
-    set(spec, jsonPath, newRef)
-  } else {
-    const ref: Record<string, any> = get(spec, jsonPath)
-    // Decrypted secrets may need to be merged with plain text specs
-    const newRef = merge(cloneDeep(ref), data?.spec)
-    set(spec, jsonPath, newRef)
+    if (fileMap.resourceGroup === 'users') {
+      data.spec.name = getUniqueIdentifierFromFilePath(filePath)
+    }
+    if (fileMap.processAs === 'arrayItem') {
+      const ref: Record<string, any>[] = get(spec, jsonPath)
+      ref.push(data?.spec)
+    } else if (fileMap.kind === 'AplTeamPolicy') {
+      const ref: Record<string, any> = get(spec, jsonPath)
+      const policy = {
+        [data?.metadata?.name]: data?.spec,
+      }
+      const newRef = merge(cloneDeep(ref), policy)
+      set(spec, jsonPath, newRef)
+    } else {
+      const ref: Record<string, any> = get(spec, jsonPath)
+      // Decrypted secrets may need to be merged with plain text specs
+      const newRef = merge(cloneDeep(ref), data?.spec)
+      set(spec, jsonPath, newRef)
+    }
+  } catch (e) {
+    console.log(filePath)
+    console.log(fileMap)
+    throw e
   }
 }
-
 export async function getKmsSettings(envDir: string, deps = { loadToSpec }): Promise<Record<string, any>> {
   const kmsFiles = getFileMap('AplKms', envDir)
   const spec = {}

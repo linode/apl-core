@@ -79,6 +79,16 @@
       "cwd": "${workspaceRoot}"
     },
     {
+      "name": "Bootstrap-test-fixtures",
+      "request": "launch",
+      "runtimeArgs": ["run", "bootstrap-tests-fixtures"],
+      "runtimeExecutable": "npm",
+      "type": "node",
+      "envFile": ".env",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceRoot}"
+    },
+    {
       "name": "Migrate values",
       "request": "launch",
       "runtimeArgs": ["run", "migrate-values"],

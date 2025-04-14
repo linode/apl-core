@@ -8,3 +8,4 @@ spec:
     provider:
         linode: {}
     zoneIdFilters: []
+    policy: upsert-only

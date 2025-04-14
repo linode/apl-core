@@ -12,3 +12,6 @@ spec:
         requests:
             cpu: 100m
             memory: 64Mi
+    _rawValues: {}
+    apiServer:
+        create: true

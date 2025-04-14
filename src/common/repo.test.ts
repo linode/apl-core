@@ -7,11 +7,25 @@ import {
   getResourceFileName,
   getResourceName,
   getTeamNameFromJsonPath,
+  getUniqueIdentifierFromFilePath,
   hasCorrespondingDecryptedFile,
 } from 'src/common/repo'
 import stubs from 'src/test-stubs'
 
 const { terminal } = stubs
+
+describe('getUniqueIdentifierFromFilePath', () => {
+  it('should get user name from .dec file', () => {
+    expect(getUniqueIdentifierFromFilePath('secrets.7f5d1670-ea3d-48b5-aa48-0f9d62f80fdb.yaml.dec')).toEqual(
+      '7f5d1670-ea3d-48b5-aa48-0f9d62f80fdb',
+    )
+  })
+  it('should get user name', () => {
+    expect(getUniqueIdentifierFromFilePath('secrets.7f5d1670-ea3d-48b5-aa48-0f9d62f80fdb.yaml')).toEqual(
+      '7f5d1670-ea3d-48b5-aa48-0f9d62f80fdb',
+    )
+  })
+})
 
 describe('getFilePath', () => {
   it('should get path for apps', () => {
