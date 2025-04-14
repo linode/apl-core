@@ -9,7 +9,7 @@
     }
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "11.7.2",
+    "@apidevtools/json-schema-ref-parser": "12.0.1",
     "@kubernetes/client-node": "0.22.2",
     "@types/deep-diff": "1.0.5",
     "@types/semver": "7.5.8",
