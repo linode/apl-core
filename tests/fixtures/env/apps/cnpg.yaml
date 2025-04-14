@@ -10,3 +10,4 @@ spec:
         requests:
             cpu: 100m
             memory: 200Mi
+    _rawValues: {}

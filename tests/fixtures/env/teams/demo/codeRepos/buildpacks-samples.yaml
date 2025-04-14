@@ -1,0 +1,9 @@
+kind: AplTeamCodeRepo
+metadata:
+    name: buildpacks-samples
+    labels:
+        apl.io/teamId: demo
+spec:
+    gitService: github
+    private: false
+    repositoryUrl: https://github.com/buildpacks/samples

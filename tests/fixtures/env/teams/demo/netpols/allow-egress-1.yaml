@@ -4,7 +4,6 @@ metadata:
     labels:
         apl.io/teamId: demo
 spec:
-    name: allow-egress-1
     ruleType:
         egress:
             domain: demo.local

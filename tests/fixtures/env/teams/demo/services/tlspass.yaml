@@ -6,7 +6,6 @@ metadata:
 spec:
     ksvc:
         predeployed: true
-    name: tlspass
     port: 443
     tlsPass: true
     type: public
