@@ -1,6 +1,6 @@
 kind: AplTeamBuild
 metadata:
-    name: demo-ext-repo-public
+    name: demo-ext-repo-public-trigger
     labels:
         apl.io/teamId: demo
 spec:
@@ -14,4 +14,4 @@ spec:
     imageName: demo-java1
     scanSource: true
     tag: v0.0.1
-    trigger: false
+    trigger: true
