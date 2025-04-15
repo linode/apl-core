@@ -571,6 +571,7 @@ describe('Build image name migration', () => {
 describe('teamSettingsMigration', () => {
   // Create a mock values object representing teams with settings that need migration.
   const getTeamSettingsMockValues = (): any => ({
+    versions: { specVersion: 1 },
     teamConfig: {
       team1: {
         settings: {
@@ -608,6 +609,7 @@ describe('teamSettingsMigration', () => {
   // - The selfService arrays ('service', 'access', 'policies', 'apps') are replaced with a new
   //   teamMembers object with the correct boolean values.
   const getTeamSettingsExpectedValues = (): any => ({
+    versions: { specVersion: 2 },
     teamConfig: {
       team1: {
         settings: {
@@ -647,6 +649,7 @@ describe('teamSettingsMigration', () => {
   // Set up the values and changes flag to trigger the teamSettingsMigration.
   const teamSettingValues: any = getTeamSettingsMockValues()
   const valuesChanges: any = {
+    version: 2,
     teamSettingsMigration: true,
   }
   const deps: any = {
