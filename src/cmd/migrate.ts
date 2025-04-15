@@ -547,7 +547,7 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
   users.forEach((user) => {
     set(user, 'name', user.id || randomUUID())
   })
-  oldValues.versions = { specVersion: 1 }
+  oldValues.versions = { specVersion: 33 }
   const teamNames = await getTeamNames(env.ENV_DIR)
   const secretPaths = await getSchemaSecretsPaths(teamNames)
   const valuesPublic = omit(oldValues, secretPaths)
