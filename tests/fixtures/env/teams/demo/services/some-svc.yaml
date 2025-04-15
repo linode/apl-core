@@ -1,7 +1,0 @@
-kind: AplTeamService
-metadata:
-    name: some-svc
-    labels:
-        apl.io/teamId: demo
-spec:
-    port: 80

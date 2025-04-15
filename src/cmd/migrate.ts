@@ -434,9 +434,6 @@ export const unparsePaths = (path: string, values: Record<string, any>): Array<s
 }
 
 function isArray(paths: string[], values: Record<string, any>): string[] {
-  console.info('PATHS:', paths)
-  console.info('VALUES: ', values)
-  console.info('VALUES: ', values?.teamConfig?.demo?.services)
   const transformedPaths: string[] = []
 
   paths.forEach((path) => {
@@ -461,7 +458,6 @@ function isArray(paths: string[], values: Record<string, any>): string[] {
 }
 export const unsetAtPath = (path: string, values: Record<string, any>): void => {
   const paths = unparsePaths(path, values)
-  console.info('UNSET PATHS: ', paths)
   paths.forEach((p) => unset(values, p))
 }
 
