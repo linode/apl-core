@@ -425,15 +425,15 @@ export const unparsePaths = (path: string, values: Record<string, any>): Array<s
     let paths: Array<string> = []
     const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
     teams.forEach((teamName) => paths.push(path.replace('{team}', teamName)))
-    paths = isArray(paths, values)
+    paths = transformArrayToPaths(paths, values)
     return paths.sort()
   } else {
-    const paths = isArray([path], values)
+    const paths = transformArrayToPaths([path], values)
     return paths
   }
 }
 
-function isArray(paths: string[], values: Record<string, any>): string[] {
+function transformArrayToPaths(paths: string[], values: Record<string, any>): string[] {
   const transformedPaths: string[] = []
 
   paths.forEach((path) => {
