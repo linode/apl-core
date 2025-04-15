@@ -7,7 +7,6 @@ spec:
     ingressClassName: platform
     ksvc:
         predeployed: false
-    name: hello-blue-green
     ownHost: true
     paths: []
     port: 80

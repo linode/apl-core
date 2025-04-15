@@ -11,3 +11,11 @@ spec:
             startTime: 22:00
             timeZone: CET
     enabled: true
+    resources:
+        kuredDaemonSet:
+            limits:
+                cpu: 50m
+                memory: 32Mi
+            requests:
+                cpu: 20m
+                memory: 16Mi

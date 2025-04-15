@@ -6,7 +6,9 @@ spec:
     globalPullSecret:
         username: otomi
     hasExternalDNS: true
-    hasExternalIDP: true
+    hasExternalIDP: false
     nodeSelector:
         otomi: otomi-sys
     version: main
+    isMultitenant: true
+    isPreInstalled: false
