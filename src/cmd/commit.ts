@@ -56,9 +56,12 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
       try {
         cd(env.ENV_DIR)
         // Check if remote branch exists
-        const remoteBranchExists = await $`git ls-remote --exit-code --heads origin ${branch}`
-          .then(() => true)
-          .catch(() => false)
+        let remoteBranchExists = true
+        try {
+          await $`git ls-remote --exit-code --heads origin ${branch}`
+        } catch (e) {
+          remoteBranchExists = false
+        }
 
         if (remoteBranchExists) {
           await $`git pull --rebase origin ${branch}`
