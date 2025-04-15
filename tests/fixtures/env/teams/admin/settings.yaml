@@ -4,7 +4,6 @@ metadata:
     labels:
         apl.io/teamId: admin
 spec:
-    id: admin
     managedMonitoring:
         alertmanager: true
         grafana: true
@@ -15,31 +14,16 @@ spec:
             useCloudShell: true
             downloadKubeconfig: false
             downloadDockerLogin: false
+    alerts:
+        groupInterval: 5m
+        receivers:
+            - none
+        repeatInterval: 3h
+    networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
     resourceQuota:
-        enabled: 'true'
-        computeResourceQuota:
-            - key: limits.cpu
-              value: '500'
-              decorator: mCPUs
-            - key: requests.cpu
-              value: '250'
-              decorator: mCPUs
-            - key: limits.memory
-              value: '500'
-              decorator: Mi
-            - key: requests.memory
-              value: '500'
-              decorator: Mi
-        countQuota:
-            - key: loadbalancers
-              value: '0'
-              mutable: 'false'
-              decorator: lbs
-            - key: nodeports
-              value: '0'
-              mutable: 'false'
-              decorator: nprts
-            - key: count
-              value: '5'
-              mutable: 'true'
-              decorator: pods
+        - name: pods
+          value: '50'
+        - name: services.loadbalancers
+          value: '0'

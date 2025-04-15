@@ -6,7 +6,7 @@ import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
 import { glob } from 'glob'
-import { cloneDeep, each, get, isObject, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
+import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
@@ -52,6 +52,8 @@ interface Change {
   }>
   networkPoliciesMigration?: boolean
   teamSettingsMigration?: boolean
+  teamResourceQuotaMigration?: boolean
+  buildImageNameMigration?: boolean
 }
 
 export type Changes = Array<Change>
@@ -364,6 +366,52 @@ const teamSettingsMigration = async (values: Record<string, any>): Promise<void>
   )
 }
 
+export const getBuildName = (name: string, tag: string): string => {
+  return `${name}-${tag}`
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/gi, '-') // Replace invalid characters with hyphens
+    .replace(/-+/g, '-') // Replace multiple consecutive hyphens with a single hyphen
+    .replace(/^-|-$/g, '') // Remove leading or trailing hyphens
+}
+
+const buildImageNameMigration = async (values: Record<string, any>): Promise<void> => {
+  const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+  type Build = {
+    name: string
+    tag: string
+    imageName?: string
+  }
+  await Promise.all(
+    teams.map(async (teamName) => {
+      const builds: Build[] = get(values, `teamConfig.${teamName}.builds`, [])
+      if (!builds || builds.length === 0) return
+      for (const build of builds) {
+        set(build, 'imageName', build.name)
+        const buildName = getBuildName(build.name, build.tag)
+        set(build, 'name', buildName)
+        await deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
+      }
+    }),
+  )
+}
+
+const teamResourceQuotaMigration = (values: Record<string, any>) => {
+  Object.entries(values?.teamConfig as Record<string, any>).forEach(([teamName, teamValues]) => {
+    const resourceQuota = teamValues?.settings?.resourceQuota
+    if (!isUndefined(resourceQuota) && !Array.isArray(resourceQuota)) {
+      set(
+        teamValues,
+        'settings.resourceQuota',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        Object.entries(resourceQuota || {}).map(([name, value]) => ({ name, value })),
+      )
+      console.log('Completed migration of resourceQuota for team', teamName)
+    } else {
+      console.log('No migration needed of resourceQuota for team', teamName)
+    }
+  })
+}
+
 const bulkAddition = (path: string, values: any, filePath: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const val = require(filePath)
@@ -427,8 +475,10 @@ export const applyChanges = async (
 
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
     if (c.teamSettingsMigration) await teamSettingsMigration(values)
+    if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
+    if (c.buildImageNameMigration) await buildImageNameMigration(values)
 
-    Object.assign(values, { version: c.version })
+    Object.assign(values.versions, { specVersion: c.version })
   }
   if (!dryRun) await deps.writeValues(values, true)
   // @ts-ignore
@@ -560,7 +610,7 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
   })
   const users = get(oldValues, 'users', [])
   users.forEach((user) => {
-    set(user, 'id', user.id || randomUUID())
+    set(user, 'name', user.id || randomUUID())
   })
   oldValues.versions = { specVersion: 1 }
   const teamNames = await getTeamNames(env.ENV_DIR)

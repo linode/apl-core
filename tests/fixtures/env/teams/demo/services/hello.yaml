@@ -18,7 +18,6 @@ spec:
                   value: same-origin
     ksvc:
         predeployed: true
-    name: hello
     ownHost: true
     port: 80
     tlsPass: true

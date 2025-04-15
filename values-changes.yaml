@@ -343,3 +343,6 @@ changes:
       - 'databases.gitea.useOtomiDB'
   - version: 34
     teamSettingsMigration: true
+    teamResourceQuotaMigration: true
+  - version: 35
+    buildImageNameMigration: true

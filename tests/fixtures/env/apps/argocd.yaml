@@ -8,10 +8,14 @@ spec:
             enabled: true
             maxReplicas: 5
             minReplicas: 1
+            targetCPUUtilizationPercentage: 80
+            targetMemoryUtilizationPercentage: 80
         server:
             enabled: true
             maxReplicas: 5
             minReplicas: 1
+            targetCPUUtilizationPercentage: 80
+            targetMemoryUtilizationPercentage: 80
     resources:
         applicationSet:
             limits:
@@ -62,3 +66,10 @@ spec:
             requests:
                 cpu: 50m
                 memory: 256M
+    _rawValues: {}
+    applicationSet:
+        replicas: 1
+    controller:
+        replicas: 1
+    controllerOperationProcessors: 10
+    controllerStatusProcessors: 20
