@@ -58,8 +58,9 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
         await $`git pull --rebase origin ${branch}`
         await $`git push -u origin ${branch}`
       } catch (e) {
-        d.warn(`The values repository is not yet reachable.`)
-        throw new Error('Could not commit and push. Retrying...')
+        const errorMsg = 'Could not pull and push. Retrying...'
+        d.error(errorMsg)
+        throw new Error(errorMsg)
       }
     },
     {
