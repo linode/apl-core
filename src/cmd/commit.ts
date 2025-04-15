@@ -55,6 +55,7 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
     async () => {
       try {
         cd(env.ENV_DIR)
+        await $`git pull --rebase origin ${branch}`
         await $`git push -u origin ${branch}`
       } catch (e) {
         d.warn(`The values repository is not yet reachable.`)

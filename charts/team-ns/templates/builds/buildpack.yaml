@@ -116,13 +116,17 @@ spec:
                 requests:
                   storage: 1Gi
             status: {}
+        {{- if .externalRepo}}
+          {{- if .secretName }}
         - name: git-credentials
           secret:
-            {{- if .externalRepo }}
             secretName: {{ .secretName }}
-            {{- else }}
+          {{- end }}
+        {{- else }}
+        - name: git-credentials
+          secret:
             secretName: gitea-credentials
-            {{- end }}
+        {{- end }}
         - name: docker-credentials
           secret:
             secretName: harbor-pushsecret-builds
@@ -156,13 +160,17 @@ spec:
           requests:
             storage: 1Gi
       status: {}
+  {{- if .externalRepo}}
+    {{- if .secretName }}
   - name: git-credentials
     secret:
-      {{- if .externalRepo }}
       secretName: {{ .secretName }}
-      {{- else }}
+    {{- end }}
+  {{- else }}
+  - name: git-credentials
+    secret:
       secretName: gitea-credentials
-      {{- end }}
+  {{- end }}
   - name: docker-credentials
     secret:
       secretName: harbor-pushsecret-builds
