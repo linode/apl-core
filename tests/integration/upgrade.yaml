@@ -51,22 +51,27 @@ apps:
     enabled: true
 teamConfig:
   demo:
-    password: somesecretvalue
-    id: demo
-    networkPolicy:
-      egressPublic: true
-      ingressPrivate: true
+    settings:
+      password: somesecretvalue
+      id: demo
+      networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
     builds:
-      - name: nodejs-hello-world
+      - name: nodejs-hello-world-v0-0-1
+        imageName: nodejs-hello-world
         tag: v0.0.1
+        trigger: false
         mode:
           docker:
             repoUrl: https://github.com/linode/apl-nodejs-helloworld
             revision: HEAD
             path: ./Dockerfile
           type: docker
-      - name: demo-java-maven
+      - name: demo-java-maven-v0-0-1
+        imageName: demo-java-maven
         tag: v0.0.1
+        trigger: false
         mode:
           buildpacks:
             repoUrl: https://github.com/buildpacks/samples

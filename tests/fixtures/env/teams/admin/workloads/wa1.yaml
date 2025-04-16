@@ -1,0 +1,9 @@
+kind: AplTeamWorkload
+metadata:
+    name: wa1
+    labels:
+        apl.io/teamId: admin
+spec:
+    path: /
+    revision: HEAD
+    url: https://myrepo.local/mychart.git
