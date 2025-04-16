@@ -32,3 +32,53 @@ spec:
                   maxShards: 100
                   maxSamplesPerSend: 6000
             target: https://remote.target.io/api/v1/push
+            insecureSkipVerify: false
+    _rawValues: {}
+    replicas: 1
+    resources:
+        kube-state-metrics:
+            limits:
+                cpu: 200m
+                memory: 256Mi
+            requests:
+                cpu: 50m
+                memory: 128Mi
+        node-exporter:
+            limits:
+                cpu: 500m
+                memory: 256Mi
+            requests:
+                cpu: 50m
+                memory: 32Mi
+        prometheus:
+            limits:
+                cpu: '3'
+                memory: 3Gi
+            requests:
+                cpu: 100m
+                memory: 2Gi
+        prometheusConfigReloader:
+            limits:
+                cpu: 100m
+                memory: 128Mi
+            requests:
+                cpu: 10m
+                memory: 24Mi
+        prometheusOperator:
+            limits:
+                cpu: 400m
+                memory: 256Mi
+            requests:
+                cpu: 50m
+                memory: 128Mi
+        thanosSidecar:
+            limits:
+                cpu: '1'
+                memory: 512Mi
+            requests:
+                cpu: 10m
+                memory: 64Mi
+    retention: 15d
+    retentionSize: 4GB
+    scrapeInterval: 60s
+    storageSize: 5Gi

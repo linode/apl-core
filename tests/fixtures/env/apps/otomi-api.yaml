@@ -7,3 +7,19 @@ spec:
     git:
         email: some@secret.value
         user: someuser
+    _rawValues: {}
+    resources:
+        api:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 256Mi
+        tools:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 300m
+                memory: 256Mi
