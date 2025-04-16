@@ -1,4 +1,4 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: knative
     labels: {}
@@ -61,3 +61,5 @@ spec:
             requests:
                 cpu: 50m
                 memory: 32Mi
+    serving:
+        replicas: 1

@@ -1,4 +1,4 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: loki
     labels: {}
@@ -83,7 +83,15 @@ spec:
             requests:
                 cpu: 100m
                 memory: 128Mi
+        reverseProxy:
+            limits:
+                cpu: 100m
+                memory: 32Mi
+            requests:
+                cpu: 50m
+                memory: 16Mi
     retention:
         duration: 24h
         period: 24h
-    v11StartDate: 2021-05-13
+    v11StartDate: 2021-05-13T00:00:00.000Z
+    _rawValues: {}
