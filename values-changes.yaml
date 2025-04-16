@@ -337,14 +337,23 @@ changes:
       - databases.harbor.resources.requests.memory: '192Mi'
       - databases.harbor.resources.requests.cpu: '200m'
   - version: 33
+    migrateLegacyValues: true
+  - version: 34
     deletions:
       - 'databases.keycloak.imported'
       - 'databases.gitea.imported'
       - 'databases.gitea.useOtomiDB'
-  - version: 34
-    teamResourceQuotaMigration: true
   - version: 35
+    teamResourceQuotaMigration: true
+  - version: 36
     buildImageNameMigration: true
   - version: 36
+    deletions:
+      - 'teamConfig.{team}.services[].type'
+    policiesMigration: true
+  - version: 37
+    fileDeletions:
+      - env/teams/{team}/policies.yaml
+  - version: 38
     deletions:
       - 'teamConfig.{team}.services[].type'

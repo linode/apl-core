@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
-import { glob } from 'glob'
+import { glob, globSync } from 'glob'
 import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
@@ -13,7 +13,7 @@ import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, hfValues } from 'src/common/hf'
-import { getFileMap, getTeamNames, saveValues } from 'src/common/repo'
+import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -53,6 +53,7 @@ interface Change {
   networkPoliciesMigration?: boolean
   teamResourceQuotaMigration?: boolean
   buildImageNameMigration?: boolean
+  policiesMigration?: boolean
 }
 
 export type Changes = Array<Change>
@@ -310,6 +311,32 @@ export const getBuildName = (name: string, tag: string): string => {
     .replace(/^-|-$/g, '') // Remove leading or trailing hyphens
 }
 
+export async function policiesMigration(deps = { loadYaml, saveResourceGroupToFiles }) {
+  const filePaths = globSync(`${env.ENV_DIR}/env/teams/*/policies.yaml`, {
+    nodir: true, // Exclude directories
+    dot: false,
+  }).sort()
+  if (filePaths.length === 0) {
+    console.info('No policies.yaml files found in env/teams/*/policies.yaml. Skipping migration')
+    return
+  }
+  const inValues = filePaths.map(async (filePath) => {
+    const yaml = await deps.loadYaml(filePath)
+    return {
+      [yaml!.metadata.name]: {
+        policies: yaml!.spec,
+      },
+    }
+  })
+  const teamArray = await Promise.all(inValues)
+  const teamConfig = teamArray.reduce((acc, team) => {
+    return { ...acc, ...team }
+  }, {})
+
+  const policiesFileMap = getFileMap('AplTeamPolicy', env.ENV_DIR)
+  await deps.saveResourceGroupToFiles(policiesFileMap, { teamConfig }, {})
+}
+
 const buildImageNameMigration = async (values: Record<string, any>): Promise<void> => {
   const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
   type Build = {
@@ -412,6 +439,7 @@ export const applyChanges = async (
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
     if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
     if (c.buildImageNameMigration) await buildImageNameMigration(values)
+    if (c.policiesMigration) await policiesMigration()
 
     Object.assign(values.versions, { specVersion: c.version })
   }
@@ -573,7 +601,7 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
   users.forEach((user) => {
     set(user, 'name', user.id || randomUUID())
   })
-  oldValues.versions = { specVersion: 1 }
+  oldValues.versions = { specVersion: 33 }
   const teamNames = await getTeamNames(env.ENV_DIR)
   const secretPaths = await getSchemaSecretsPaths(teamNames)
   const valuesPublic = omit(oldValues, secretPaths)
