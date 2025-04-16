@@ -304,67 +304,65 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
-const teamSettingsMigration = async (values: Record<string, any>): Promise<void> => {
+const teamSettingsMigration = (values: Record<string, any>): void => {
   const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
-  await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/require-await
-    teams.map(async (teamName) => {
-      // Get the alerts block for the team and remove email and opsgenie
-      const alerts = get(values, `teamConfig.${teamName}.settings.alerts`)
-      if (alerts?.email) unset(alerts, 'email')
-      if (alerts?.opsgenie) unset(alerts, 'opsgenie')
-      // Get the selfService block for the team
-      const selfService = get(values, `teamConfig.${teamName}.settings.selfService`)
-      if (!selfService) return
 
-      // Initialize the new teamMembers structure with default boolean values
-      const teamMembers = {
-        createServices: false,
-        editSecurityPolicies: false,
-        useCloudShell: false,
-        downloadKubeconfig: false,
-        downloadDockerLogin: false,
+  teams.map((teamName) => {
+    // Get the alerts block for the team and remove email and opsgenie
+    const alerts = get(values, `teamConfig.${teamName}.settings.alerts`)
+    if (alerts?.email) unset(alerts, 'email')
+    if (alerts?.opsgenie) unset(alerts, 'opsgenie')
+    // Get the selfService block for the team
+    const selfService = get(values, `teamConfig.${teamName}.settings.selfService`)
+    if (!selfService) return
+
+    // Initialize the new teamMembers structure with default boolean values
+    const teamMembers = {
+      createServices: false,
+      editSecurityPolicies: false,
+      useCloudShell: false,
+      downloadKubeconfig: false,
+      downloadDockerLogin: false,
+    }
+
+    // Map selfService.service.ingress -> teamMembers.createServices
+    const servicePermissions = get(selfService, 'service', [])
+    if (Array.isArray(servicePermissions) && servicePermissions.includes('ingress')) {
+      teamMembers.createServices = true
+    }
+
+    // Map selfService.access keys to corresponding teamMembers fields
+    // - downloadKubeConfig -> downloadKubeconfig
+    // - downloadDockerConfig -> downloadDockerLogin
+    // - shell -> useCloudShell
+    const accessPermissions = get(selfService, 'access', [])
+    if (Array.isArray(accessPermissions)) {
+      if (accessPermissions.includes('downloadKubeConfig')) {
+        teamMembers.downloadKubeconfig = true
       }
-
-      // Map selfService.service.ingress -> teamMembers.createServices
-      const servicePermissions = get(selfService, 'service', [])
-      if (Array.isArray(servicePermissions) && servicePermissions.includes('ingress')) {
-        teamMembers.createServices = true
+      if (accessPermissions.includes('downloadDockerConfig')) {
+        teamMembers.downloadDockerLogin = true
       }
-
-      // Map selfService.access keys to corresponding teamMembers fields
-      // - downloadKubeConfig -> downloadKubeconfig
-      // - downloadDockerConfig -> downloadDockerLogin
-      // - shell -> useCloudShell
-      const accessPermissions = get(selfService, 'access', [])
-      if (Array.isArray(accessPermissions)) {
-        if (accessPermissions.includes('downloadKubeConfig')) {
-          teamMembers.downloadKubeconfig = true
-        }
-        if (accessPermissions.includes('downloadDockerConfig')) {
-          teamMembers.downloadDockerLogin = true
-        }
-        if (accessPermissions.includes('shell')) {
-          teamMembers.useCloudShell = true
-        }
+      if (accessPermissions.includes('shell')) {
+        teamMembers.useCloudShell = true
       }
+    }
 
-      // Map selfService.policies.edit_policies -> teamMembers.editSecurityPolicies.
-      // Note: In the source schema, the string "edit policies" is used.
-      const policies = get(selfService, 'policies', [])
-      if (Array.isArray(policies) && policies.includes('edit policies')) {
-        teamMembers.editSecurityPolicies = true
-      }
+    // Map selfService.policies.edit_policies -> teamMembers.editSecurityPolicies.
+    // Note: In the source schema, the string "edit policies" is used.
+    const policies = get(selfService, 'policies', [])
+    if (Array.isArray(policies) && policies.includes('edit policies')) {
+      teamMembers.editSecurityPolicies = true
+    }
 
-      // Set the new teamMembers object on selfService
-      set(selfService, 'teamMembers', teamMembers)
+    // Set the new teamMembers object on selfService
+    set(selfService, 'teamMembers', teamMembers)
 
-      unset(selfService, 'service')
-      unset(selfService, 'access')
-      unset(selfService, 'policies')
-      unset(selfService, 'apps')
-    }),
-  )
+    unset(selfService, 'service')
+    unset(selfService, 'access')
+    unset(selfService, 'policies')
+    unset(selfService, 'apps')
+  })
 }
 
 export const getBuildName = (name: string, tag: string): string => {
@@ -501,7 +499,7 @@ export const applyChanges = async (
     }
 
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
-    if (c.teamSettingsMigration) await teamSettingsMigration(values)
+    if (c.teamSettingsMigration) teamSettingsMigration(values)
     if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
     if (c.buildImageNameMigration) await buildImageNameMigration(values)
     if (c.policiesMigration) await policiesMigration()
