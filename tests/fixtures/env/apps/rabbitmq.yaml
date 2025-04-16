@@ -1,4 +1,4 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: rabbitmq
     labels: {}
@@ -19,3 +19,4 @@ spec:
             requests:
                 cpu: 100m
                 memory: 128Mi
+    _rawValues: {}

@@ -1,6 +1,24 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: trivy
     labels: {}
 spec:
     enabled: true
+    _rawValues: {}
+    operator:
+        replicaCount: 1
+    resources:
+        operator:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 10m
+                memory: 512Mi
+        trivy:
+            limits:
+                cpu: '1'
+                memory: 1G
+            requests:
+                cpu: 10m
+                memory: 128M

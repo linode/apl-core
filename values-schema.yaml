@@ -1131,7 +1131,17 @@ definitions:
             x-secret: ''
           resourceQuota:
             description: 'List of kubernetes resource quota. Should adhere to the "spec.hard" format as described here: https://kubernetes.io/docs/concepts/policy/resource-quotas/. Not validated as there is no schema published. Change at your own risk.'
-            type: object
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                value:
+                  type: string
+              required:
+                - name
+                - value
           selfService:
             $ref: '#/definitions/teamSelfService'
           alerts:
@@ -1276,6 +1286,9 @@ definitions:
     description: Define location of code to build
     properties:
       name:
+        description: Name of the build
+        $ref: '#/definitions/idName'
+      imageName:
         description: Name of the image
         $ref: '#/definitions/idName'
       tag:
@@ -1484,7 +1497,7 @@ definitions:
     type: object
     description: A user in keycloak, who can be a platform admin, a team admin, or a team member.
     properties:
-      id:
+      name:
         type: string
       email:
         $ref: '#/definitions/email'
@@ -1655,7 +1668,7 @@ properties:
             $ref: '#/definitions/email'
           issuer:
             description: |
-              Indicates the origin of the wildcard certificate. 
+              Indicates the origin of the wildcard certificate.
               The custom-ca - cert-manager uses the customRootCA to generate wildcard certificate.
               The letsencrypt - cert-manager requests certificate from letsencrypt endpoint.
               The byo-wildcard-cert allows users to bring their own trusted wildcard certificate (cert-manager not involved)
@@ -3168,6 +3181,10 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: harbor
           gitea:
             title: Gitea
             properties:
@@ -3180,6 +3197,10 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: gitea
           keycloak:
             title: Keycloak
             properties:
@@ -3192,6 +3213,10 @@ properties:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
                 $ref: '#/definitions/backupSchedule'
+              pathSuffix:
+                type: string
+                pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
+                default: keycloak
       persistentVolumes:
         type: object
         description: Create backups of persistent volumes
@@ -3293,9 +3318,16 @@ properties:
           replicas:
             type: integer
             default: 2
-          imported:
-            type: boolean
-            default: false
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
       harbor:
         title: Harbor
         properties:
@@ -3306,12 +3338,19 @@ properties:
           replicas:
             type: integer
             default: 2
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
       gitea:
         title: gitea
         properties:
-          useOtomiDB:
-            type: boolean
-            default: false
           size:
             type: string
           resources:
@@ -3319,9 +3358,16 @@ properties:
           replicas:
             type: integer
             default: 2
-          imported:
-            type: boolean
-            default: false
+          recovery:
+            type: object
+            additionalProperties: true
+            default: {}
+          externalClusters:
+            type: array
+            items:
+              type: object
+              additionalProperties: true
+            default: []
   teamConfig:
     additionalProperties: false
     patternProperties:

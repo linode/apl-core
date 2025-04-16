@@ -74,7 +74,7 @@ export const bootstrapSops = async (
     obj.keys = publicKey
     if (privateKey && !process.env.SOPS_AGE_KEY) {
       process.env.SOPS_AGE_KEY = privateKey
-      await deps.writeFile(`${env.ENV_DIR}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
+      await deps.writeFile(`${envDir}/.secrets`, `SOPS_AGE_KEY=${privateKey}`)
     }
   }
 
@@ -87,13 +87,13 @@ export const bootstrapSops = async (
   d.info('Copying sops related files')
   // add sops related files
   const file = '.gitattributes'
-  await deps.copyFile(`${rootDir}/.values/${file}`, `${env.ENV_DIR}/${file}`)
+  await deps.copyFile(`${rootDir}/.values/${file}`, `${envDir}/${file}`)
 
   // prepare some credential files the first time and crypt some
   if (!exists) {
     if (isCli || env.OTOMI_DEV) {
       // first time so we know we have values
-      const secretsFile = `${env.ENV_DIR}/.secrets`
+      const secretsFile = `${envDir}/.secrets`
       d.log(`Creating secrets file: ${secretsFile}`)
       if (provider === 'google') {
         // and we also assume the correct values are given by using '!' (we want to err when not set)
@@ -101,7 +101,7 @@ export const bootstrapSops = async (
         // and set it in env for later decryption
         process.env.GCLOUD_SERVICE_KEY = values.kms.sops!.google!.accountJson
         d.log('Creating gcp-key.json for vscode.')
-        await deps.writeFile(`${env.ENV_DIR}/gcp-key.json`, JSON.stringify(serviceKeyJson))
+        await deps.writeFile(`${envDir}/gcp-key.json`, JSON.stringify(serviceKeyJson))
         d.log(`Creating credentials file: ${secretsFile}`)
         await deps.writeFile(secretsFile, `GCLOUD_SERVICE_KEY=${JSON.stringify(JSON.stringify(serviceKeyJson))}`)
       } else if (provider === 'aws') {
@@ -117,8 +117,8 @@ export const bootstrapSops = async (
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later
-    await deps.encrypt()
-    await deps.decrypt()
+    await deps.encrypt(envDir)
+    await deps.decrypt(envDir)
   }
 }
 
@@ -224,7 +224,7 @@ export const getUsers = (originalInput: any, deps = { generatePassword, addIniti
   }
   deps.addInitialPasswords(users)
   users.forEach((user) => {
-    set(user, 'id', user.id || randomUUID())
+    set(user, 'name', user.name || randomUUID())
   })
   return users
 }
