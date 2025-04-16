@@ -1,3 +1,22 @@
-apps:
-    jaeger:
-        enabled: true
+kind: AplApp
+metadata:
+    name: jaeger
+    labels: {}
+spec:
+    enabled: true
+    _rawValues: {}
+    resources:
+        jaeger:
+            limits:
+                cpu: '1'
+                memory: 2Gi
+            requests:
+                cpu: 200m
+                memory: 384Mi
+        operator:
+            limits:
+                cpu: 500m
+                memory: 1Gi
+            requests:
+                cpu: 100m
+                memory: 128Mi

@@ -1,8 +1,19 @@
-apps:
-    minio:
+kind: AplApp
+metadata:
+    name: minio
+    labels: {}
+spec:
+    enabled: true
+    persistence:
         enabled: true
-        provisioning:
-            enabled: true
-        persistence:
-            enabled: true
-            size: 20Gi
+        size: 20Gi
+    provisioning:
+        enabled: true
+    _rawValues: {}
+    resources:
+        limits:
+            cpu: '1'
+            memory: 1Gi
+        requests:
+            cpu: 500m
+            memory: 128Mi

@@ -1,4 +1,5 @@
-# NOTE: Header with source was intentionally removed to avoid updates in the CRD. Ref: https://github.com/bitnami/charts/issues/25967
+# Source: https://raw.githubusercontent.com/kubernetes-sigs/external-dns/v{version}/docs/sources/crd/crd-manifest.yaml
+# Version: 0.16.1
 # Conditional: .Values.crd.create
 {{- if .Values.crd.create }}
 ---
@@ -7,7 +8,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes-sigs/external-dns/pull/2007
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.15.0
   name: dnsendpoints.externaldns.k8s.io
 spec:
   group: externaldns.k8s.io

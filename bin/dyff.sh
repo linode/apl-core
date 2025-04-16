@@ -22,6 +22,6 @@ echo "$diff_output" | while read -r line; do
     # Use dyff to compare the files
     dyff between "$second_path" "$first_path" --omit-header \
       --exclude "data.tls.key" --exclude "/data/ca.crt" --exclude "/data/tls.crt" --exclude "/data/tls.key" \
-      --exclude-regexp "/checksum" --exclude-regexp "/webhooks.*"
+      --exclude-regexp "/checksum" --exclude-regexp "/webhooks.*" --ignore-order-changes
   fi
 done
