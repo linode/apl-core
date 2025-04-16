@@ -12,8 +12,6 @@ spec:
     value: "edge"
   - name: hostname-strict-https
     value: "false"
-  - name: spi-login-protocol-openid-connect-legacy-logout-redirect-uri # Needed for now otherwise will throw a "Invalid parameter: redirec_uri" error. 
-    value: "true"
   db:
     vendor: postgres
     usernameSecret:
