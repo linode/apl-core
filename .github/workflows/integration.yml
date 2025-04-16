@@ -2,6 +2,10 @@ name: Deploy APL
 on:
   workflow_call:
     inputs:
+      linode_types:
+        description: 'Linode instance types'
+        type: string
+        default: g6-dedicated-8
       kubernetes_versions:
         description: 'Kubernetes version'
         type: string
@@ -28,6 +32,18 @@ on:
         default: 'false'
   workflow_dispatch:
     inputs:
+      linode_types:
+        description: 'Linode instance types'
+        type: choice
+        options:
+          - g6-dedicated-4
+          - g6-dedicated-8
+          - g6-dedicated-16
+          - g6-dedicated-32
+          - g6-dedicated-48
+          - g6-dedicated-50
+          - g6-dedicated-56
+        default: g6-dedicated-4
       kubernetes_versions:
         description: 'Kubernetes version'
         type: choice
@@ -198,7 +214,7 @@ jobs:
             --region nl-ams \
             --k8s_version ${{ env.LINODE_K8S_VERSION }} \
             --control_plane.high_availability true \
-            --node_pools.type g6-dedicated-8 --node_pools.count 3 \
+            --node_pools.type ${{ inputs.linode_types }} --node_pools.count 3 \
             --node_pools.autoscaler.enabled true \
             --node_pools.autoscaler.max 3 \
             --node_pools.autoscaler.min 3 \

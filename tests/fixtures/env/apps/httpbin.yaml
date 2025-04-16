@@ -1,3 +1,7 @@
-apps:
-    httpbin:
-        enabled: true
+kind: AplApp
+metadata:
+    name: httpbin
+    labels: {}
+spec:
+    enabled: true
+    _rawValues: {}

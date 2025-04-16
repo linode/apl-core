@@ -1,3 +1,18 @@
-databases:
-    harbor:
-        replicas: 2
+kind: AplDatabase
+metadata:
+    name: harbor
+    labels: {}
+spec:
+    replicas: 2
+    coreDatabase: registry
+    externalClusters: []
+    imageName: null
+    recovery: {}
+    resources:
+        limits:
+            cpu: 200m
+            memory: 192Mi
+        requests:
+            cpu: 200m
+            memory: 192Mi
+    size: 5Gi

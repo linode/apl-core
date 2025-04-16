@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: disallow-host-process
+    labels:
+        apl.io/teamId: dev
+spec:
+    action: Audit
+    severity: medium

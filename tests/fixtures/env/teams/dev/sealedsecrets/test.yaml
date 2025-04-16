@@ -1,0 +1,18 @@
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+    name: test
+    namespace: team-beta
+    annotations:
+        sealedsecrets.bitnami.com/namespace-wide: 'true'
+spec:
+    encryptedData:
+        test: ghi
+    template:
+        immutable: false
+        metadata:
+            name: test
+            namespace: team-beta
+            annotations: {}
+            labels: {}
+        type: kubernetes.io/opaque

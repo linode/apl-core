@@ -1,0 +1,13 @@
+kind: AplApp
+metadata:
+    name: external-dns
+    labels: {}
+spec:
+    logLevel: info
+    resources:
+        limits:
+            cpu: 100m
+            memory: 128Mi
+        requests:
+            cpu: 10m
+            memory: 64Mi

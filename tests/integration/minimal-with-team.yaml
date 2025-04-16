@@ -12,20 +12,22 @@ apps:
     enabled: true
 teamConfig:
   demo:
-    password: somesecretvalue
-    id: demo
-    selfService:
-      service:
-        - ingress
-    managedMonitoring:
-      grafana: false
-      prometheus: false
-      alertmanager: false
-    networkPolicy:
-      egressPublic: true
-      ingressPrivate: true
+    settings:
+      password: somesecretvalue
+      id: demo
+      selfService:
+        service:
+          - ingress
+      managedMonitoring:
+        grafana: false
+        prometheus: false
+        alertmanager: false
+      networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
     builds:
-      - name: nodejs-hello-world
+      - name: nodejs-hello-world-v0-0-1
+        imageName: nodejs-hello-world
         tag: v0.0.1
         trigger: false
         mode:
@@ -34,7 +36,8 @@ teamConfig:
             revision: HEAD
             path: ./Dockerfile
           type: docker
-      - name: demo-java-maven
+      - name: demo-java-maven-v0-0-1
+        imageName: demo-java-maven
         tag: v0.0.1
         trigger: false
         mode:
@@ -96,12 +99,12 @@ teamConfig:
         path: chart/hello-world
         revision: HEAD
 files:
-  env/teams/workloads/demo/nodejs-helloworld.yaml: |
+  env/teams/demo/workloadValues/nodejs-helloworld.yaml: |
     values: |
       image:
         repository: otomi/nodejs-helloworld
         tag: v1.2.13
-  env/teams/workloads/demo/nginx-deployment.yaml: |
+  env/teams/demo/workloadValues/nginx-deployment.yaml: |
     values: |
       fullnameOverride: nginx-deployment
       image:
@@ -118,7 +121,7 @@ files:
       autoscaling:
         minReplicas: 2
         maxReplicas: 10
-  env/teams/workloads/demo/nginx-ksvc.yaml: |
+  env/teams/demo/workloadValues/nginx-ksvc.yaml: |
     values: |
       fullnameOverride: nginx-ksvc
       image:
@@ -139,10 +142,10 @@ files:
       autoscaling:
         minReplicas: 0
         maxReplicas: 10
-  env/teams/workloads/demo/httpbin.yaml: |
+  env/teams/demo/workloadValues/httpbin.yaml: |
     values: |
       {}
-  env/teams/workloads/admin/nodejs-helloworld.yaml: |
+  env/teams/admin/workloadValues/nodejs-helloworld.yaml: |
     values: |
       image:
         repository: otomi/nodejs-helloworld
