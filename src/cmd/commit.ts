@@ -46,7 +46,8 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
     }
     await $`git commit -m ${message} --no-verify`
   } catch (e) {
-    d.log(e)
+    const { password } = getRepo(values)
+    d.log('commitAndPush error ', e?.message?.replace(password, '****'))
     return
   }
   if (values._derived?.untrustedCA) process.env.GIT_SSL_NO_VERIFY = '1'
@@ -54,10 +55,24 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
     async () => {
       try {
         cd(env.ENV_DIR)
+        // Check if remote branch exists
+        let remoteBranchExists = true
+        try {
+          await $`git ls-remote --exit-code --heads origin ${branch}`
+        } catch (e) {
+          remoteBranchExists = false
+        }
+
+        if (remoteBranchExists) {
+          await $`git pull --rebase origin ${branch}`
+        } else {
+          d.log(`Remote branch '${branch}' does not exist. Skipping pull.`)
+        }
         await $`git push -u origin ${branch}`
       } catch (e) {
-        d.warn(`The values repository is not yet reachable.`)
-        throw new Error('Could not commit and push. Retrying...')
+        const errorMsg = 'Could not pull and push. Retrying...'
+        d.error(errorMsg)
+        throw new Error(errorMsg)
       }
     },
     {
@@ -127,7 +142,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`git config http.sslVerify false`
     await $`git push -u origin main`
   } catch (error) {
-    d.info('CloneOtomiChartsInGitea Error:', error)
+    d.info('CloneOtomiChartsInGitea Error ', error?.message?.replace(password, '****'))
   }
   d.info('Cloned apl-charts in Gitea')
 }
