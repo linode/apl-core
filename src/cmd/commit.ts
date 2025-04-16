@@ -55,11 +55,24 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
     async () => {
       try {
         cd(env.ENV_DIR)
-        await $`git pull --rebase origin ${branch}`
+        // Check if remote branch exists
+        let remoteBranchExists = true
+        try {
+          await $`git ls-remote --exit-code --heads origin ${branch}`
+        } catch (e) {
+          remoteBranchExists = false
+        }
+
+        if (remoteBranchExists) {
+          await $`git pull --rebase origin ${branch}`
+        } else {
+          d.log(`Remote branch '${branch}' does not exist. Skipping pull.`)
+        }
         await $`git push -u origin ${branch}`
       } catch (e) {
-        d.warn(`The values repository is not yet reachable.`)
-        throw new Error('Could not commit and push. Retrying...')
+        const errorMsg = 'Could not pull and push. Retrying...'
+        d.error(errorMsg)
+        throw new Error(errorMsg)
       }
     },
     {
