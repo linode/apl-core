@@ -1,8 +1,8 @@
+import { globSync } from 'glob'
 import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration } from 'src/cmd/migrate'
 import stubs from 'src/test-stubs'
-import { globSync } from 'glob'
-import { getFileMap } from '../common/repo'
 import { env } from '../common/envalid'
+import { getFileMap } from '../common/repo'
 
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'my-fixed-uuid'),
@@ -668,6 +668,7 @@ describe('teamSettingsMigration', () => {
     const expectedValues = getTeamSettingsExpectedValues()
     expect(deps.writeValues).toBeCalledWith(expectedValues, true)
   }, 20000)
+})
 
 jest.mock('glob')
 describe('Policies migration', () => {
