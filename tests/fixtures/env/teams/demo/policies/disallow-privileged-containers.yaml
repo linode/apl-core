@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: disallow-privileged-containers
+    labels:
+        apl.io/teamId: demo
+spec:
+    action: Audit
+    severity: medium

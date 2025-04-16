@@ -1,4 +1,4 @@
-import Ajv, { DefinedError, ValidateFunction } from 'ajv'
+import Ajv, { ValidateFunction } from 'ajv'
 import { unset } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { terminal } from 'src/common/debug'
@@ -19,7 +19,7 @@ export const validateValues = async (envDir = env.ENV_DIR): Promise<void> => {
   // TODO: Make this return true or error tree
   // Create an end point function (when running otomi validate-values) to print current messages.
   const argv: HelmArguments = getParsedArgs()
-  d.log('Values validation STARTED')
+  d.log('Values validation STARTED on ', envDir)
 
   if (argv.l || argv.label) {
     const labelOpts = [...new Set([...(argv.l ?? []), ...(argv.label ?? [])])]
@@ -49,15 +49,7 @@ export const validateValues = async (envDir = env.ENV_DIR): Promise<void> => {
   if (val) {
     d.log('Values validation SUCCESSFUL')
   } else {
-    validate.errors?.map((error: DefinedError) =>
-      d.error('%O', {
-        keyword: error.keyword,
-        dataPath: error.instancePath,
-        schemaPath: error.schemaPath,
-        params: error.params,
-        message: error.message,
-      }),
-    )
+    d.error(JSON.stringify(validate.errors, null, 2))
     throw new Error('Values validation FAILED')
   }
 }
