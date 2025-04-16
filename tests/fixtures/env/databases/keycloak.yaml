@@ -1,3 +1,18 @@
-databases:
-    keycloak:
-        imported: false
+kind: AplDatabase
+metadata:
+    name: keycloak
+    labels: {}
+spec:
+    imported: false
+    externalClusters: []
+    imageName: null
+    recovery: {}
+    replicas: 2
+    resources:
+        limits:
+            cpu: 200m
+            memory: 192Mi
+        requests:
+            cpu: 200m
+            memory: 192Mi
+    size: 5Gi

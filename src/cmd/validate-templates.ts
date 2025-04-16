@@ -157,11 +157,6 @@ export const validateTemplates = async (): Promise<void> => {
     ',',
   )} ${skipPatterns} -schema-location ${schemaOutputPath}/${vk8sVersion}-standalone/{{.ResourceKind}}{{.KindSuffix}}.json -summary -output json ${verbose} ${k8sResourcesPath}`.nothrow()
 
-  if (kubeconformOutput.exitCode !== 0) {
-    d.info('Kubeconform output: %s', kubeconformOutput.toString())
-    throw new Error(`Template validation FAILED: ${kubeconformOutput.exitCode}`)
-  }
-
   const parsedOutput = JSON.parse(kubeconformOutput.stdout)
   const { valid, invalid, errors, skipped } = parsedOutput.summary
 
@@ -169,6 +164,15 @@ export const validateTemplates = async (): Promise<void> => {
   d.info(`${chalk.magentaBright('TOTAL SKIP')}: %s`, `${skipped} files`)
   d.info(`${chalk.yellowBright('TOTAL WARN')}: %s`, `${invalid} files`)
   d.info(`${chalk.redBright('TOTAL ERR')}: %s`, `${errors} files`)
+
+  if (kubeconformOutput.exitCode !== 0) {
+    const failedResources = parsedOutput.resources.filter((res) => res.status === 'statusInvalid')
+    d.error('Kubeconform failed resources:')
+    for (const resource of failedResources) {
+      d.error(resource.msg)
+    }
+    throw new Error(`Template validation FAILED: ${kubeconformOutput.exitCode}`)
+  }
 
   d.log('Template validation SUCCESS')
 }
