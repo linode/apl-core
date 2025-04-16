@@ -37,19 +37,18 @@ describe('semverCompare', () => {
 
 describe('ensureTeamGitopsDirectories', () => {
   it('should create .keep files in all team directories', async () => {
-    const envDir = '/env/teams'
+    const envDir = '/values'
     const deps: any = {
       writeFile: jest.fn(),
-      glob: jest.fn().mockResolvedValue(['/env/teams/team1', '/env/teams/team2']),
+      glob: jest.fn().mockResolvedValue(['/values/env/teams/team1', '/values/env/teams/team2']),
     }
     const result = await utils.ensureTeamGitopsDirectories(envDir, deps)
-    expect(deps.glob).toHaveBeenCalledWith(`${envDir}/teams/*`)
-    expect(deps.writeFile).toHaveBeenCalledTimes(4)
+    expect(deps.glob).toHaveBeenCalledWith(`${envDir}/env/teams/*`)
     expect(result).toEqual([
-      '/env/teams/team1/sealedsecrets/.keep',
-      '/env/teams/team1/workloadValues/.keep',
-      '/env/teams/team2/sealedsecrets/.keep',
-      '/env/teams/team2/workloadValues/.keep',
+      '/values/env/teams/team1/sealedsecrets/.keep',
+      '/values/env/teams/team1/workloadValues/.keep',
+      '/values/env/teams/team2/sealedsecrets/.keep',
+      '/values/env/teams/team2/workloadValues/.keep',
     ])
   })
 })

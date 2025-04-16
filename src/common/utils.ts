@@ -8,7 +8,7 @@ import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
-import { join, resolve } from 'path'
+import { dirname, join, resolve } from 'path'
 import { $, ProcessOutput } from 'zx'
 import { env } from './envalid'
 
@@ -224,8 +224,18 @@ export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> 
   return cleanSecretPaths
 }
 
+async function ensureKeepFile(keepFilePath: string, deps = { writeFile }): Promise<void> {
+  const dirPath = dirname(keepFilePath)
+  if (!(await pathExists(dirPath))) {
+    await $`mkdir -p ${dirname(keepFilePath)}`
+  }
+  if (existsSync(keepFilePath)) return
+  // create the .keep file
+  await deps.writeFile(keepFilePath, '')
+}
+
 export async function ensureTeamGitopsDirectories(envDir: string, deps = { writeFile, glob }) {
-  const dirs = await deps.glob(`${envDir}/teams/*`)
+  const dirs = await deps.glob(`${envDir}/env/teams/*`)
   const gitOpsDirs = ['sealedsecrets', 'workloadValues']
 
   const keepFilePaths: string[] = []
@@ -237,7 +247,10 @@ export async function ensureTeamGitopsDirectories(envDir: string, deps = { write
 
   await Promise.allSettled(
     keepFilePaths.map(async (keepFilePath) => {
-      await deps.writeFile(keepFilePath, '')
+      await ensureKeepFile(keepFilePath, deps)
+      if (!(await pathExists(dirname(keepFilePath)))) {
+        await $`mkdir -p ${dirname(keepFilePath)}`
+      }
     }),
   )
   return keepFilePaths
