@@ -4,7 +4,6 @@ metadata:
     labels:
         apl.io/teamId: admin
 spec:
-    id: admin
     managedMonitoring:
         alertmanager: true
         grafana: true
@@ -14,3 +13,19 @@ spec:
             - downloadCertificateAuthority
         policies:
             - edit policies
+        apps: []
+        service:
+            - ingress
+    alerts:
+        groupInterval: 5m
+        receivers:
+            - none
+        repeatInterval: 3h
+    networkPolicy:
+        egressPublic: true
+        ingressPrivate: true
+    resourceQuota:
+        - name: pods
+          value: '50'
+        - name: services.loadbalancers
+          value: '0'

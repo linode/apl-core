@@ -1,17 +1,18 @@
 kind: AplTeamBuild
 metadata:
-    name: demo-java1
+    name: demo-ext-repo-private-trigger
     labels:
         apl.io/teamId: demo
 spec:
-    externalRepo: false
+    externalRepo: true
+    secretName: demo-ext-repo-private
     mode:
         docker:
             path: ./Dockerfile
             repoUrl: https://github.com/buildpacks/samples
             revision: HEAD
         type: docker
-    name: demo-java1
+    imageName: demo-java1
     scanSource: true
-    tag: v.0.0.1
-    trigger: false
+    tag: v0.0.1
+    trigger: true

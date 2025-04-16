@@ -13,3 +13,5 @@ spec:
             server: https://gitea.demo.eks.otomi.cloud
         github: {}
         provider: gitea
+        username: otomi-admin
+    trace: false
