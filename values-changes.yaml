@@ -347,3 +347,8 @@ changes:
     teamResourceQuotaMigration: true
   - version: 36
     buildImageNameMigration: true
+  - version: 36
+    policiesMigration: true
+  - version: 37
+    fileDeletions:
+      - env/teams/{team}/policies.yaml
