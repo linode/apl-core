@@ -1,2 +1,43 @@
-apps:
-    oauth2-proxy-redis: {}
+kind: AplApp
+metadata:
+    name: oauth2-proxy-redis
+    labels: {}
+spec:
+    _rawValues: {}
+    architecture: standalone
+    persistence:
+        master:
+            size: 1Gi
+        replica:
+            size: 1Gi
+        sentinel:
+            size: 1Gi
+    resources:
+        master:
+            limits:
+                cpu: 200m
+                memory: 128Mi
+            requests:
+                cpu: 20m
+                memory: 16Mi
+        metrics:
+            limits:
+                cpu: 100m
+                memory: 256Mi
+            requests:
+                cpu: 50m
+                memory: 64Mi
+        replica:
+            limits:
+                cpu: 500m
+                memory: 256Mi
+            requests:
+                cpu: 200m
+                memory: 64Mi
+        sentinel:
+            limits:
+                cpu: 500m
+                memory: 256Mi
+            requests:
+                cpu: 200m
+                memory: 64Mi

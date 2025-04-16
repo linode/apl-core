@@ -15,7 +15,7 @@ dependencies:
     version: 0.23.0
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
-    version: 8.3.9
+    version: 8.7.8
     repository: https://charts.bitnami.com/bitnami
   - name: falco
     version: 3.8.5
@@ -30,7 +30,7 @@ dependencies:
     version: 1.16.2
     repository: https://helm.goharbor.io
   - name: ingress-nginx
-    version: 4.11.2
+    version: 4.11.5
     repository: https://kubernetes.github.io/ingress-nginx
   - name: jaeger-operator
     version: 2.46.0
@@ -78,7 +78,7 @@ dependencies:
     repository: https://grafana.github.io/helm-charts
   - name: rabbitmq-cluster-operator
     alias: rabbitmq
-    version: 3.10.10
+    version: 3.20.1
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
     version: 2.17.1

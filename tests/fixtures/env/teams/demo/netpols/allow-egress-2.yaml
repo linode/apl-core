@@ -1,0 +1,10 @@
+kind: AplTeamNetworkControl
+metadata:
+    name: allow-egress-2
+    labels:
+        apl.io/teamId: demo
+spec:
+    ruleType:
+        egress:
+            domain: demo.local
+        type: egress

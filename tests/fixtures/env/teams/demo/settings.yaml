@@ -1,0 +1,43 @@
+kind: AplTeamSettingSet
+metadata:
+    name: demo
+    labels:
+        apl.io/teamId: demo
+spec:
+    alerts:
+        email:
+            critical: admins@yourdoma.in
+            nonCritical: admins@yourdoma.in
+        receivers:
+            - slack
+        repeatInterval: 3h
+        slack:
+            channel: aaaaa
+            channelCrit: aaaaa
+            url: https://slack.con
+        groupInterval: 5m
+    managedMonitoring:
+        alertmanager: true
+        grafana: true
+    networkPolicy:
+        egressPublic: true
+        ingressPrivate: false
+    oidc:
+        groupMapping: somesecretvalue
+    resourceQuota:
+        - name: pods
+          value: '50'
+        - name: services.loadbalancers
+          value: '0'
+    selfService:
+        access:
+            - shell
+            - downloadCertificateAuthority
+        apps: []
+        policies:
+            - edit policies
+        service:
+            - ingress
+        team:
+            - alerts
+    password: somesecretvalue

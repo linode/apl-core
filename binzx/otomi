@@ -77,12 +77,12 @@ function parse_yaml {
 fallback_otomi_version='latest'
 if [ -n "$in_core" ]; then
   otomi_version='main'
-elif [ -f "${ENV_DIR}/env/settings.yaml" ]; then
-  otomi_version_rec=$(parse_yaml $ENV_DIR/env/settings.yaml | grep 'otomi__version=')
+elif [ -f "${ENV_DIR}/env/settings/otomi.yaml" ]; then
+  otomi_version_rec=$(parse_yaml $ENV_DIR/env/settings/otomi.yaml | grep 'otomi__version=')
   if [[ "$otomi_version_rec" =~ otomi__version=\"(.*)\" ]]; then
     otomi_version=${BASH_REMATCH[1]}
   else
-    # If the settings.yaml doesn't contain otomi.version, we fall back to latest
+    # If the otomi.yaml doesn't contain otomi.version, we fall back to latest
     otomi_version=$fallback_otomi_version
   fi
 else
