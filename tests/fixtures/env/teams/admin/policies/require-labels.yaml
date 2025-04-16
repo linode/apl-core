@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: require-labels
+    labels:
+        apl.io/teamId: admin
+spec:
+    action: Audit
+    severity: medium

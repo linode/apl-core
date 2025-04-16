@@ -10,8 +10,6 @@ bases:
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
 {{- $a := $v.apps }}
-{{- $h := $a.harbor }}
-{{- $k := $a.keycloak }}
 
 releases:
   - name: knative-serving-artifacts
@@ -40,12 +38,6 @@ releases:
     labels:
       pkg: minio
     <<: *default
-  - name: harbor-artifacts
-    installed: {{ $h | get "enabled" }}
-    namespace: harbor
-    labels:
-      pkg: harbor
-    <<: *raw
   - name: tekton-triggers
     installed: true
     namespace: tekton-pipelines
