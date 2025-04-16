@@ -1,5 +1,8 @@
-import { applyChanges, Changes, filterChanges, getBuildName } from 'src/cmd/migrate'
+import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration } from 'src/cmd/migrate'
 import stubs from 'src/test-stubs'
+import { globSync } from 'glob'
+import { getFileMap } from '../common/repo'
+import { env } from '../common/envalid'
 
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'my-fixed-uuid'),
@@ -566,4 +569,58 @@ describe('Build image name migration', () => {
     const expectedValues = getExpectedValues()
     expect(deps.writeValues).toBeCalledWith(expectedValues, true)
   }, 20000)
+})
+
+jest.mock('glob')
+describe('Policies migration', () => {
+  const mockFilePaths = ['/path/to/env/teams/admin/policies.yaml', '/path/to/env/teams/alpha/policies.yaml']
+
+  const policiesFileMap = getFileMap('AplTeamPolicy', env.ENV_DIR)
+  const mockYamlContent = {
+    '/path/to/env/teams/admin/policies.yaml': {
+      metadata: { name: 'admin' },
+      spec: { ruleA: { action: 'Audit' } },
+    },
+    '/path/to/env/teams/alpha/policies.yaml': {
+      metadata: { name: 'alpha' },
+      spec: { ruleB: { action: 'Enforce' } },
+    },
+  }
+
+  const loadYaml = jest.fn((filePath: string) => mockYamlContent[filePath])
+  const saveResourceGroupToFiles = jest.fn()
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should load and convert policies.yaml files into teamConfig and save them', async () => {
+    ;(globSync as jest.Mock).mockReturnValue(mockFilePaths)
+
+    await policiesMigration({ loadYaml, saveResourceGroupToFiles })
+
+    expect(loadYaml).toHaveBeenCalledTimes(2)
+    expect(loadYaml).toHaveBeenCalledWith('/path/to/env/teams/admin/policies.yaml')
+    expect(loadYaml).toHaveBeenCalledWith('/path/to/env/teams/alpha/policies.yaml')
+
+    expect(saveResourceGroupToFiles).toHaveBeenCalledWith(
+      policiesFileMap,
+      {
+        teamConfig: {
+          admin: { policies: { ruleA: { action: 'Audit' } } },
+          alpha: { policies: { ruleB: { action: 'Enforce' } } },
+        },
+      },
+      {},
+    )
+  })
+
+  it('should not migrate if filepaths are empty', async () => {
+    ;(globSync as jest.Mock).mockReturnValue([])
+
+    await policiesMigration({ loadYaml, saveResourceGroupToFiles })
+
+    expect(loadYaml).toHaveBeenCalledTimes(0)
+    expect(saveResourceGroupToFiles).toHaveBeenCalledTimes(0)
+  })
 })

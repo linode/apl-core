@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: require-startup-probe
+    labels:
+        apl.io/teamId: demo
+spec:
+    action: Audit
+    severity: medium

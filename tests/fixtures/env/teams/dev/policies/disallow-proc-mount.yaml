@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: disallow-proc-mount
+    labels:
+        apl.io/teamId: dev
+spec:
+    action: Audit
+    severity: medium

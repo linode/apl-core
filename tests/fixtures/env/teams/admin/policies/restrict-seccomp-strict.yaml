@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: restrict-seccomp-strict
+    labels:
+        apl.io/teamId: admin
+spec:
+    action: Audit
+    severity: medium

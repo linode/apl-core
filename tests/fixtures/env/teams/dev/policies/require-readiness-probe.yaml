@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: require-readiness-probe
+    labels:
+        apl.io/teamId: dev
+spec:
+    action: Audit
+    severity: medium

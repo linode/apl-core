@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: restrict-sysctls
+    labels:
+        apl.io/teamId: dev
+spec:
+    action: Audit
+    severity: medium
