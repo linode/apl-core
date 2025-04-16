@@ -1,0 +1,22 @@
+kind: AplTeamBuild
+metadata:
+    name: demo-ext-repo-buildpacks-public-trigger
+    labels:
+        apl.io/teamId: demo
+spec:
+    externalRepo: false
+    mode:
+        buildpacks:
+            envVars:
+                - name: TEST1
+                  value: test1
+                - name: TEST2
+                  value: test2
+            path: apps/java-maven
+            repoUrl: https://github.com/buildpacks/samples
+            revision: HEAD
+        type: buildpacks
+    imageName: demo-java2
+    scanSource: false
+    tag: v0.0.1
+    trigger: true

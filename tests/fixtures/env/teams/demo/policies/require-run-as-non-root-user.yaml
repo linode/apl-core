@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: require-run-as-non-root-user
+    labels:
+        apl.io/teamId: demo
+spec:
+    action: Audit
+    severity: medium

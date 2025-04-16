@@ -2,7 +2,7 @@ annotations:
   category: Infrastructure
   licenses: Apache-2.0
 apiVersion: v2
-appVersion: 2.14.1
+appVersion: 2.18.0
 description: A Library Helm Chart for grouping common logic between bitnami charts.
   This chart is not deployable by itself.
 home: https://bitnami.com
@@ -20,4 +20,4 @@ name: common
 sources:
 - https://github.com/bitnami/charts
 type: library
-version: 2.14.1
+version: 2.18.0

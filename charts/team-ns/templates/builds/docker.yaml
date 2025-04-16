@@ -14,7 +14,9 @@ spec:
   workspaces:
   - name: shared-data
   - name: docker-credentials
+  {{- if or (not .externalRepo) .secretName }}
   - name: git-credentials
+  {{- end }}
   tasks:
   - name: fetch-source
     taskRef:
@@ -23,8 +25,10 @@ spec:
     workspaces:
     - name: output
       workspace: shared-data
+  {{- if or (not .externalRepo) .secretName }}
     - name: ssh-directory
       workspace: git-credentials
+  {{- end }}
     params:
     - name: url
       value: {{ .mode.docker.repoUrl }}
@@ -67,7 +71,7 @@ spec:
     - name: CONTEXT
       value: {{ $context }}
     - name: IMAGE
-      value: {{ $v.harborDomain }}/team-{{ $v.teamId }}/{{ .name }}:{{ .tag }}
+      value: {{ $v.harborDomain }}/team-{{ $v.teamId }}/{{ .imageName }}:{{ .tag }}
     {{- with (dig "mode" "docker" "envVars" nil . ) }}
     - name: EXTRA_ARGS
       value: 
@@ -87,7 +91,7 @@ spec:
     - apiVersion: tekton.dev/v1
       kind: PipelineRun
       metadata:
-        generateName: docker-trigger-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}-
+        generateName: docker-trigger-build-{{ .name }}-
         labels:
           tekton.dev/pipeline: docker-build-{{ .name }}
           {{- include "team-ns.chart-labels" $ | nindent 10 }}
@@ -114,13 +118,17 @@ spec:
                 requests:
                   storage: 1Gi
             status: {}
+        {{- if .externalRepo}}
+          {{- if .secretName }}
         - name: git-credentials
           secret:
-            {{- if .externalRepo }}
             secretName: {{ .secretName }}
-            {{- else }}
+          {{- end }}
+        {{- else }}
+        - name: git-credentials
+          secret:
             secretName: gitea-credentials
-            {{- end }}
+        {{- end }}
         - name: docker-credentials
           secret:
             secretName: harbor-pushsecret-builds
@@ -129,7 +137,7 @@ spec:
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: docker-build-{{ .name }}-{{ regexReplaceAll "[|._]{1}" .tag "-" }}
+  name: docker-build-{{ .name }}
   annotations:
     sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
@@ -154,13 +162,17 @@ spec:
           requests:
             storage: 1Gi
       status: {}
+  {{- if .externalRepo}}
+    {{- if .secretName }}
   - name: git-credentials
     secret:
-      {{- if .externalRepo }}
       secretName: {{ .secretName }}
-      {{- else }}
+    {{- end }}
+  {{- else }}
+  - name: git-credentials
+    secret:
       secretName: gitea-credentials
-      {{- end }}
+  {{- end }}
   - name: docker-credentials
     secret:
       secretName: harbor-pushsecret-builds
