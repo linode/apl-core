@@ -1,4 +1,4 @@
-kind: AplTeamSettings
+kind: AplTeamSettingSet
 metadata:
     name: demo
     labels:
@@ -15,7 +15,7 @@ spec:
             channel: aaaaa
             channelCrit: aaaaa
             url: https://slack.con
-    id: demo
+        groupInterval: 5m
     managedMonitoring:
         alertmanager: true
         grafana: true
@@ -25,7 +25,10 @@ spec:
     oidc:
         groupMapping: somesecretvalue
     resourceQuota:
-        services.loadbalancers: '1'
+        - name: pods
+          value: '50'
+        - name: services.loadbalancers
+          value: '0'
     selfService:
         access:
             - shell

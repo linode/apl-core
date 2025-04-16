@@ -1,4 +1,4 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: metrics-server
     labels: {}
@@ -12,3 +12,6 @@ spec:
         requests:
             cpu: 100m
             memory: 64Mi
+    _rawValues: {}
+    apiServer:
+        create: true
