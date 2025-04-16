@@ -1,0 +1,23 @@
+kind: AplTeamPolicy
+metadata:
+    name: disallow-capabilities
+    labels:
+        apl.io/teamId: admin
+spec:
+    action: Audit
+    customValues:
+        - AUDIT_WRITE
+        - CHOWN
+        - DAC_OVERRIDE
+        - FOWNER
+        - FSETID
+        - KILL
+        - MKNOD
+        - NET_BIND_SERVICE
+        - SETFCAP
+        - SETGID
+        - SETPCAP
+        - SETUID
+        - SYS_CHROOT
+        - "''"
+    severity: medium
