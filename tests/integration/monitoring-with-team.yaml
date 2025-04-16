@@ -75,7 +75,7 @@ teamConfig:
     workloads: []
 
 files:
-  env/teams/demo/workloadsValues/petclinic.yaml: |
+  env/teams/demo/workloadValues/petclinic.yaml: |
     values: |
       image:
           repository: springcommunity/spring-framework-petclinic

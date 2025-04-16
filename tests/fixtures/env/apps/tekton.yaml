@@ -1,5 +1,63 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: tekton
     labels: {}
-spec: {}
+spec:
+    _rawValues: {}
+    resources:
+        dashboard:
+            limits:
+                cpu: 100m
+                memory: 128Mi
+            requests:
+                cpu: 10m
+                memory: 64Mi
+        pipelinesController:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        pipelinesEvents:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        pipelinesRemoteresolver:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        pipelinesWebhook:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 100m
+                memory: 144Mi
+        triggersController:
+            limits:
+                cpu: 500m
+                memory: 256Mi
+            requests:
+                cpu: 50m
+                memory: 64Mi
+        triggersInterceptors:
+            limits:
+                cpu: 500m
+                memory: 256Mi
+            requests:
+                cpu: 50m
+                memory: 64Mi
+        triggersWebhook:
+            limits:
+                cpu: 500m
+                memory: 256Mi
+            requests:
+                cpu: 50m
+                memory: 64Mi

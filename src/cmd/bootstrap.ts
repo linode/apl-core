@@ -117,8 +117,8 @@ export const bootstrapSops = async (
       }
     }
     // now do a round of encryption and decryption to make sure we have all the files in place for later
-    await deps.encrypt()
-    await deps.decrypt()
+    await deps.encrypt(envDir)
+    await deps.decrypt(envDir)
   }
 }
 
@@ -224,7 +224,7 @@ export const getUsers = (originalInput: any, deps = { generatePassword, addIniti
   }
   deps.addInitialPasswords(users)
   users.forEach((user) => {
-    set(user, 'id', user.id || randomUUID())
+    set(user, 'name', user.name || randomUUID())
   })
   return users
 }

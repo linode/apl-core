@@ -1,6 +1,22 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: kiali
     labels: {}
 spec:
     enabled: true
+    _rawValues: {}
+    resources:
+        operator:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 100m
+                memory: 256Mi
+        pod:
+            limits:
+                cpu: '2'
+                memory: 1Gi
+            requests:
+                cpu: 100m
+                memory: 768Mi

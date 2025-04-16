@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: disallow-host-ports
+    labels:
+        apl.io/teamId: dev
+spec:
+    action: Audit
+    severity: medium
