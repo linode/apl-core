@@ -13,7 +13,9 @@ spec:
   workspaces:
   - name: shared-data
   - name: docker-credentials
+  {{- if or (not .externalRepo) .secretName }}
   - name: git-credentials
+  {{- end }}
   tasks:
   - name: fetch-source
     taskRef:
@@ -22,8 +24,10 @@ spec:
     workspaces:
     - name: output
       workspace: shared-data
+  {{- if or (not .externalRepo) .secretName }}
     - name: ssh-directory
       workspace: git-credentials
+  {{- end }}
     params:
     - name: url
       value: {{ .mode.buildpacks.repoUrl }}
