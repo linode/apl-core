@@ -1,7 +1,25 @@
-apps:
-    otomi-api:
-        editorInactivityTimeout: 5
-        git:
-            email: some@secret.value
-            repoUrl: github.com/redkubes/otomi-values-demo.git
-            user: someuser
+kind: AplApp
+metadata:
+    name: otomi-api
+    labels: {}
+spec:
+    editorInactivityTimeout: 5
+    git:
+        email: some@secret.value
+        user: someuser
+    _rawValues: {}
+    resources:
+        api:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 256Mi
+        tools:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 300m
+                memory: 256Mi

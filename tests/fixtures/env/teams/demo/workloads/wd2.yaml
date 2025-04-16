@@ -1,0 +1,14 @@
+kind: AplTeamWorkload
+metadata:
+    name: wd2
+    labels:
+        apl.io/teamId: demo
+spec:
+    imageUpdateStrategy:
+        semver:
+            imageRepository: harbor.try-otomi.net/team-orange/green
+            versionConstraint: '1.12'
+        type: semver
+    path: ./
+    revision: main
+    url: https://myrepo.local/mychart.git

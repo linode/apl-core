@@ -1,0 +1,11 @@
+kind: AplIdentityProvider
+metadata:
+    name: oidc
+    labels: {}
+spec:
+    allTeamsAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    clientID: someClientID
+    issuer: https://login.microsoftonline.com/xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    platformAdminGroupID: someAdminGroupID
+    subClaimMapper: oid
+    teamAdminGroupID: xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
