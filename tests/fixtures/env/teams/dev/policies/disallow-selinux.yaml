@@ -1,0 +1,8 @@
+kind: AplTeamPolicy
+metadata:
+    name: disallow-selinux
+    labels:
+        apl.io/teamId: dev
+spec:
+    action: Audit
+    severity: medium

@@ -1,4 +1,4 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: cnpg
     labels: {}
@@ -10,3 +10,4 @@ spec:
         requests:
             cpu: 100m
             memory: 200Mi
+    _rawValues: {}

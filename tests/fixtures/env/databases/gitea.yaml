@@ -1,0 +1,17 @@
+kind: AplDatabase
+metadata:
+    name: gitea
+    labels: {}
+spec:
+    externalClusters: []
+    imageName: null
+    recovery: {}
+    replicas: 2
+    resources:
+        limits:
+            cpu: 200m
+            memory: 192Mi
+        requests:
+            cpu: 200m
+            memory: 192Mi
+    size: 5Gi

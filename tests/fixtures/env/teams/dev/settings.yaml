@@ -1,10 +1,9 @@
-kind: AplTeamSettings
+kind: AplTeamSettingSet
 metadata:
     name: dev
     labels:
         apl.io/teamId: dev
 spec:
-    id: dev
     managedMonitoring:
         alertmanager: true
         grafana: true
@@ -17,4 +16,17 @@ spec:
             - downloadCertificateAuthority
         policies:
             - edit policies
+        apps: []
+        service:
+            - ingress
     password: IkdUsKPcGAdanjas
+    alerts:
+        groupInterval: 5m
+        receivers:
+            - none
+        repeatInterval: 3h
+    resourceQuota:
+        - name: pods
+          value: '50'
+        - name: services.loadbalancers
+          value: '0'

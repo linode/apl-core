@@ -1,6 +1,37 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: kyverno
     labels: {}
 spec:
     enabled: true
+    _rawValues: {}
+    mode: DevTest
+    resources:
+        admissionController:
+            limits:
+                cpu: '1'
+                memory: 512Mi
+            requests:
+                cpu: 100m
+                memory: 128Mi
+        backgroundController:
+            limits:
+                cpu: '1'
+                memory: 512Mi
+            requests:
+                cpu: 50m
+                memory: 64Mi
+        cleanupController:
+            limits:
+                cpu: '1'
+                memory: 512Mi
+            requests:
+                cpu: 10m
+                memory: 64Mi
+        reportsController:
+            limits:
+                cpu: '1'
+                memory: 512Mi
+            requests:
+                cpu: 50m
+                memory: 128Mi
