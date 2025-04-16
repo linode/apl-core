@@ -89,6 +89,7 @@ spec:
           jqPathExpressions:
             - ".spec.volumeClaimTemplates[].apiVersion"
             - ".spec.volumeClaimTemplates[].kind"
+            - ".spec.volumeClaimTemplates[].spec"
         {{- end }}
       destination:
         server: 'https://kubernetes.default.svc'

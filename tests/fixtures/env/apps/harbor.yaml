@@ -1,4 +1,4 @@
-kind: AplCoreApp
+kind: AplApp
 metadata:
     name: harbor
     labels: {}
@@ -8,3 +8,70 @@ spec:
     jobservice: {}
     registry:
         credentials: {}
+    _rawValues: {}
+    oidcAutoOnboard: true
+    oidcUserClaim: email
+    resources:
+        chartmuseum:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 20m
+                memory: 56Mi
+        core:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 20m
+                memory: 128Mi
+        jobservice:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 20m
+                memory: 128Mi
+        nginx:
+            limits:
+                cpu: 200m
+                memory: 512Mi
+            requests:
+                cpu: 20m
+                memory: 32Mi
+        portal:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 20m
+                memory: 128Mi
+        redis:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 20m
+                memory: 128Mi
+        registry:
+            limits:
+                cpu: 500m
+                memory: 256Mi
+            requests:
+                cpu: 20m
+                memory: 32Mi
+        registryController:
+            limits:
+                cpu: 500m
+                memory: 512Mi
+            requests:
+                cpu: 20m
+                memory: 32Mi
+        trivy:
+            limits:
+                cpu: '1'
+                memory: 1Gi
+            requests:
+                cpu: 100m
+                memory: 128Mi
