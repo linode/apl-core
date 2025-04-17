@@ -1,0 +1,45 @@
+{{- $v := .Values }}
+{{- $k := $v | get "apps.keycloak" }}
+
+auth:
+  adminUser: {{ $k.adminUsername | b64enc }}
+  existingSecret: keycloak-initial-admin
+  passwordSecretKey: password
+service:
+  ports:
+    http: 8080
+
+usePasswordFiles: false  # Currently required due to chart issue in rendering all values from DB secret
+customCaExistingSecret: custom-ca
+production: true
+proxy: edge
+resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
+priorityClassName: otomi-critical
+
+initContainers:
+  # Akamai branding init container
+  - name: init-container-theme-copy
+    image: docker.io/linode/apl-console:{{ $v.versions.consoleLogin }}
+    resources: {{ $k.resources.keycloak | toYaml | nindent 6 }}
+    command:
+      - sh
+    args:
+      - -c
+      - |
+        echo "Copying theme..."
+        cp -Rv /app/APL.jar /opt/bitnami/keycloak/providers/
+    volumeMounts:
+      - name: empty-dir  # Mounted by Keycloak pod
+        mountPath: /opt/bitnami/keycloak/providers
+        subPath: app-providers-dir
+
+# Use CNPG platform database
+postgresql:
+  enabled: false
+externalDatabase:
+  host: keycloak-db-rw.keycloak.svc.cluster.local
+  port: 5432
+  existingSecret: keycloak-db-app
+  existingSecretUserKey: username
+  existingSecretDatabaseKey: dbname
+  existingSecretPasswordKey: password
