@@ -8,14 +8,12 @@ spec:
         alertmanager: true
         grafana: true
     selfService:
-        access:
-            - shell
-            - downloadCertificateAuthority
-        policies:
-            - edit policies
-        apps: []
-        service:
-            - ingress
+        teamMembers:
+            createServices: false
+            editSecurityPolicies: true
+            useCloudShell: true
+            downloadKubeconfig: false
+            downloadDockerLogin: false
     alerts:
         groupInterval: 5m
         receivers:
