@@ -339,7 +339,6 @@ changes:
   - version: 33
     migrateLegacyValues: true
   - version: 34
-    teamSettingsMigration: true
     deletions:
       - 'databases.keycloak.imported'
       - 'databases.gitea.imported'
@@ -352,3 +351,5 @@ changes:
   - version: 37
     fileDeletions:
       - env/teams/{team}/policies.yaml
+  - version: 38
+    teamSettingsMigration: true
