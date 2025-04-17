@@ -10,22 +10,12 @@ service:
     http: 8080
 
 usePasswordFiles: false
-
 customCaExistingSecret: custom-ca
-
 production: true
-
 proxy: edge
-
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
-extraVolumes:
-  - name: theme-volume
-    emptyDir: {}
-extraVolumeMounts:
-  - name: theme-volume
-    mountPath: /opt/keycloak/providers
 initContainers:
   - name: init-container-theme-copy  # Otomi branding init container
     image: docker.io/linode/apl-console:{{ $v.versions.consoleLogin }}
@@ -36,10 +26,11 @@ initContainers:
       - -c
       - |
         echo "Copying theme..."
-        cp -Rv /app/APL.jar /opt/keycloak/providers/
+        cp -Rv /app/APL.jar /opt/bitnami/keycloak/providers/
     volumeMounts:
-      - name: theme-volume
-        mountPath: /opt/keycloak/providers
+      - name: empty-dir  # Mounted by Keycloak pod
+        mountPath: /opt/bitnami/keycloak/providers
+        subPath: app-providers-dir
 
 postgresql:
   enabled: false
