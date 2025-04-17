@@ -1,0 +1,150 @@
+name: Create Release Candidate.
+run-name: Create Release Candidate from commit ${{ github.event.inputs.rc_commit_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      rc_commit_sha:
+        description: 'Commit from which to create the release candidate. If not provided, the latest commit on main will be used'
+        required: false
+        type: string
+      dry_run:
+        description: 'If you want to run the workflow without making any changes'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - true
+          - false
+
+jobs:
+  create_patch_release:
+    runs-on: ubuntu-latest
+    outputs:
+      rc_branch: ${{ steps.create_release.outputs.rc_branch }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install standard-version
+        run: |
+          npm install standard-version
+
+      - name: Determine commit from where to create the RC
+        id: determine_commit
+        run: |
+          if [ "${{ github.event.inputs.rc_commit_sha }}" == "" ]; then
+            echo "No commit sha provided, using the latest commit"
+            echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          else
+            echo "Using provided commit sha"
+            echo "commit_sha=${{ github.event.inputs.rc_commit_sha }}" >> $GITHUB_ENV
+          fi
+
+      - name: Create release candidate tag
+        id: create_release
+        run: |
+
+          git config --global user.email "rc_githubactions@github.com"
+          git config --global user.name "Release Candidate GitHub Action "
+
+          git reset --hard ${{ env.commit_sha }}
+
+          # Use standard-version to determine the next version
+          npm run release -- --skip.commit --skip.tag --skip.changelog
+          new_version=$(jq -r '.version' package.json)
+          branch_name=rc/v${new_version%.*}
+          echo "rc_branch=$branch_name" >> $GITHUB_OUTPUT
+          release_branch_name=${branch_name//rc/release}
+
+          git reset --hard ${{ env.commit_sha }}
+
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            echo "Dry run enabled. The following commands would be executed:"
+            echo "git checkout -b $branch_name"
+            echo "npm run release -- --prerelease rc --skip.changelog --dry-run"
+            npm run release -- --prerelease rc --skip.changelog --dry-run
+            echo "git push -u origin $branch_name --follow-tags"
+          else
+            
+            git checkout -b $branch_name
+            npm run release -- --prerelease rc --skip.changelog
+            git push -u origin $branch_name --follow-tags
+          fi
+
+      - name: Create Github Release
+        id: create_github_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag=$(jq -r '.version' package.json)
+          if [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+            echo "Dry run enabled. The following commands would be executed otherwise:"
+            echo gh release create "$tag" --title="Release Candidate: $tag" --notes="Automated release for $tag" --latest=false -p
+          else
+            gh release create "$tag" --title="Release Candidate: $tag" --notes="Automated release for $tag" --latest=false -p
+          fi
+
+  chart-release:
+    needs: create_patch_release
+    if: always() && contains(needs.create_patch_release.result, 'success') && !github.event.act
+    runs-on: ubuntu-22.04
+    container:
+      image: linode/apl-tools:v2.8.2
+      options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.create_patch_release.outputs.rc_branch }}
+
+      - name: Prepare chart
+        id: prepare_chart
+        run: |
+          # Retrieve the app version from package.json
+          app_version=$(jq -r '.version' package.json)
+
+          # Update Chart.yaml and values.yaml with the new app version
+          sed -i "s/0.0.0-chart-version/$app_version/g" chart/apl/Chart.yaml
+          sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/apl/Chart.yaml
+
+          echo "Chart and values files updated successfully with version $app_version"
+
+          # Copy readme from repo into the charts and add tpl/chart-values.md
+          cp README.md chart/apl/
+          printf "\n\n" >>chart/apl/README.md
+          cat tpl/chart-values.md >>chart/apl/README.md
+
+          # Generate schema
+          npx js-yaml values-schema.yaml > chart/apl/values.schema.json
+
+          # Set the global id for git as it seems needed by the next step when a custom image is used
+          git config --global user.email ${{ env.BOT_EMAIL }}
+          git config --global user.name ${{ env.BOT_USERNAME }}
+
+      #TODO: Use the same user id on the container as in the runner to avoid the "dubious ownership" error
+      - name: Mark repository as safe for Git
+        run: git config --global --add safe.directory /__w/apl-core/apl-core
+
+      - name: Dry Run Outputs
+        if: ${{ github.event.inputs.dry_run }}
+        run: |
+          echo -e "This Pipeline was executed in dry run mode so it will not publish the helm chart.\nBelow are some useful data to check:"
+          echo "Contents of: chart/apl/Chart.yaml"
+          cat chart/apl/Chart.yaml
+          echo "Contents of: package.json"
+          cat package.json
+          echo
+      - name: Create and publish otomi chart release
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        id: chart_release
+        uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: chart
+          skip_existing: true
+          mark_as_latest: false
+        env:
+          CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
