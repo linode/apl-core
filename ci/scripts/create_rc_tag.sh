@@ -30,6 +30,7 @@ npm run release -- --skip.commit --skip.tag --skip.changelog
 new_version=$(jq -r '.version' package.json)
 branch_name="rc/v${new_version%.*}"
 release_branch_name="${branch_name//rc/release}"
+echo "$branch_name" >> rc_branch_name.txt
 git reset --hard "$COMMIT_SHA"
 
 # Dry run or actual execution
