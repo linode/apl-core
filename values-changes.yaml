@@ -339,17 +339,15 @@ changes:
   - version: 33
     migrateLegacyValues: true
   - version: 34
+    teamSettingsMigration: true
     deletions:
       - 'databases.keycloak.imported'
       - 'databases.gitea.imported'
       - 'databases.gitea.useOtomiDB'
-  - version: 34
-    teamSettingsMigration: true
   - version: 35
     teamResourceQuotaMigration: true
   - version: 36
     buildImageNameMigration: true
-  - version: 36
     policiesMigration: true
   - version: 37
     fileDeletions:
