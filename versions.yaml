@@ -1,5 +1,5 @@
-api: main
-console: main
-consoleLogin: main
+api: APL-537-new
+console: APL-537
+consoleLogin: v3.5.0
 tasks: main
 tools: main
