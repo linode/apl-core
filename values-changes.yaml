@@ -343,19 +343,16 @@ changes:
       - 'databases.keycloak.imported'
       - 'databases.gitea.imported'
       - 'databases.gitea.useOtomiDB'
-  - version: 34
-    teamSettingsMigration: true
   - version: 35
     teamResourceQuotaMigration: true
   - version: 36
     buildImageNameMigration: true
-  - version: 36
-    deletions:
-      - 'teamConfig.{team}.services[].type'
     policiesMigration: true
   - version: 37
     fileDeletions:
       - env/teams/{team}/policies.yaml
   - version: 38
+    teamSettingsMigration: true
+  - version: 39
     deletions:
       - 'teamConfig.{team}.services[].type'
