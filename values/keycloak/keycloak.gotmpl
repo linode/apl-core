@@ -9,7 +9,7 @@ service:
   ports:
     http: 8080
 
-usePasswordFiles: false
+usePasswordFiles: false  # Currently required due to chart issue in rendering all values from DB secret
 customCaExistingSecret: custom-ca
 production: true
 proxy: edge
@@ -17,7 +17,8 @@ resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
 initContainers:
-  - name: init-container-theme-copy  # Otomi branding init container
+  # Akamai branding init container
+  - name: init-container-theme-copy
     image: docker.io/linode/apl-console:{{ $v.versions.consoleLogin }}
     resources: {{ $k.resources.keycloak | toYaml | nindent 6 }}
     command:
@@ -32,6 +33,7 @@ initContainers:
         mountPath: /opt/bitnami/keycloak/providers
         subPath: app-providers-dir
 
+# Use CNPG platform database
 postgresql:
   enabled: false
 externalDatabase:
