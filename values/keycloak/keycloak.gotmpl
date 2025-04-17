@@ -1,0 +1,52 @@
+{{- $v := .Values }}
+{{- $k := $v | get "apps.keycloak" }}
+
+auth:
+  adminUser: {{ $k.adminUsername | b64enc }}
+  existingSecret: keycloak-initial-admin
+  passwordSecretKey: password
+service:
+  ports:
+    http: 8080
+
+usePasswordFiles: false
+
+customCaExistingSecret: custom-ca
+
+production: true
+
+proxy: edge
+
+resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
+priorityClassName: otomi-critical
+
+extraVolumes:
+  - name: theme-volume
+    emptyDir: {}
+extraVolumeMounts:
+  - name: theme-volume
+    mountPath: /opt/keycloak/providers
+initContainers:
+  - name: init-container-theme-copy  # Otomi branding init container
+    image: docker.io/linode/apl-console:{{ $v.versions.consoleLogin }}
+    resources: {{ $k.resources.keycloak | toYaml | nindent 6 }}
+    command:
+      - sh
+    args:
+      - -c
+      - |
+        echo "Copying theme..."
+        cp -Rv /app/APL.jar /opt/keycloak/providers/
+    volumeMounts:
+      - name: theme-volume
+        mountPath: /opt/keycloak/providers
+
+postgresql:
+  enabled: false
+externalDatabase:
+  host: keycloak-db-rw.keycloak.svc.cluster.local
+  port: 5432
+  existingSecret: keycloak-db-app
+  existingSecretUserKey: username
+  existingSecretDatabaseKey: dbname
+  existingSecretPasswordKey: password
