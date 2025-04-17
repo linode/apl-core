@@ -2,10 +2,10 @@
 
 set -eu
 
-if [[ $(helm status -n keycloak keycloak-operator-cr 2>/dev/null) ]]; then
-  helm uninstall -n keycloak keycloak-operator-cr
+if [[ $(kubectl get applications.argoproj.io -n argocd keycloak-keycloak-operator-cr 2>/dev/null) ]]; then
+  kubectl delete applications.argoproj.io -n argocd keycloak-keycloak-operator-cr
 fi
 
-if [[ $(helm status -n keycloak keycloak-operator 2>/dev/null) ]]; then
-  helm uninstall -n keycloak keycloak-operator
+if [[ $(kubectl get applications.argoproj.io -n argocd keycloak-keycloak-operator 2>/dev/null) ]]; then
+  kubectl delete applications.argoproj.io -n argocd keycloak-keycloak-operator
 fi
