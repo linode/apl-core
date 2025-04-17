@@ -1,8 +1,8 @@
+import { globSync } from 'glob'
 import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration } from 'src/cmd/migrate'
 import stubs from 'src/test-stubs'
-import { globSync } from 'glob'
-import { getFileMap } from '../common/repo'
 import { env } from '../common/envalid'
+import { getFileMap } from '../common/repo'
 
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'my-fixed-uuid'),
@@ -567,6 +567,105 @@ describe('Build image name migration', () => {
   it('should apply changes to build values ', async () => {
     await applyChanges([valuesChanges], false, deps)
     const expectedValues = getExpectedValues()
+    expect(deps.writeValues).toBeCalledWith(expectedValues, true)
+  }, 20000)
+})
+
+describe('teamSettingsMigration', () => {
+  // Create a mock values object representing teams with settings that need migration.
+  const getTeamSettingsMockValues = (): any => ({
+    versions: { specVersion: 1 },
+    teamConfig: {
+      team1: {
+        settings: {
+          alerts: {
+            email: 'test@example.com',
+            opsgenie: 'ops_value',
+            teams: 'keep this alert',
+          },
+          selfService: {
+            service: ['ingress'],
+            access: ['downloadKubeConfig', 'shell'],
+            policies: ['edit policies'],
+            apps: ['argocd', 'gitea'],
+          },
+        },
+      },
+      team2: {
+        settings: {
+          alerts: {
+            teams: 'team2 alert',
+          },
+          selfService: {
+            service: [],
+            access: [],
+            policies: [],
+            apps: ['argocd'],
+          },
+        },
+      },
+    },
+  })
+
+  // Expected values after migration:
+  // - The alerts block should have the 'email' and 'opsgenie' keys removed.
+  // - The selfService arrays ('service', 'access', 'policies', 'apps') are replaced with a new
+  //   teamMembers object with the correct boolean values.
+  const getTeamSettingsExpectedValues = (): any => ({
+    versions: { specVersion: 2 },
+    teamConfig: {
+      team1: {
+        settings: {
+          alerts: {
+            teams: 'keep this alert',
+          },
+          selfService: {
+            teamMembers: {
+              createServices: true, // 'ingress' was present in service.
+              editSecurityPolicies: true, // 'edit policies' was present in policies.
+              useCloudShell: true, // 'shell' was present in access.
+              downloadKubeconfig: true, // 'downloadKubeConfig' was present in access.
+              downloadDockerLogin: false, // 'downloadDockerConfig' was not provided.
+            },
+          },
+        },
+      },
+      team2: {
+        settings: {
+          alerts: {
+            teams: 'team2 alert',
+          },
+          selfService: {
+            teamMembers: {
+              createServices: false,
+              editSecurityPolicies: false,
+              useCloudShell: false,
+              downloadKubeconfig: false,
+              downloadDockerLogin: false,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  // Set up the values and changes flag to trigger the teamSettingsMigration.
+  const teamSettingValues: any = getTeamSettingsMockValues()
+  const valuesChanges: any = {
+    version: 2,
+    teamSettingsMigration: true,
+  }
+  const deps: any = {
+    cd: jest.fn(),
+    rename: jest.fn(),
+    hfValues: jest.fn().mockReturnValue(teamSettingValues),
+    terminal,
+    writeValues: jest.fn(),
+  }
+
+  it('should migrate team settings correctly', async () => {
+    await applyChanges([valuesChanges], false, deps)
+    const expectedValues = getTeamSettingsExpectedValues()
     expect(deps.writeValues).toBeCalledWith(expectedValues, true)
   }, 20000)
 })
