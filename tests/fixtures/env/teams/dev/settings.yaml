@@ -11,14 +11,12 @@ spec:
         egressPublic: false
         ingressPrivate: true
     selfService:
-        access:
-            - shell
-            - downloadCertificateAuthority
-        policies:
-            - edit policies
-        apps: []
-        service:
-            - ingress
+        teamMembers:
+            createServices: false
+            editSecurityPolicies: true
+            useCloudShell: true
+            downloadKubeconfig: false
+            downloadDockerLogin: false
     password: IkdUsKPcGAdanjas
     alerts:
         groupInterval: 5m

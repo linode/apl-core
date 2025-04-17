@@ -1,6 +1,6 @@
 import { pathExists } from 'fs-extra'
 import { mkdir, unlink, writeFile } from 'fs/promises'
-import { cloneDeep, get, isEmpty, isEqual, merge, omit, pick, set } from 'lodash'
+import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, omit, pick, set } from 'lodash'
 import path from 'path'
 import { supportedK8sVersions } from 'src/supportedK8sVersions.json'
 import { stringify } from 'yaml'
@@ -121,7 +121,9 @@ export const writeValuesToFile = async (
   const values = cloneDeep(inValues)
   const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
-  const mergeResult = merge(cloneDeep(originalValues), values)
+  const mergeResult = mergeWith(cloneDeep(originalValues), values, (prev, next) => {
+    return next
+  })
   const cleanedValues = removeBlankAttributes(values)
   const cleanedMergeResult = removeBlankAttributes(mergeResult)
   if (((overwrite && isEmpty(cleanedValues)) || (!overwrite && isEmpty(cleanedMergeResult))) && isSecretsFile) {

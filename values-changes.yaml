@@ -343,6 +343,8 @@ changes:
       - 'databases.keycloak.imported'
       - 'databases.gitea.imported'
       - 'databases.gitea.useOtomiDB'
+  - version: 34
+    teamSettingsMigration: true
   - version: 35
     teamResourceQuotaMigration: true
   - version: 36

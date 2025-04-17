@@ -5,9 +5,6 @@ metadata:
         apl.io/teamId: demo
 spec:
     alerts:
-        email:
-            critical: admins@yourdoma.in
-            nonCritical: admins@yourdoma.in
         receivers:
             - slack
         repeatInterval: 3h
@@ -30,14 +27,9 @@ spec:
         - name: services.loadbalancers
           value: '0'
     selfService:
-        access:
-            - shell
-            - downloadCertificateAuthority
-        apps: []
-        policies:
-            - edit policies
-        service:
-            - ingress
-        team:
-            - alerts
-    password: somesecretvalue
+        teamMembers:
+            createServices: true
+            editSecurityPolicies: true
+            useCloudShell: true
+            downloadKubeconfig: false
+            downloadDockerLogin: false
