@@ -5,6 +5,7 @@ metadata:
         apl.io/teamId: demo
 spec:
     alerts:
+        groupInterval: 5m
         receivers:
             - slack
         repeatInterval: 3h
@@ -25,9 +26,14 @@ spec:
         - name: services.loadbalancers
           value: '0'
     selfService:
+        apps: []
+        policies:
+            - edit policies
+        service:
+            - ingress
         teamMembers:
-            createServices: true
-            editSecurityPolicies: true
-            useCloudShell: true
-            downloadKubeconfig: false
+            createServices: false
             downloadDockerLogin: false
+            downloadKubeconfig: false
+            editSecurityPolicies: false
+            useCloudShell: false
