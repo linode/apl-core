@@ -1,4 +1,7 @@
-# This script creates a release candidate tag for commit set as COMMIT_SHA env var.
+#!/bin/bash
+set -euo pipefail
+
+# This script creates a release candidate tag for a given commit.
 # Input:
 # - COMMIT_SHA: The commit SHA to create the release candidate tag for.
 # - DRY_RUN: If set to true, the script will not create the tag, but will print the commands that would be executed.
@@ -6,37 +9,47 @@
 # - BOT_EMAIL: The email address to use for the git commit.
 # - BOT_USERNAME: The username to use for the git commit.
 
-git config --global user.email $BOT_EMAIL
-git config --global user.name $BOT_USERNAME
+# Validate required environment variables
+: "${COMMIT_SHA:?COMMIT_SHA is required}"
+: "${BOT_EMAIL:?BOT_EMAIL is required}"
+: "${BOT_USERNAME:?BOT_USERNAME is required}"
+: "${GITHUB_TOKEN:?GITHUB_TOKEN is required}"
 
-git reset --hard $COMMIT_SHA
+# Configure Git
+echo "Configuring Git..."
+git config --global user.email "$BOT_EMAIL"
+git config --global user.name "$BOT_USERNAME"
 
-# Use standard-version to determine the next version
+# Reset to the specified commit
+echo "Resetting to commit $COMMIT_SHA..."
+git reset --hard "$COMMIT_SHA"
+
+# Determine the next version
+echo "Determining the next version..."
 npm run release -- --skip.commit --skip.tag --skip.changelog
 new_version=$(jq -r '.version' package.json)
-branch_name=rc/v${new_version%.*}
-echo "$branch_name" >> rc_branch_name.txt
-release_branch_name=${branch_name//rc/release}
+branch_name="rc/v${new_version%.*}"
+release_branch_name="${branch_name//rc/release}"
+git reset --hard "$COMMIT_SHA"
 
-git reset --hard $COMMIT_SHA
-
+# Dry run or actual execution
 if [ "$DRY_RUN" == "true" ]; then
     echo "Dry run enabled. The following commands would be executed:"
     echo "git checkout -b $branch_name"
     echo "npm run release -- --prerelease rc --skip.changelog --dry-run"
     npm run release -- --prerelease rc --skip.changelog --dry-run
     echo "git push -u origin $branch_name --follow-tags"
+    echo "git fetch --tags origin"
+    echo "gh release create \"$new_version\" --verify-tag --title=\"Release Candidate: $new_version\" --notes=\"Automated release for $new_version\" --latest=false -p"
 else
-    git checkout -b $branch_name
+    echo "Creating branch $branch_name..."
+    git checkout -b "$branch_name"
     npm run release -- --prerelease rc --skip.changelog
-    git push -u origin $branch_name --follow-tags
+    git push -u origin "$branch_name" --follow-tags
+    git fetch --tags origin
+
+    echo "Creating GitHub release..."
+    gh release create "$new_version" --verify-tag --title="Release Candidate: $new_version" --notes="Automated release for $new_version" --latest=false -p
 fi
 
-tag=$(jq -r '.version' package.json)
-
-if [ "$DRY_RUN" == "true" ]; then
-    echo "Dry run enabled. The following commands would be executed otherwise:"
-    echo gh release create "$tag" --title="Release Candidate: $tag" --notes="Automated release for $tag" --latest=false -p
-else
-    gh release create "$tag" --title="Release Candidate: $tag" --notes="Automated release for $tag" --latest=false -p
-fi
+echo "Script completed successfully."
