@@ -49,11 +49,7 @@ definitions:
           url:
             type: string
             description: A Slack webhook URL.
-            x-acl:
-              platformAdmin: [read-any, update-any]
-              teamAdmin: []
-              teamMember: []
-            x-secret: true
+            x-secret: ''
         # TODO: Enable again when form rework is done
         # required:
         #   - url
@@ -65,19 +61,11 @@ definitions:
           highPrio:
             title: High prio web hook
             type: string
-            x-acl:
-              platformAdmin: [read-any, update-any]
-              teamAdmin: []
-              teamMember: []
-            x-secret: true
+            x-secret: ''
           lowPrio:
             title: Low prio web hook
             type: string
-            x-acl:
-              platformAdmin: [read-any, update-any]
-              teamAdmin: []
-              teamMember: []
-            x-secret: true
+            x-secret: ''
         # TODO: Enable again when form rework is done
         # required:
         #   - highPrio
