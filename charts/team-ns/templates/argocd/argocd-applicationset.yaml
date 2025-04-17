@@ -94,7 +94,7 @@ spec:
       destination:
         server: 'https://kubernetes.default.svc'
         {{- if and ( eq $v.teamId "admin" ) .namespace }} 
-        namespace: '{{- .namespace }}'
+        namespace: '{{ .namespace }}'
         {{- else }} 
         namespace: 'team-{{ $v.teamId }}'
         {{- end }}
