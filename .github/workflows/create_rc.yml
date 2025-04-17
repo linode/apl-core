@@ -130,7 +130,7 @@ jobs:
         run: git config --global --add safe.directory /__w/apl-core/apl-core
 
       - name: Dry Run Outputs
-        if: ${{ github.event.inputs.dry_run }}
+        if: ${{ github.event.inputs.dry_run == 'true'}}
         run: |
           echo -e "This Pipeline was executed in dry run mode so it will not publish the helm chart.\nBelow are some useful data to check:"
           echo "Contents of: chart/apl/Chart.yaml"
