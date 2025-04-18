@@ -8,7 +8,7 @@ metadata:
   labels:
     {{- include "tempo.labels" $dict | nindent 4 }}
 spec:
-  minReadySeconds: 10
+  minReadySeconds: {{ .Values.gateway.minReadySeconds }}
 {{- if not .Values.gateway.autoscaling.enabled }}
   replicas: {{ .Values.gateway.replicas }}
 {{- end }}

@@ -12,7 +12,7 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  minReadySeconds: 10
+  minReadySeconds: {{ .Values.metricsGenerator.minReadySeconds }}
   replicas: {{ .Values.metricsGenerator.replicas }}
   revisionHistoryLimit: 10
   selector:
@@ -51,6 +51,8 @@ spec:
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        {{- toYaml .Values.metricsGenerator.initContainers | nindent 8 }}
       containers:
         - args:
             - -target=metrics-generator
