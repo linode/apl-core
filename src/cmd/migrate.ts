@@ -657,7 +657,8 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
     }),
   )
   await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)
-  await encrypt(env.ENV_DIR)
+  await encrypt()
+  await decrypt()
   return true
 }
 
