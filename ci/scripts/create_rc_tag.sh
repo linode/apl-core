@@ -33,22 +33,17 @@ release_branch_name="${branch_name//rc/release}"
 echo "$branch_name" >> rc_branch_name.txt
 git reset --hard "$COMMIT_SHA"
 
+echo "Creating branch $branch_name..."
+git checkout -b "$branch_name"
+
 # Dry run or actual execution
 if [ "$DRY_RUN" == "true" ]; then
-    echo "Dry run enabled. The following commands would be executed:"
-    echo "git checkout -b $branch_name"
-    echo "npm run release -- --prerelease rc --skip.changelog --dry-run"
+    echo "Running in dry run mode. No changes will be pushed.\nBelow you can check the dry run of the release command"
     npm run release -- --prerelease rc --skip.changelog --dry-run
-    echo "git push -u origin $branch_name --follow-tags"
-    echo "git fetch --tags origin"
-    echo "gh release create \"$new_version\" --verify-tag --title=\"Release Candidate: $new_version\" --notes=\"Automated release for $new_version\" --latest=false -p"
 else
-    echo "Creating branch $branch_name..."
-    git checkout -b "$branch_name"
     npm run release -- --prerelease rc --skip.changelog
     git push -u origin "$branch_name" --follow-tags
     git fetch --tags origin
-
     echo "Creating GitHub release..."
     gh release create "$new_version" --verify-tag --title="Release Candidate: $new_version" --notes="Automated release for $new_version" --latest=false -p
 fi

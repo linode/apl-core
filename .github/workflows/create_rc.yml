@@ -9,7 +9,7 @@ on:
         required: false
         type: string
       dry_run:
-        description: 'If you want to run the workflow without making any changes'
+        description: 'Dry Run: If true, the pipeline will not publish the helm chart.'
         required: true
         default: 'true'
         type: choice
@@ -20,6 +20,9 @@ on:
 jobs:
   create_patch_release:
     runs-on: ubuntu-latest
+    container:
+      image: linode/apl-tools:v2.8.7
+      options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
     outputs:
       rc_branch: ${{ steps.create_release.outputs.rc_branch }}
     steps:
@@ -28,22 +31,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install standard-version
-        run: |
-          npm install standard-version
-
       - name: Determine commit from where to create the RC
         id: determine_commit
         run: |
           if [ "${{ github.event.inputs.rc_commit_sha }}" == "" ]; then
-            echo "No commit sha provided, using the latest commit"
+            echo "No commit sha provided, using the latest commit on main"
             echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_ENV
           else
-            echo "Using provided commit sha"
+            echo "Using provided commit sha: ${{ github.event.inputs.rc_commit_sha }}"
             echo "commit_sha=${{ github.event.inputs.rc_commit_sha }}" >> $GITHUB_ENV
           fi
 
-      - name: Create release candidate tag
+      #TODO: Use the same user id on the container as in the runner to avoid the "dubious ownership" error
+      - name: Mark repository as safe for Git
+        run: git config --global --add safe.directory /__w/apl-core/apl-core
+
+      - name: Create release candidate tag & branch
         id: create_release
         env:
           DRY_RUN: ${{ github.event.inputs.dry_run }}
@@ -51,21 +54,6 @@ jobs:
           COMMIT_SHA: ${{ env.commit_sha }}
         run: |
           ci/scripts/create_rc.sh
-          echo "rc_branch=$(cat rc_branch_name.txt)" >> $GITHUB_OUTPUT
-
-  chart-release:
-    needs: create_patch_release
-    if: always() && contains(needs.create_patch_release.result, 'success') && !github.event.act
-    runs-on: ubuntu-22.04
-    container:
-      image: linode/apl-tools:v2.8.2
-      options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ needs.create_patch_release.outputs.rc_branch }}
 
       - name: Prepare chart
         env:
@@ -75,19 +63,16 @@ jobs:
         run: |
           ci/scripts/prepare_chart_for_release.sh
 
-      #TODO: Use the same user id on the container as in the runner to avoid the "dubious ownership" error
-      - name: Mark repository as safe for Git
-        run: git config --global --add safe.directory /__w/apl-core/apl-core
-
       - name: Dry Run Outputs
         if: ${{ github.event.inputs.dry_run == 'true'}}
         run: |
           echo -e "This Pipeline was executed in dry run mode so it will not publish the helm chart.\nBelow are some useful data to check:"
+          echo "Release candidate branch: ${{ github.ref }}"
           echo "Contents of: chart/apl/Chart.yaml"
           cat chart/apl/Chart.yaml
           echo "Contents of: package.json"
           cat package.json
-          echo
+
       - name: Create and publish otomi chart release
         if: ${{ github.event.inputs.dry_run == 'false' }}
         id: chart_release
