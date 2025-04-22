@@ -11,18 +11,24 @@ jobs:
   patch_rc:
     if: startsWith(github.event.head_commit.message, 'fix:') && !github.event.act
     runs-on: ubuntu-latest
+    container:
+      image: linode/apl-tools:v2.8.2
+      options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - name: Install dependencies
         run: |
           npm install standard-version
+
       - name: Configure Git
         run: |
           git config --global user.email "githubactions_rc@github.com"
           git config --global user.name "GitHub Action RC"
+
       - name: Release new RC version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -33,47 +39,10 @@ jobs:
           TAG="v$(jq '.version' package.json -r)"
           gh release create "$TAG" --title="Release: $TAG" --notes="Automated release for $TAG" --latest=false -p
 
-  chart-release:
-    needs: patch_rc
-    if: always() && contains(needs.patch_rc.result, 'success') && !github.event.act
-    runs-on: ubuntu-22.04
-    container:
-      image: linode/apl-tools:v2.8.2
-      options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.ref}}
-
       - name: Prepare chart
         id: prepare_chart
         run: |
-          # Retrieve the app version from package.json
-          app_version=$(jq -r '.version' package.json)
-
-          # Update Chart.yaml and values.yaml with the new app version
-          sed -i "s/0.0.0-chart-version/$app_version/g" chart/apl/Chart.yaml
-          sed -i "s/APP_VERSION_PLACEHOLDER/v$app_version/g" chart/apl/Chart.yaml
-
-          echo "Chart and values files updated successfully with version $app_version"
-
-          # Copy readme from repo into the charts and add tpl/chart-values.md
-          cp README.md chart/apl/
-          printf "\n\n" >>chart/apl/README.md
-          cat tpl/chart-values.md >>chart/apl/README.md
-
-          # Generate schema
-          npx js-yaml values-schema.yaml > chart/apl/values.schema.json
-
-          # Set the global id for git as it seems needed by the next step when a custom image is used
-          git config --global user.email ${{ env.BOT_EMAIL }}
-          git config --global user.name ${{ env.BOT_USERNAME }}
-
-      #TODO: Use the same user id on the container as in the runner to avoid the "dubious ownership" error
-      - name: Mark repository as safe for Git
-        run: git config --global --add safe.directory /__w/apl-core/apl-core
+          ci/scripts/prepare_chart_for_release.sh
 
       - name: Create and publish otomi chart release
         if: ${{ github.event.inputs.dry_run == 'false' }}
