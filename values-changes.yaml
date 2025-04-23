@@ -353,3 +353,6 @@ changes:
       - env/teams/{team}/policies.yaml
   - version: 38
     teamSettingsMigration: true
+  - version: 39
+    deletions:
+      - 'teamConfig.{team}.services[].type'
