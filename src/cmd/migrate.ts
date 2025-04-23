@@ -513,13 +513,39 @@ export const applyChanges = async (
 
 export const unparsePaths = (path: string, values: Record<string, any>): Array<string> => {
   if (path.includes('{team}')) {
-    const paths: Array<string> = []
+    let paths: Array<string> = []
     const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
     teams.forEach((teamName) => paths.push(path.replace('{team}', teamName)))
+    paths = transformArrayToPaths(paths, values)
     return paths.sort()
   } else {
-    return [path]
+    const paths = transformArrayToPaths([path], values)
+    return paths
   }
+}
+
+function transformArrayToPaths(paths: string[], values: Record<string, any>): string[] {
+  const transformedPaths: string[] = []
+
+  paths.forEach((path) => {
+    const match = path.match(/^(.*)\.(\w+)\[\](.*)$/)
+    if (!match) {
+      transformedPaths.push(path)
+      return
+    }
+
+    const [, beforeArrayPath, arrayKey, afterArrayPath] = match
+
+    const objectPath = beforeArrayPath.split('.').reduce((obj, key) => obj?.[key], values)
+
+    if (objectPath && objectPath[arrayKey]) {
+      objectPath[arrayKey].forEach((_item: any, index: number) => {
+        transformedPaths.push(`${beforeArrayPath}.${arrayKey}[${index}]${afterArrayPath}`)
+      })
+    }
+  })
+
+  return transformedPaths
 }
 export const unsetAtPath = (path: string, values: Record<string, any>): void => {
   const paths = unparsePaths(path, values)
@@ -674,12 +700,10 @@ export const migrate = async (): Promise<boolean> => {
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
   const prevVersion: number = versions?.spec?.specVersion
   if (!prevVersion) {
-    d.log('No changes detected, skipping')
+    d.log('No previous version detected')
     return false
   }
-
   const filteredChanges = filterChanges(prevVersion, changes)
-
   if (filteredChanges.length) {
     d.log(
       `Changes detected, migrating from ${prevVersion} to ${
