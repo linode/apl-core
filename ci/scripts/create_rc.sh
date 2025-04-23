@@ -44,8 +44,9 @@ else
     npm run release -- --prerelease rc --skip.changelog
     git push -u origin "$branch_name" --follow-tags
     git fetch --tags origin
-    echo "Creating GitHub release..."
-    gh release create "$new_version" --verify-tag --title="Release Candidate: $new_version" --notes="Automated release for $new_version" --latest=false -p
+    rc_version="v$(jq -r '.version' package.json)"
+    echo "Creating GitHub release: $rc_version"
+    gh release create "$rc_version" --verify-tag --title="Release Candidate: $rc_version" --notes="Automated release for $rc_version" --latest=false -p
 fi
 
 echo "Script completed successfully."

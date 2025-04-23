@@ -19,10 +19,7 @@ on:
 
 jobs:
   create_patch_release:
-    runs-on: ubuntu-latest
-    container:
-      image: linode/apl-tools:v2.8.7
-      options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
+    runs-on: ubuntu-22.04
     outputs:
       rc_branch: ${{ steps.create_release.outputs.rc_branch }}
     steps:
@@ -30,10 +27,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      #TODO: Use the same user id on the container as in the runner to avoid the "dubious ownership" error
-      - name: Mark repository as safe for Git
-        run: git config --global --add safe.directory /__w/apl-core/apl-core
 
       - name: Determine commit from where to create the RC
         id: determine_commit
@@ -48,7 +41,7 @@ jobs:
             echo "commit_sha=$commit_sha" >> $GITHUB_ENV
           fi
 
-      - name: Install standard-version
+      - name: Install dependencies
         run: |
           npm install standard-version
 
