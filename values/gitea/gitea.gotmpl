@@ -64,8 +64,6 @@ gitea:
       SCHEMA: public
     admin:
       DISABLE_REGULAR_ORG_CREATION: false
-    log:
-      LEVEL: trace
     {{ with $v | get "smtp" nil }}
     mailer:
       enabled: true
