@@ -3,5 +3,4 @@ metadata:
     name: service-a
     labels:
         apl.io/teamId: demo
-spec:
-    type: cluster
+spec: {}
