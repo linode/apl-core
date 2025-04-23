@@ -44,7 +44,9 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  tag: {{ $g | get "image.gitea.tag" "1.19.1" }}
+  {{- with $g | get "image.gitea.tag" nil }}
+  tag: {{ . }}
+  {{- end }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
   rootless: true
 
@@ -121,7 +123,7 @@ gitea:
 init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}
 
-statefulset:
+deployment:
   env:
     - name: RCLONE_CONFIG_GITEA_TYPE
       value: s3
@@ -159,30 +161,19 @@ statefulset:
     - name: BUCKET_NAME
       value: {{ $giteaBucketName }}
 
-memcached:
-  # @TODO:
-  image:
-    tag: {{ $g | get "image.memcached.tag" "1.6.12" }}
-    pullPolicy:  {{ $g | get "image.memcached.pullPolicy" "IfNotPresent" }}
-  resources: {{- $g.resources.memcached| toYaml | nindent 4 }}
-  metrics:
-    enabled: true
-    resources: {{- $g.resources.memcachedMetrics| toYaml | nindent 6 }}
-    securityContext:
-      enabled: true
-    serviceMonitor:
-      enabled: true
-      selector:
-        prometheus: system
-
-
 persistence:
   size: 1Gi
+{{- if $g.existingVolume }}
+  create: false
+  claimName: data-gitea-0
+{{- end }}
 
 postgresql:
   enabled: false
+postgresql-ha:
+  enabled: false
 
-extraVolumeMounts:
+extraContainerVolumeMounts:
   - name: backup
     mountPath: /backup
 {{- if $v._derived.untrustedCA }}
