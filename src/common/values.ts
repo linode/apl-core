@@ -102,6 +102,10 @@ export const getRepo = (values: Record<string, any>): Repo => {
   return { remote, branch, email, username, password }
 }
 
+function mergeCustomizer(prev, next) {
+  return next
+}
+
 let hasSops = false
 /**
  * Writes new values to a file. Will keep the original values if `overwrite` is `false`.
@@ -121,9 +125,7 @@ export const writeValuesToFile = async (
   const values = cloneDeep(inValues)
   const originalValues = (await loadYaml(targetPath + suffix, { noError: true })) ?? {}
   d.debug('originalValues: ', JSON.stringify(originalValues, null, 2))
-  const mergeResult = mergeWith(cloneDeep(originalValues), values, (prev, next) => {
-    return next
-  })
+  const mergeResult = mergeWith(cloneDeep(originalValues), values, mergeCustomizer)
   const cleanedValues = removeBlankAttributes(values)
   const cleanedMergeResult = removeBlankAttributes(mergeResult)
   if (((overwrite && isEmpty(cleanedValues)) || (!overwrite && isEmpty(cleanedMergeResult))) && isSecretsFile) {
@@ -147,6 +149,7 @@ export const writeValuesToFile = async (
       return
     }
   }
+
   if (isEqual(originalValues, useValues)) {
     d.info(`No changes for ${targetPath}${suffix}, skipping...`)
     return

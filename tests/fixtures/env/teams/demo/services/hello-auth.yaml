@@ -10,4 +10,3 @@ spec:
     ownHost: true
     paths: []
     port: 80
-    type: public
