@@ -112,7 +112,7 @@ gitea:
       DOMAIN: {{ $giteaDomain }}
       ROOT_URL: "https://{{ $giteaDomain }}/"
       DISABLE_SSH: true
-
+      HTTP_PORT: 3000
   metrics:
     enabled: true
     serviceMonitor:
