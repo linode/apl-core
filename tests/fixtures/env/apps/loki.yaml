@@ -3,6 +3,7 @@ metadata:
     name: loki
     labels: {}
 spec:
+    _rawValues: {}
     autoscaling:
         distributor:
             enabled: true
@@ -94,4 +95,3 @@ spec:
         duration: 24h
         period: 24h
     v11StartDate: 2021-05-13T00:00:00.000Z
-    _rawValues: {}
