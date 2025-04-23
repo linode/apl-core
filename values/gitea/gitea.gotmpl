@@ -77,9 +77,6 @@ gitea:
       IS_TLS_ENABLED: true
       SUBJECT_PREFIX: 'Otomi[Gitea]: '
     {{- end }}
-    openid:
-      ENABLE_OPENID_SIGNIN: true
-      ENABLE_OPENID_SIGNUP: true
     oauth2_client:
       ENABLE_AUTO_REGISTRATION: true
       {{/*Disabled so that when an user with the same username is created in gitea, it will not be linked to another account*/}}
