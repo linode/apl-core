@@ -7,4 +7,3 @@ spec:
     hasCert: true
     paths:
         - /jeho
-    type: public
