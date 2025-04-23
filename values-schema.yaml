@@ -402,7 +402,7 @@ definitions:
         $ref: '#/definitions/rawValues'
       tracing:
         description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
-        propterties:
+        properties:
           enabled:
             default: false
             type: boolean
@@ -1999,7 +1999,7 @@ properties:
             $ref: '#/definitions/rawValues'
           tracing:
             description: Configure Istio for tracing. Requires Otel Collector to be enabled.
-            propterties:
+            properties:
               enabled:
                 default: false
                 type: boolean
@@ -3356,6 +3356,10 @@ properties:
               type: object
               additionalProperties: true
             default: []
+          existingVolume:
+            type: boolean
+            default: false
+            description: Set to true only when upgrading an existing cluster
   teamConfig:
     additionalProperties: false
     patternProperties:
