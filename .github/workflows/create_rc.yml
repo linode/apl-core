@@ -1,5 +1,5 @@
 name: Create Release Candidate.
-run-name: Create Release Candidate from commit ${{ github.event.inputs.rc_commit_sha }}
+run-name: Create Release Candidate from ${{ github.event.inputs.rc_commit_sha || 'main' }}
 
 on:
   workflow_dispatch:
@@ -31,20 +31,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Determine commit from where to create the RC
-        id: determine_commit
-        run: |
-          if [ "${{ github.event.inputs.rc_commit_sha }}" == "" ]; then
-            echo "No commit sha provided, using the latest commit on main"
-            echo "commit_sha=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          else
-            echo "Using provided commit sha: ${{ github.event.inputs.rc_commit_sha }}"
-            echo "commit_sha=${{ github.event.inputs.rc_commit_sha }}" >> $GITHUB_ENV
-          fi
-
       #TODO: Use the same user id on the container as in the runner to avoid the "dubious ownership" error
       - name: Mark repository as safe for Git
         run: git config --global --add safe.directory /__w/apl-core/apl-core
+
+      - name: Determine commit from where to create the RC
+        id: determine_commit
+        run: |
+          if [ -n "${{ github.event.inputs.rc_commit_sha }}" ]; then
+            commit_sha="${{ github.event.inputs.rc_commit_sha }}"
+            echo "Using provided commit sha: $commit_sha"
+            echo "commit_sha=$commit_sha" >> $GITHUB_ENV
+          else
+            commit_sha=$(git rev-parse HEAD)
+            echo "No commit sha provided, using the latest commit on main: $commit_sha"
+            echo "commit_sha=$commit_sha" >> $GITHUB_ENV
+          fi
+
+      - name: Install standard-version
+        run: |
+          npm install standard-version
 
       - name: Create release candidate tag & branch
         id: create_release
@@ -52,13 +58,15 @@ jobs:
           DRY_RUN: ${{ github.event.inputs.dry_run }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_SHA: ${{ env.commit_sha }}
+          BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
         run: |
           ci/scripts/create_rc.sh
 
       - name: Prepare chart
         env:
-          BOT_EMAIL: ${{ secrets.BOT_EMAIL }}
-          BOT_USERNAME: ${{ secrets.BOT_USERNAME }}
+          BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
         id: prepare_chart
         run: |
           ci/scripts/prepare_chart_for_release.sh
@@ -66,12 +74,21 @@ jobs:
       - name: Dry Run Outputs
         if: ${{ github.event.inputs.dry_run == 'true'}}
         run: |
-          echo -e "This Pipeline was executed in dry run mode so it will not publish the helm chart.\nBelow are some useful data to check:"
-          echo "Release candidate branch: ${{ github.ref }}"
+          echo "This Pipeline was executed in dry run mode so it will not publish the helm chart."
+          echo "Below are some useful data to check:"
+          echo "Release candidate branch: $(git rev-parse --abbrev-ref HEAD)"
+          echo "-*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*"
           echo "Contents of: chart/apl/Chart.yaml"
           cat chart/apl/Chart.yaml
+          echo "-*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*"
           echo "Contents of: package.json"
           cat package.json
+          echo "-*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*"
+          echo "Latest 5 commits on the release candidate branch"
+          git log -n 5 --pretty=format:"%h %s" --abbrev-commit
+          echo "-*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*--*-*"
+          echo "Commits behind main branch VS Commits ahead of main branch"
+          git rev-list --left-right --count origin/main...HEAD
 
       - name: Create and publish otomi chart release
         if: ${{ github.event.inputs.dry_run == 'false' }}

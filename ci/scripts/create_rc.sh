@@ -38,8 +38,8 @@ git checkout -b "$branch_name"
 
 # Dry run or actual execution
 if [ "$DRY_RUN" == "true" ]; then
-    echo "Running in dry run mode. No changes will be pushed.\nBelow you can check the dry run of the release command"
-    npm run release -- --prerelease rc --skip.changelog --dry-run
+    echo -e "Running in dry run mode. No changes will be pushed."
+    npm run release -- --prerelease rc --skip.changelog
 else
     npm run release -- --prerelease rc --skip.changelog
     git push -u origin "$branch_name" --follow-tags
