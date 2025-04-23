@@ -41,6 +41,9 @@ jobs:
 
       - name: Prepare chart
         id: prepare_chart
+        env:
+          BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
         run: |
           ci/scripts/prepare_chart_for_release.sh
 
