@@ -5,6 +5,7 @@ metadata:
         apl.io/teamId: demo
 spec:
     externalRepo: false
+    imageName: demo-java2
     mode:
         buildpacks:
             envVars:
@@ -16,8 +17,6 @@ spec:
             repoUrl: https://github.com/buildpacks/samples
             revision: HEAD
         type: buildpacks
-    name: demo-java2-v0-0-1
-    imageName: demo-java2
     scanSource: false
     tag: v0.0.1
     trigger: false
