@@ -42,6 +42,9 @@ metadata:
 rules:
 # Allows the operator to execute commands within pods in the gitea namespace. This is necessary to set up gitea group mapping and OIDC configuration.
 - apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list", "get"]
+- apiGroups: [""]
   resources: ["pods/exec"]
   verbs: ["create", "get", "post"]
 ---
