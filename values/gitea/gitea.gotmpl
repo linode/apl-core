@@ -52,15 +52,12 @@ image:
 
 gitea:
   admin:
-    username: {{ $g.adminUsername }}
-    password: {{ $g.adminPassword }}
+    existingSecret: gitea-admin-secret
   config:
     database:
       DB_TYPE: postgres
       HOST: gitea-db-rw.gitea.svc.cluster.local:5432
       NAME: gitea
-      USER: gitea
-      PASSWD: {{ $v.apps.gitea.postgresqlPassword }}
       SCHEMA: public
     admin:
       DISABLE_REGULAR_ORG_CREATION: false
@@ -117,6 +114,17 @@ gitea:
       enabled: true
       additionalLabels:
         prometheus: system
+  additionalConfigFromEnvs:
+    - name: GITEA__DATABASE__USER
+      valueFrom:
+        secretKeyRef:
+          name: gitea-db-secret
+          key: username
+    - name: GITEA__DATABASE__PASSWD
+      valueFrom:
+        secretKeyRef:
+          name: gitea-db-secret
+          key: password
 
 init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}
@@ -157,7 +165,7 @@ deployment:
           key: S3_STORAGE_KEY
     {{- end }}
     - name: BUCKET_NAME
-      value: {{ $giteaBucketName }}
+      value: {{ $giteaBucketName | quote }}
 
 persistence:
   size: 1Gi
