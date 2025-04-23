@@ -9,27 +9,46 @@ on:
 
 jobs:
   patch_rc:
-    if: startsWith(github.event.head_commit.message, 'fix:') && !github.event.act
-    runs-on: ubuntu-latest
-    container:
-      image: linode/apl-tools:v2.8.2
-      options: --user 0 # See https://docs.github.com/en/actions/sharing-automations/creating-actions/dockerfile-support-for-github-actions#user
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
+      - name: Analze commits since last rc release
+        id: analyze_commits
+        run: |
+
+          CURRENT_VERSION=$(jq '.version' package.json -r)
+          echo "Current version: $CURRENT_VERSION"
+          LATEST_TAG=$(git tag -l "v${CURRENT_VERSION%.*}*" | sort -V | tail -n 1)
+          echo "Latest tag: $LATEST_TAG"
+
+          echo "Commits since last rc release:"
+          git -P log --pretty=format:"%s" "${LATEST_TAG}..HEAD"
+          COMMITS=$(git log --pretty=format:"%s" "${LATEST_TAG}..HEAD")
+
+          if [[ $COMMITS == *"feat:"* || $COMMITS == *"fix:"* ]]; then
+            echo "RC_RELEASE=true" >> $GITHUB_ENV
+          else
+            echo "No feat/fix commits found. Skipping release."
+            echo "RC_RELEASE=false" >> $GITHUB_ENV
+          fi
+
       - name: Install dependencies
+        if: ${{ env.RC_RELEASE == 'true' }}
         run: |
           npm install standard-version
 
       - name: Configure Git
+        if: ${{ env.RC_RELEASE == 'true' }}
         run: |
           git config --global user.email "githubactions_rc@github.com"
           git config --global user.name "GitHub Action RC"
 
       - name: Release new RC version
+        if: ${{ env.RC_RELEASE == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -40,6 +59,7 @@ jobs:
           gh release create "$TAG" --title="Release: $TAG" --notes="Automated release for $TAG" --latest=false -p
 
       - name: Prepare chart
+        if: ${{ env.RC_RELEASE == 'true' }}
         id: prepare_chart
         env:
           BOT_EMAIL: ${{ vars.BOT_EMAIL }}
@@ -48,7 +68,7 @@ jobs:
           ci/scripts/prepare_chart_for_release.sh
 
       - name: Create and publish otomi chart release
-        if: ${{ github.event.inputs.dry_run == 'false' }}
+        if: ${{ github.event.inputs.dry_run == 'false' }} && ${{ env.RC_RELEASE == 'true' }}
         id: chart_release
         uses: helm/chart-releaser-action@v1.7.0
         with:
