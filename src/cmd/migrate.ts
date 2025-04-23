@@ -704,9 +704,7 @@ export const migrate = async (): Promise<boolean> => {
     d.log('No changes detected, skipping')
     return false
   }
-  d.log('PREVIOUS VERSION: ', prevVersion)
   const filteredChanges = filterChanges(prevVersion, changes)
-  d.log('FILTEREDCHANGES', filteredChanges)
   if (filteredChanges.length) {
     d.log(
       `Changes detected, migrating from ${prevVersion} to ${
