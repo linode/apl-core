@@ -354,5 +354,8 @@ changes:
   - version: 38
     teamSettingsMigration: true
   - version: 39
+    deletions:
+      - 'teamConfig.{team}.services[].type'
+  - version: 40
     additions:
       - apps.gitea.existingVolume: true
