@@ -44,7 +44,7 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  tag: {{ $g | get "image.gitea.tag" "1.19.1" }}
+  tag: {{ $g | get "image.gitea.tag" "1.19.4" }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
   rootless: true
 
