@@ -241,7 +241,7 @@ export async function ensureTeamGitopsDirectories(envDir: string, deps = { write
   const keepFilePaths: string[] = []
   for (const teamDir of dirs) {
     for (const gitOpsDir of gitOpsDirs) {
-      keepFilePaths.push(join(teamDir, gitOpsDir, '.keep'))
+      keepFilePaths.push(join(teamDir, gitOpsDir, '.gitkeep'))
     }
   }
 
