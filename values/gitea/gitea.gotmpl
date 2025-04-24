@@ -44,11 +44,16 @@ image:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  {{- with $g | get "image.gitea.tag" nil }}
+  {{- with $g | get "image.gitea.tag" "1.23.7" }}
   tag: {{ . }}
   {{- end }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
   rootless: true
+strategy:
+  # Default will block on volume reassignment, and Recreate
+  # cannot be set as rollingUpdate is set in default chart values
+  rollingUpdate:
+    maxUnavailable: 1
 
 gitea:
   admin:
