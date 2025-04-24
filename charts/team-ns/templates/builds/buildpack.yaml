@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $provider := $v.cluster.provider }}
 {{- range $v.builds }}
 {{- if eq .mode.type "buildpacks" }}
 ---
@@ -114,6 +115,9 @@ spec:
             metadata:
               creationTimestamp: null
             spec:
+              {{- if eq $provider "linode" }}  
+              storageClassName: linode-block-storage
+              {{- end }}
               accessModes:
               - ReadWriteOnce
               resources:
@@ -158,6 +162,9 @@ spec:
       metadata:
         creationTimestamp: null
       spec:
+        {{- if eq $provider "linode" }}  
+        storageClassName: linode-block-storage
+        {{- end }}
         accessModes:
         - ReadWriteOnce
         resources:
