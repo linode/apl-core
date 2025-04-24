@@ -112,8 +112,10 @@ gitea:
     enabled: true
     serviceMonitor:
       enabled: true
-      additionalLabels:
-        prometheus: system
+      relabelings:
+        - sourceLabels: [__name__]
+          targetLabel: prometheus
+          replacement: system
   additionalConfigFromEnvs:
     - name: GITEA__DATABASE__USER
       valueFrom:
