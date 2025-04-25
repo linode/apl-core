@@ -53,10 +53,9 @@ jobs:
           BOT_USERNAME: ${{ vars.BOT_USERNAME }}
         run: |
           echo "Detected "feat"/"fix"/"chore: trigger" commits. Running standard-version..."
-          npm run release -- --prerelease rc --skip.changelog 
-
           git config --global user.email $BOT_EMAIL
           git config --global user.name $BOT_USERNAME
+          npm run release -- --prerelease rc --skip.changelog 
 
           git push --follow-tags
           TAG="v$(jq '.version' package.json -r)"
