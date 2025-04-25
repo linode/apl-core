@@ -45,19 +45,19 @@ jobs:
         run: |
           npm install standard-version
 
-      - name: Configure Git
-        if: ${{ env.RC_RELEASE == 'true' }}
-        run: |
-          git config --global user.email "githubactions_rc@github.com"
-          git config --global user.name "GitHub Action RC"
-
       - name: Release new RC version
         if: ${{ env.RC_RELEASE == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
         run: |
           echo "Detected "feat"/"fix"/"chore: trigger" commits. Running standard-version..."
           npm run release -- --prerelease rc --skip.changelog 
+
+          git config --global user.email $BOT_EMAIL
+          git config --global user.name $BOT_USERNAME
+
           git push --follow-tags
           TAG="v$(jq '.version' package.json -r)"
           gh release create "$TAG" --title="Release: $TAG" --notes="Automated release for $TAG" --latest=false -p
