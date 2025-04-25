@@ -193,16 +193,27 @@ environments:
                 egressPublic: true
                 ingressPrivate: true
             resourceQuota:
-                - name: pods
-                  value: "50"
                 - name: services.loadbalancers
                   value: "0"
+                - name: services.nodeports
+                  value: "0"
+                - name: limits.cpu
+                  value: "24"
+                - name: requests.cpu
+                  value: "24"
+                - name: limits.memory
+                  value: "32Gi"
+                - name: requests.memory
+                  value: "32Gi"
+                - name: count/pods
+                  value: "50"
             selfService:
-                apps: []
-                policies:
-                    - edit policies
-                service:
-                    - ingress
+              teamMembers:
+                - createServices: true
+                - editSecurityPolicies: true
+                - useCloudShell: true
+                - downloadKubeconfig: true
+                - downloadDockerLogin: true
             password: {{ randAlphaNum 32 }}
       {{- end }}
       {{- end }}
