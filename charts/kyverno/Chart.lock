@@ -1,0 +1,9 @@
+dependencies:
+- name: grafana
+  repository: ""
+  version: 3.4.0
+- name: crds
+  repository: ""
+  version: 3.4.0
+digest: sha256:5e6b15461cfa01aeae320407400339b0efcb3392e818f2d89843f6010c28fbd9
+generated: "2025-04-25T00:40:29.817993926Z"
