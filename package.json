@@ -166,11 +166,6 @@
     "bootstrap-dev-with-repo": "CI=1 ENV_DIR=/tmp/otomi-bootstrap-dev binzx/otomi bootstrap",
     "bootstrap-tests-fixtures": "CI=1 ENV_DIR=$PWD/tests/fixtures binzx/otomi bootstrap"
   },
-  "standard-version": {
-    "skip": {
-      "tag": true
-    }
-  },
   "type": "commonjs",
   "version": "4.4.0"
 }
