@@ -1,5 +1,4 @@
 {{- $v := .Values }}
-{{- $provider := $v.cluster.provider }}
 {{- range $v.builds }}
 {{- if eq .mode.type "docker" }}
 {{- $context := ( dir .mode.docker.path ) }}
@@ -113,8 +112,8 @@ spec:
             metadata:
               creationTimestamp: null
             spec:
-              {{- if eq $provider "linode" }}  
-              storageClassName: linode-block-storage
+              {{- if $v.buildStorageClassName }}  
+              storageClassName: {{ $v.buildStorageClassName }}
               {{- end }}
               accessModes:
               - ReadWriteOnce
@@ -160,8 +159,8 @@ spec:
       metadata:
         creationTimestamp: null
       spec:
-        {{- if eq $provider "linode" }}  
-        storageClassName: linode-block-storage
+        {{- if $v.buildStorageClassName }}  
+        storageClassName: {{ $v.buildStorageClassName }}
         {{- end }}
         accessModes:
         - ReadWriteOnce
