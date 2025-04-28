@@ -36,7 +36,7 @@ describe('semverCompare', () => {
 })
 
 describe('ensureTeamGitopsDirectories', () => {
-  it('should create .keep files in all team directories', async () => {
+  it('should create .gitkeep files in all team directories', async () => {
     const envDir = '/values'
     const deps: any = {
       writeFile: jest.fn(),
@@ -45,10 +45,10 @@ describe('ensureTeamGitopsDirectories', () => {
     const result = await utils.ensureTeamGitopsDirectories(envDir, deps)
     expect(deps.glob).toHaveBeenCalledWith(`${envDir}/env/teams/*`)
     expect(result).toEqual([
-      '/values/env/teams/team1/sealedsecrets/.keep',
-      '/values/env/teams/team1/workloadValues/.keep',
-      '/values/env/teams/team2/sealedsecrets/.keep',
-      '/values/env/teams/team2/workloadValues/.keep',
+      '/values/env/teams/team1/sealedsecrets/.gitkeep',
+      '/values/env/teams/team1/workloadValues/.gitkeep',
+      '/values/env/teams/team2/sealedsecrets/.gitkeep',
+      '/values/env/teams/team2/workloadValues/.gitkeep',
     ])
   })
 })
