@@ -114,6 +114,9 @@ spec:
             metadata:
               creationTimestamp: null
             spec:
+              {{- if $v.buildStorageClassName }}  
+              storageClassName: {{ $v.buildStorageClassName }}
+              {{- end }}
               accessModes:
               - ReadWriteOnce
               resources:
@@ -158,6 +161,9 @@ spec:
       metadata:
         creationTimestamp: null
       spec:
+        {{- if $v.buildStorageClassName }}  
+        storageClassName: {{ $v.buildStorageClassName }}
+        {{- end }}
         accessModes:
         - ReadWriteOnce
         resources:

@@ -8,6 +8,8 @@
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
 {{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
 
+buildStorageClassName: {{ $v._derived.buildStorageClassName }}
+
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
   {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
