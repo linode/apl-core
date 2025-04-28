@@ -44,6 +44,7 @@ environments:
   default:
     values:
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
+          buildStorageClassName: {{ if eq $v.cluster.provider "linode" }}"linode-block-storage"{{ else }}""{{ end }} 
           caCert: |
             {{- if eq $issuer "letsencrypt" }}
             -----BEGIN CERTIFICATE-----
