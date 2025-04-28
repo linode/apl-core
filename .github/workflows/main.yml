@@ -24,9 +24,6 @@ jobs:
       - name: Set env
         run: |
           tag=${GITHUB_REF##*/}
-          if ${GITHUB_REF_NAME%%/*} == 'rc'; then
-            tag=$( jq -r '.version' < package.json )
-          fi
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> $GITHUB_ENV
           git config --global user.email $BOT_EMAIL
@@ -59,9 +56,6 @@ jobs:
         run: |
           set -u
           TAG=${GITHUB_REF##*/}
-          if ${GITHUB_REF_NAME%%/*} == 'rc'; then
-            TAG=$( jq -r '.version' < package.json )
-          fi
           docker login ghcr.io -u $BOT_USERNAME -p ${{ secrets.BOT_TOKEN }}
           image="$CACHE_REGISTRY/$CACHE_REPO:$TAG"
           docker pull $image
