@@ -7,6 +7,8 @@
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
 
+buildStorageClassName: {{ $v._derived.buildStorageClassName }}
+
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
   {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
