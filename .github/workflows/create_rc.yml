@@ -76,6 +76,7 @@ jobs:
           password: '${{ secrets.BOT_TOKEN }}'
 
       - name: CI tests, image build and push tag rc branch
+        if: ${{ github.event.inputs.dry_run == 'false' }}
         uses: docker/build-push-action@v6
         with:
           push: true
@@ -84,6 +85,7 @@ jobs:
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
 
       - name: Push to docker hub
+        if: ${{ github.event.inputs.dry_run == 'false' }}
         id: push-to-docker
         run: |
           set -u
