@@ -44,6 +44,10 @@ rules:
 - apiGroups: [""]
   resources: ["pods/exec"]
   verbs: ["create", "get", "post"]
+# Allows the operator to get, list and watch pods in the gitea namespace. This is necessary to wait for the gitea pod to be ready before executing commands.
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
 ---
 # RoleBinding for the above Role in gitea namespace
 apiVersion: rbac.authorization.k8s.io/v1
