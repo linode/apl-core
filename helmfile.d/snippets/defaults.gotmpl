@@ -209,11 +209,11 @@ environments:
                   value: "50"
             selfService:
               teamMembers:
-                - createServices: true
-                - editSecurityPolicies: true
-                - useCloudShell: true
-                - downloadKubeconfig: true
-                - downloadDockerLogin: true
+                createServices: true
+                editSecurityPolicies: true
+                useCloudShell: true
+                downloadKubeconfig: true
+                downloadDockerLogin: true
             password: {{ randAlphaNum 32 }}
       {{- end }}
       {{- end }}
