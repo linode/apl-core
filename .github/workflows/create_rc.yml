@@ -17,6 +17,16 @@ on:
           - true
           - false
 
+env:
+  CACHE_REGISTRY: ghcr.io
+  CACHE_REPO: linode/apl-core
+  REPO: linode/apl-core
+  DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_LINODEBOT_TOKEN }}
+  DOCKER_USERNAME: ${{ vars.DOCKERHUB_LINODEBOT_USERNAME }}
+  DEV_KUBECONFIG_64: ${{ secrets.DEV_KUBECONFIG }}
+  BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+  BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+
 jobs:
   create_patch_release:
     runs-on: ubuntu-22.04
@@ -27,23 +37,15 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: Determine commit from where to create the RC
-        id: determine_commit
-        run: |
-          if [ -n "${{ github.event.inputs.rc_commit_sha }}" ]; then
-            commit_sha="${{ github.event.inputs.rc_commit_sha }}"
-            echo "Using provided commit sha: $commit_sha"
-            echo "commit_sha=$commit_sha" >> $GITHUB_ENV
-          else
-            commit_sha=$(git rev-parse HEAD)
-            echo "No commit sha provided, using the latest commit on main: $commit_sha"
-            echo "commit_sha=$commit_sha" >> $GITHUB_ENV
-          fi
+          # Checkout inputs.rc_commit_sha or main if not provided
+          ref: ${{ github.event.inputs.rc_commit_sha || 'main' }}
 
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Install dependencies
         run: |
@@ -53,17 +55,49 @@ jobs:
         id: create_release
         env:
           DRY_RUN: ${{ github.event.inputs.dry_run }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMIT_SHA: ${{ env.commit_sha }}
-          BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          COMMIT_SHA: ${{ github.event.inputs.rc_commit_sha || 'main' }}
         run: |
           ci/scripts/create_rc.sh
 
+      - name: Set environment variables
+        run: |
+          TAG=v$( jq -r '.version' package.json)
+          echo "Creating TAG: $TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+          git config --global user.email $BOT_EMAIL
+          git config --global user.name $BOT_USERNAME
+
+      - name: Login to Github Packages
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.CACHE_REGISTRY }}
+          username: ${{ env.BOT_USERNAME }}
+          password: '${{ secrets.BOT_TOKEN }}'
+
+      - name: CI tests, image build and push tag rc branch
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          context: .
+          tags: |
+            ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
+
+      - name: Push to docker hub
+        id: push-to-docker
+        run: |
+          set -u
+          docker login ghcr.io -u $BOT_USERNAME -p ${{ secrets.BOT_TOKEN }}
+          image="$CACHE_REGISTRY/$CACHE_REPO:${{ env.TAG }}"
+          docker pull $image
+          docker tag $image $REPO:${{ env.TAG }}
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker push $REPO:${{ env.TAG }}
+
+      # - name: Deploy to staging // TODO: support staging env
+      #   run: ci/scripts/trigger_dev.sh
+
       - name: Prepare chart
-        env:
-          BOT_EMAIL: ${{ vars.BOT_EMAIL }}
-          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
         id: prepare_chart
         run: |
           ci/scripts/prepare_chart_for_release.sh

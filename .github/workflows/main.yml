@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - '**'
+      - '!rc/**'
     tags-ignore:
       - '*'
 env:
