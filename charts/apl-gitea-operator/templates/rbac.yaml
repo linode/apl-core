@@ -42,11 +42,12 @@ metadata:
 rules:
 # Allows the operator to execute commands within pods in the gitea namespace. This is necessary to set up gitea group mapping and OIDC configuration.
 - apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["list", "get"]
-- apiGroups: [""]
   resources: ["pods/exec"]
   verbs: ["create", "get", "post"]
+# Allows the operator to get, list and watch pods in the gitea namespace. This is necessary to wait for the gitea pod to be ready before executing commands.
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
 ---
 # RoleBinding for the above Role in gitea namespace
 apiVersion: rbac.authorization.k8s.io/v1
@@ -66,7 +67,7 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: apl-gitea-operator-trigger-template-pipeline-watcher
+  name: {{ include "apl-gitea-operator.fullname" . }}-trigger-template-pipeline-watcher
 rules:
   - apiGroups: ["tekton.dev"]
     resources: ["pipelines"]
@@ -78,13 +79,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: apl-gitea-operator-trigger-template-pipeline-binding
+  name: {{ include "apl-gitea-operator.fullname" . }}-trigger-template-pipeline-binding
 subjects:
   - kind: ServiceAccount
-    namespace: apl-gitea-operator
-    name: apl-gitea-operator
+    namespace: {{ .Release.Namespace }}
+    name: {{ include "apl-gitea-operator.serviceAccountName" . }}
 roleRef:
   kind: ClusterRole
-  name: apl-gitea-operator-trigger-template-pipeline-watcher
+  name: {{ include "apl-gitea-operator.fullname" . }}-trigger-template-pipeline-watcher
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
