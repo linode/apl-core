@@ -11,13 +11,15 @@ buildStorageClassName: {{ $v._derived.buildStorageClassName }}
 
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
-  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
+  {{- if and (hasKey $s "ingress") $v.otomi.isMultitenant }}
     {{- range $ing := $s.ingress }}
       {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
       {{- $coreTeamServices = append $coreTeamServices $svc }}
     {{- end }}
   {{- end }}
 {{- end }}
+
+
 
 {{- $teamResourceQuotas := dict }}
 {{- range $team | get "settings.resourceQuota" list }}
