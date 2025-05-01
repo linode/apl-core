@@ -8,6 +8,8 @@ kind: Pipeline
 metadata:
   name: docker-build-{{ .name }}
   annotations:
+    "helm.sh/hook": "pre-install"
+    "helm.sh/hook-delete-policy": "before-hook-creation"
     sidecar.istio.io/inject: "false"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
