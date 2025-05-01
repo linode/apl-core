@@ -3,12 +3,16 @@
 {{- if eq .mode.type "docker" }}
 {{- $context := ( dir .mode.docker.path ) }}
 ---
+# Define the Pipeline first with higher Kubernetes priority
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: docker-build-{{ .name }}
   annotations:
     sidecar.istio.io/inject: "false"
+    # Add a helm hook to ensure this pipeline is created BEFORE the PipelineRun
+    helm.sh/hook: "pre-install,pre-upgrade"
+    helm.sh/hook-weight: "-5"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   workspaces:
@@ -81,6 +85,7 @@ spec:
     {{- end }}
 ---
 {{- if .trigger }}
+# Define trigger templates
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
@@ -137,13 +142,17 @@ spec:
             secretName: harbor-pushsecret-builds
 ---
 {{- else }}
+# Define the PipelineRun with a weight that ensures it comes after the Pipeline
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: docker-build-{{ .name }}
+  name: docker-build-{{ .name }}-{{ .tag | replace "." "-" }}
   annotations:
     sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
+    # Add a helm hook to ensure this runs AFTER the pipeline is created
+    helm.sh/hook: "post-install,post-upgrade"
+    helm.sh/hook-weight: "5"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   pipelineRef:
