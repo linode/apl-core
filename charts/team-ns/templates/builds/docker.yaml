@@ -147,7 +147,7 @@ spec:
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: docker-build-{{ .name }}-{{ .tag | replace "." "-" }}
+  name: docker-build-{{ .name }}
   annotations:
     sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
