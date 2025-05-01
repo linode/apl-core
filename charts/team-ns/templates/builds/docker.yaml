@@ -3,7 +3,6 @@
 {{- if eq .mode.type "docker" }}
 {{- $context := ( dir .mode.docker.path ) }}
 ---
-# Define the Pipeline 
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -84,7 +83,6 @@ spec:
     {{- end }}
 ---
 {{- if .trigger }}
-# Define trigger templates
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
