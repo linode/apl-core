@@ -4,17 +4,15 @@ kind: Task
 metadata:
   name: git-clone
   annotations:
-    # Add a helm hook to ensure this task is created BEFORE the pipeline
-    helm.sh/hook: "pre-install,pre-upgrade"
-    helm.sh/hook-weight: "-10"
-  labels:
-    app.kubernetes.io/version: "0.9"
-  annotations:
+    # Use ArgoCD sync wave annotation to ensure tasks are created first
+    argocd.argoproj.io/sync-wave: "-5"
     tekton.dev/pipelines.minVersion: "0.38.0"
     tekton.dev/categories: Git
     tekton.dev/tags: git
     tekton.dev/displayName: "git clone"
     tekton.dev/platforms: "linux/amd64,linux/s390x,linux/ppc64le,linux/arm64"
+  labels:
+    app.kubernetes.io/version: "0.9"
 spec:
   stepTemplate:
     computeResources:

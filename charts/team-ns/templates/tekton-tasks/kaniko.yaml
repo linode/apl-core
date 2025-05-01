@@ -3,13 +3,11 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: kaniko
-  annotations:
-    # Add a helm hook to ensure this task is created BEFORE the pipeline
-    helm.sh/hook: "pre-install,pre-upgrade"
-    helm.sh/hook-weight: "-10"
   labels:
     app.kubernetes.io/version: "0.6"
   annotations:
+    # ArgoCD sync wave annotation to ensure it's applied first
+    argocd.argoproj.io/sync-wave: "-5"
     tekton.dev/pipelines.minVersion: "0.17.0"
     tekton.dev/categories: Image Build
     tekton.dev/tags: image-build

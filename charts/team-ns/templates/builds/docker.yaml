@@ -3,16 +3,15 @@
 {{- if eq .mode.type "docker" }}
 {{- $context := ( dir .mode.docker.path ) }}
 ---
-# Define the Pipeline first with higher Kubernetes priority
+# Define the Pipeline 
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: docker-build-{{ .name }}
   annotations:
     sidecar.istio.io/inject: "false"
-    # Add a helm hook to ensure this pipeline is created BEFORE the PipelineRun
-    helm.sh/hook: "pre-install,pre-upgrade"
-    helm.sh/hook-weight: "-5"
+    # ArgoCD sync wave annotation to ensure it's applied first
+    argocd.argoproj.io/sync-wave: "-2" 
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   workspaces:
@@ -90,6 +89,8 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: trigger-template-{{ .name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   resourcetemplates:
@@ -142,7 +143,7 @@ spec:
             secretName: harbor-pushsecret-builds
 ---
 {{- else }}
-# Define the PipelineRun with a weight that ensures it comes after the Pipeline
+# Create PipelineRun with a higher sync wave to ensure it's created after the Pipeline
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
@@ -150,9 +151,8 @@ metadata:
   annotations:
     sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
-    # Add a helm hook to ensure this runs AFTER the pipeline is created
-    helm.sh/hook: "post-install,post-upgrade"
-    helm.sh/hook-weight: "5"
+    # ArgoCD sync wave annotation to ensure it's applied after the pipeline
+    argocd.argoproj.io/sync-wave: "5"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   pipelineRef:
@@ -198,6 +198,8 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
   name: gitea-triggerbinding-{{ .name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   params:
@@ -210,6 +212,8 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1" 
   labels:
     tekton.dev/pipeline: docker-build-{{ .name }}
     {{- include "team-ns.chart-labels" $ | nindent 4 }}
