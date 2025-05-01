@@ -6,6 +6,8 @@ metadata:
   labels:
     app.kubernetes.io/version: "0.6"
   annotations:
+    # Use ArgoCD sync wave annotation to ensure tasks are created first
+    argocd.argoproj.io/sync-wave: "-5"
     tekton.dev/categories: Image Build
     tekton.dev/pipelines.minVersion: "0.17.0"
     tekton.dev/tags: image-build

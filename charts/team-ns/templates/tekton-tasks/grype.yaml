@@ -3,14 +3,16 @@ apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: grype
-  labels:
-    app.kubernetes.io/version: "0.1"
   annotations:
+    # Use ArgoCD sync wave annotation to ensure tasks are created first
+    argocd.argoproj.io/sync-wave: "-5"
     tekton.dev/pipelines.minVersion: "0.12.1"
     tekton.dev/categories: Security
     tekton.dev/tags: CLI, grype
     tekton.dev/displayName: "grype"
     tekton.dev/platforms: "linux/amd64,linux/arm64,linux/ppc64le,linux/390x"
+  labels:
+    app.kubernetes.io/version: "0.1"
 spec:
   stepTemplate:
     computeResources:
