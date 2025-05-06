@@ -7,8 +7,13 @@ const config: Config.InitialOptions = {
   modulePathIgnorePatterns: ['src/cmd/test.ts'],
   testEnvironment: 'node',
   transform: {
-    '^.+\\.(ts|tsx|js|jsx)$': 'babel-jest',
+    '^.+.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
+    '^.+\\.tsx?$': 'babel-jest',
+    '^.+\\.jsx?$': 'babel-jest',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(@kubernetes/client-node|node-fetch|zx|yaml|glob|minimatch|fetch-blob|formdata-polyfill|data-uri-to-buffer|web-streams-polyfill)/)',
+  ],
   silent: false,
   testMatch: ['**/*.test.ts'],
   verbose: true,
