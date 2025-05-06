@@ -32,19 +32,33 @@ jobs:
           GH_TOKEN: ${{ secrets.BOT_TOKEN }}
           GH_PROMPT_DISABLED: 1
         run: |
-          prs=$(gh pr list --state open --base main --json number,headRefName -q '.[] | [.number, .headRefName] | @tsv')
+          prs=$(gh pr list \
+            --state open \
+            --base main \
+            --json number,headRefName,labels \
+            --jq '.[]
+              | [
+                  .number,
+                  .headRefName,
+                  ( .labels | map(.name) | join(",") )
+                ]
+              | @tsv'
+          )
 
-          while IFS=$'\t' read -r number branch; do
-            echo "Updating PR #$number (branch: $branch)"
+          while IFS=$'\t' read -r number branch labels; do
+            if [[ "$labels" == *"no_autoupdate"* ]]; then
+              echo "⏩ Skipping PR #$number ($branch) — has ‘no_autoupdate’ label."
+              continue
+            fi
 
-            git fetch origin "$branch"
-            git checkout "$branch"
+            echo "Updating PR #$number ($branch)…"
+            git fetch origin "$branch" && git checkout "$branch"
 
             if git merge origin/main --no-edit; then
-              git push origin HEAD:$branch
+              git push origin HEAD:"$branch"
               echo "✅ Updated $branch"
             else
-              echo "❌ Merge conflict on $branch — skipped."
+              echo "❌ Merge conflict on $branch — aborting."
               git merge --abort
             fi
           done <<< "$prs"
