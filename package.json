@@ -91,10 +91,9 @@
     "prettier": "3.5.3",
     "semantic-release": "^24.2.3",
     "standard-version": "9.5.0",
-    "ts-node": "^10.8.1",
-    "ts-node-dev": "2.0.0",
     "tsc-alias": "^1.8.15",
     "tsconfig-paths": "4.2.0",
+    "tsx": "^4.19.4",
     "typescript": "5.8.3"
   },
   "engines": {
@@ -133,7 +132,7 @@
     "compile:watch": "npm run compile && tsc -w",
     "cz": "git-cz",
     "cz:retry": "git-cz -- --retry",
-    "dev:bootstrapCoreApp": "ts-node src/dev/bootstrapCoreApp.ts",
+    "dev:bootstrapCoreApp": "tsx src/dev/bootstrapCoreApp.ts",
     "eslint": "eslint --ext ts .",
     "eslint:fix": "eslint --fix --ext ts .",
     "format": "prettier --check \"**/*.{json,md,yml,yaml}\"",
