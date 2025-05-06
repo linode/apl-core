@@ -144,11 +144,12 @@ export const extract = (
       if (typeof childObj !== 'object') return {}
       const obj: JSONSchema = extract(childObj, leaf, mapValue)
       if ('extractedValue' in obj) return { [key]: obj.extractedValue }
-      return schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
-        ? Object.keys(obj).length === 0
-          ? undefined
-          : obj
-        : { [key]: obj }
+      const specialCondition = schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
+      if (specialCondition) {
+        // @ts-ignore
+        return obj === '{}' ? undefined : obj
+      }
+      return { [key]: obj }
     })
     .reduce((accumulator, extractedValue) => {
       return typeof extractedValue !== 'object'
