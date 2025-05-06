@@ -21,7 +21,7 @@ spec:
                         docker.io/weaveworks/kured,
                         ghcr.io/aquasecurity/trivy-operator,
                         quay.io/argoproj/argocd,
-                        quay.io/keycloak/keycloak-operator,
+                        docker.io/bitnami/keycloak,
                         k8s.gcr.io/kube-state-metrics/kube-state-metrics,
                         quay.io/jetstack/cert-manager-cainjector,
                         quay.io/jetstack/cert-manager-controller,
