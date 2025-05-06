@@ -90,3 +90,6 @@ operations:
   - version: 4.4.0
     pre:
       - upgrades/pre/upgrade-4-4-0.mjs || true
+  - version: 4.5.0
+    pre:
+      - upgrades/pre/upgrade-4-5-0.sh || true
