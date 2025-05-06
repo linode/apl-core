@@ -31,5 +31,4 @@ releases:
     namespace: keycloak
     labels:
       pkg: keycloak
-      app: core
     <<: *raw

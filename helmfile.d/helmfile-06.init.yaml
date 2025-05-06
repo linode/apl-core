@@ -17,7 +17,6 @@ releases:
     namespace: keycloak
     labels:
       pkg: keycloak
-      app: core
     <<: *default
   - name: cert-manager
     installed: true
