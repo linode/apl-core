@@ -7,7 +7,6 @@ const config: Config.InitialOptions = {
   modulePathIgnorePatterns: ['src/cmd/test.ts'],
   testEnvironment: 'node',
   transform: {
-    '^.+.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
     '^.+\\.tsx?$': 'babel-jest',
     '^.+\\.jsx?$': 'babel-jest',
   },
