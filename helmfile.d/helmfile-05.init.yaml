@@ -31,12 +31,5 @@ releases:
     namespace: keycloak
     labels:
       pkg: keycloak
-    <<: *raw
-  - name: keycloak
-    installed: true
-    namespace: keycloak
-    labels:
-      pkg: keycloak
       app: core
-    <<: *default
-
+    <<: *raw
