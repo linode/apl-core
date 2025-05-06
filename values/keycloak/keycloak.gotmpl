@@ -1,5 +1,7 @@
 {{- $v := .Values }}
 {{- $k := $v | get "apps.keycloak" }}
+{{- $consoleLoginVersion := $v.versions.consoleLogin}}
+{{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 
 auth:
   adminUser: {{ $k.adminUsername | b64enc }}
@@ -25,7 +27,7 @@ image:
 initContainers:
   # Akamai branding init container
   - name: init-container-theme-copy
-    image: docker.io/linode/apl-console:{{ $v.versions.consoleLogin }}
+    image: docker.io/linode/apl-console:{{ printf "%s%s" ($isSemver | ternary "v" "") $consoleLoginVersion }}
     resources: {{ $k.resources.keycloak | toYaml | nindent 6 }}
     command:
       - sh
