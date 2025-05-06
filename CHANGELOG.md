@@ -2,6 +2,98 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.5.0](https://github.com/linode/apl-core/compare/v4.4.0...v4.5.0) (2025-05-06)
+
+
+### Features
+
+* add argocd sync waves to ensure tasks and pipelines are created in the right order ([#2117](https://github.com/linode/apl-core/issues/2117)) ([9ac4dcc](https://github.com/linode/apl-core/commit/9ac4dcca221d15e2ddf68b3369bcadaa4642aa89))
+* add gitea repo public url as env ([#2034](https://github.com/linode/apl-core/issues/2034)) ([332fdcb](https://github.com/linode/apl-core/commit/332fdcb071b8e04342f12e56471877c4e53280e6))
+* allow gitea-operator to list pods in Gitea namespace ([#2106](https://github.com/linode/apl-core/issues/2106)) ([2062488](https://github.com/linode/apl-core/commit/2062488c0f5f34edf01cb46ef934e70213f9dc15))
+* argocd to check repo every 15s ([#2075](https://github.com/linode/apl-core/issues/2075)) ([81578f6](https://github.com/linode/apl-core/commit/81578f6e9e5f5ed9989ad87ac9c3bf7703e03168))
+* auto creation of webhooks in gitea for builds ([#1971](https://github.com/linode/apl-core/issues/1971)) ([b5338af](https://github.com/linode/apl-core/commit/b5338af6b20ca52e2cc012282b6aa1785340405b))
+* CNPG recovery options ([#1926](https://github.com/linode/apl-core/issues/1926)) ([98d8bfe](https://github.com/linode/apl-core/commit/98d8bfe4738bf2b772e437e376920ba5dfaeba9c))
+* improve gitops  compatibility by defining new file structure ([#1930](https://github.com/linode/apl-core/issues/1930)) ([8e15923](https://github.com/linode/apl-core/commit/8e15923121c5d0a437dac7313959f2009ab44fd6))
+* new build page ([#2026](https://github.com/linode/apl-core/issues/2026)) ([7bee88b](https://github.com/linode/apl-core/commit/7bee88be4a9b3af4104fde081be5edcbaa3c64f7))
+* rely solely on metadata name ([#2040](https://github.com/linode/apl-core/issues/2040)) ([0f89b2b](https://github.com/linode/apl-core/commit/0f89b2b507b5e3d79ed4c289683eb20ac714763e))
+* service page using new components ([#1996](https://github.com/linode/apl-core/issues/1996)) ([f3b5745](https://github.com/linode/apl-core/commit/f3b57450ae7c4c4101d046e3ba1c64059195023d))
+* split up team policies to single file ([#2057](https://github.com/linode/apl-core/issues/2057)) ([33d68ff](https://github.com/linode/apl-core/commit/33d68fff499efae2b8b7c050a2a2e2b7ea285a8d))
+* static team settings page  ([#2024](https://github.com/linode/apl-core/issues/2024)) ([b6c66b1](https://github.com/linode/apl-core/commit/b6c66b1028d6aae1c6d88b41de54fe4b8ee49298))
+* switching to linode-block-storage as default for tekton builds ([#2101](https://github.com/linode/apl-core/issues/2101)) ([776f3c4](https://github.com/linode/apl-core/commit/776f3c4d0b4c35a846e550adf36e51d4d9bcd7a9))
+* update api and console versions ([#2019](https://github.com/linode/apl-core/issues/2019)) ([793df47](https://github.com/linode/apl-core/commit/793df471d2cda2a840179ca0d63f9b08352289f3))
+* updated ingress_nginx helm chart to v4.11.5 ([#2011](https://github.com/linode/apl-core/issues/2011)) ([4d81a61](https://github.com/linode/apl-core/commit/4d81a618295df7813ed7accb6138d06d600bae20))
+* updated keycloak operator and gitea values ([#2008](https://github.com/linode/apl-core/issues/2008)) ([ebda118](https://github.com/linode/apl-core/commit/ebda1187d9a01cb36f646c61f375d7bbd1b8ea5e))
+* use internal service for traffic between apl-api and gitea ([#2016](https://github.com/linode/apl-core/issues/2016)) ([775e307](https://github.com/linode/apl-core/commit/775e307449b8b6db1dc851572874c92cd00ead0d))
+
+
+### Bug Fixes
+
+* 5xx errors ([#2025](https://github.com/linode/apl-core/issues/2025)) ([85f474f](https://github.com/linode/apl-core/commit/85f474f7224cccd5fc5808955f9729ca9f99fa77))
+* alert values ([#2077](https://github.com/linode/apl-core/issues/2077)) ([053077b](https://github.com/linode/apl-core/commit/053077b9e4d337fd4fb13d6f22f00d17b37e1a04))
+* always deploy ingress for team core apps  ([#2110](https://github.com/linode/apl-core/issues/2110)) ([5121cad](https://github.com/linode/apl-core/commit/5121cadfbef7c62287259b97e997c8d1ca521ef6))
+* commit and push ([#2066](https://github.com/linode/apl-core/issues/2066)) ([d358c38](https://github.com/linode/apl-core/commit/d358c383bdb8082af28052ba92cb8656c52cfd1d))
+* correct values order ([#2074](https://github.com/linode/apl-core/issues/2074)) ([d92a543](https://github.com/linode/apl-core/commit/d92a543469879a087802be71439ca6592961b833))
+* decrypt after updated structure encryption ([#2082](https://github.com/linode/apl-core/issues/2082)) ([9be7903](https://github.com/linode/apl-core/commit/9be7903a2897eaa1d0c68dc26ae18171fc11f3fe))
+* dont run team-tasks on "ci_skip" commits ([#2103](https://github.com/linode/apl-core/issues/2103)) ([8e129bd](https://github.com/linode/apl-core/commit/8e129bddb3ab7c474bdb0a216425f3dc0f4465b6))
+* ensure sealedsecrets and workloadValues directories exist ([#2069](https://github.com/linode/apl-core/issues/2069)) ([ac1b191](https://github.com/linode/apl-core/commit/ac1b1910ba4920aaebe52e57dd6e94f2f8808950))
+* get envDir path from the function argument ([#2004](https://github.com/linode/apl-core/issues/2004)) ([8341059](https://github.com/linode/apl-core/commit/8341059d8b473bad4d138698da2e8142670f5a13))
+* log complete error of ajv validation ([#2065](https://github.com/linode/apl-core/issues/2065)) ([1420a40](https://github.com/linode/apl-core/commit/1420a40a014a87db49502a739bb09bb28311fe44))
+* move operator rbac to chart ([#2093](https://github.com/linode/apl-core/issues/2093)) ([790b99f](https://github.com/linode/apl-core/commit/790b99f12509d2d780d82581a1d5862e38d1e86f))
+* obtaining the apl version from values repo ([#2003](https://github.com/linode/apl-core/issues/2003)) ([242a42e](https://github.com/linode/apl-core/commit/242a42ed4ad37700908d111ffd2b34a7b85f6020))
+* only encrypt secret files if not encrypted ([#2086](https://github.com/linode/apl-core/issues/2086)) ([920ef83](https://github.com/linode/apl-core/commit/920ef8332648a1445e17f2f83a23c45f66970917))
+* process resource quota as list ([#2055](https://github.com/linode/apl-core/issues/2055)) ([3a344b4](https://github.com/linode/apl-core/commit/3a344b4be7ae34605b30deb8efebfa950bc564f9))
+* pull before pushing to gitea in commitAndPush func ([#2063](https://github.com/linode/apl-core/issues/2063)) ([96003c8](https://github.com/linode/apl-core/commit/96003c8ecf387e511f4da66a674867bb0df5b8ec))
+* rabbitmq out of sync in argocd ([#2018](https://github.com/linode/apl-core/issues/2018)) ([c4ed6dd](https://github.com/linode/apl-core/commit/c4ed6dda672bb5ef72d346acf576d0b7a4ccdec0))
+* remove coverage annotations ([#2050](https://github.com/linode/apl-core/issues/2050)) ([0eab891](https://github.com/linode/apl-core/commit/0eab891f24f0e1c0cc05b30011b30ee13f8e12c8))
+* remove resourcequota and limitrange limits ([#2115](https://github.com/linode/apl-core/issues/2115)) ([73fdd55](https://github.com/linode/apl-core/commit/73fdd55ff87fa38310fc7e41919967a25c77241b))
+* render build git-credentials only if secretName specified ([#2062](https://github.com/linode/apl-core/issues/2062)) ([ffdfa3e](https://github.com/linode/apl-core/commit/ffdfa3e209bfe656eb05f7b6bf257f1f761672ef))
+* replace username and password from git related logs ([#2037](https://github.com/linode/apl-core/issues/2037)) ([94b056f](https://github.com/linode/apl-core/commit/94b056f4b4e5fba14773549cd8cbb10ae1c74d29))
+* selfservice defaults ([#2104](https://github.com/linode/apl-core/issues/2104)) ([5e60e9e](https://github.com/linode/apl-core/commit/5e60e9ee03ef31a497cc1fcbbaf84c1964f23545))
+* set resource limits to enforce resource defaults for containers ([#2100](https://github.com/linode/apl-core/issues/2100)) ([41d316a](https://github.com/linode/apl-core/commit/41d316adfbfb59b88dc8d91bea52316e63389147))
+* set team defaults ([#2095](https://github.com/linode/apl-core/issues/2095)) ([6f7d447](https://github.com/linode/apl-core/commit/6f7d447937c7e26b290579abe1974da4a3323c28))
+* team access to loki logs ([#2116](https://github.com/linode/apl-core/issues/2116)) ([c39bc9b](https://github.com/linode/apl-core/commit/c39bc9b2f17d552d77bbd20343deaae50f52d201))
+* team-ns build templates for git credentials ([#2068](https://github.com/linode/apl-core/issues/2068)) ([8716f15](https://github.com/linode/apl-core/commit/8716f15fd5e68d25bcf4e7ac69c07c27ee520f93))
+* updated keycloak init container version rendering ([#2108](https://github.com/linode/apl-core/issues/2108)) ([ce8f4f0](https://github.com/linode/apl-core/commit/ce8f4f046729bad6682a023bf51385424aae6684))
+
+
+### Others
+
+* **chart-deps:** update external-dns to version 8.7.8 ([#2015](https://github.com/linode/apl-core/issues/2015)) ([3bb0b16](https://github.com/linode/apl-core/commit/3bb0b1691f0338b366924a930d06a7bda882cfd3))
+* **deps:** bump @types/lodash from 4.17.13 to 4.17.16 ([#2041](https://github.com/linode/apl-core/issues/2041)) ([3143105](https://github.com/linode/apl-core/commit/314310543171ed94bf72b8237f000a7a4ea32d53))
+* **deps:** bump @types/retry from 0.12.2 to 0.12.5 ([#1915](https://github.com/linode/apl-core/issues/1915)) ([f8aa45a](https://github.com/linode/apl-core/commit/f8aa45a71b252cdda9cd92678a5a0f38f7f0fe9c))
+* **deps:** bump debug and @types/debug ([#1913](https://github.com/linode/apl-core/issues/1913)) ([a2a5b79](https://github.com/linode/apl-core/commit/a2a5b7907df840d7e5219d8b065bc118e7f4cc16))
+* **deps:** bump ncipollo/release-action from 1.15.0 to 1.16.0 ([#1972](https://github.com/linode/apl-core/issues/1972)) ([54b2960](https://github.com/linode/apl-core/commit/54b296009176636bcda71418a041e3e0db860ef0))
+* **deps:** bump ts-node-dev from 1.1.8 to 2.0.0 ([#1914](https://github.com/linode/apl-core/issues/1914)) ([7a586c1](https://github.com/linode/apl-core/commit/7a586c1df5907e1d574d09d4a5743d6d19c134b7))
+* set api version 4.1.1 ([#2036](https://github.com/linode/apl-core/issues/2036)) ([e186417](https://github.com/linode/apl-core/commit/e18641704921f198ef31be2f6260e8d77fa85096))
+* update .env.sample ([#2017](https://github.com/linode/apl-core/issues/2017)) ([22cc2f5](https://github.com/linode/apl-core/commit/22cc2f5b62de6fc14e6dd0041f5ef7461789b655))
+* update api version ([#2030](https://github.com/linode/apl-core/issues/2030)) ([a6254b2](https://github.com/linode/apl-core/commit/a6254b2319582e83bb8e09030ca3bd86dc2052ce))
+* update pull request template ([#2046](https://github.com/linode/apl-core/issues/2046)) ([e58f39d](https://github.com/linode/apl-core/commit/e58f39d4aa26e6347991c70df8ece79ba11d40e9))
+* update task version ([#2022](https://github.com/linode/apl-core/issues/2022)) ([7b3ce79](https://github.com/linode/apl-core/commit/7b3ce79db92fae910cf60300d2ee69af938126d3))
+* update versions ([#2043](https://github.com/linode/apl-core/issues/2043)) ([fb4340f](https://github.com/linode/apl-core/commit/fb4340f6c37a0b05fc09136d2abda5ad096aaccf))
+
+
+### Tests
+
+* add build fixtures ([#2067](https://github.com/linode/apl-core/issues/2067)) ([c0f4765](https://github.com/linode/apl-core/commit/c0f4765c4aceb4060880fd8ec931fe3f9ec6918b))
+
+
+### CI
+
+* added automatic deployment to dev for commits to main ([#2047](https://github.com/linode/apl-core/issues/2047)) ([a0a4623](https://github.com/linode/apl-core/commit/a0a4623d2a261f487103b57a5d6385adf00cd3e3))
+* added checkout step to deploy-to-dev job ([#2048](https://github.com/linode/apl-core/issues/2048)) ([ea0722b](https://github.com/linode/apl-core/commit/ea0722b8298514cb01095b39e71d845df35e5da9))
+* added pr-autoupdate job ([#2053](https://github.com/linode/apl-core/issues/2053)) ([b731a85](https://github.com/linode/apl-core/commit/b731a85926abc5d114657dcbed5780a2ea7f39a5))
+* added release candidate pipelines ([#2076](https://github.com/linode/apl-core/issues/2076)) ([54d4727](https://github.com/linode/apl-core/commit/54d4727d2054e946d838e0013718ddff92c4313b))
+* fix compare.sh script ([#2045](https://github.com/linode/apl-core/issues/2045)) ([b299c9f](https://github.com/linode/apl-core/commit/b299c9f61bd8ddaedd5dd3cb66433feb499b33b0))
+* fixed git config order ([#2096](https://github.com/linode/apl-core/issues/2096)) ([4305ef1](https://github.com/linode/apl-core/commit/4305ef11d1ff5861fc21c777a4767acb38350e0b))
+* path of workload values in installation profiles ([#2028](https://github.com/linode/apl-core/issues/2028)) ([d8e3552](https://github.com/linode/apl-core/commit/d8e3552545381e02a5deba3e712e8f4ed1bd6a5d))
+* update manifest kind in fixtures ([#2029](https://github.com/linode/apl-core/issues/2029)) ([830b5b2](https://github.com/linode/apl-core/commit/830b5b2d7db414988c24f83cd97ce26b29d1ad33))
+* update test fixtures ([#2039](https://github.com/linode/apl-core/issues/2039)) ([5e1dc9c](https://github.com/linode/apl-core/commit/5e1dc9ca6305735f35caa2133a136e323f4bf268))
+* updated github token to bot token ([#2099](https://github.com/linode/apl-core/issues/2099)) ([4258f87](https://github.com/linode/apl-core/commit/4258f87605d05b2f44d8f750d8eb3a076fb644ad))
+* updated trigger_dev.sh clone directory ([#2049](https://github.com/linode/apl-core/issues/2049)) ([aa419a9](https://github.com/linode/apl-core/commit/aa419a91f5bfa8d1745a2c6f45b27f934030213b))
+* updated workflow to use a PAT instead of the default GITHUB_TOKEN ([#2088](https://github.com/linode/apl-core/issues/2088)) ([f098b49](https://github.com/linode/apl-core/commit/f098b4917eadf5672eead6eaaa8b8db8e9d169b1))
+* using BOT_EMAIL and BOT_USERNAME variables ([#2094](https://github.com/linode/apl-core/issues/2094)) ([b9bb9dc](https://github.com/linode/apl-core/commit/b9bb9dc84b11ce5753d651ccd93d0b1247a11e5d))
+* using node 20 ([#2092](https://github.com/linode/apl-core/issues/2092)) ([ed24a18](https://github.com/linode/apl-core/commit/ed24a1839f7e2a30c2c2fe7ed30e81155adbc53d))
+
 ## [4.4.0](https://github.com/linode/apl-core/compare/v4.3.0...v4.4.0) (2025-03-14)
 
 
