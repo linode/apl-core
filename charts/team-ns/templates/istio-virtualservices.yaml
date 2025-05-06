@@ -55,11 +55,10 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /platform-logout
+            prefix: /logout-otomi
       redirect:
-        authority: {{ $v.authDomain | quote }}
-        uri: {{ $v.sso.logoutUri | quote }}
-        redirectCode: 302
+        authority: {{ $v.authDomain }}
+        uri: {{ $v.sso.logoutUri }}
     -
         {{- with $s.paths | default (list "/") }}
       match:
@@ -204,11 +203,10 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /platform-logout
+            prefix: /logout-otomi
       redirect:
-        authority: {{ $v.authDomain | quote }}
-        uri: {{ $v.sso.logoutUri | quote }}
-        redirectCode: 302
+        authority: "{{ $v.authDomain }}"
+        uri: "{{ $v.sso.logoutUri }}"
     -
         {{- with $s.paths | default (list "/") }}
       match:

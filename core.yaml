@@ -253,7 +253,7 @@ adminApps:
     ownHost: true
     ingress:
       - namespace: keycloak
-        svc: keycloak
+        svc: keycloak-service
         type: public
         port: 8080
   - name: kiali

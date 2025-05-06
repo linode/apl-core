@@ -32,11 +32,10 @@ releases:
     labels:
       pkg: keycloak
     <<: *raw
-  - name: keycloak
+  - name: keycloak-operator
     installed: true
     namespace: keycloak
     labels:
-      pkg: keycloak
-      app: core
+      pkg: keycloak-operator
     <<: *default
 

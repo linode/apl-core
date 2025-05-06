@@ -163,7 +163,7 @@ environments:
                           docker.io/weaveworks/kured,
                           ghcr.io/aquasecurity/trivy-operator,
                           quay.io/argoproj/argocd,
-                          docker.io/bitnami/keycloak,
+                          quay.io/keycloak/keycloak-operator,
                           k8s.gcr.io/kube-state-metrics/kube-state-metrics,
                           quay.io/jetstack/cert-manager-cainjector,
                           quay.io/jetstack/cert-manager-controller,
