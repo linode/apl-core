@@ -1,5 +1,3 @@
-/* eslint-disable no-loop-func */
-/* eslint-disable no-await-in-loop */
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
 import { existsSync, pathExists, readFileSync } from 'fs-extra'
@@ -146,9 +144,8 @@ export const extract = (
       if (typeof childObj !== 'object') return {}
       const obj: JSONSchema = extract(childObj, leaf, mapValue)
       if ('extractedValue' in obj) return { [key]: obj.extractedValue }
-      // eslint-disable-next-line no-nested-ternary
       return schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
-        ? obj === '{}'
+        ? Object.keys(obj).length === 0
           ? undefined
           : obj
         : { [key]: obj }
