@@ -6,6 +6,8 @@ metadata:
   labels:
     app.kubernetes.io/version: "0.6"
   annotations:
+    # ArgoCD sync wave annotation to ensure it's applied first
+    argocd.argoproj.io/sync-wave: "-5"
     tekton.dev/pipelines.minVersion: "0.17.0"
     tekton.dev/categories: Image Build
     tekton.dev/tags: image-build
