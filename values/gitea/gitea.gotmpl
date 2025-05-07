@@ -176,10 +176,7 @@ deployment:
 
 persistence:
   size: 1Gi
-{{- if $g.existingVolume }}
-  create: false
   claimName: data-gitea-0
-{{- end }}
 
 postgresql:
   enabled: false

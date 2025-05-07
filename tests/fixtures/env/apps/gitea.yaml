@@ -35,4 +35,3 @@ spec:
             requests:
                 cpu: 10m
                 memory: 16M
-    existingVolume: false
