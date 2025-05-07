@@ -1,12 +1,12 @@
 annotations:
   artifacthub.io/changes: |
     - kind: changed
-      description: Bump argo-cd to v2.10.4
+      description: Bump argo-cd to v2.11.2
   artifacthub.io/signKey: |
     fingerprint: 2B8F22F57260EFA67BE1C5824B11F800CD9D2252
     url: https://argoproj.github.io/argo-helm/pgp_keys.asc
 apiVersion: v2
-appVersion: v2.10.4
+appVersion: v2.11.2
 dependencies:
 - condition: redis-ha.enabled
   name: redis-ha
@@ -28,4 +28,4 @@ name: argo-cd
 sources:
 - https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd
 - https://github.com/argoproj/argo-cd
-version: 6.7.3
+version: 6.11.1
