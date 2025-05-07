@@ -86,18 +86,22 @@ export const hfValues = async (
   let output: ProcessOutputTrimmed
   if (filesOnly)
     output = await hf(
-      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' },
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.gotmpl`, args: 'build' },
       undefined,
       envDir,
     )
   else if (defaultValues)
     output = await hf(
-      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-defaults.yaml`, args: 'build' },
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-defaults.gotmpl`, args: 'build' },
       undefined,
       envDir,
     )
   else
-    output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml`, args: 'build' }, undefined, envDir)
+    output = await hf(
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.gotmpl`, args: 'build' },
+      undefined,
+      envDir,
+    )
   const res = parse(replaceHFPaths(output.stdout, envDir)).renderedvalues
   if (excludeSecrets) {
     // strip secrets
@@ -160,7 +164,7 @@ export const hfTemplate = async (
   let template = ''
   const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {
-    const file = 'helmfile.tpl/helmfile-init.yaml'
+    const file = 'helmfile.tpl/helmfile-init.yaml.gotmpl'
     d.debug(`# Templating ${file} started`)
     const outInit = await hf({ ...params, fileOpts: file }, { streams }, envDir)
     d.debug(`# Templating ${file} done`)
