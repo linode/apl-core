@@ -4,7 +4,7 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 
 auth:
-  adminUser: {{ $k.adminUsername | b64enc }}
+  adminUser: {{ $k.adminUsername | quote }}
   existingSecret: keycloak-initial-admin
   passwordSecretKey: password
 service:
