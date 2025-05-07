@@ -5,7 +5,27 @@ environments:
   default:
     values:
     - apps:
-        ingress-nginx:
+        {{- /* Combine platform class with other ingress classes in a single loop */}}
+        {{- if $v.ingress }}
+        {{- /* Create a new list with all ingress classes */}}
+        {{- $allClasses := list }}
+        
+        {{- /* Add platform class if it exists */}}
+        {{- if $v.ingress.platformClass }}
+        {{- $platformClass := dict "className" $v.ingress.platformClass.className }}
+        {{- $allClasses = append $allClasses $platformClass }}
+        {{- end }}
+        
+        {{- /* Add additional classes if they exist */}}
+        {{- if $v.ingress.classes }}
+        {{- range $v.ingress.classes }}
+        {{- $allClasses = append $allClasses . }}
+        {{- end }}
+        {{- end }}
+        
+        {{- /* Loop through all classes */}}
+        {{- range $allClasses }}
+        ingress-nginx-{{ .className }}:
           autoscaling:
             enabled: true
             minReplicas: 2
@@ -44,21 +64,5 @@ environments:
                 cpu: 10m
                 memory: 10Mi
           _rawValues: {}
-        {{- /* Add platform class ingress-nginx */}}
-        {{- if $v.ingress }}
-        {{- if $v.ingress.platformClass }}
-        ingress-nginx-{{ $v.ingress.platformClass.className }}:
-            {{- with $defaults := index $v.apps "ingress-nginx" }}
-                {{ toYaml $defaults | nindent 10 }}
-            {{- end }}
-        {{- end }}
-        {{- /* Add additional ingress classes */}}
-        {{- if $v.ingress.classes }}
-        {{- range $index, $ingress := $v.ingress.classes }}
-        ingress-nginx-{{ $ingress.className }}:
-            {{- with $defaults := index $v.apps "ingress-nginx" }}
-                {{ toYaml $defaults | nindent 10 }}
-            {{- end }}
-        {{- end }}
         {{- end }}
         {{- end }}
