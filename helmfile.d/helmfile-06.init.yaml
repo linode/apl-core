@@ -12,12 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: keycloak-operator-cr
-    installed: true
-    namespace: keycloak
-    labels:
-      pkg: keycloak
-    <<: *rawCR
   - name: cert-manager
     installed: true
     namespace: cert-manager
@@ -34,5 +28,3 @@ releases:
     values:
       - ../values/istio-operator/istio-operator-raw.gotmpl
       - snippets/common.gotmpl
-
-
