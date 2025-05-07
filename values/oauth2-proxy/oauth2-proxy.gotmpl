@@ -23,8 +23,7 @@ resources: {{- $oauth2.resources | toYaml | nindent 2 }}
 {{- range $teamId, $team := $v.teamConfig }}
   {{- if hasKey $team "services" }}
     {{- range $s := $team.services }}
-      {{- $type := $s.type | default "auth" }}
-      {{- if and (hasKey $s "domain") (not (eq $type "public")) }}
+      {{- if (hasKey $s "domain")}}
         {{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domainSuffix $s.domain)) }}
           {{- $domains = append $domains $s.domain }}
         {{- end }}

@@ -117,7 +117,8 @@ configs:
       rootCA: |
         {{- $v._derived.caCert | nindent 8 }}
       {{- end }}
-
+    timeout.reconciliation: 15s
+    timeout.reconciliation.jitter: 2s
   {{- if $v._derived.untrustedCA }}
   tls:
     certificates:

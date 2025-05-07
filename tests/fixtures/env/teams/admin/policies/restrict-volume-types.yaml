@@ -1,0 +1,17 @@
+kind: AplTeamPolicy
+metadata:
+    name: restrict-volume-types
+    labels:
+        apl.io/teamId: admin
+spec:
+    action: Audit
+    customValues:
+        - configMap
+        - csi
+        - downwardAPI
+        - emptyDir
+        - ephemeral
+        - persistentVolumeClaim
+        - projected
+        - secret
+    severity: medium

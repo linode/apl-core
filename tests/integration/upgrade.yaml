@@ -58,16 +58,20 @@ teamConfig:
         egressPublic: true
         ingressPrivate: true
     builds:
-      - name: nodejs-hello-world
+      - name: nodejs-hello-world-v0-0-1
+        imageName: nodejs-hello-world
         tag: v0.0.1
+        trigger: false
         mode:
           docker:
             repoUrl: https://github.com/linode/apl-nodejs-helloworld
             revision: HEAD
             path: ./Dockerfile
           type: docker
-      - name: demo-java-maven
+      - name: demo-java-maven-v0-0-1
+        imageName: demo-java-maven
         tag: v0.0.1
+        trigger: false
         mode:
           buildpacks:
             repoUrl: https://github.com/buildpacks/samples
@@ -86,7 +90,6 @@ teamConfig:
             mode: DenyAll
         ownHost: true
         port: 80
-        type: public
       - id: a106eb22-8c06-41b6-ab15-97aafb0888b5
         ingressClassName: platform
         name: nginx-deployment
@@ -96,7 +99,6 @@ teamConfig:
         ownHost: true
         paths: []
         port: 80
-        type: public
       - id: 91f6af98-ad8e-4111-b916-cf1b5bdcafb0
         ingressClassName: platform
         ksvc:
@@ -108,7 +110,6 @@ teamConfig:
         ownHost: true
         paths: []
         port: 80
-        type: public
     workloads:
       - name: nodejs-helloworld
         url: https://github.com/linode/apl-nodejs-helloworld.git

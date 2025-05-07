@@ -1,0 +1,50 @@
+name: PR Auto Updater
+on:
+  push:
+    branches:
+      - 'main'
+      - 'release/*'
+    tags-ignore:
+      - '*'
+
+jobs:
+  pr-autoupdate:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt update
+          sudo apt install gh -y
+
+      - name: Configure Git
+        run: |
+          git config --global user.email ${{ vars.BOT_EMAIL }}
+          git config --global user.name ${{ vars.BOT_USERNAME }}
+
+      - name: Update PR branches
+        env:
+          GH_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GH_PROMPT_DISABLED: 1
+        run: |
+          prs=$(gh pr list --state open --base main --json number,headRefName -q '.[] | [.number, .headRefName] | @tsv')
+
+          while IFS=$'\t' read -r number branch; do
+            echo "Updating PR #$number (branch: $branch)"
+
+            git fetch origin "$branch"
+            git checkout "$branch"
+
+            if git merge origin/main --no-edit; then
+              git push origin HEAD:$branch
+              echo "✅ Updated $branch"
+            else
+              echo "❌ Merge conflict on $branch — skipped."
+              git merge --abort
+            fi
+          done <<< "$prs"

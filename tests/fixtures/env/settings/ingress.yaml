@@ -13,3 +13,4 @@ spec:
           sourceIpAddressFiltering: 10.0.0.0/24
     platformClass:
         entrypoint: ''
+        className: platform

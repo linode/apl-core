@@ -5,14 +5,15 @@ import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
 import { mkdir, readFile, writeFile } from 'fs/promises'
-import { cloneDeep, each, get, isObject, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
+import { glob, globSync } from 'glob'
+import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, pick, pull, set, unset } from 'lodash'
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, hfValues } from 'src/common/hf'
-import { getFileMap, getTeamNames, saveValues } from 'src/common/repo'
+import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
 import { BasicArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
@@ -20,7 +21,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { glob } from 'glob'
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -51,6 +51,10 @@ interface Change {
     [mutation: string]: string
   }>
   networkPoliciesMigration?: boolean
+  teamSettingsMigration?: boolean
+  teamResourceQuotaMigration?: boolean
+  buildImageNameMigration?: boolean
+  policiesMigration?: boolean
 }
 
 export type Changes = Array<Change>
@@ -300,6 +304,139 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
+const teamSettingsMigration = (values: Record<string, any>): void => {
+  const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+
+  teams.map((teamName) => {
+    // Get the alerts block for the team and remove email and opsgenie
+    const alerts = get(values, `teamConfig.${teamName}.settings.alerts`)
+    if (alerts?.email) unset(alerts, 'email')
+    if (alerts?.opsgenie) unset(alerts, 'opsgenie')
+    // Get the selfService block for the team
+    const selfService = get(values, `teamConfig.${teamName}.settings.selfService`)
+    if (!selfService) return
+
+    // Initialize the new teamMembers structure with default boolean values
+    const teamMembers = {
+      createServices: false,
+      editSecurityPolicies: false,
+      useCloudShell: false,
+      downloadKubeconfig: false,
+      downloadDockerLogin: false,
+    }
+
+    // Map selfService.service.ingress -> teamMembers.createServices
+    const servicePermissions = get(selfService, 'service', [])
+    if (Array.isArray(servicePermissions) && servicePermissions.includes('ingress')) {
+      teamMembers.createServices = true
+    }
+
+    // Map selfService.access keys to corresponding teamMembers fields
+    // - downloadKubeConfig -> downloadKubeconfig
+    // - downloadDockerConfig -> downloadDockerLogin
+    // - shell -> useCloudShell
+    const accessPermissions = get(selfService, 'access', [])
+    if (Array.isArray(accessPermissions)) {
+      if (accessPermissions.includes('downloadKubeConfig')) {
+        teamMembers.downloadKubeconfig = true
+      }
+      if (accessPermissions.includes('downloadDockerConfig')) {
+        teamMembers.downloadDockerLogin = true
+      }
+      if (accessPermissions.includes('shell')) {
+        teamMembers.useCloudShell = true
+      }
+    }
+
+    // Map selfService.policies.edit_policies -> teamMembers.editSecurityPolicies.
+    // Note: In the source schema, the string "edit policies" is used.
+    const policies = get(selfService, 'policies', [])
+    if (Array.isArray(policies) && policies.includes('edit policies')) {
+      teamMembers.editSecurityPolicies = true
+    }
+
+    // Set the new teamMembers object on selfService
+    set(selfService, 'teamMembers', teamMembers)
+
+    unset(selfService, 'service')
+    unset(selfService, 'access')
+    unset(selfService, 'policies')
+    unset(selfService, 'apps')
+  })
+}
+
+export const getBuildName = (name: string, tag: string): string => {
+  return `${name}-${tag}`
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/gi, '-') // Replace invalid characters with hyphens
+    .replace(/-+/g, '-') // Replace multiple consecutive hyphens with a single hyphen
+    .replace(/^-|-$/g, '') // Remove leading or trailing hyphens
+}
+
+export async function policiesMigration(deps = { loadYaml, saveResourceGroupToFiles }) {
+  const filePaths = globSync(`${env.ENV_DIR}/env/teams/*/policies.yaml`, {
+    nodir: true, // Exclude directories
+    dot: false,
+  }).sort()
+  if (filePaths.length === 0) {
+    console.info('No policies.yaml files found in env/teams/*/policies.yaml. Skipping migration')
+    return
+  }
+  const inValues = filePaths.map(async (filePath) => {
+    const yaml = await deps.loadYaml(filePath)
+    return {
+      [yaml!.metadata.name]: {
+        policies: yaml!.spec,
+      },
+    }
+  })
+  const teamArray = await Promise.all(inValues)
+  const teamConfig = teamArray.reduce((acc, team) => {
+    return { ...acc, ...team }
+  }, {})
+
+  const policiesFileMap = getFileMap('AplTeamPolicy', env.ENV_DIR)
+  await deps.saveResourceGroupToFiles(policiesFileMap, { teamConfig }, {})
+}
+
+const buildImageNameMigration = async (values: Record<string, any>): Promise<void> => {
+  const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+  type Build = {
+    name: string
+    tag: string
+    imageName?: string
+  }
+  await Promise.all(
+    teams.map(async (teamName) => {
+      const builds: Build[] = get(values, `teamConfig.${teamName}.builds`, [])
+      if (!builds || builds.length === 0) return
+      for (const build of builds) {
+        set(build, 'imageName', build.name)
+        const buildName = getBuildName(build.name, build.tag)
+        set(build, 'name', buildName)
+        await deleteFile(`env/teams/${teamName}/builds/${build.imageName}.yaml`)
+      }
+    }),
+  )
+}
+
+const teamResourceQuotaMigration = (values: Record<string, any>) => {
+  Object.entries(values?.teamConfig as Record<string, any>).forEach(([teamName, teamValues]) => {
+    const resourceQuota = teamValues?.settings?.resourceQuota
+    if (!isUndefined(resourceQuota) && !Array.isArray(resourceQuota)) {
+      set(
+        teamValues,
+        'settings.resourceQuota',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        Object.entries(resourceQuota || {}).map(([name, value]) => ({ name, value })),
+      )
+      console.log('Completed migration of resourceQuota for team', teamName)
+    } else {
+      console.log('No migration needed of resourceQuota for team', teamName)
+    }
+  })
+}
+
 const bulkAddition = (path: string, values: any, filePath: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const val = require(filePath)
@@ -362,8 +499,12 @@ export const applyChanges = async (
     }
 
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
+    if (c.teamSettingsMigration) teamSettingsMigration(values)
+    if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
+    if (c.buildImageNameMigration) await buildImageNameMigration(values)
+    if (c.policiesMigration) await policiesMigration()
 
-    Object.assign(values, { version: c.version })
+    Object.assign(values.versions, { specVersion: c.version })
   }
   if (!dryRun) await deps.writeValues(values, true)
   // @ts-ignore
@@ -372,13 +513,39 @@ export const applyChanges = async (
 
 export const unparsePaths = (path: string, values: Record<string, any>): Array<string> => {
   if (path.includes('{team}')) {
-    const paths: Array<string> = []
+    let paths: Array<string> = []
     const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
     teams.forEach((teamName) => paths.push(path.replace('{team}', teamName)))
+    paths = transformArrayToPaths(paths, values)
     return paths.sort()
   } else {
-    return [path]
+    const paths = transformArrayToPaths([path], values)
+    return paths
   }
+}
+
+function transformArrayToPaths(paths: string[], values: Record<string, any>): string[] {
+  const transformedPaths: string[] = []
+
+  paths.forEach((path) => {
+    const match = path.match(/^(.*)\.(\w+)\[\](.*)$/)
+    if (!match) {
+      transformedPaths.push(path)
+      return
+    }
+
+    const [, beforeArrayPath, arrayKey, afterArrayPath] = match
+
+    const objectPath = beforeArrayPath.split('.').reduce((obj, key) => obj?.[key], values)
+
+    if (objectPath && objectPath[arrayKey]) {
+      objectPath[arrayKey].forEach((_item: any, index: number) => {
+        transformedPaths.push(`${beforeArrayPath}.${arrayKey}[${index}]${afterArrayPath}`)
+      })
+    }
+  })
+
+  return transformedPaths
 }
 export const unsetAtPath = (path: string, values: Record<string, any>): void => {
   const paths = unparsePaths(path, values)
@@ -495,9 +662,9 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
   })
   const users = get(oldValues, 'users', [])
   users.forEach((user) => {
-    set(user, 'id', user.id || randomUUID())
+    set(user, 'name', user.id || randomUUID())
   })
-  oldValues.versions = { specVersion: 1 }
+  oldValues.versions = { specVersion: 33 }
   const teamNames = await getTeamNames(env.ENV_DIR)
   const secretPaths = await getSchemaSecretsPaths(teamNames)
   const valuesPublic = omit(oldValues, secretPaths)
@@ -516,7 +683,8 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
     }),
   )
   await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)
-  await encrypt(env.ENV_DIR)
+  await encrypt()
+  await decrypt()
   return true
 }
 
@@ -530,14 +698,12 @@ export const migrate = async (): Promise<boolean> => {
   }
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
-  const prevVersion: number = versions?.specVersion
+  const prevVersion: number = versions?.spec?.specVersion
   if (!prevVersion) {
-    d.log('No changes detected, skipping')
+    d.log('No previous version detected')
     return false
   }
-
   const filteredChanges = filterChanges(prevVersion, changes)
-
   if (filteredChanges.length) {
     d.log(
       `Changes detected, migrating from ${prevVersion} to ${

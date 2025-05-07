@@ -1,0 +1,17 @@
+kind: AplTeamBuild
+metadata:
+    name: demo-java1-v0-0-1
+    labels:
+        apl.io/teamId: demo
+spec:
+    externalRepo: false
+    imageName: demo-java1
+    mode:
+        docker:
+            path: ./Dockerfile
+            repoUrl: https://github.com/buildpacks/samples
+            revision: HEAD
+        type: docker
+    scanSource: true
+    tag: v0.0.1
+    trigger: false
