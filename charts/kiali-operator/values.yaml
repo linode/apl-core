@@ -2,8 +2,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 image: # see: https://quay.io/repository/kiali/kiali-operator?tab=tags
-  repo: ${HELM_IMAGE_REPO} # quay.io/kiali/kiali-operator
-  tag: ${HELM_IMAGE_TAG} # version string like v1.39.0 or a digest hash
+  repo: quay.io/kiali/kiali-operator # quay.io/kiali/kiali-operator
+  tag: v1.89.7 # version string like v1.39.0 or a digest hash
   digest: "" # use "sha256" if tag is a sha256 hash (do NOT prefix this value with a "@")
   pullPolicy: Always
   pullSecrets: []
