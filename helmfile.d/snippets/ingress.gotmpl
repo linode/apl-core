@@ -7,23 +7,32 @@ environments:
     - apps:
         {{- /* Combine platform class with other ingress classes in a single loop */}}
         {{- if $v.ingress }}
-        {{- /* Create a new list with all ingress classes */}}
+        {{- /* Create a new list with unique ingress classes */}}
         {{- $allClasses := list }}
+        {{- $classMap := dict }}
         
-        {{- /* Add platform class if it exists */}}
-        {{- if $v.ingress.platformClass }}
-        {{- $platformClass := dict "className" $v.ingress.platformClass.className }}
-        {{- $allClasses = append $allClasses $platformClass }}
-        {{- end }}
+        {{- /* Process all classes, ensuring uniqueness */}}
         
-        {{- /* Add additional classes if they exist */}}
+        {{- /* First collect classes from ingress.classes if they exist */}}
         {{- if $v.ingress.classes }}
         {{- range $v.ingress.classes }}
+        {{- if not (hasKey $classMap .className) }}
         {{- $allClasses = append $allClasses . }}
+        {{- $_ := set $classMap .className true }}
+        {{- end }}
         {{- end }}
         {{- end }}
         
-        {{- /* Loop through all classes */}}
+        {{- /* Then add platform class if it exists and isn't already added */}}
+        {{- if $v.ingress.platformClass }}
+        {{- if not (hasKey $classMap $v.ingress.platformClass.className) }}
+        {{- $platformClass := dict "className" $v.ingress.platformClass.className }}
+        {{- $allClasses = append $allClasses $platformClass }}
+        {{- $_ := set $classMap $v.ingress.platformClass.className true }}
+        {{- end }}
+        {{- end }}
+        
+        {{- /* Loop through all unique classes and apply defaults */}}
         {{- range $allClasses }}
         ingress-nginx-{{ .className }}:
           autoscaling:

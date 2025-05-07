@@ -10,6 +10,9 @@ bases:
 bases:
   - snippets/derived.gotmpl
 ---
+bases:
+  - snippets/ingress.gotmpl
+---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
 {{- $a := $v.apps }}
