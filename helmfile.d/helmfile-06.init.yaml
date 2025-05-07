@@ -12,12 +12,6 @@ bases:
 {{- $a := $v.apps }}
 
 releases:
-  - name: keycloak
-    installed: true
-    namespace: keycloak
-    labels:
-      pkg: keycloak
-    <<: *default
   - name: cert-manager
     installed: true
     namespace: cert-manager
