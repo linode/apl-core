@@ -150,6 +150,7 @@ export const hfTemplate = async (
 ): Promise<string> => {
   const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
+  process.env.HELMFILE_V1MODE = 'true'
   // const args = ['template', '--validate']
   const args = ['template', '--include-needs']
   if (outDir) args.push(`--output-dir=${outDir}`)
