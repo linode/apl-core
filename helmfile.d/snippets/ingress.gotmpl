@@ -1,0 +1,64 @@
+{{- /* Add ingress configurations */}}
+{{- $v := .Values }}
+
+environments:
+  default:
+    values:
+    - apps:
+        ingress-nginx:
+          autoscaling:
+            enabled: true
+            minReplicas: 2
+            maxReplicas: 10
+            targetCPUUtilizationPercentage: 80
+            targetMemoryUtilizationPercentage: 80
+          modsecurity:
+            enabled: false
+            block: false
+            owasp: true
+          tracing:
+            enabled: false
+            samplingRatio: "0.01"
+          maxBodySize: 1024m
+          maxBodySizeBytes: 1073741824
+          resources:
+            controller:
+              requests:
+                cpu: 100m
+                memory: 384Mi
+              limits:
+                cpu: "2"
+                memory: 2Gi
+            opentelemetry:
+              requests:
+                cpu: 100m
+                memory: 65Mi
+              limits:
+                cpu: 500m
+                memory: 256Mi
+            defaultBackend:
+              limits:
+                cpu: 20m
+                memory: 20Mi
+              requests:
+                cpu: 10m
+                memory: 10Mi
+          _rawValues: {}
+        {{- /* Add platform class ingress-nginx */}}
+        {{- if $v.ingress }}
+        {{- if $v.ingress.platformClass }}
+        ingress-nginx-{{ $v.ingress.platformClass.className }}:
+            {{- with $defaults := index $v.apps "ingress-nginx" }}
+                {{ toYaml $defaults | nindent 10 }}
+            {{- end }}
+        {{- end }}
+        {{- /* Add additional ingress classes */}}
+        {{- if $v.ingress.classes }}
+        {{- range $index, $ingress := $v.ingress.classes }}
+        ingress-nginx-{{ $ingress.className }}:
+            {{- with $defaults := index $v.apps "ingress-nginx" }}
+                {{ toYaml $defaults | nindent 10 }}
+            {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
