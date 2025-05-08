@@ -4,6 +4,7 @@ bases:
 bases:
   - snippets/defaults.gotmpl
 ---
+
 bases:
   - snippets/env.gotmpl
 ---
