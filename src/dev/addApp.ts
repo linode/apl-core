@@ -1,4 +1,4 @@
-#!/usr/bin/env node --nolazy -r ts-node/register
+#!/usr/bin/env node --nolazy --import tsx
 
 import { createFileSync, mkdirpSync, writeFile } from 'fs-extra'
 import { set } from 'lodash'
