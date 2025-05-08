@@ -1,4 +1,4 @@
-#!/usr/bin/env node --nolazy -r ts-node/register -r tsconfig-paths/register
+#!/usr/bin/env node --nolazy --import tsx
 
 import { existsSync, symlinkSync, unlinkSync } from 'fs'
 import { commands, defaultCommand } from 'src/cmd'
