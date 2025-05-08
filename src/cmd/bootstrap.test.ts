@@ -1,9 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { cloneDeep, merge } from 'lodash'
-import { pki } from 'node-forge'
 import { env } from 'process'
 import stubs from 'src/test-stubs'
-import { createMock } from 'ts-auto-mock'
 import {
   bootstrap,
   bootstrapSops,
@@ -14,6 +11,7 @@ import {
   handleFileEntry,
   processValues,
 } from './bootstrap'
+import { pki } from 'node-forge'
 
 const { terminal } = stubs
 
@@ -235,7 +233,25 @@ describe('Bootstrapping values', () => {
     })
     describe('Checking for a custom CA', () => {
       const deps = {
-        pki: createMock<typeof pki>(),
+        pki: {
+          rsa: {
+            generateKeyPair: jest.fn().mockReturnValue({
+              publicKey: { n: {}, e: {} },
+              privateKey: { d: {}, p: {}, q: {} },
+            }),
+          },
+          createCertificate: jest.fn().mockReturnValue({
+            publicKey: {},
+            serialNumber: '01',
+            validity: {},
+            sign: jest.fn(),
+            setSubject: jest.fn(),
+            setIssuer: jest.fn(),
+            setExtensions: jest.fn(),
+          }),
+          certificateToPem: jest.fn(),
+          privateKeyToPem: jest.fn(),
+        } as unknown as typeof pki,
         writeValues: jest.fn(),
         terminal,
       }
