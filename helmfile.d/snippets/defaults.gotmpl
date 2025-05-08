@@ -1,6 +1,13 @@
 {{- /* Only dynamic defaults */}}
 {{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
 {{- $dirPath := printf "%s/env/teams" $ENV_DIR }}
+{{- $ingressFilePath := printf "%s/env/settings/ingress.yaml" $ENV_DIR }}
+
+
+{{- $ingress := ((isFile $ingressFilePath) | ternary (readFile $ingressFilePath | fromYaml) (dict)) }}
+{{- $ingressClasses := $ingress | get "spec.classes" list }}
+{{- $ingressClassNames := list }}{{- range $ingressClasses }}{{- $ingressClassNames = append $ingressClassNames .className }}{{- end }}
+{{- $ingressClassNames = append $ingressClassNames "platform" }}
 
 environments:
   default:
@@ -8,6 +15,47 @@ environments:
     - apps:
         gitea:
           adminPassword: {{ randAlphaNum 20 }}
+        {{- range $index,$ingressClassName := $ingressClassNames }}
+        ingress-nginx-{{ $ingressClassName}}:
+          autoscaling:
+            enabled: true
+            minReplicas: 2
+            maxReplicas: 10
+            targetCPUUtilizationPercentage: 80
+            targetMemoryUtilizationPercentage: 80
+          modsecurity:
+            enabled: false
+            block: false
+            owasp: true
+          tracing:
+            enabled: false
+            samplingRatio: "0.01"
+          maxBodySize: 1024m
+          maxBodySizeBytes: 1073741824
+          resources:
+            controller:
+              requests:
+                cpu: 100m
+                memory: 384Mi
+              limits:
+                cpu: "2"
+                memory: 2Gi
+            opentelemetry:
+              requests:
+                cpu: 100m
+                memory: 65Mi
+              limits:
+                cpu: 500m
+                memory: 256Mi
+            defaultBackend:
+              limits:
+                cpu: 20m
+                memory: 20Mi
+              requests:
+                cpu: 10m
+                memory: 10Mi
+          _rawValues: {}
+        {{- end }}
       teamConfig:
       {{- range $index,$item := readDirEntries $dirPath }}
       {{- if $item.IsDir }}

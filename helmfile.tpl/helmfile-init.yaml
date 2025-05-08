@@ -4,9 +4,6 @@ bases:
   - ../helmfile.d/snippets/defaults.yaml
 ---
 bases:
-  - ../helmfile.d/snippets/ingress.gotmpl
----
-bases:
   - ../helmfile.d/snippets/env.gotmpl
 ---
 bases:

@@ -4,14 +4,12 @@ bases:
 bases:
   - snippets/defaults.gotmpl
 ---
+
 bases:
   - snippets/env.gotmpl
 ---
 bases:
   - snippets/derived.gotmpl
----
-bases:
-  - snippets/ingress.gotmpl
 ---
 {{ readFile "snippets/templates.gotmpl" }}
 {{- $v := .Values }}
