@@ -122,6 +122,8 @@ gitea:
           targetLabel: prometheus
           replacement: system
   additionalConfigFromEnvs:
+    # Configuration through app.ini, not directly supported through Helm chart.
+    # See https://gitea.com/gitea/helm-gitea#user-defined-environment-variables-in-appini
     - name: GITEA__DATABASE__USER
       valueFrom:
         secretKeyRef:
