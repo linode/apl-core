@@ -2,9 +2,11 @@
 {{- $ENV_DIR := env "ENV_DIR" | default "../env" }}
 {{- $dirPath := printf "%s/env/teams" $ENV_DIR }}
 {{- $ingressFilePath := printf "%s/env/settings/ingress.yaml" $ENV_DIR }}
-
+{{ $ingress := dict }}
 {{- /* We load ingress class names in order to generate defaults for corresponding ingress-nginx instancies */}}
-{{- $ingress := ((isFile $ingressFilePath) | ternary (readFile $ingressFilePath | fromYaml) (dict)) }}
+{{- if (isFile $ingressFilePath) }}
+{{- $ingress = readFile $ingressFilePath | fromYaml }}
+{{- end }}
 {{- $ingressClasses := $ingress | get "spec.classes" list }}
 {{- $ingressClassNames := list }}{{- range $ingressClasses }}{{- $ingressClassNames = append $ingressClassNames .className }}{{- end }}
 {{- $ingressClassNames = append $ingressClassNames "platform" }}
