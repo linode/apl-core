@@ -86,19 +86,19 @@ export const hfValues = async (
   let output: ProcessOutputTrimmed
   if (filesOnly)
     output = await hf(
-      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.gotmpl`, args: 'build' },
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml.gotmpl`, args: 'build' },
       undefined,
       envDir,
     )
   else if (defaultValues)
     output = await hf(
-      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-defaults.gotmpl`, args: 'build' },
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-defaults.yaml.gotmpl`, args: 'build' },
       undefined,
       envDir,
     )
   else
     output = await hf(
-      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.gotmpl`, args: 'build' },
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml.gotmpl`, args: 'build' },
       undefined,
       envDir,
     )
