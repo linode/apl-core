@@ -139,13 +139,6 @@ export const getStandaloneFiles = async (envDir: string): Promise<Record<string,
   return files
 }
 
-export const getHelmArgs = (argv: HelmArguments, args: string[] = []): string[] => {
-  const argsArr: string[] = args
-  if (argv.args) argsArr.push(argv.args)
-  if (argv.kubeVersion) argsArr.push(`--kube-version=${argv.kubeVersion}`)
-  return ['--args', argsArr.join(' ')]
-}
-
 export const hfTemplate = async (
   argv: HelmArguments,
   outDir?: string,
@@ -154,13 +147,10 @@ export const hfTemplate = async (
 ): Promise<string> => {
   const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
-  process.env.HELMFILE_V1MODE = 'true'
-  // const args = ['template', '--validate']
-  const args = ['template', '--include-needs']
+  const args = ['template', '--include-needs', '--skip-tests']
   if (outDir) args.push(`--output-dir=${outDir}`)
   if (argv.skipCleanup || isCore) args.push('--skip-cleanup')
-  const helmArgs = getHelmArgs(argv, ['--skip-tests'])
-  args.push(...helmArgs)
+  if (argv.kubeVersion) args.push(`--kube-version=${argv.kubeVersion}`)
   let template = ''
   const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {
