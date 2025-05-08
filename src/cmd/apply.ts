@@ -117,7 +117,7 @@ const applyAll = async () => {
       await hf(
         {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
-          fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml`,
+          fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml.gotmpl`,
           logLevel: logLevelString(),
           args: hfArgs,
         },
