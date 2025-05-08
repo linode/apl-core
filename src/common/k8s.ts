@@ -1,14 +1,10 @@
-/* eslint-disable no-loop-func */
-/* eslint-disable no-await-in-loop */
 import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
 import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
-import { Agent } from 'https'
 import { isEmpty, isEqual, map, mapValues } from 'lodash'
-import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
@@ -267,12 +263,11 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
     maxTimeout: 30000,
   }
 
-  const globalSkipSsl = !env.NODE_TLS_REJECT_UNAUTHORIZED
-  let rejectUnauthorized = !globalSkipSsl
-  if (opts!.skipSsl !== undefined) rejectUnauthorized = !options.skipSsl
+  // NOTE: Native fetch does not allow a custom 'agent' or direct 'timeout'.
+  // If you need special TLS handling, rely on environment variables
+  // like NODE_TLS_REJECT_UNAUTHORIZED or NODE_EXTRA_CA_CERTS.
   const fetchOptions: RequestInit = {
     redirect: 'follow',
-    agent: new Agent({ rejectUnauthorized }),
   }
   if (options.username && options.password) {
     fetchOptions.headers = {
