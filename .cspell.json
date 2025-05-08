@@ -3,7 +3,7 @@
   "allowCompoundWords": true,
   "enableFiletypes": ["dockerfile", "md", "yaml"],
   "enabledLanguageIds": ["json", "jsonc", "markdown", "typescript", "typescriptreact", "yaml", "yml"],
-  "ignorePaths": ["/CHANGELOG.md", "*.json"],
+  "ignorePaths": ["CHANGELOG.md", "*.json"],
   "ignoreRegExpList": ["/'s\\b/"],
   "ignoreWords": [
     "adrs",
@@ -89,7 +89,8 @@
     "Paketo",
     "tekton",
     "cnpg",
-    "dockercfg"
+    "dockercfg",
+    "dockerconfigjson"
   ],
   "language": "en",
   "words": [

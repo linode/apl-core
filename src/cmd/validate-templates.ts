@@ -7,7 +7,7 @@ import { hfTemplate } from 'src/common/hf'
 import { getFilename, readdirRecurse, rootDir } from 'src/common/utils'
 import { getK8sVersion } from 'src/common/values'
 import { BasicArguments, HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
-import tar from 'tar'
+import * as tar from 'tar'
 import { Argv } from 'yargs'
 import { $, cd, chalk } from 'zx'
 
@@ -40,6 +40,11 @@ const setup = async (argv: HelmArguments): Promise<void> => {
   await Promise.allSettled(prep)
 
   prep = []
+
+  // Make sure tar is properly initialized before using it
+  if (!tar || typeof tar.x !== 'function') {
+    throw new Error('tar module not properly initialized. Make sure it is imported correctly.')
+  }
 
   prep.push(
     tar.x({
