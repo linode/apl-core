@@ -261,8 +261,8 @@ if [ -n "$in_core" ]; then
   tmp_volume="-v /tmp:/tmp"
   export TS_NODE_PROJECT="$PWD/tsconfig.json"
   if [ -z "$NODE_PATH" ]; then
-    # ts-node
-    executable="node --no-warnings --inspect=4320 -r ts-node/register -r tsconfig-paths/register ${stack_dir}/src/otomi.ts --"
+    # tsx
+    executable="node --no-warnings --inspect=4320 --import tsx ${stack_dir}/src/otomi.ts --"
   else
     # node compiled js
     executable="node --no-warnings --inspect=4320 ${stack_dir}/dist/src/otomi.js --"
