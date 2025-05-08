@@ -1,4 +1,4 @@
-#!/usr/bin/env node --nolazy -r ts-node/register
+#!/usr/bin/env node --nolazy --import tsx
 /* eslint-disable @typescript-eslint/no-floating-promises */
 import { $ } from 'zx'
 
