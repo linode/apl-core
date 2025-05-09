@@ -29,7 +29,7 @@ jobs:
           git -P log --pretty=format:"%s" "${LATEST_TAG}..HEAD"
           COMMITS=$(git log --pretty=format:"%s" "${LATEST_TAG}..HEAD")
 
-          if [[ $COMMITS == *"feat:"* || $COMMITS == *"fix:"* ]]; then
+          if [[ $COMMITS == *"feat:"* || $COMMITS == *"fix:"* || $COMMITS == *"chore(versions):"*]]; then
             echo "RC_RELEASE=true" >> $GITHUB_ENV
           else
             echo "No feat/fix commits found. Skipping release."
