@@ -148,7 +148,21 @@ app: "{{ template "harbor.name" . }}"
 
 {{- define "harbor.redis.scheme" -}}
   {{- with .Values.redis }}
-    {{- ternary "redis+sentinel" "redis"  (and (eq .type "external" ) (not (not .external.sentinelMasterSet))) }}
+    {{- if eq .type "external" -}}
+      {{- if not (not .external.sentinelMasterSet) -}}
+        {{- ternary "rediss+sentinel" "redis+sentinel" (.external.tlsOptions.enable) }}
+      {{- else -}}
+        {{- ternary "rediss" "redis" (.external.tlsOptions.enable) }}
+      {{- end -}}
+    {{- else -}}
+      {{ print "redis" }}
+    {{- end -}}
+  {{- end }}
+{{- end -}}
+
+{{- define "harbor.redis.enableTLS" -}}
+  {{- with .Values.redis }}
+    {{- ternary "true" "false" (and ( eq .type "external") (.external.tlsOptions.enable)) }}
   {{- end }}
 {{- end -}}
 
@@ -161,7 +175,7 @@ app: "{{ template "harbor.name" . }}"
 
 {{- define "harbor.redis.masterSet" -}}
   {{- with .Values.redis }}
-    {{- ternary .external.sentinelMasterSet "" (eq "redis+sentinel" (include "harbor.redis.scheme" $)) }}
+    {{- ternary .external.sentinelMasterSet "" (contains "+sentinel" (include "harbor.redis.scheme" $)) }}
   {{- end }}
 {{- end -}}
 
