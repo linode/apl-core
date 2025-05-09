@@ -133,6 +133,7 @@ environments:
             - namespace: team-a2
               labels:
                 otomi.io/app: c7
+---
 releases:
   - name: inter-team-connectivity
     installed: true

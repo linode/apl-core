@@ -620,7 +620,7 @@ function renameKeyDeep(obj: any, oldKey: string, newKey: string): any {
 
 export const migrateLegacyValues = async (envDir: string, deps = { writeFile }): Promise<boolean> => {
   const output = await hf(
-    { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml`, args: 'build' },
+    { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml.gotmpl`, args: 'build' },
     undefined,
     envDir,
   )

@@ -20,6 +20,6 @@ export CUSTOM_NETWORK='--network minikube'
 #####
 # apply
 #####
-binzx/otomi otomi apply-as-apps -f helmfile.tpl/helmfile-init.yaml
+binzx/otomi otomi apply-as-apps -f helmfile.tpl/helmfile-init.yaml.gotmpl
 binzx/otomi otomi apply-as-apps
 # minikube tunnel
