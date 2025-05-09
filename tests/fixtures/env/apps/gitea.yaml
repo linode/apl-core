@@ -3,9 +3,9 @@ metadata:
     name: gitea
     labels: {}
 spec:
-    enabled: true
     _rawValues: {}
     adminUsername: otomi-admin
+    enabled: true
     resources:
         gitea:
             limits:

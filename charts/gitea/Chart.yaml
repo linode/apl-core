@@ -1,16 +1,24 @@
 apiVersion: v2
-appVersion: 1.15.8
+appVersion: 1.23.6
 dependencies:
-- condition: memcached.enabled
-  name: memcached
-  repository: https://charts.bitnami.com/bitnami
-  version: 5.9.0
 - condition: postgresql.enabled
   name: postgresql
-  repository: https://charts.bitnami.com/bitnami
-  version: 10.3.17
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 16.4.14
+- condition: postgresql-ha.enabled
+  name: postgresql-ha
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 15.2.3
+- condition: redis-cluster.enabled
+  name: redis-cluster
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 11.4.3
+- condition: redis.enabled
+  name: redis
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 20.8.0
 description: Gitea Helm chart for Kubernetes
-icon: https://docs.gitea.io/images/gitea.png
+icon: https://gitea.com/assets/img/logo.svg
 keywords:
 - git
 - issue tracker
@@ -29,10 +37,12 @@ maintainers:
   name: Lucas Hahn
 - email: sk.bunsenbrenner@gmail.com
   name: Steven Kriegler
+- email: patrick.schratz@gmail.com
+  name: Patrick Schratz
 name: gitea
 sources:
-- https://gitea.com/gitea/helm-chart
+- https://gitea.com/gitea/helm-gitea
 - https://github.com/go-gitea/gitea
-- https://hub.docker.com/r/gitea/gitea/
+- https://docker.gitea.com/gitea
 type: application
-version: 5.0.0
+version: 11.0.1
