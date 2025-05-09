@@ -2,6 +2,7 @@
 {{/*
 Expand the name of the chart.
 */}}
+
 {{- define "gitea.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -25,6 +26,13 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+Create a default worker name.
+*/}}
+{{- define "gitea.workername" -}}
+{{- printf "%s-%s" .global.Release.Name .worker | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "gitea.chart" -}}
@@ -35,10 +43,48 @@ Create chart name and version as used by the chart label.
 Create image name and tag used by the deployment.
 */}}
 {{- define "gitea.image" -}}
-{{- $name := .Values.image.repository -}}
-{{- $tag := ternary .Values.image.version .Values.image.tag (hasKey .Values.image "version") -}}
+{{- $fullOverride := .Values.image.fullOverride | default "" -}}
+{{- $registry := .Values.global.imageRegistry | default .Values.image.registry -}}
+{{- $repository := .Values.image.repository -}}
+{{- $separator := ":" -}}
+{{- $tag := .Values.image.tag | default .Chart.AppVersion | toString -}}
 {{- $rootless := ternary "-rootless" "" (.Values.image.rootless) -}}
-{{- printf "%s:%s%s" $name $tag $rootless -}}
+{{- $digest := "" -}}
+{{- if .Values.image.digest }}
+    {{- $digest = (printf "@%s" (.Values.image.digest | toString)) -}}
+{{- end -}}
+{{- if $fullOverride }}
+    {{- printf "%s" $fullOverride -}}
+{{- else if $registry }}
+    {{- printf "%s/%s%s%s%s%s" $registry $repository $separator $tag $rootless $digest -}}
+{{- else -}}
+    {{- printf "%s%s%s%s%s" $repository $separator $tag $rootless $digest -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Docker Image Registry Secret Names evaluating values as templates
+*/}}
+{{- define "gitea.images.pullSecrets" -}}
+{{- $pullSecrets := .Values.imagePullSecrets -}}
+{{- range .Values.global.imagePullSecrets -}}
+    {{- $pullSecrets = append $pullSecrets (dict "name" .) -}}
+{{- end -}}
+{{- if (not (empty $pullSecrets)) }}
+imagePullSecrets:
+{{ toYaml $pullSecrets }}
+{{- end }}
+{{- end -}}
+
+
+{{/*
+Storage Class
+*/}}
+{{- define "gitea.persistence.storageClass" -}}
+{{- $storageClass :=  (tpl ( default "" .Values.persistence.storageClass) .) | default (tpl ( default "" .Values.global.storageClass) .) }}
+{{- if $storageClass }}
+storageClassName: {{ $storageClass | quote }}
+{{- end }}
 {{- end -}}
 
 {{/*
@@ -48,10 +94,17 @@ Common labels
 helm.sh/chart: {{ include "gitea.chart" . }}
 app: {{ include "gitea.name" . }}
 {{ include "gitea.selectorLabels" . }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-version: {{ .Chart.AppVersion | quote }}
-{{- end }}
+app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
+version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{- define "gitea.labels.actRunner" -}}
+helm.sh/chart: {{ include "gitea.chart" . }}
+app: {{ include "gitea.name" . }}-act-runner
+{{ include "gitea.selectorLabels.actRunner" . }}
+app.kubernetes.io/version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
+version: {{ .Values.image.tag | default .Chart.AppVersion | quote }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end -}}
 
@@ -63,48 +116,51 @@ app.kubernetes.io/name: {{ include "gitea.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
-{{- define "db.servicename" -}}
-{{- if .Values.postgresql.enabled -}}
-{{- printf "%s-postgresql" .Release.Name -}}
-{{- else if .Values.mysql.enabled -}}
-{{- printf "%s-mysql" .Release.Name -}}
-{{- else if .Values.mariadb.enabled -}}
-{{- printf "%s-mariadb" .Release.Name -}}
-{{- else if ne .Values.gitea.config.database.DB_TYPE "sqlite3" -}}
-{{- $parts := split ":" .Values.gitea.config.database.HOST -}}
-{{- printf "%s %s" $parts._0 $parts._1 -}}
-{{- end -}}
+{{- define "gitea.selectorLabels.actRunner" -}}
+app.kubernetes.io/name: {{ include "gitea.name" . }}-act-runner
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
-{{- define "db.port" -}}
-{{- if .Values.postgresql.enabled -}}
-{{ .Values.postgresql.global.postgresql.servicePort }}
-{{- else if .Values.mysql.enabled -}}
-{{ .Values.mysql.service.port }}
-{{- else if .Values.mariadb.enabled -}}
-{{ .Values.mariadb.primary.service.port }}
-{{- else -}}
+{{- define "postgresql-ha.dns" -}}
+{{- if (index .Values "postgresql-ha").enabled -}}
+{{- printf "%s-postgresql-ha-pgpool.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "postgresql-ha" "service" "ports" "postgresql") -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "postgresql.dns" -}}
-{{- printf "%s-postgresql.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.postgresql.global.postgresql.servicePort -}}
+{{- if (index .Values "postgresql").enabled -}}
+{{- printf "%s-postgresql.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.postgresql.global.postgresql.service.ports.postgresql -}}
+{{- end -}}
 {{- end -}}
 
-{{- define "mysql.dns" -}}
-{{- printf "%s-mysql.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.mysql.service.port | trunc 63 | trimSuffix "-" -}}
+{{- define "redis.dns" -}}
+{{- if and ((index .Values "redis-cluster").enabled) ((index .Values "redis").enabled) -}}
+{{- fail "redis and redis-cluster cannot be enabled at the same time. Please only choose one." -}}
+{{- else if (index .Values "redis-cluster").enabled -}}
+{{- printf "redis+cluster://:%s@%s-redis-cluster-headless.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "redis-cluster").global.redis.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "redis-cluster").service.ports.redis -}}
+{{- else if (index .Values "redis").enabled -}}
+{{- printf "redis://:%s@%s-redis-headless.%s.svc.%s:%g/0?pool_size=100&idle_timeout=180s&" (index .Values "redis").global.redis.password .Release.Name .Release.Namespace .Values.clusterDomain (index .Values "redis").master.service.ports.redis -}}
+{{- end -}}
 {{- end -}}
 
-{{- define "mariadb.dns" -}}
-{{- printf "%s-mariadb.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.mariadb.primary.service.port | trunc 63 | trimSuffix "-" -}}
+{{- define "redis.port" -}}
+{{- if (index .Values "redis-cluster").enabled -}}
+{{ (index .Values "redis-cluster").service.ports.redis }}
+{{- else if (index .Values "redis").enabled -}}
+{{ (index .Values "redis").master.service.ports.redis }}
+{{- end -}}
 {{- end -}}
 
-{{- define "memcached.dns" -}}
-{{- printf "%s-memcached.%s.svc.%s:%g" .Release.Name .Release.Namespace .Values.clusterDomain .Values.memcached.service.port | trunc 63 | trimSuffix "-" -}}
+{{- define "redis.servicename" -}}
+{{- if (index .Values "redis-cluster").enabled -}}
+{{- printf "%s-redis-cluster-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
+{{- else if (index .Values "redis").enabled -}}
+{{- printf "%s-redis-headless.%s.svc.%s" .Release.Name .Release.Namespace .Values.clusterDomain -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "gitea.default_domain" -}}
-{{- printf "%s-gitea.%s.svc.%s" (include "gitea.fullname" .) .Release.Namespace .Values.clusterDomain | trunc 63 | trimSuffix "-" -}}
+{{- printf "%s-http.%s.svc.%s" (include "gitea.fullname" .) .Release.Namespace .Values.clusterDomain -}}
 {{- end -}}
 
 {{- define "gitea.ldap_settings" -}}
@@ -156,6 +212,23 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 {{- end -}}
 
+{{- define "gitea.public_protocol" -}}
+{{- if and .Values.ingress.enabled (gt (len .Values.ingress.tls) 0) -}}
+https
+{{- else -}}
+{{ .Values.gitea.config.server.PROTOCOL }}
+{{- end -}}
+{{- end -}}
+
+{{- define "gitea.act_runner.local_root_url" -}}
+{{- if not .Values.gitea.config.server.LOCAL_ROOT_URL -}}
+    {{- printf "http://%s-http:%.0f" (include "gitea.fullname" .) .Values.service.http.port -}}
+{{- else -}}
+  {{/* fallback for allowing to overwrite this value via inline config */}}
+  {{- .Values.gitea.config.server.LOCAL_ROOT_URL -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "gitea.inline_configuration" -}}
   {{- include "gitea.inline_configuration.init" . -}}
   {{- include "gitea.inline_configuration.defaults" . -}}
@@ -178,6 +251,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
       {{- else -}}
         {{- (printf "Key %s cannot be on top level of configuration" $key) | fail -}}
       {{- end -}}
+
     {{- end }}
   {{- end }}
 
@@ -207,6 +281,21 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   {{- if not (hasKey .Values.gitea.config "oauth2") -}}
     {{- $_ := set .Values.gitea.config "oauth2" dict -}}
   {{- end -}}
+  {{- if not (hasKey .Values.gitea.config "session") -}}
+    {{- $_ := set .Values.gitea.config "session" dict -}}
+  {{- end -}}
+  {{- if not (hasKey .Values.gitea.config "queue") -}}
+    {{- $_ := set .Values.gitea.config "queue" dict -}}
+  {{- end -}}
+  {{- if not (hasKey .Values.gitea.config "queue.issue_indexer") -}}
+    {{- $_ := set .Values.gitea.config "queue.issue_indexer" dict -}}
+  {{- end -}}
+  {{- if not (hasKey .Values.gitea.config "indexer") -}}
+    {{- $_ := set .Values.gitea.config "indexer" dict -}}
+  {{- end -}}
+  {{- if not (hasKey .Values.gitea.config "actions") -}}
+    {{- $_ := set .Values.gitea.config "actions" dict -}}
+  {{- end -}}
 {{- end -}}
 
 {{- define "gitea.inline_configuration.defaults" -}}
@@ -222,12 +311,42 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   {{- if not (hasKey .Values.gitea.config.metrics "ENABLED") -}}
     {{- $_ := set .Values.gitea.config.metrics "ENABLED" .Values.gitea.metrics.enabled -}}
   {{- end -}}
-  {{- if .Values.memcached.enabled -}}
-    {{- $_ := set .Values.gitea.config.cache "ENABLED" "true" -}}
-    {{- $_ := set .Values.gitea.config.cache "ADAPTER" "memcache" -}}
-    {{- if not (.Values.gitea.config.cache.HOST) -}}
-      {{- $_ := set .Values.gitea.config.cache "HOST" (include "memcached.dns" .) -}}
+  {{- if and (not (hasKey .Values.gitea.config.metrics "TOKEN")) (.Values.gitea.metrics.token) (.Values.gitea.metrics.enabled) -}}
+    {{- $_ := set .Values.gitea.config.metrics "TOKEN" .Values.gitea.metrics.token -}}
+  {{- end -}}
+  {{- /* redis queue */ -}}
+  {{- if or ((index .Values "redis-cluster").enabled) ((index .Values "redis").enabled) -}}
+    {{- $_ := set .Values.gitea.config.queue "TYPE" "redis" -}}
+    {{- $_ := set .Values.gitea.config.queue "CONN_STR" (include "redis.dns" .) -}}
+    {{- $_ := set .Values.gitea.config.session "PROVIDER" "redis" -}}
+    {{- $_ := set .Values.gitea.config.session "PROVIDER_CONFIG" (include "redis.dns" .) -}}
+    {{- $_ := set .Values.gitea.config.cache "ADAPTER" "redis" -}}
+    {{- $_ := set .Values.gitea.config.cache "HOST" (include "redis.dns" .) -}}
+  {{- else -}}
+    {{- if not (get .Values.gitea.config.session "PROVIDER") -}}
+      {{- $_ := set .Values.gitea.config.session "PROVIDER" "memory" -}}
     {{- end -}}
+    {{- if not (get .Values.gitea.config.session "PROVIDER_CONFIG") -}}
+      {{- $_ := set .Values.gitea.config.session "PROVIDER_CONFIG" "" -}}
+    {{- end -}}
+    {{- if not (get .Values.gitea.config.queue "TYPE") -}}
+      {{- $_ := set .Values.gitea.config.queue "TYPE" "level" -}}
+    {{- end -}}
+    {{- if not (get .Values.gitea.config.queue "CONN_STR") -}}
+      {{- $_ := set .Values.gitea.config.queue "CONN_STR" "" -}}
+    {{- end -}}
+    {{- if not (get .Values.gitea.config.cache "ADAPTER") -}}
+      {{- $_ := set .Values.gitea.config.cache "ADAPTER" "memory" -}}
+    {{- end -}}
+    {{- if not (get .Values.gitea.config.cache "HOST") -}}
+      {{- $_ := set .Values.gitea.config.cache "HOST" "" -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if not .Values.gitea.config.indexer.ISSUE_INDEXER_TYPE -}}
+     {{- $_ := set .Values.gitea.config.indexer "ISSUE_INDEXER_TYPE" "db" -}}
+  {{- end -}}
+  {{- if not .Values.gitea.config.actions.ENABLED -}}
+     {{- $_ := set .Values.gitea.config.actions "ENABLED" (ternary "true" "false" .Values.actions.enabled) -}}
   {{- end -}}
 {{- end -}}
 
@@ -240,21 +359,16 @@ app.kubernetes.io/instance: {{ .Release.Name }}
   {{- end -}}
   {{- if not (.Values.gitea.config.server.DOMAIN) -}}
     {{- if gt (len .Values.ingress.hosts) 0 -}}
-      {{- $_ := set .Values.gitea.config.server "DOMAIN" (index .Values.ingress.hosts 0).host -}}
+      {{- $_ := set .Values.gitea.config.server "DOMAIN" ( tpl (index .Values.ingress.hosts 0).host $) -}}
     {{- else -}}
       {{- $_ := set .Values.gitea.config.server "DOMAIN" (include "gitea.default_domain" .) -}}
     {{- end -}}
   {{- end -}}
   {{- if not .Values.gitea.config.server.ROOT_URL -}}
-    {{- if .Values.ingress.enabled -}}
-      {{- if gt (len .Values.ingress.tls) 0 -}}
-        {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" .Values.gitea.config.server.PROTOCOL (index (index .Values.ingress.tls 0).hosts 0)) -}}
-      {{- else -}}
-        {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" .Values.gitea.config.server.PROTOCOL (index .Values.ingress.hosts 0).host) -}}
-      {{- end -}}
-    {{- else -}}
-      {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" .Values.gitea.config.server.PROTOCOL .Values.gitea.config.server.DOMAIN) -}}
-    {{- end -}}
+    {{- $_ := set .Values.gitea.config.server "ROOT_URL" (printf "%s://%s" (include "gitea.public_protocol" .) .Values.gitea.config.server.DOMAIN) -}}
+  {{- end -}}
+  {{- if .Values.actions.enabled -}}
+     {{- $_ := set .Values.gitea.config.server "LOCAL_ROOT_URL" (include "gitea.act_runner.local_root_url" .) -}}
   {{- end -}}
   {{- if not .Values.gitea.config.server.SSH_DOMAIN -}}
     {{- $_ := set .Values.gitea.config.server "SSH_DOMAIN" .Values.gitea.config.server.DOMAIN -}}
@@ -283,29 +397,78 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "gitea.inline_configuration.defaults.database" -}}
-  {{- if .Values.postgresql.enabled -}}
+  {{- if (index .Values "postgresql-ha" "enabled") -}}
+    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "postgres" -}}
+    {{- if not (.Values.gitea.config.database.HOST) -}}
+      {{- $_ := set .Values.gitea.config.database "HOST"      (include "postgresql-ha.dns" .) -}}
+    {{- end -}}
+    {{- $_ := set .Values.gitea.config.database "NAME"      (index .Values "postgresql-ha" "global" "postgresql" "database") -}}
+    {{- $_ := set .Values.gitea.config.database "USER"      (index .Values "postgresql-ha" "global" "postgresql" "username") -}}
+    {{- $_ := set .Values.gitea.config.database "PASSWD"    (index .Values "postgresql-ha" "global" "postgresql" "password") -}}
+  {{- end -}}
+  {{- if (index .Values "postgresql" "enabled") -}}
     {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "postgres" -}}
     {{- if not (.Values.gitea.config.database.HOST) -}}
       {{- $_ := set .Values.gitea.config.database "HOST"      (include "postgresql.dns" .) -}}
     {{- end -}}
-    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.postgresql.global.postgresql.postgresqlDatabase -}}
-    {{- $_ := set .Values.gitea.config.database "USER"      .Values.postgresql.global.postgresql.postgresqlUsername -}}
-    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.postgresql.global.postgresql.postgresqlPassword -}}
-  {{- else if .Values.mysql.enabled -}}
-    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "mysql" -}}
-    {{- if not (.Values.gitea.config.database.HOST) -}}
-      {{- $_ := set .Values.gitea.config.database "HOST"      (include "mysql.dns" .) -}}
-    {{- end -}}
-    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.mysql.db.name -}}
-    {{- $_ := set .Values.gitea.config.database "USER"      .Values.mysql.db.user -}}
-    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.mysql.db.password -}}
-  {{- else if .Values.mariadb.enabled -}}
-    {{- $_ := set .Values.gitea.config.database "DB_TYPE"   "mysql" -}}
-    {{- if not (.Values.gitea.config.database.HOST) -}}
-      {{- $_ := set .Values.gitea.config.database "HOST"      (include "mariadb.dns" .) -}}
-    {{- end -}}
-    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.mariadb.auth.database -}}
-    {{- $_ := set .Values.gitea.config.database "USER"      .Values.mariadb.auth.username -}}
-    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.mariadb.auth.password -}}
+    {{- $_ := set .Values.gitea.config.database "NAME"      .Values.postgresql.global.postgresql.auth.database -}}
+    {{- $_ := set .Values.gitea.config.database "USER"      .Values.postgresql.global.postgresql.auth.username -}}
+    {{- $_ := set .Values.gitea.config.database "PASSWD"    .Values.postgresql.global.postgresql.auth.password -}}
   {{- end -}}
+{{- end -}}
+
+{{- define "gitea.init-additional-mounts" -}}
+  {{- /* Honor the deprecated extraVolumeMounts variable when defined */ -}}
+  {{- if gt (len .Values.extraInitVolumeMounts) 0 -}}
+    {{- toYaml .Values.extraInitVolumeMounts -}}
+  {{- else if gt (len .Values.extraVolumeMounts) 0 -}}
+    {{- toYaml .Values.extraVolumeMounts -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "gitea.container-additional-mounts" -}}
+  {{- /* Honor the deprecated extraVolumeMounts variable when defined */ -}}
+  {{- if gt (len .Values.extraContainerVolumeMounts) 0 -}}
+    {{- toYaml .Values.extraContainerVolumeMounts -}}
+  {{- else if gt (len .Values.extraVolumeMounts) 0 -}}
+    {{- toYaml .Values.extraVolumeMounts -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "gitea.gpg-key-secret-name" -}}
+{{ default (printf "%s-gpg-key" (include "gitea.fullname" .)) .Values.signing.existingSecret }}
+{{- end -}}
+
+{{- define "gitea.serviceAccountName" -}}
+{{ .Values.serviceAccount.name | default (include "gitea.fullname" .) }}
+{{- end -}}
+
+{{- define "gitea.admin.passwordMode" -}}
+{{- if has .Values.gitea.admin.passwordMode (tuple "keepUpdated" "initialOnlyNoReset" "initialOnlyRequireReset") -}}
+{{ .Values.gitea.admin.passwordMode }}
+{{- else -}}
+{{ printf "gitea.admin.passwordMode must be set to one of 'keepUpdated', 'initialOnlyNoReset', or 'initialOnlyRequireReset'. Received: '%s'" .Values.gitea.admin.passwordMode | fail }}
+{{- end -}}
+{{- end -}}
+
+{{/* Create a functioning probe object for rendering. Given argument must be either a livenessProbe, readinessProbe, or startupProbe */}}
+{{- define "gitea.deployment.probe" -}}
+  {{- $probe := unset . "enabled" -}}
+  {{- $probeKeys := keys $probe -}}
+  {{- $containsCustomMethod := false -}}
+  {{- $chartDefaultMethod := "tcpSocket" -}}
+  {{- $nonChartDefaultMethods := list "exec" "httpGet" "grpc" -}}
+  {{- range $probeKeys -}}
+    {{- if has . $nonChartDefaultMethods -}}
+      {{- $containsCustomMethod = true -}}
+    {{- end -}}
+  {{- end -}}
+  {{- if $containsCustomMethod -}}
+    {{- $probe = unset . $chartDefaultMethod -}}
+  {{- end -}}
+  {{- toYaml $probe -}}
+{{- end -}}
+
+{{- define "gitea.metrics-secret-name" -}}
+{{ default (printf "%s-metrics-secret" (include "gitea.fullname" .)) }}
 {{- end -}}

@@ -402,7 +402,7 @@ definitions:
         $ref: '#/definitions/rawValues'
       tracing:
         description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
-        propterties:
+        properties:
           enabled:
             default: false
             type: boolean
@@ -1999,7 +1999,7 @@ properties:
             $ref: '#/definitions/rawValues'
           tracing:
             description: Configure Istio for tracing. Requires Otel Collector to be enabled.
-            propterties:
+            properties:
               enabled:
                 default: false
                 type: boolean
