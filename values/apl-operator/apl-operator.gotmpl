@@ -20,3 +20,6 @@ kms: {{- $kms | toYaml | nindent 2 }}
 
 giteaPassword: {{ $g.adminPassword }}
 otomiVersion: {{ $v.otomi.version }}
+
+env:
+  ENV_DIR: /tmp/apl-operator/values
