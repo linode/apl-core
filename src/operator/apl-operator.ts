@@ -10,6 +10,7 @@ import { module as validateValuesModule } from '../cmd/validate-values'
 import { setValuesFile } from '../common/repo'
 import { waitTillGitRepoAvailable } from '../common/k8s'
 import { env } from '../common/envalid'
+import path from 'path'
 
 export class AplOperator {
   private d = terminal('operator:apl')
@@ -33,8 +34,11 @@ export class AplOperator {
       this.d.info('Removing existing repository directory')
       fs.rmSync(this.repoPath, { recursive: true, force: true })
     }
+    const parentDir = path.dirname(this.repoPath)
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true })
+    }
 
-    // Ensure directory exists
     if (!fs.existsSync(this.repoPath)) {
       fs.mkdirSync(this.repoPath, { recursive: true })
     }
