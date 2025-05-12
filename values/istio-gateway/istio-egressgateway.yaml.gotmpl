@@ -2,9 +2,8 @@
 {{- $i := $v.apps.istio }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
-global:
-  imagePullSecrets:
-    - otomi-pullsecret-global
+imagePullSecrets:
+  - name: otomi-pullsecret-global
 {{- end }}
 
 service:
