@@ -4,6 +4,6 @@ metadata:
     labels: {}
 spec:
     enabled: false
-    password: wrrpCKuVJmiqHSylAdtpvbxb
+    password: '*APL-577-secret-with-asterisk'
     sizes:
         master: 1Gi
