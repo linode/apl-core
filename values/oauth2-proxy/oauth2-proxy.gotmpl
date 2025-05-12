@@ -9,7 +9,7 @@
 
 config:
   clientID: {{ $k.idp.clientID  }}
-  clientSecret: {{ $k.idp.clientSecret }}
+  clientSecret: {{ $k.idp.clientSecret | quote }}
   cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
 
 replicaCount: 2
@@ -46,7 +46,7 @@ extraArgs:
   - --scope={{ $o | get "scope" "openid email profile" }}
   - --session-store-type=redis
   - --redis-connection-url=redis://oauth2-proxy-redis-master
-  - --redis-password={{ $r | get "password" }}
+  - --redis-password={{ $r | get "password" | quote }}
   - --redirect-url=https://auth.{{ $v.cluster.domainSuffix }}/oauth2/callback
   - --email-domain="*"
   - --cookie-domain={{ $domainList }}
@@ -94,7 +94,7 @@ redis:
   enabled: true
   architecture: {{ $r | get "architecture" }}
   auth:
-    password: {{ $r | get "password" }}
+    password: {{ $r | get "password" | quote }}
 
   sentinel:
     persistence:
