@@ -31,6 +31,7 @@
     "minimatch": "^10.0.1",
     "node-forge": "1.3.1",
     "semver": "7.7.1",
+    "simple-git": "^3.23.0",
     "tar": "7.4.3",
     "uuid": "^11.1.0",
     "validator": "13.15.0",
@@ -120,6 +121,7 @@
     "values-schema.yaml": "npm run gen:chart-schema"
   },
   "scripts": {
+    "apl-operator": "tsx src/operator/main.ts",
     "install-deps": "bin/install-deps.sh",
     "app-versions:csv": "echo 'name,appVersion,chartVersion'; for f in $(find charts -name Chart.yaml -type f -maxdepth 2| sort); do yq eval -o=json $f | jq -rc '. | [.name, .appVersion, .version] | @csv' | tr -d '\"'; done",
     "charts-update": "cd chart/chart-index && helm dep update",
