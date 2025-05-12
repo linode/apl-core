@@ -19,6 +19,3 @@ resources: {{- toYaml $o.resources.operator | nindent 2 }}
 kms: {{- $kms | toYaml | nindent 2 }}
 
 giteaPassword: {{ $g.adminPassword }}
-
-env:
-  ENV_DIR: /tmp/apl-operator/values

@@ -37,8 +37,6 @@ spec:
           env:
             - name: RUN_AS_OPERATOR
               value: "true"
-            - name: ENV_DIR
-              value: "{{ .Values.env.ENV_DIR }}"
           envFrom:
             - secretRef:
                 name: gitea-credentials
