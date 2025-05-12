@@ -9,13 +9,14 @@ import { module as bootstrapModule } from '../cmd/bootstrap'
 import { module as validateValuesModule } from '../cmd/validate-values'
 import { setValuesFile } from '../common/repo'
 import { waitTillGitRepoAvailable } from '../common/k8s'
+import { env } from '../common/envalid'
 
 export class AplOperator {
   private d = terminal('operator:apl')
   private isRunning = false
   private pollInterval = 1000
   private lastRevision = ''
-  private repoPath = '/tmp/apl-operator/values'
+  private repoPath = env.ENV_DIR
   private repoUrl: string
   private git: SimpleGit
 
