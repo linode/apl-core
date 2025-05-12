@@ -18,13 +18,28 @@ releases:
     labels:
       pkg: cert-manager
     <<: *default
-  - name: istio-operator-artifacts
+  - name: istiod
     installed: true
-    namespace: istio-operator
+    namespace: istio-system
     labels:
       pkg: istio
       app: core
-    chart: ../charts/raw
+    <<: *default
+  - name: istio-ingressgateway-public
+    installed: true
+    namespace: istio-system
+    labels:
+      pkg: istio
+      app: core
+    chart: ../charts/istio-gateway
     values:
-      - ../values/istio-operator/istio-operator-raw.gotmpl
-      - snippets/common.gotmpl
+      - ../values/istio-gateway/istio-ingressgateway.yaml.gotmpl
+  - name: istio-egressgateway
+    installed: {{ $a | get "istio.egressGateway.enabled" }}
+    namespace: istio-system
+    labels:
+      pkg: istio
+      app: core
+    chart: ../charts/istio-gateway
+    values:
+      - ../values/istio-gateway/istio-egressgateway.yaml.gotmpl

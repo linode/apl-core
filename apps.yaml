@@ -153,7 +153,7 @@ appsInfo:
     integration: APL integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio Operator
-    appVersion: 1.20.5
+    appVersion: 1.26.0
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:

@@ -1,7 +1,7 @@
 {{- $v := .Values }}
 {{- $i := $v.apps.istio }}
 resources:
-  - apiVersion: telemetry.istio.io/v1alpha1
+  - apiVersion: telemetry.istio.io/v1
     kind: Telemetry
     metadata:
       name: telemetry-defaults
