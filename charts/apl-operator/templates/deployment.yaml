@@ -32,9 +32,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
-            - npm
-            - run
-            - apl-operator
+            - node
+            - dist/src/operator/main.js
           env:
             - name: RUN_AS_OPERATOR
               value: "true"
