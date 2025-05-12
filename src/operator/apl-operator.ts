@@ -28,13 +28,13 @@ export class AplOperator {
     //TODO change this when going in to cluster
     this.repoUrl = `https://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
 
-    // Remove the existing directory if it exists
-    if (fs.existsSync(this.repoPath)) {
+    // Remove the existing directory if it exists and is not empty
+    if (fs.existsSync(this.repoPath) && fs.readdirSync(this.repoPath).length > 0) {
       this.d.info('Removing existing repository directory')
       fs.rmSync(this.repoPath, { recursive: true, force: true })
     }
 
-    // Ensure parent directory exists
+    // Ensure directory exists
     if (!fs.existsSync(this.repoPath)) {
       fs.mkdirSync(this.repoPath, { recursive: true })
     }
