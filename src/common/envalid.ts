@@ -32,6 +32,8 @@ export const cliEnvSpec = {
   RANDOM: bool({ desc: 'Randomizes the timeouts by multiplying with a factor between 1 to 2', default: false }),
   MIN_TIMEOUT: num({ desc: 'The number of milliseconds before starting the first retry', default: 60000 }),
   FACTOR: num({ desc: 'The factor to multiply the timeout with', default: 1 }),
+  GITEA_URL: str({ default: 'gitea-http.gitea.svc.cluster.local:3000' }),
+  GITEA_PROTOCOL: str({ default: 'http' }),
 }
 
 export function cleanEnv<T>(spec: { [K in keyof T]: ValidatorSpec<T[K]> }, options?: CleanOptions<T>) {

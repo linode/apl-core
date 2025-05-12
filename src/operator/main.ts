@@ -1,6 +1,8 @@
 import * as dotenv from 'dotenv'
 import { terminal } from '../common/debug'
 import { AplOperator } from './apl-operator'
+import { operatorEnv } from './validators'
+import { env } from '../common/envalid'
 
 // Load environment variables
 dotenv.config()
@@ -15,9 +17,9 @@ interface OperatorConfig {
 
 // Load configuration from environment variables
 function loadConfig(): OperatorConfig {
-  const giteaUsername = process.env.GITEA_USERNAME!
-  const giteaPassword = process.env.GITEA_PASSWORD!
-  const giteaUrl = process.env.GITEA_URL!
+  const giteaUsername = operatorEnv.GITEA_USERNAME
+  const giteaPassword = operatorEnv.GITEA_PASSWORD
+  const giteaUrl = env.GITEA_URL
 
   return {
     giteaUsername,

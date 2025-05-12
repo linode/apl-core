@@ -1,16 +1,14 @@
 import simpleGit, { SimpleGit } from 'simple-git'
 import { terminal } from '../common/debug'
 import * as fs from 'fs'
-import retry from 'async-retry'
 import { HelmArguments } from '../common/yargs'
-import { prepareEnvironment } from '../common/cli'
-import { decrypt } from '../common/crypt'
 
 import { module as applyModule } from '../cmd/apply'
 import { module as applyAsAppsModule } from '../cmd/apply-as-apps'
 import { module as bootstrapModule } from '../cmd/bootstrap'
 import { module as validateValuesModule } from '../cmd/validate-values'
 import { setValuesFile } from '../common/repo'
+import { waitTillGitRepoAvailable } from '../common/k8s'
 
 export class AplOperator {
   private d = terminal('operator:apl')
@@ -29,7 +27,7 @@ export class AplOperator {
     //TODO change this when going in to cluster
     this.repoUrl = `https://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
 
-    // Remove existing directory if it exists
+    // Remove the existing directory if it exists
     if (fs.existsSync(this.repoPath)) {
       this.d.info('Removing existing repository directory')
       fs.rmSync(this.repoPath, { recursive: true, force: true })
@@ -47,42 +45,16 @@ export class AplOperator {
     this.d.info(`Initialized APL operator with repo URL: ${this.repoUrl.replace(password, '***')}`)
   }
 
-  private async waitForGitea(): Promise<boolean> {
-    this.d.info('Waiting for Gitea to be available...')
-
-    const maxRetries = 30
-    const retryDelay = 30000 // 30 seconds
-
-    return retry(
-      async () => {
-        try {
-          await this.git.listRemote(['--heads', this.repoUrl])
-          this.d.info('Gitea is available and repository is accessible')
-          return true
-        } catch (error) {
-          this.d.warn(`Gitea not available yet: ${error.message}`)
-          throw new Error('Gitea not available')
-        }
-      },
-      {
-        retries: maxRetries,
-        minTimeout: retryDelay,
-        maxTimeout: retryDelay,
-        onRetry: (error: any, attempt) => {
-          this.d.info(`Retry attempt ${attempt}/${maxRetries} - ${error.message}`)
-        },
-      },
-    )
+  private async waitForGitea(): Promise<void> {
+    await waitTillGitRepoAvailable(this.repoUrl)
   }
 
   private async cloneRepository(): Promise<void> {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
-    // Clone the repository
     try {
       await this.git.clone(this.repoUrl, this.repoPath)
 
-      // Get the current commit hash
       const log = await this.git.log({ maxCount: 1 })
       this.lastRevision = log.latest?.hash || ''
 
@@ -93,22 +65,49 @@ export class AplOperator {
     }
   }
 
+  private async shouldSkipCommit(commitHash: string): Promise<boolean> {
+    try {
+      const logResult = await this.git.log({ maxCount: 1, from: commitHash, to: commitHash })
+
+      if (!logResult.latest) {
+        return false
+      }
+
+      const commitMessage = logResult.latest.message || ''
+      const skipMarker = '[ci skip]'
+
+      const shouldSkip = commitMessage.includes(skipMarker)
+
+      if (shouldSkip) {
+        this.d.info(`Commit ${commitHash.substring(0, 7)} contains "${skipMarker}" - skipping apply`)
+      }
+
+      return shouldSkip
+    } catch (error) {
+      this.d.error(`Error checking commit message for ${commitHash}:`, error)
+      return false
+    }
+  }
+
   private async pullRepository(): Promise<boolean> {
     this.d.info('Pulling latest changes from repository')
 
     try {
-      // Pull the latest changes
+      const previousRevision = this.lastRevision
+
       await this.git.pull()
 
-      // Get a new commit hash
       const log = await this.git.log({ maxCount: 1 })
-      const newRevision = log.latest?.hash || null
+      const newRevision = log.latest?.hash || ''
 
-      // Check if there are changes
-      if (newRevision && newRevision !== this.lastRevision) {
-        this.d.info(`Repository updated: ${this.lastRevision} -> ${newRevision}`)
+      if (newRevision && newRevision !== previousRevision) {
+        this.d.info(`Repository updated: ${previousRevision} -> ${newRevision}`)
+
+        const shouldSkip = await this.shouldSkipCommit(newRevision)
+
         this.lastRevision = newRevision
-        return true
+
+        return !shouldSkip
       } else {
         this.d.info('No changes detected in repository')
         return false
@@ -151,11 +150,11 @@ export class AplOperator {
     this.d.info('Executing apply')
 
     try {
-      // Prepare the environment and set ENV_DIR
-      process.env.ENV_DIR = this.repoPath
-
-      // We need to prepare and parse arguments as expected by the apply module
-      const args: HelmArguments = { args: '--tekton' } as HelmArguments
+      const args: HelmArguments = {
+        tekton: true,
+        _: [] as string[],
+        $0: '',
+      } as HelmArguments
 
       // Use the handler from the module
       await applyModule.handler(args)
@@ -171,14 +170,10 @@ export class AplOperator {
     this.d.info('Executing applyAsApps for teams')
 
     try {
-      // Set the environment
-      process.env.ENV_DIR = this.repoPath
-
       const args: HelmArguments = {
-        l: ['pipeline=otomi-task-teams'],
+        label: ['pipeline=otomi-task-teams'],
       } as HelmArguments
 
-      // Use the handler from the module
       await applyAsAppsModule.handler(args)
 
       this.d.info('ApplyAsApps for teams completed successfully')
@@ -188,36 +183,35 @@ export class AplOperator {
     }
   }
 
-  private async pollForChanges(): Promise<void> {
-    if (!this.isRunning) return
+  private async pollForChangesAndApplyIfAny(): Promise<void> {
+    this.d.info('Starting polling loop')
 
-    try {
-      const hasChanges = await this.pullRepository()
+    while (this.isRunning) {
+      try {
+        const hasChanges = await this.pullRepository()
 
-      if (hasChanges) {
-        this.d.info('Changes detected, triggering apply process')
+        if (hasChanges) {
+          this.d.info('Changes detected, triggering apply process')
 
-        // Execute the following in parallel
-        await Promise.all([this.executeApply(), this.executeApplyAsApps()])
+          // Execute them not in parallel as it resulted in issues
+          await this.executeApply()
+          await this.executeApplyAsApps()
 
-        this.d.info('Apply process completed successfully')
-      }
+          this.d.info('Apply process completed successfully')
+        } else {
+          this.d.info('No changes detected')
+        }
 
-      // Schedule next poll
-      setTimeout(() => {
-        void this.pollForChanges()
-      }, this.pollInterval)
-    } catch (error) {
-      this.d.error('Error during polling:', error)
+        await new Promise((resolve) => setTimeout(resolve, this.pollInterval))
+      } catch (error) {
+        this.d.error('Error during applying changes:', error)
 
-      // If we encounter an error, retry after a delay
-      if (this.isRunning) {
-        this.d.info(`Retrying in ${this.pollInterval}ms`)
-        setTimeout(() => {
-          void this.pollForChanges()
-        }, this.pollInterval)
+        // Optionally create prometheus metrics or alerts here
+        await new Promise((resolve) => setTimeout(resolve, this.pollInterval))
       }
     }
+
+    this.d.info('Polling loop stopped')
   }
 
   public async start(): Promise<void> {
@@ -230,7 +224,6 @@ export class AplOperator {
     this.d.info('Starting APL operator')
 
     try {
-      // Step 1: Wait for Gitea to be available
       await this.waitForGitea()
 
       await this.cloneRepository()
@@ -239,9 +232,10 @@ export class AplOperator {
 
       await this.executeValidateValues()
 
-      await Promise.all([this.executeApply(), this.executeApplyAsApps()])
+      await this.executeApply()
+      await this.executeApplyAsApps()
 
-      await this.pollForChanges()
+      await this.pollForChangesAndApplyIfAny()
 
       this.d.info('APL operator started successfully')
     } catch (error) {

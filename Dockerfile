@@ -42,4 +42,4 @@ COPY --from=ci /home/app/stack/dist /home/app/stack/dist
 COPY --from=clean /home/app/stack/node_modules /home/app/stack/node_modules
 COPY --chown=app . .
 
-CMD ["dist/src/otomi.js"]
+CMD if [ "$RUN_AS_OPERATOR" = "true" ]; then node dist/src/operator/main.js; else dist/src/otomi.js; fi

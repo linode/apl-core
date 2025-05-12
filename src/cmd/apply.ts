@@ -77,7 +77,7 @@ const applyAll = async () => {
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
+      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
       fileOpts: 'helmfile.d/helmfile-02.init.yaml',
       labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
@@ -86,14 +86,12 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  let labelOpts = ['']
   if (initialInstall) {
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // Only install the core apps
-    labelOpts = ['app=core']
     await hf(
       {
-        labelOpts,
+        labelOpts: ['app=core'],
         logLevel: logLevelString(),
         args: hfArgs,
       },

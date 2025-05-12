@@ -1,0 +1,22 @@
+{{- $v := .Values }}
+{{- $o := $v.apps | get "apl-operator" }}
+{{- $version := $v.versions.tasks }}
+{{- $isSemver := regexMatch "^[0-9.]+" $version }}
+{{- $g := $v.apps.gitea }}
+{{- $kms := $v | get "kms" dict }}
+
+image:
+  tag: {{ printf "%s%s" ($isSemver | ternary "v" "") $version }}
+  pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+resources: {{- toYaml $o.resources.operator | nindent 2 }}
+
+kms: {{- $kms | toYaml | nindent 2 }}
+
+giteaPassword: {{ $g.adminPassword }}
+otomiVersion: {{ $v.otomi.version }}
