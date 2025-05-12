@@ -68,7 +68,7 @@ export class AplOperator {
         retries: maxRetries,
         minTimeout: retryDelay,
         maxTimeout: retryDelay,
-        onRetry: (error, attempt) => {
+        onRetry: (error: any, attempt) => {
           this.d.info(`Retry attempt ${attempt}/${maxRetries} - ${error.message}`)
         },
       },

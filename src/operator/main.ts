@@ -15,9 +15,9 @@ interface OperatorConfig {
 
 // Load configuration from environment variables
 function loadConfig(): OperatorConfig {
-  const giteaUsername = process.env.GITEA_USERNAME
-  const giteaPassword = process.env.GITEA_PASSWORD
-  const giteaUrl = process.env.GITEA_URL
+  const giteaUsername = process.env.GITEA_USERNAME!
+  const giteaPassword = process.env.GITEA_PASSWORD!
+  const giteaUrl = process.env.GITEA_URL!
 
   return {
     giteaUsername,
