@@ -44,21 +44,21 @@ export class AplOperator {
 
   private async waitForGitea(): Promise<void> {
     await waitTillGitRepoAvailable(this.repoUrl)
-    await this.git.raw([
-      'config',
-      '--global',
-      '--file',
-      '/home/app/stack/gitconfig',
-      '--add',
-      'safe.directory',
-      this.repoPath,
-    ])
+    await this.git.raw(['config', '--file', '/home/app/stack/gitconfig', '--add', 'safe.directory', this.repoPath])
   }
 
   private async cloneRepository(): Promise<void> {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
+      const listRoot = await $`ls -la`.nothrow()
+      this.d.log('ls -la:\n', listRoot.stdout)
+
+      const listEnv = await $`ls -la ./env`.nothrow()
+      this.d.log('ls -la ./env:\n', listEnv.stdout)
+
+      const currentDir = await $`pwd`.nothrow()
+      this.d.log('pwd:\n', currentDir.stdout)
       await this.git.clone(this.repoUrl, this.repoPath)
 
       const log = await this.git.log({ maxCount: 1 })
