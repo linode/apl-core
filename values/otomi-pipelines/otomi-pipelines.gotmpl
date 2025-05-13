@@ -5,7 +5,7 @@
 
 kms: {{- $kms | toYaml | nindent 2 }}
 
-giteaPassword: {{ $g.adminPassword }}
+giteaPassword: {{ $g.adminPassword | quote }}
 otomiVersion: {{ $v.otomi.version }}
 
 cloneUnsecure: true
