@@ -50,13 +50,13 @@ export class AplOperator {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
+      await this.git.clone(this.repoUrl, this.repoPath, ['-c', `safe.directory=${this.repoPath}`])
+      this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
       const listRoot = await $`ls -la`.nothrow()
       this.d.log('ls -la:\n', listRoot.stdout)
 
       const currentDir = await $`pwd`.nothrow()
       this.d.log('pwd:\n', currentDir.stdout)
-      await this.git.clone(this.repoUrl, this.repoPath, ['-c', `safe.directory=${this.repoPath}`])
-      this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
       await this.git.raw(['config', '--local', '--add', 'safe.directory', '*'])
       const log = await this.git.log({ maxCount: 1 })
       this.lastRevision = log.latest?.hash || ''
