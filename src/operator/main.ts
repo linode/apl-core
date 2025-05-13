@@ -50,19 +50,18 @@ async function main(): Promise<void> {
     d.info('Starting APL Operator')
 
     const config = loadConfig()
-    const repoPath = env.ENV_DIR
     // Remove the existing directory if it exists and is not empty
-    if (fs.existsSync(repoPath) && fs.readdirSync(repoPath).length > 0) {
+    if (fs.existsSync(config.repoPath) && fs.readdirSync(config.repoPath).length > 0) {
       this.d.info('Removing existing repository directory')
-      fs.rmSync(repoPath, { recursive: true, force: true })
+      fs.rmSync(config.repoPath, { recursive: true, force: true })
     }
-    const parentDir = path.dirname(repoPath)
+    const parentDir = path.dirname(config.repoPath)
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true })
     }
 
-    if (!fs.existsSync(repoPath)) {
-      fs.mkdirSync(repoPath, { recursive: true })
+    if (!fs.existsSync(config.repoPath)) {
+      fs.mkdirSync(config.repoPath, { recursive: true })
     }
 
     const operator = new AplOperator(

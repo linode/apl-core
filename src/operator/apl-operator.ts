@@ -30,7 +30,7 @@ export class AplOperator {
     pollIntervalMs?: number,
   ) {
     this.pollInterval = pollIntervalMs ? pollIntervalMs : this.pollInterval
-    this.repoUrl = repoPath
+    this.repoPath = repoPath
     const giteaOrg = 'otomi'
     const giteaRepo = 'values'
     //TODO change this when going in to cluster
