@@ -44,14 +44,9 @@ export class AplOperator {
 
   private async waitForGitea(): Promise<void> {
     await waitTillGitRepoAvailable(this.repoUrl)
-    await this.git.raw([
-      'config',
-      '--file',
-      '/home/app/stack/gitconfig/.gitconfig',
-      '--add',
-      'safe.directory',
-      this.repoPath,
-    ])
+    const gitConfig = '/home/app/stack/gitconfig/.gitconfig'
+    process.env.GIT_CONFIG_GLOBAL = gitConfig
+    await this.git.raw(['config', '--file', gitConfig, '--add', 'safe.directory', this.repoPath])
   }
 
   private async cloneRepository(): Promise<void> {
