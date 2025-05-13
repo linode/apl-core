@@ -54,7 +54,7 @@ if [[ $(kubectl get deployment -n istio-operator istio-operator 2>/dev/null) ]];
      kubectl annotate "$res" "meta.helm.sh/release-namespace=istio-system"
   done
 
-  for res in service/istio-ingressgateway-public deployment/istio-ingressgateway-public horizontalpodautoscaler.autoscaling/istio-ingressgateway-public
+  for res in service/istio-ingressgateway-public serviceaccount/istio-ingressgateway-public role/istio-ingressgateway-public rolebinding/istio-ingressgateway-public deployment/istio-ingressgateway-public horizontalpodautoscaler.autoscaling/istio-ingressgateway-public
   do
      kubectl label -n istio-system "$res" "app.kubernetes.io/managed-by=Helm"
      kubectl annotate -n istio-system "$res" "meta.helm.sh/release-name=istio-ingressgateway-public"
