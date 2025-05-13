@@ -57,8 +57,8 @@ export class AplOperator {
       this.d.log('pwd:\n', currentDir.stdout)
       await this.git.clone(this.repoUrl, this.repoPath, ['-c', `safe.directory=${this.repoPath}`])
 
-      const log = await this.git.log({ maxCount: 1 })
-      this.lastRevision = log.latest?.hash || ''
+      const hash = await this.git.revparse('HEAD')
+      this.lastRevision = hash || ''
 
       this.d.info(`Repository cloned successfully, current revision: ${this.lastRevision}`)
     } catch (error) {
