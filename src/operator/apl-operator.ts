@@ -34,11 +34,7 @@ export class AplOperator {
     const giteaRepo = 'values'
     //TODO change this when going in to cluster
     this.repoUrl = `${giteaProtocol}://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
-    const gitConfigDir = '/home/app/stack/gitconfig'
-    const gitConfigFile = `${gitConfigDir}/.gitconfig`
 
-    // Set this to be used for all git commands
-    process.env.GIT_CONFIG_GLOBAL = gitConfigFile
     this.git = simpleGit({
       baseDir: this.repoPath,
     })
@@ -48,14 +44,6 @@ export class AplOperator {
 
   private async waitForGitea(): Promise<void> {
     await waitTillGitRepoAvailable(this.repoUrl)
-
-    // Set the Git safe directory using the raw git command
-    this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
-    await this.git.raw(['config', '--system', '--add', 'safe.directory', this.repoPath])
-
-    // Verify the configuration was set
-    const config = await this.git.raw(['config', '--global', '--get', 'safe.directory'])
-    this.d.info(`Git safe.directory is set to: ${config.trim()}`)
   }
 
   private async cloneRepository(): Promise<void> {
@@ -67,7 +55,7 @@ export class AplOperator {
 
       const currentDir = await $`pwd`.nothrow()
       this.d.log('pwd:\n', currentDir.stdout)
-      await this.git.clone(this.repoUrl, this.repoPath)
+      await this.git.clone(this.repoUrl)
 
       const log = await this.git.log({ maxCount: 1 })
       this.lastRevision = log.latest?.hash || ''
