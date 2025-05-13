@@ -53,7 +53,8 @@ export class AplOperator {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
-      await $`ls -la ./env`
+      await $`pwd`
+      await $`ls -la`
       await this.git.clone(this.repoUrl, this.repoPath)
 
       const log = await this.git.log({ maxCount: 1 })
