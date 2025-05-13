@@ -34,7 +34,11 @@ export class AplOperator {
     const giteaRepo = 'values'
     //TODO change this when going in to cluster
     this.repoUrl = `${giteaProtocol}://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
+    const gitConfigDir = '/home/app/stack/gitconfig'
+    const gitConfigFile = `${gitConfigDir}/.gitconfig`
 
+    // Set this to be used for all git commands
+    process.env.GIT_CONFIG_GLOBAL = gitConfigFile
     this.git = simpleGit({
       baseDir: this.repoPath,
     })
@@ -44,11 +48,6 @@ export class AplOperator {
 
   private async waitForGitea(): Promise<void> {
     await waitTillGitRepoAvailable(this.repoUrl)
-    const gitConfigDir = '/home/app/stack/gitconfig'
-    const gitConfigFile = `${gitConfigDir}/.gitconfig`
-
-    // Set this to be used for all git commands
-    process.env.GIT_CONFIG_GLOBAL = gitConfigFile
 
     // Set the Git safe directory using the raw git command
     this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
