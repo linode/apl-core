@@ -55,7 +55,7 @@ export class AplOperator {
 
       const currentDir = await $`pwd`.nothrow()
       this.d.log('pwd:\n', currentDir.stdout)
-      await this.git.clone(this.repoUrl)
+      await this.git.clone(this.repoUrl, this.repoPath, ['-c', `safe.directory=${this.repoPath}`])
 
       const log = await this.git.log({ maxCount: 1 })
       this.lastRevision = log.latest?.hash || ''
