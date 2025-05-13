@@ -6,7 +6,7 @@
   allow_sign_up: true
   oauth_auto_login: true # false = so we can login with admin / bladibla
   client_id: {{ .keycloak.clientID }}
-  client_secret: {{ .keycloak.clientSecret }}
+  client_secret: {{ .keycloak.clientSecret | quote }}
   scopes: openid
   auth_url: {{ printf "%s/protocol/openid-connect/auth" .keycloakBase }}
   token_url: {{ printf "%s/protocol/openid-connect/token" .keycloakBase }}
