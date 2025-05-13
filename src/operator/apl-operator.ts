@@ -45,7 +45,7 @@ export class AplOperator {
 
   private async waitForGitea(): Promise<void> {
     await waitTillGitRepoAvailable(this.repoUrl)
-    const gitConfigPath = path.join('/home/app/stack', '.gitconfig')
+    const gitConfigPath = path.join('/home/app/stack/gitconfig', '.gitconfig')
     process.env.GIT_CONFIG_GLOBAL = gitConfigPath
     await this.git.raw(['config', '--file', gitConfigPath, '--add', 'safe.directory', this.repoPath])
   }
