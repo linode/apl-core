@@ -21,7 +21,7 @@ resources: {{- $o.resources.api | toYaml | nindent 2 }}
 secrets:
   GIT_USER: otomi-admin
   GIT_EMAIL: not@us.ed
-  GIT_PASSWORD: {{ $g.adminPassword }}
+  GIT_PASSWORD: {{ $g.adminPassword | quote}}
   {{- $sopsEnv | nindent 2 }}
   
 env:
@@ -41,7 +41,7 @@ env:
     {{- $v._derived.caCert | nindent 4 }}
   {{- end }}
   EDITOR_INACTIVITY_TIMEOUT: {{ $o.editorInactivityTimeout }}
-  DRONE_WEBHOOK_SECRET: {{ $d | get "sharedSecret" }}
+  DRONE_WEBHOOK_SECRET: {{ $d | get "sharedSecret" | quote }}
 
 core:
   k8s: {{- toYaml $v.k8s | nindent 4 }}
