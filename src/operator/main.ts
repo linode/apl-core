@@ -4,7 +4,6 @@ import { AplOperator } from './apl-operator'
 import { operatorEnv } from './validators'
 import { env } from '../common/envalid'
 
-// Load environment variables
 dotenv.config()
 
 const d = terminal('operator:main')
@@ -13,22 +12,23 @@ interface OperatorConfig {
   giteaUsername: string
   giteaPassword: string
   giteaUrl: string
+  giteaProtocol: string
 }
 
-// Load configuration from environment variables
 function loadConfig(): OperatorConfig {
   const giteaUsername = operatorEnv.GITEA_USERNAME
   const giteaPassword = operatorEnv.GITEA_PASSWORD
   const giteaUrl = env.GITEA_URL
+  const giteaProtocol = env.GITEA_PROTOCOL
 
   return {
     giteaUsername,
     giteaPassword,
     giteaUrl,
+    giteaProtocol,
   }
 }
 
-// Gracefully handle termination signals
 function handleTerminationSignals(operator: AplOperator): void {
   function exitHandler(signal: string) {
     d.info(`Received ${signal}, shutting down...`)
@@ -40,21 +40,16 @@ function handleTerminationSignals(operator: AplOperator): void {
   process.on('SIGINT', () => exitHandler('SIGINT'))
 }
 
-// Main function
 async function main(): Promise<void> {
   try {
     d.info('Starting APL Operator')
 
-    // Load configuration
     const config = loadConfig()
 
-    // Create and start the Gitea operator
-    const operator = new AplOperator(config.giteaUsername, config.giteaPassword, config.giteaUrl)
+    const operator = new AplOperator(config.giteaUsername, config.giteaPassword, config.giteaUrl, config.giteaProtocol)
 
-    // Set up signal handlers
     handleTerminationSignals(operator)
 
-    // Start the operator
     await operator.start()
 
     d.info('APL Operator started successfully')
@@ -64,7 +59,6 @@ async function main(): Promise<void> {
   }
 }
 
-// Run the main function if this file is executed directly
 if (require.main === module) {
   main().catch((error) => {
     d.error('Unhandled error in main:', error)

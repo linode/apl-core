@@ -21,27 +21,13 @@ export class AplOperator {
   private repoUrl: string
   private git: SimpleGit
 
-  constructor(username: string, password: string, giteaUrl: string, pollIntervalMs?: number) {
+  constructor(username: string, password: string, giteaUrl: string, giteaProtocol: string, pollIntervalMs?: number) {
     this.pollInterval = pollIntervalMs ? pollIntervalMs : this.pollInterval
 
     const giteaOrg = 'otomi'
     const giteaRepo = 'values'
     //TODO change this when going in to cluster
-    this.repoUrl = `https://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
-
-    // Remove the existing directory if it exists and is not empty
-    if (fs.existsSync(this.repoPath) && fs.readdirSync(this.repoPath).length > 0) {
-      this.d.info('Removing existing repository directory')
-      fs.rmSync(this.repoPath, { recursive: true, force: true })
-    }
-    const parentDir = path.dirname(this.repoPath)
-    if (!fs.existsSync(parentDir)) {
-      fs.mkdirSync(parentDir, { recursive: true })
-    }
-
-    if (!fs.existsSync(this.repoPath)) {
-      fs.mkdirSync(this.repoPath, { recursive: true })
-    }
+    this.repoUrl = `${giteaProtocol}://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
 
     this.git = simpleGit({
       baseDir: this.repoPath,
