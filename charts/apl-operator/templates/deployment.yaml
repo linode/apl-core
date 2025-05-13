@@ -46,7 +46,7 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: apl-values
-              mountPath: /home/app/stack/env
+              mountPath: /home/app/stack
       volumes:
         - name: apl-values
           emptyDir: {}
