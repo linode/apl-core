@@ -87,7 +87,7 @@ appsInfo:
     integration: ExternalDNS is used by APL to make public service domains accessible by registering them with APL's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then APL will rely on nip.io to create host names for all services.
   falco:
     title: Falco
-    appVersion: 0.33.1
+    appVersion: 0.36.2
     repo: https://github.com/falcosecurity/falco
     maintainers: The Falco Authors
     relatedLinks:
@@ -316,7 +316,7 @@ appsInfo:
     integration: APL installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
   thanos:
     title: Thanos
-    appVersion: 0.35.1
+    appVersion: 0.36.1
     repo: https://github.com/thanos-io/thanos
     maintainers: Thanos
     relatedLinks:
@@ -328,7 +328,7 @@ appsInfo:
     integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
   trivy:
     title: Trivy Operator
-    appVersion: 0.16.4
+    appVersion: 0.57.1
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:
