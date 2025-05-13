@@ -50,10 +50,13 @@ async function main(): Promise<void> {
     d.info('Starting APL Operator')
 
     const config = loadConfig()
-    // Remove the existing directory if it exists and is not empty
-    if (fs.existsSync(config.repoPath) && fs.readdirSync(config.repoPath).length > 0) {
-      d.info('Removing existing repository directory')
-      fs.rmSync(config.repoPath, { recursive: true, force: true })
+    // Only delete contents of the directory
+    if (fs.existsSync(config.repoPath)) {
+      d.info(`Clearing directory contents of ${config.repoPath}`)
+      for (const entry of fs.readdirSync(config.repoPath)) {
+        const entryPath = path.join(config.repoPath, entry)
+        fs.rmSync(entryPath, { recursive: true, force: true })
+      }
     }
     const parentDir = path.dirname(config.repoPath)
     if (!fs.existsSync(parentDir)) {
