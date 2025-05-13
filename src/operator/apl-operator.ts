@@ -120,7 +120,6 @@ export class AplOperator {
     this.d.info('Executing bootstrap process')
 
     try {
-      process.env.ENV_DIR = this.repoPath
       await bootstrapModule.handler({} as HelmArguments)
       await setValuesFile(this.repoPath)
       this.d.info('Bootstrap completed successfully')
@@ -135,7 +134,6 @@ export class AplOperator {
 
     try {
       // Execute validate-values command
-      process.env.ENV_DIR = this.repoPath
       await validateValuesModule.handler({} as HelmArguments)
       this.d.info('Values validation completed successfully')
     } catch (error) {

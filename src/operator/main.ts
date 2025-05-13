@@ -52,7 +52,7 @@ async function main(): Promise<void> {
     const config = loadConfig()
     // Remove the existing directory if it exists and is not empty
     if (fs.existsSync(config.repoPath) && fs.readdirSync(config.repoPath).length > 0) {
-      this.d.info('Removing existing repository directory')
+      d.info('Removing existing repository directory')
       fs.rmSync(config.repoPath, { recursive: true, force: true })
     }
     const parentDir = path.dirname(config.repoPath)
