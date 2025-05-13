@@ -17,13 +17,20 @@ export class AplOperator {
   private isRunning = false
   private pollInterval = 1000
   private lastRevision = ''
-  private repoPath = env.ENV_DIR
+  private repoPath: string
   private repoUrl: string
   private git: SimpleGit
 
-  constructor(username: string, password: string, giteaUrl: string, giteaProtocol: string, pollIntervalMs?: number) {
+  constructor(
+    username: string,
+    password: string,
+    giteaUrl: string,
+    giteaProtocol: string,
+    repoPath: string,
+    pollIntervalMs?: number,
+  ) {
     this.pollInterval = pollIntervalMs ? pollIntervalMs : this.pollInterval
-
+    this.repoUrl = repoPath
     const giteaOrg = 'otomi'
     const giteaRepo = 'values'
     //TODO change this when going in to cluster

@@ -44,6 +44,12 @@ spec:
                 name: apl-sops-secrets
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: apl-values
+              mountPath: /home/app/stack/env
+      volumes:
+        - name: apl-values
+          emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

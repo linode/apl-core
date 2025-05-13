@@ -3,6 +3,8 @@ import { terminal } from '../common/debug'
 import { AplOperator } from './apl-operator'
 import { operatorEnv } from './validators'
 import { env } from '../common/envalid'
+import fs from 'fs'
+import path from 'path'
 
 dotenv.config()
 
@@ -13,6 +15,7 @@ interface OperatorConfig {
   giteaPassword: string
   giteaUrl: string
   giteaProtocol: string
+  repoPath: string
 }
 
 function loadConfig(): OperatorConfig {
@@ -20,12 +23,14 @@ function loadConfig(): OperatorConfig {
   const giteaPassword = operatorEnv.GITEA_PASSWORD
   const giteaUrl = env.GITEA_URL
   const giteaProtocol = env.GITEA_PROTOCOL
+  const repoPath = env.ENV_DIR
 
   return {
     giteaUsername,
     giteaPassword,
     giteaUrl,
     giteaProtocol,
+    repoPath,
   }
 }
 
@@ -45,8 +50,28 @@ async function main(): Promise<void> {
     d.info('Starting APL Operator')
 
     const config = loadConfig()
+    const repoPath = env.ENV_DIR
+    // Remove the existing directory if it exists and is not empty
+    if (fs.existsSync(repoPath) && fs.readdirSync(repoPath).length > 0) {
+      this.d.info('Removing existing repository directory')
+      fs.rmSync(repoPath, { recursive: true, force: true })
+    }
+    const parentDir = path.dirname(repoPath)
+    if (!fs.existsSync(parentDir)) {
+      fs.mkdirSync(parentDir, { recursive: true })
+    }
 
-    const operator = new AplOperator(config.giteaUsername, config.giteaPassword, config.giteaUrl, config.giteaProtocol)
+    if (!fs.existsSync(repoPath)) {
+      fs.mkdirSync(repoPath, { recursive: true })
+    }
+
+    const operator = new AplOperator(
+      config.giteaUsername,
+      config.giteaPassword,
+      config.giteaUrl,
+      config.giteaProtocol,
+      config.repoPath,
+    )
 
     handleTerminationSignals(operator)
 
