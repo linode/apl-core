@@ -61,7 +61,7 @@ services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 2 }}
 resourceQuota: {{- $teamResourceQuotas | toYaml | nindent 2 }}
 
 gitOps:
-  adminPassword: {{ $a.gitea.adminPassword }}
+  adminPassword: {{ $a.gitea.adminPassword | quote }}
   adminUsername: {{ $a.gitea.adminUsername }}
   globalUrl: "https://{{ $v._derived.giteaDomain }}"
   teamRepoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
