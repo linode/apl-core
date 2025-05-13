@@ -10,6 +10,8 @@ metadata:
     {{- tpl (toYaml . | nindent 4) $ }}
   {{- end }}
 spec:
+  ipFamilies: {{ .Values.tempo.service.ipFamilies }}
+  ipFamilyPolicy: {{ .Values.tempo.service.ipFamilyPolicy }}
   ports:
     - name: http-metrics
       port: 3100
