@@ -44,9 +44,19 @@ export class AplOperator {
 
   private async waitForGitea(): Promise<void> {
     await waitTillGitRepoAvailable(this.repoUrl)
-    const gitConfig = '/home/app/stack/gitconfig/.gitconfig'
-    process.env.GIT_CONFIG_GLOBAL = gitConfig
-    await this.git.raw(['config', '--file', gitConfig, '--add', 'safe.directory', this.repoPath])
+    const gitConfigDir = '/home/app/stack/gitconfig'
+    const gitConfigFile = `${gitConfigDir}/.gitconfig`
+
+    // Set this to be used for all git commands
+    process.env.GIT_CONFIG_GLOBAL = gitConfigFile
+
+    // Set the Git safe directory using the raw git command
+    this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
+    await this.git.raw(['config', '--global', '--add', 'safe.directory', this.repoPath])
+
+    // Verify the configuration was set
+    const config = await this.git.raw(['config', '--global', '--get', 'safe.directory'])
+    this.d.info(`Git safe.directory is set to: ${config.trim()}`)
   }
 
   private async cloneRepository(): Promise<void> {
@@ -55,9 +65,6 @@ export class AplOperator {
     try {
       const listRoot = await $`ls -la`.nothrow()
       this.d.log('ls -la:\n', listRoot.stdout)
-
-      const listEnv = await $`ls -la ./env`.nothrow()
-      this.d.log('ls -la ./env:\n', listEnv.stdout)
 
       const currentDir = await $`pwd`.nothrow()
       this.d.log('pwd:\n', currentDir.stdout)
