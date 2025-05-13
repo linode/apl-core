@@ -51,7 +51,7 @@ export class AplOperator {
 
     // Set the Git safe directory using the raw git command
     this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
-    await this.git.raw(['config', '--global', '--add', 'safe.directory', this.repoPath])
+    await this.git.raw(['config', '--system', '--add', 'safe.directory', this.repoPath])
 
     // Verify the configuration was set
     const config = await this.git.raw(['config', '--global', '--get', 'safe.directory'])
