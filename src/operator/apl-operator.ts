@@ -1,6 +1,5 @@
 import simpleGit, { SimpleGit } from 'simple-git'
 import { terminal } from '../common/debug'
-import * as fs from 'fs'
 import { HelmArguments } from '../common/yargs'
 
 import { module as applyModule } from '../cmd/apply'
@@ -9,8 +8,8 @@ import { module as bootstrapModule } from '../cmd/bootstrap'
 import { module as validateValuesModule } from '../cmd/validate-values'
 import { setValuesFile } from '../common/repo'
 import { waitTillGitRepoAvailable } from '../common/k8s'
-import { env } from '../common/envalid'
 import path from 'path'
+import { $ } from 'zx'
 
 export class AplOperator {
   private d = terminal('operator:apl')
@@ -54,6 +53,7 @@ export class AplOperator {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
+      await $`ls -la ./env`
       await this.git.clone(this.repoUrl, this.repoPath)
 
       const log = await this.git.log({ maxCount: 1 })
