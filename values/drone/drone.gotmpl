@@ -24,13 +24,13 @@ images:
 
 nameOverride: drone
 fullnameOverride: drone
-sharedSecret: {{ $d | get "sharedSecret" }}
+sharedSecret: {{ $d | get "sharedSecret" | quote }}
 sourceControl: {{- $d.sourceControl | toYaml | nindent 2 }}
 server:
   host: {{ $host }}
   protocol: https
   adminUser: {{ $d | get "adminUser" "otomi-admin" }}
-  adminToken: {{ $d | get "adminToken" ($g | get "adminPassword" $v.otomi.adminPassword) }}
+  adminToken: {{ $d | get "adminToken" ($g | get "adminPassword" $v.otomi.adminPassword) | quote }}
   dind:
     enabled: {{ $dindEnabled }}
   resources:
@@ -57,10 +57,10 @@ server:
     {{- end }}
     {{- if eq $provider "github" }}
     DRONE_ADMISSION_ENDPOINT: http://drone-admit-members:80
-    DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" }}
+    DRONE_ADMISSION_SECRET: {{ $d | get "sharedSecret" | quote }}
     {{- end }}
     DRONE_WEBHOOK_ENDPOINT: http://otomi-api.otomi/drone
-    DRONE_WEBHOOK_SECRET: {{ $d | get "sharedSecret" }}
+    DRONE_WEBHOOK_SECRET: {{ $d | get "sharedSecret" | quote }}
   strategyType: Recreate
 agent:
   annotations:
