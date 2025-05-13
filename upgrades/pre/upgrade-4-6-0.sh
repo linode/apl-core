@@ -24,6 +24,7 @@ if [[ $(kubectl get applications.argoproj.io -n argocd keycloak-keycloak-operato
 fi
 
 if [[ $(kubectl get deployment -n istio-operator istio-operator 2>/dev/null) ]]; then
+  kubectl patch application -n argocd istio-operator-istio-operator --patch '[{"op": "remove", "path": "/spec/syncPolicy/automated"}]' --type=json
   kubectl scale deployment -n istio-operator istio-operator --replicas=0
 
   for crd in $(kubectl get crds -l chart=istio -o name && kubectl get crds -l app.kubernetes.io/part-of=istio -o name)
@@ -33,10 +34,14 @@ if [[ $(kubectl get deployment -n istio-operator istio-operator 2>/dev/null) ]];
      kubectl annotate "$crd" "meta.helm.sh/release-namespace=istio-system"
   done
 
+   kubectl label -n istio-system serviceaccount/istio-reader-service-account "app.kubernetes.io/managed-by=Helm"
+   kubectl annotate -n istio-system serviceaccount/istio-reader-service-account "meta.helm.sh/release-name=istio-base"
+   kubectl annotate -n istio-system serviceaccount/istio-reader-service-account "meta.helm.sh/release-namespace=istio-system"
+
   for res in poddisruptionbudgets.policy/istiod serviceaccount/istiod configmap/istio configmap/istio-sidecar-injector role/istiod rolebinding/istiod service/istiod deployment/istiod horizontalpodautoscaler.autoscaling/istiod mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector validatingwebhookconfiguration.admissionregistration.k8s.io/istio-validator-istio-system validatingwebhookconfiguration.admissionregistration.k8s.io/istiod-default-validator
   do
      kubectl label -n istio-system "$res" "app.kubernetes.io/managed-by=Helm"
-     kubectl annotate -n istio-system "$res" "meta.helm.sh/release-name=istiod"
+     kubectl annotate -n istio-system "$res" "meta.helm.sh/release-name=istiod" --overwrite
      kubectl annotate -n istio-system "$res" "meta.helm.sh/release-namespace=istio-system"
   done
   for res in clusterrole/istiod-clusterrole-istio-system clusterrole/istiod-gateway-controller-istio-system clusterrole/istio-reader-clusterrole-istio-system clusterrolebinding/istiod-clusterrole-istio-system clusterrolebinding/istiod-gateway-controller-istio-system clusterrolebinding/istio-reader-clusterrole-istio-system
@@ -46,7 +51,7 @@ if [[ $(kubectl get deployment -n istio-operator istio-operator 2>/dev/null) ]];
      kubectl annotate "$res" "meta.helm.sh/release-namespace=istio-system"
   done
 
-  for res in poddisruptionbudgets.policy/istio-ingressgateway-public service/istio-ingressgateway-public deployment/istio-ingressgateway-public horizontalpodautoscaler.autoscaling/istio-ingressgateway-public
+  for res in service/istio-ingressgateway-public deployment/istio-ingressgateway-public horizontalpodautoscaler.autoscaling/istio-ingressgateway-public
   do
      kubectl label -n istio-system "$res" "app.kubernetes.io/managed-by=Helm"
      kubectl annotate -n istio-system "$res" "meta.helm.sh/release-name=istio-ingressgateway-public"
