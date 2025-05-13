@@ -34,11 +34,14 @@ if [[ $(kubectl get deployment -n istio-operator istio-operator 2>/dev/null) ]];
      kubectl annotate "$crd" "meta.helm.sh/release-namespace=istio-system"
   done
 
-   kubectl label -n istio-system serviceaccount/istio-reader-service-account "app.kubernetes.io/managed-by=Helm"
-   kubectl annotate -n istio-system serviceaccount/istio-reader-service-account "meta.helm.sh/release-name=istio-base"
-   kubectl annotate -n istio-system serviceaccount/istio-reader-service-account "meta.helm.sh/release-namespace=istio-system"
+  for res in serviceaccount/istio-reader-service-account validatingwebhookconfiguration.admissionregistration.k8s.io/istiod-default-validator
+  do
+     kubectl label -n istio-system "$res" "app.kubernetes.io/managed-by=Helm"
+     kubectl annotate -n istio-system "$res" "meta.helm.sh/release-name=istio-base"
+     kubectl annotate -n istio-system "$res" "meta.helm.sh/release-namespace=istio-system"
+  done
 
-  for res in poddisruptionbudgets.policy/istiod serviceaccount/istiod configmap/istio configmap/istio-sidecar-injector role/istiod rolebinding/istiod service/istiod deployment/istiod horizontalpodautoscaler.autoscaling/istiod mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector validatingwebhookconfiguration.admissionregistration.k8s.io/istio-validator-istio-system validatingwebhookconfiguration.admissionregistration.k8s.io/istiod-default-validator
+  for res in poddisruptionbudgets.policy/istiod serviceaccount/istiod configmap/istio configmap/values configmap/istio-sidecar-injector role/istiod rolebinding/istiod service/istiod deployment/istiod horizontalpodautoscaler.autoscaling/istiod mutatingwebhookconfiguration.admissionregistration.k8s.io/istio-sidecar-injector validatingwebhookconfiguration.admissionregistration.k8s.io/istio-validator-istio-system
   do
      kubectl label -n istio-system "$res" "app.kubernetes.io/managed-by=Helm"
      kubectl annotate -n istio-system "$res" "meta.helm.sh/release-name=istiod" --overwrite

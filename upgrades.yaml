@@ -93,5 +93,3 @@ operations:
   - version: 4.6.0
     pre:
       - upgrades/pre/upgrade-4-6-0.sh || true
-    post:
-      - upgrades/post/upgrade-4-6-0.sh || true
