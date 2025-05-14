@@ -23,25 +23,22 @@ if [[ $(kubectl get applications.argoproj.io -n argocd keycloak-keycloak-operato
   kubectl delete --ignore-not-found crd keycloaks.k8s.keycloak.org
 fi
 
-if [[ $(kubectl get deployment -n istio-operator istio-operator 2>/dev/null) ]]; then
+if [[ ! $(kubectl get applications.argoproj.io -n argocd istio-system-istio-base 2>/dev/null) ]]; then
   for crd in $(kubectl get crds -l chart=istio -o name && kubectl get crds -l app.kubernetes.io/part-of=istio -o name)
   do
-     kubectl label "$crd" "app.kubernetes.io/managed-by=Helm" || true
-     kubectl annotate "$crd" "meta.helm.sh/release-name=istio-base" || true
-     kubectl annotate "$crd" "meta.helm.sh/release-namespace=istio-system" || true
+     kubectl label "$crd" "app.kubernetes.io/managed-by=Helm"
+     kubectl annotate "$crd" "meta.helm.sh/release-name=istio-base"
+     kubectl annotate "$crd" "meta.helm.sh/release-namespace=istio-system"
   done
 fi
+
+if [[ $(kubectl get deployment -n istio-operator istio-operator 2>/dev/null) ]]; then
+  kubectl patch application -n argocd istio-operator-istio-operator --patch '[{"op": "remove", "path": "/spec/syncPolicy/automated"}]' --type=json
+  kubectl scale deployment -n istio-operator istio-operator --replicas=0
+fi
+
 #
 #if [[ $(kubectl get deployment -n istio-operator istio-operator 2>/dev/null) ]]; then
-#  kubectl patch application -n argocd istio-operator-istio-operator --patch '[{"op": "remove", "path": "/spec/syncPolicy/automated"}]' --type=json
-#  kubectl scale deployment -n istio-operator istio-operator --replicas=0
-#
-#  for crd in $(kubectl get crds -l chart=istio -o name && kubectl get crds -l app.kubernetes.io/part-of=istio -o name)
-#  do
-#     kubectl label "$crd" "app.kubernetes.io/managed-by=Helm" || true
-#     kubectl annotate "$crd" "meta.helm.sh/release-name=istio-base" || true
-#     kubectl annotate "$crd" "meta.helm.sh/release-namespace=istio-system" || true
-#  done
 #
 #  for res in serviceaccount/istio-reader-service-account validatingwebhookconfiguration.admissionregistration.k8s.io/istiod-default-validator
 #  do
