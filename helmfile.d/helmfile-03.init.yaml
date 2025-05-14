@@ -80,6 +80,7 @@ releases:
     namespace: apl-operator
     labels:
       pkg: apl-operator
+      app: core
     <<: *default
   - name: kiali-operator-artifacts
     installed: {{ $a | get "kiali.enabled" }}
