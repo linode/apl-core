@@ -7,5 +7,4 @@ global:
     - otomi-pullsecret-global
 {{- end }}
 
-base:
-  defaultRevision: {{ $i.revision | quote }}
+defaultRevision: {{ $i.revision | default "default" | quote }}
