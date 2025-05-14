@@ -49,8 +49,8 @@ export class AplOperator {
 
       const currentDir = await $`pwd`.nothrow()
       this.d.log('pwd:\n', currentDir.stdout)
-      this.d.info('setting git config')
-      await $`git config --global --add safe.directory ${this.repoPath}`
+      // this.d.info('setting git config')
+      // await $`git config --global --add safe.directory ${this.repoPath}`
       const result = await $`git log -1 --pretty=format:"%H"`
       const commitHash = result.stdout.trim()
       this.lastRevision = commitHash || ''
