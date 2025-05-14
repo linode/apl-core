@@ -47,12 +47,12 @@ spec:
           volumeMounts:
             - name: apl-values
               mountPath: /home/app/stack/env
-            - name: git-config
-              mountPath: /home/app/stack/gitconfig
+            - name: tmp
+              mountPath: /tmp
       volumes:
         - name: apl-values
           emptyDir: {}
-        - name: git-config
+        - name: tmp
           emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
