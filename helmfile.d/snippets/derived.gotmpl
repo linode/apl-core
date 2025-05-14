@@ -38,7 +38,7 @@
 {{- $istioRevision := "1-26-0" }}
 {{- $gatewayPrefix := "istio-ingressgateway" }}
 {{- if $istioRevision }}
-{{- $gatewayPrefix := print "istio-ingressgateway-" $istioRevision }}
+{{- $gatewayPrefix = print "istio-ingressgateway-" $istioRevision }}
 {{- end }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
