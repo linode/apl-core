@@ -57,7 +57,8 @@ export class AplOperator {
 
       const currentDir = await $`pwd`.nothrow()
       this.d.log('pwd:\n', currentDir.stdout)
-      await this.git.raw(['config', '--local', '--add', 'safe.directory', '*'])
+      this.d.info('setting git config')
+      await $`git config --global --add safe.directory ${this.repoPath}`.nothrow().quiet()
       const log = await this.git.log({ maxCount: 1 })
       this.lastRevision = log.latest?.hash || ''
 
@@ -126,7 +127,6 @@ export class AplOperator {
 
     try {
       await bootstrapModule.handler({} as HelmArguments)
-      await setValuesFile(this.repoPath)
       this.d.info('Bootstrap completed successfully')
     } catch (error) {
       this.d.error('Bootstrap failed:', error)
