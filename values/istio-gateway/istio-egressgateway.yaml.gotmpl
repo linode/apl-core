@@ -1,6 +1,9 @@
 {{- $v := .Values }}
 {{- $i := $v.apps.istio }}
 
+name: istio-egressgateway-1-26-0
+revision: "1-26-0"
+
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global

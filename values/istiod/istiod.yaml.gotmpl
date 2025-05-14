@@ -9,6 +9,9 @@ jwksResolverExtraRootCA: |
   {{- $v._derived.caCertRoot | nindent 2 }}
 {{- end }}
 
+name: istiod-1-26-0
+revision: "1-26-0"
+
 global:
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
