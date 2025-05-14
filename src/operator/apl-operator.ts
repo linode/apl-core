@@ -1,4 +1,3 @@
-import simpleGit, { SimpleGit } from 'simple-git'
 import { terminal } from '../common/debug'
 import { HelmArguments } from '../common/yargs'
 
@@ -6,9 +5,7 @@ import { module as applyModule } from '../cmd/apply'
 import { module as applyAsAppsModule } from '../cmd/apply-as-apps'
 import { module as bootstrapModule } from '../cmd/bootstrap'
 import { module as validateValuesModule } from '../cmd/validate-values'
-import { setValuesFile } from '../common/repo'
 import { waitTillGitRepoAvailable } from '../common/k8s'
-import path from 'path'
 import { $ } from 'zx'
 
 export class AplOperator {
@@ -18,7 +15,6 @@ export class AplOperator {
   private lastRevision = ''
   private repoPath: string
   private repoUrl: string
-  private git: SimpleGit
 
   constructor(
     username: string,
@@ -35,10 +31,6 @@ export class AplOperator {
     //TODO change this when going in to cluster
     this.repoUrl = `${giteaProtocol}://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
 
-    this.git = simpleGit({
-      baseDir: this.repoPath,
-    })
-
     this.d.info(`Initialized APL operator with repo URL: ${this.repoUrl.replace(password, '***')}`)
   }
 
@@ -50,7 +42,7 @@ export class AplOperator {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
-      await this.git.clone(this.repoUrl, this.repoPath, ['-c', `safe.directory=${this.repoPath}`])
+      await $`git clone ${this.repoUrl} ${this.repoPath}`.nothrow().quiet()
       this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
       const listRoot = await $`ls -la`.nothrow()
       this.d.log('ls -la:\n', listRoot.stdout)
@@ -59,37 +51,14 @@ export class AplOperator {
       this.d.log('pwd:\n', currentDir.stdout)
       this.d.info('setting git config')
       await $`git config --global --add safe.directory ${this.repoPath}`.nothrow().quiet()
-      const log = await this.git.log({ maxCount: 1 })
-      this.lastRevision = log.latest?.hash || ''
+      const result = await $`git log -1 --pretty=format:"%H"`.quiet()
+      const commitHash = result.stdout.trim()
+      this.lastRevision = commitHash || ''
 
       this.d.info(`Repository cloned successfully, current revision: ${this.lastRevision}`)
     } catch (error) {
       this.d.error('Failed to clone repository:', error)
       throw error
-    }
-  }
-
-  private async shouldSkipCommit(commitHash: string): Promise<boolean> {
-    try {
-      const logResult = await this.git.log({ maxCount: 1, from: commitHash, to: commitHash })
-
-      if (!logResult.latest) {
-        return false
-      }
-
-      const commitMessage = logResult.latest.message || ''
-      const skipMarker = '[ci skip]'
-
-      const shouldSkip = commitMessage.includes(skipMarker)
-
-      if (shouldSkip) {
-        this.d.info(`Commit ${commitHash.substring(0, 7)} contains "${skipMarker}" - skipping apply`)
-      }
-
-      return shouldSkip
-    } catch (error) {
-      this.d.error(`Error checking commit message for ${commitHash}:`, error)
-      return false
     }
   }
 
@@ -99,15 +68,23 @@ export class AplOperator {
     try {
       const previousRevision = this.lastRevision
 
-      await this.git.pull()
+      // Pull the latest changes
+      await $`git pull`.quiet()
 
-      const log = await this.git.log({ maxCount: 1 })
-      const newRevision = log.latest?.hash || ''
+      // Get both hash and commit message in one command
+      const result = await $`git log -1 --pretty=format:"%H|%B"`.quiet()
+      const [newRevision, commitMessage] = result.stdout.split('|', 2)
 
       if (newRevision && newRevision !== previousRevision) {
         this.d.info(`Repository updated: ${previousRevision} -> ${newRevision}`)
 
-        const shouldSkip = await this.shouldSkipCommit(newRevision)
+        // Check for skip marker directly with the message we already have
+        const skipMarker = '[ci skip]'
+        const shouldSkip = commitMessage.includes(skipMarker)
+
+        if (shouldSkip) {
+          this.d.info(`Commit ${newRevision.substring(0, 7)} contains "${skipMarker}" - skipping apply`)
+        }
 
         this.lastRevision = newRevision
 
@@ -121,7 +98,6 @@ export class AplOperator {
       throw error
     }
   }
-
   private async executeBootstrap(): Promise<void> {
     this.d.info('Executing bootstrap process')
 
