@@ -50,11 +50,20 @@ spec:
               mountPath: /home/app/stack/env
             - name: tmp
               mountPath: /tmp
+            - name: git-config
+              mountPath: /home/app/.gitconfig
+              subPath: .gitconfig
       volumes:
         - name: apl-values
           emptyDir: {}
         - name: tmp
           emptyDir: {}
+        - name: git-config
+          configMap:
+            name: git-config
+            items:
+              - key: .gitconfig
+                path: .gitconfig
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
