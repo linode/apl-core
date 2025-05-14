@@ -42,7 +42,7 @@ export class AplOperator {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
-      await $`git clone ${this.repoUrl} ${this.repoPath}`.nothrow().quiet()
+      await $`git clone ${this.repoUrl} ${this.repoPath}`
       this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
       const listRoot = await $`ls -la`.nothrow()
       this.d.log('ls -la:\n', listRoot.stdout)
@@ -50,8 +50,8 @@ export class AplOperator {
       const currentDir = await $`pwd`.nothrow()
       this.d.log('pwd:\n', currentDir.stdout)
       this.d.info('setting git config')
-      await $`git config --global --add safe.directory ${this.repoPath}`.nothrow().quiet()
-      const result = await $`git log -1 --pretty=format:"%H"`.quiet()
+      await $`git config --global --add safe.directory ${this.repoPath}`
+      const result = await $`git log -1 --pretty=format:"%H"`
       const commitHash = result.stdout.trim()
       this.lastRevision = commitHash || ''
 
