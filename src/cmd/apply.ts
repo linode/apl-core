@@ -122,7 +122,8 @@ const applyAll = async () => {
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
       await cloneOtomiChartsInGitea()
-      await retryCheckingForPipelineRun()
+      // Change this to check if apl-operator successfully deployed
+      // retryCheckingForPipelineRun()
       await retryIsOAuth2ProxyRunning()
       await printWelcomeMessage()
     }
