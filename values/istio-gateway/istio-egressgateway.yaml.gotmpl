@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- $i := $v.apps.istio }}
 
-name: istio-egressgateway-1-26-0
-revision: "1-26-0"
+name: istio-egressgateway{{- if $i.revision }}-{{ $i.revision }}{{ end }}
+revision: {{ $i.revision | quote }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
