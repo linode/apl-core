@@ -226,6 +226,7 @@ export class AplOperator {
 
     try {
       await this.waitForGitea()
+      await this.cloneRepository()
 
       await this.executeBootstrap()
 
