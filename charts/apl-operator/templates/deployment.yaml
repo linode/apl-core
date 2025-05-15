@@ -36,8 +36,6 @@ spec:
             - node
             - dist/src/operator/main.js
           env:
-            - name: RUN_AS_OPERATOR
-              value: "true"
             - name: CI
               value: "true"
           envFrom:

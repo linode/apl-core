@@ -22,6 +22,7 @@ import {
 
 import { saveValues } from './repo'
 import { HelmArguments } from './yargs'
+import { gitP } from 'simple-git'
 
 export const objectToYaml = (obj: Record<string, any>, indent = 4, lineWidth = 200): string => {
   return isEmpty(obj) ? '' : stringify(obj, { indent, lineWidth })
@@ -94,11 +95,12 @@ export const getRepo = (values: Record<string, any>): Repo => {
     username = 'otomi-admin'
     password = values?.apps?.gitea?.adminPassword
     email = `pipeline@cluster.local`
-    const giteaUrl = env.GITEA_URL
-    const giteaOrg = 'otomi'
-    const giteaRepo = 'values'
-    const protocol = env.GITEA_PROTOCOL
-    remote = `${protocol}://${username}:${encodeURIComponent(password)}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
+    const gitUrl = env.GIT_URL
+    const gitPort = env.GIT_PORT
+    const gitOrg = 'otomi'
+    const gitRepo = 'values'
+    const protocol = env.GIT_PROTOCOL
+    remote = `${protocol}://${username}:${encodeURIComponent(password)}@${gitUrl}:${gitPort}/${gitOrg}/${gitRepo}.git`
   }
   return { remote, branch, email, username, password }
 }

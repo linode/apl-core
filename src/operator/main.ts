@@ -1,36 +1,45 @@
 import * as dotenv from 'dotenv'
 import { terminal } from '../common/debug'
-import { AplOperator } from './apl-operator'
+import { AplOperator, AplOperatorConfig } from './apl-operator'
 import { operatorEnv } from './validators'
 import { env } from '../common/envalid'
 import fs from 'fs'
 import path from 'path'
+import { GitRepository } from './git-repository'
+import { AplOperations } from './apl-operations'
 
 dotenv.config()
 
 const d = terminal('operator:main')
 
-interface OperatorConfig {
-  giteaUsername: string
-  giteaPassword: string
-  giteaUrl: string
-  giteaProtocol: string
-  repoPath: string
-}
-
-function loadConfig(): OperatorConfig {
-  const giteaUsername = operatorEnv.GITEA_USERNAME
-  const giteaPassword = operatorEnv.GITEA_PASSWORD
-  const giteaUrl = env.GITEA_URL
-  const giteaProtocol = env.GITEA_PROTOCOL
+function loadConfig(): AplOperatorConfig {
+  const username = operatorEnv.GIT_USERNAME
+  const password = operatorEnv.GIT_PASSWORD
+  const gitHost = env.GIT_URL
+  const gitPort = env.GIT_PORT
+  const gitProtocol = env.GIT_PROTOCOL
   const repoPath = env.ENV_DIR
+  const gitOrg = operatorEnv.GIT_ORG
+  const gitRepo = operatorEnv.GIT_REPO
+  const pollIntervalMs = operatorEnv.POLL_INTERVAL_MS
+  const reconcileIntervalMs = operatorEnv.RECONCILE_INTERVAL_MS
+  const gitRepository = new GitRepository({
+    username,
+    password,
+    gitHost,
+    gitPort,
+    gitProtocol,
+    repoPath,
+    gitOrg,
+    gitRepo,
+  })
+  const aplOps = new AplOperations()
 
   return {
-    giteaUsername,
-    giteaPassword,
-    giteaUrl,
-    giteaProtocol,
-    repoPath,
+    gitRepo: gitRepository,
+    aplOps,
+    pollIntervalMs,
+    reconcileIntervalMs,
   }
 }
 
@@ -50,30 +59,25 @@ async function main(): Promise<void> {
     d.info('Starting APL Operator')
 
     const config = loadConfig()
+    const repoPath = env.ENV_DIR
     // Only delete contents of the directory
-    if (fs.existsSync(config.repoPath)) {
-      d.info(`Clearing directory contents of ${config.repoPath}`)
-      for (const entry of fs.readdirSync(config.repoPath)) {
-        const entryPath = path.join(config.repoPath, entry)
+    if (fs.existsSync(repoPath)) {
+      d.info(`Clearing directory contents of ${repoPath}`)
+      for (const entry of fs.readdirSync(repoPath)) {
+        const entryPath = path.join(repoPath, entry)
         fs.rmSync(entryPath, { recursive: true, force: true })
       }
     }
-    const parentDir = path.dirname(config.repoPath)
+    const parentDir = path.dirname(repoPath)
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true })
     }
 
-    if (!fs.existsSync(config.repoPath)) {
-      fs.mkdirSync(config.repoPath, { recursive: true })
+    if (!fs.existsSync(repoPath)) {
+      fs.mkdirSync(repoPath, { recursive: true })
     }
 
-    const operator = new AplOperator(
-      config.giteaUsername,
-      config.giteaPassword,
-      config.giteaUrl,
-      config.giteaProtocol,
-      config.repoPath,
-    )
+    const operator = new AplOperator(config)
 
     handleTerminationSignals(operator)
 
