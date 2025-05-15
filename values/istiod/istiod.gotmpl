@@ -9,7 +9,7 @@ jwksResolverExtraRootCA: |
   {{- $v._derived.caCertRoot | nindent 2 }}
 {{- end }}
 
-revision: {{ $i.revision | quote }}
+revision: {{ $i.canaryRevision | quote }}
 
 global:
 {{- with $v.otomi | get "globalPullSecret" nil }}

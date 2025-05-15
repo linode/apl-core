@@ -35,10 +35,13 @@
 {{- else if eq $cm.issuer "byo-wildcard-cert" }}
   {{- $tlsSecretName = "otomi-byo-wildcard-cert" }}
 {{- end -}}
-{{- $istioRevision := "1-26-0" }}
+{{- $istioDefaultRevision := "1-26-0" }}
+{{- $istioCanaryRevision := "1-26-0" }}
 {{- $gatewayPrefix := "istio-ingressgateway" }}
-{{- if $istioRevision }}
-{{- $gatewayPrefix = print "istio-ingressgateway-" $istioRevision }}
+{{- $gatewayLabel := "ingressgateway" }}
+{{- if $istioDefaultRevision }}
+{{- $gatewayPrefix = print "istio-ingressgateway-" $istioDefaultRevision }}
+{{- $gatewayLabel = print "ingressgateway-" $istioDefaultRevision }}
 {{- end }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
@@ -167,6 +170,7 @@ environments:
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           tlsSecretName: {{ $tlsSecretName }}
           ingressGatewayPrefix: {{ $gatewayPrefix }}
+          ingressGatewayLabel: {{ $gatewayLabel }}
         apps:
           argocd:
             enabled: true
@@ -203,7 +207,8 @@ environments:
             enabled: true
           istio:
             enabled: true
-            revision: {{ $istioRevision | quote }}
+            defaultRevision: {{ $istioDefaultRevision | quote }}
+            canaryRevision: {{ $istioCanaryRevision | quote }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
           minio:

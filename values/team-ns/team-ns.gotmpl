@@ -60,6 +60,7 @@ tracingEnabled: {{ $a.istio.tracing.enabled }}
 services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 2 }}
 resourceQuota: {{- $teamResourceQuotas | toYaml | nindent 2 }}
 ingressGatewayPrefix: {{ $v._derived.ingressGatewayPrefix }}
+ingressGatewayLabel: {{ $v._derived.ingressGatewayLabel }}
 
 gitOps:
   adminPassword: {{ $a.gitea.adminPassword | quote }}

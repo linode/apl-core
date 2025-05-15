@@ -32,7 +32,7 @@ metadata:
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   selector:
-    istio: ingressgateway-public
+    istio: {{ $v.ingressGatewayLabel }}
   servers:
   - hosts:
     {{- range $domain := $tlsDomains }}

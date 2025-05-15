@@ -61,4 +61,4 @@ spec:
       enabled: true
       knative-ingress-gateway:
         selector:
-          istio: ingressgateway-public
+          istio: {{ $v._derived.ingressGatewayLabel }}

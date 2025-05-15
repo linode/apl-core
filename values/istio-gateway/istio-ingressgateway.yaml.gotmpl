@@ -1,8 +1,8 @@
 {{- $v := .Values }}
 {{- $i := $v.apps.istio }}
 
-name: istio-ingressgateway{{- if $i.revision }}-{{ $i.revision }}{{ end }}-public
-revision: {{ $i.revision | quote }}
+name: istio-ingressgateway{{- if $i.canaryRevision }}-{{ $i.canaryRevision }}{{ end }}-public
+revision: {{ $i.canaryRevision | quote }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
@@ -10,7 +10,7 @@ imagePullSecrets:
 {{- end }}
 
 labels:
-  istio: ingressgateway-public
+  istio: ingressgateway{{- if $i.canaryRevision }}-{{ $i.canaryRevision }}{{ end }}-public
   app: ingressgateway
 
 service:
