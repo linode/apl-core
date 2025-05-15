@@ -21,11 +21,10 @@ spec:
         - list
         - watch
     - apiGroups:
-        - kyverno.io
+        - reports.kyverno.io
       clusterScope: true
       resources:
-        - clusteradmissionreports
-        - clusterbackgroundscanreports
+        - clusterephemeralreports
       verbs:
         - create
         - delete
@@ -36,12 +35,11 @@ spec:
         - watch
         - deletecollection
     - apiGroups:
-        - kyverno.io
+        - reports.kyverno.io
       namespaces:
         - '*'
       resources:
-        - admissionreports
-        - backgroundscanreports
+        - ephemeralreports
       verbs:
         - create
         - delete
