@@ -1,5 +1,6 @@
 import { terminal } from '../common/debug'
 import { HelmArguments } from '../common/yargs'
+import simpleGit, { SimpleGit } from 'simple-git'
 
 import { module as applyModule } from '../cmd/apply'
 import { module as applyAsAppsModule } from '../cmd/apply-as-apps'
@@ -17,6 +18,7 @@ export class AplOperator {
   private repoUrl: string
   private isApplying = false
   private reconcileInterval = 300_000 // 5 minutes in milliseconds
+  private git: SimpleGit
 
   constructor(
     username: string,
@@ -32,6 +34,7 @@ export class AplOperator {
     const giteaRepo = 'values'
     //TODO change this when going in to cluster
     this.repoUrl = `${giteaProtocol}://${username}:${password}@${giteaUrl}/${giteaOrg}/${giteaRepo}.git`
+    this.git = simpleGit(this.repoPath)
 
     this.d.info(`Initialized APL operator with repo URL: ${this.repoUrl.replace(password, '***')}`)
   }
@@ -44,12 +47,14 @@ export class AplOperator {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
-      await $`git clone ${this.repoUrl} ${this.repoPath}`
-      this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
+      // Clone the repository
+      await this.git.clone(this.repoUrl, this.repoPath)
 
-      const result = await $`git log -1 --pretty=format:"%H"`
-      const commitHash = result.stdout.trim()
-      this.lastRevision = commitHash || ''
+      await this.git.addConfig('safe.directory', this.repoPath)
+
+      // Get the commit hash
+      const logs = await this.git.log({ maxCount: 1 })
+      this.lastRevision = logs.latest?.hash || ''
 
       this.d.info(`Repository cloned successfully, current revision: ${this.lastRevision}`)
     } catch (error) {
@@ -65,16 +70,17 @@ export class AplOperator {
       const previousRevision = this.lastRevision
 
       // Pull the latest changes
-      await $`git pull`
+      await this.git.pull()
 
-      // Get both hash and commit message in one command
-      const result = await $`git log -1 --pretty=format:"%H|%B"`
-      const [newRevision, commitMessage] = result.stdout.split('|', 2)
+      // Get the latest commit hash and message
+      const logs = await this.git.log({ maxCount: 1 })
+      const newRevision = logs.latest?.hash || ''
+      const commitMessage = logs.latest?.message || ''
 
       if (newRevision && newRevision !== previousRevision) {
         this.d.info(`Repository updated: ${previousRevision} -> ${newRevision}`)
 
-        // Check for skip marker directly with the message we already have
+        // Check for skip marker in the commit message
         const skipMarker = '[ci skip]'
         const shouldSkip = commitMessage.includes(skipMarker)
 
@@ -94,6 +100,7 @@ export class AplOperator {
       throw error
     }
   }
+
   private async executeBootstrap(): Promise<void> {
     this.d.info('Executing bootstrap process')
 
