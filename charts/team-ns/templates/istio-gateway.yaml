@@ -29,7 +29,9 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: team-{{ $v.teamId }}-public-tls{{ $tls }}
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+  labels:
+    apl.io/istio-gateway: default
+    {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   selector:
     istio: {{ $v.defaultIngressGatewayLabel }}
@@ -57,7 +59,9 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: team-{{ $v.teamId }}-public-tls{{ $tls }}-canary
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+  labels:
+    apl.io/istio-gateway: canary
+    {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   selector:
     istio: {{ $v.canaryIngressGatewayLabel }}

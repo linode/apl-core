@@ -1993,10 +1993,11 @@ properties:
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
-        additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
+          defaultRevision:
+            type: string
           tracing:
             description: Configure Istio for tracing. Requires Otel Collector to be enabled.
             properties:

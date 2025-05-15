@@ -35,7 +35,7 @@
 {{- else if eq $cm.issuer "byo-wildcard-cert" }}
   {{- $tlsSecretName = "otomi-byo-wildcard-cert" }}
 {{- end -}}
-{{- $istioDefaultRevision := "" }}
+{{- $istioDefaultRevision := $a.istio.defaultRevision }}
 {{- $istioCanaryRevision := "1-26-0" }}
 {{- $ingressGatewayPrefix := "istio-ingressgateway" }}
 {{- $defaultIngressGatewayLabel := "ingressgateway-public" }}
@@ -218,7 +218,6 @@ environments:
             enabled: true
           istio:
             enabled: true
-            defaultRevision: {{ $istioDefaultRevision | quote }}
             canaryRevision: {{ $istioCanaryRevision | quote }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
