@@ -24,7 +24,7 @@
 {{- end }}
 {{- $publicDomains := dict "term" $publicDomainsTerm "pass" $publicDomainsPass }}
 {{- range $tls, $tlsDomains := $publicDomains }}
-{{- if not (empty $tlsDomains) }}
+  {{- if not (empty $tlsDomains) }}
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
@@ -32,7 +32,7 @@ metadata:
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   selector:
-    istio: {{ $v.ingressGatewayLabel }}
+    istio: {{ $v.defaultIngressGatewayLabel }}
   servers:
   - hosts:
     {{- range $domain := $tlsDomains }}
@@ -52,5 +52,34 @@ spec:
       protocol: HTTP
     {{- end }}
 ---
+  {{- if $v.canaryIngressGatewayLabel }}
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: team-{{ $v.teamId }}-public-tls{{ $tls }}-canary
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  selector:
+    istio: {{ $v.canaryIngressGatewayLabel }}
+  servers:
+    - hosts:
+    {{- range $domain := $tlsDomains }}
+        - '{{ $ns }}/{{ $domain }}'
+    {{- end }}
+    {{- if eq $tls "pass" }}
+      tls:
+        mode: PASSTHROUGH
+      port:
+        number: 443
+        name: https
+        protocol: HTTPS
+    {{- else }}
+      port:
+        name: http
+        number: 80
+        protocol: HTTP
+    {{- end }}
+---
+  {{- end }}
   {{- end }}
 {{- end }}

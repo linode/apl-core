@@ -2,6 +2,7 @@
 
 resources:
 {{- if $v | get "apps.istio.egressGateway.enabled" }}
+{{- $egressGatewayHostname := print $v._derived.egressGatewayName ".istio-system.svc.cluster.local" }}
   - apiVersion: networking.istio.io/v1beta1
     kind: Gateway
     metadata:
@@ -9,7 +10,7 @@ resources:
       namespace: istio-system
     spec:
       selector:
-        istio: egressgateway
+        istio: {{ $v._derived.egressGatewayLabel }}
       servers:
       - port:
           protocol: HTTP
@@ -27,7 +28,7 @@ resources:
       name: egressgateway-for-all
       namespace: istio-system
     spec:
-      host: istio-egressgateway.istio-system.svc.cluster.local
+      host: {{ $egressGatewayHostname }}
       subsets:
       - name: all
   - apiVersion: networking.istio.io/v1beta1
@@ -47,7 +48,7 @@ resources:
           - mesh
         route:
         - destination:
-            host: istio-egressgateway.istio-system.svc.cluster.local
+            host: {{ $egressGatewayHostname }}
           weight: 100
       - match:
         - gateways:
@@ -60,7 +61,7 @@ resources:
           - '*'
         route:
         - destination:
-            host: istio-egressgateway.istio-system.svc.cluster.local
+            host: {{ $egressGatewayHostname }}
             subset: all
       - match:
         - gateways:
