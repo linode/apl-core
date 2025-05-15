@@ -9,6 +9,10 @@ imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
 
+labels:
+  istio: egressgateway{{- if $i.canaryRevision }}-{{ $i.canaryRevision }}{{ end }}-public
+  app: egressgateway
+
 service:
   type: ClusterIP
 
