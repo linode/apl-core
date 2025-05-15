@@ -38,6 +38,8 @@ spec:
           env:
             - name: RUN_AS_OPERATOR
               value: "true"
+            - name: CI
+              value: "true"
           envFrom:
             - secretRef:
                 name: gitea-credentials

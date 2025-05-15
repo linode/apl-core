@@ -98,8 +98,8 @@ export const commit = async (initialInstall: boolean): Promise<void> => {
     // the url might need updating (e.g. if credentials changed)
     await $`git remote set-url origin ${remote}`
   }
-  // lets wait until the remote is ready
-  if (false) {
+  // let's wait until the remote is ready
+  if (values?.apps!.gitea!.enabled ?? true) {
     await waitTillGitRepoAvailable(remote)
   }
   // continue
