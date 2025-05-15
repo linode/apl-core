@@ -130,7 +130,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: apl-operator
-    namespace: otomi
+    namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
   name: apl-operator-crds
@@ -154,7 +154,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: apl-operator
-    namespace: apl-operator
+    namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
   name: apl-operator-configmap-manager
