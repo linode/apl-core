@@ -1,3 +1,4 @@
+{{- $v := . }}
 additionalServiceMonitors:
   - name: blackbox
     namespaceSelector:
@@ -14,7 +15,7 @@ additionalServiceMonitors:
     namespace: istio-system
     selector:
       matchLabels:
-        istio: ingressgateway-public
+        istio: {{ $v._derived.ingressGatewayLabel }}
     namespaceSelector:
       matchNames:
         - istio-system

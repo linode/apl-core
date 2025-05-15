@@ -33,8 +33,8 @@ if [[ ! $(kubectl get applications.argoproj.io -n argocd istio-system-istio-base
 fi
 
 if [[ $(kubectl get deployment -n istio-operator istio-operator 2>/dev/null) ]]; then
-  kubectl patch application -n argocd istio-operator-istio-operator --patch '[{"op": "remove", "path": "/spec/syncPolicy/automated"}]' --type=json
-  kubectl scale deployment -n istio-operator istio-operator --replicas=0
+  kubectl patch application -n argocd istio-operator-istio-operator --patch '[{"op": "remove", "path": "/spec/syncPolicy/automated"}]' --type=json || true
+  kubectl scale deployment -n istio-operator istio-operator --replicas=0 || true
 fi
 
 #
