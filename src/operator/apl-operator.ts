@@ -15,6 +15,8 @@ export class AplOperator {
   private lastRevision = ''
   private repoPath: string
   private repoUrl: string
+  private isApplying = false
+  private reconcileInterval = 300_000 // 5 minutes in milliseconds
 
   constructor(
     username: string,
@@ -44,13 +46,7 @@ export class AplOperator {
     try {
       await $`git clone ${this.repoUrl} ${this.repoPath}`
       this.d.info(`Setting Git safe.directory to ${this.repoPath}`)
-      const listRoot = await $`ls -la`.nothrow()
-      this.d.log('ls -la:\n', listRoot.stdout)
 
-      const currentDir = await $`pwd`.nothrow()
-      this.d.log('pwd:\n', currentDir.stdout)
-      // this.d.info('setting git config')
-      // await $`git config --global --add safe.directory ${this.repoPath}`
       const result = await $`git log -1 --pretty=format:"%H"`
       const commitHash = result.stdout.trim()
       this.lastRevision = commitHash || ''
@@ -69,10 +65,10 @@ export class AplOperator {
       const previousRevision = this.lastRevision
 
       // Pull the latest changes
-      await $`git pull`.quiet()
+      await $`git pull`
 
       // Get both hash and commit message in one command
-      const result = await $`git log -1 --pretty=format:"%H|%B"`.quiet()
+      const result = await $`git log -1 --pretty=format:"%H|%B"`
       const [newRevision, commitMessage] = result.stdout.split('|', 2)
 
       if (newRevision && newRevision !== previousRevision) {
@@ -160,6 +156,46 @@ export class AplOperator {
     }
   }
 
+  private async runApplyIfNotBusy(trigger: string): Promise<void> {
+    if (this.isApplying) {
+      this.d.info(`[${trigger}] Apply already in progress, skipping`)
+      return
+    }
+
+    this.isApplying = true
+    this.d.info(`[${trigger}] Starting apply process`)
+
+    try {
+      await this.executeApply()
+      await this.executeApplyAsApps()
+      this.d.info(`[${trigger}] Apply process completed`)
+    } catch (error) {
+      this.d.error(`[${trigger}] Apply process failed`, error)
+    } finally {
+      this.isApplying = false
+    }
+  }
+
+  private async periodicallyReconcile(): Promise<void> {
+    this.d.info('Starting reconciliation loop')
+
+    while (this.isRunning) {
+      try {
+        this.d.info('Reconciliation triggered')
+
+        await this.runApplyIfNotBusy('reconcile')
+
+        this.d.info('Reconciliation completed')
+      } catch (error) {
+        this.d.error('Error during reconciliation:', error)
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, this.reconcileInterval))
+    }
+
+    this.d.info('Reconciliation loop stopped')
+  }
+
   private async pollForChangesAndApplyIfAny(): Promise<void> {
     this.d.info('Starting polling loop')
 
@@ -170,9 +206,7 @@ export class AplOperator {
         if (hasChanges) {
           this.d.info('Changes detected, triggering apply process')
 
-          // Execute them not in parallel as it resulted in issues
-          await this.executeApply()
-          await this.executeApplyAsApps()
+          await this.runApplyIfNotBusy('poll')
 
           this.d.info('Apply process completed successfully')
         } else {
@@ -211,13 +245,17 @@ export class AplOperator {
       await this.executeApply()
       await this.executeApplyAsApps()
 
-      await this.pollForChangesAndApplyIfAny()
-
       this.d.info('APL operator started successfully')
     } catch (error) {
       this.isRunning = false
       this.d.error('Failed to start APL operator:', error)
       throw error
+    }
+
+    try {
+      await Promise.all([this.pollForChangesAndApplyIfAny(), this.periodicallyReconcile()])
+    } catch (error) {
+      this.d.error('Error during polling or reconciling:', error)
     }
   }
 
