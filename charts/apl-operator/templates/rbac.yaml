@@ -188,7 +188,7 @@ rules:
   # Allow reading PriorityClasses (e.g., otomi-critical)
   - apiGroups: ["scheduling.k8s.io"]
     resources: ["priorityclasses"]
-    verbs: ["get", "list"]
+    verbs: ["get", "list", "patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
