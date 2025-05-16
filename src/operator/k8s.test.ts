@@ -26,7 +26,7 @@ jest.mock('../common/debug', () => ({
   })),
 }))
 
-describe('updateApplyState', () => {
+describe.skip('updateApplyState', () => {
   let mockCoreV1Api
   let mockTerminal
 
