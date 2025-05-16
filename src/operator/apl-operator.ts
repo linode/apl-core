@@ -115,9 +115,9 @@ export class AplOperator {
         continue
       }
       try {
-        const { hasChanges, shouldSkip, applyTeamsOnly } = await this.gitRepo.pull()
+        const { hasChangesToApply, applyTeamsOnly } = await this.gitRepo.pull()
 
-        if (hasChanges && !shouldSkip) {
+        if (hasChangesToApply) {
           this.d.info('Changes detected, triggering apply process')
           await this.runApplyIfNotBusy('poll', applyTeamsOnly)
           this.d.info('Apply process completed successfully')

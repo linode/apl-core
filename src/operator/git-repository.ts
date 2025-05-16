@@ -21,6 +21,8 @@ export class GitRepository {
   private d: OtomiDebugger
   readonly repoUrl: string
   private readonly repoPath: string
+  private readonly skipMarker = '[ci skip]'
+
   constructor(config: GitRepositoryConfig) {
     const { username, password, gitHost, gitPort, gitProtocol, repoPath, gitOrg, gitRepo } = config
     this.d = terminal('GitRepository')
@@ -47,7 +49,7 @@ export class GitRepository {
       maxTimeout: 30000,
     }
     const d = terminal('common:k8s:waitTillGitRepoAvailable')
-    await retry(async (bail) => {
+    await retry(async () => {
       try {
         await this.hasCommits()
       } catch (e) {
@@ -74,7 +76,28 @@ export class GitRepository {
     }
   }
 
-  async pull(): Promise<{ hasChanges: boolean; shouldSkip: boolean; applyTeamsOnly: boolean }> {
+  private async getChangedFiles(fromRevision: string, toRevision: string): Promise<string[]> {
+    const diffResult = await this.git.diff([`${fromRevision}..${toRevision}`, '--name-only'])
+    return diffResult.split('\n').filter((file) => file.trim().length > 0)
+  }
+
+  private isTeamsOnlyChange(changedFiles: string[]): boolean {
+    return (
+      changedFiles.length > 0 &&
+      changedFiles.every((file) => file.startsWith('env/teams/') || file.startsWith('teams/'))
+    )
+  }
+
+  private async shouldSkipCommits(fromRevision: string, toRevision: string): Promise<boolean> {
+    const logResult = await this.git.log({
+      from: fromRevision,
+      to: toRevision,
+    })
+
+    return logResult.all.every((commit) => commit.message.includes(this.skipMarker))
+  }
+
+  async pull(): Promise<{ hasChangesToApply: boolean; applyTeamsOnly: boolean }> {
     try {
       const previousRevision = this._lastRevision
 
@@ -83,47 +106,44 @@ export class GitRepository {
       const logs = await this.git.log({ maxCount: 1 })
       const newRevision = logs.latest?.hash || ''
 
-      if (newRevision && newRevision !== previousRevision) {
-        this.d.info(`Repository updated: ${previousRevision} -> ${newRevision}`)
-
-        const logResult = await this.git.log({
-          from: previousRevision,
-          to: 'HEAD',
-        })
-
-        const skipMarker = '[ci skip]'
-        const allCommitsContainSkipMarker = logResult.all.every((commit) => commit.message.includes(skipMarker))
-
-        if (allCommitsContainSkipMarker) {
-          this.d.info(`All new commits contain "${skipMarker}" - skipping apply`)
-        }
-
-        // Get all changed files between revisions
-        const diffResult = await this.git.diff([`${previousRevision}..${newRevision}`, '--name-only'])
-        const changedFiles = diffResult.split('\n').filter((file) => file.trim().length > 0)
-
-        // Check if all changes are in teams directory
-        const onlyTeamsChanged =
-          changedFiles.length > 0 &&
-          changedFiles.every((file) => file.startsWith('env/teams/') || file.startsWith('teams/'))
-
-        if (onlyTeamsChanged) {
-          this.d.info('All changes are in teams directory - applying teams only')
-        }
-
-        this._lastRevision = newRevision
-
+      if (!newRevision || newRevision === previousRevision) {
         return {
-          hasChanges: true,
-          shouldSkip: allCommitsContainSkipMarker,
-          applyTeamsOnly: onlyTeamsChanged,
-        }
-      } else {
-        return {
-          hasChanges: false,
-          shouldSkip: false,
+          hasChangesToApply: false,
           applyTeamsOnly: false,
         }
+      }
+
+      this.d.info(`Repository updated: ${previousRevision} -> ${newRevision}`)
+
+      // Default result if the previous revision is empty (first run)
+      if (!previousRevision) {
+        this._lastRevision = newRevision
+        return {
+          hasChangesToApply: true,
+          applyTeamsOnly: false,
+        }
+      }
+
+      const allCommitsContainSkipMarker = await this.shouldSkipCommits(previousRevision, 'HEAD')
+      if (allCommitsContainSkipMarker) {
+        this.d.info(`All new commits contain "[ci skip]" - skipping apply`)
+        return {
+          hasChangesToApply: false,
+          applyTeamsOnly: false,
+        }
+      }
+
+      const changedFiles = await this.getChangedFiles(previousRevision, newRevision)
+      const onlyTeamsChanged = this.isTeamsOnlyChange(changedFiles)
+      if (onlyTeamsChanged) {
+        this.d.info('All changes are in teams directory - applying teams only')
+      }
+
+      this._lastRevision = newRevision
+
+      return {
+        hasChangesToApply: true,
+        applyTeamsOnly: onlyTeamsChanged,
       }
     } catch (error) {
       this.d.error('Failed to pull repository:', error)
