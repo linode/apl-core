@@ -14,24 +14,17 @@ rules:
   # Needed for deployment state management
   - apiGroups: [""]
     resources: ["configmaps"]
-    verbs: ["get", "create", "update", "patch"]
-    resourceNames: ["otomi-deployment-status"]
-
-  # General ConfigMap operations for other ConfigMaps
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "list", "create"]
+    verbs: ["get", "create", "update", "patch", "delete", "watch", "list"]
 
   # Secret management for stored credentials
   - apiGroups: [""]
     resources: ["secrets"]
-    verbs: ["get", "create", "update", "patch"]
-    resourceNames: ["otomi-deployment-passwords"]
+    verbs: ["get", "create", "update", "patch", "delete", "watch", "list"]
 
-  # General Secret operations for other secrets
+  # General operations for all resources
   - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list", "create"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
 ---
 # Role for operations in the argocd namespace
 apiVersion: rbac.authorization.k8s.io/v1
@@ -65,9 +58,8 @@ metadata:
 rules:
   # Needed for LoadBalancer IP/hostname retrieval
   - apiGroups: [""]
-    resources: ["services"]
-    verbs: ["get"]
-    resourceNames: ["ingress-nginx-platform-controller"]
+    resources: ["services", "secrets"]
+    verbs: ["get", "list", "watch"]
 ---
 # RoleBinding for otomi namespace
 apiVersion: rbac.authorization.k8s.io/v1
