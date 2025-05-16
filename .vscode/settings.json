@@ -38,6 +38,7 @@
     "aliases": "shellscript",
     "bin/hooks/*": "shellscript",
     "helmfile-*.yaml": "helm",
+    "helmfile-*.yaml.gotmpl": "helm",
     "helmfile.yaml": "helm",
     "otomi": "shellscript"
   },
