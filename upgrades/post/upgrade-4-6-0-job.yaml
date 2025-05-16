@@ -14,8 +14,10 @@ spec:
         - image: bitnami/kubectl:1.32.4
           name: kubectl
           command:
-            - /bin/sh
-            - -ec
+            - /bin/bash
+            - -euo
+            - pipefail
+            - -c
             - >-
               echo "Waiting for upgraded Istio ingress gateway to become ready." &&             
               kubectl wait deployment -n istio-system istio-ingressgateway-1-26-0-public --for condition=available --timeout=3600s &&
@@ -24,12 +26,12 @@ spec:
                 sleep 10
               done &&
               echo "No canary gateway detected." &&
-              if [ $(kubectl get applications.argoproj.io -ojson -n argocd istio-operator-istio-operator-artifacts | jq '.items | length') -gt 0 ]; then
+              if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts 2>/dev/null) ]]; then
                 kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts
               else
                 echo "Istio Operator resource not deployed. Skipping"
               fi &&
-              if [ $(kubectl get applications.argoproj.io -ojson -n argocd istio-operator-istio-operator | jq '.items | length') -gt 0 ]; then
+              if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator 2>/dev/null) ]]; then
                 kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator &&
                 kubectl delete customresourcedefinition istiooperators.install.istio.io --ignore-not-found &&
                 kubectl delete ns istio-operator --ignore-not-found --wait=false
