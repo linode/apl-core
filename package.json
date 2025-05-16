@@ -73,7 +73,7 @@
     "cspell": "9.0.0",
     "cz-conventional-changelog": "3.3.0",
     "eslint": "^9.25.1",
-    "eslint-config-prettier": "10.1.2",
+    "eslint-config-prettier": "10.1.5",
     "eslint-import-resolver-typescript": "^4.3.4",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-prettier": "^5.2.6",
