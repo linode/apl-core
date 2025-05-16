@@ -194,3 +194,47 @@ roleRef:
   kind: ClusterRole
   name: apl-operator-cluster-access
   apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: apl-operator-namespace-patch
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: apl-operator-namespace-patch
+subjects:
+  - kind: ServiceAccount
+    name: apl-operator
+    namespace: apl-operator
+roleRef:
+  kind: ClusterRole
+  name: apl-operator-namespace-patch
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: apl-operator-serviceaccount-patch
+rules:
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "list", "watch", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: apl-operator-serviceaccount-patch
+subjects:
+  - kind: ServiceAccount
+    name: apl-operator
+    namespace: apl-operator
+roleRef:
+  kind: ClusterRole
+  name: apl-operator-serviceaccount-patch
+  apiGroup: rbac.authorization.k8s.io
