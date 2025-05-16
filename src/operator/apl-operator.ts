@@ -135,8 +135,9 @@ export class AplOperator {
 
     try {
       await waitTillGitRepoAvailable(this.repoUrl)
-      await this.gitRepo.waitForCommits()
       await this.gitRepo.clone()
+      await this.gitRepo.waitForCommits()
+      await this.gitRepo.pull()
 
       await this.aplOps.bootstrap()
       await this.aplOps.validateValues()
