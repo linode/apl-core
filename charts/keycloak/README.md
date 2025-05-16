@@ -22,8 +22,6 @@ Bitnami charts for Helm are carefully engineered, actively maintained and are th
 
 This chart bootstraps a [Keycloak](https://github.com/bitnami/containers/tree/main/bitnami/keycloak) deployment on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
-Bitnami charts can be used with [Kubeapps](https://kubeapps.dev/) for deployment and management of Helm Charts in clusters.
-
 ## Prerequisites
 
 - Kubernetes 1.23+
@@ -647,6 +645,8 @@ As an alternative, you can use of the preset configurations for pod affinity, po
 | `keycloakConfigCli.podAnnotations`                                    | Annotations for job pod                                                                                                                                                                                                                               | `{}`                                  |
 | `keycloakConfigCli.nodeSelector`                                      | Node labels for pod assignment                                                                                                                                                                                                                        | `{}`                                  |
 | `keycloakConfigCli.podTolerations`                                    | Tolerations for job pod assignment                                                                                                                                                                                                                    | `[]`                                  |
+| `keycloakConfigCli.availabilityCheck.enabled`                         | Whether to wait until Keycloak is available                                                                                                                                                                                                           | `true`                                |
+| `keycloakConfigCli.availabilityCheck.timeout`                         | Timeout for the availability check (Default is 120s)                                                                                                                                                                                                  | `""`                                  |
 | `keycloakConfigCli.extraEnvVars`                                      | Additional environment variables to set                                                                                                                                                                                                               | `[]`                                  |
 | `keycloakConfigCli.extraEnvVarsCM`                                    | ConfigMap with extra environment variables                                                                                                                                                                                                            | `""`                                  |
 | `keycloakConfigCli.extraEnvVarsSecret`                                | Secret with extra environment variables                                                                                                                                                                                                               | `""`                                  |
