@@ -11,7 +11,7 @@ spec:
     spec:
       serviceAccountName: apl
       containers:
-        - image: bitnami/kubectl:1.31
+        - image: bitnami/kubectl:1.32.4
           name: kubectl
           command:
             - /bin/sh
@@ -24,15 +24,15 @@ spec:
                 sleep 10
               done &&
               echo "No canary gateway detected." &&
-              if [ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts 2>/dev/null) ]; then
+              if [ $(kubectl get applications.argoproj.io -ojson -n argocd istio-operator-istio-operator-artifacts | jq '.items | length') -gt 0 ]; then
                 kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts
               else
                 echo "Istio Operator resource not deployed. Skipping"
               fi &&
-              if [ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator 2>/dev/null) ]; then
+              if [ $(kubectl get applications.argoproj.io -ojson -n argocd istio-operator-istio-operator | jq '.items | length') -gt 0 ]; then
                 kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator &&
-                (kubectl delete customresourcedefinition istiooperators.install.istio.io || true) &&
-                (kubectl delete ns istio-operator --wait=false || true)
+                kubectl delete customresourcedefinition istiooperators.install.istio.io --ignore-not-found &&
+                kubectl delete ns istio-operator --ignore-not-found --wait=false
               else
                 echo "Istio Operator not installed. Skipping"
               fi
