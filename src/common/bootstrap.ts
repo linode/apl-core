@@ -72,8 +72,10 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   }
 
   if (isCli) {
-    await copyFile(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
+    d.info('Copying pre-commit hook')
+    // await copyFile(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
   } else {
+    d.info('setting git config')
     await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()
   }
 
