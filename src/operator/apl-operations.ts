@@ -54,7 +54,7 @@ export class AplOperations {
     }
   }
 
-  async applyAsApps(): Promise<void> {
+  async applyAsAppsTeams(): Promise<void> {
     this.d.info('Executing applyAsApps for teams')
 
     try {

@@ -74,7 +74,7 @@ export class GitRepository {
     }
   }
 
-  async pull(): Promise<{ hasChanges: boolean; shouldSkip: boolean }> {
+  async pull(): Promise<{ hasChanges: boolean; shouldSkip: boolean; applyTeamsOnly: boolean }> {
     try {
       const previousRevision = this._lastRevision
 
@@ -82,30 +82,54 @@ export class GitRepository {
 
       const logs = await this.git.log({ maxCount: 1 })
       const newRevision = logs.latest?.hash || ''
-      const commitMessage = logs.latest?.message || ''
 
       if (newRevision && newRevision !== previousRevision) {
         this.d.info(`Repository updated: ${previousRevision} -> ${newRevision}`)
 
-        const skipMarker = '[ci skip]'
-        const shouldSkip = commitMessage.includes(skipMarker)
+        const logResult = await this.git.log({
+          from: previousRevision,
+          to: 'HEAD',
+        })
 
-        if (shouldSkip) {
-          this.d.info(`Commit ${newRevision.substring(0, 7)} contains "${skipMarker}" - skipping apply`)
+        const skipMarker = '[ci skip]'
+        const allCommitsContainSkipMarker = logResult.all.every((commit) => commit.message.includes(skipMarker))
+
+        if (allCommitsContainSkipMarker) {
+          this.d.info(`All new commits contain "${skipMarker}" - skipping apply`)
+        }
+
+        // Get all changed files between revisions
+        const diffResult = await this.git.diff([`${previousRevision}..${newRevision}`, '--name-only'])
+        const changedFiles = diffResult.split('\n').filter((file) => file.trim().length > 0)
+
+        // Check if all changes are in teams directory
+        const onlyTeamsChanged =
+          changedFiles.length > 0 &&
+          changedFiles.every((file) => file.startsWith('env/teams/') || file.startsWith('teams/'))
+
+        if (onlyTeamsChanged) {
+          this.d.info('All changes are in teams directory - applying teams only')
         }
 
         this._lastRevision = newRevision
 
-        return { hasChanges: true, shouldSkip }
+        return {
+          hasChanges: true,
+          shouldSkip: allCommitsContainSkipMarker,
+          applyTeamsOnly: onlyTeamsChanged,
+        }
       } else {
-        return { hasChanges: false, shouldSkip: false }
+        return {
+          hasChanges: false,
+          shouldSkip: false,
+          applyTeamsOnly: false,
+        }
       }
     } catch (error) {
       this.d.error('Failed to pull repository:', error)
       throw new OperatorError('Repository pull failed', error as Error)
     }
   }
-
   public get lastRevision(): string {
     return this._lastRevision
   }

@@ -82,8 +82,6 @@ async function main(): Promise<void> {
     handleTerminationSignals(operator)
 
     await operator.start()
-
-    d.info('APL Operator started successfully')
   } catch (error) {
     d.error('Failed to start APL Operator:', error)
     process.exit(1)

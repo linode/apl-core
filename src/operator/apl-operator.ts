@@ -38,7 +38,7 @@ export class AplOperator {
     this.d.info(`Initializing APL Operator with repo URL: ${maskRepoUrl(gitRepo.repoUrl)}`)
   }
 
-  private async runApplyIfNotBusy(trigger: string): Promise<void> {
+  private async runApplyIfNotBusy(trigger: string, applyTeamsOnly = false): Promise<void> {
     if (this.isApplying) {
       this.d.info(`[${trigger}] Apply already in progress, skipping`)
       return
@@ -56,8 +56,11 @@ export class AplOperator {
     })
 
     try {
-      await this.aplOps.apply()
-      await this.aplOps.applyAsApps()
+      if (applyTeamsOnly) {
+        await this.aplOps.applyAsAppsTeams()
+      } else {
+        await this.aplOps.apply()
+      }
       this.d.info(`[${trigger}] Apply process completed`)
 
       this.d.info(`[${trigger}] Starting validation process`)
@@ -106,12 +109,17 @@ export class AplOperator {
     this.d.info('Starting polling loop')
 
     while (this.isRunning) {
+      if (this.isApplying) {
+        this.d.debug('Skipping polling, apply process is in progress')
+        await new Promise((resolve) => setTimeout(resolve, this.pollInterval))
+        continue
+      }
       try {
-        const { hasChanges, shouldSkip } = await this.gitRepo.pull()
+        const { hasChanges, shouldSkip, applyTeamsOnly } = await this.gitRepo.pull()
 
         if (hasChanges && !shouldSkip) {
           this.d.info('Changes detected, triggering apply process')
-          await this.runApplyIfNotBusy('poll')
+          await this.runApplyIfNotBusy('poll', applyTeamsOnly)
           this.d.info('Apply process completed successfully')
         }
       } catch (error) {
