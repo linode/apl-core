@@ -419,6 +419,7 @@ environments:
             enabled: false
             _rawValues: {}
           istio:
+            defaultRevision: "1-26-0"
             tracing:
               enabled: false
               samplingRatio: "0.01"

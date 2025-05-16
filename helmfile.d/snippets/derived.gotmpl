@@ -35,6 +35,22 @@
 {{- else if eq $cm.issuer "byo-wildcard-cert" }}
   {{- $tlsSecretName = "otomi-byo-wildcard-cert" }}
 {{- end -}}
+{{- $istioDefaultRevision := $a.istio.defaultRevision }}
+{{- $istioCanaryRevision := "1-26-0" }}
+{{- $ingressGatewayPrefix := "istio-ingressgateway" }}
+{{- $defaultIngressGatewayLabel := "ingressgateway-public" }}
+{{- $canaryIngressGatewayLabel := "" }}
+{{- $egressGatewayName := "istio-egressgateway" }}
+{{- $egressGatewayLabel := "egressgateway" }}
+{{- if $istioDefaultRevision }}
+{{- $ingressGatewayPrefix = print "istio-ingressgateway-" $istioDefaultRevision }}
+{{- $defaultIngressGatewayLabel = printf "ingressgateway-%s-public" $istioDefaultRevision }}
+{{- $egressGatewayName = print "istio-egressgateway-" $istioDefaultRevision }}
+{{- $egressGatewayLabel = print "egressgateway-" $istioDefaultRevision }}
+{{- end }}
+{{- if ne $istioDefaultRevision $istioCanaryRevision }}
+{{- $canaryIngressGatewayLabel = printf "ingressgateway-%s-public" $istioCanaryRevision }}
+{{- end }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -161,6 +177,11 @@ environments:
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           tlsSecretName: {{ $tlsSecretName }}
+          ingressGatewayPrefix: {{ $ingressGatewayPrefix }}
+          defaultIngressGatewayLabel: {{ $defaultIngressGatewayLabel }}
+          canaryIngressGatewayLabel: {{ $canaryIngressGatewayLabel | quote }}
+          egressGatewayName: {{ $egressGatewayName }}
+          egressGatewayLabel: {{ $egressGatewayLabel }}
         apps:
           argocd:
             enabled: true
@@ -197,6 +218,7 @@ environments:
             enabled: true
           istio:
             enabled: true
+            canaryRevision: {{ $istioCanaryRevision | quote }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
           minio:

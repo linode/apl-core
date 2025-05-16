@@ -1,0 +1,30 @@
+# Not created if istiod is running remotely
+{{- if not .Values.istiodRemote.enabled }}
+{{- if .Values.global.defaultPodDisruptionBudget.enabled }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: istiod{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: istiod
+    istio.io/rev: {{ .Values.revision | default "default" | quote }}
+    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
+    operator.istio.io/component: "Pilot"
+    release: {{ .Release.Name }}
+    istio: pilot
+    app.kubernetes.io/name: "istiod"
+    {{- include "istio.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: istiod
+      {{- if ne .Values.revision "" }}
+      istio.io/rev: {{ .Values.revision | quote }}
+      {{- else }}
+      istio: pilot
+      {{- end }}
+---
+{{- end }}
+{{- end }}

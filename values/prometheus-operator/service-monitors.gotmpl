@@ -1,3 +1,4 @@
+{{- $v := . }}
 additionalServiceMonitors:
   - name: blackbox
     namespaceSelector:
@@ -14,13 +15,26 @@ additionalServiceMonitors:
     namespace: istio-system
     selector:
       matchLabels:
-        istio: ingressgateway-public
+        istio: {{ $v._derived.defaultIngressGatewayLabel }}
     namespaceSelector:
       matchNames:
         - istio-system
     endpoints:
       - targetPort: http-envoy-prom
         path: /stats/prometheus
+  {{- with $v._derived.canaryIngressGatewayLabel }}
+  - name: istio-{{ . }}
+    namespace: istio-system
+    selector:
+      matchLabels:
+        istio: {{ . }}
+    namespaceSelector:
+      matchNames:
+        - istio-system
+    endpoints:
+      - targetPort: http-envoy-prom
+        path: /stats/prometheus
+  {{- end }}
   - name: istiod
     namespace: istio-system
     selector:
