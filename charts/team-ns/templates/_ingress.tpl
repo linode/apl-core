@@ -11,7 +11,7 @@
 {{- define "ingress" -}}
 {{- $ := . }}
 {{- $v := .dot.Values }}
-{{- $istioSvc := print $v.ingressGatewayPrefix "-" .type }}
+{{- $istioSvc := print ($v.ingressGatewayPrefix | default "istio-ingressgateway") "-" .type }}
 {{- range $ingress := $v.ingress.classes }}
   {{- $routes := dict }}
   {{- $names := list }}
