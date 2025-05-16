@@ -148,9 +148,10 @@ async function patchArgocdResources(release: HelmRelease, values: Record<string,
   }
 }
 
-const writeApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<void> => {
+const writeApplicationManifest = async (release: HelmRelease, index: number, otomiVersion: string): Promise<void> => {
   const appName = `${release.namespace}-${release.name}`
-  const applicationPath = `${appsDir}/${appName}.yaml`
+  const orderingNumber = index.toString().padStart(3, '0')
+  const applicationPath = `${appsDir}/${orderingNumber}-${appName}.yaml`
   const valuesPath = `${valuesDir}/${appName}.yaml`
   let values = {}
 
@@ -185,9 +186,9 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releases: [] = JSON.parse(res.stdout.toString())
   await Promise.allSettled(
-    releases.map(async (release: HelmRelease) => {
+    releases.map(async (release: HelmRelease, index) => {
       try {
-        if (release.installed) await writeApplicationManifest(release, otomiVersion)
+        if (release.installed) await writeApplicationManifest(release, index, otomiVersion)
         else {
           await removeApplication(release)
         }
