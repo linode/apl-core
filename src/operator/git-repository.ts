@@ -1,5 +1,8 @@
 import simpleGit, { SimpleGit } from 'simple-git'
 import { OtomiDebugger, terminal } from '../common/debug'
+import retry, { Options } from 'async-retry'
+import { $, cd } from 'zx'
+import { env } from '../common/envalid'
 
 export interface GitRepositoryConfig {
   username: string
@@ -24,6 +27,34 @@ export class GitRepository {
     this.repoUrl = `${gitProtocol}://${username}:${password}@${gitHost}:${gitPort}/${gitOrg}/${gitRepo}.git`
     this.repoPath = repoPath
     this.git = simpleGit(this.repoPath)
+  }
+
+  async hasCommits(): Promise<boolean> {
+    try {
+      const logs = await this.git.log({ maxCount: 1 })
+      return logs.latest !== undefined && logs.total > 0
+    } catch (error) {
+      this.d.warn('Gitea has no commits yet:', error)
+      throw error
+    }
+  }
+
+  async waitForCommits(maxRetries = 30, interval = 10000): Promise<void> {
+    this.d.info(`Waiting for repository to have commits (max ${maxRetries} retries, ${interval}ms interval)`)
+
+    const retryOptions: Options = {
+      retries: 20,
+      maxTimeout: 30000,
+    }
+    const d = terminal('common:k8s:waitTillGitRepoAvailable')
+    await retry(async (bail) => {
+      try {
+        await this.hasCommits()
+      } catch (e) {
+        d.warn(`The values repository has no commits yet. Retrying in ${retryOptions.maxTimeout} ms`)
+        throw e
+      }
+    }, retryOptions)
   }
 
   async clone(): Promise<string> {
