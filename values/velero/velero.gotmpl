@@ -106,7 +106,7 @@ credentials:
 {{- if eq $obj.type "minioLocal" }}
       [default]
       aws_access_key_id=otomi-admin
-      aws_secret_access_key={{ $v.otomi.adminPassword }}
+      aws_secret_access_key={{ $v.otomi.adminPassword | quote }}
 {{- end }}
 
 kubectl:

@@ -33,6 +33,7 @@
     ".secrets*": "shellscript",
     "CODE_OF_CONDUCT": "markdown",
     "CONTRIBUTING": "markdown",
+    "CODEOWNERS": "plaintext",
     "_*.tpl": "helm",
     "aliases": "shellscript",
     "bin/hooks/*": "shellscript",

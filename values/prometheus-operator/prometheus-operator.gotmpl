@@ -228,7 +228,7 @@ grafana:
       basicAuth: true
       basicAuthUser: otomi-admin
       secureJsonData:
-        basicAuthPassword: {{ $v.apps.loki.adminPassword }}
+        basicAuthPassword: {{ $v.apps.loki.adminPassword | quote }}
     {{- if $t.enabled }}
     - name: Thanos Query
       access: proxy
@@ -291,7 +291,7 @@ grafana:
           datasourceUid: 'loki'
     {{- end }}
     {{- end }}
-  adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
+  adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword | quote }}
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:
       root_url: https://{{ $grafanaDomain }}

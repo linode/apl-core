@@ -52,11 +52,11 @@ env:
 
 {{- end }}
 nativeSecrets:
-  KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
-  KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
+  KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword | quote }}
+  KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret | quote }}
 {{- if $v.otomi.hasExternalIDP }}
   IDP_CLIENT_ID: {{ $o.clientID }}
-  IDP_CLIENT_SECRET: {{ $o.clientSecret }}
+  IDP_CLIENT_SECRET: {{ $o.clientSecret | quote }}
 {{- end }}
 podDnsPolicy: "None"
 podDnsConfig:

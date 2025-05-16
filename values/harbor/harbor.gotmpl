@@ -15,7 +15,7 @@ fullnameOverride: harbor
 # logLevel - debug, info, warning, error or fatal
 logLevel: warning
 
-harborAdminPassword: {{ $h.adminPassword }}
+harborAdminPassword: {{ $h.adminPassword | quote }}
 nameOverride: harbor
 secretKey: {{ $h | get "secretKey" nil }}
 
@@ -34,7 +34,7 @@ core:
   image:
     tag: {{ $tag }}
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
-  secret: {{ $h | get "core.secret" nil }}
+  secret: {{ $h | get "core.secret" nil | quote }}
   # secretName: {{ $harborSecretName }}
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
@@ -69,7 +69,7 @@ jobservice:
   jobLoggers:
     - stdout
   resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
-  secret: {{ $h | get "jobservice.secret" nil }}
+  secret: {{ $h | get "jobservice.secret" nil | quote }}
 
 metrics:
   serviceMonitor:
@@ -141,7 +141,7 @@ persistence:
       region: us-east-1
       regionendpoint: http://minio.minio.svc.cluster.local:9000
       accesskey: otomi-admin                          
-      secretkey: {{ $v.otomi.adminPassword }}                            
+      secretkey: {{ $v.otomi.adminPassword | quote }}                            
       secure: false
       v4auth: true
       {{- end }}
@@ -149,7 +149,7 @@ persistence:
       bucket: {{ $obj.linode.buckets.harbor }}
       regionendpoint: https://{{ $obj.linode.region }}.linodeobjects.com
       accesskey: {{ $obj.linode.accessKeyId }}               
-      secretkey: {{ $obj.linode.secretAccessKey }}
+      secretkey: {{ $obj.linode.secretAccessKey | quote }}
       region: {{ $obj.linode.region }}
       encrypt: false
       secure: true
@@ -184,7 +184,7 @@ redis:
 
 registry:
   priorityClassName: otomi-critical
-  secret: {{ $h | get "registry.secret" nil }}
+  secret: {{ $h | get "registry.secret" nil | quote }}
 
   registry:
     image:
@@ -197,7 +197,7 @@ registry:
   relativeurls: false
   credentials:
     username: {{ $h.registry.credentials.username }}
-    password: {{ $h.registry.credentials.password }}
+    password: {{ $h.registry.credentials.password | quote }}
     htpasswdString: {{ $h.registry.credentials.htpasswd }}
 
 trivy:
