@@ -94,4 +94,4 @@ operations:
     pre:
       - upgrades/pre/upgrade-4-6-0.sh || true
     post:
-      - upgrades/post/upgrade-4-6-0.sh || true
+      - upgrades/post/upgrade-4-6-0.sh
