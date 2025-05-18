@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.6
-FROM ubuntu:20.04 AS builder
+FROM ubuntu:22.04 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
@@ -18,7 +18,7 @@ ARG AGE_VERSION=1.2.0
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.6.13
 # https://github.com/helmfile/helmfile/releases
-ARG HELMFILE_VERSION=0.171.0
+ARG HELMFILE_VERSION=1.0.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=20
 
