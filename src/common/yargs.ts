@@ -55,7 +55,7 @@ const helmOpts: { [key: string]: Options } = {
   file: {
     alias: 'f',
     array: true,
-    describe: "Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml'",
+    describe: "Select helmfiles by filename, e.g. '-f helmfile.d/helmfile-15.ingress-core.yaml.gotmpl'",
     nargs: 1,
     coerce: (files: string[]) => {
       if (!files || files.length === 0) return files
