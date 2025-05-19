@@ -1,0 +1,53 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+releases:
+  - name: knative-serving-artifacts
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: knative-serving
+    disableValidationOnInstall: true
+    chart: ../charts/raw
+    labels:
+      init: true
+      pkg: knative
+    values:
+      - ../values/knative-serving/knative-serving-raw.gotmpl
+    <<: *upgrade
+  - name: knative-serving
+    installed: {{ $a | get "knative.enabled" }}
+    namespace: knative-serving
+    chart: ../charts/raw-cr
+    labels:
+      pkg: knative
+    values:
+      - ../values/knative-serving/knative-serving-cr.gotmpl
+    <<: *upgrade
+  - name: minio
+    installed: {{ $a.minio.enabled }}
+    namespace: minio
+    labels:
+      pkg: minio
+    <<: *default
+  - name: tekton-triggers
+    installed: true
+    namespace: tekton-pipelines
+    labels:
+      pkg: tekton-triggers
+      app: core
+    <<: *default
+  - name: otomi-pipelines
+    installed: true
+    namespace: otomi-pipelines
+    labels:
+      app: core
+    <<: *default
