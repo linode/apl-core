@@ -14,6 +14,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
+import { existsSync } from 'fs'
 
 const cmdName = getFilename(__filename)
 
@@ -26,7 +27,12 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
-  const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
+  let message: string
+  if (isCi && existsSync(`${env.ENV_DIR}/.rerun`)) {
+    message = '[apl-trigger]'
+  } else {
+    message = isCi ? 'updated values [ci skip]' : (argv.message as string) || 'otomi commit'
+  }
   cd(env.ENV_DIR)
   try {
     try {

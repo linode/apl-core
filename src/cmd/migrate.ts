@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
@@ -50,6 +47,7 @@ interface Change {
   bulkAdditions?: Array<{
     [mutation: string]: string
   }>
+  requireRerun?: boolean
   networkPoliciesMigration?: boolean
   teamSettingsMigration?: boolean
   teamResourceQuotaMigration?: boolean
@@ -438,7 +436,6 @@ const teamResourceQuotaMigration = (values: Record<string, any>) => {
 }
 
 const bulkAddition = (path: string, values: any, filePath: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const val = require(filePath)
   setAtPath(path, values, val)
 }
@@ -498,6 +495,7 @@ export const applyChanges = async (
       })
     }
 
+    if (c.requireRerun) await writeFile('.rerun', '')
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
     if (c.teamSettingsMigration) teamSettingsMigration(values)
     if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
