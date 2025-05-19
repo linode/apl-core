@@ -99,6 +99,7 @@ environments:
               - https://apl-docs.net
               - https://116.203.255.68
               - https://httpbin.org/headers
+---
 releases:
   - name: inter-team-connectivity
     installed: true
