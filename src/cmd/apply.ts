@@ -58,7 +58,7 @@ const applyAll = async () => {
   await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
   const output: ProcessOutputTrimmed = await hf(
-    { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
+    { fileOpts: 'helmfile.tpl/helmfile-init.yaml.gotmpl', args: 'template' },
     { streams: { stderr: d.stream.error } },
   )
   if (output.exitCode > 0) {
@@ -78,7 +78,7 @@ const applyAll = async () => {
   await hf(
     {
       // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
-      fileOpts: 'helmfile.d/helmfile-02.init.yaml',
+      fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
       labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
       args: hfArgs,
@@ -115,7 +115,7 @@ const applyAll = async () => {
       await hf(
         {
           // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
-          fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml`,
+          fileOpts: `${rootDir}/helmfile.tpl/helmfile-e2e.yaml.gotmpl`,
           logLevel: logLevelString(),
           args: hfArgs,
         },

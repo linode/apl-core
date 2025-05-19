@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
@@ -438,7 +435,6 @@ const teamResourceQuotaMigration = (values: Record<string, any>) => {
 }
 
 const bulkAddition = (path: string, values: any, filePath: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const val = require(filePath)
   setAtPath(path, values, val)
 }
@@ -620,7 +616,7 @@ function renameKeyDeep(obj: any, oldKey: string, newKey: string): any {
 
 export const migrateLegacyValues = async (envDir: string, deps = { writeFile }): Promise<boolean> => {
   const output = await hf(
-    { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml`, args: 'build' },
+    { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml.gotmpl`, args: 'build' },
     undefined,
     envDir,
   )
