@@ -357,5 +357,6 @@ changes:
     deletions:
       - 'teamConfig.{team}.services[].type'
   - version: 40
+    requireRerun: true
     additions:
       - apps.istio.defaultRevision: ''
