@@ -216,7 +216,7 @@ grafana:
     enabled: false  
   plugins:
     - grafana-piechart-panel
-  {{- if and $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}
+  {{- if or $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}
   additionalDataSources:
     {{- if $apps.loki.enabled }}
     - name: Loki
