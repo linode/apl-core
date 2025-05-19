@@ -44,10 +44,4 @@ meshConfig:
     {{- end }}
 
 # Mutating webhook needs to be available for istio-gateway deployment!
-podAnnotations:
-  argocd.argoproj.io/sync-wave: "-10"
-serviceAnnotations:
-  argocd.argoproj.io/sync-wave: "-10"
-sidecarInjectorWebhookAnnotations:
-  argocd.argoproj.io/sync-wave: "-10"
 priorityClassName: otomi-critical
