@@ -357,6 +357,7 @@ changes:
     deletions:
       - 'teamConfig.{team}.services[].type'
   - version: 40
+    addAplOperator: true
     additions:
       - apps.apl-operator.resources.operator.requests.cpu: 50m
       - apps.apl-operator.resources.operator.requests.memory: 128Mi
