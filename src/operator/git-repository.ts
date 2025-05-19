@@ -1,8 +1,7 @@
 import simpleGit, { SimpleGit } from 'simple-git'
 import { OtomiDebugger, terminal } from '../common/debug'
 import retry, { Options } from 'async-retry'
-import { $, cd } from 'zx'
-import { env } from '../common/envalid'
+import { OperatorError } from './errors'
 
 export interface GitRepositoryConfig {
   username: string

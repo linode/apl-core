@@ -1,4 +1,4 @@
-class OperatorError extends Error {
+export class OperatorError extends Error {
   constructor(
     message: string,
     public readonly cause?: Error,

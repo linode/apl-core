@@ -4,6 +4,7 @@ import { module as applyModule } from '../cmd/apply'
 import { module as applyAsAppsModule } from '../cmd/apply-as-apps'
 import { module as bootstrapModule } from '../cmd/bootstrap'
 import { module as validateValuesModule } from '../cmd/validate-values'
+import { OperatorError } from './errors'
 
 export class AplOperations {
   private d: OtomiDebugger

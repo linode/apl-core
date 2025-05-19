@@ -22,9 +22,9 @@ export class AplOperator {
   private gitRepo: GitRepository
   private aplOps: AplOperations
 
-  private readonly repoUrl: string
-  private readonly pollInterval: number
-  private readonly reconcileInterval: number
+  readonly repoUrl: string
+  readonly pollInterval: number
+  readonly reconcileInterval: number
 
   constructor(config: AplOperatorConfig) {
     const { gitRepo, aplOps, pollIntervalMs, reconcileIntervalMs } = config
@@ -38,7 +38,8 @@ export class AplOperator {
     this.d.info(`Initializing APL Operator with repo URL: ${maskRepoUrl(gitRepo.repoUrl)}`)
   }
 
-  private async runApplyIfNotBusy(trigger: string, applyTeamsOnly = false): Promise<void> {
+  // public for testing
+  public async runApplyIfNotBusy(trigger: string, applyTeamsOnly = false): Promise<void> {
     if (this.isApplying) {
       this.d.info(`[${trigger}] Apply already in progress, skipping`)
       return
@@ -87,10 +88,11 @@ export class AplOperator {
     }
   }
 
-  private async reconcile(): Promise<void> {
+  // Only used in tests: run N iterations and exit
+  public async reconcile(maxIterations = Infinity): Promise<void> {
     this.d.info('Starting reconciliation loop')
 
-    while (this.isRunning) {
+    for (let i = 0; this.isRunning && i < maxIterations; i++) {
       try {
         this.d.info('Reconciliation triggered')
         await this.runApplyIfNotBusy('reconcile')
@@ -105,10 +107,11 @@ export class AplOperator {
     this.d.info('Reconciliation loop stopped')
   }
 
-  private async pollForChanges(): Promise<void> {
+  // Only used in tests: run N iterations and exit
+  public async pollForChanges(maxIterations = Infinity): Promise<void> {
     this.d.info('Starting polling loop')
 
-    while (this.isRunning) {
+    for (let i = 0; this.isRunning && i < maxIterations; i++) {
       if (this.isApplying) {
         this.d.debug('Skipping polling, apply process is in progress')
         await new Promise((resolve) => setTimeout(resolve, this.pollInterval))
