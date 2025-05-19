@@ -18,24 +18,24 @@ Effective development starts with an understanding the code structure and the re
 
 ```
 apl-core
-├── .values                     # Boilerplate for initializing git repository
-├── adr                         # Architectural Decision Records [read more](https://adr.github.io/madr/)
-├── bin                         # APL CLI entrypoint (deprecated)
-├── binzx                       # APL CLI entrypoint
-├── chart                       # Helm chart for installing APL and upgrading APL Helm charts
-├── charts                      # All other Helm charts that comprise APL
-├── docs                        # Documentation
-├── helmfile.d/helmfile-*.yaml  # Helmfile specs ordered by name and executed accordingly by otomi commands
-├── helmfile.d/snippets         # Reusable code snippets
-├── helmfile.tpl                # Additional Helmfiles that do not have corresponding chart and are not parsed on otomi apply|template command
-├── k8s                         # Kubernetes manifests that before any other chart
-├── src                         # APL CLI source code
-├── tests                       # Values used for testing purposes
-├── upgrades.yaml               # Upgrade presync hooks
-├── values                      # Value templates that serves as input to corresponding Helm charts
-├── values-changes.yaml         # Definitions for performing data migrations
-├── values-schema.yaml          # JSON schema that defines APL interface
-└── versions.yaml               # Version tags of otomi-api, otomi-console and otomi-tasks
+├── .values                       # Boilerplate for initializing git repository
+├── adr                           # Architectural Decision Records [read more](https://adr.github.io/madr/)
+├── bin                           # APL CLI entrypoint (deprecated)
+├── binzx                         # APL CLI entrypoint
+├── chart                         # Helm chart for installing APL and upgrading APL Helm charts
+├── charts                        # All other Helm charts that comprise APL
+├── docs                          # Documentation
+├── helmfile.d/helmfile-*.yaml*   # Helmfile specs ordered by name and executed accordingly by otomi commands
+├── helmfile.d/snippets           # Reusable code snippets
+├── helmfile.tpl                  # Additional Helmfiles that do not have corresponding chart and are not parsed on otomi apply|template command
+├── k8s                           # Kubernetes manifests that before any other chart
+├── src                           # APL CLI source code
+├── tests                         # Values used for testing purposes
+├── upgrades.yaml                 # Upgrade presync hooks
+├── values                        # Value templates that serves as input to corresponding Helm charts
+├── values-changes.yaml           # Definitions for performing data migrations
+├── values-schema.yaml            # JSON schema that defines APL interface
+└── versions.yaml                 # Version tags of otomi-api, otomi-console and otomi-tasks
 ```
 
 ## Reusable code snippets
@@ -65,7 +65,7 @@ While rendering kubernetes manifests APL leverages Helmfile.
 In APL, all Helmfile specs are defined in the `helmfile.d/` directory and executed in alphabetical order. The majority of Helmfile specs has the following structure:
 
 ```go-template
-#helmfiled./999-helmfile.yaml
+#helmfile.d/999-helmfile.yaml.gotmpl
 bases:
   - snippets/defaults.yaml
 ---
@@ -80,7 +80,7 @@ releases:
   - <helmfile release>
 ```
 
-From the above code snippet, the `base` statements define loading and merging values from various sources. If we would execute `otomi apply|template -f helmfiled./999-helmfile.yaml` then the following data flow would take place:
+From the above code snippet, the `base` statements define loading and merging values from various sources. If we would execute `otomi apply|template -f helmfile.d/999-helmfile.yaml.gotmpl` then the following data flow would take place:
 
 ```mermaid
 flowchart LR
