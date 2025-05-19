@@ -179,7 +179,6 @@ redis:
     priorityClassName: otomi-critical
     image:
       tag: {{ $tag }}
-  internal:
     resources: {{- $h.resources.redis | toYaml | nindent 6 }}
 
 registry:
