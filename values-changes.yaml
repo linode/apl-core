@@ -356,3 +356,10 @@ changes:
   - version: 39
     deletions:
       - 'teamConfig.{team}.services[].type'
+  - version: 40
+    additions:
+      - apps.apl-operator.resources.operator.requests.cpu: 50m
+      - apps.apl-operator.resources.operator.requests.memory: 128Mi
+      - apps.apl-operator.resources.operator.limits.cpu: '1'
+      - apps.apl-operator.resources.operator.limits.memory: 1Gi
+      - apps.apl-operator._rawValues: {}
