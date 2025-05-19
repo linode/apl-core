@@ -2,14 +2,14 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: istio-operator-uninstall
-  namespace: default
+  namespace: maintenance
 spec:
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: 'false'
     spec:
-      serviceAccountName: apl
+      serviceAccountName: default
       containers:
         - image: bitnami/kubectl:1.32.4
           name: kubectl
