@@ -36,7 +36,7 @@
 - name: DRONE_GIT_USERNAME
   value: {{ .Values.sourceControl.username }}
 - name: DRONE_GIT_PASSWORD
-  value: {{ .Values.sourceControl.password | default .Values.server.adminToken }}
+  value: {{ .Values.sourceControl.password | default .Values.server.adminToken | quote }}
 - name: DRONE_GITEA_CLIENT_SECRET
   valueFrom:
     secretKeyRef:
