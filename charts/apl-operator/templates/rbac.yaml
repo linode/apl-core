@@ -163,3 +163,27 @@ roleRef:
   kind: ClusterRole
   name: apl-operator-patch-permissions
   apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: apl-operator-otomi-configmap
+  namespace: otomi
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: apl-operator-otomi-configmap
+  namespace: otomi
+subjects:
+  - kind: ServiceAccount
+    name: apl-operator
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: apl-operator-otomi-configmap
+  apiGroup: rbac.authorization.k8s.io
