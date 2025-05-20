@@ -78,7 +78,11 @@ describe('AplOperations', () => {
 
       await aplOperations.migrate()
 
-      expect(migrateModule.handler).toHaveBeenCalledWith({})
+      expect(migrateModule.handler).toHaveBeenCalledWith({
+        nonInteractive: true,
+        _: [] as string[],
+        $0: '',
+      })
     })
 
     test('should handle migrate failure', async () => {
@@ -87,7 +91,11 @@ describe('AplOperations', () => {
 
       await expect(aplOperations.migrate()).rejects.toBeInstanceOf(OperatorError)
 
-      expect(migrateModule.handler).toHaveBeenCalledWith({})
+      expect(migrateModule.handler).toHaveBeenCalledWith({
+        nonInteractive: true,
+        _: [] as string[],
+        $0: '',
+      })
     })
   })
 
