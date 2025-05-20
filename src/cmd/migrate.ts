@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
+import { k8s } from '../common/k8s'
 
 const cmdName = getFilename(__filename)
 
@@ -441,8 +442,25 @@ const bulkAddition = (path: string, values: any, filePath: string) => {
   setAtPath(path, values, val)
 }
 
+async function aplOperatorNsExists(): Promise<boolean> {
+  try {
+    await k8s.core().readNamespace('apl-operator')
+    return true
+  } catch (error) {
+    if (error.response && error.response.statusCode === 404) {
+      return false
+    } else {
+      throw error
+    }
+  }
+}
+
 export async function addAplOperator(): Promise<void> {
   const d = terminal('addAplOperator')
+  if (await aplOperatorNsExists()) {
+    d.info('Apl-operator namespace already exists, skipping installation')
+    return
+  }
   d.info('Installing apl-operator')
 
   await hf(
