@@ -447,7 +447,7 @@ export async function addAplOperator(): Promise<void> {
 
   await hf(
     {
-      fileOpts: 'helmfile.d/helmfile-03.init.yaml.gotmpl',
+      fileOpts: `${rootDir}/helmfile.d/helmfile-03.init.yaml.gotmpl`,
       labelOpts: ['pkg=apl-operator'],
       logLevel: logLevelString(),
       args: ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20'],
