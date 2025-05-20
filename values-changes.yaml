@@ -368,3 +368,7 @@ changes:
     additions:
       - apps.apl-operator.resources.operator.requests.cpu: 60m
       - apps.apl-operator.resources.operator.requests.memory: 228Mi
+  - version: 42
+    additions:
+      - apps.apl-operator.resources.operator.requests.cpu: 45m
+      - apps.apl-operator.resources.operator.requests.memory: 200Mi
