@@ -11,6 +11,11 @@ export interface AplOperatorConfig {
   reconcileIntervalMs: number
 }
 
+export enum ApplyTrigger {
+  Poll = 'poll',
+  Reconcile = 'reconcile',
+}
+
 function maskRepoUrl(url: string): string {
   return url.replace(/(https?:\/\/)([^@]+)(@.+)/g, '$1***$3')
 }
@@ -39,7 +44,7 @@ export class AplOperator {
   }
 
   // public for testing
-  public async runApplyIfNotBusy(trigger: string, applyTeamsOnly = false): Promise<void> {
+  public async runApplyIfNotBusy(trigger: ApplyTrigger, applyTeamsOnly = false): Promise<void> {
     if (this.isApplying) {
       this.d.info(`[${trigger}] Apply already in progress, skipping`)
       return
@@ -57,16 +62,19 @@ export class AplOperator {
     })
 
     try {
+      if (trigger === ApplyTrigger.Poll) {
+        await this.aplOps.migrate()
+
+        this.d.info(`[${trigger}] Starting validation process`)
+        await this.aplOps.validateValues()
+        this.d.info(`[${trigger}] Validation process completed`)
+      }
       if (applyTeamsOnly) {
         await this.aplOps.applyAsAppsTeams()
       } else {
         await this.aplOps.apply()
       }
       this.d.info(`[${trigger}] Apply process completed`)
-
-      this.d.info(`[${trigger}] Starting validation process`)
-      await this.aplOps.validateValues()
-      this.d.info(`[${trigger}] Validation process completed`)
 
       await updateApplyState({
         commitHash,
@@ -95,7 +103,7 @@ export class AplOperator {
     for (let i = 0; this.isRunning && i < maxIterations; i++) {
       try {
         this.d.info('Reconciliation triggered')
-        await this.runApplyIfNotBusy('reconcile')
+        await this.runApplyIfNotBusy(ApplyTrigger.Reconcile)
         this.d.info('Reconciliation completed')
       } catch (error) {
         this.d.error('Error during reconciliation:', error)
@@ -122,7 +130,7 @@ export class AplOperator {
         const { hasChangesToApply, applyTeamsOnly } = await this.gitRepo.syncAndAnalyzeChanges()
 
         if (hasChangesToApply) {
-          await this.runApplyIfNotBusy('poll', applyTeamsOnly)
+          await this.runApplyIfNotBusy(ApplyTrigger.Poll, applyTeamsOnly)
         }
       } catch (error) {
         this.d.error('Error during git polling cycle:', error)

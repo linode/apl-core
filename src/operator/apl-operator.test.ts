@@ -1,4 +1,4 @@
-import { AplOperator, AplOperatorConfig } from './apl-operator'
+import { AplOperator, AplOperatorConfig, ApplyTrigger } from './apl-operator'
 import { waitTillGitRepoAvailable } from '../common/k8s'
 import { updateApplyState } from './k8s'
 import { GitRepository } from './git-repository'
@@ -22,6 +22,7 @@ const mockAplOps = {
   validateValues: jest.fn().mockResolvedValue(undefined),
   apply: jest.fn().mockResolvedValue(undefined),
   applyAsAppsTeams: jest.fn().mockResolvedValue(undefined),
+  migrate: jest.fn().mockResolvedValue(undefined),
 }
 
 jest.mock('../common/debug', () => ({
@@ -168,16 +169,17 @@ describe('AplOperator', () => {
     test('should run apply process when not busy', async () => {
       Object.defineProperty(aplOperator, 'isApplying', { value: false, configurable: true })
 
-      await aplOperator.runApplyIfNotBusy('test')
+      await aplOperator.runApplyIfNotBusy(ApplyTrigger.Poll)
 
       expect(mockAplOps.apply).toHaveBeenCalled()
+      expect(mockAplOps.migrate).toHaveBeenCalled()
       expect(mockAplOps.validateValues).toHaveBeenCalled()
 
       expect(updateApplyState).toHaveBeenCalledWith(
         expect.objectContaining({
           commitHash: 'abc123',
           status: 'in-progress',
-          trigger: 'test',
+          trigger: 'poll',
         }),
       )
 
@@ -185,7 +187,7 @@ describe('AplOperator', () => {
         expect.objectContaining({
           commitHash: 'abc123',
           status: 'succeeded',
-          trigger: 'test',
+          trigger: 'poll',
         }),
       )
 
@@ -195,22 +197,32 @@ describe('AplOperator', () => {
     test('should run applyAsAppsTeams when teams only flag is set', async () => {
       Object.defineProperty(aplOperator, 'isApplying', { value: false, configurable: true })
 
-      await aplOperator.runApplyIfNotBusy('test', true)
+      await aplOperator.runApplyIfNotBusy(ApplyTrigger.Poll, true)
 
       expect(mockAplOps.applyAsAppsTeams).toHaveBeenCalled()
       expect(mockAplOps.apply).not.toHaveBeenCalled()
+    })
+    test('should not run migrate and validate when run is reconcile', async () => {
+      Object.defineProperty(aplOperator, 'isApplying', { value: false, configurable: true })
+
+      await aplOperator.runApplyIfNotBusy(ApplyTrigger.Reconcile, false)
+
+      expect(mockAplOps.apply).toHaveBeenCalled()
+      expect(mockAplOps.migrate).not.toHaveBeenCalled()
+      expect(mockAplOps.validateValues).not.toHaveBeenCalled()
     })
 
     test('should skip if already applying', async () => {
       Object.defineProperty(aplOperator, 'isApplying', { value: true, configurable: true })
 
-      await aplOperator.runApplyIfNotBusy('test')
+      await aplOperator.runApplyIfNotBusy(ApplyTrigger.Poll)
 
       expect(mockAplOps.apply).not.toHaveBeenCalled()
+      expect(mockAplOps.migrate).not.toHaveBeenCalled()
       expect(mockAplOps.validateValues).not.toHaveBeenCalled()
       expect(updateApplyState).not.toHaveBeenCalled()
 
-      expect(mockInfoFn).toHaveBeenCalledWith('[test] Apply already in progress, skipping')
+      expect(mockInfoFn).toHaveBeenCalledWith('[poll] Apply already in progress, skipping')
     })
 
     test('should handle apply failure', async () => {
@@ -219,20 +231,20 @@ describe('AplOperator', () => {
       const error = new Error('Apply failed')
       mockAplOps.apply.mockRejectedValueOnce(error)
 
-      await aplOperator.runApplyIfNotBusy('test')
+      await aplOperator.runApplyIfNotBusy(ApplyTrigger.Poll)
 
       expect(updateApplyState).toHaveBeenCalledWith(
         expect.objectContaining({
           commitHash: 'abc123',
           status: 'failed',
-          trigger: 'test',
+          trigger: 'poll',
           errorMessage: 'Apply failed',
         }),
       )
 
       expect((aplOperator as any).isApplying).toBe(false)
 
-      expect(mockErrorFn).toHaveBeenCalledWith('[test] Apply process failed', error)
+      expect(mockErrorFn).toHaveBeenCalledWith('[poll] Apply process failed', error)
     })
   })
 
@@ -344,8 +356,6 @@ describe('AplOperator', () => {
       expect(logCalls).toContain('Reconciliation triggered')
       expect(logCalls).toContain('[reconcile] Starting apply process')
       expect(logCalls).toContain('[reconcile] Apply process completed')
-      expect(logCalls).toContain('[reconcile] Starting validation process')
-      expect(logCalls).toContain('[reconcile] Validation process completed')
       expect(logCalls).toContain('Reconciliation completed')
       expect(logCalls).toContain('Reconciliation loop stopped')
     })

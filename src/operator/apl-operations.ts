@@ -4,6 +4,7 @@ import { module as applyModule } from '../cmd/apply'
 import { module as applyAsAppsModule } from '../cmd/apply-as-apps'
 import { module as bootstrapModule } from '../cmd/bootstrap'
 import { module as validateValuesModule } from '../cmd/validate-values'
+import { module as migrateModule } from '../cmd/migrate'
 import { OperatorError } from './errors'
 
 export class AplOperations {
@@ -11,6 +12,18 @@ export class AplOperations {
 
   constructor() {
     this.d = terminal('AplOperations')
+  }
+
+  async migrate(): Promise<void> {
+    this.d.info('Executing migration process')
+
+    try {
+      await migrateModule.handler({} as HelmArguments)
+      this.d.info('Migration completed successfully')
+    } catch (error) {
+      this.d.error('Migration failed:', error)
+      throw new OperatorError('Migration process failed', error as Error)
+    }
   }
 
   async bootstrap(): Promise<void> {
