@@ -35,8 +35,16 @@
 {{- else if eq $cm.issuer "byo-wildcard-cert" }}
   {{- $tlsSecretName = "otomi-byo-wildcard-cert" }}
 {{- end -}}
+
+# Istio component variables
+
+# During initial install of APL, defaultRevision should be set to the same as the canary.
+# It only serves as a reference and does not necessarily have to correspond with the version number.
+# During a migration from the operator, this is an empty string.
 {{- $istioDefaultRevision := $a.istio.defaultRevision }}
 {{- $istioCanaryRevision := "1-26-0" }}
+
+# The following variables are used as reference for other components (ingress, gateway etc).
 {{- $ingressGatewayPrefix := "istio-ingressgateway" }}
 {{- $defaultIngressGatewayLabel := "ingressgateway-public" }}
 {{- $canaryIngressGatewayLabel := "" }}
@@ -48,8 +56,21 @@
 {{- $egressGatewayName = print "istio-egressgateway-" $istioDefaultRevision }}
 {{- $egressGatewayLabel = print "egressgateway-" $istioDefaultRevision }}
 {{- end }}
-{{- if ne $istioDefaultRevision $istioCanaryRevision }}
+{{- if and $istioCanaryRevision (ne $istioDefaultRevision $istioCanaryRevision) }}
 {{- $canaryIngressGatewayLabel = printf "ingressgateway-%s-public" $istioCanaryRevision }}
+{{- end }}
+{{- $ingressPublicGatewayName := print $ingressGatewayPrefix "-public" }}
+
+# The following variables are referred to by the Helm chart.
+{{- $istioIngressPublicReleaseName := $ingressPublicGatewayName }}
+{{- $istioIngressPublicReleaseLabel := $defaultIngressGatewayLabel }}
+{{- $istioEgressReleaseName := $egressGatewayName }}
+{{- $istioEgressReleaseLabel := $egressGatewayLabel }}
+{{- if $istioCanaryRevision }}
+{{- $istioIngressPublicReleaseName = printf "istio-ingressgateway-%s-public" $istioCanaryRevision }}
+{{- $istioIngressPublicReleaseLabel = printf "ingressgateway-%s-public" $istioCanaryRevision }}
+{{- $istioEgressReleaseName = print "istio-egressgateway-" $istioCanaryRevision }}
+{{- $istioEgressReleaseLabel = print "egressgateway-" $istioCanaryRevision }}
 {{- end }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
@@ -178,6 +199,7 @@ environments:
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           tlsSecretName: {{ $tlsSecretName }}
           ingressGatewayPrefix: {{ $ingressGatewayPrefix }}
+          ingressPublicGatewayName: {{ $ingressPublicGatewayName }}
           defaultIngressGatewayLabel: {{ $defaultIngressGatewayLabel }}
           canaryIngressGatewayLabel: {{ $canaryIngressGatewayLabel | quote }}
           egressGatewayName: {{ $egressGatewayName }}
@@ -218,7 +240,12 @@ environments:
             enabled: true
           istio:
             enabled: true
-            canaryRevision: {{ $istioCanaryRevision | quote }}
+            release:
+              revision: {{ $istioCanaryRevision | quote }}
+              ingressPublicName: {{ $istioIngressPublicReleaseName }}
+              ingressPublicLabel: {{ $istioIngressPublicReleaseLabel }}
+              egressName: {{ $istioEgressReleaseName }}
+              egressLabel: {{ $istioEgressReleaseLabel }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
           minio:

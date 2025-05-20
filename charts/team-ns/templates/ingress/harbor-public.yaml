@@ -2,7 +2,7 @@
 {{- if eq $v.teamId "admin" }}
 {{- if $v.apps.harbor.enabled }}
 {{- $ingress :=  $v.ingress.platformClass }}
-{{- $ingressGateway := print ($v.ingressGatewayPrefix | default "istio-ingressgateway") "-public" }}
+{{- $ingressGateway := $v.ingressPublicGatewayName | default "istio-ingressgateway-public" }}
 {{- $name :=  printf "nginx-team-%s-platform-public-open-forward-harbor" $v.teamId }}
 ---
 apiVersion: networking.k8s.io/v1
