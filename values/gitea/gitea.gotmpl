@@ -179,6 +179,8 @@ deployment:
 persistence:
   size: 1Gi
   claimName: data-gitea-0
+  labels:
+    app.kubernetes.io/name: gitea
 
 postgresql:
   enabled: false
