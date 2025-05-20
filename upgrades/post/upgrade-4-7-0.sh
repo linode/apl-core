@@ -10,6 +10,6 @@ if [ "$(yq '.spec.defaultRevision' "$ENV_DIR/env/apps/istio.yaml")" != "1-26-0" 
   yq -I 4 -i '.spec.defaultRevision = "1-26-0"' "$ENV_DIR/env/apps/istio.yaml"
   if [[ -z "$(kubectl get job --ignore-not-found -ojson -n default istio-operator-uninstall 2>/dev/null)" ]]; then
     echo "Scheduling cleanup."
-    kubectl apply -f upgrades/post/upgrade-4-6-0-job.yaml
+    kubectl apply -f upgrades/post/upgrade-4-7-0-job.yaml
   fi
 fi
