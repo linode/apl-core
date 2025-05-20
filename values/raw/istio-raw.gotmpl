@@ -13,10 +13,14 @@ resources:
         istio: {{ $v._derived.egressGatewayLabel }}
       servers:
       - port:
+          number: 80
+          name: http
           protocol: HTTP
         hosts:
         - '*'
       - port:
+          number: 443
+          name: http-tls
           protocol: TLS
         hosts:
         - '*'
