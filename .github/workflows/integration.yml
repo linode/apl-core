@@ -51,7 +51,7 @@ on:
           - "['1.31']"
           - "['1.32']"
           - "['1.33']"
-        default: "['1.33']"
+        default: "['1.32']"
       install_profile:
         description: APL installation profile
         default: minimal-with-team
