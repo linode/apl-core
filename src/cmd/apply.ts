@@ -8,18 +8,12 @@ import { hf } from 'src/common/hf'
 import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import { applyAsApps } from './apply-as-apps'
-import {
-  cloneOtomiChartsInGitea,
-  commit,
-  printWelcomeMessage,
-  retryCheckingForPipelineRun,
-  retryIsOAuth2ProxyRunning,
-} from './commit'
+import { cloneOtomiChartsInGitea, commit, printWelcomeMessage, retryIsOAuth2ProxyRunning } from './commit'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -122,8 +116,6 @@ const applyAll = async () => {
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
       await cloneOtomiChartsInGitea()
-      // Change this to check if apl-operator successfully deployed
-      // retryCheckingForPipelineRun()
       await retryIsOAuth2ProxyRunning()
       await printWelcomeMessage()
     }

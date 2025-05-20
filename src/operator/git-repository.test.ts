@@ -143,7 +143,7 @@ describe('GitRepository', () => {
         all: [],
       })
 
-      const result = await gitRepository.pull()
+      const result = await gitRepository.syncAndAnalyzeChanges()
 
       expect(result).toEqual({
         hasChangesToApply: false,
@@ -167,7 +167,7 @@ describe('GitRepository', () => {
         all: [],
       })
 
-      const result = await gitRepository.pull()
+      const result = await gitRepository.syncAndAnalyzeChanges()
 
       expect(result).toEqual({
         hasChangesToApply: true,
@@ -196,7 +196,7 @@ describe('GitRepository', () => {
         all: [{ message: 'Commit 1 [ci skip]' }, { message: 'Commit 2 [ci skip]' }],
       })
 
-      const result = await gitRepository.pull()
+      const result = await gitRepository.syncAndAnalyzeChanges()
 
       expect(result).toEqual({
         hasChangesToApply: false,
@@ -229,7 +229,7 @@ describe('GitRepository', () => {
 
       mockGit.diff.mockResolvedValue('env/teams/dev/settings.yaml\nteams/prod/settings.yaml')
 
-      const result = await gitRepository.pull()
+      const result = await gitRepository.syncAndAnalyzeChanges()
 
       expect(result).toEqual({
         hasChangesToApply: true,
@@ -259,7 +259,7 @@ describe('GitRepository', () => {
 
       mockGit.diff.mockResolvedValue('env/teams/dev/config.yaml\nenv/users/userid.yaml')
 
-      const result = await gitRepository.pull()
+      const result = await gitRepository.syncAndAnalyzeChanges()
 
       expect(result).toEqual({
         hasChangesToApply: true,
@@ -273,7 +273,7 @@ describe('GitRepository', () => {
       const error = new Error('Pull failed')
       mockGit.pull.mockRejectedValue(error)
 
-      await expect(gitRepository.pull()).rejects.toBeInstanceOf(OperatorError)
+      await expect(gitRepository.syncAndAnalyzeChanges()).rejects.toBeInstanceOf(OperatorError)
       expect(mockGit.pull).toHaveBeenCalled()
     })
   })

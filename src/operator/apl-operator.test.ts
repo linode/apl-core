@@ -115,7 +115,7 @@ describe('AplOperator', () => {
 
     test('should log error if poll or reconcile fails after start', async () => {
       // Make all the setup succeed
-      jest.spyOn(aplOperator as any, 'pollForChanges').mockImplementation(() => Promise.resolve())
+      jest.spyOn(aplOperator as any, 'pollAndApplyGitChanges').mockImplementation(() => Promise.resolve())
       jest
         .spyOn(aplOperator as any, 'reconcile')
         .mockImplementation(() => Promise.reject(new Error('Reconcile crashed')))
@@ -236,7 +236,7 @@ describe('AplOperator', () => {
     })
   })
 
-  describe('pollForChanges', () => {
+  describe('pollAndApplyGitChanges', () => {
     test('should poll and apply changes if detected', async () => {
       jest.useFakeTimers()
 
@@ -249,7 +249,7 @@ describe('AplOperator', () => {
 
       const runApplyIfNotBusySpy = jest.spyOn(aplOperator as any, 'runApplyIfNotBusy')
 
-      const pollPromise = aplOperator.pollForChanges(1)
+      const pollPromise = aplOperator.pollAndApplyGitChanges(1)
 
       await Promise.resolve()
       await Promise.resolve()
@@ -282,7 +282,7 @@ describe('AplOperator', () => {
         writable: true,
       })
 
-      const pollPromise = aplOperator.pollForChanges()
+      const pollPromise = aplOperator.pollAndApplyGitChanges()
 
       await Promise.resolve()
       jest.advanceTimersByTime(defaultConfig.pollIntervalMs)
@@ -309,7 +309,7 @@ describe('AplOperator', () => {
         writable: true,
       })
 
-      const pollPromise = aplOperator.pollForChanges()
+      const pollPromise = aplOperator.pollAndApplyGitChanges()
 
       await Promise.resolve()
       jest.advanceTimersByTime(defaultConfig.pollIntervalMs)

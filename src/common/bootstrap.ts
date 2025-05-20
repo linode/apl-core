@@ -1,9 +1,9 @@
-import { copyFile, pathExists } from 'fs-extra'
+import { pathExists } from 'fs-extra'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
-import { getFilename, rootDir } from 'src/common/utils'
+import { getFilename } from 'src/common/utils'
 import { getRepo, writeValues } from 'src/common/values'
 import { $, cd } from 'zx'
 
@@ -73,7 +73,6 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
 
   if (isCli) {
     d.info('Copying pre-commit hook')
-    // await copyFile(`${rootDir}/bin/hooks/pre-commit`, `${env.ENV_DIR}/.git/hooks/pre-commit`)
   } else {
     d.info('setting git config')
     await $`git config --global --add safe.directory ${env.ENV_DIR}`.nothrow().quiet()

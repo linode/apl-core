@@ -101,38 +101,41 @@ export class AplOperator {
         this.d.error('Error during reconciliation:', error)
       }
 
-      await new Promise((resolve) => setTimeout(resolve, this.reconcileInterval))
+      await this.scheduleNextAttempt(this.reconcileInterval)
     }
 
     this.d.info('Reconciliation loop stopped')
   }
 
   // Only used in tests: run N iterations and exit
-  public async pollForChanges(maxIterations = Infinity): Promise<void> {
-    this.d.info('Starting polling loop')
+  public async pollAndApplyGitChanges(maxIterations = Infinity): Promise<void> {
+    this.d.info('Starting git polling loop')
 
     for (let i = 0; this.isRunning && i < maxIterations; i++) {
       if (this.isApplying) {
-        this.d.debug('Skipping polling, apply process is in progress')
-        await new Promise((resolve) => setTimeout(resolve, this.pollInterval))
+        this.d.debug('Skipping polling cycle, apply process is in progress')
+        await this.scheduleNextAttempt(this.pollInterval)
         continue
       }
+
       try {
-        const { hasChangesToApply, applyTeamsOnly } = await this.gitRepo.pull()
+        const { hasChangesToApply, applyTeamsOnly } = await this.gitRepo.syncAndAnalyzeChanges()
 
         if (hasChangesToApply) {
-          this.d.info('Changes detected, triggering apply process')
           await this.runApplyIfNotBusy('poll', applyTeamsOnly)
-          this.d.info('Apply process completed successfully')
         }
       } catch (error) {
-        this.d.error('Error during applying changes:', error)
+        this.d.error('Error during git polling cycle:', error)
       }
 
-      await new Promise((resolve) => setTimeout(resolve, this.pollInterval))
+      await this.scheduleNextAttempt(this.pollInterval)
     }
 
-    this.d.info('Polling loop stopped')
+    this.d.info('Git polling loop stopped')
+  }
+
+  private async scheduleNextAttempt(interval: number) {
+    await new Promise((resolve) => setTimeout(resolve, interval))
   }
 
   public async start(): Promise<void> {
@@ -148,7 +151,7 @@ export class AplOperator {
       await waitTillGitRepoAvailable(this.repoUrl)
       await this.gitRepo.clone()
       await this.gitRepo.waitForCommits()
-      await this.gitRepo.pull()
+      await this.gitRepo.syncAndAnalyzeChanges()
 
       await this.aplOps.bootstrap()
       await this.aplOps.validateValues()
@@ -161,7 +164,7 @@ export class AplOperator {
     }
 
     try {
-      await Promise.all([this.pollForChanges(), this.reconcile()])
+      await Promise.all([this.pollAndApplyGitChanges(), this.reconcile()])
     } catch (error) {
       this.d.error('Error in polling or reconcile task:', error)
     }

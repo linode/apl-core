@@ -96,14 +96,26 @@ export class GitRepository {
     return logResult.all.every((commit) => commit.message.includes(this.skipMarker))
   }
 
-  async pull(): Promise<{ hasChangesToApply: boolean; applyTeamsOnly: boolean }> {
+  private async pull(): Promise<string> {
+    try {
+      await this.git.pull()
+      return this.getCurrentRevision()
+    } catch (error) {
+      this.d.error('Failed to pull repository:', error)
+      throw new OperatorError('Repository pull failed', error as Error)
+    }
+  }
+
+  private async getCurrentRevision(): Promise<string> {
+    const logs = await this.git.log({ maxCount: 1 })
+    return logs.latest?.hash || ''
+  }
+
+  async syncAndAnalyzeChanges(): Promise<{ hasChangesToApply: boolean; applyTeamsOnly: boolean }> {
     try {
       const previousRevision = this._lastRevision
 
-      await this.git.pull()
-
-      const logs = await this.git.log({ maxCount: 1 })
-      const newRevision = logs.latest?.hash || ''
+      const newRevision = await this.pull()
 
       if (!newRevision || newRevision === previousRevision) {
         return {
@@ -114,7 +126,6 @@ export class GitRepository {
 
       this.d.info(`Repository updated: ${previousRevision} -> ${newRevision}`)
 
-      // Default result if the previous revision is empty (first run)
       if (!previousRevision) {
         this._lastRevision = newRevision
         return {
@@ -123,8 +134,8 @@ export class GitRepository {
         }
       }
 
-      const allCommitsContainSkipMarker = await this.shouldSkipCommits(previousRevision, 'HEAD')
-      if (allCommitsContainSkipMarker) {
+      const shouldSkip = await this.shouldSkipCommits(previousRevision, 'HEAD')
+      if (shouldSkip) {
         this.d.info(`All new commits contain "[ci skip]" - skipping apply`)
         return {
           hasChangesToApply: false,
@@ -134,6 +145,7 @@ export class GitRepository {
 
       const changedFiles = await this.getChangedFiles(previousRevision, newRevision)
       const onlyTeamsChanged = this.isTeamsOnlyChange(changedFiles)
+
       if (onlyTeamsChanged) {
         this.d.info('All changes are in teams directory - applying teams only')
       }
@@ -145,8 +157,8 @@ export class GitRepository {
         applyTeamsOnly: onlyTeamsChanged,
       }
     } catch (error) {
-      this.d.error('Failed to pull repository:', error)
-      throw new OperatorError('Repository pull failed', error as Error)
+      this.d.error('Failed to analyze repository changes:', error)
+      throw new OperatorError('Repository sync and analysis failed', error as Error)
     }
   }
   public get lastRevision(): string {
