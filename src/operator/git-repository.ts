@@ -123,11 +123,10 @@ export class GitRepository {
           applyTeamsOnly: false,
         }
       }
-
       this.d.info(`Repository updated: ${previousRevision} -> ${newRevision}`)
+      this._lastRevision = newRevision
 
       if (!previousRevision) {
-        this._lastRevision = newRevision
         return {
           hasChangesToApply: true,
           applyTeamsOnly: false,
@@ -149,8 +148,6 @@ export class GitRepository {
       if (onlyTeamsChanged) {
         this.d.info('All changes are in teams directory - applying teams only')
       }
-
-      this._lastRevision = newRevision
 
       return {
         hasChangesToApply: true,
