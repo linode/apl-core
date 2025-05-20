@@ -364,3 +364,7 @@ changes:
       - apps.apl-operator.resources.operator.limits.cpu: '1'
       - apps.apl-operator.resources.operator.limits.memory: 1Gi
       - apps.apl-operator._rawValues: {}
+  - version: 41
+    additions:
+      - apps.apl-operator.resources.operator.requests.cpu: 60m
+      - apps.apl-operator.resources.operator.requests.memory: 228Mi
