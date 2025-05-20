@@ -18,7 +18,12 @@ export class AplOperations {
     this.d.info('Executing migration process')
 
     try {
-      await migrateModule.handler({} as HelmArguments)
+      const args: HelmArguments = {
+        nonInteractive: true,
+        _: [] as string[],
+        $0: '',
+      } as HelmArguments
+      await migrateModule.handler(args)
       this.d.info('Migration completed successfully')
     } catch (error) {
       this.d.error('Migration failed:', error)
