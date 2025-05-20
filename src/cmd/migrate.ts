@@ -7,7 +7,7 @@ import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, 
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
-import { terminal } from 'src/common/debug'
+import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
@@ -18,7 +18,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 
@@ -444,39 +443,19 @@ const bulkAddition = (path: string, values: any, filePath: string) => {
 
 export async function addAplOperator(): Promise<void> {
   const d = terminal('addAplOperator')
-  d.info('Checking if apl-operator namespace exists')
+  d.info('Installing apl-operator')
 
-  const kc = new KubeConfig()
-  kc.loadFromDefault()
-  const k8sApi = kc.makeApiClient(CoreV1Api)
+  await hf(
+    {
+      fileOpts: 'helmfile.d/helmfile-03.init.yaml.gotmpl',
+      labelOpts: ['pkg=apl-operator'],
+      logLevel: logLevelString(),
+      args: ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20'],
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
 
-  try {
-    await k8sApi.readNamespace('apl-operator')
-    d.info('apl-operator namespace already exists')
-  } catch (error) {
-    if ((error as any).response?.statusCode === 404) {
-      d.info('apl-operator namespace not found, creating it')
-
-      try {
-        await k8sApi.createNamespace({
-          metadata: {
-            name: 'apl-operator',
-            labels: {
-              'app.kubernetes.io/name': 'apl-operator',
-              'app.kubernetes.io/part-of': 'apl',
-            },
-          },
-        })
-        d.info('Successfully created apl-operator namespace')
-      } catch (createError) {
-        d.error('Failed to create apl-operator namespace:', createError)
-        throw new Error(`Failed to create apl-operator namespace: ${createError}`)
-      }
-    } else {
-      d.error('Error checking for apl-operator namespace:', error)
-      throw new Error(`Error checking for apl-operator namespace: ${error}`)
-    }
-  }
+  d.info('Apl-operator installed')
 }
 
 /**
