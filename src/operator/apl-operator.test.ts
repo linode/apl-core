@@ -12,7 +12,7 @@ const mockDebugFn = jest.fn()
 const mockGitRepo = {
   clone: jest.fn().mockResolvedValue(undefined),
   waitForCommits: jest.fn().mockResolvedValue(undefined),
-  pull: jest.fn().mockResolvedValue({ hasChangesToApply: false, applyTeamsOnly: false }),
+  syncAndAnalyzeChanges: jest.fn().mockResolvedValue({ hasChangesToApply: false, applyTeamsOnly: false }),
   repoUrl: 'https://username:password@example.com:443/org/repo.git',
   lastRevision: 'abc123',
 }
@@ -94,7 +94,7 @@ describe('AplOperator', () => {
       expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.repoUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
       expect(mockGitRepo.waitForCommits).toHaveBeenCalled()
-      expect(mockGitRepo.pull).toHaveBeenCalled()
+      expect(mockGitRepo.syncAndAnalyzeChanges).toHaveBeenCalled()
       expect(mockAplOps.bootstrap).toHaveBeenCalled()
       expect(mockAplOps.validateValues).toHaveBeenCalled()
 
@@ -123,7 +123,7 @@ describe('AplOperator', () => {
       // Mock all setup methods to resolve
       mockGitRepo.clone.mockResolvedValue(undefined)
       mockGitRepo.waitForCommits.mockResolvedValue(undefined)
-      mockGitRepo.pull.mockResolvedValue(undefined)
+      mockGitRepo.syncAndAnalyzeChanges.mockResolvedValue(undefined)
       aplOperator['aplOps'].bootstrap = jest.fn().mockResolvedValue(undefined)
       aplOperator['aplOps'].validateValues = jest.fn().mockResolvedValue(undefined)
 
@@ -240,7 +240,7 @@ describe('AplOperator', () => {
     test('should poll and apply changes if detected', async () => {
       jest.useFakeTimers()
 
-      mockGitRepo.pull.mockResolvedValueOnce({
+      mockGitRepo.syncAndAnalyzeChanges.mockResolvedValueOnce({
         hasChangesToApply: true,
         applyTeamsOnly: false,
       })
@@ -261,14 +261,12 @@ describe('AplOperator', () => {
 
       expect(runApplyIfNotBusySpy).toHaveBeenCalledWith('poll', false)
       const logCalls = mockInfoFn.mock.calls.flat()
-      expect(logCalls).toContain('Starting polling loop')
-      expect(logCalls).toContain('Changes detected, triggering apply process')
+      expect(logCalls).toContain('Starting git polling loop')
       expect(logCalls).toContain('[poll] Starting apply process')
       expect(logCalls).toContain('[poll] Apply process completed')
       expect(logCalls).toContain('[poll] Starting validation process')
       expect(logCalls).toContain('[poll] Validation process completed')
-      expect(logCalls).toContain('Apply process completed successfully')
-      expect(logCalls).toContain('Polling loop stopped')
+      expect(logCalls).toContain('Git polling loop stopped')
     })
 
     test('should skip polling if apply is in progress', async () => {
@@ -291,13 +289,13 @@ describe('AplOperator', () => {
 
       await pollPromise
 
-      expect(mockGitRepo.pull).not.toHaveBeenCalled()
-      expect(mockDebugFn).toHaveBeenCalledWith('Skipping polling, apply process is in progress')
-      expect(mockInfoFn).toHaveBeenCalledWith('Polling loop stopped')
+      expect(mockGitRepo.syncAndAnalyzeChanges).not.toHaveBeenCalled()
+      expect(mockDebugFn).toHaveBeenCalledWith('Skipping polling cycle, apply process is in progress')
+      expect(mockInfoFn).toHaveBeenCalledWith('Git polling loop stopped')
     })
 
     test('should log error if pull fails', async () => {
-      mockGitRepo.pull.mockRejectedValueOnce(new Error('Pull failed'))
+      mockGitRepo.syncAndAnalyzeChanges.mockRejectedValueOnce(new Error('Pull failed'))
 
       Object.defineProperty(aplOperator as any, 'isRunning', {
         value: true,
@@ -318,7 +316,7 @@ describe('AplOperator', () => {
 
       await pollPromise
 
-      expect(mockErrorFn).toHaveBeenCalledWith('Error during applying changes:', expect.any(Error))
+      expect(mockErrorFn).toHaveBeenCalledWith('Error during git polling cycle:', expect.any(Error))
     })
   })
 
