@@ -38,11 +38,12 @@
 
 # Istio component variables
 
-# During initial install of APL, defaultRevision should be set to the same as the canary.
+# During initial install of APL, defaultRevision is set to the same as the canary.
 # It only serves as a reference and does not necessarily have to correspond with the version number.
-# During a migration from the operator, this is an empty string.
-{{- $istioDefaultRevision := $a.istio.defaultRevision }}
+# During a migration from the operator, legacyRevision set to 'operator' by the pre-upgrade script,
 {{- $istioCanaryRevision := "1-26-0" }}
+{{- $istioLegacyRevision := $a.istio | get "legacyRevision" "" }}
+{{- $istioDefaultRevision := ternary "" $istioCanaryRevision (eq $istioLegacyRevision "operator") }}
 
 # The following variables are used as reference for other components (ingress, gateway etc).
 {{- $ingressGatewayPrefix := "istio-ingressgateway" }}
@@ -240,6 +241,7 @@ environments:
             enabled: true
           istio:
             enabled: true
+            defaultRevision: {{ $istioDefaultRevision | quote }}
             release:
               revision: {{ $istioCanaryRevision | quote }}
               ingressPublicName: {{ $istioIngressPublicReleaseName }}

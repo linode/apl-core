@@ -419,7 +419,6 @@ environments:
             enabled: false
             _rawValues: {}
           istio:
-            defaultRevision: "1-26-0"
             tracing:
               enabled: false
               samplingRatio: "0.01"
@@ -1312,4 +1311,4 @@ environments:
             version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 40
+          specVersion: 39
