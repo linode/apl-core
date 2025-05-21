@@ -147,19 +147,6 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   d.info('Cloned apl-charts in Gitea')
 }
 
-export async function retryCheckingForPipelineRun() {
-  const d = terminal(`cmd:${cmdName}:pipelineRun`)
-  await retry(
-    async () => {
-      await checkIfPipelineRunExists()
-    },
-    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
-  ).catch((e) => {
-    d.error('Error retrieving PipelineRuns:', e)
-    throw e
-  })
-}
-
 export async function retryIsOAuth2ProxyRunning() {
   const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
   await retry(
@@ -190,23 +177,6 @@ export async function isOAuth2ProxyAvailable(coreV1Api: CoreV1Api): Promise<void
     throw new Error('OAuth2Proxy has no available addresses, waiting...')
   }
   d.info('OAuth2proxy is available, continuing...')
-}
-
-export async function checkIfPipelineRunExists(): Promise<void> {
-  const d = terminal(`cmd:${cmdName}:pipelineRun`)
-
-  const response = await k8s
-    .custom()
-    .listNamespacedCustomObject('tekton.dev', 'v1beta1', 'otomi-pipelines', 'pipelineruns')
-
-  const pipelineRuns = (response.body as { items: any[] }).items
-  if (pipelineRuns.length === 0) {
-    d.info(`No Tekton pipeline runs found, triggering a new one...`)
-    await $`git commit --allow-empty -m "[apl-trigger]"`
-    await $`git push`
-    throw new Error('PipelineRun not found in otomi-pipelines namespace')
-  }
-  d.info(`There is a Tekton PipelineRuns continuing...`)
 }
 
 async function createCredentialsSecret(secretName: string, username: string, password: string): Promise<void> {
