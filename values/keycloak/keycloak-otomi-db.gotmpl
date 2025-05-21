@@ -11,7 +11,11 @@ storage:
 instances: {{ $kdb.replicas }}
 
 {{- with $kdb.imageName }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+imageName: {{ regexReplaceAll "^ghcr\\.io"  .  (printf "%s/ghrc" $v.otomi.linodeLkeImageRepository) }}
+  {{- else }}
 imageName: {{ . }}
+  {{- end }}
 {{- end }}
 
 postgresql:

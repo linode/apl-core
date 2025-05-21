@@ -10,7 +10,11 @@ storage:
 instances: {{ $hdb.replicas }}
 
 {{- with $hdb.imageName }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+imageName: {{ regexReplaceAll "^ghcr\\.io"  .  (printf "%s/ghrc" $v.otomi.linodeLkeImageRepository) }}
+  {{- else }}
 imageName: {{ . }}
+  {{- end }}
 {{- end }}
 
 postgresql:

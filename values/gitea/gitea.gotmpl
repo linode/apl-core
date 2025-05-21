@@ -220,3 +220,13 @@ global:
   imagePullSecrets:
     - otomi-pullsecret-global
 {{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+global:
+  imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}"
+  security:
+    allowInsecureImages: true
+image:
+  registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+  repository: "docker/gitea/gitea"
+{{- end }}

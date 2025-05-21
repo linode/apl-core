@@ -106,7 +106,7 @@ resources:
           spec:
             serviceAccountName: gitea-backup
             containers:
-              - image: bitnami/kubectl:1.31
+              - image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/{{- end }}bitnami/kubectl:1.31"
                 name: kubectl
                 command:
                   - /bin/sh

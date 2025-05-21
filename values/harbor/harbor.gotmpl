@@ -171,6 +171,9 @@ postgresql:
 portal:
   priorityClassName: otomi-critical
   image:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-portal"
+  {{- end }}
     tag: {{ $tag }}
   resources: {{- $h.resources.portal | toYaml | nindent 4 }}
 
@@ -178,6 +181,9 @@ redis:
   internal:
     priorityClassName: otomi-critical
     image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/redis-photon"
+    {{- end }}
       tag: {{ $tag }}
     resources: {{- $h.resources.redis | toYaml | nindent 6 }}
 
@@ -188,9 +194,15 @@ registry:
   registry:
     image:
       tag: {{ $tag }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/registry-photon"
+    {{- end }}
     resources: {{- $h.resources.registry | toYaml | nindent 6 }}
   controller:
     image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-registryctl"
+    {{- end }}
       tag: {{ $tag }}
     resources: {{- $h.resources.registryController | toYaml | nindent 6 }}
   relativeurls: false
@@ -202,6 +214,9 @@ registry:
 trivy:
   priorityClassName: otomi-critical
   image:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/trivy-adapter-photon"
+  {{- end }}
     tag: {{ $tag }}
   resources: 
     {{- $h.resources.trivy | toYaml  | nindent 4 }}
@@ -210,4 +225,25 @@ trivy:
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
+{{- end }}
+
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+nginx:
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/nginx-photon"
+{{- end }}
+
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+jobservice:
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-jobservice"
+{{- end }}
+
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+core:
+  image:  
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-core"
 {{- end }}
