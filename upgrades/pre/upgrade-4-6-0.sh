@@ -22,3 +22,5 @@ if [[ $(kubectl get applications.argoproj.io -n argocd keycloak-keycloak-operato
   kubectl delete --ignore-not-found crd keycloakrealmimports.k8s.keycloak.org
   kubectl delete --ignore-not-found crd keycloaks.k8s.keycloak.org
 fi
+
+kubectl annotate -n gitea pvc/data-gitea-0 helm.sh/resource-policy=keep
