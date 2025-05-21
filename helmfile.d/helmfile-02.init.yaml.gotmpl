@@ -49,7 +49,7 @@ releases:
       pkg: istio
       # Only on the first installation of the Istio-base chart,
       # this needs to be installed in stage=prep as a dependency of Istiod.
-      {{- if $a.istio.release.revision }}
+      {{- if $a.istio.defaultRevision }}
       app: core
       {{- else }}
       stage: prep
@@ -63,7 +63,7 @@ releases:
       # Only on the first installation of the Istiod chart,
       # this needs to be installed in stage=prep to
       # ensure the sidecar injection is ready.
-      {{- if $a.istio.release.revision }}
+      {{- if $a.istio.defaultRevision }}
       app: core
       {{- else }}
       stage: prep
