@@ -198,7 +198,7 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
         // Compare timestamps
         const specsAreDifferent = await filesAreDifferent(file, d)
         if (specsAreDifferent) {
-          d.info(`Encrypting ${file}, different from ${file}.dec`)
+          d.info(`Encrypting ${file}, difference found between encrypted and .dec file`)
           return true
         }
 
