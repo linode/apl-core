@@ -58,10 +58,11 @@ affinity: {}
 
 env: {}
 
-kms:
-  sops:
-    age:
-      privateKey: "AGE-SECRET-KEY-EXAMPLExxxxxxxxxxxxxxxxxxxxxxxx"
+kms: {}
+# example:
+#  sops:
+#    age:
+#      privateKey: "AGE-SECRET-KEY-EXAMPLExxxxxxxxxxxxxxxxxxxxxxxx"
 
-gitPassword: ""
+gitPassword: "testPassword"
 gitUsername: "otomi-admin"
