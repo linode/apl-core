@@ -19,10 +19,11 @@ proxy: edge
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
+{{- with .Values.otomi | get "globalPullSecret" nil }}
 image:
-  # Override default from 26.2.0, as it has an issue during upgrade (to be fixed in 26.2.1)
-  # see https://github.com/keycloak/keycloak/issues/38937
-  tag: 26.1.5-debian-12-r1
+  pullSecrets:
+    - name: otomi-pullsecret-global
+{{- end }}
 
 initContainers:
   # Akamai branding init container
