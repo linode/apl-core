@@ -73,6 +73,7 @@ releases:
           prometheusSpec: {}
         grafana:
           enabled: {{ $teamSettings | get "managedMonitoring.grafana" false }}
+          adminPassword: {{ $teamSettings.password | quote }}
           resources:
             {{- $teamApps.grafana.resources.grafana | toYaml | nindent 12 }}
           namespaceOverride: null # team-{{ $teamId }}
