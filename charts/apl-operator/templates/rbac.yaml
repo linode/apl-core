@@ -4,73 +4,17 @@ metadata:
   name: apl-operator
   namespace: {{ .Release.Namespace }}
 ---
-# Role and Binding for ArgoCD Namespace
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: apl-operator
-  namespace: argocd
-rules:
-  - apiGroups: ["argoproj.io"]
-    resources: ["applications"]
-    verbs: ["get", "list", "create", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: apl-operator
-  namespace: argocd
-subjects:
-  - kind: ServiceAccount
-    name: apl-operator
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: Role
-  name: apl-operator
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: apl-operator-cluster-access
-rules:
-  - apiGroups: ["*"]
-    resources: ["*"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: [""]
-    resources: ["namespaces", "serviceaccounts", "secrets", "configmaps", "services", "endpoints", "pods", "persistentvolumeclaims"]
-    verbs: ["create", "update", "patch", "delete"]
-  - apiGroups: ["rbac.authorization.k8s.io"]
-    resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
-    verbs: ["get", "list", "watch"]
-  - apiGroups: ["apps"]
-    resources: ["deployments", "replicasets", "daemonsets", "statefulsets"]
-    verbs: ["create", "update", "patch", "delete"]
-  - apiGroups: ["extensions", "networking.k8s.io"]
-    resources: ["ingresses", "networkpolicies"]
-    verbs: ["create", "update", "patch", "delete"]
-  - apiGroups: ["batch"]
-    resources: ["jobs", "cronjobs"]
-    verbs: ["create", "update", "patch", "delete"]
-  - apiGroups: ["autoscaling"]
-    resources: ["horizontalpodautoscalers"]
-    verbs: ["create", "update", "patch", "delete"]
-  - apiGroups: ["scheduling.k8s.io"]
-    resources: ["priorityclasses"]
-    verbs: ["get", "list", "patch"]
-  - apiGroups: [ "apiextensions.k8s.io" ]
-    resources: [ "customresourcedefinitions" ]
-    verbs: [ "get", "list", "watch", "create", "update", "patch", "delete" ]
----
+# Unfortunately, we need to use a cluster-admin role for apl-operator.
+# This is because when migrations are applied via Helm, the apl-operator needs to be able to create and update all resources in the cluster.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: apl-operator-cluster-access
+  name: apl-operator-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
 subjects:
   - kind: ServiceAccount
     name: apl-operator
     namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: ClusterRole
-  name: apl-operator-cluster-access
-  apiGroup: rbac.authorization.k8s.io
