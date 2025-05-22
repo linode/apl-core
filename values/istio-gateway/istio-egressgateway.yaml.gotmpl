@@ -1,0 +1,24 @@
+{{- $v := .Values }}
+{{- $i := $v.apps.istio }}
+
+name: {{ $i.release.egressName }}
+revision: {{ $i.release.revision | quote }}
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+labels:
+  istio: {{ $i.release.egressLabel }}
+  app: egressgateway
+
+service:
+  type: ClusterIP
+
+resources: {{- $i.resources.egressgateway | toYaml | nindent 2 }}
+autoscaling:
+  minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" }}
+  maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" }}
+
+priorityClassName: otomi-critical

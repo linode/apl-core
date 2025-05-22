@@ -14,6 +14,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
+import { existsSync } from 'fs'
 
 const cmdName = getFilename(__filename)
 
@@ -26,6 +27,7 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
+  const forceCommit = isCi && existsSync(`${env.ENV_DIR}/.rerun`)
   const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
   cd(env.ENV_DIR)
   try {
@@ -38,13 +40,18 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
       await $`git commit -m ${message} --no-verify`
     }
     await $`git add -A`
-    // The below 'git status' command will always return at least single new line
-    const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
-    if (filesChangedCount === 0) {
-      d.log('Nothing to commit')
-      return
+    if (forceCommit) {
+      d.log('Committing changes and triggering pipeline run')
+      await $`git commit -m "[apl-trigger]" --no-verify --allow-empty`
+    } else {
+      // The below 'git status' command will always return at least single new line
+      const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
+      if (filesChangedCount === 0) {
+        d.log('Nothing to commit')
+        return
+      }
+      await $`git commit -m ${message} --no-verify`
     }
-    await $`git commit -m ${message} --no-verify`
   } catch (e) {
     const { password } = getRepo(values)
     d.log('commitAndPush error ', e?.message?.replace(password, '****'))

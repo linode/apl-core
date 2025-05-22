@@ -8,6 +8,7 @@ import { hf } from 'src/common/hf'
 import { isResourcePresent, k8s, patchContainerResourcesOfSts } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
+import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
@@ -44,11 +45,13 @@ const getAppName = (release: HelmRelease): string => {
 }
 
 const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>, otomiVersion) => {
+  const name = getAppName(release)
+  const patch = appPatches[name] || genericPatch
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
     metadata: {
-      name: getAppName(release),
+      name,
       labels: {
         'otomi.io/app': 'managed',
       },
@@ -66,18 +69,6 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
         },
         syncOptions: ['ServerSideApply=true'],
       },
-      ignoreDifferences: [
-        {
-          group: 'admissionregistration.k8s.io',
-          kind: 'ValidatingWebhookConfiguration',
-          jqPathExpressions: ['.webhooks[]?.clientConfig.caBundle'],
-        },
-        {
-          group: 'admissionregistration.k8s.io',
-          kind: 'MutatingWebhookConfiguration',
-          jqPathExpressions: ['.webhooks[]?.clientConfig.caBundle'],
-        },
-      ],
       project: 'default',
       source: {
         path: release.chart.replace('../', ''),
@@ -92,6 +83,7 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
         server: 'https://kubernetes.default.svc',
         namespace: release.namespace,
       },
+      ...patch,
     },
   }
 }
@@ -156,9 +148,10 @@ async function patchArgocdResources(release: HelmRelease, values: Record<string,
   }
 }
 
-const writeApplicationManifest = async (release: HelmRelease, otomiVersion: string): Promise<void> => {
+const writeApplicationManifest = async (release: HelmRelease, index: number, otomiVersion: string): Promise<void> => {
   const appName = `${release.namespace}-${release.name}`
-  const applicationPath = `${appsDir}/${appName}.yaml`
+  const orderingNumber = index.toString().padStart(3, '0')
+  const applicationPath = `${appsDir}/${orderingNumber}-${appName}.yaml`
   const valuesPath = `${valuesDir}/${appName}.yaml`
   let values = {}
 
@@ -193,9 +186,9 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releases: [] = JSON.parse(res.stdout.toString())
   await Promise.allSettled(
-    releases.map(async (release: HelmRelease) => {
+    releases.map(async (release: HelmRelease, index) => {
       try {
-        if (release.installed) await writeApplicationManifest(release, otomiVersion)
+        if (release.installed) await writeApplicationManifest(release, index, otomiVersion)
         else {
           await removeApplication(release)
         }
