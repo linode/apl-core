@@ -136,7 +136,8 @@ configs:
     policy.csv: |
       # image updater
       p, role:image-updater, applications, get, */*, allow
-      p, role:image-updater, applications, update, */*, allow
+      p, role:image-updater, applications, update/*, */*, allow
+      p, role:image-updater, logs, get, */*, allow
       g, image-updater, role:image-updater
       # admin
       g, admin, role:admin
