@@ -5,7 +5,7 @@ import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
 import { cleanEnv, cliEnvSpec, env, isCli } from './envalid'
-import { filesAreDifferent, readdirRecurse, rootDir } from './utils'
+import { hasFileDifference, readdirRecurse, rootDir } from './utils'
 import { BasicArguments } from './yargs'
 
 export interface Arguments extends BasicArguments {
@@ -196,7 +196,7 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
         }
 
         // Compare files
-        const specsAreDifferent = await filesAreDifferent(file, d)
+        const specsAreDifferent = await hasFileDifference(file, `${file}.dec`)
         if (specsAreDifferent) {
           d.info(`Encrypting ${file}, difference found between encrypted and .dec file`)
           return true

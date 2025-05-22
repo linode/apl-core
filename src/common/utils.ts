@@ -9,7 +9,7 @@ import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
 import { dirname, join, resolve } from 'path'
 import { $, ProcessOutput } from 'zx'
-import { OtomiDebugger } from './debug'
+import { terminal } from './debug'
 import { env } from './envalid'
 
 const packagePath = process.cwd()
@@ -260,17 +260,18 @@ function hashContent(content: Buffer): string {
   return createHash('sha256').update(content).digest('hex')
 }
 
-export async function filesAreDifferent(file: string, debug: OtomiDebugger): Promise<boolean> {
+export async function hasFileDifference(filePathOne: string, filePathTwo: string): Promise<boolean> {
+  const d = terminal(`common:utils:hasFileDifference`)
   try {
-    const originalContent = await readFile(file)
-    const decryptedContent = await readFile(`${file}.dec`)
+    const fileOneContent = await readFile(filePathOne)
+    const fileTwoContent = await readFile(filePathTwo)
 
-    const originalHash = hashContent(originalContent)
-    const decryptedHash = hashContent(decryptedContent)
+    const fileOneHash = hashContent(fileOneContent)
+    const fileTwoHash = hashContent(fileTwoContent)
 
-    return originalHash !== decryptedHash
+    return fileOneHash !== fileTwoHash
   } catch (err) {
-    debug.error(`Error reading files: ${err}`)
+    d.error(`Error reading files: ${err}`)
     return true // If there's an error, assume files are different
   }
 }
