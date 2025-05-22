@@ -27,12 +27,8 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
   const argv = getParsedArgs()
-  let message: string
-  if (isCi && existsSync(`${env.ENV_DIR}/.rerun`)) {
-    message = '[apl-trigger]'
-  } else {
-    message = isCi ? 'updated values [ci skip]' : (argv.message as string) || 'otomi commit'
-  }
+  const forceCommit = isCi && existsSync(`${env.ENV_DIR}/.rerun`)
+  const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
   cd(env.ENV_DIR)
   try {
     try {
@@ -44,6 +40,11 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
       await $`git commit -m ${message} --no-verify`
     }
     await $`git add -A`
+    if (forceCommit) {
+      d.log('Committing changes and triggering pipeline run')
+      await $`git commit -m "[apl-trigger]" --no-verify --allow-empty`
+      return
+    }
     // The below 'git status' command will always return at least single new line
     const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
     if (filesChangedCount === 0) {
