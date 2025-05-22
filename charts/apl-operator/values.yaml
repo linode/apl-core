@@ -64,5 +64,5 @@ kms: {}
 #    age:
 #      privateKey: "AGE-SECRET-KEY-EXAMPLExxxxxxxxxxxxxxxxxxxxxxxx"
 
-gitPassword: "testPassword"
+gitPassword: ""
 gitUsername: "otomi-admin"
