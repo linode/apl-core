@@ -4,34 +4,6 @@ metadata:
   name: apl-operator
   namespace: {{ .Release.Namespace }}
 ---
-# Single Role per namespace where scoped access is needed
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: apl-operator
-  namespace: {{ .Release.Namespace }}
-rules:
-  - apiGroups: [""]
-    resources: ["configmaps", "secrets"]
-    verbs: ["get", "create", "update", "patch", "delete", "watch", "list"]
-  - apiGroups: [""]
-    resources: ["*"]
-    verbs: ["get", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: apl-operator
-  namespace: {{ .Release.Namespace }}
-subjects:
-  - kind: ServiceAccount
-    name: apl-operator
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: Role
-  name: apl-operator
-  apiGroup: rbac.authorization.k8s.io
----
 # Role and Binding for ArgoCD Namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -42,13 +14,6 @@ rules:
   - apiGroups: ["argoproj.io"]
     resources: ["applications"]
     verbs: ["get", "list", "create", "update", "patch", "delete"]
-  - apiGroups: ["apps"]
-    resources: ["statefulsets"]
-    resourceNames: ["argocd-application-controller"]
-    verbs: ["get", "list", "patch"]
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -64,69 +29,38 @@ roleRef:
   name: apl-operator
   apiGroup: rbac.authorization.k8s.io
 ---
-# Role and Binding for Ingress Namespace
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: apl-operator
-  namespace: ingress
-rules:
-  - apiGroups: [""]
-    resources: ["services", "secrets"]
-    verbs: ["get", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: apl-operator
-  namespace: ingress
-subjects:
-  - kind: ServiceAccount
-    name: apl-operator
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: Role
-  name: apl-operator
-  apiGroup: rbac.authorization.k8s.io
----
-# ClusterRole for CRD operations
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: apl-operator-crds
-rules:
-  - apiGroups: ["apiextensions.k8s.io"]
-    resources: ["customresourcedefinitions"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: apl-operator-crds
-subjects:
-  - kind: ServiceAccount
-    name: apl-operator
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: ClusterRole
-  name: apl-operator-crds
-  apiGroup: rbac.authorization.k8s.io
----
-# ClusterRole for general cluster-wide access
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: apl-operator-cluster-access
 rules:
-  - apiGroups: ["rbac.authorization.k8s.io"]
-    resources: ["clusterroles", "clusterrolebindings"]
-    verbs: ["get", "list"]
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
-    resources: ["namespaces", "serviceaccounts", "secrets"]
-    verbs: ["get", "list"]
+    resources: ["namespaces", "serviceaccounts", "secrets", "configmaps", "services", "endpoints", "pods"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "daemonsets", "statefulsets"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["extensions", "networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["create", "update", "patch", "delete"]
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["create", "update", "patch", "delete"]
   - apiGroups: ["scheduling.k8s.io"]
     resources: ["priorityclasses"]
     verbs: ["get", "list", "patch"]
+  - apiGroups: [ "apiextensions.k8s.io" ]
+    resources: [ "customresourcedefinitions" ]
+    verbs: [ "get", "list", "watch", "create", "update", "patch", "delete" ]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -139,51 +73,4 @@ subjects:
 roleRef:
   kind: ClusterRole
   name: apl-operator-cluster-access
-  apiGroup: rbac.authorization.k8s.io
----
-# ClusterRoles for patch permissions
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: apl-operator-patch-permissions
-rules:
-  - apiGroups: [""]
-    resources: ["namespaces", "serviceaccounts"]
-    verbs: ["get", "list", "watch", "patch", "create", "delete", "update"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: apl-operator-patch-permissions
-subjects:
-  - kind: ServiceAccount
-    name: apl-operator
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: ClusterRole
-  name: apl-operator-patch-permissions
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: apl-operator-otomi-configmap
-  namespace: otomi
-rules:
-  - apiGroups: [""]
-    resources: ["configmaps"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: apl-operator-otomi-configmap
-  namespace: otomi
-subjects:
-  - kind: ServiceAccount
-    name: apl-operator
-    namespace: {{ .Release.Namespace }}
-roleRef:
-  kind: Role
-  name: apl-operator-otomi-configmap
   apiGroup: rbac.authorization.k8s.io
