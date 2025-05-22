@@ -1,13 +1,39 @@
 {{- $v := .Values -}}
 {{- $kv := $v.apps.kyverno -}}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+test:
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+webhooksCleanup:
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+policyReportsCleanup:
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}
+
 cleanupJobs:
   admissionReports:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    {{- end }}
     resources:
       limits:
         cpu: 1
         memory: 1Gi
   clusterAdmissionReports:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    {{- end }}
     resources:
       limits:
         cpu: 1
@@ -21,6 +47,10 @@ admissionController:
   replicas: 3
   {{- end }}
   initContainer:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
+  {{- end }}
     resources:
       limits:
         cpu: 1
@@ -29,9 +59,17 @@ admissionController:
     additionalLabels:
       prometheus: systen
   container:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
+  {{- end }}
     resources: {{- $kv.resources.admissionController | toYaml | nindent 6 }}
 
 cleanupController:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghrc"
+  {{- end }}  
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
   {{- end }}
@@ -41,6 +79,10 @@ cleanupController:
   resources: {{- $kv.resources.cleanupController | toYaml | nindent 4 }}
 
 backgroundController:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghrc"
+  {{- end }}
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
   {{- end }}
@@ -54,6 +96,10 @@ backgroundController:
       prometheus: systen
 
 reportsController:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghrc"
+  {{- end }}
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
   {{- end }}

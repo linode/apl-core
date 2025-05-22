@@ -11,6 +11,10 @@ imagePullSecrets:
 {{- end }}
 
 global:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  {{- end }}
   priorityClassName: otomi-critical
 serviceMonitor:
   enabled: true
@@ -122,7 +126,11 @@ queryFrontend:
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.queryFrontend.targetMemoryUtilizationPercentage }}
   extraContainers:
   - name: reverse-proxy
+  {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/k8spin/loki-multi-tenant-proxy:v1.0.0"
+  {{- else }}
     image: k8spin/loki-multi-tenant-proxy:v1.0.0
+  {{- end }}
     args:
       - "run"
       - "--port=3101"
