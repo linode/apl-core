@@ -3,7 +3,6 @@ import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration }
 import stubs from 'src/test-stubs'
 import { env } from '../common/envalid'
 import { getFileMap } from '../common/repo'
-import { existsSync, unlinkSync } from 'fs'
 
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'my-fixed-uuid'),
@@ -116,7 +115,6 @@ describe('Values migrations', () => {
         { 'teamConfig.{team}.managedMonitoring.prometheus': 'true' },
         { 'teamConfig.{team}.managedMonitoring.alertmanager': 'true' },
       ],
-      requireRerun: true,
     }
     deps = {
       cd: jest.fn(),
@@ -152,8 +150,6 @@ describe('Values migrations', () => {
       },
       true,
     )
-    expect(existsSync('.rerun')).toBe(true)
-    unlinkSync('.rerun')
   })
 })
 

@@ -47,7 +47,6 @@ interface Change {
   bulkAdditions?: Array<{
     [mutation: string]: string
   }>
-  requireRerun?: boolean
   networkPoliciesMigration?: boolean
   teamSettingsMigration?: boolean
   teamResourceQuotaMigration?: boolean
@@ -495,7 +494,6 @@ export const applyChanges = async (
       })
     }
 
-    if (c.requireRerun) await writeFile('.rerun', '')
     if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
     if (c.teamSettingsMigration) teamSettingsMigration(values)
     if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
