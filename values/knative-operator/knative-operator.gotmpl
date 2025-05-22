@@ -6,3 +6,22 @@ webhook:
 
 operator:
   resources: {{- $k.resources.operator | toYaml | nindent 4 }}
+
+
+webhook:
+  image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    repo: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/operator/cmd/webhook"
+    {{- else }}
+    repo: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
+    {{- end }}
+    tag: v1.15.6
+
+operator:
+  image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    repo: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/operator/cmd/operator"
+    {{- else }}
+    repo: gcr.io/knative-releases/knative.dev/operator/cmd/operator
+    {{- end }}
+    tag: v1.15.6

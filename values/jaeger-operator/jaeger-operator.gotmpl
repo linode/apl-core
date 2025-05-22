@@ -33,3 +33,8 @@ securityContext:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: {{- $v.otomi.linodeLkeImageRepository }}/docker/jaegertracing/jaeger-operator
+{{- end }}

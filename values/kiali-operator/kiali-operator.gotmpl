@@ -2,15 +2,17 @@
 {{- $k := $v.apps.kiali }}
 {{- $kk := $v.apps.keycloak }}
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
 image:
+{{- with .Values.otomi | get "globalPullSecret" nil }}
   pullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
 
-
-image:
+{{- if $v.otomi.linodeLkeImageRepository }}
+  repo: "{{- $v.otomi.linodeLkeImageRepository }}/quay/kiali/kiali-operator"
+{{- else }}
   repo: quay.io/kiali/kiali-operator
+{{- end }}
   tag: v1.86.1
 
 cr:

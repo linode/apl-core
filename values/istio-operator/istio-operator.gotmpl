@@ -1,6 +1,12 @@
 {{- $v := .Values }}
 {{- $i := $v.apps | get "istio" }}
-hub: istio
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+hub: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio"
+{{- else}}
+hub: "isto"
+{{- end }}
+
 tag: 1.22.5
 
 operatorNamespace: istio-operator
