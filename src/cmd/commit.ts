@@ -43,15 +43,15 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
     if (forceCommit) {
       d.log('Committing changes and triggering pipeline run')
       await $`git commit -m "[apl-trigger]" --no-verify --allow-empty`
-      return
+    } else {
+      // The below 'git status' command will always return at least single new line
+      const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
+      if (filesChangedCount === 0) {
+        d.log('Nothing to commit')
+        return
+      }
+      await $`git commit -m ${message} --no-verify`
     }
-    // The below 'git status' command will always return at least single new line
-    const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
-    if (filesChangedCount === 0) {
-      d.log('Nothing to commit')
-      return
-    }
-    await $`git commit -m ${message} --no-verify`
   } catch (e) {
     const { password } = getRepo(values)
     d.log('commitAndPush error ', e?.message?.replace(password, '****'))
