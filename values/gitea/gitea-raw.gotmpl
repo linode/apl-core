@@ -112,7 +112,7 @@ resources:
                   - /bin/sh
                   - -ec
                   - >-
-                    kubectl exec gitea-0 -- /bin/sh -ec "
+                    kubectl exec deployments/gitea -- /bin/sh -ec "
                     echo 'Verifying Rclone...' &&
                     ( test ! -f '/backup/.bin/rclone' || echo '{{ $rcloneBinSha512 }}  /backup/.bin/rclone' | sha512sum -c - || rm '/backup/.bin/rclone' ) &&
                     if [ ! -f '/backup/.bin/rclone' ]; then
