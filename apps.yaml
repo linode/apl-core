@@ -1,7 +1,7 @@
 appsInfo:
   alertmanager:
     title: Alertmanager
-    appVersion: 0.65.1
+    appVersion: 0.27.0
     repo: https://github.com/prometheus/alertmanager
     maintainers: Prometheus Community
     relatedLinks:
@@ -25,7 +25,7 @@ appsInfo:
     integration: Argo CD is configured by APL to use the SSO provided by keycloak, and maps APL groups to Argo CD roles. The otomi-admin role is made super admin within Argo CD. The team-admin role has access to Argo CD and is admin of all team projects. Members of team roles are only allowed to administer their own projects. All Teams will automatically get access to a Git repo, and Argo CD is configured to listen to this repo. All a team has to do is to fill their repo with intended state, commit, and automation takes care of the rest.
   cert-manager:
     title: Certificate Manager
-    appVersion: 1.11.4
+    appVersion: 1.17.1
     repo: https://github.com/cert-manager/cert-manager
     maintainers: The Linux Foundation
     relatedLinks:
@@ -36,7 +36,7 @@ appsInfo:
     integration: Cert-manager is used by APL to automatically create and rotate TLS certificates for service endpoints. You may bring your own CA, or let APL create one for you (default). It is recommended to use Let's Encrypt for production certificates. Setting cert-manager to use Let's Encrypt requires DNS availability of the requesting domains, and forces APL to install external-dns. Because a lot of DNS settings are used by other APL contexts, most DNS configuration is found under settings/dns.
   cnpg:
     title: CloudNative PostgreSQL Operator
-    appVersion: 1.20.0
+    appVersion: 1.25.0
     repo: https://github.com/cloudnative-pg/cloudnative-pg
     maintainers: EDB
     relatedLinks:
@@ -87,7 +87,7 @@ appsInfo:
     integration: ExternalDNS is used by APL to make public service domains accessible by registering them with APL's load balancer CNAME or IP address. When ExternalDNS is not enabled (default), then APL will rely on nip.io to create host names for all services.
   falco:
     title: Falco
-    appVersion: 0.33.1
+    appVersion: 0.36.2
     repo: https://github.com/falcosecurity/falco
     maintainers: The Falco Authors
     relatedLinks:
@@ -99,7 +99,7 @@ appsInfo:
     integration: Falco can be enabled in APL for runtime intrusion detection. Macros have been configured to exclude all known platform violations so platform admins are only notified when user workloads are not compliant to the security rules. Alerts are automatically send using Alertmanager and the Falco Dashboard is added to Grafana.
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.15.8
+    appVersion: 1.23.7
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
@@ -110,7 +110,7 @@ appsInfo:
     integration: APL uses Gitea as its default repository for APL configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in APL. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, APL will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
-    appVersion: 9.5.2
+    appVersion: 11.2.2
     repo: https://github.com/grafana/grafana
     maintainers: Grafana Labs
     relatedLinks:
@@ -144,7 +144,7 @@ appsInfo:
     integration: Httpbin is by default available for developers to use.
   ingress-nginx:
     title: Ingress-NGINX
-    appVersion: 1.7.1
+    appVersion: 1.11.6
     repo: https://github.com/kubernetes/ingress-nginx
     maintainers: NGINX
     relatedLinks: ['https://apl-docs.net/docs/apps/ingress-nginx', 'https://docs.nginx.com/nginx-ingress-controller/']
@@ -153,7 +153,7 @@ appsInfo:
     integration: APL integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio Operator
-    appVersion: 1.20.5
+    appVersion: 1.22.5
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -176,7 +176,7 @@ appsInfo:
     integration: Jaeger can be activated to gain tracing insights on its network traffic. It runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
   keycloak:
     title: Keycloak Operator
-    appVersion: 22.0.4
+    appVersion: 26.1.5
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
@@ -187,7 +187,7 @@ appsInfo:
     integration: The SSO login page for APL is served by Keycloak. Keycloak is used as an identity broker or provider for all APL integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of APL and is always enabled.
   kiali:
     title: Kiali Operator
-    appVersion: 1.76.0
+    appVersion: 1.86.1
     repo: https://github.com/kiali/kiali
     maintainers: Kiali
     relatedLinks:
@@ -210,7 +210,7 @@ appsInfo:
     integration: Knative serving can be activated to deliver Container-as-a-Service (CaaS) functionality with a scale-to-zero option. It can be compared to Functions-as-a-service (FaaS) but is container oriented, and takes only one manifest to configure an auto scaling service based on a container image of choice. APL offers an on-the-fly Knative service deployment, making it very easy to deploy containerized services without the hassle of providing all the supporting resources involved with Helm charts. Istio Virtual Services are used to route traffic coming in for a public domain to its backing Knative Service, allowing it to set a custom domain.
   kyverno:
     title: Kyverno
-    appVersion: 1.11.3
+    appVersion: 1.11.4
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
@@ -231,7 +231,7 @@ appsInfo:
     integration: Kured can be activated to perform safe automatic node reboots. Only activate Kured if cluster autoscaling is enabled and make sure the cloud resource quota is sufficent.
   tekton:
     title: Tekton Pipelines
-    appVersion: 0.42.0
+    appVersion: 0.53.0
     repo: https://github.com/tektoncd/pipeline
     maintainers: Tekton
     relatedLinks:
@@ -246,7 +246,7 @@ appsInfo:
     integration: APL uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
   loki:
     title: Loki
-    appVersion: 2.9.8
+    appVersion: 2.9.10
     repo: https://github.com/grafana/loki
     maintainers: Grafana Labs
     relatedLinks:
@@ -270,7 +270,7 @@ appsInfo:
     integration: APL installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in APL capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
-    appVersion: 0.65.1
+    appVersion: 2.54.1
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
@@ -294,7 +294,7 @@ appsInfo:
     isBeta: true
   sealed-secrets:
     title: Sealed Secrets
-    appVersion: 0.24.5
+    appVersion: 0.28.0
     repo: https://github.com/bitnami-labs/sealed-secrets
     maintainers: Bitnami Labs
     relatedLinks:
@@ -316,7 +316,7 @@ appsInfo:
     integration: APL installs and configures Tempo based on best-practices defaults. By default storage is configured to use the tempo bucket of the local Minio instance. For each team a Grafana agent is installed and configured to enable writes to the Tempo cluster.
   thanos:
     title: Thanos
-    appVersion: 0.35.1
+    appVersion: 0.36.1
     repo: https://github.com/thanos-io/thanos
     maintainers: Thanos
     relatedLinks:
@@ -328,7 +328,7 @@ appsInfo:
     integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
   trivy:
     title: Trivy Operator
-    appVersion: 0.16.4
+    appVersion: 0.57.1
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:

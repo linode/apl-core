@@ -1,0 +1,40 @@
+bases:
+  - snippets/defaults.yaml
+---
+bases:
+  - snippets/env.gotmpl
+---
+bases:
+  - snippets/derived.gotmpl
+---
+{{ readFile "snippets/templates.gotmpl" }}
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+{{- $dns := $v | get "dns" dict }}
+{{- $p := $dns | get "provider" dict }}
+
+releases:
+  - name: cert-manager-webhook-civo
+    installed: {{ hasKey $p "civo" }}
+    namespace: cert-manager
+    labels:
+      pkg: cert-manager
+    <<: *default
+  - name: cert-manager-webhook-linode
+    installed: {{ hasKey $p "linode" }}
+    namespace: cert-manager
+    labels:
+      pkg: cert-manager
+    <<: *default
+  - name: cert-manager-artifacts
+    installed: true
+    namespace: cert-manager
+    labels:
+      pkg: cert-manager
+    <<: *raw
+  - name: minio-artifacts
+    installed: {{ $a.minio.enabled }}
+    namespace: minio
+    labels:
+      pkg: minio
+    <<: *raw

@@ -8,7 +8,7 @@
 mode: standalone
 auth:
   rootUser: otomi-admin
-  rootPassword: {{ $v.otomi.adminPassword }}
+  rootPassword: {{ $v.otomi.adminPassword | quote }}
 
 metrics:
   serviceMonitor:
