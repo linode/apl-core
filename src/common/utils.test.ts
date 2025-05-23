@@ -52,3 +52,43 @@ describe('ensureTeamGitopsDirectories', () => {
     ])
   })
 })
+
+import * as fsUtils from 'fs/promises'
+import { readFile } from 'fs/promises'
+import * as debugTools from './debug'
+jest.mock('fs/promises', () => ({
+  readFile: jest.fn(),
+}))
+describe('hasFileDifference', () => {
+  jest.mock('crypto')
+  jest.isMockFunction(fsUtils.readFile)
+  const debug = jest.spyOn(debugTools, 'terminal')
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns false when file hashes are equal', async () => {
+    ;(readFile as jest.Mock).mockResolvedValue('content-A')
+
+    const result = await utils.hasFileDifference('fileA.txt', 'fileB.txt')
+
+    expect(result).toBe(false)
+  })
+
+  it('returns true when file hashes differ', async () => {
+    ;(readFile as jest.Mock).mockResolvedValueOnce('content-A')
+    ;(readFile as jest.Mock).mockResolvedValueOnce('content-B')
+
+    const result = await utils.hasFileDifference('fileA.txt', 'fileB.txt')
+
+    expect(result).toBe(true)
+  })
+
+  it('returns true and logs an error if readFile throws', async () => {
+    ;(readFile as jest.Mock).mockRejectedValueOnce(new Error('Failed to read file'))
+    const result = await utils.hasFileDifference('fileA.txt', 'fileB.txt')
+
+    expect(result).toBe(true)
+    expect(debug).toHaveBeenCalled()
+  })
+})

@@ -1,5 +1,6 @@
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
+import { createHash } from 'crypto'
 import { existsSync, pathExists, readFileSync } from 'fs-extra'
 import { readFile, readdir, writeFile } from 'fs/promises'
 import { glob } from 'glob'
@@ -8,6 +9,7 @@ import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
 import { dirname, join, resolve } from 'path'
 import { $, ProcessOutput } from 'zx'
+import { terminal } from './debug'
 import { env } from './envalid'
 
 const packagePath = process.cwd()
@@ -252,4 +254,24 @@ export async function ensureTeamGitopsDirectories(envDir: string, deps = { write
     }),
   )
   return keepFilePaths
+}
+
+function hashContent(content: Buffer): string {
+  return createHash('sha256').update(content).digest('hex')
+}
+
+export async function hasFileDifference(filePathOne: string, filePathTwo: string): Promise<boolean> {
+  const d = terminal(`common:utils:hasFileDifference`)
+  try {
+    const fileOneContent = await readFile(filePathOne)
+    const fileTwoContent = await readFile(filePathTwo)
+
+    const fileOneHash = hashContent(fileOneContent)
+    const fileTwoHash = hashContent(fileTwoContent)
+
+    return fileOneHash !== fileTwoHash
+  } catch (err) {
+    d.error(`Error reading files: ${err}`)
+    return true // If there's an error, assume files are different
+  }
 }
