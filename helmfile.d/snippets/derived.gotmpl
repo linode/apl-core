@@ -27,7 +27,7 @@
 {{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
 {{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
-{{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak.keycloak/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 {{- $tlsSecretName := "otomi-cert-manager-wildcard-cert" }}
 {{- if eq $cm.issuer "externally-managed-tls-secret" }}
@@ -44,6 +44,7 @@ environments:
   default:
     values:
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
+          buildStorageClassName: {{ if eq $v.cluster.provider "linode" }}"linode-block-storage"{{ else }}""{{ end }} 
           caCert: |
             {{- if eq $issuer "letsencrypt" }}
             -----BEGIN CERTIFICATE-----
@@ -182,16 +183,16 @@ environments:
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
           harbor:
-            adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword }}
+            adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword | quote }}
             registry:
               credentials:
-                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
+                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword | quote }}
           gitea:
             enabled: true
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
-            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword | quote }}
           ingress-nginx:
             enabled: true
           istio:

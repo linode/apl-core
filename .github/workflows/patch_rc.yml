@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -48,15 +48,14 @@ jobs:
       - name: Release new RC version
         if: ${{ env.RC_RELEASE == 'true' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
           BOT_EMAIL: ${{ vars.BOT_EMAIL }}
           BOT_USERNAME: ${{ vars.BOT_USERNAME }}
         run: |
           echo "Detected "feat"/"fix"/"chore: trigger" commits. Running standard-version..."
-          npm run release -- --prerelease rc --skip.changelog 
-
           git config --global user.email $BOT_EMAIL
           git config --global user.name $BOT_USERNAME
+          npm run release -- --prerelease rc --skip.changelog 
 
           git push --follow-tags
           TAG="v$(jq '.version' package.json -r)"
@@ -80,4 +79,4 @@ jobs:
           skip_existing: true
           mark_as_latest: false
         env:
-          CR_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          CR_TOKEN: '${{ secrets.BOT_TOKEN }}'

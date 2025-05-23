@@ -9,6 +9,8 @@ metadata:
   name: docker-build-{{ .name }}
   annotations:
     sidecar.istio.io/inject: "false"
+    # ArgoCD sync wave annotation to ensure it's applied first
+    argocd.argoproj.io/sync-wave: "-2" 
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   workspaces:
@@ -85,6 +87,8 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerTemplate
 metadata:
   name: trigger-template-{{ .name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   resourcetemplates:
@@ -112,6 +116,9 @@ spec:
             metadata:
               creationTimestamp: null
             spec:
+              {{- if $v.buildStorageClassName }}  
+              storageClassName: {{ $v.buildStorageClassName }}
+              {{- end }}
               accessModes:
               - ReadWriteOnce
               resources:
@@ -134,6 +141,7 @@ spec:
             secretName: harbor-pushsecret-builds
 ---
 {{- else }}
+# Create PipelineRun with a higher sync wave to ensure it's created after the Pipeline
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
@@ -141,6 +149,8 @@ metadata:
   annotations:
     sidecar.istio.io/inject: "false"
     argocd.argoproj.io/compare-options: IgnoreExtraneous
+    # ArgoCD sync wave annotation to ensure it's applied after the pipeline
+    argocd.argoproj.io/sync-wave: "5"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   pipelineRef:
@@ -156,6 +166,9 @@ spec:
       metadata:
         creationTimestamp: null
       spec:
+        {{- if $v.buildStorageClassName }}  
+        storageClassName: {{ $v.buildStorageClassName }}
+        {{- end }}
         accessModes:
         - ReadWriteOnce
         resources:
@@ -183,6 +196,8 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
 metadata:
   name: gitea-triggerbinding-{{ .name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   params:
@@ -195,6 +210,8 @@ apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener
 metadata:
   name: gitea-webhook-{{ .name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1" 
   labels:
     tekton.dev/pipeline: docker-build-{{ .name }}
     {{- include "team-ns.chart-labels" $ | nindent 4 }}
