@@ -489,6 +489,10 @@ export async function addAplOperator(): Promise<void> {
 }
 
 async function createPostMigrationJob(name: string, script: string): Promise<void> {
+  const parsedArgs = getParsedArgs()
+  if (parsedArgs?.dryRun || parsedArgs?.local) {
+    return
+  }
   await k8s.batch().createNamespacedJob('maintenance', {
     apiVersion: 'batch/v1',
     kind: 'Job',
