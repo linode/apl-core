@@ -171,10 +171,12 @@ export const validateTemplates = async (): Promise<void> => {
   d.info(`${chalk.redBright('TOTAL ERR')}: %s`, `${errors} files`)
 
   if (kubeconformOutput.exitCode !== 0) {
-    const failedResources = parsedOutput.resources.filter((res) => res.status === 'statusInvalid')
+    const failedResources = parsedOutput.resources.filter((res) =>
+      ['statusInvalid', 'statusError'].includes(res.status),
+    )
     d.error('Kubeconform failed resources:')
     for (const resource of failedResources) {
-      d.error(resource.msg)
+      d.error(`${resource.name}: ${resource.msg}`)
     }
     throw new Error(`Template validation FAILED: ${kubeconformOutput.exitCode}`)
   }
