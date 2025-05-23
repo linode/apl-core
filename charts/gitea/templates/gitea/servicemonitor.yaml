@@ -1,8 +1,9 @@
-{{- if .Values.gitea.metrics.serviceMonitor.enabled -}}
+{{- if and .Values.gitea.metrics.enabled .Values.gitea.metrics.serviceMonitor.enabled -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "gitea.fullname" . }}
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
   labels:
     {{- include "gitea.labels" . | nindent 4 }}
     {{- if .Values.gitea.metrics.serviceMonitor.additionalLabels }}
@@ -14,4 +15,29 @@ spec:
       {{- include "gitea.selectorLabels" . | nindent 6 }}
   endpoints:
   - port: http
+    {{- if .Values.gitea.metrics.serviceMonitor.interval }}
+    interval: {{ .Values.gitea.metrics.serviceMonitor.interval }}
+    {{- end }}
+    {{- with .Values.gitea.metrics.serviceMonitor.relabelings }}
+    relabelings:
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.gitea.metrics.serviceMonitor.scheme }}
+    scheme: {{ .Values.gitea.metrics.serviceMonitor.scheme }}
+    {{- end }}
+    {{- if .Values.gitea.metrics.serviceMonitor.scrapeTimeout }}
+    scrapeTimeout: {{ .Values.gitea.metrics.serviceMonitor.scrapeTimeout }}
+    {{- end }}
+    {{- with .Values.gitea.metrics.serviceMonitor.tlsConfig }}
+    tlsConfig:
+      {{- . | toYaml | nindent 6 }}
+    {{- end }}
+    {{- if .Values.gitea.metrics.token }}
+    authorization:
+      type: Bearer
+      credentials:
+        name: {{ include "gitea.metrics-secret-name" . }}
+        key: token
+        optional: false
+    {{- end }}
 {{- end -}}

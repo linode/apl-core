@@ -21,11 +21,6 @@ containerSecurityContext:
       - ALL
   allowPrivilegeEscalation: false
 
-serviceMonitor:
-  enabled: true
-  labels:
-    prometheus: system
-
 podAnnotations:
   sidecar.istio.io/inject: "false"
 
