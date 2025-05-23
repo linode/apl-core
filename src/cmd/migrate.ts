@@ -26,6 +26,10 @@ interface Arguments extends BasicArguments {
   dryRun?: boolean
 }
 
+interface CustomMigrationFunction {
+  (values: Record<string, any>): Promise<void>
+}
+
 interface Change {
   version: number
   clones?: Array<{
@@ -49,12 +53,7 @@ interface Change {
   bulkAdditions?: Array<{
     [mutation: string]: string
   }>
-  networkPoliciesMigration?: boolean
-  teamSettingsMigration?: boolean
-  teamResourceQuotaMigration?: boolean
-  buildImageNameMigration?: boolean
-  policiesMigration?: boolean
-  addAplOperator?: boolean
+  customFunctions?: string[]
 }
 
 export type Changes = Array<Change>
@@ -304,7 +303,7 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
-const teamSettingsMigration = (values: Record<string, any>): void => {
+const teamSettingsMigration = async (values: Record<string, any>): Promise<void> => {
   const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
 
   teams.map((teamName) => {
@@ -373,7 +372,10 @@ export const getBuildName = (name: string, tag: string): string => {
     .replace(/^-|-$/g, '') // Remove leading or trailing hyphens
 }
 
-export async function policiesMigration(deps = { loadYaml, saveResourceGroupToFiles }) {
+export async function policiesMigration(
+  _values: Record<string, any>,
+  deps = { loadYaml, saveResourceGroupToFiles },
+): Promise<void> {
   const filePaths = globSync(`${env.ENV_DIR}/env/teams/*/policies.yaml`, {
     nodir: true, // Exclude directories
     dot: false,
@@ -420,7 +422,7 @@ const buildImageNameMigration = async (values: Record<string, any>): Promise<voi
   )
 }
 
-const teamResourceQuotaMigration = (values: Record<string, any>) => {
+const teamResourceQuotaMigration = async (values: Record<string, any>): Promise<void> => {
   Object.entries(values?.teamConfig as Record<string, any>).forEach(([teamName, teamValues]) => {
     const resourceQuota = teamValues?.settings?.resourceQuota
     if (!isUndefined(resourceQuota) && !Array.isArray(resourceQuota)) {
@@ -474,6 +476,15 @@ export async function addAplOperator(): Promise<void> {
   )
 
   d.info('Apl-operator installed')
+}
+
+const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
+  networkPoliciesMigration,
+  teamSettingsMigration,
+  teamResourceQuotaMigration,
+  buildImageNameMigration,
+  policiesMigration,
+  addAplOperator,
 }
 
 /**
@@ -531,12 +542,13 @@ export const applyChanges = async (
       })
     }
 
-    if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
-    if (c.teamSettingsMigration) teamSettingsMigration(values)
-    if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
-    if (c.buildImageNameMigration) await buildImageNameMigration(values)
-    if (c.policiesMigration) await policiesMigration()
-    if (c.addAplOperator) await addAplOperator()
+    for (const customFunctionName of c.customFunctions || []) {
+      const customFunction = customMigrationFunctions[customFunctionName]
+      if (!customFunction) {
+        throw new Error(`Error in migration: Custom migration function ${customFunctionName} not found`)
+      }
+      await customFunction(values)
+    }
 
     Object.assign(values.versions, { specVersion: c.version })
   }
