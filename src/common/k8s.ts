@@ -237,22 +237,21 @@ type WaitTillAvailableOptions = Options & {
   password?: string
 }
 
-export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
-  const retryOptions: Options = {
-    retries: 20,
-    maxTimeout: 30000,
-  }
+export const waitTillGitRepoAvailable = async (repoUrl: string): Promise<void> => {
   const d = terminal('common:k8s:waitTillGitRepoAvailable')
-  await retry(async (bail) => {
-    try {
-      cd(env.ENV_DIR)
-      // the ls-remote exist with zero even if repo is empty
-      await $`git ls-remote ${repoUrl}`
-    } catch (e) {
-      d.warn(`The values repository is not yet reachable. Retrying in ${retryOptions.maxTimeout} ms`)
-      throw e
-    }
-  }, retryOptions)
+  await retry(
+    async () => {
+      try {
+        cd(env.ENV_DIR)
+        // the ls-remote exists with zero even if repo is empty
+        await $`git ls-remote ${repoUrl}`
+      } catch (e) {
+        d.warn(`The values repository is not yet reachable. Retrying in ${env.MIN_TIMEOUT} ms`)
+        throw e
+      }
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
 }
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
