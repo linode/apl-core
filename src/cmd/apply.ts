@@ -73,7 +73,7 @@ const applyAll = async () => {
       fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
       labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
-      args: [...hfArgs, '--take-ownership'],
+      args: hfArgs,
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )

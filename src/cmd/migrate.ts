@@ -552,7 +552,7 @@ export async function installIstioHelmCharts(): Promise<void> {
   const d = terminal('installIstioHelmCharts')
   if (await appExists('istio-operator-istio-operator')) {
     d.info('Installing Istio Helm charts')
-    const args = [...HF_DEFAULT_SYNC_ARGS, '--set', 'apps.istio.legacyRevision=operator']
+    const args = [...HF_DEFAULT_SYNC_ARGS, '--take-ownership', '--set', 'apps.istio.legacyRevision=operator']
     const postMigrationScript =
       'echo "Waiting for upgraded Istio ingress gateway to become ready." &&\n' +
       'kubectl wait deployment -n istio-system istio-ingressgateway-1-26-0-public --for condition=available --timeout=3600s &&\n' +
