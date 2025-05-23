@@ -67,7 +67,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: {{ include "cloudnative-pg.serviceAccountName" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "cloudnative-pg.namespace" . }}
 {{/*
 If we're doing a single-namespace installation
 we create a Role with the common rules for the operator,
@@ -108,7 +108,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: {{ include "cloudnative-pg.serviceAccountName" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "cloudnative-pg.namespace" . }}
 {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
