@@ -54,7 +54,7 @@ const hfCore = (args: HFParams, envDir = env.ENV_DIR): ProcessPromise => {
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
   process.env.HELM_DIFF_COLOR = 'true'
   process.env.HELM_DIFF_USE_UPGRADE_DRY_RUN = 'true'
-  if (parsedArgs?.dryRun && paramsCopy.args.includes('sync')) {
+  if ((parsedArgs?.dryRun || parsedArgs?.local) && paramsCopy.args.includes('sync')) {
     return $`echo ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`
   } else {
     return $`ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`
