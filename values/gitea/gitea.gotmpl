@@ -72,7 +72,7 @@ gitea:
       HELO_HOSTNAME: {{ .hello }}
       FROM: {{ .from }}
       USER: {{ .auth_username }}
-      PASSWD: {{ .auth_password }}
+      PASSWD: {{ .auth_password | quote }}
       MAILER_TYPE: smtp
       IS_TLS_ENABLED: true
       SUBJECT_PREFIX: 'Otomi[Gitea]: '
@@ -179,6 +179,9 @@ deployment:
 persistence:
   size: 1Gi
   claimName: data-gitea-0
+  labels:
+    app.kubernetes.io/name: gitea
+    app.kubernetes.io/instance: gitea
 
 postgresql:
   enabled: false

@@ -28,7 +28,7 @@ The Pod status 'Error' means that connection did not succeded thus network polic
 Delete connectivity test Pods
 
 ```
-helmfile -f tests/network-policies/helmfile-connectivity.yaml destroy --args=--wait
+helmfile -f tests/network-policies/helmfile-connectivity.yaml destroy --deleteWait
 ```
 
 # Tests

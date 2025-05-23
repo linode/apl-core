@@ -5,7 +5,7 @@ import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
 import { cleanEnv, cliEnvSpec, env, isCli } from './envalid'
-import { readdirRecurse, rootDir } from './utils'
+import { hasFileDifference, readdirRecurse, rootDir } from './utils'
 import { BasicArguments } from './yargs'
 
 export interface Arguments extends BasicArguments {
@@ -115,9 +115,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
   d.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
-    // eslint-disable-next-line no-restricted-syntax
     for (const fileChunk of filesChunked) {
-      // eslint-disable-next-line no-await-in-loop
       await processFileChunk(crypt, fileChunk)
     }
     return
@@ -197,12 +195,10 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
           return true
         }
 
-        // Compare timestamps
-        const encTS = await stat(file)
-        const decTS = await stat(`${file}.dec`)
-        const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
-        if (timeDiff > 1) {
-          d.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
+        // Compare files
+        const specsAreDifferent = await hasFileDifference(file, `${file}.dec`)
+        if (specsAreDifferent) {
+          d.info(`Encrypting ${file}, difference found between encrypted and .dec file`)
           return true
         }
 
