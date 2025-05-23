@@ -13,8 +13,8 @@ global:
   smtp_hello: {{ .root | get "smtp.hello" .root.cluster.domainSuffix }}
   smtp_from: {{ .root | get "smtp.from" (print "alerts@" .root.cluster.domainSuffix) }}
   smtp_auth_username: {{ .root | get "smtp.auth_username" nil }}
-  smtp_auth_password: {{ .root | get "smtp.auth_password" nil }}
-  smtp_auth_secret: {{ .root | get "smtp.auth_secret" nil }}
+  smtp_auth_password: {{ .root | get "smtp.auth_password" nil | quote }}
+  smtp_auth_secret: {{ .root | get "smtp.auth_secret" nil | quote }}
   smtp_auth_identity: {{ .root | get "smtp.auth_identity" nil }}
 {{- end }}
 route:
