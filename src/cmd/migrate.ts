@@ -444,9 +444,9 @@ const bulkAddition = (path: string, values: any, filePath: string) => {
   setAtPath(path, values, val)
 }
 
-async function aplOperatorNsExists(): Promise<boolean> {
+const checkExists = async (func: () => Promise<any>): Promise<boolean> => {
   try {
-    await k8s.core().readNamespace('apl-operator')
+    await func()
     return true
   } catch (error) {
     if (error.response && error.response.statusCode === 404) {
@@ -457,9 +457,19 @@ async function aplOperatorNsExists(): Promise<boolean> {
   }
 }
 
+async function namespaceExists(name: string): Promise<boolean> {
+  return await checkExists(async () => await k8s.core().readNamespace(name))
+}
+
+async function appExists(name: string): Promise<boolean> {
+  return await checkExists(
+    async () => await k8s.custom().getNamespacedCustomObject('argoproj.io', 'v1alpha1', 'argocd', 'applications', name),
+  )
+}
+
 export async function addAplOperator(): Promise<void> {
   const d = terminal('addAplOperator')
-  if (await aplOperatorNsExists()) {
+  if (await namespaceExists('apl-operator')) {
     d.info('Apl-operator namespace already exists, skipping installation')
     return
   }
@@ -478,6 +488,117 @@ export async function addAplOperator(): Promise<void> {
   d.info('Apl-operator installed')
 }
 
+async function createPostMigrationJob(name: string, script: string): Promise<void> {
+  await k8s.batch().createNamespacedJob('maintenance', {
+    apiVersion: 'batch/v1',
+    kind: 'Job',
+    metadata: {
+      name,
+      namespace: 'maintenance',
+    },
+    spec: {
+      template: {
+        metadata: {
+          annotations: {
+            'sidecar.istio.io/inject': 'false',
+          },
+        },
+        spec: {
+          serviceAccountName: 'default',
+          containers: [
+            {
+              image: 'bitnami/kubectl:1.32.4',
+              name: 'kubectl',
+              command: ['/bin/bash', '-euo', 'pipefail', '-c', script],
+              resources: {
+                limits: {
+                  cpu: '250m',
+                  memory: '256Mi',
+                },
+                requests: {
+                  cpu: '100m',
+                  memory: '128Mi',
+                },
+              },
+              securityContext: {
+                runAsNonRoot: true,
+                runAsUser: 65535,
+                runAsGroup: 65535,
+                allowPrivilegeEscalation: false,
+                capabilities: {
+                  drop: ['ALL'],
+                },
+              },
+            },
+          ],
+          restartPolicy: 'Never',
+          securityContext: {
+            fsGroup: 65535,
+            seccompProfile: {
+              type: 'RuntimeDefault',
+            },
+          },
+        },
+      },
+    },
+  })
+}
+
+export async function installIstioHelmCharts(): Promise<void> {
+  const d = terminal('installIstioHelmCharts')
+  if (await appExists('istio-operator-istio-operator')) {
+    d.info('Installing Istio Helm charts')
+    const args = [...HF_DEFAULT_SYNC_ARGS, '--set', 'apps.istio.legacyRevision=operator']
+    const postMigrationScript =
+      'echo "Waiting for upgraded Istio ingress gateway to become ready." &&\n' +
+      'kubectl wait deployment -n istio-system istio-ingressgateway-1-26-0-public --for condition=available --timeout=3600s &&\n' +
+      'echo "Checking gateways." &&\n' +
+      "while [ $(kubectl get --selector apl.io/istio-gateway=canary --all-namespaces -ojson gateway | jq '.items | length') -gt 0 ]; do\n" +
+      '  sleep 10\n' +
+      'done &&\n' +
+      'echo "No canary gateway detected." &&\n' +
+      'if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts 2>/dev/null) ]]; then\n' +
+      '  kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts\n' +
+      'else\n' +
+      '  echo "Istio Operator resource not deployed. Skipping"\n' +
+      'fi && if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator 2>/dev/null) ]]; then\n' +
+      '  kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator &&\n' +
+      '  kubectl delete customresourcedefinition istiooperators.install.istio.io --ignore-not-found &&\n' +
+      '  kubectl delete ns istio-operator --ignore-not-found --wait=false\n' +
+      'else\n' +
+      '  echo "Istio Operator not installed. Skipping"\n' +
+      'fi'
+    // Istio-base and Istiod
+    await hf(
+      {
+        fileOpts: `${rootDir}/helmfile.d/helmfile-02.init.yaml.gotmpl`,
+        labelOpts: ['pkg=istio'],
+        logLevel: logLevelString(),
+        args,
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+    // Istio gateways
+    await hf(
+      {
+        fileOpts: `${rootDir}/helmfile.d/helmfile-06.init.yaml.gotmpl`,
+        labelOpts: ['pkg=istio'],
+        logLevel: logLevelString(),
+        args,
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+    if (await checkExists(async () => await k8s.batch().readNamespacedJob('istio-operator-uninstall', 'maintenance'))) {
+      d.info('Istio Operator uninstall job pending.')
+    } else {
+      d.info('Scheduling post-migration job for Istio Operator uninstall')
+      await createPostMigrationJob('istio-operator-uninstall', postMigrationScript)
+    }
+  } else {
+    d.info('Istio Operator not installed. Skipping migration.')
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -485,6 +606,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   buildImageNameMigration,
   policiesMigration,
   addAplOperator,
+  installIstioHelmCharts,
 }
 
 /**

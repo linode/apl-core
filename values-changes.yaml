@@ -365,3 +365,5 @@ changes:
     customFunctions:
       - addAplOperator
   - version: 41
+    customFunctions:
+      - installIstioHelmCharts

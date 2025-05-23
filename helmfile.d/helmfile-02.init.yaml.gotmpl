@@ -47,27 +47,14 @@ releases:
     namespace: istio-system
     labels:
       pkg: istio
-      # Only on the first installation of the Istio-base chart,
-      # this needs to be installed in stage=prep as a dependency of Istiod.
-      {{- if $a.istio.defaultRevision }}
       app: core
-      {{- else }}
-      stage: prep
-      {{- end }}
     <<: *default
   - name: istiod
     installed: true
     namespace: istio-system
     labels:
       pkg: istio
-      # Only on the first installation of the Istiod chart,
-      # this needs to be installed in stage=prep to
-      # ensure the sidecar injection is ready.
-      {{- if $a.istio.defaultRevision }}
       app: core
-      {{- else }}
-      stage: prep
-      {{- end }}
     <<: *default
   - name: cloudnative-pg
     installed: true
