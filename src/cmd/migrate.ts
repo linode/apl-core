@@ -9,7 +9,7 @@ import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hf, hfValues } from 'src/common/hf'
+import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
@@ -470,7 +470,7 @@ export async function addAplOperator(): Promise<void> {
       fileOpts: `${rootDir}/helmfile.d/helmfile-03.init.yaml.gotmpl`,
       labelOpts: ['pkg=apl-operator'],
       logLevel: logLevelString(),
-      args: ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20'],
+      args: HF_DEFAULT_SYNC_ARGS,
     },
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )

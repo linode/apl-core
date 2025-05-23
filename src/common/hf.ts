@@ -11,6 +11,7 @@ import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
+export const HF_DEFAULT_SYNC_ARGS = ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
 
 type HFParams = {
   fileOpts?: string | string[] | null
@@ -53,8 +54,11 @@ const hfCore = (args: HFParams, envDir = env.ENV_DIR): ProcessPromise => {
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
   process.env.HELM_DIFF_COLOR = 'true'
   process.env.HELM_DIFF_USE_UPGRADE_DRY_RUN = 'true'
-  const proc = $`ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`
-  return proc
+  if (parsedArgs?.dryRun && paramsCopy.args.includes('sync')) {
+    return $`echo ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`
+  } else {
+    return $`ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`
+  }
 }
 
 type HFOptions = {
@@ -66,8 +70,7 @@ export const hf = async (args: HFParams, opts?: HFOptions, envDir = env.ENV_DIR)
   const proc: ProcessPromise = hfCore(args, envDir)
   if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
   if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
-  const res = new ProcessOutputTrimmed(await proc)
-  return res
+  return new ProcessOutputTrimmed(await proc)
 }
 
 export interface ValuesArgs {
