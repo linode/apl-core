@@ -1,4 +1,4 @@
-#!/usr/bin/env node --nolazy -r ts-node/register
+#!/usr/bin/env node --nolazy --import tsx
 
 import { createFileSync, mkdirpSync, writeFile } from 'fs-extra'
 import { set } from 'lodash'
@@ -70,7 +70,7 @@ const generateAppsFile = async (projectDir: string, name: string): Promise<void>
 }
 
 const generateHelmfileFile = async (projectDir: string, name: string): Promise<void> => {
-  const helmfilePath = `${projectDir}/helmfile-${name}.yaml`
+  const helmfilePath = `${projectDir}/helmfile-${name}.yaml.gotmpl`
   const helmfileChunkPath = `${helmfilePath}.chunk`
   const helmfileReleaseChunk = {
     releases: [

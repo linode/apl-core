@@ -418,45 +418,6 @@ environments:
           httpbin:
             enabled: false
             _rawValues: {}
-          ingress-nginx:
-            autoscaling:
-              enabled: true
-              minReplicas: 2
-              maxReplicas: 10
-              targetCPUUtilizationPercentage: 80
-              targetMemoryUtilizationPercentage: 80
-            modsecurity:
-              enabled: false
-              block: false
-              owasp: true
-            tracing:
-              enabled: false
-              samplingRatio: "0.01"
-            maxBodySize: 1024m
-            maxBodySizeBytes: 1073741824
-            resources:
-              controller:
-                requests:
-                  cpu: 100m
-                  memory: 384Mi
-                limits:
-                  cpu: "2"
-                  memory: 2Gi
-              opentelemetry:
-                requests:
-                  cpu: 100m
-                  memory: 65Mi
-                limits:
-                  cpu: 500m
-                  memory: 256Mi
-              defaultBackend:
-                limits:
-                  cpu: 20m
-                  memory: 20Mi
-                requests:
-                  cpu: 10m
-                  memory: 10Mi
-            _rawValues: {}
           istio:
             tracing:
               enabled: false
@@ -945,6 +906,16 @@ environments:
                   cpu: "1"
                   memory: 1Gi
             _rawValues: {}
+          apl-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 250m
+                  memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+            _rawValues: {}
           apl-keycloak-operator:
             resources:
               operator:
@@ -1350,4 +1321,4 @@ environments:
             version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 39
+          specVersion: 40

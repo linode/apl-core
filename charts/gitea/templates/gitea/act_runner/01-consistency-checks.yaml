@@ -1,0 +1,15 @@
+{{- if .Values.actions.enabled -}}
+    {{- if .Values.actions.provisioning.enabled -}}
+        {{- if not (and .Values.persistence.enabled .Values.persistence.mount) -}}
+            {{- fail "persistence.enabled and persistence.mount are required when provisioning is enabled" -}}
+        {{- end -}}
+        {{- if and .Values.persistence.enabled .Values.persistence.mount -}}
+            {{- if .Values.actions.existingSecret -}}
+                {{- fail "Can't specify both actions.provisioning.enabled and actions.existingSecret" -}}
+            {{- end -}}
+        {{- end -}}
+    {{- end -}}
+    {{- if and (not .Values.actions.provisioning.enabled) (or (empty .Values.actions.existingSecret) (empty .Values.actions.existingSecretKey)) -}}
+        {{- fail "actions.existingSecret and actions.existingSecretKey are required when provisioning is disabled" -}}
+    {{- end -}}
+{{- end -}}
