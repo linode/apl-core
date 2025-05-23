@@ -906,6 +906,16 @@ environments:
                   cpu: "1"
                   memory: 1Gi
             _rawValues: {}
+          apl-operator:
+            resources:
+              operator:
+                requests:
+                  cpu: 250m
+                  memory: 128Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+            _rawValues: {}
           apl-keycloak-operator:
             resources:
               operator:
@@ -1311,4 +1321,4 @@ environments:
             version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 39
+          specVersion: 40

@@ -75,6 +75,13 @@ releases:
     labels:
       pkg: apl-harbor-operator
     <<: *default
+  - name: apl-operator
+    installed: true
+    namespace: apl-operator
+    labels:
+      pkg: apl-operator
+      app: core
+    <<: *default
   - name: kiali-operator-artifacts
     installed: {{ $a | get "kiali.enabled" }}
     namespace: kiali
