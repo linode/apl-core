@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: istio-operator-uninstall
+  namespace: maintenance
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: 'false'
+    spec:
+      serviceAccountName: default
+      containers:
+        - image: bitnami/kubectl:1.32.4
+          name: kubectl
+          command:
+            - /bin/bash
+            - -euo
+            - pipefail
+            - -c
+            - >-
+              echo "Waiting for upgraded Istio ingress gateway to become ready." &&             
+              kubectl wait deployment -n istio-system istio-ingressgateway-1-26-0-public --for condition=available --timeout=3600s &&
+              echo "Checking gateways." &&
+              while [ $(kubectl get --selector apl.io/istio-gateway=canary --all-namespaces -ojson gateway | jq '.items | length') -gt 0 ]; do
+                sleep 10
+              done &&
+              echo "No canary gateway detected." &&
+              if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts 2>/dev/null) ]]; then
+                kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts
+              else
+                echo "Istio Operator resource not deployed. Skipping"
+              fi &&
+              if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator 2>/dev/null) ]]; then
+                kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator &&
+                kubectl delete customresourcedefinition istiooperators.install.istio.io --ignore-not-found &&
+                kubectl delete ns istio-operator --ignore-not-found --wait=false
+              else
+                echo "Istio Operator not installed. Skipping"
+              fi
+          resources:
+            limits:
+              cpu: 250m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65535
+            runAsGroup: 65535
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+      restartPolicy: Never
+      securityContext:
+        fsGroup: 65535
+        seccompProfile:
+          type: RuntimeDefault

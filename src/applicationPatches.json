@@ -1,0 +1,37 @@
+{
+  "genericPatch": {
+    "ignoreDifferences": [
+      {
+        "group": "admissionregistration.k8s.io",
+        "kind": "ValidatingWebhookConfiguration",
+        "jqPathExpressions": [".webhooks[]?.clientConfig.caBundle"]
+      },
+      {
+        "group": "admissionregistration.k8s.io",
+        "kind": "MutatingWebhookConfiguration",
+        "jqPathExpressions": [".webhooks[]?.clientConfig.caBundle"]
+      }
+    ]
+  },
+  "appPatches": {
+    "istio-system-istio-base": {
+      "ignoreDifferences": [
+        {
+          "group": "admissionregistration.k8s.io",
+          "kind": "ValidatingWebhookConfiguration",
+          "name": "istiod-default-validator",
+          "jsonPointers": ["/webhooks/0/failurePolicy"]
+        }
+      ]
+    },
+    "istio-system-istiod": {
+      "ignoreDifferences": [
+        {
+          "group": "admissionregistration.k8s.io",
+          "kind": "ValidatingWebhookConfiguration",
+          "jsonPointers": ["/webhooks/0/failurePolicy"]
+        }
+      ]
+    }
+  }
+}
