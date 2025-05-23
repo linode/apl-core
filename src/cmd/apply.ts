@@ -8,18 +8,12 @@ import { hf } from 'src/common/hf'
 import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import { applyAsApps } from './apply-as-apps'
-import {
-  cloneOtomiChartsInGitea,
-  commit,
-  printWelcomeMessage,
-  retryCheckingForPipelineRun,
-  retryIsOAuth2ProxyRunning,
-} from './commit'
+import { cloneOtomiChartsInGitea, commit, printWelcomeMessage, retryIsOAuth2ProxyRunning } from './commit'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -77,7 +71,7 @@ const applyAll = async () => {
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
+      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
       fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
       labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
@@ -86,14 +80,12 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  let labelOpts = ['']
   if (initialInstall) {
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // Only install the core apps
-    labelOpts = ['app=core']
     await hf(
       {
-        labelOpts,
+        labelOpts: ['app=core'],
         logLevel: logLevelString(),
         args: hfArgs,
       },
@@ -124,7 +116,6 @@ const applyAll = async () => {
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
       await cloneOtomiChartsInGitea()
-      await retryCheckingForPipelineRun()
       await retryIsOAuth2ProxyRunning()
       await printWelcomeMessage()
     }

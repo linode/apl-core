@@ -7,7 +7,7 @@ import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, 
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
-import { terminal } from 'src/common/debug'
+import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
@@ -18,6 +18,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
+import { k8s } from '../common/k8s'
+
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
@@ -52,6 +54,7 @@ interface Change {
   teamResourceQuotaMigration?: boolean
   buildImageNameMigration?: boolean
   policiesMigration?: boolean
+  addAplOperator?: boolean
 }
 
 export type Changes = Array<Change>
@@ -439,6 +442,40 @@ const bulkAddition = (path: string, values: any, filePath: string) => {
   setAtPath(path, values, val)
 }
 
+async function aplOperatorNsExists(): Promise<boolean> {
+  try {
+    await k8s.core().readNamespace('apl-operator')
+    return true
+  } catch (error) {
+    if (error.response && error.response.statusCode === 404) {
+      return false
+    } else {
+      throw error
+    }
+  }
+}
+
+export async function addAplOperator(): Promise<void> {
+  const d = terminal('addAplOperator')
+  if (await aplOperatorNsExists()) {
+    d.info('Apl-operator namespace already exists, skipping installation')
+    return
+  }
+  d.info('Installing apl-operator')
+
+  await hf(
+    {
+      fileOpts: `${rootDir}/helmfile.d/helmfile-03.init.yaml.gotmpl`,
+      labelOpts: ['pkg=apl-operator'],
+      logLevel: logLevelString(),
+      args: ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20'],
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  d.info('Apl-operator installed')
+}
+
 /**
  * Applies changes from configuration.
  *
@@ -499,6 +536,7 @@ export const applyChanges = async (
     if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
     if (c.buildImageNameMigration) await buildImageNameMigration(values)
     if (c.policiesMigration) await policiesMigration()
+    if (c.addAplOperator) await addAplOperator()
 
     Object.assign(values.versions, { specVersion: c.version })
   }
