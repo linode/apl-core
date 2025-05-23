@@ -226,10 +226,10 @@ global:
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 global:
-  imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}"
+  imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   security:
     allowInsecureImages: true
 image:
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}"
-  repository: "docker/gitea/gitea"
+  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  repository: "gitea/gitea"
 {{- end }}
