@@ -1,7 +1,7 @@
 import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 import { mkdirSync, rmdirSync } from 'fs'
 import { pathExists } from 'fs-extra'
-import { writeFile } from 'fs/promises'
+import { rm, writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
@@ -161,6 +161,7 @@ const writeApplicationManifest = async (release: HelmRelease, index: number, oto
 
   await patchArgocdResources(release, values)
 }
+
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
@@ -185,6 +186,8 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const errors: Array<any> = []
   // Generate JSON object with all helmfile releases defined in helmfile.d
   const releases: [] = JSON.parse(res.stdout.toString())
+  // Clean up apps dir from any previous run
+  await rm(`${appsDir}/*.yaml`)
   await Promise.allSettled(
     releases.map(async (release: HelmRelease, index) => {
       try {
