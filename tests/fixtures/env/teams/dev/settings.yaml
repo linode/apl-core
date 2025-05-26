@@ -4,29 +4,31 @@ metadata:
     labels:
         apl.io/teamId: dev
 spec:
+    alerts:
+        groupInterval: 5m
+        receivers:
+            - none
+        repeatInterval: 3h
     managedMonitoring:
         alertmanager: true
         grafana: true
     networkPolicy:
         egressPublic: false
         ingressPrivate: true
-    selfService:
-        access:
-            - shell
-            - downloadCertificateAuthority
-        policies:
-            - edit policies
-        apps: []
-        service:
-            - ingress
-    password: IkdUsKPcGAdanjas
-    alerts:
-        groupInterval: 5m
-        receivers:
-            - none
-        repeatInterval: 3h
     resourceQuota:
         - name: pods
           value: '50'
         - name: services.loadbalancers
           value: '0'
+    selfService:
+        apps: []
+        policies:
+            - edit policies
+        service:
+            - ingress
+        teamMembers:
+            createServices: false
+            downloadDockerLogin: false
+            downloadKubeconfig: false
+            editSecurityPolicies: false
+            useCloudShell: false

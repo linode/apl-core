@@ -39,7 +39,7 @@ const destroyAll = async () => {
   d.info('Uninstalled all charts.')
   d.info('Uninstalling applied manifests...')
   const output: ProcessOutputTrimmed = await hf(
-    { fileOpts: 'helmfile.tpl/helmfile-init.yaml', args: 'template' },
+    { fileOpts: 'helmfile.tpl/helmfile-init.yaml.gotmpl', args: 'template' },
     { streams: debugStream },
   )
   if (output.exitCode > 0 || output.stderr.length > 0) {

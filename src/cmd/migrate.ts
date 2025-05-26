@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
@@ -10,9 +7,9 @@ import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, 
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
-import { terminal } from 'src/common/debug'
+import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hf, hfValues } from 'src/common/hf'
+import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
 import { getFilename, getSchemaSecretsPaths, gucci, loadYaml, rootDir } from 'src/common/utils'
 import { writeValues, writeValuesToFile } from 'src/common/values'
@@ -21,10 +18,16 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
+import { k8s } from '../common/k8s'
+
 const cmdName = getFilename(__filename)
 
 interface Arguments extends BasicArguments {
   dryRun?: boolean
+}
+
+interface CustomMigrationFunction {
+  (values: Record<string, any>): Promise<void>
 }
 
 interface Change {
@@ -50,10 +53,7 @@ interface Change {
   bulkAdditions?: Array<{
     [mutation: string]: string
   }>
-  networkPoliciesMigration?: boolean
-  teamResourceQuotaMigration?: boolean
-  buildImageNameMigration?: boolean
-  policiesMigration?: boolean
+  customFunctions?: string[]
 }
 
 export type Changes = Array<Change>
@@ -303,6 +303,67 @@ const networkPoliciesMigration = async (values: Record<string, any>): Promise<vo
   )
 }
 
+const teamSettingsMigration = async (values: Record<string, any>): Promise<void> => {
+  const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
+
+  teams.map((teamName) => {
+    // Get the alerts block for the team and remove email and opsgenie
+    const alerts = get(values, `teamConfig.${teamName}.settings.alerts`)
+    if (alerts?.email) unset(alerts, 'email')
+    if (alerts?.opsgenie) unset(alerts, 'opsgenie')
+    // Get the selfService block for the team
+    const selfService = get(values, `teamConfig.${teamName}.settings.selfService`)
+    if (!selfService) return
+
+    // Initialize the new teamMembers structure with default boolean values
+    const teamMembers = {
+      createServices: false,
+      editSecurityPolicies: false,
+      useCloudShell: false,
+      downloadKubeconfig: false,
+      downloadDockerLogin: false,
+    }
+
+    // Map selfService.service.ingress -> teamMembers.createServices
+    const servicePermissions = get(selfService, 'service', [])
+    if (Array.isArray(servicePermissions) && servicePermissions.includes('ingress')) {
+      teamMembers.createServices = true
+    }
+
+    // Map selfService.access keys to corresponding teamMembers fields
+    // - downloadKubeConfig -> downloadKubeconfig
+    // - downloadDockerConfig -> downloadDockerLogin
+    // - shell -> useCloudShell
+    const accessPermissions = get(selfService, 'access', [])
+    if (Array.isArray(accessPermissions)) {
+      if (accessPermissions.includes('downloadKubeConfig')) {
+        teamMembers.downloadKubeconfig = true
+      }
+      if (accessPermissions.includes('downloadDockerConfig')) {
+        teamMembers.downloadDockerLogin = true
+      }
+      if (accessPermissions.includes('shell')) {
+        teamMembers.useCloudShell = true
+      }
+    }
+
+    // Map selfService.policies.edit_policies -> teamMembers.editSecurityPolicies.
+    // Note: In the source schema, the string "edit policies" is used.
+    const policies = get(selfService, 'policies', [])
+    if (Array.isArray(policies) && policies.includes('edit policies')) {
+      teamMembers.editSecurityPolicies = true
+    }
+
+    // Set the new teamMembers object on selfService
+    set(selfService, 'teamMembers', teamMembers)
+
+    unset(selfService, 'service')
+    unset(selfService, 'access')
+    unset(selfService, 'policies')
+    unset(selfService, 'apps')
+  })
+}
+
 export const getBuildName = (name: string, tag: string): string => {
   return `${name}-${tag}`
     .toLowerCase()
@@ -311,7 +372,10 @@ export const getBuildName = (name: string, tag: string): string => {
     .replace(/^-|-$/g, '') // Remove leading or trailing hyphens
 }
 
-export async function policiesMigration(deps = { loadYaml, saveResourceGroupToFiles }) {
+export async function policiesMigration(
+  _values: Record<string, any>,
+  deps = { loadYaml, saveResourceGroupToFiles },
+): Promise<void> {
   const filePaths = globSync(`${env.ENV_DIR}/env/teams/*/policies.yaml`, {
     nodir: true, // Exclude directories
     dot: false,
@@ -358,7 +422,7 @@ const buildImageNameMigration = async (values: Record<string, any>): Promise<voi
   )
 }
 
-const teamResourceQuotaMigration = (values: Record<string, any>) => {
+const teamResourceQuotaMigration = async (values: Record<string, any>): Promise<void> => {
   Object.entries(values?.teamConfig as Record<string, any>).forEach(([teamName, teamValues]) => {
     const resourceQuota = teamValues?.settings?.resourceQuota
     if (!isUndefined(resourceQuota) && !Array.isArray(resourceQuota)) {
@@ -376,9 +440,177 @@ const teamResourceQuotaMigration = (values: Record<string, any>) => {
 }
 
 const bulkAddition = (path: string, values: any, filePath: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const val = require(filePath)
   setAtPath(path, values, val)
+}
+
+const checkExists = async (func: () => Promise<any>): Promise<boolean> => {
+  try {
+    await func()
+    return true
+  } catch (error) {
+    if (error.response && error.response.statusCode === 404) {
+      return false
+    } else {
+      throw error
+    }
+  }
+}
+
+async function namespaceExists(name: string): Promise<boolean> {
+  return await checkExists(async () => await k8s.core().readNamespace(name))
+}
+
+async function appExists(name: string): Promise<boolean> {
+  return await checkExists(
+    async () => await k8s.custom().getNamespacedCustomObject('argoproj.io', 'v1alpha1', 'argocd', 'applications', name),
+  )
+}
+
+export async function addAplOperator(): Promise<void> {
+  const d = terminal('addAplOperator')
+  if (await namespaceExists('apl-operator')) {
+    d.info('Apl-operator namespace already exists, skipping installation')
+    return
+  }
+  d.info('Installing apl-operator')
+
+  await hf(
+    {
+      fileOpts: `${rootDir}/helmfile.d/helmfile-03.init.yaml.gotmpl`,
+      labelOpts: ['pkg=apl-operator'],
+      logLevel: logLevelString(),
+      args: HF_DEFAULT_SYNC_ARGS,
+    },
+    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+  )
+
+  d.info('Apl-operator installed')
+}
+
+async function createPostMigrationJob(name: string, script: string): Promise<void> {
+  const parsedArgs = getParsedArgs()
+  if (parsedArgs?.dryRun || parsedArgs?.local) {
+    return
+  }
+  await k8s.batch().createNamespacedJob('maintenance', {
+    apiVersion: 'batch/v1',
+    kind: 'Job',
+    metadata: {
+      name,
+      namespace: 'maintenance',
+    },
+    spec: {
+      template: {
+        metadata: {
+          annotations: {
+            'sidecar.istio.io/inject': 'false',
+          },
+        },
+        spec: {
+          serviceAccountName: 'default',
+          containers: [
+            {
+              image: 'bitnami/kubectl:1.32.4',
+              name: 'kubectl',
+              command: ['/bin/bash', '-euo', 'pipefail', '-c', script],
+              resources: {
+                limits: {
+                  cpu: '250m',
+                  memory: '256Mi',
+                },
+                requests: {
+                  cpu: '100m',
+                  memory: '128Mi',
+                },
+              },
+              securityContext: {
+                runAsNonRoot: true,
+                runAsUser: 65535,
+                runAsGroup: 65535,
+                allowPrivilegeEscalation: false,
+                capabilities: {
+                  drop: ['ALL'],
+                },
+              },
+            },
+          ],
+          restartPolicy: 'Never',
+          securityContext: {
+            fsGroup: 65535,
+            seccompProfile: {
+              type: 'RuntimeDefault',
+            },
+          },
+        },
+      },
+    },
+  })
+}
+
+export async function installIstioHelmCharts(): Promise<void> {
+  const d = terminal('installIstioHelmCharts')
+  if (await appExists('istio-operator-istio-operator')) {
+    d.info('Installing Istio Helm charts')
+    const args = [...HF_DEFAULT_SYNC_ARGS, '--take-ownership', '--set', 'apps.istio.legacyRevision=operator']
+    const postMigrationScript =
+      'echo "Waiting for upgraded Istio ingress gateway to become ready." &&\n' +
+      'kubectl wait deployment -n istio-system istio-ingressgateway-1-26-0-public --for condition=available --timeout=3600s &&\n' +
+      'echo "Checking gateways." &&\n' +
+      "while [ $(kubectl get --selector apl.io/istio-gateway=canary --all-namespaces -ojson gateway | jq '.items | length') -gt 0 ]; do\n" +
+      '  sleep 10\n' +
+      'done &&\n' +
+      'echo "No canary gateway detected." &&\n' +
+      'if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts 2>/dev/null) ]]; then\n' +
+      '  kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator-artifacts\n' +
+      'else\n' +
+      '  echo "Istio Operator resource not deployed. Skipping"\n' +
+      'fi && if [[ $(kubectl get applications.argoproj.io -n argocd istio-operator-istio-operator 2>/dev/null) ]]; then\n' +
+      '  kubectl delete applications.argoproj.io -n argocd istio-operator-istio-operator &&\n' +
+      '  kubectl delete customresourcedefinition istiooperators.install.istio.io --ignore-not-found &&\n' +
+      '  kubectl delete ns istio-operator --ignore-not-found --wait=false\n' +
+      'else\n' +
+      '  echo "Istio Operator not installed. Skipping"\n' +
+      'fi'
+    // Istio-base and Istiod
+    await hf(
+      {
+        fileOpts: `${rootDir}/helmfile.d/helmfile-02.init.yaml.gotmpl`,
+        labelOpts: ['pkg=istio'],
+        logLevel: logLevelString(),
+        args,
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+    // Istio gateways
+    await hf(
+      {
+        fileOpts: `${rootDir}/helmfile.d/helmfile-06.init.yaml.gotmpl`,
+        labelOpts: ['pkg=istio'],
+        logLevel: logLevelString(),
+        args,
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+    if (await checkExists(async () => await k8s.batch().readNamespacedJob('istio-operator-uninstall', 'maintenance'))) {
+      d.info('Istio Operator uninstall job pending.')
+    } else {
+      d.info('Scheduling post-migration job for Istio Operator uninstall')
+      await createPostMigrationJob('istio-operator-uninstall', postMigrationScript)
+    }
+  } else {
+    d.info('Istio Operator not installed. Skipping migration.')
+  }
+}
+
+const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
+  networkPoliciesMigration,
+  teamSettingsMigration,
+  teamResourceQuotaMigration,
+  buildImageNameMigration,
+  policiesMigration,
+  addAplOperator,
+  installIstioHelmCharts,
 }
 
 /**
@@ -436,10 +668,13 @@ export const applyChanges = async (
       })
     }
 
-    if (c.networkPoliciesMigration) await networkPoliciesMigration(values)
-    if (c.teamResourceQuotaMigration) teamResourceQuotaMigration(values)
-    if (c.buildImageNameMigration) await buildImageNameMigration(values)
-    if (c.policiesMigration) await policiesMigration()
+    for (const customFunctionName of c.customFunctions || []) {
+      const customFunction = customMigrationFunctions[customFunctionName]
+      if (!customFunction) {
+        throw new Error(`Error in migration: Custom migration function ${customFunctionName} not found`)
+      }
+      await customFunction(values)
+    }
 
     Object.assign(values.versions, { specVersion: c.version })
   }
@@ -450,13 +685,39 @@ export const applyChanges = async (
 
 export const unparsePaths = (path: string, values: Record<string, any>): Array<string> => {
   if (path.includes('{team}')) {
-    const paths: Array<string> = []
+    let paths: Array<string> = []
     const teams: Array<string> = Object.keys(values?.teamConfig as Record<string, any>)
     teams.forEach((teamName) => paths.push(path.replace('{team}', teamName)))
+    paths = transformArrayToPaths(paths, values)
     return paths.sort()
   } else {
-    return [path]
+    const paths = transformArrayToPaths([path], values)
+    return paths
   }
+}
+
+function transformArrayToPaths(paths: string[], values: Record<string, any>): string[] {
+  const transformedPaths: string[] = []
+
+  paths.forEach((path) => {
+    const match = path.match(/^(.*)\.(\w+)\[\](.*)$/)
+    if (!match) {
+      transformedPaths.push(path)
+      return
+    }
+
+    const [, beforeArrayPath, arrayKey, afterArrayPath] = match
+
+    const objectPath = beforeArrayPath.split('.').reduce((obj, key) => obj?.[key], values)
+
+    if (objectPath && objectPath[arrayKey]) {
+      objectPath[arrayKey].forEach((_item: any, index: number) => {
+        transformedPaths.push(`${beforeArrayPath}.${arrayKey}[${index}]${afterArrayPath}`)
+      })
+    }
+  })
+
+  return transformedPaths
 }
 export const unsetAtPath = (path: string, values: Record<string, any>): void => {
   const paths = unparsePaths(path, values)
@@ -531,7 +792,7 @@ function renameKeyDeep(obj: any, oldKey: string, newKey: string): any {
 
 export const migrateLegacyValues = async (envDir: string, deps = { writeFile }): Promise<boolean> => {
   const output = await hf(
-    { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml`, args: 'build' },
+    { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files-old.yaml.gotmpl`, args: 'build' },
     undefined,
     envDir,
   )
@@ -594,7 +855,8 @@ export const migrateLegacyValues = async (envDir: string, deps = { writeFile }):
     }),
   )
   await saveValues(env.ENV_DIR, valuesPublic, valuesSecrets)
-  await encrypt(env.ENV_DIR)
+  await encrypt()
+  await decrypt()
   return true
 }
 
@@ -610,12 +872,10 @@ export const migrate = async (): Promise<boolean> => {
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
   const prevVersion: number = versions?.spec?.specVersion
   if (!prevVersion) {
-    d.log('No changes detected, skipping')
+    d.log('No previous version detected')
     return false
   }
-
   const filteredChanges = filterChanges(prevVersion, changes)
-
   if (filteredChanges.length) {
     d.log(
       `Changes detected, migrating from ${prevVersion} to ${

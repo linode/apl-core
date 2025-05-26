@@ -3,8 +3,8 @@ metadata:
     name: alerts
     labels: {}
 spec:
-    email: {}
-    msteams: {}
     receivers:
+        - slack
         - msteams
+    msteams: {}
     slack: {}

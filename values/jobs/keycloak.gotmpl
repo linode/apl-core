@@ -29,7 +29,7 @@ env:
   FEAT_EXTERNAL_IDP: {{ $v.otomi.hasExternalIDP }}
   KC_HOSTNAME_URL: https://keycloak.{{ $v.cluster.domainSuffix }}
   KC_HOSTNAME: keycloak.{{ $v.cluster.domainSuffix }}
-  KEYCLOAK_ADDRESS_INTERNAL: http://keycloak-http.keycloak
+  KEYCLOAK_ADDRESS_INTERNAL: http://keycloak.keycloak
   KEYCLOAK_CLIENT_ID: {{ $k.idp.clientID }}
   KEYCLOAK_THEME_LOGIN: {{ $k.theme }}
   REDIRECT_URIS: '["https://{{ tpl $joinTpl (dict "list" (keys $doms | sortAlpha) "sep" "/*\",\"https://") }}/*"]'
@@ -52,11 +52,11 @@ env:
 
 {{- end }}
 nativeSecrets:
-  KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword }}
-  KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret }}
+  KEYCLOAK_ADMIN_PASSWORD: {{ $k.adminPassword | quote }}
+  KEYCLOAK_CLIENT_SECRET: {{ $k.idp.clientSecret | quote }}
 {{- if $v.otomi.hasExternalIDP }}
   IDP_CLIENT_ID: {{ $o.clientID }}
-  IDP_CLIENT_SECRET: {{ $o.clientSecret }}
+  IDP_CLIENT_SECRET: {{ $o.clientSecret | quote }}
 {{- end }}
 podDnsPolicy: "None"
 podDnsConfig:

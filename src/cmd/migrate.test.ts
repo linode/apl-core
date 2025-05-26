@@ -1,8 +1,8 @@
+import { globSync } from 'glob'
 import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration } from 'src/cmd/migrate'
 import stubs from 'src/test-stubs'
-import { globSync } from 'glob'
-import { getFileMap } from '../common/repo'
 import { env } from '../common/envalid'
+import { getFileMap } from '../common/repo'
 
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'my-fixed-uuid'),
@@ -16,8 +16,8 @@ describe('Upgrading values', () => {
     teamConfig: {
       teamA: {
         services: [
-          { name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }] },
-          { name: 'svc1', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }] },
+          { name: 'svc1', prop: 'replaceMe', bla: [{ ok: 'replaceMe' }], type: 'cluster' },
+          { name: 'svc2', prop: 'replaceMe', di: [{ ok: 'replaceMeNot' }], type: 'public' },
         ],
       },
     },
@@ -43,11 +43,19 @@ describe('Upgrading values', () => {
       ],
       renamings: [{ 'somefile.yaml': 'newloc.yaml' }],
     },
+    {
+      version: 4,
+      deletions: [
+        // { 'some.k8sVersion': 'printf "v%s" .prev' },
+        'teamConfig.{team}.services[].type',
+        // { 'teamConfig.{team}.services[].bla[].ok': 'print .prev "ee"' },
+      ],
+    },
   ]
 
   describe('Filter changes', () => {
     it('should only select changes whose version >= current version', () => {
-      expect(filterChanges(oldVersion, mockChanges)).toEqual(mockChanges.slice(1, 3))
+      expect(filterChanges(oldVersion, mockChanges)).toEqual(mockChanges.slice(1, 4))
     })
   })
   describe('Apply changes to values', () => {
@@ -66,12 +74,12 @@ describe('Upgrading values', () => {
             teamA: {
               services: [
                 { name: 'svc1', prop: 'replaced', bla: [{ ok: 'replaceMe' }] },
-                { name: 'svc1', prop: 'replaced', di: [{ ok: 'replaceMeNot' }] },
+                { name: 'svc2', prop: 'replaced', di: [{ ok: 'replaceMeNot' }] },
               ],
             },
           },
           some: { bla: {}, k8sVersion: '1.18' },
-          versions: { specVersion: 3 },
+          versions: { specVersion: 4 },
         },
         true,
       )
@@ -406,10 +414,12 @@ describe('Network policies migrations', () => {
     },
   })
   const values: any = getMockValues()
-  const valuesChanges: any = {
-    version: 2,
-    networkPoliciesMigration: true,
-  }
+  const valuesChanges: Changes = [
+    {
+      version: 2,
+      customFunctions: ['networkPoliciesMigration'],
+    },
+  ]
   const deps: any = {
     cd: jest.fn(),
     rename: jest.fn(),
@@ -418,7 +428,7 @@ describe('Network policies migrations', () => {
     writeValues: jest.fn(),
   }
   it('should apply changes to services and create netpols ', async () => {
-    await applyChanges([valuesChanges], false, deps)
+    await applyChanges(valuesChanges, false, deps)
     const expectedValues = getExpectedValues()
     expect(deps.writeValues).toBeCalledWith(expectedValues, true)
   }, 20000)
@@ -553,10 +563,12 @@ describe('Build image name migration', () => {
     },
   })
   const values: any = getMockValues()
-  const valuesChanges: any = {
-    version: 2,
-    buildImageNameMigration: true,
-  }
+  const valuesChanges: Changes = [
+    {
+      version: 2,
+      customFunctions: ['buildImageNameMigration'],
+    },
+  ]
   const deps: any = {
     cd: jest.fn(),
     rename: jest.fn(),
@@ -565,8 +577,109 @@ describe('Build image name migration', () => {
     writeValues: jest.fn(),
   }
   it('should apply changes to build values ', async () => {
-    await applyChanges([valuesChanges], false, deps)
+    await applyChanges(valuesChanges, false, deps)
     const expectedValues = getExpectedValues()
+    expect(deps.writeValues).toBeCalledWith(expectedValues, true)
+  }, 20000)
+})
+
+describe('teamSettingsMigration', () => {
+  // Create a mock values object representing teams with settings that need migration.
+  const getTeamSettingsMockValues = (): any => ({
+    versions: { specVersion: 1 },
+    teamConfig: {
+      team1: {
+        settings: {
+          alerts: {
+            email: 'test@example.com',
+            opsgenie: 'ops_value',
+            teams: 'keep this alert',
+          },
+          selfService: {
+            service: ['ingress'],
+            access: ['downloadKubeConfig', 'shell'],
+            policies: ['edit policies'],
+            apps: ['argocd', 'gitea'],
+          },
+        },
+      },
+      team2: {
+        settings: {
+          alerts: {
+            teams: 'team2 alert',
+          },
+          selfService: {
+            service: [],
+            access: [],
+            policies: [],
+            apps: ['argocd'],
+          },
+        },
+      },
+    },
+  })
+
+  // Expected values after migration:
+  // - The alerts block should have the 'email' and 'opsgenie' keys removed.
+  // - The selfService arrays ('service', 'access', 'policies', 'apps') are replaced with a new
+  //   teamMembers object with the correct boolean values.
+  const getTeamSettingsExpectedValues = (): any => ({
+    versions: { specVersion: 2 },
+    teamConfig: {
+      team1: {
+        settings: {
+          alerts: {
+            teams: 'keep this alert',
+          },
+          selfService: {
+            teamMembers: {
+              createServices: true, // 'ingress' was present in service.
+              editSecurityPolicies: true, // 'edit policies' was present in policies.
+              useCloudShell: true, // 'shell' was present in access.
+              downloadKubeconfig: true, // 'downloadKubeConfig' was present in access.
+              downloadDockerLogin: false, // 'downloadDockerConfig' was not provided.
+            },
+          },
+        },
+      },
+      team2: {
+        settings: {
+          alerts: {
+            teams: 'team2 alert',
+          },
+          selfService: {
+            teamMembers: {
+              createServices: false,
+              editSecurityPolicies: false,
+              useCloudShell: false,
+              downloadKubeconfig: false,
+              downloadDockerLogin: false,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  // Set up the values and changes flag to trigger the teamSettingsMigration.
+  const teamSettingValues: any = getTeamSettingsMockValues()
+  const valuesChanges: Changes = [
+    {
+      version: 2,
+      customFunctions: ['teamSettingsMigration'],
+    },
+  ]
+  const deps: any = {
+    cd: jest.fn(),
+    rename: jest.fn(),
+    hfValues: jest.fn().mockReturnValue(teamSettingValues),
+    terminal,
+    writeValues: jest.fn(),
+  }
+
+  it('should migrate team settings correctly', async () => {
+    await applyChanges(valuesChanges, false, deps)
+    const expectedValues = getTeamSettingsExpectedValues()
     expect(deps.writeValues).toBeCalledWith(expectedValues, true)
   }, 20000)
 })
@@ -597,7 +710,7 @@ describe('Policies migration', () => {
   it('should load and convert policies.yaml files into teamConfig and save them', async () => {
     ;(globSync as jest.Mock).mockReturnValue(mockFilePaths)
 
-    await policiesMigration({ loadYaml, saveResourceGroupToFiles })
+    await policiesMigration({}, { loadYaml, saveResourceGroupToFiles })
 
     expect(loadYaml).toHaveBeenCalledTimes(2)
     expect(loadYaml).toHaveBeenCalledWith('/path/to/env/teams/admin/policies.yaml')
@@ -618,7 +731,7 @@ describe('Policies migration', () => {
   it('should not migrate if filepaths are empty', async () => {
     ;(globSync as jest.Mock).mockReturnValue([])
 
-    await policiesMigration({ loadYaml, saveResourceGroupToFiles })
+    await policiesMigration({}, { loadYaml, saveResourceGroupToFiles })
 
     expect(loadYaml).toHaveBeenCalledTimes(0)
     expect(saveResourceGroupToFiles).toHaveBeenCalledTimes(0)
