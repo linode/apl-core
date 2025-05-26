@@ -3,7 +3,7 @@
 
 knative_operator:
   knative_operator:
-    resources: {{- $k.resources.operator | toYaml | nindent 4 }}
+    resources: {{- $k.resources.operator | toYaml | nindent 6 }}
 
   operator_webhook:
-    resources: {{- $k.resources.operatorWebhook | toYaml | nindent 4 }}
+    resources: {{- $k.resources.operatorWebhook | toYaml | nindent 6 }}
