@@ -1,0 +1,19 @@
+# Not created if istiod is running remotely
+{{- if not .Values.istiodRemote.enabled }}
+{{- if .Values.jwksResolverExtraRootCA }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pilot-jwks-extra-cacerts{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Release.Name }}
+    istio.io/rev: {{ .Values.revision | default "default" | quote }}
+    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
+    operator.istio.io/component: "Pilot"
+    app.kubernetes.io/name: "istiod"
+    {{- include "istio.labels" . | nindent 4 }}
+data:
+  extra.pem: {{ .Values.jwksResolverExtraRootCA | quote }}
+{{- end }}
+{{- end }}

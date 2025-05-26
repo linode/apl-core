@@ -53,7 +53,7 @@ spec:
     domain:
       {{ $v.cluster.domainSuffix }}: ''
     istio:
-      gateway.knative-serving.knative-ingress-gateway: istio-ingressgateway-public.istio-system.svc.cluster.local
+      gateway.knative-serving.knative-ingress-gateway: {{ $v._derived.ingressPublicGatewayName }}.istio-system.svc.cluster.local
     features:
       podspec-securitycontext: enabled
   ingress:
@@ -61,4 +61,4 @@ spec:
       enabled: true
       knative-ingress-gateway:
         selector:
-          istio: ingressgateway-public
+          istio: {{ $v._derived.defaultIngressGatewayLabel }}

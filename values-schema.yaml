@@ -1993,7 +1993,6 @@ properties:
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
-        additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
