@@ -18,8 +18,8 @@ kubectl rollout restart deployment -n apl-gitea-operator apl-gitea-operator
 kubectl rollout restart deployment -n otomi-operator otomi-operator
 
 echo "Extract Gitea username, password, and values repo git url"
-export USERNAME=$(kubectl get secret -n otomi-pipelines gitea-credentials -ojsonpath='{.data.username}' | base64 -d)
-export PASSWORD=$(kubectl get secret -n otomi-pipelines gitea-credentials -ojsonpath='{.data.password}' | base64 -d)
+export USERNAME=$(kubectl get secret -n apl-operator gitea-credentials -ojsonpath='{.data.GIT_USERNAME}' | base64 -d)
+export PASSWORD=$(kubectl get secret -n apl-operator gitea-credentials -ojsonpath='{.data.GIT_PASSWORD}' | base64 -d)
 export URL=$(kubectl get ingress nginx-team-admin-platform-public-open -n istio-system -o json | jq -r '.spec.rules[] | select(.host | startswith("gitea")) | .host')
 
 if [ -n "$BOT_USERNAME" ] && [ -n "$BOT_EMAIL" ]; then

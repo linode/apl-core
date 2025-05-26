@@ -4,22 +4,16 @@ import { cloneDeep } from 'lodash'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hf } from 'src/common/hf'
+import { hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import { applyAsApps } from './apply-as-apps'
-import {
-  cloneOtomiChartsInGitea,
-  commit,
-  printWelcomeMessage,
-  retryCheckingForPipelineRun,
-  retryIsOAuth2ProxyRunning,
-} from './commit'
+import { cloneOtomiChartsInGitea, commit, printWelcomeMessage, retryIsOAuth2ProxyRunning } from './commit'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -42,9 +36,7 @@ const applyAll = async () => {
   const prevState = await getDeploymentState()
   const argv: HelmArguments = getParsedArgs()
   const initialInstall = !argv.tekton
-  const hfArgs = initialInstall
-    ? ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
-    : ['apply', '--sync-args', '--qps=20']
+  const hfArgs = initialInstall ? HF_DEFAULT_SYNC_ARGS : ['apply', '--sync-args', '--qps=20']
 
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
@@ -77,7 +69,7 @@ const applyAll = async () => {
   d.info('Deploying charts containing label stage=prep')
   await hf(
     {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values in this statege):
+      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
       fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
       labelOpts: ['stage=prep'],
       logLevel: logLevelString(),
@@ -86,14 +78,12 @@ const applyAll = async () => {
     { streams: { stdout: d.stream.log, stderr: d.stream.error } },
   )
 
-  let labelOpts = ['']
   if (initialInstall) {
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // Only install the core apps
-    labelOpts = ['app=core']
     await hf(
       {
-        labelOpts,
+        labelOpts: ['app=core'],
         logLevel: logLevelString(),
         args: hfArgs,
       },
@@ -124,7 +114,6 @@ const applyAll = async () => {
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
       await cloneOtomiChartsInGitea()
-      await retryCheckingForPipelineRun()
       await retryIsOAuth2ProxyRunning()
       await printWelcomeMessage()
     }

@@ -48,20 +48,6 @@ subjects:
   name: sa-team-{{ $v.teamId }}
   namespace: {{ $ns }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: ingress-update-team-{{ $v.teamId }}
-  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: ingress-update
-subjects:
-- kind: ServiceAccount
-  name: sa-team-{{ $v.teamId }}
-  namespace: {{ $ns }}
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -234,3 +220,27 @@ roleRef:
   kind: Role
   name: apl-gitea-operator-service-account
   apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tekton-triggers-secrets-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tekton-triggers-secrets-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+subjects:
+  - kind: ServiceAccount
+    name: tekton-triggers-team-{{ $v.teamId }}
+    namespace: team-{{ $v.teamId }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: tekton-triggers-secrets-team-{{ $v.teamId }}
