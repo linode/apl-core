@@ -42,6 +42,20 @@ releases:
       - ./snippets/common.gotmpl
     <<: *upgrade
 {{- end }}
+  - name: istio-base
+    installed: true
+    namespace: istio-system
+    labels:
+      pkg: istio
+      app: core
+    <<: *default
+  - name: istiod
+    installed: true
+    namespace: istio-system
+    labels:
+      pkg: istio
+      app: core
+    <<: *default
   - name: cloudnative-pg
     installed: true
     namespace: cnpg-system

@@ -3,6 +3,7 @@
 {{- range $s := $v.services }}
   {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
   {{- $type := $s.type | default "public" }}
+  {{- $gatewayName := printf "%s-%s.istio-system.svc.cluster.local" ($v.ingressGatewayPrefix | default "istio-ingressgateway") $type }}
   {{- $hasAuth := $s.auth | default false }}
   {{- $hasTlsPass := $s.tlsPass | default false }}
   {{- $ns := index $s "namespace" | default $.Release.Namespace }}
@@ -80,7 +81,7 @@ spec:
       {{- if $isKnativeService }}
       route:
         - destination:
-            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            host: {{ $gatewayName }}
       {{- else }}
       route:
         - destination:
@@ -116,7 +117,7 @@ spec:
         {{- with (dig "trafficControl" "enabled" nil $s) }}
         - destination:
             {{- if $isKnativeService }}
-            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            host: {{ $gatewayName }}
             {{- else }}
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
             {{- end }}
@@ -156,7 +157,7 @@ metadata:
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   {{- if $isKnativeService }}
-  host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+  host: {{ $gatewayName }}
   {{- else }}
   host: {{ $svc }}.{{ $ns }}.svc.cluster.local
   {{- end }}
@@ -229,7 +230,7 @@ spec:
         {{- if $isKnativeService }}
       route:
         - destination:
-            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            host: {{ $gatewayName }}
         {{- else }}
       route:
         - destination:
@@ -266,7 +267,7 @@ spec:
         {{- with (dig "trafficControl" "enabled" nil $s) }}
         - destination:
             {{- if $isKnativeService }}
-            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            host: {{ $gatewayName }}
             {{- else }}
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
             {{- end }}
