@@ -414,10 +414,12 @@ describe('Network policies migrations', () => {
     },
   })
   const values: any = getMockValues()
-  const valuesChanges: any = {
-    version: 2,
-    networkPoliciesMigration: true,
-  }
+  const valuesChanges: Changes = [
+    {
+      version: 2,
+      customFunctions: ['networkPoliciesMigration'],
+    },
+  ]
   const deps: any = {
     cd: jest.fn(),
     rename: jest.fn(),
@@ -426,7 +428,7 @@ describe('Network policies migrations', () => {
     writeValues: jest.fn(),
   }
   it('should apply changes to services and create netpols ', async () => {
-    await applyChanges([valuesChanges], false, deps)
+    await applyChanges(valuesChanges, false, deps)
     const expectedValues = getExpectedValues()
     expect(deps.writeValues).toBeCalledWith(expectedValues, true)
   }, 20000)
@@ -561,10 +563,12 @@ describe('Build image name migration', () => {
     },
   })
   const values: any = getMockValues()
-  const valuesChanges: any = {
-    version: 2,
-    buildImageNameMigration: true,
-  }
+  const valuesChanges: Changes = [
+    {
+      version: 2,
+      customFunctions: ['buildImageNameMigration'],
+    },
+  ]
   const deps: any = {
     cd: jest.fn(),
     rename: jest.fn(),
@@ -573,7 +577,7 @@ describe('Build image name migration', () => {
     writeValues: jest.fn(),
   }
   it('should apply changes to build values ', async () => {
-    await applyChanges([valuesChanges], false, deps)
+    await applyChanges(valuesChanges, false, deps)
     const expectedValues = getExpectedValues()
     expect(deps.writeValues).toBeCalledWith(expectedValues, true)
   }, 20000)
@@ -659,10 +663,12 @@ describe('teamSettingsMigration', () => {
 
   // Set up the values and changes flag to trigger the teamSettingsMigration.
   const teamSettingValues: any = getTeamSettingsMockValues()
-  const valuesChanges: any = {
-    version: 2,
-    teamSettingsMigration: true,
-  }
+  const valuesChanges: Changes = [
+    {
+      version: 2,
+      customFunctions: ['teamSettingsMigration'],
+    },
+  ]
   const deps: any = {
     cd: jest.fn(),
     rename: jest.fn(),
@@ -672,7 +678,7 @@ describe('teamSettingsMigration', () => {
   }
 
   it('should migrate team settings correctly', async () => {
-    await applyChanges([valuesChanges], false, deps)
+    await applyChanges(valuesChanges, false, deps)
     const expectedValues = getTeamSettingsExpectedValues()
     expect(deps.writeValues).toBeCalledWith(expectedValues, true)
   }, 20000)
@@ -704,7 +710,7 @@ describe('Policies migration', () => {
   it('should load and convert policies.yaml files into teamConfig and save them', async () => {
     ;(globSync as jest.Mock).mockReturnValue(mockFilePaths)
 
-    await policiesMigration({ loadYaml, saveResourceGroupToFiles })
+    await policiesMigration({}, { loadYaml, saveResourceGroupToFiles })
 
     expect(loadYaml).toHaveBeenCalledTimes(2)
     expect(loadYaml).toHaveBeenCalledWith('/path/to/env/teams/admin/policies.yaml')
@@ -725,7 +731,7 @@ describe('Policies migration', () => {
   it('should not migrate if filepaths are empty', async () => {
     ;(globSync as jest.Mock).mockReturnValue([])
 
-    await policiesMigration({ loadYaml, saveResourceGroupToFiles })
+    await policiesMigration({}, { loadYaml, saveResourceGroupToFiles })
 
     expect(loadYaml).toHaveBeenCalledTimes(0)
     expect(saveResourceGroupToFiles).toHaveBeenCalledTimes(0)
