@@ -1,7 +1,8 @@
 {{- $v := .Values }}
 
-resources:
 {{- if $v | get "apps.istio.egressGateway.enabled" }}
+{{- $egressGatewayHostname := print $v._derived.egressGatewayName ".istio-system.svc.cluster.local" }}
+resources:
   - apiVersion: networking.istio.io/v1beta1
     kind: Gateway
     metadata:
@@ -9,13 +10,17 @@ resources:
       namespace: istio-system
     spec:
       selector:
-        istio: egressgateway
+        istio: {{ $v._derived.egressGatewayLabel }}
       servers:
       - port:
+          number: 80
+          name: http
           protocol: HTTP
         hosts:
         - '*'
       - port:
+          number: 443
+          name: http-tls
           protocol: TLS
         hosts:
         - '*'
@@ -27,48 +32,7 @@ resources:
       name: egressgateway-for-all
       namespace: istio-system
     spec:
-      host: istio-egressgateway.istio-system.svc.cluster.local
+      host: {{ $egressGatewayHostname }}
       subsets:
       - name: all
-  - apiVersion: networking.istio.io/v1beta1
-    kind: VirtualService
-    metadata:
-      name: direct-all-through-egress-gateway
-      namespace: istio-system
-    spec:
-      hosts:
-      - '*'
-      gateways:
-      - istio-egressgateway
-      - mesh
-      http:
-      - match:
-        - gateways:
-          - mesh
-        route:
-        - destination:
-            host: istio-egressgateway.istio-system.svc.cluster.local
-          weight: 100
-      - match:
-        - gateways:
-          - istio-egressgateway
-      tls:
-      - match:
-        - gateways:
-          - mesh
-          sniHosts:
-          - '*'
-        route:
-        - destination:
-            host: istio-egressgateway.istio-system.svc.cluster.local
-            subset: all
-      - match:
-        - gateways:
-          - istio-egressgateway
-          sniHosts:
-          - '*'
-        route:
-        - destination:
-            host: '*'
-          weight: 100        
 {{- end }}

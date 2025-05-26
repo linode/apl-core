@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
-import { hf } from 'src/common/hf'
+import { hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
 import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
@@ -36,9 +36,7 @@ const applyAll = async () => {
   const prevState = await getDeploymentState()
   const argv: HelmArguments = getParsedArgs()
   const initialInstall = !argv.tekton
-  const hfArgs = initialInstall
-    ? ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
-    : ['apply', '--sync-args', '--qps=20']
+  const hfArgs = initialInstall ? HF_DEFAULT_SYNC_ARGS : ['apply', '--sync-args', '--qps=20']
 
   await upgrade({ when: 'pre' })
   d.info('Start apply all')
