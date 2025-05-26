@@ -11,14 +11,18 @@ metadata:
   {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  minReadySeconds: 10
+  minReadySeconds: {{ .Values.distributor.minReadySeconds }}
 {{- if not .Values.distributor.autoscaling.enabled }}
   replicas: {{ .Values.distributor.replicas }}
 {{- end }}
-  revisionHistoryLimit: 10
+  revisionHistoryLimit: {{ .Values.tempo.revisionHistoryLimit }}
   selector:
     matchLabels:
       {{- include "tempo.selectorLabels" $dict | nindent 6 }}
+{{- with .Values.distributor.strategy }}
+  strategy:
+{{- toYaml . | nindent 4 }}
+{{- end }}      
   template:
     metadata:
       labels:
@@ -50,6 +54,10 @@ spec:
       {{- include "tempo.distributorImagePullSecrets" . | nindent 6 -}}
       {{- with .Values.distributor.hostAliases }}
       hostAliases:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.distributor.initContainers }}
+      initContainers:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
@@ -144,6 +152,9 @@ spec:
             {{- with .Values.distributor.extraVolumeMounts }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
+        {{- with .Values.distributor.extraContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       terminationGracePeriodSeconds: {{ .Values.distributor.terminationGracePeriodSeconds }}
       {{- if semverCompare ">= 1.19-0" .Capabilities.KubeVersion.Version }}
       {{- with .Values.distributor.topologySpreadConstraints }}
