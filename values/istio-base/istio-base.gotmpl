@@ -1,0 +1,10 @@
+{{- $v := .Values }}
+{{- $i := $v.apps.istio }}
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+global:
+  imagePullSecrets:
+    - otomi-pullsecret-global
+{{- end }}
+
+defaultRevision: {{ $i.defaultRevision | default "default" | quote }}

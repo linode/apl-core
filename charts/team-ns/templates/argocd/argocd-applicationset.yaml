@@ -57,6 +57,10 @@ spec:
           parameters:
             - name: sidecar.istio.io/inject
               value: 'true'
+            {{- if $v.apps.istio.defaultRevision }}
+            - name: istio.io/rev
+              value: {{ $v.apps.istio.defaultRevision | quote }}
+            {{- end }}
           {{- end }}
       syncPolicy:
         automated:
