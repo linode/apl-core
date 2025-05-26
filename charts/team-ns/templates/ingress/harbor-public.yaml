@@ -2,6 +2,7 @@
 {{- if eq $v.teamId "admin" }}
 {{- if $v.apps.harbor.enabled }}
 {{- $ingress :=  $v.ingress.platformClass }}
+{{- $ingressGateway := $v.ingressPublicGatewayName | default "istio-ingressgateway-public" }}
 {{- $name :=  printf "nginx-team-%s-platform-public-open-forward-harbor" $v.teamId }}
 ---
 apiVersion: networking.k8s.io/v1
@@ -36,28 +37,28 @@ spec:
         paths:
         - backend:
             service:
-              name: istio-ingressgateway-public
+              name: {{ $ingressGateway }}
               port:
                 number: 80
           path: /chartrepo/
           pathType: Prefix
         - backend:
             service:
-              name: istio-ingressgateway-public
+              name: {{ $ingressGateway }}
               port:
                 number: 80
           path: /service/
           pathType: Prefix
         - backend:
             service:
-              name: istio-ingressgateway-public
+              name: {{ $ingressGateway }}
               port:
                 number: 80
           path: /v1/
           pathType: Prefix
         - backend:
             service:
-              name: istio-ingressgateway-public
+              name: {{ $ingressGateway }}
               port:
                 number: 80
           path: /v2/

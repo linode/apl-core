@@ -3,6 +3,7 @@ metadata:
     name: istio
     labels: {}
 spec:
+    _rawValues: {}
     autoscaling:
         ingressgateway:
             maxReplicas: 5
@@ -71,4 +72,3 @@ spec:
     tracing:
         enabled: true
         samplingRatio: '0.01'
-    _rawValues: {}
