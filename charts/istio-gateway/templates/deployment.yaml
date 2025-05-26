@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: {{ .Values.kind | default "Deployment" }}
+metadata:
+  name: {{ include "gateway.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "gateway.name" . }}
+    {{- include "istio.labels" . | nindent 4}}
+    {{- include "gateway.labels" . | nindent 4}}
+  annotations:
+    {{- .Values.annotations | toYaml | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  {{- if and (hasKey .Values "replicaCount") (ne .Values.replicaCount nil) }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- end }}
+  {{- with .Values.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.minReadySeconds }}
+  minReadySeconds: {{ . }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "gateway.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gateway.sidecarInjectionLabels" . | nindent 8 }}
+        {{- include "gateway.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: {{ include "gateway.name" . }}
+        {{- include "istio.labels" .  | nindent 8}}
+        {{- range $key, $val := .Values.labels }}
+        {{- if and (ne $key "app") (ne $key "istio") }}
+        {{ $key | quote }}: {{ $val | quote }}
+        {{- end }}
+        {{- end }}
+        {{- with .Values.networkGateway }}
+        topology.istio.io/network: "{{.}}"
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "gateway.serviceAccountName" . }}
+      securityContext:
+      {{- if .Values.securityContext }}
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      {{- else }}
+        # Safe since 1.22: https://github.com/kubernetes/kubernetes/pull/103326
+        sysctls:
+        - name: net.ipv4.ip_unprivileged_port_start
+          value: "0"
+      {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{ toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: istio-proxy
+          # "auto" will be populated at runtime by the mutating webhook. See https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#customizing-injection
+          image: auto
+          {{- with .Values.imagePullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          securityContext:
+          {{- if .Values.containerSecurityContext }}
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          {{- else }}
+            capabilities:
+              drop:
+              - ALL
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            {{- if not (eq (.Values.platform | default "") "openshift") }}
+            runAsUser: 1337
+            runAsGroup: 1337
+            {{- end }}
+            runAsNonRoot: true
+          {{- end }}
+          env:
+          {{- with .Values.networkGateway }}
+          - name: ISTIO_META_REQUESTED_NETWORK_VIEW
+            value: "{{.}}"
+          {{- end }}
+          {{- range $key, $val := .Values.env }}
+          - name: {{ $key }}
+            value: {{ $val | quote }}
+          {{- end }}
+          ports:
+          - containerPort: 15090
+            protocol: TCP
+            name: http-envoy-prom
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ $.Values.terminationGracePeriodSeconds }}
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
