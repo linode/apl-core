@@ -1,4 +1,4 @@
-import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
+import { AppsV1Api, BatchV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
 import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
@@ -21,6 +21,7 @@ export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 let kc: KubeConfig
 let coreClient: CoreV1Api
 let appClient: AppsV1Api
+let batchClient: BatchV1Api
 let customClient: CustomObjectsApi
 export const k8s = {
   kc: (): KubeConfig => {
@@ -38,6 +39,11 @@ export const k8s = {
     if (appClient) return appClient
     appClient = k8s.kc().makeApiClient(AppsV1Api)
     return appClient
+  },
+  batch: (): BatchV1Api => {
+    if (batchClient) return batchClient
+    batchClient = k8s.kc().makeApiClient(BatchV1Api)
+    return batchClient
   },
   custom: (): CustomObjectsApi => {
     if (customClient) return customClient
