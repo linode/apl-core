@@ -19,9 +19,3 @@ podSecurityContext:
 imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
-
-{{- if $v.otomi.linodeLkeImageRepository }}
-image:
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-  tag: "{{- $v.versions.console }}"
-{{- end }}

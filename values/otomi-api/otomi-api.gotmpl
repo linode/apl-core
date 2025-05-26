@@ -72,9 +72,3 @@ imagePullSecrets:
 sso:
   issuer: {{ $v._derived.oidcBaseUrl }}
   jwksUri: {{ $v._derived.oidcBaseUrl }}/protocol/openid-connect/certs
-
-{{- if $v.otomi.linodeLkeImageRepository }}
-image:
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-  tag: "{{- $v.versions.api }}"
-{{- end }}
