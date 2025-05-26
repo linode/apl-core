@@ -27,7 +27,7 @@ priorityClassName: otomi-critical
 
 image:
 {{- if $v.otomi.linodeLkeImageRepository }}
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   repository: bitnami/keycloak
 {{- end }}
   # Override default from 26.2.0, as it has an issue during upgrade (to be fixed in 26.2.1)
