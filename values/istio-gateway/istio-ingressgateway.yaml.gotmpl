@@ -22,3 +22,5 @@ autoscaling:
   maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" }}
 
 priorityClassName: otomi-critical
+podDisruptionBudget:
+  minAvailable: 1
