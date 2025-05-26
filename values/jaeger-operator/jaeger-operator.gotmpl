@@ -36,5 +36,5 @@ imagePullSecrets:
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 image:
-  repository: {{- $v.otomi.linodeLkeImageRepository }}/docker/jaegertracing/jaeger-operator
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/jaegertracing/jaeger-operator"
 {{- end }}
