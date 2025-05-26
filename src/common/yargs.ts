@@ -129,6 +129,11 @@ export const basicOptions: { [key: string]: Options } = {
     default: false,
     hidden: true,
   },
+  dryRun: {
+    boolean: true,
+    default: false,
+    hidden: true,
+  },
 }
 
 export const helmOptions = (p: Argv): Argv => p.options(helmOpts)
