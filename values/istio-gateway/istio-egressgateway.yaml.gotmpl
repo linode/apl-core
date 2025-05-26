@@ -17,10 +17,18 @@ service:
   type: ClusterIP
 
 resources: {{- $i.resources.egressgateway | toYaml | nindent 2 }}
+
+strategy:
+  rollingUpdate:
+    maxSurge: 100%
+    maxUnavailable: 25%
+
 autoscaling:
   minReplicas: {{ $i | get "autoscaling.egressgateway.minReplicas" }}
   maxReplicas: {{ $i | get "autoscaling.egressgateway.maxReplicas" }}
 
-priorityClassName: otomi-critical
 podDisruptionBudget:
   minAvailable: 1
+
+priorityClassName: otomi-critical
+
