@@ -402,7 +402,7 @@ definitions:
         $ref: '#/definitions/rawValues'
       tracing:
         description: Configure Nginx for tracing. Requires Otel Collector to be enabled.
-        propterties:
+        properties:
           enabled:
             default: false
             type: boolean
@@ -1993,13 +1993,12 @@ properties:
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
-        additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
           tracing:
             description: Configure Istio for tracing. Requires Otel Collector to be enabled.
-            propterties:
+            properties:
               enabled:
                 default: false
                 type: boolean
@@ -2510,6 +2509,16 @@ properties:
               operator:
                 $ref: '#/definitions/resources'
       apl-keycloak-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+      apl-operator:
         additionalProperties: false
         properties:
           _rawValues:

@@ -5,7 +5,7 @@ import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
 import { cleanEnv, cliEnvSpec, env, isCli } from './envalid'
-import { readdirRecurse, rootDir } from './utils'
+import { hasFileDifference, readdirRecurse, rootDir } from './utils'
 import { BasicArguments } from './yargs'
 
 export interface Arguments extends BasicArguments {
@@ -115,9 +115,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   if (chunkSize + 2 > EventEmitter.defaultMaxListeners) EventEmitter.defaultMaxListeners = chunkSize + 2
   d.debug(`runOnSecretFiles: ${crypt.cmd}`)
   try {
-    // eslint-disable-next-line no-restricted-syntax
     for (const fileChunk of filesChunked) {
-      // eslint-disable-next-line no-await-in-loop
       await processFileChunk(crypt, fileChunk)
     }
     return
@@ -177,26 +175,33 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
     path,
     {
       condition: async (file: string): Promise<boolean> => {
-        const absFilePath = `${path}/${file}`
+        if (!(await pathExists(file))) {
+          d.warn(`${file} does not exist`)
+          return false
+        }
 
-        const decExists = await pathExists(`${absFilePath}.dec`)
+        try {
+          // Same logic is used in helm-secrets: https://github.com/jkroepke/helm-secrets/blob/18a061430899c8cd66be68d8495f4b8489dbf3c3/scripts/lib/backends/sops.sh#L16
+          await $`grep -q 'mac.*,type:str]' ${file}`
+          d.info(`Skipping encryption for ${file} (already encrypted)`)
+          return false
+        } catch {
+          d.debug(`${file} is not yet encrypted or grep did not match`)
+        }
+        // Check if the decrypted version exists
+        const decExists = await pathExists(`${file}.dec`)
         if (!decExists) {
-          d.debug(`Did not find decrypted ${absFilePath}.dec`)
+          d.debug(`Did not find decrypted ${file}.dec`)
           return true
         }
 
-        // if there is a .dec && .dec is > 1s newer
-        d.debug(`Found decrypted ${file}.dec`)
-
-        const encTS = await stat(absFilePath)
-        const decTS = await stat(`${absFilePath}.dec`)
-        d.debug(`${file} encTS.mtime: `, encTS.mtime)
-        d.debug(`${file} decTS.mtime: `, decTS.mtime)
-        const timeDiff = Math.round((decTS.mtimeMs - encTS.mtimeMs) / 1000)
-        if (timeDiff > 1) {
-          d.info(`Encrypting ${file}, time difference was ${timeDiff} seconds`)
+        // Compare files
+        const specsAreDifferent = await hasFileDifference(file, `${file}.dec`)
+        if (specsAreDifferent) {
+          d.info(`Encrypting ${file}, difference found between encrypted and .dec file`)
           return true
         }
+
         d.info(`Skipping encryption for ${file} as it has not changed`)
         return false
       },

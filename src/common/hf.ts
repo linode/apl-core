@@ -11,6 +11,7 @@ import { getParsedArgs, HelmArguments } from './yargs'
 import { ProcessOutputTrimmed, Streams } from './zx-enhance'
 
 const replaceHFPaths = (output: string, envDir = env.ENV_DIR): string => output.replaceAll('../env', envDir)
+export const HF_DEFAULT_SYNC_ARGS = ['sync', '--concurrency=1', '--sync-args', '--disable-openapi-validation --qps=20']
 
 type HFParams = {
   fileOpts?: string | string[] | null
@@ -53,8 +54,11 @@ const hfCore = (args: HFParams, envDir = env.ENV_DIR): ProcessPromise => {
   stringArray.push(`--log-level=${paramsCopy.logLevel.toLowerCase()}`)
   process.env.HELM_DIFF_COLOR = 'true'
   process.env.HELM_DIFF_USE_UPGRADE_DRY_RUN = 'true'
-  const proc = $`ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`
-  return proc
+  if ((parsedArgs?.dryRun || parsedArgs?.local) && paramsCopy.args.includes('sync')) {
+    return $`echo ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`
+  } else {
+    return $`ENV_DIR=${envDir} helmfile ${stringArray} ${paramsCopy.args}`
+  }
 }
 
 type HFOptions = {
@@ -66,8 +70,7 @@ export const hf = async (args: HFParams, opts?: HFOptions, envDir = env.ENV_DIR)
   const proc: ProcessPromise = hfCore(args, envDir)
   if (opts?.streams?.stdout) proc.stdout.pipe(opts.streams.stdout, { end: false })
   if (opts?.streams?.stderr) proc.stderr.pipe(opts.streams.stderr, { end: false })
-  const res = new ProcessOutputTrimmed(await proc)
-  return res
+  return new ProcessOutputTrimmed(await proc)
 }
 
 export interface ValuesArgs {
@@ -86,18 +89,22 @@ export const hfValues = async (
   let output: ProcessOutputTrimmed
   if (filesOnly)
     output = await hf(
-      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml`, args: 'build' },
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-files.yaml.gotmpl`, args: 'build' },
       undefined,
       envDir,
     )
   else if (defaultValues)
     output = await hf(
-      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-defaults.yaml`, args: 'build' },
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-defaults.yaml.gotmpl`, args: 'build' },
       undefined,
       envDir,
     )
   else
-    output = await hf({ fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml`, args: 'build' }, undefined, envDir)
+    output = await hf(
+      { fileOpts: `${rootDir}/helmfile.tpl/helmfile-dump-all.yaml.gotmpl`, args: 'build' },
+      undefined,
+      envDir,
+    )
   const res = parse(replaceHFPaths(output.stdout, envDir)).renderedvalues
   if (excludeSecrets) {
     // strip secrets
@@ -135,13 +142,6 @@ export const getStandaloneFiles = async (envDir: string): Promise<Record<string,
   return files
 }
 
-export const getHelmArgs = (argv: HelmArguments, args: string[] = []): string[] => {
-  const argsArr: string[] = args
-  if (argv.args) argsArr.push(argv.args)
-  if (argv.kubeVersion) argsArr.push(`--kube-version=${argv.kubeVersion}`)
-  return ['--args', argsArr.join(' ')]
-}
-
 export const hfTemplate = async (
   argv: HelmArguments,
   outDir?: string,
@@ -150,16 +150,14 @@ export const hfTemplate = async (
 ): Promise<string> => {
   const d = terminal('common:hf:hfTemplate')
   process.env.QUIET = '1'
-  // const args = ['template', '--validate']
-  const args = ['template', '--include-needs']
+  const args = ['template', '--include-needs', '--skip-tests']
   if (outDir) args.push(`--output-dir=${outDir}`)
   if (argv.skipCleanup || isCore) args.push('--skip-cleanup')
-  const helmArgs = getHelmArgs(argv, ['--skip-tests'])
-  args.push(...helmArgs)
+  if (argv.kubeVersion) args.push(`--kube-version=${argv.kubeVersion}`)
   let template = ''
   const params: HFParams = { args, fileOpts: argv.file, labelOpts: argv.label, logLevel: argv.logLevel }
   if (!argv.f && !argv.l) {
-    const file = 'helmfile.tpl/helmfile-init.yaml'
+    const file = 'helmfile.tpl/helmfile-init.yaml.gotmpl'
     d.debug(`# Templating ${file} started`)
     const outInit = await hf({ ...params, fileOpts: file }, { streams }, envDir)
     d.debug(`# Templating ${file} done`)

@@ -242,10 +242,10 @@ function hf_template() {
   QUIET=1
   if [ -n "$1" ]; then
     local out_dir="$1"
-    [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps --output-dir="$out_dir" $SKIP_CLEANUP >/dev/null
+    [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml.gotmpl template --skip-deps --output-dir="$out_dir" $SKIP_CLEANUP >/dev/null
     hf template --skip-deps --output-dir="$out_dir" $SKIP_CLEANUP >/dev/null
   else
-    [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml template --skip-deps $SKIP_CLEANUP
+    [ -z "$FILE_OPT" ] && [ -z "$LABEL_OPT" ] && hf -f helmfile.tpl/helmfile-init.yaml.gotmpl template --skip-deps $SKIP_CLEANUP
     hf template --skip-deps $SKIP_CLEANUP
   fi
 }

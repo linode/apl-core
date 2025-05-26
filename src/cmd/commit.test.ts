@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { CoreV1Api } from '@kubernetes/client-node'
 import { terminal } from '../common/debug'
 import { isOAuth2ProxyAvailable } from './commit'
