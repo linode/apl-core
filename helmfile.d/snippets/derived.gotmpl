@@ -38,9 +38,9 @@
 
 # Istio component variables
 
-# During initial install of APL, defaultRevision is set to the same as the canary.
+# During initial install of APL, legacyRevision is set to "operator". In that particular case, the
+# default revision should be an empty string. In later upgrades this can take any other value.
 # It only serves as a reference and does not necessarily have to correspond with the version number.
-# During a migration from the operator, legacyRevision set to 'operator' by the pre-upgrade script,
 {{- $istioCanaryRevision := "1-26-0" }}
 {{- $istioLegacyRevision := $a.istio | get "legacyRevision" "" }}
 {{- $istioDefaultRevision := ternary "" $istioCanaryRevision (eq $istioLegacyRevision "operator") }}
@@ -63,16 +63,10 @@
 {{- $ingressPublicGatewayName := print $ingressGatewayPrefix "-public" }}
 
 # The following variables are referred to by the Helm chart.
-{{- $istioIngressPublicReleaseName := $ingressPublicGatewayName }}
-{{- $istioIngressPublicReleaseLabel := $defaultIngressGatewayLabel }}
-{{- $istioEgressReleaseName := $egressGatewayName }}
-{{- $istioEgressReleaseLabel := $egressGatewayLabel }}
-{{- if $istioCanaryRevision }}
-{{- $istioIngressPublicReleaseName = printf "istio-ingressgateway-%s-public" $istioCanaryRevision }}
-{{- $istioIngressPublicReleaseLabel = printf "ingressgateway-%s-public" $istioCanaryRevision }}
-{{- $istioEgressReleaseName = print "istio-egressgateway-" $istioCanaryRevision }}
-{{- $istioEgressReleaseLabel = print "egressgateway-" $istioCanaryRevision }}
-{{- end }}
+{{- $istioIngressPublicReleaseName := printf "istio-ingressgateway-%s-public" $istioCanaryRevision }}
+{{- $istioIngressPublicReleaseLabel := printf "ingressgateway-%s-public" $istioCanaryRevision }}
+{{- $istioEgressReleaseName := print "istio-egressgateway-" $istioCanaryRevision }}
+{{- $istioEgressReleaseLabel := print "egressgateway-" $istioCanaryRevision }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
