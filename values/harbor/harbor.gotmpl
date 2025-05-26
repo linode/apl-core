@@ -7,7 +7,7 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
-{{- $tag := $h | get "image.tag" "v2.6.4" }}
+{{- $tag := $h | get "image.tag" "v2.12.2" }}
 {{/*The cloudNativeDb operator is responsible for creating the secret*/}}
 
 externalURL: {{ $externalUrl }}
@@ -22,16 +22,13 @@ secretKey: {{ $h | get "secretKey" nil }}
 updateStrategy:
     type: Recreate
 
-chartmuseum:
-  priorityClassName: otomi-critical
-  image:
-    tag: {{ $tag }}
-  resources: {{- $h.resources.chartmuseum | toYaml | nindent 6 }}
-
 core:
   secretName: harbor-token-service-ca
   priorityClassName: otomi-critical
   image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-core"
+    {{- end }}
     tag: {{ $tag }}
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
   secret: {{ $h | get "core.secret" nil | quote }}
@@ -51,6 +48,9 @@ database:
 exporter:
   priorityClassName: otomi-critical
   image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-exporter"
+    {{- end }}
     tag: {{ $tag }}
 
 expose:
@@ -65,6 +65,9 @@ internalTLS:
 jobservice:
   priorityClassName: otomi-critical
   image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-jobservice"
+    {{- end }}
     tag: {{ $tag }}
   jobLoggers:
     - stdout
@@ -79,18 +82,11 @@ metrics:
 
 nginx:
   resources: {{- $h.resources.nginx | toYaml | nindent 4 }}
-
-notary:
-  server:
-    priorityClassName: otomi-critical
-    image:
-      tag: {{ $tag }}
-  signer:
-    priorityClassName: otomi-critical
-    image:
-      tag: {{ $tag }}
-  enabled: false
-  secretName: {{ $notarySecretName }}
+  image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/nginx-photon"
+    {{- end }}
+    tag: {{ $tag }}
 
 persistence:
   enabled: true
@@ -164,10 +160,6 @@ persistence:
     type: filesystem
     {{- end }}
 
-postgresql:
-  volumePermissions:
-    enabled: true
-
 portal:
   priorityClassName: otomi-critical
   image:
@@ -194,15 +186,15 @@ registry:
   registry:
     image:
       tag: {{ $tag }}
-    {{- if $v.otomi.linodeLkeImageRepository }}
+      {{- if $v.otomi.linodeLkeImageRepository }}
       repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/registry-photon"
-    {{- end }}
+      {{- end }}
     resources: {{- $h.resources.registry | toYaml | nindent 6 }}
   controller:
     image:
-    {{- if $v.otomi.linodeLkeImageRepository }}
+      {{- if $v.otomi.linodeLkeImageRepository }}
       repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-registryctl"
-    {{- end }}
+      {{- end }}
       tag: {{ $tag }}
     resources: {{- $h.resources.registryController | toYaml | nindent 6 }}
   relativeurls: false
@@ -214,9 +206,9 @@ registry:
 trivy:
   priorityClassName: otomi-critical
   image:
-  {{- if $v.otomi.linodeLkeImageRepository }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/trivy-adapter-photon"
-  {{- end }}
+    {{- end }}
     tag: {{ $tag }}
   resources: 
     {{- $h.resources.trivy | toYaml  | nindent 4 }}
@@ -225,25 +217,4 @@ trivy:
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
-{{- end }}
-
-
-{{- if $v.otomi.linodeLkeImageRepository }}
-nginx:
-  image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/nginx-photon"
-{{- end }}
-
-
-{{- if $v.otomi.linodeLkeImageRepository }}
-jobservice:
-  image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-jobservice"
-{{- end }}
-
-
-{{- if $v.otomi.linodeLkeImageRepository }}
-core:
-  image:  
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/goharbor/harbor-core"
 {{- end }}

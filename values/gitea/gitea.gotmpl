@@ -40,6 +40,10 @@ securityContext:
   runAsUser: 1000
 
 image:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  registry:    "{{ $v.otomi.linodeLkeImageRepository }}/docker"
+  repository:  "gitea/gitea"
+  {{- end }}
   {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
@@ -218,18 +222,16 @@ containerSecurityContext:
   runAsUser: 1000
   runAsGroup: 1000
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
+  storageClass: ""
+  hostAliases: []
+{{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global
 {{- end }}
 
 {{- if $v.otomi.linodeLkeImageRepository }}
-global:
-  imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  imageRegistry: "{{ $v.otomi.linodeLkeImageRepository }}/docker"
   security:
     allowInsecureImages: true
-image:
-  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-  repository: "gitea/gitea"
 {{- end }}
