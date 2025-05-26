@@ -1,0 +1,306 @@
+# Not created if istiod is running remotely
+{{- if not .Values.istiodRemote.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istiod{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: istiod
+    istio.io/rev: {{ .Values.revision | default "default" | quote }}
+    install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
+    operator.istio.io/component: "Pilot"
+    istio: pilot
+    release: {{ .Release.Name }}
+    app.kubernetes.io/name: "istiod"
+    {{- include "istio.labels" . | nindent 4 }}
+{{- range $key, $val := .Values.deploymentLabels }}
+    {{ $key }}: "{{ $val }}"
+{{- end }}
+spec:
+{{- if not .Values.autoscaleEnabled }}
+{{- if .Values.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+{{- end }}
+  strategy:
+    rollingUpdate:
+      maxSurge: {{ .Values.rollingMaxSurge }}
+      maxUnavailable: {{ .Values.rollingMaxUnavailable }}
+  selector:
+    matchLabels:
+      {{- if ne .Values.revision "" }}
+      app: istiod
+      istio.io/rev: {{ .Values.revision | default "default" | quote }}
+      {{- else }}
+      istio: pilot
+      {{- end }}
+  template:
+    metadata:
+      labels:
+        app: istiod
+        istio.io/rev: {{ .Values.revision | default "default" | quote }}
+        install.operator.istio.io/owning-resource: {{ .Values.ownerName | default "unknown" }}
+        sidecar.istio.io/inject: "false"
+        operator.istio.io/component: "Pilot"
+        {{- if ne .Values.revision "" }}
+        istio: istiod
+        {{- else }}
+        istio: pilot
+        {{- end }}
+        {{- range $key, $val := .Values.podLabels }}
+        {{ $key }}: "{{ $val }}"
+        {{- end }}
+        istio.io/dataplane-mode: none
+        app.kubernetes.io/name: "istiod"
+        {{- include "istio.labels" . | nindent 8 }}
+      annotations:
+        prometheus.io/port: "15014"
+        prometheus.io/scrape: "true"
+        sidecar.istio.io/inject: "false"
+        {{- if .Values.podAnnotations }}
+{{ toYaml .Values.podAnnotations | indent 8 }}
+        {{- end }}
+    spec:
+{{- if .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.nodeSelector | indent 8 }}
+{{- end }}
+{{- with .Values.affinity }}
+      affinity:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+      tolerations:
+        - key: cni.istio.io/not-ready
+          operator: "Exists"
+{{- with .Values.tolerations }}
+{{- toYaml . | nindent 8 }}
+{{- end }}
+{{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+{{- toYaml . | nindent 8 }}
+{{- end }}
+      serviceAccountName: istiod{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+{{- if .Values.global.priorityClassName }}
+      priorityClassName: "{{ .Values.global.priorityClassName }}"
+{{- end }}
+{{- with .Values.initContainers }}
+      initContainers:
+        {{- tpl (toYaml .) $ | nindent 8 }}
+{{- end }}
+      containers:
+        - name: discovery
+{{- if contains "/" .Values.image }}
+          image: "{{ .Values.image }}"
+{{- else }}
+          image: "{{ .Values.hub | default .Values.global.hub }}/{{ .Values.image | default "pilot" }}:{{ .Values.tag | default .Values.global.tag }}{{with (.Values.variant | default .Values.global.variant)}}-{{.}}{{end}}"
+{{- end }}
+{{- if .Values.global.imagePullPolicy }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+{{- end }}
+          args:
+          - "discovery"
+          - --monitoringAddr=:15014
+{{- if .Values.global.logging.level }}
+          - --log_output_level={{ .Values.global.logging.level }}
+{{- end}}
+{{- if .Values.global.logAsJson }}
+          - --log_as_json
+{{- end }}
+          - --domain
+          - {{ .Values.global.proxy.clusterDomain }}
+{{- if .Values.taint.namespace }}
+          - --cniNamespace={{ .Values.taint.namespace }}
+{{- end }}
+          - --keepaliveMaxServerConnectionAge
+          - "{{ .Values.keepaliveMaxServerConnectionAge }}"
+{{- if .Values.extraContainerArgs }}
+          {{- with .Values.extraContainerArgs }}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+{{- end }}
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+            name: http-debug
+          - containerPort: 15010
+            protocol: TCP
+            name: grpc-xds
+          - containerPort: 15012
+            protocol: TCP
+            name: tls-xds
+          - containerPort: 15017
+            protocol: TCP
+            name: https-webhooks
+          - containerPort: 15014
+            protocol: TCP
+            name: http-monitoring
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 1
+            periodSeconds: 3
+            timeoutSeconds: 5
+          env:
+          - name: REVISION
+            value: "{{ .Values.revision | default `default` }}"
+          - name: PILOT_CERT_PROVIDER
+            value: {{ .Values.global.pilotCertProvider }}
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+          - name: SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.serviceAccountName
+          - name: KUBECONFIG
+            value: /var/run/secrets/remote/config
+          # If you explicitly told us where ztunnel lives, use that.
+          # Otherwise, assume it lives in our namespace
+          # Also, check for an explicit ENV override (legacy approach) and prefer that
+          # if present
+          {{ $ztTrustedNS := or .Values.trustedZtunnelNamespace .Release.Namespace }}
+          {{ $ztTrustedName := or .Values.trustedZtunnelName "ztunnel" }}
+          {{- if not .Values.env.CA_TRUSTED_NODE_ACCOUNTS }}
+          - name: CA_TRUSTED_NODE_ACCOUNTS
+            value: "{{ $ztTrustedNS }}/{{ $ztTrustedName }}"
+          {{- end }}
+          {{- if .Values.env }}
+          {{- range $key, $val := .Values.env }}
+          - name: {{ $key }}
+            value: "{{ $val }}"
+          {{- end }}
+          {{- end }}
+          {{- with .Values.envVarFrom }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+{{- if .Values.traceSampling }}
+          - name: PILOT_TRACE_SAMPLING
+            value: "{{ .Values.traceSampling }}"
+{{- end }}
+# If externalIstiod is set via Values.Global, then enable the pilot env variable. However, if it's set via Values.pilot.env, then
+# don't set it here to avoid duplication.
+# TODO (nshankar13): Move from Helm chart to code: https://github.com/istio/istio/issues/52449
+{{- if and .Values.global.externalIstiod (not (and .Values.env .Values.env.EXTERNAL_ISTIOD)) }}
+          - name: EXTERNAL_ISTIOD
+            value: "{{ .Values.global.externalIstiod }}"
+{{- end }}
+          - name: PILOT_ENABLE_ANALYSIS
+            value: "{{ .Values.global.istiod.enableAnalysis }}"
+          - name: CLUSTER_ID
+            value: "{{ $.Values.global.multiCluster.clusterName | default `Kubernetes` }}"
+          - name: GOMEMLIMIT
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.memory
+                divisor: "1"
+          - name: GOMAXPROCS
+            valueFrom:
+              resourceFieldRef:
+                resource: limits.cpu
+                divisor: "1"
+          - name: PLATFORM
+            value: "{{ coalesce .Values.global.platform .Values.platform }}"
+          resources:
+{{- if .Values.resources }}
+{{ toYaml .Values.resources | trim | indent 12 }}
+{{- else }}
+{{ toYaml .Values.global.defaultResources | trim | indent 12 }}
+{{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+              - ALL
+{{- if .Values.seccompProfile }}
+            seccompProfile:
+{{ toYaml .Values.seccompProfile | trim | indent 14 }}
+{{- end }}
+          volumeMounts:
+          - name: istio-token
+            mountPath: /var/run/secrets/tokens
+            readOnly: true
+          - name: local-certs
+            mountPath: /var/run/secrets/istio-dns
+          - name: cacerts
+            mountPath: /etc/cacerts
+            readOnly: true
+          - name: istio-kubeconfig
+            mountPath: /var/run/secrets/remote
+            readOnly: true
+          {{- if .Values.jwksResolverExtraRootCA }}
+          - name: extracacerts
+            mountPath: /cacerts
+          {{- end }}
+          - name: istio-csr-dns-cert
+            mountPath: /var/run/secrets/istiod/tls
+            readOnly: true
+          - name: istio-csr-ca-configmap
+            mountPath: /var/run/secrets/istiod/ca
+            readOnly: true
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+      volumes:
+      # Technically not needed on this pod - but it helps debugging/testing SDS
+      # Should be removed after everything works.
+      - emptyDir:
+          medium: Memory
+        name: local-certs
+      - name: istio-token
+        projected:
+          sources:
+            - serviceAccountToken:
+                audience: {{ .Values.global.sds.token.aud }}
+                expirationSeconds: 43200
+                path: istio-token
+      # Optional: user-generated root
+      - name: cacerts
+        secret:
+          secretName: cacerts
+          optional: true
+      - name: istio-kubeconfig
+        secret:
+          secretName: istio-kubeconfig
+          optional: true
+      # Optional: istio-csr dns pilot certs
+      - name: istio-csr-dns-cert
+        secret:
+          secretName: istiod-tls
+          optional: true
+      - name: istio-csr-ca-configmap
+  {{- if eq (.Values.env).ENABLE_CLUSTER_TRUST_BUNDLE_API true }}
+        projected:
+          sources:
+          - clusterTrustBundle:
+              name: istio.io:istiod-ca:root-cert
+              path: root-cert.pem
+              optional: true
+  {{- else }}
+        configMap:
+          name: istio-ca-root-cert
+          defaultMode: 420
+          optional: true
+  {{- end }}
+  {{- if .Values.jwksResolverExtraRootCA }}
+      - name: extracacerts
+        configMap:
+          name: pilot-jwks-extra-cacerts{{- if not (eq .Values.revision "") }}-{{ .Values.revision }}{{- end }}
+  {{- end }}
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 6}}
+      {{- end }}
+
+---
+{{- end }}
