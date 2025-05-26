@@ -13,7 +13,13 @@ resources:
       name: {{ $ns.name }}
       labels:
         name: {{ $ns.name }}
-        {{ if not ($ns | get "disableIstioInjection" false) }}istio-injection: enabled{{ end }}
+        {{- if not ($ns | get "disableIstioInjection" false) }}
+        {{- if $v.apps.istio.defaultRevision }}
+        istio.io/rev: {{ $v.apps.istio.defaultRevision }}
+        {{- else }}
+        istio-injection: enabled
+        {{- end }}
+        {{- end }}
         {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
       {{- with $v.otomi | get "globalPullSecret" nil }}
   - apiVersion: v1
@@ -45,7 +51,11 @@ resources:
       labels:
         name: {{ $ns }}
         type: team
+        {{- if $v.apps.istio.defaultRevision }}
+        istio.io/rev: {{ $v.apps.istio.defaultRevision | quote }}
+        {{- else }}
         istio-injection: enabled
+        {{- end }}
   {{- with $v.otomi | get "globalPullSecret" nil }}
   - apiVersion: v1
     kind: Secret
