@@ -123,7 +123,8 @@ changes:
     deletions:
       - 'apps.argocd.enabled'
   - version: 20
-    networkPoliciesMigration: true
+    customFunctions:
+      - networkPoliciesMigration
     additions:
       - 'teamConfig.{team}.managedMonitoring.private': true
     deletions:
@@ -337,25 +338,35 @@ changes:
       - databases.harbor.resources.requests.memory: '192Mi'
       - databases.harbor.resources.requests.cpu: '200m'
   - version: 33
-    migrateLegacyValues: true
+    customFunctions:
+      - migrateLegacyValues
   - version: 34
     deletions:
       - 'databases.keycloak.imported'
       - 'databases.gitea.imported'
       - 'databases.gitea.useOtomiDB'
   - version: 35
-    teamResourceQuotaMigration: true
+    customFunctions:
+      - teamResourceQuotaMigration
   - version: 36
-    buildImageNameMigration: true
-    policiesMigration: true
+    customFunctions:
+      - buildImageNameMigration
+      - policiesMigration
   - version: 37
     fileDeletions:
       - env/teams/{team}/policies.yaml
   - version: 38
-    teamSettingsMigration: true
+    customFunctions:
+      - teamSettingsMigration
   - version: 39
     deletions:
       - 'teamConfig.{team}.services[].type'
   - version: 40
+    customFunctions:
+      - addAplOperator
+  - version: 41
+    customFunctions:
+      - installIstioHelmCharts
+  - version: 42
     additions:
       - otomi.useORCS: true

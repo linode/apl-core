@@ -144,7 +144,7 @@ appsInfo:
     integration: Httpbin is by default available for developers to use.
   ingress-nginx:
     title: Ingress-NGINX
-    appVersion: 1.11.5
+    appVersion: 1.11.6
     repo: https://github.com/kubernetes/ingress-nginx
     maintainers: NGINX
     relatedLinks: ['https://apl-docs.net/docs/apps/ingress-nginx', 'https://docs.nginx.com/nginx-ingress-controller/']
@@ -152,8 +152,8 @@ appsInfo:
     about: ingress-nginx is an Ingress controller for Kubernetes using NGINX as a reverse proxy and load balancer.
     integration: APL integrated ingress-nginx into an advanced ingress architecture.
   istio:
-    title: Istio Operator
-    appVersion: 1.22.5
+    title: Istio
+    appVersion: 1.26.0
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:

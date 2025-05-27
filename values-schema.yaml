@@ -1993,7 +1993,6 @@ properties:
       ingress-nginx-platform:
         $ref: '#/definitions/ingressNginx'
       istio:
-        additionalProperties: false
         properties:
           _rawValues:
             $ref: '#/definitions/rawValues'
@@ -2510,6 +2509,16 @@ properties:
               operator:
                 $ref: '#/definitions/resources'
       apl-keycloak-operator:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            additionalProperties: false
+            properties:
+              operator:
+                $ref: '#/definitions/resources'
+      apl-operator:
         additionalProperties: false
         properties:
           _rawValues:

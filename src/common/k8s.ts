@@ -1,4 +1,4 @@
-import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
+import { AppsV1Api, BatchV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
 import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
@@ -21,6 +21,7 @@ export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 let kc: KubeConfig
 let coreClient: CoreV1Api
 let appClient: AppsV1Api
+let batchClient: BatchV1Api
 let customClient: CustomObjectsApi
 export const k8s = {
   kc: (): KubeConfig => {
@@ -38,6 +39,11 @@ export const k8s = {
     if (appClient) return appClient
     appClient = k8s.kc().makeApiClient(AppsV1Api)
     return appClient
+  },
+  batch: (): BatchV1Api => {
+    if (batchClient) return batchClient
+    batchClient = k8s.kc().makeApiClient(BatchV1Api)
+    return batchClient
   },
   custom: (): CustomObjectsApi => {
     if (customClient) return customClient
@@ -237,22 +243,21 @@ type WaitTillAvailableOptions = Options & {
   password?: string
 }
 
-export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
-  const retryOptions: Options = {
-    retries: 20,
-    maxTimeout: 30000,
-  }
+export const waitTillGitRepoAvailable = async (repoUrl: string): Promise<void> => {
   const d = terminal('common:k8s:waitTillGitRepoAvailable')
-  await retry(async (bail) => {
-    try {
-      cd(env.ENV_DIR)
-      // the ls-remote exist with zero even if repo is empty
-      await $`git ls-remote ${repoUrl}`
-    } catch (e) {
-      d.warn(`The values repository is not yet reachable. Retrying in ${retryOptions.maxTimeout} ms`)
-      throw e
-    }
-  }, retryOptions)
+  await retry(
+    async () => {
+      try {
+        cd(env.ENV_DIR)
+        // the ls-remote exists with zero even if repo is empty
+        await $`git ls-remote ${repoUrl}`
+      } catch (e) {
+        d.warn(`The values repository is not yet reachable. Retrying in ${env.MIN_TIMEOUT} ms`)
+        throw e
+      }
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
 }
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
