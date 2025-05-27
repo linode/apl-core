@@ -27,6 +27,10 @@ startupapicheck:
   jobAnnotations:
     sidecar.istio.io/inject: "false"  
   resources: {{- toYaml $cm.resources.startupapicheck | nindent 4 }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-startupapicheck"
+{{- end }}
 
 cainjector:
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -47,8 +51,3 @@ acmesolver:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-acmesolver"
 {{- end }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
-startupapicheck:
-  image:
-    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-startupapicheck"
-{{- end }}
