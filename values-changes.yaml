@@ -369,4 +369,4 @@ changes:
       - installIstioHelmCharts
   - version: 42
     additions:
-      - otomi.useORCS: true
+      - otomi.useORCS: false
