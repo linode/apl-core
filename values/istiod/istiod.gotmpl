@@ -20,6 +20,7 @@ global:
     level: {{ $i | get "global.logging.level" "default:info" }}
   proxy:
     resources: {{- $i.resources.proxy | toYaml | nindent 6 }}
+  priorityClassName: otomi-critical
 
 meshConfig:
   defaultConfig:
@@ -44,4 +45,3 @@ meshConfig:
     {{- end }}
 
 # Mutating webhook needs to be available for istio-gateway deployment!
-priorityClassName: otomi-critical
