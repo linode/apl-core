@@ -10,6 +10,7 @@ storage:
 walStorage:
   storageClass: ""
   size: 5Gi
+priorityClassName: otomi-critical
 
 resources: {}
 
