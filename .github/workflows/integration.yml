@@ -51,7 +51,7 @@ on:
           - "['1.31']"
           - "['1.32']"
           - "['1.33']"
-        default: "['1.33']"
+        default: "['1.32']"
       install_profile:
         description: APL installation profile
         default: minimal-with-team
@@ -279,6 +279,15 @@ jobs:
           imagePullSecretNames:
             - reg-otomi-github
           EOF
+      - name: Install Cloud Firewall Controller
+        if: ${{ inputs.install_profile != 'no-apl' }}
+        run: |
+          helm repo add linode-cfw https://linode.github.io/cloud-firewall-controller
+          helm repo update linode-cfw
+
+          helm install cloud-firewall-crd linode-cfw/cloud-firewall-crd \
+            && kubectl wait --for condition=established --timeout=60s crd/cloudfirewalls.networking.linode.com \
+            && helm install cloud-firewall-ctrl linode-cfw/cloud-firewall-controller
       - name: APL install
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
@@ -382,13 +391,3 @@ jobs:
           EDGEDNS_HOST: ${{ secrets.EDGEDNS_HOST }}
         run: |
           python3 bin/edgedns_A_record.py delete "*.${DOMAIN}"
-      - name: Slack Notification
-        if: always()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: github-ci
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_ICON: https://github.com/redkubes.png?size=48
-          SLACK_TITLE: Scheduled integration tests
-          SLACK_USERNAME: RedKubesBot

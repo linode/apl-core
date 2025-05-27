@@ -1,0 +1,33 @@
+{{- $v := .Values }}
+{{- $i := $v.apps.istio }}
+
+name: {{ $i.release.ingressPublicName }}
+revision: {{ $i.release.revision | quote }}
+
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+labels:
+  istio: {{ $i.release.ingressPublicLabel }}
+  app: ingressgateway
+
+service:
+  type: ClusterIP
+
+resources: {{- $i.resources.ingressgateway | toYaml | nindent 2 }}
+
+strategy:
+  rollingUpdate:
+    maxSurge: '100%'
+    maxUnavailable: '25%'
+
+autoscaling:
+  minReplicas: {{ $i | get "autoscaling.ingressgateway.minReplicas" }}
+  maxReplicas: {{ $i | get "autoscaling.ingressgateway.maxReplicas" }}
+
+podDisruptionBudget:
+  minAvailable: 1
+
+priorityClassName: otomi-critical
