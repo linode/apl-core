@@ -1,5 +1,5 @@
-api: 4.4.0
-console: 4.3.0
-consoleLogin: 4.3.0
-tasks: 3.11.0
-tools: 2.8.8
+api: main
+console: main
+consoleLogin: main
+tasks: main
+tools: main

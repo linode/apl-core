@@ -27,7 +27,6 @@ FROM ci AS clean
 RUN npm prune --production
 
 FROM linode/apl-tools:v2.9.0  AS prod
-
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
 ENV VERBOSITY='0'
