@@ -44,7 +44,10 @@ notifications:
 
 redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
-
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
+  {{- end }}
 repoServer:
   autoscaling:
     enabled: {{ $a.autoscaling.repoServer.enabled }}

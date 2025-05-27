@@ -6,7 +6,7 @@ jaeger:
   namespace: jaeger
   spec:
     allInOne:
-      image: jaegertracing/all-in-one:{{ $version }}
+      image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/docker/{{- end }}jaegertracing/all-in-one:{{ $version }}"
       options:
         query:
           base-path: /jaeger

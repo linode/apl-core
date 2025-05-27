@@ -20,6 +20,9 @@ global:
     level: {{ $i | get "global.logging.level" "default:info" }}
   proxy:
     resources: {{- $i.resources.proxy | toYaml | nindent 6 }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  hub: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio"
+  {{- end }}
 
 meshConfig:
   defaultConfig:
