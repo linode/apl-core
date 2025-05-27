@@ -23,6 +23,7 @@ global:
   {{- if $v.otomi.linodeLkeImageRepository }}
   hub: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio"
   {{- end }}
+  priorityClassName: otomi-critical
 
 meshConfig:
   defaultConfig:
@@ -47,4 +48,3 @@ meshConfig:
     {{- end }}
 
 # Mutating webhook needs to be available for istio-gateway deployment!
-priorityClassName: otomi-critical
