@@ -28,17 +28,6 @@ podDns:
 
 resources: {{- $g.resources.gitea | toYaml | nindent 2 }}
 
-securityContext:
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop:
-      - ALL
-  privileged: false
-  readOnlyRootFilesystem: true
-  runAsGroup: 1000
-  runAsNonRoot: true
-  runAsUser: 1000
-
 image:
   {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
@@ -212,11 +201,19 @@ extraVolumes:
 
 podSecurityContext:
   fsGroup: 1000
-
-containerSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000
   runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  capabilities:
+    drop:
+      - ALL
+  allowPrivilegeEscalation: false
+  privileged: false
+  readOnlyRootFilesystem: true
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
