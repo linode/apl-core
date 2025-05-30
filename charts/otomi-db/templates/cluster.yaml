@@ -13,6 +13,9 @@ spec:
   {{- with .Values.imageName }}
   imageName: {{ . }}
   {{- end }}
+  {{- with .Values.priorityClassName }}
+  priorityClassName: {{ . }}
+  {{- end }}
   storage:
     {{- with .Values.storage.storageClass }}
     storageClass: {{ . }}
