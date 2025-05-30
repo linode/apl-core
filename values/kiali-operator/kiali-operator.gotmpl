@@ -38,20 +38,15 @@ cr:
       istio:
         component_status:
           enabled: true
-          components:
-          - app_label: istiod
-            is_core: true
-            namespace: istio-system
-          - app_label: ingressgateway
-            is_core: true
-            is_proxy: false
-            namespace: istio-system
-          {{ if $v.apps.istio.egressGateway.enabled }}
-          - app_label: egressgateway
-            is_core: false
-            is_proxy: true
-            namespace: istio-system
-          {{- end }}
+        external_services:
+            istio:
+              config_map_name: istio-1-26-0
+              istiod_deployment_name: istiod-1-26-0
+              component_status:
+                enabled: true
+              root_namespace: istio-system
+              url_service_version: http://istiod-1-26-0.istio-system.svc:15014/version
+              istio_identity_domain: svc.cluster.local
       prometheus:
         auth:
           insecure_skip_verify: {{ $v._derived.untrustedCA }}
