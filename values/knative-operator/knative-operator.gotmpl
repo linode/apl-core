@@ -2,10 +2,6 @@
 {{- $k := $v.apps.knative -}}
 
 
-operator:
-  resources: {{- $k.resources.operator | toYaml | nindent 4 }}
-
-
 webhook:
   resources: {{- $k.resources.operatorWebhook | toYaml | nindent 4 }}
   image:
