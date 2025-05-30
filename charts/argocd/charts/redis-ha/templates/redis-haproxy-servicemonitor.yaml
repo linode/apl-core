@@ -1,4 +1,4 @@
-{{- if and ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) ( .Values.haproxy.metrics.serviceMonitor.enabled ) ( .Values.haproxy.metrics.enabled ) }}
+{{- if and ( or .Values.haproxy.metrics.serviceMonitor.disableAPICheck ( .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" ) ) ( .Values.haproxy.metrics.serviceMonitor.enabled ) ( .Values.haproxy.metrics.enabled ) }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:

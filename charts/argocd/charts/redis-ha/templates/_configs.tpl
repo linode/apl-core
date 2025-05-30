@@ -27,7 +27,13 @@
     {{- end }}
     {{- end }}
     {{- range $key, $value := .Values.redis.config }}
+    {{- if kindIs "slice" $value }}
+        {{- range $value }}
+    {{ $key }} {{ . }}
+        {{- end }}
+        {{- else }}
     {{ $key }} {{ $value }}
+        {{- end }}
     {{- end }}
 {{- if .Values.auth }}
     requirepass replace-default-auth
@@ -327,7 +333,7 @@
     identify_announce_ip
 
     if [ -z "${ANNOUNCE_IP}" ]; then
-        "Error: Could not resolve the announce ip for this pod."
+        "Error: Could not resolve the announce ip for this pod"
         exit 1
     elif [ "${MASTER}" ]; then
         find_master
@@ -459,6 +465,7 @@
         identify_announce_ip
     done
 
+    trap "exit 0" TERM
     while true; do
         sleep {{ .Values.splitBrainDetection.interval }}
 
@@ -527,7 +534,7 @@
       {{- if .Values.haproxy.tls.enabled }}
       bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.haproxy.containerPort }} ssl crt {{ .Values.haproxy.tls.certMountPath }}{{ .Values.haproxy.tls.keyName }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       {{ else }}
-      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ $root.Values.redis.port }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
+      bind {{ if .Values.haproxy.IPv6.enabled }}[::]{{ end }}:{{ if ne (int $root.Values.redis.port) 0 }}{{ $root.Values.redis.port }}{{ else }}{{ $root.Values.redis.tlsPort }}{{ end }} {{ if .Values.haproxy.IPv6.enabled }}v4v6{{ end }}
       {{- end }}
       use_backend bk_redis_master
     {{- if .Values.haproxy.readOnly.enabled }}
@@ -636,11 +643,12 @@
       {{- end}}
         ping
     )
-    if [ "$response" != "PONG" ] && [ "${response:0:7}" != "LOADING" ] ; then
-      echo "$response"
-      exit 1
-    fi
     echo "response=$response"
+    case $response in
+      PONG|LOADING*) ;;
+      *) exit 1 ;;
+    esac
+    exit 0
 {{- end }}
 
 {{- define "redis_readiness.sh" }}
@@ -661,10 +669,39 @@
         ping
     )
     if [ "$response" != "PONG" ] ; then
-      echo "$response"
+      echo "ping=$response"
       exit 1
     fi
-    echo "response=$response"
+
+    response=$(
+      redis-cli \
+      {{- if .Values.auth }}
+        -a "${AUTH}" --no-auth-warning \
+      {{- end }}
+        -h localhost \
+      {{- if ne (int .Values.redis.port) 0 }}
+        -p {{ .Values.redis.port }} \
+      {{- else }}
+        -p {{ .Values.redis.tlsPort }} ${TLS_CLIENT_OPTION} \
+      {{- end}}
+        role
+    )
+    role=$( echo "$response" | sed "1!d" )
+    if [ "$role" = "master" ]; then
+      echo "role=$role"
+      exit 0
+    elif [ "$role" = "slave" ]; then
+      repl=$( echo "$response" | sed "4!d" )
+      echo "role=$role; repl=$repl"
+      if [ "$repl" = "connected" ]; then
+        exit 0
+      else
+        exit 1
+      fi
+    else
+      echo "role=$role"
+      exit 1
+    fi
 {{- end }}
 
 {{- define "sentinel_liveness.sh" }}
