@@ -36,17 +36,6 @@ rules:
   - create
   - list
   - watch
-{{- if gt (len .Values.secretReader) 0 }}
-- apiGroups: [""]
-  resourceNames:
-  {{- range .Values.secretReader }}
-  - {{ . }}
-  {{- end }}
-  resources:
-  - secrets
-  verbs:
-  - get
-{{- end }}
 - apiGroups: [""]
   resourceNames:
   - kiali-signing-key
@@ -58,6 +47,15 @@ rules:
   - list
   - patch
   - update
+  - watch
+- apiGroups: [""]
+  resourceNames:
+  - kiali-multi-cluster-secret
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
   - watch
 - apiGroups: ["apps"]
   resources:
@@ -113,7 +111,7 @@ rules:
   - list
 - apiGroups: ["rbac.authorization.k8s.io"]
   resources:
-  {{- if or (and (.Values.cr.create) (has "**" .Values.cr.spec.deployment.accessible_namespaces)) (.Values.clusterRoleCreator) }}
+  {{- if or (and (.Values.cr.create) (.Values.cr.spec.deployment.cluster_wide_access)) (.Values.clusterRoleCreator) }}
   - clusterrolebindings
   - clusterroles
   {{- end }}
@@ -312,4 +310,11 @@ rules:
   - tokenreviews
   verbs:
   - create
----
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+...
