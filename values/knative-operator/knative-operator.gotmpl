@@ -1,14 +1,13 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.knative -}}
 
-webhook:
-  resources: {{- $k.resources.operatorWebhook | toYaml | nindent 4 }}
 
 operator:
   resources: {{- $k.resources.operator | toYaml | nindent 4 }}
 
 
 webhook:
+  resources: {{- $k.resources.operatorWebhook | toYaml | nindent 4 }}
   image:
     {{- if $v.otomi.linodeLkeImageRepository }}
     repo: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/operator/cmd/webhook"
@@ -18,6 +17,7 @@ webhook:
     tag: v1.15.6
 
 operator:
+  resources: {{- $k.resources.operator | toYaml | nindent 4 }}
   image:
     {{- if $v.otomi.linodeLkeImageRepository }}
     repo: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/operator/cmd/operator"
