@@ -99,7 +99,7 @@ appsInfo:
     integration: Falco can be enabled in APL for runtime intrusion detection. Macros have been configured to exclude all known platform violations so platform admins are only notified when user workloads are not compliant to the security rules. Alerts are automatically send using Alertmanager and the Falco Dashboard is added to Grafana.
   gitea:
     title: Gitea Self-hosted GIT
-    appVersion: 1.23.7
+    appVersion: 1.23.8
     repo: https://github.com/go-gitea/gitea
     maintainers: Gitea
     relatedLinks:
