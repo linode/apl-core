@@ -1,3 +1,0 @@
-Welcome to Knative! For more details on Knative, see: https://github.com/knative/community
-
-The Knative Operator [{{ .Chart.AppVersion }}] has been installed in namespace [{{ .Release.Namespace }}]. It will be ready soon.
