@@ -56,6 +56,10 @@ prometheusOperator:
   priorityClassName: otomi-critical
   prometheusConfigReloader:
     resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}    
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
 commonLabels:
   prometheus: system
 crds:

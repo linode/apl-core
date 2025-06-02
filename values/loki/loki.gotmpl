@@ -88,6 +88,10 @@ ingester:
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.ingester.targetMemoryUtilizationPercentage }}
 
 gateway:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image: 
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  {{- end }}
   resources: {{- $l.resources.gateway | toYaml | nindent 4 }}
   autoscaling:
     enabled: {{ $l.autoscaling.gateway.enabled }}
