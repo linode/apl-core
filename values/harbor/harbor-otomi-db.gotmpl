@@ -9,12 +9,16 @@ storage:
   size: {{ $hdb.size }}
 instances: {{ $hdb.replicas }}
 
-{{- with $hdb.imageName }}
+{{- if $hdb.imageName }}
   {{- if $v.otomi.linodeLkeImageRepository }}
-imageName: {{ regexReplaceAll "^ghcr\\.io"  .  (printf "%s/ghrc" $v.otomi.linodeLkeImageRepository) }}
+imageName: {{ regexReplaceAll "^ghcr\\.io" $hdb.imageName (printf "%s/ghrc" $v.otomi.linodeLkeImageRepository) }}
   {{- else }}
-imageName: {{ . }}
+imageName: {{ $hdb.imageName }}
   {{- end }}
+{{- else if $v.otomi.linodeLkeImageRepository }}
+imageName: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/cloudnative-pg/postgresql:15.10
+{{- else }}
+imageName: ghcr.io/cloudnative-pg/postgresql:15.10
 {{- end }}
 
 postgresql:
