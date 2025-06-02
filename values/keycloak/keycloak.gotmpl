@@ -17,7 +17,6 @@ service:
   ports:
     http: 8080
 
-usePasswordFiles: false  # Currently required due to chart issue in rendering all values from DB secret
 enableServiceLinks: false
 customCaExistingSecret: custom-ca
 production: true
@@ -26,6 +25,10 @@ resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
 image:
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+  pullSecrets:
+    - name: otomi-pullsecret-global
+{{- end }}
 {{- if $v.otomi.linodeLkeImageRepository }}
   registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   repository: bitnami/keycloak
