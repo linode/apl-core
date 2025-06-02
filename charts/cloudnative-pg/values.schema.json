@@ -246,6 +246,12 @@
         "tolerations": {
             "type": "array"
         },
+        "topologySpreadConstraints": {
+            "type": "array"
+        },
+        "updateStrategy": {
+            "type": "object"
+        },
         "webhook": {
             "type": "object",
             "properties": {
@@ -275,6 +281,17 @@
                     "type": "object",
                     "properties": {
                         "initialDelaySeconds": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "startupProbe": {
+                    "type": "object",
+                    "properties": {
+                        "failureThreshold": {
+                            "type": "integer"
+                        },
+                        "periodSeconds": {
                             "type": "integer"
                         }
                     }
