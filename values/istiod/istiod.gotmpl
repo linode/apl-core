@@ -11,6 +11,10 @@ jwksResolverExtraRootCA: |
 
 revision: {{ $i.release.revision | quote }}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+hub: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio"
+{{- end }}
+
 global:
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
@@ -20,9 +24,14 @@ global:
     level: {{ $i | get "global.logging.level" "default:info" }}
   proxy:
     resources: {{- $i.resources.proxy | toYaml | nindent 6 }}
-  {{- if $v.otomi.linodeLkeImageRepository }}
-  hub: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio"
-  {{- end }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio/proxyv2"
+    {{- end }}
+  proxy_init:
+    resources: {{- $i.resources.proxy | toYaml | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio/proxyv2"
+    {{- end }}
   priorityClassName: otomi-critical
 
 meshConfig:
