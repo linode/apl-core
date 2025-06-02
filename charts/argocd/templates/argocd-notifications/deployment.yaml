@@ -9,7 +9,7 @@ metadata:
     {{- end }}
   {{- end }}
   name: {{ include "argo-cd.notifications.fullname" . }}
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include  "argo-cd.namespace" . }}
   labels:
     {{- include "argo-cd.labels" (dict "context" . "component" .Values.notifications.name "name" .Values.notifications.name) | nindent 4 }}
 spec:
@@ -36,6 +36,9 @@ spec:
           {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- with .Values.notifications.runtimeClassName | default .Values.global.runtimeClassName }}
+      runtimeClassName: {{ . }}
+      {{- end }}
       {{- with .Values.notifications.imagePullSecrets | default .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -55,6 +58,7 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.notifications.terminationGracePeriodSeconds }}
       {{- end }}
       serviceAccountName: {{ include "argo-cd.notifications.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.notifications.automountServiceAccountToken }}
       containers:
         - name: {{ .Values.notifications.name }}
           image: {{ default .Values.global.image.repository .Values.notifications.image.repository }}:{{ default (include "argo-cd.defaultTag" .) .Values.notifications.image.tag }}
@@ -62,11 +66,15 @@ spec:
           args:
             - /usr/local/bin/argocd-notifications
             - --metrics-port={{ .Values.notifications.containerPorts.metrics }}
-            - --loglevel={{ default .Values.global.logging.level .Values.notifications.logLevel }}
-            - --logformat={{ default .Values.global.logging.format .Values.notifications.logFormat }}
-            - --namespace={{ .Release.Namespace }}
+            - --namespace={{ include "argo-cd.namespace" . }}
             - --argocd-repo-server={{ template "argo-cd.repoServer.fullname" . }}:{{ .Values.repoServer.service.port }}
             - --secret-name={{ .Values.notifications.secret.name }}
+            {{- with .Values.notifications.logLevel }}
+            - --loglevel={{ . }}
+            {{- end }}
+            {{- with .Values.notifications.logFormat }}
+            - --logformat={{ . }}
+            {{- end }}
             {{- range .Values.notifications.extraArgs }}
             - {{ . | squote }}
             {{- end }}
@@ -86,6 +94,12 @@ spec:
                   key: notificationscontroller.log.format
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_LOG_FORMAT_TIMESTAMP
+              valueFrom:
+                configMapKeyRef:
+                  name: argocd-cmd-params-cm
+                  key: log.format.timestamp
+                  optional: true
             - name: ARGOCD_APPLICATION_NAMESPACES
               valueFrom:
                 configMapKeyRef:
@@ -98,6 +112,12 @@ spec:
                   key: notificationscontroller.selfservice.enabled
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_NOTIFICATION_CONTROLLER_REPO_SERVER_PLAINTEXT
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.repo.server.plaintext
+                  name: argocd-cmd-params-cm
+                  optional: true
           {{- with .Values.notifications.extraEnvFrom }}
           envFrom:
             {{- toYaml . | nindent 12 }}
@@ -106,6 +126,26 @@ spec:
           - name: metrics
             containerPort: {{ .Values.notifications.containerPorts.metrics }}
             protocol: TCP
+          {{- if .Values.notifications.livenessProbe.enabled }}
+          livenessProbe:
+            tcpSocket:
+              port: metrics
+            initialDelaySeconds: {{ .Values.notifications.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.notifications.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.notifications.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.notifications.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.notifications.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.notifications.readinessProbe.enabled }}
+          readinessProbe:
+            tcpSocket:
+              port: metrics
+            initialDelaySeconds: {{ .Values.notifications.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.notifications.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.notifications.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.notifications.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.notifications.readinessProbe.failureThreshold }}
+          {{- end }}
           resources:
             {{- toYaml .Values.notifications.resources | nindent 12 }}
           {{- with .Values.notifications.containerSecurityContext }}
