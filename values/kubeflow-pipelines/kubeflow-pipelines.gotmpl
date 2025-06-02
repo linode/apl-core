@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $kfp := $v.apps.kubeflow-pipelines }}
+{{- $kfp := index $v.apps "kubeflow-pipelines" }}
 
 cacheDeployer:
   resources: {{- $kfp.resources.cacheDeployer | toYaml | nindent 4 }}

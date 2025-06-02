@@ -2176,6 +2176,9 @@ properties:
           enabled:
             default: false
             type: boolean
+          rootPassword:
+            type: string
+            x-secret: ''
           resources:
             additionalProperties: false
             properties:
