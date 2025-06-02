@@ -334,6 +334,7 @@ jobs:
             --set otomi.hasExternalDNS=true \
             --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set otomi.adminPassword=$adminPassword \
+            --set otomi.useORCS=true \
             $kms"
 
           helm install $install_args &
