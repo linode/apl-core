@@ -35,13 +35,6 @@ spec:
           protocol: TCP
         - port: {{ .Values.sentinel.port }}
           protocol: TCP
-    - to:
-      - namespaceSelector: {}
-      ports:
-        - port: 53
-          protocol: UDP
-        - port: 53
-          protocol: TCP
 {{-  range $rule := .Values.networkPolicy.egressRules }}
     - to:
 {{ (tpl (toYaml $rule.selectors) $) | indent 7 }}
