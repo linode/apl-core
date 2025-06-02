@@ -20,6 +20,9 @@ global:
   imagePullSecrets:
     - otomi-pullsecret-global
 {{- end }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  hub: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio"
+  {{- end }}
   logging:
     level: {{ $i | get "global.logging.level" "default:info" }}
   proxy:
