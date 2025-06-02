@@ -5,7 +5,7 @@ cluster:
 otomi:
   isMultitenant: true
   version: 'OTOMI_VERSION_PLACEHOLDER'
-  adminPassword: welcomeotomi
+  useORCS: true
 apps:
   alertmanager:
     enabled: true
