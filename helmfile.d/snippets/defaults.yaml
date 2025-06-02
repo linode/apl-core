@@ -590,6 +590,101 @@ environments:
                 limits:
                   cpu: "1"
                   memory: 1Gi
+          kubeflow-pipelines:
+            enabled: false
+            resources:
+              cacheDeployer:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+              cacheServer:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+              metadataEnvoy:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              metadataGrpc:
+                requests:
+                  cpu: 20m
+                  memory: 8Mi
+                limits:
+                  cpu: 100m
+                  memory: 16Mi
+              metadataWriter:
+                requests:
+                  cpu: 20m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              mlPipeline:
+                requests:
+                  cpu: 20m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              mlPipelinePersistenceagent:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              mlPipelineScheduledworkflow:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              mlPipelineUi:
+                requests:
+                  cpu: 20m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              mlPipelineViewer:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              mlPipelineVisualizationserver:
+                requests:
+                  cpu: 20m
+                  memory: 128Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              mysql:
+                requests:
+                  cpu: 100m
+                  memory: 512Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              workflowController:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+            _rawValues: {}
           kured:
             enabled: false
             resources:

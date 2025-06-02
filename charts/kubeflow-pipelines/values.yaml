@@ -1,0 +1,81 @@
+objectStorage:
+  region: ""
+  bucket: ""
+
+cacheDeployer:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 8Mi
+
+cacheServer:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+
+metadataEnvoy:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+metadataGrpc:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 8Mi
+
+metadataWriter:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+mlPipeline:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+mlPipelinePersistenceagent:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+
+mlPipelineScheduledworkflow:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 16Mi
+
+mlPipelineUi:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+mlPipelineViewer:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+mlPipelineVisualizationserver:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 128Mi
+
+mysql:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+workflowController:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi

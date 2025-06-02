@@ -2168,6 +2168,43 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
+      kubeflow-pipelines:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            default: false
+            type: boolean
+          resources:
+            additionalProperties: false
+            properties:
+              cacheDeployer:
+                $ref: '#/definitions/resources'
+              cacheServer:
+                $ref: '#/definitions/resources'
+              metadataEnvoy:
+                $ref: '#/definitions/resources'
+              metadataGrpc:
+                $ref: '#/definitions/resources'
+              metadataWriter:
+                $ref: '#/definitions/resources'
+              mlPipeline:
+                $ref: '#/definitions/resources'
+              mlPipelinePersistenceagent:
+                $ref: '#/definitions/resources'
+              mlPipelineScheduledworkflow:
+                $ref: '#/definitions/resources'
+              mlPipelineUi:
+                $ref: '#/definitions/resources'
+              mlPipelineViewer:
+                $ref: '#/definitions/resources'
+              mlPipelineVisualizationserver:
+                $ref: '#/definitions/resources'
+              mysql:
+                $ref: '#/definitions/resources'
+              workflowController:
+                $ref: '#/definitions/resources'
       kured:
         additionalProperties: false
         properties:
