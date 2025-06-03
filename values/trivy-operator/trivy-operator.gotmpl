@@ -5,7 +5,7 @@
 {{- if $v.otomi.linodeLkeImageRepository }}
 global:
   image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/gcr"
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
 {{- end }}
 
 {{ $targets := list }}
