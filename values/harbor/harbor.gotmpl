@@ -7,7 +7,7 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
-{{- $tag := $h | get "image.tag" "v2.6.4" }}
+{{- $tag := $h | get "image.tag" "v2.13.1" }}
 {{/*The cloudNativeDb operator is responsible for creating the secret*/}}
 
 externalURL: {{ $externalUrl }}
