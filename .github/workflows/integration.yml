@@ -30,10 +30,6 @@ on:
         description: Fake if Otomi is pre-installed by Installer
         type: string
         default: 'false'
-      useORCS:
-        description: 'Use OCI Registry Cache Service (ORCS) for container images'
-        type: boolean
-        default: false
   workflow_dispatch:
     inputs:
       linode_types:
@@ -96,6 +92,10 @@ on:
           - 'true'
           - 'false'
         default: 'true'
+      useORCS:
+        description: 'Use OCI Registry Cache Service (ORCS) for container images'
+        type: boolean
+        default: false
 
 env:
   CACHE_REGISTRY: ghcr.io
