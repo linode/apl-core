@@ -68,7 +68,7 @@ admissionController:
 cleanupController:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghrc"
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
   {{- end }}  
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
@@ -81,7 +81,7 @@ cleanupController:
 backgroundController:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghrc"
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
   {{- end }}
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
@@ -98,7 +98,7 @@ backgroundController:
 reportsController:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
-    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghrc"
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
   {{- end }}
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1

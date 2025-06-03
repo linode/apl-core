@@ -13,7 +13,7 @@ instances: {{ $kdb.replicas }}
 
 {{- if $kdb.imageName }}
   {{- if $v.otomi.linodeLkeImageRepository }}
-imageName: {{ regexReplaceAll "^ghcr\\.io" $kdb.imageName (printf "%s/ghrc" $v.otomi.linodeLkeImageRepository) }}
+imageName: {{ regexReplaceAll "^ghcr\\.io" $kdb.imageName (printf "%s/ghcr" $v.otomi.linodeLkeImageRepository) }}
   {{- else }}
 imageName: {{ $kdb.imageName }}
   {{- end }}

@@ -12,7 +12,7 @@ instances: {{ $gdb.replicas }}
 
 {{- if $gdb.imageName }}
   {{- if $v.otomi.linodeLkeImageRepository }}
-imageName: {{ regexReplaceAll "^ghcr\\.io" $gdb.imageName (printf "%s/ghrc" $v.otomi.linodeLkeImageRepository) }}
+imageName: {{ regexReplaceAll "^ghcr\\.io" $gdb.imageName (printf "%s/ghcr" $v.otomi.linodeLkeImageRepository) }}
   {{- else }}
 imageName: {{ $gdb.imageName }}
   {{- end }}

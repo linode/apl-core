@@ -11,7 +11,7 @@ instances: {{ $hdb.replicas }}
 
 {{- if $hdb.imageName }}
   {{- if $v.otomi.linodeLkeImageRepository }}
-imageName: {{ regexReplaceAll "^ghcr\\.io" $hdb.imageName (printf "%s/ghrc" $v.otomi.linodeLkeImageRepository) }}
+imageName: {{ regexReplaceAll "^ghcr\\.io" $hdb.imageName (printf "%s/ghcr" $v.otomi.linodeLkeImageRepository) }}
   {{- else }}
 imageName: {{ $hdb.imageName }}
   {{- end }}
