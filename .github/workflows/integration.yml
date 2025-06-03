@@ -288,6 +288,7 @@ jobs:
           if [[ '${{ inputs.useORCS }}' == 'true' ]]; then
             cat << EOF > values-container-registry.yaml
             imageName: "mirror.registry.linodelke.net/docker/${{ env.CACHE_REPO }}"
+            EOF
           fi
       - name: Install Cloud Firewall Controller
         if: ${{ inputs.install_profile != 'no-apl' }}
