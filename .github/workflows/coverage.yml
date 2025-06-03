@@ -3,6 +3,11 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - '*.json'
+      - '*.js'
+      - '*.ts'
 
 jobs:
   coverage:
