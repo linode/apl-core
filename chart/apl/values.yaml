@@ -124,8 +124,8 @@ cleanup:
   
   # Job configuration
   backoffLimit: 3
-  ttlSecondsAfterFinished: 300  # 5 minutes
-  activeDeadlineSeconds: 180    # 3 minutes timeout
+  ttlSecondsAfterFinished: 300
+  activeDeadlineSeconds: 180
   
   # Container image configuration
   image:
