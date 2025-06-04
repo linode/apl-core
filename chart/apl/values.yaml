@@ -116,3 +116,28 @@ otomi: {}
 #   allTeamsAdminGroupID: ''
 #   # IDP group id used to identify team admin
 #   teamAdminGroupID: ''
+
+## Cleanup job configuration
+cleanup:
+  # Enable the cleanup job that removes cluster-admin ClusterRoleBinding after installation
+  enabled: true
+  
+  # Job configuration
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 300  # 5 minutes
+  activeDeadlineSeconds: 180    # 3 minutes timeout
+  
+  # Container image configuration
+  image:
+    repository: bitnami/kubectl
+    tag: latest
+    pullPolicy: IfNotPresent
+  
+  # Resource limits and requests
+  resources:
+    limits:
+      memory: 128Mi
+      cpu: 100m
+    requests:
+      memory: 64Mi
+      cpu: 50m
