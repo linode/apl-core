@@ -31,8 +31,8 @@ spec:
           type: RuntimeDefault
       containers:
         - name: cleanup
-          image: {{ .Values.cleanup.image.repository | default "bitnami/kubectl" }}:{{ .Values.cleanup.image.tag | default "latest" }}
-          imagePullPolicy: {{ .Values.cleanup.image.pullPolicy | default "IfNotPresent" }}
+          image: {{ .Values.cleanup.image.repository | default "bitnami/kubectl" }}:{{ .Values.cleanup.image.tag | default "1.33" }}
+          imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

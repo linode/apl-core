@@ -130,8 +130,7 @@ cleanup:
 #  # Container image configuration
 #  image:
 #    repository: bitnami/kubectl
-#    tag: latest
-#    pullPolicy: IfNotPresent
+#    tag: 1.33
 #
 #  # Resource limits and requests
 #  resources:
