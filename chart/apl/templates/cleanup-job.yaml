@@ -7,7 +7,7 @@ metadata:
   annotations:
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "10"
-    helm.sh/hook-delete-policy: hook-succeeded
+{{/*    helm.sh/hook-delete-policy: hook-succeeded*/}}
   labels: {{- include "apl.labels" . | nindent 4 }}
 spec:
   backoffLimit: {{ .Values.cleanup.backoffLimit | default 3 }}
@@ -58,16 +58,9 @@ spec:
                 echo "Deleting ClusterRoleBinding: {{ include "apl.fullname" . }}"
                 kubectl delete clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found
                 echo "ClusterRoleBinding deleted successfully"
-                echo "Note: This pod will continue to run with cached permissions until completion"
               else
                 echo "ClusterRoleBinding {{ include "apl.fullname" . }} not found, nothing to clean up"
               fi
               
               echo "Cleanup completed successfully"
-      {{- if hasKey .Values "imagePullSecretNames" }}
-      imagePullSecrets:
-        {{- range .Values.imagePullSecretNames }}
-        - name: {{ . }}
-        {{- end }}
-      {{- end }}
 {{- end }}
