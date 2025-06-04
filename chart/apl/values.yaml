@@ -123,20 +123,20 @@ cleanup:
   enabled: true
   
 #  # Job configuration
-#  backoffLimit: 3
-#  ttlSecondsAfterFinished: 300
-#  activeDeadlineSeconds: 180
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 300
+  activeDeadlineSeconds: 180
 #
 #  # Container image configuration
-  image: {}
-#    repository: bitnami/kubectl
-#    tag: 1.33
+  image:
+    repository: bitnami/kubectl
+    tag: '1.33'
 #
 #  # Resource limits and requests
-  resources: {}
-#    limits:
-#      memory: 128Mi
-#      cpu: 100m
-#    requests:
-#      memory: 64Mi
-#      cpu: 50m
+  resources:
+    limits:
+      memory: 128Mi
+      cpu: 100m
+    requests:
+      memory: 64Mi
+      cpu: 50m
