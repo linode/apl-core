@@ -33,12 +33,12 @@ spec:
           valueFrom:
             secretKeyRef:
               key: username
-              name: {{ .Values.mysql.secret }}
+              name: kfp-mysql-secret
         - name: DBCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
               key: password
-              name: {{ .Values.mysql.secret }}
+              name: kfp-mysql-secret
         - name: MYSQL_DATABASE
           valueFrom:
             configMapKeyRef:

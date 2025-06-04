@@ -1,5 +1,18 @@
 {{- $v := .Values }}
 {{- $kfp := index $v.apps "kubeflow-pipelines" }}
+{{- $obj := $v.obj.provider }}
+
+objectStorage:
+{{- if eq $obj.type "minioLocal" }}
+  endpoint: minio.minio.svc.cluster.local:9000
+  bucket: {{ $obj.linode.buckets.kfp }}
+  region: us-east-1
+{{- end }}
+{{- if eq $obj.type "linode" }}
+  endpoint: {{ $obj.linode.region }}.linodeobjects.com
+  bucket: {{ $obj.linode.buckets.kfp }}
+  region: {{ $obj.linode.region }}
+{{- end }}
 
 cacheDeployer:
   resources: {{- $kfp.resources.cacheDeployer | toYaml | nindent 4 }}

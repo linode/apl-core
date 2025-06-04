@@ -2178,7 +2178,7 @@ properties:
             type: boolean
           rootPassword:
             type: string
-            x-secret: ''
+            x-secret: '{{ randAlphaNum 32 }}'
           resources:
             additionalProperties: false
             properties:
@@ -3332,6 +3332,10 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: gitea
+                  kfp:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: kfp
             required:
               - region
               - accessKeyId

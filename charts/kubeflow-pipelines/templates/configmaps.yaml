@@ -16,7 +16,7 @@ data:
   appName: pipeline
   appVersion: {{ .Chart.AppVersion }}
   autoUpdatePipelineDefaultVersion: "true"
-  objHost: {{ .Values.objectStorage.region }}.linodeobjects.com
+  objHost: {{ .Values.objectStorage.endpoint }}
   objRegion: {{ .Values.objectStorage.region }}
   objPort: "443"
   bucketName: {{ .Values.objectStorage.bucket }}
