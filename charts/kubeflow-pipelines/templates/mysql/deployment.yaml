@@ -38,16 +38,6 @@ spec:
         {{- with .Values.mysql.resources }}
         resources: {{- . | toYaml | nindent 12 }}
         {{- end }}
-        securityContext:
-          allowPrivilegeEscalation: false
-          seccompProfile:
-            type: RuntimeDefault
-          runAsNonRoot: true
-          runAsUser: 1000
-          runAsGroup: 0
-          capabilities:
-            drop:
-            - ALL
         volumeMounts:
         - mountPath: /var/lib/mysql
           name: mysql-persistent-storage

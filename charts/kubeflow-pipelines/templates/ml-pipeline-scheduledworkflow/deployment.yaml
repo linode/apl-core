@@ -31,7 +31,7 @@ spec:
             configMapKeyRef:
               key: cronScheduleTimezone
               name: pipeline-install-config
-        image: gcr.io/ml-pipeline/scheduledworkflow:{{ .Chart.AppVersion }}
+        image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         name: ml-pipeline-scheduledworkflow
         {{- with .Values.mlPipelineScheduledworkflow.resources }}

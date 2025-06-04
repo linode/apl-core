@@ -40,7 +40,7 @@ spec:
               fieldPath: metadata.namespace
         - name: DISABLE_GKE_METADATA
           value: "true"
-        image: gcr.io/ml-pipeline/frontend:{{ .Chart.AppVersion }}
+        image: ghcr.io/kubeflow/kfp-frontend:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:

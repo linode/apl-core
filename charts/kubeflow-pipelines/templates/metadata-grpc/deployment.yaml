@@ -30,10 +30,7 @@ spec:
         - /bin/metadata_store_server
         env:
         - name: DBCONFIG_USER
-          valueFrom:
-            secretKeyRef:
-              key: username
-              name: kfp-mysql-secret
+          value: root
         - name: DBCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:

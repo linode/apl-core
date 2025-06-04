@@ -32,10 +32,7 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: DBCONFIG_USER
-          valueFrom:
-            secretKeyRef:
-              key: username
-              name: kfp-mysql-secret
+          value: root
         - name: DBCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -67,10 +64,7 @@ spec:
               key: dbType
               name: pipeline-install-config
         - name: DBCONFIG_MYSQLCONFIG_USER
-          valueFrom:
-            secretKeyRef:
-              key: username
-              name: kfp-mysql-secret
+          value: root
         - name: DBCONFIG_MYSQLCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -123,7 +117,7 @@ spec:
             configMapKeyRef:
               name: pipeline-install-config
               key: objPort
-        image: gcr.io/ml-pipeline/api-server:{{ .Chart.AppVersion }}
+        image: ghcr.io/kubeflow/kfp-api-server:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         livenessProbe:
           exec:
