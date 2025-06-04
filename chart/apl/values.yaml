@@ -128,12 +128,12 @@ cleanup:
 #  activeDeadlineSeconds: 180
 #
 #  # Container image configuration
-#  image:
+  image: {}
 #    repository: bitnami/kubectl
 #    tag: 1.33
 #
 #  # Resource limits and requests
-#  resources:
+  resources: {}
 #    limits:
 #      memory: 128Mi
 #      cpu: 100m
