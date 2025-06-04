@@ -14,10 +14,12 @@ metadata:
   {{- end }}
 spec:
   type: {{ .Values.queryFrontend.service.type }}
+  ipFamilies: {{ .Values.tempo.service.ipFamilies }}
+  ipFamilyPolicy: {{ .Values.tempo.service.ipFamilyPolicy }}
   ports:
     - name: http-metrics
-      port: 3100
-      targetPort: 3100
+      port: 3200
+      targetPort: 3200
     - name: grpc
       port: 9095
       protocol: TCP
