@@ -2,20 +2,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels: {{- include "kfp.labels" . | nindent 4 }}
-    app: mysql
+    app: ml-pipeline-mysql
     application-crd-id: kubeflow-pipelines
-  name: kfp-mysql
+  name: ml-pipeline-mysql
 spec:
   selector:
     matchLabels:
-      app: kfp-mysql
+      app: ml-pipeline-mysql
       application-crd-id: kubeflow-pipelines
   strategy:
     type: Recreate
   template:
     metadata:
       labels: {{- include "kfp.labels" . | nindent 8 }}
-        app: kfp-mysql
+        app: ml-pipeline-mysql
         application-crd-id: kubeflow-pipelines
     spec:
       containers:
@@ -34,7 +34,7 @@ spec:
         name: kfp-mysql
         ports:
         - containerPort: 3306
-          name: mysql
+          name: ml-pipeline-mysql
         {{- with .Values.mysql.resources }}
         resources: {{- . | toYaml | nindent 12 }}
         {{- end }}

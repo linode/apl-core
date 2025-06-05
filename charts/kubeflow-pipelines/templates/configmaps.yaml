@@ -28,7 +28,7 @@ data:
   cronScheduleTimezone: UTC
   dbType: mysql
   defaultPipelineRoot: "minio://{{ .Values.objectStorage.bucket }}/v2/artifacts"
-  mysqlHost: mysql
+  mysqlHost: ml-pipeline-mysql
   mysqlPort: "3306"
 kind: ConfigMap
 metadata:
