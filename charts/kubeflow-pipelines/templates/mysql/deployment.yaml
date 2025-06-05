@@ -34,7 +34,7 @@ spec:
         name: ml-pipeline-mysql
         ports:
         - containerPort: 3306
-          name: ml-pipeline-mysql
+          name: kfp-mysql
         {{- with .Values.mysql.resources }}
         resources: {{- . | toYaml | nindent 12 }}
         {{- end }}
