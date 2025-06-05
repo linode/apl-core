@@ -277,17 +277,17 @@ jobs:
           # If a pipeline installs APL from the semver tag then pull container image from DockerHub
           [[ ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]] && exit 0
 
-          # Pull image from cache registry
+          if [[ '${{ inputs.useORCS }}' == 'true' ]]; then
+          # If ORCS is enabled, pull image from ORCS cache registry
+          cat << EOF > values-container-registry.yaml
+          imageName: "mirror.registry.linodelke.net/docker/${{ env.CACHE_REPO }}"
+          EOF
+          else
+          # Else pull image from github registry
           cat << EOF > values-container-registry.yaml
           imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
           imagePullSecretNames:
             - reg-otomi-github
-          EOF
-
-          # If ORCS is enabled, pull image from ORCS cache registry
-          if [[ '${{ inputs.useORCS }}' == 'true' ]]; then
-          cat << EOF > values-container-registry.yaml
-          imageName: "mirror.registry.linodelke.net/docker/${{ env.CACHE_REPO }}"
           EOF
           fi
       - name: Install Cloud Firewall Controller
