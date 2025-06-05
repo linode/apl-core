@@ -32,6 +32,16 @@ spec:
           value: info
         image: ghcr.io/kubeflow/kfp-persistence-agent:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
         name: ml-pipeline-persistenceagent
         {{- with .Values.mlPipelinePersistenceagent.resources }}
         resources: {{- . | toYaml | nindent 12 }}

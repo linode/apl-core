@@ -32,7 +32,10 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: DBCONFIG_USER
-          value: root
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: kfp-mysql-secret
         - name: DBCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -64,7 +67,10 @@ spec:
               key: dbType
               name: pipeline-install-config
         - name: DBCONFIG_MYSQLCONFIG_USER
-          value: root
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: kfp-mysql-secret
         - name: DBCONFIG_MYSQLCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -164,5 +170,15 @@ spec:
           failureThreshold: 12
           periodSeconds: 5
           timeoutSeconds: 2
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
       serviceAccountName: ml-pipeline
 ---

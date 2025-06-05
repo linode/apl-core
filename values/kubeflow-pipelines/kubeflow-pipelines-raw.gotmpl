@@ -10,6 +10,7 @@ resources:
       name: kfp-mysql-secret
     data:
       password: "{{ $kfp.rootPassword | b64enc }}"
+      username: "root"
   - apiVersion: v1
     kind: Secret
     metadata:

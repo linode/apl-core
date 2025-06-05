@@ -30,4 +30,14 @@ spec:
           name: md-envoy
         - containerPort: 9901
           name: envoy-admin
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
 ---

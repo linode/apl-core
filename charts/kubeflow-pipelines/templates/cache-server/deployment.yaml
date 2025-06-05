@@ -66,7 +66,10 @@ spec:
               key: mysqlPort
               name: pipeline-install-config
         - name: DBCONFIG_USER
-          value: root
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: kfp-mysql-secret
         - name: DBCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -80,6 +83,16 @@ spec:
           value: "8443"
         image: ghcr.io/kubeflow/kfp-cache-server:{{ .Chart.AppVersion }}
         imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
         name: server
         {{- with .Values.cacheServer.resources }}
         resources: {{- . | toYaml | nindent 12 }}

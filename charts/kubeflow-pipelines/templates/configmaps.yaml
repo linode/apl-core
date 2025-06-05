@@ -9,7 +9,7 @@ metadata:
 ---
 apiVersion: v1
 data:
-  ConMaxLifeTime: 120s
+  ConMaxLifeTime: "120s"
   DEFAULT_CACHE_STALENESS: ""
   LOG_LEVEL: info
   MAXIMUM_CACHE_STALENESS: ""

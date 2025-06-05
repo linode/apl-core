@@ -21,7 +21,7 @@ spec:
       containers:
       - env:
         - name: LOG_LEVEL
-          value: info
+          value: "info"
         - name: NAMESPACE
           valueFrom:
             fieldRef:
@@ -33,6 +33,16 @@ spec:
               name: pipeline-install-config
         image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
         name: ml-pipeline-scheduledworkflow
         {{- with .Values.mlPipelineScheduledworkflow.resources }}
         resources: {{- . | toYaml | nindent 12 }}

@@ -24,6 +24,16 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         image: ghcr.io/kubeflow/kfp-metadata-writer:{{ .Chart.AppVersion }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
         name: main
         {{- with .Values.metadataWriter.resources }}
         resources: {{- . | toYaml | nindent 12 }}

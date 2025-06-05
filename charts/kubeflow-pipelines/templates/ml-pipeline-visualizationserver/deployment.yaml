@@ -21,6 +21,16 @@ spec:
       containers:
       - image: ghcr.io/kubeflow/kfp-visualization-server:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           exec:
             command:

@@ -3332,10 +3332,10 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: gitea
-                  kfp:
+                  kubeflow-pipelines:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
-                    default: kfp
+                    default: kubeflow-pipelines
             required:
               - region
               - accessKeyId

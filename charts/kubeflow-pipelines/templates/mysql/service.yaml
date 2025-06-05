@@ -3,13 +3,13 @@ kind: Service
 metadata:
   labels:
     application-crd-id: kubeflow-pipelines
-  name: mysql
+  name: kfp-mysql
 spec:
   ports:
   - port: 3306
     protocol: TCP
     targetPort: 3306
   selector:
-    app: mysql
+    app: kfp-mysql
     application-crd-id: kubeflow-pipelines
 ---

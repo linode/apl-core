@@ -30,7 +30,10 @@ spec:
         - /bin/metadata_store_server
         env:
         - name: DBCONFIG_USER
-          value: root
+          valueFrom:
+            secretKeyRef:
+              key: username
+              name: kfp-mysql-secret
         - name: DBCONFIG_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -52,12 +55,16 @@ spec:
               key: mysqlPort
               name: pipeline-install-config
         image: gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
-        livenessProbe:
-          initialDelaySeconds: 3
-          periodSeconds: 5
-          tcpSocket:
-            port: grpc-api
-          timeoutSeconds: 2
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
         name: container
         {{- with .Values.metadataGrpc.resources }}
         resources: {{- . | toYaml | nindent 12 }}
@@ -66,6 +73,12 @@ spec:
         - containerPort: 8080
           name: grpc-api
         readinessProbe:
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          tcpSocket:
+            port: grpc-api
+          timeoutSeconds: 2
+        livenessProbe:
           initialDelaySeconds: 3
           periodSeconds: 5
           tcpSocket:

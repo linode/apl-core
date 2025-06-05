@@ -42,6 +42,16 @@ spec:
           value: "true"
         image: ghcr.io/kubeflow/kfp-frontend:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
         livenessProbe:
           exec:
             command:
