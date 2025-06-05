@@ -3,6 +3,9 @@ import { waitTillGitRepoAvailable } from '../common/k8s'
 import { GitRepository } from './git-repository'
 import { AplOperations } from './apl-operations'
 import { updateApplyState } from './k8s'
+import { ensureTeamGitOpsDirectories } from '../common/utils'
+import { env } from '../common/envalid'
+import { commit } from '../cmd/commit'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
@@ -73,6 +76,12 @@ export class AplOperator {
         await this.aplOps.applyAsAppsTeams()
       } else {
         await this.aplOps.apply()
+      }
+      try {
+        await ensureTeamGitOpsDirectories(env.ENV_DIR)
+        await commit(false)
+      } catch (e) {
+        this.d.error(`Failed to ensure team GitOps directories: ${e.message}`)
       }
       this.d.info(`[${trigger}] Apply process completed`)
 
