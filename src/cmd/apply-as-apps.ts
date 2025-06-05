@@ -6,12 +6,13 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
 import { isResourcePresent, k8s, patchContainerResourcesOfSts } from 'src/common/k8s'
-import { getFilename, loadYaml } from 'src/common/utils'
+import { ensureTeamGitOpsDirectories, getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
 import { appPatches, genericPatch } from 'src/applicationPatches.json'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
+import { env } from 'src/common/envalid'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -162,6 +163,12 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
 }
 
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
+  try {
+    await ensureTeamGitOpsDirectories(env.ENV_DIR)
+  } catch (e) {
+    d.error(`Failed to ensure team GitOps directories: ${e.message}`)
+  }
+
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)
   setup()

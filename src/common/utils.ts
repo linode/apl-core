@@ -2,7 +2,7 @@ import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
 import { createHash } from 'crypto'
 import { existsSync, pathExists, readFileSync } from 'fs-extra'
-import { readFile, readdir, writeFile } from 'fs/promises'
+import { readdir, readFile, writeFile } from 'fs/promises'
 import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
@@ -234,7 +234,7 @@ async function ensureKeepFile(keepFilePath: string, deps = { writeFile }): Promi
   await deps.writeFile(keepFilePath, '')
 }
 
-export async function ensureTeamGitopsDirectories(envDir: string, deps = { writeFile, glob }) {
+export async function ensureTeamGitOpsDirectories(envDir: string, deps = { writeFile, glob }) {
   const dirs = await deps.glob(`${envDir}/env/teams/*`)
   const gitOpsDirs = ['sealedsecrets', 'workloadValues']
 
