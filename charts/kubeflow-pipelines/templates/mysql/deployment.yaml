@@ -31,7 +31,7 @@ spec:
               name: kfp-mysql-secret
               key: password
         image: gcr.io/ml-pipeline/mysql:8.0.26
-        name: kfp-mysql
+        name: ml-pipeline-mysql
         ports:
         - containerPort: 3306
           name: ml-pipeline-mysql
@@ -41,7 +41,7 @@ spec:
         volumeMounts:
         - mountPath: /var/lib/mysql
           name: mysql-persistent-storage
-      serviceAccountName: kfp-mysql
+      serviceAccountName: ml-pipeline-mysql
       volumes:
       - name: mysql-persistent-storage
         persistentVolumeClaim:
