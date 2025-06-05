@@ -13,6 +13,7 @@ import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/co
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { env } from 'src/common/envalid'
+import { commit } from './commit'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -165,6 +166,7 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   try {
     await ensureTeamGitOpsDirectories(env.ENV_DIR)
+    await commit(false)
   } catch (e) {
     d.error(`Failed to ensure team GitOps directories: ${e.message}`)
   }
