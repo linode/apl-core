@@ -228,7 +228,7 @@ appsInfo:
       - https://kubeflow.org
     license: Apache 2.0
     about: Kubeflow pipelines are reusable end-to-end ML workflows built using the Kubeflow Pipelines SDK.
-    isAlfa: true
+    isAlpha: true
   kured:
     title: Kured
     appVersion: 1.13.1
