@@ -41,7 +41,7 @@ export async function updateApplyState(
     const stateJson = JSON.stringify(state)
 
     try {
-      const { body: existingConfigMap } = await k8sClient.readNamespacedConfigMap(configMapName, namespace)
+      const existingConfigMap = await k8sClient.readNamespacedConfigMap({ name: configMapName, namespace })
 
       // Update the existing ConfigMap
       if (!existingConfigMap.data) {
@@ -50,15 +50,18 @@ export async function updateApplyState(
 
       existingConfigMap.data['state'] = stateJson
 
-      await k8sClient.replaceNamespacedConfigMap(configMapName, namespace, existingConfigMap)
+      await k8sClient.replaceNamespacedConfigMap({ name: configMapName, namespace, body: existingConfigMap })
     } catch (error) {
       if ((error as any).response?.statusCode === 404) {
-        await k8sClient.createNamespacedConfigMap(namespace, {
-          metadata: {
-            name: configMapName,
-          },
-          data: {
-            state: stateJson,
+        await k8sClient.createNamespacedConfigMap({
+          namespace,
+          body: {
+            metadata: {
+              name: configMapName,
+            },
+            data: {
+              state: stateJson,
+            },
           },
         })
       } else {
