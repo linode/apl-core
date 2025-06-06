@@ -17,10 +17,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-{{- if .Capabilities.APIVersions.Has "batch/v1alpha1" }}
-  # Alpha feature since k8s 1.12
   ttlSecondsAfterFinished: 0
-{{- end }}
   template:
     metadata:
       name: {{ include "ingress-nginx.admissionWebhooks.patchWebhookJob.fullname" . }}
@@ -42,7 +39,7 @@ spec:
     {{- end }}
       containers:
         - name: patch
-          {{- with .Values.controller.admissionWebhooks.patch.image }}
+          {{- with (merge .Values.controller.admissionWebhooks.patch.image .Values.global.image) }}
           image: {{ if .repository }}{{ .repository }}{{ else }}{{ .registry }}/{{ .image }}{{ end }}:{{ .tag }}{{ if .digest }}@{{ .digest }}{{ end }}
           {{- end }}
           imagePullPolicy: {{ .Values.controller.admissionWebhooks.patch.image.pullPolicy }}
