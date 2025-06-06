@@ -2,6 +2,11 @@
 {{- $provider := $v.cluster.provider }}
 {{- $m := $v.apps | get "metrics-server" }}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+global:
+  imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}
+
 extraArgs:
   - --kubelet-preferred-address-types=InternalIP
 {{- if eq $provider "linode" }}

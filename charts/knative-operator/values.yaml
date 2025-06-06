@@ -4,3 +4,14 @@ webhook:
 
 operator:
   resources: {}
+
+
+webhook:
+  image:
+    repo: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
+    tag: v1.15.6
+
+operator:
+  image:
+    repo: gcr.io/knative-releases/knative.dev/operator/cmd/operator
+    tag: v1.15.6

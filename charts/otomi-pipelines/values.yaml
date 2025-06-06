@@ -18,10 +18,13 @@ eventListener:
       memory: '128Mi'
       cpu: '500m'
 
+core:
+  image:
+    repository: linode/apl-core
+    tag: 0.1.0
+
 kms: {}
 
 giteaPassword: ""
 
 cloneUnsecure: false
-
-otomiVersion: 0.1.0

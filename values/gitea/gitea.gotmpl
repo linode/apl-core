@@ -29,6 +29,10 @@ podDns:
 resources: {{- $g.resources.gitea | toYaml | nindent 2 }}
 
 image:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  registry:    "{{ $v.otomi.linodeLkeImageRepository }}/docker"
+  repository:  "gitea/gitea"
+  {{- end }}
   {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
@@ -219,8 +223,16 @@ containerSecurityContext:
   privileged: false
   readOnlyRootFilesystem: true
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
+  storageClass: ""
+  hostAliases: []
+{{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global
+{{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+  imageRegistry: "{{ $v.otomi.linodeLkeImageRepository }}/docker"
+  security:
+    allowInsecureImages: true
 {{- end }}

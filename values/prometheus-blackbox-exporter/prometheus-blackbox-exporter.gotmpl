@@ -18,10 +18,15 @@ config:
       prober: http
       timeout: 12s # a knative service should start under 12s, right?
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
 image:
+  {{- with .Values.otomi | get "globalPullSecret" nil }}
   pullSecrets:
     - otomi-pullsecret-global
-{{- end }}
+  {{- end }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/prom/blackbox-exporter"
+  {{- end }}
+  pullPolicy: IfNotPresent
+
 
 pspEnabled: false

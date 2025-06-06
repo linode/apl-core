@@ -30,7 +30,11 @@ spec:
           type: RuntimeDefault
       containers:
         - name: install
-          image: {{ $imageName }}:{{ $version }}
+          {{- if .Values.otomi.useORCS }}
+          image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
+          {{- else }}
+          image: "{{ $imageName }}:{{ $version }}"
+          {{- end }}
           imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
           securityContext:
             allowPrivilegeEscalation: false
