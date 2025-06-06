@@ -1,8 +1,8 @@
 {{- define "gateway.name" -}}
 {{- if eq .Release.Name "RELEASE-NAME" -}}
-  {{- .Values.name | default "istio-gateway" -}}
+  {{- .Values.name | default "istio-ingressgateway" -}}
 {{- else -}}
-  {{- .Values.name | default .Release.Name | default "istio-gateway" -}}
+  {{- .Values.name | default .Release.Name | default "istio-ingressgateway" -}}
 {{- end -}}
 {{- end }}
 
