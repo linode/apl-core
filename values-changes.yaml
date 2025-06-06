@@ -367,3 +367,8 @@ changes:
   - version: 41
     customFunctions:
       - installIstioHelmCharts
+  - version: 42
+    deletions:
+      - databases.keycloak.imageName
+      - databases.gitea.imageName
+      - databases.harbor.imageName
