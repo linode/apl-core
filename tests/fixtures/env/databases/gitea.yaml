@@ -4,7 +4,6 @@ metadata:
     labels: {}
 spec:
     externalClusters: []
-    imageName: null
     recovery: {}
     replicas: 2
     resources:
