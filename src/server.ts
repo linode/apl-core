@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises, @typescript-eslint/require-await */
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import express, { Request, Response } from 'express'
 import { Server } from 'http'
@@ -17,9 +16,9 @@ let server: Server
 export const stopServer = (): void => {
   server?.close()
 }
-
-app.get('/', async (req: Request, res: Response): Promise<Response<any>> => {
-  return res.send({ status: 'ok' })
+// Return statement is not needed anymore in express 5.x and above
+app.get('/', async (req: Request, res: Response): Promise<void> => {
+  res.send({ status: 'ok' })
 })
 
 type QueryParams = {
@@ -27,7 +26,7 @@ type QueryParams = {
   files?: string[]
 }
 
-app.get('/init', async (req: Request, res: Response) => {
+app.get('/init', async (req: Request, res: Response): Promise<void> => {
   const { envDir } = req.query as QueryParams
   try {
     d.log('Request to initialize values repo on', envDir)
@@ -39,7 +38,7 @@ app.get('/init', async (req: Request, res: Response) => {
   }
 })
 
-app.get('/prepare', async (req: Request, res: Response) => {
+app.get('/prepare', async (req: Request, res: Response): Promise<void> => {
   const { envDir, files } = req.query as QueryParams
   try {
     d.log('Request to prepare values repo on', envDir)
@@ -63,10 +62,10 @@ app.get('/prepare', async (req: Request, res: Response) => {
   }
 })
 
-function parseBoolean(string, defaultValue = false) {
+function parseBoolean(string: any, defaultValue = false): boolean {
   return string === 'true' ? true : string === 'false' ? false : defaultValue
 }
-app.get('/otomi/values', async (req: Request, res: Response) => {
+app.get('/otomi/values', async (req: Request, res: Response): Promise<void> => {
   const { envDir } = req.query as QueryParams
 
   const filesOnly = parseBoolean(req.query.filesOnly, true)
@@ -85,7 +84,7 @@ app.get('/otomi/values', async (req: Request, res: Response) => {
   }
 })
 
-app.get('/apl/schema', async (req: Request, res: Response) => {
+app.get('/apl/schema', async (req: Request, res: Response): Promise<void> => {
   const schema = await loadYaml(`${rootDir}/values-schema.yaml`)
   const derefSchema = await $RefParser.dereference(schema as JSONSchema)
   res.setHeader('Content-type', 'application/json')

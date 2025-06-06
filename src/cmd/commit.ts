@@ -9,7 +9,7 @@ import { hfValues } from 'src/common/hf'
 import { createGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
-import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
+import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
@@ -174,7 +174,10 @@ export async function retryIsOAuth2ProxyRunning() {
 export async function isOAuth2ProxyAvailable(coreV1Api: CoreV1Api): Promise<void> {
   const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
   d.info('Checking if OAuth2Proxy is available, waiting...')
-  const { body: oauth2ProxyEndpoint } = await coreV1Api.readNamespacedEndpoints('oauth2-proxy', 'istio-system')
+  const oauth2ProxyEndpoint = await coreV1Api.readNamespacedEndpoints({
+    name: 'oauth2-proxy',
+    namespace: 'istio-system',
+  })
   if (!oauth2ProxyEndpoint) {
     throw new Error('OAuth2Proxy endpoint not found, waiting...')
   }
