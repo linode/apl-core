@@ -3,11 +3,10 @@ metadata:
     name: harbor
     labels: {}
 spec:
-    replicas: 2
     coreDatabase: registry
     externalClusters: []
-    imageName: null
     recovery: {}
+    replicas: 2
     resources:
         limits:
             cpu: 200m
