@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {{- include "kfp.labels" . | nindent 4 }}
+    application-crd-id: kubeflow-pipelines
+    component: metadata-envoy
+  name: metadata-envoy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      application-crd-id: kubeflow-pipelines
+      component: metadata-envoy
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels: {{- include "kfp.labels" . | nindent 8 }}
+        application-crd-id: kubeflow-pipelines
+        component: metadata-envoy
+    spec:
+      containers:
+      - image: ghcr.io/kubeflow/kfp-metadata-envoy:{{ .Chart.AppVersion }}
+        name: container
+        {{- with .Values.metadataEnvoy.resources }}
+        resources: {{- . | toYaml | nindent 12 }}
+        {{- end }}
+        ports:
+        - containerPort: 9090
+          name: md-envoy
+        - containerPort: 9901
+          name: envoy-admin
+        securityContext:
+          allowPrivilegeEscalation: false
+          seccompProfile:
+            type: RuntimeDefault
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 0
+          capabilities:
+            drop:
+            - ALL
+---
