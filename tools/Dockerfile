@@ -6,7 +6,7 @@ ARG TARGETARCH
 # https://github.com/kubernetes/kubernetes/releases
 ARG KUBECTL_VERSION=1.33.0
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.17.0
+ARG HELM_VERSION=3.18.1
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.11.0
 # https://github.com/jkroepke/helm-secrets/releases
@@ -20,7 +20,7 @@ ARG GUCCI_VERSION=1.6.13
 # https://github.com/helmfile/helmfile/releases
 ARG HELMFILE_VERSION=1.0.0
 # https://nodejs.org/en/download/
-ARG NODE_VERSION=20
+ARG NODE_VERSION=22
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
 WORKDIR /
