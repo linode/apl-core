@@ -46,10 +46,9 @@ spec:
         - containerPort: 9090
           name: metrics
         - containerPort: 6060
-        resources:
-          requests:
-            cpu: 100m
-            memory: 500Mi
+        {{- with .Values.workflowController.resources }}
+        resources: {{- . | toYaml | nindent 12 }}
+        {{- end }}
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
