@@ -3,9 +3,8 @@ metadata:
     name: keycloak
     labels: {}
 spec:
-    imported: false
     externalClusters: []
-    imageName: null
+    imported: false
     recovery: {}
     replicas: 2
     resources:
