@@ -13,7 +13,7 @@
   {{- end }}
   {{- $shared := (and $s.isCore (eq $v.teamId "admin") (hasKey $s "isShared")) | default false }}
   {{- if (not ($isKnativeService)) }}
-    {{- $domain := include "service.domain" (dict "s" $s "dot" $) }}
+    {{- $domain := include "service.domain" (dict "s" $s "dot" $ "isKnativeService" $isKnativeService) }}
     {{- $domain = list $domain }}
       {{- if and $tlsPass (not (has $domain $publicDomainsPass)) }}
           {{- $publicDomainsPass = (concat $publicDomainsPass $domain $cnameDomain) }}

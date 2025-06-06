@@ -10,7 +10,7 @@
   {{- if and (not (eq $type "cluster")) (not (and $isKnativeService (not $v.apps.knative.enabled))) }}
     {{- $name := $s.svc | default $s.name }}
     {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $name) $name) }}
-    {{- $domain := include "service.domain" (dict "s" $s "dot" $ "vs" true) }}
+    {{- $domain := include "service.domain" (dict "s" $s "dot" $ "isKnativeService" $isKnativeService) }}
     {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
     {{- if not (and $isKnativeService (eq $knativeServiceDomain $domain)) }}
       {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
