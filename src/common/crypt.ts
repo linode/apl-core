@@ -63,7 +63,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
       d.debug(`${crypt.cmd} ${file}`)
       try {
         d.info(`${crypt.cmd} ${file}`)
-        const result = await $`${[...crypt.cmd.split(' '), file]}`
+        const result = await $`${[...crypt.cmd.split(' '), file]}`.quiet()
 
         if (crypt.cmd === CryptType.DECRYPT) {
           const outputFile = `${file}.dec`
