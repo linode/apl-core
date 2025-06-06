@@ -1,4 +1,3 @@
-import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 import { mkdirSync, rmdirSync } from 'fs'
 import { pathExists } from 'fs-extra'
 import { writeFile } from 'fs/promises'
@@ -12,6 +11,7 @@ import { appPatches, genericPatch } from 'src/applicationPatches.json'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
+import { V1ResourceRequirements } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
