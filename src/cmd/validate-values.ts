@@ -14,11 +14,10 @@ const cmdName = getFilename(__filename)
 const internalPaths: string[] = ['k8s', 'adminApps', 'teamApps']
 
 // TODO: Accept json path to validate - on empty, validate all
-export const validateValues = async (envDir = env.ENV_DIR): Promise<void> => {
+export const validateValues = async (argv: HelmArguments = getParsedArgs(), envDir = env.ENV_DIR): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:validateValues`)
   // TODO: Make this return true or error tree
   // Create an end point function (when running otomi validate-values) to print current messages.
-  const argv: HelmArguments = getParsedArgs()
   d.log('Values validation STARTED on ', envDir)
 
   if (argv.l || argv.label) {
@@ -28,7 +27,6 @@ export const validateValues = async (envDir = env.ENV_DIR): Promise<void> => {
 
   const values = await hfValues({ filesOnly: true }, envDir)
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const internalPath of internalPaths) {
     unset(values, internalPath)
   }

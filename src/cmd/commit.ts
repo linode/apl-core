@@ -94,9 +94,9 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   d.log('Successfully pushed the updated values')
 }
 
-export const commit = async (initialInstall: boolean): Promise<void> => {
+export const commit = async (initialInstall: boolean, overrideArgs?: HelmArguments): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
-  await validateValues()
+  await validateValues(overrideArgs)
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
   const { branch, remote, username, email } = getRepo(values)
@@ -240,6 +240,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await commit(true)
+    await commit(true, argv)
   },
 }

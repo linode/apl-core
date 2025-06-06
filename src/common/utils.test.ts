@@ -1,4 +1,7 @@
 import * as utils from './utils'
+import * as fsUtils from 'fs/promises'
+import { readFile } from 'fs/promises'
+import * as debugTools from './debug'
 
 describe('Flatten objects', () => {
   it('should be flattened', () => {
@@ -42,7 +45,7 @@ describe('ensureTeamGitopsDirectories', () => {
       writeFile: jest.fn(),
       glob: jest.fn().mockResolvedValue(['/values/env/teams/team1', '/values/env/teams/team2']),
     }
-    const result = await utils.ensureTeamGitopsDirectories(envDir, deps)
+    const result = await utils.ensureTeamGitOpsDirectories(envDir, deps)
     expect(deps.glob).toHaveBeenCalledWith(`${envDir}/env/teams/*`)
     expect(result).toEqual([
       '/values/env/teams/team1/sealedsecrets/.gitkeep',
@@ -53,9 +56,6 @@ describe('ensureTeamGitopsDirectories', () => {
   })
 })
 
-import * as fsUtils from 'fs/promises'
-import { readFile } from 'fs/promises'
-import * as debugTools from './debug'
 jest.mock('fs/promises', () => ({
   readFile: jest.fn(),
 }))

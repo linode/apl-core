@@ -14,7 +14,7 @@ import { env, isChart, isCi, isCli } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createK8sSecret, getDeploymentState, getK8sSecret, secretId } from 'src/common/k8s'
 import { getKmsSettings } from 'src/common/repo'
-import { ensureTeamGitopsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
+import { ensureTeamGitOpsDirectories, getFilename, gucci, isCore, loadYaml, rootDir } from 'src/common/utils'
 import { generateSecrets, getCurrentVersion, getImageTag, writeValues } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -475,7 +475,7 @@ export const bootstrap = async (
 
   await deps.handleFileEntry()
   await deps.bootstrapSops()
-  await ensureTeamGitopsDirectories(ENV_DIR)
+  await ensureTeamGitOpsDirectories(ENV_DIR)
   if (!hasOtomi) {
     d.log('You can now use the otomi CLI')
   }
