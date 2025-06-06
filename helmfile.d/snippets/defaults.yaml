@@ -351,13 +351,6 @@ environments:
               credentials:
                 username: otomi-admin
             resources:
-              chartmuseum:
-                requests:
-                  cpu: 20m
-                  memory: 56Mi
-                limits:
-                  cpu: 500m
-                  memory: 512Mi
               core:
                 requests:
                   cpu: 20m
@@ -1321,4 +1314,4 @@ environments:
             version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 42
+          specVersion: 43

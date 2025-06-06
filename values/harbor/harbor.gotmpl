@@ -7,7 +7,7 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
-{{- $tag := $h | get "image.tag" "v2.13.1" }}
+{{- $tag := $h | get "image.tag" }}
 {{/*The cloudNativeDb operator is responsible for creating the secret*/}}
 
 externalURL: {{ $externalUrl }}
@@ -21,12 +21,6 @@ secretKey: {{ $h | get "secretKey" nil }}
 
 updateStrategy:
     type: Recreate
-
-chartmuseum:
-  priorityClassName: otomi-critical
-  image:
-    tag: {{ $tag }}
-  resources: {{- $h.resources.chartmuseum | toYaml | nindent 6 }}
 
 core:
   secretName: harbor-token-service-ca
@@ -58,10 +52,6 @@ expose:
     enabled: false
   type: clusterIP
 
-internalTLS:
-  # we use istio with mTLS enabled for harbor namespace
-  enabled: false
-
 jobservice:
   priorityClassName: otomi-critical
   image:
@@ -80,18 +70,6 @@ metrics:
 nginx:
   resources: {{- $h.resources.nginx | toYaml | nindent 4 }}
 
-notary:
-  server:
-    priorityClassName: otomi-critical
-    image:
-      tag: {{ $tag }}
-  signer:
-    priorityClassName: otomi-critical
-    image:
-      tag: {{ $tag }}
-  enabled: false
-  secretName: {{ $notarySecretName }}
-
 persistence:
   enabled: true
   persistentVolumeClaim:
@@ -102,11 +80,6 @@ persistence:
       subPath: ''
       accessMode: ReadWriteOnce
       size: 10Gi
-    chartmuseum:
-      existingClaim: ''
-      subPath: ''
-      accessMode: ReadWriteOnce
-      size: 5Gi
     jobservice:
       existingClaim: ''
       subPath: ''
@@ -163,10 +136,6 @@ persistence:
     {{- else }}
     type: filesystem
     {{- end }}
-
-postgresql:
-  volumePermissions:
-    enabled: true
 
 portal:
   priorityClassName: otomi-critical

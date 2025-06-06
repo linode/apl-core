@@ -1961,8 +1961,6 @@ properties:
           resources:
             additionalProperties: false
             properties:
-              chartmuseum:
-                $ref: '#/definitions/resources'
               core:
                 $ref: '#/definitions/resources'
               jobservice:
