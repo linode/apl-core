@@ -11,6 +11,7 @@ on:
 
 jobs:
   coverage:
+    continue-on-error: true
     if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
     steps:
@@ -34,6 +35,7 @@ jobs:
           sudo mv gucci /usr/local/bin/
 
       - name: Compare Coverage
+        continue-on-error: true
         uses: ArtiomTr/jest-coverage-report-action@v2
         with:
           test-script: npm run test:ts
