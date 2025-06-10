@@ -1,14 +1,20 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-
-import { AppsV1Api, CoreV1Api, V1Pod, V1PodList, V1StatefulSet } from '@kubernetes/client-node'
+import {
+  AppsV1Api,
+  CoreV1Api,
+  PatchStrategy,
+  setHeaderOptions,
+  V1Pod,
+  V1PodList,
+  V1ResourceRequirements,
+  V1StatefulSet,
+} from '@kubernetes/client-node'
 import * as k8s from './k8s'
-import { terminal } from './debug'
-import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 import { deleteStatefulSetPods, patchContainerResourcesOfSts, patchStatefulSetResources } from './k8s'
+import { terminal } from './debug'
 
 jest.mock('@kubernetes/client-node')
 describe('createGenericSecret', () => {
-  const mockCoreV1Api = new CoreV1Api() as jest.Mocked<CoreV1Api>
+  const mockCoreV1Api = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
 
   afterEach(() => {
     jest.clearAllMocks()
@@ -26,17 +32,20 @@ describe('createGenericSecret', () => {
       password: 'cGFzc3dvcmQxMjM=', // base64 of 'password123'
     }
 
-    const mockResponse = { body: { metadata: { name, namespace }, data: encodedData } } as any
+    const mockResponse = { metadata: { name, namespace }, data: encodedData } as any
     mockCoreV1Api.createNamespacedSecret.mockResolvedValue(mockResponse)
     const result = await k8s.createGenericSecret(mockCoreV1Api, name, namespace, secretData)
 
-    expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith(namespace, {
-      metadata: { name, namespace },
-      data: encodedData,
-      type: 'Opaque',
+    expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith({
+      body: {
+        data: { password: 'cGFzc3dvcmQxMjM=', username: 'YWRtaW4=' },
+        metadata: { name: 'test-secret', namespace: 'default' },
+        type: 'Opaque',
+      },
+      namespace: 'default',
     })
 
-    expect(result).toEqual(mockResponse.body)
+    expect(result).toEqual(mockResponse)
   })
 
   it('should throw an error if the secret creation fails', async () => {
@@ -55,8 +64,8 @@ describe('createGenericSecret', () => {
 })
 
 describe('StatefulSet tests', () => {
-  const mockAppsApi = new AppsV1Api() as jest.Mocked<AppsV1Api>
-  const mockCoreApi = new CoreV1Api() as jest.Mocked<CoreV1Api>
+  const mockAppsApi = new AppsV1Api({} as any) as jest.Mocked<AppsV1Api>
+  const mockCoreApi = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
   const mockDebugger = terminal(`k8s:tests:`)
   jest.spyOn(mockDebugger, 'error')
 
@@ -78,25 +87,21 @@ describe('StatefulSet tests', () => {
         items: [{ metadata: { name: 'pod-1' } }, { metadata: { name: 'pod-2' } }],
       } as V1PodList
 
-      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
-      mockCoreApi.listNamespacedPod.mockResolvedValue({ body: mockPodList } as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue(mockStatefulSet as any)
+      mockCoreApi.listNamespacedPod.mockResolvedValue(mockPodList as any)
 
       const pods = await k8s.getPodsOfStatefulSet(mockAppsApi, 'my-sts', 'my-namespace', mockCoreApi)
-      expect(mockAppsApi.readNamespacedStatefulSet).toHaveBeenCalledWith('my-sts', 'my-namespace')
-      expect(mockCoreApi.listNamespacedPod).toHaveBeenCalledWith(
-        'my-namespace',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        'app=my-app',
-      )
+      expect(mockAppsApi.readNamespacedStatefulSet).toHaveBeenCalledWith({ name: 'my-sts', namespace: 'my-namespace' })
+      expect(mockCoreApi.listNamespacedPod).toHaveBeenCalledWith({
+        labelSelector: 'app=my-app',
+        namespace: 'my-namespace',
+      })
       expect(pods).toEqual(mockPodList)
     })
 
     it('should throw an error if matchLabels is missing', async () => {
       const mockStatefulSet: V1StatefulSet = {} as V1StatefulSet
-      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue(mockStatefulSet as any)
 
       await expect(k8s.getPodsOfStatefulSet(mockAppsApi, 'my-sts', 'my-namespace', mockCoreApi)).rejects.toThrow(
         'StatefulSet my-sts does not have matchLabels',
@@ -140,10 +145,10 @@ describe('StatefulSet tests', () => {
     })
 
     it('should patch the StatefulSet and restart pods if resources do not match', async () => {
-      mockCoreApi.listNamespacedPod.mockResolvedValue({ body: mockPodList } as any)
-      mockCoreApi.deleteNamespacedPod.mockResolvedValue({ body: mockPodList } as any)
-      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
-      mockAppsApi.patchNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
+      mockCoreApi.listNamespacedPod.mockResolvedValue(mockPodList as any)
+      mockCoreApi.deleteNamespacedPod.mockResolvedValue(mockPodList as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue(mockStatefulSet as any)
+      mockAppsApi.patchNamespacedStatefulSet.mockResolvedValue(mockStatefulSet as any)
 
       const debug = jest.spyOn(mockDebugger, 'info')
       jest.isMockFunction(patchStatefulSetResources)
@@ -168,8 +173,8 @@ describe('StatefulSet tests', () => {
     })
 
     it('should log an error if no pods are found', async () => {
-      mockCoreApi.listNamespacedPod.mockResolvedValue({ body: { items: [] } } as any)
-      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
+      mockCoreApi.listNamespacedPod.mockResolvedValue({ items: [] } as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue(mockStatefulSet as any)
 
       const debugInfo = jest.spyOn(mockDebugger, 'info')
       const debugError = jest.spyOn(mockDebugger, 'error')
@@ -203,8 +208,8 @@ describe('StatefulSet tests', () => {
           } as V1Pod,
         ],
       }
-      mockCoreApi.listNamespacedPod.mockResolvedValue({ body: matchingPodList } as any)
-      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
+      mockCoreApi.listNamespacedPod.mockResolvedValue(matchingPodList as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue(mockStatefulSet as any)
       const debug = jest.spyOn(mockDebugger, 'info')
 
       await patchContainerResourcesOfSts(
@@ -263,37 +268,25 @@ describe('StatefulSet tests', () => {
       )
 
       expect(mockAppsApi.patchNamespacedStatefulSet).toHaveBeenCalledWith(
-        'my-sts',
-        'my-namespace',
         {
-          spec: {
-            template: {
-              spec: {
-                containers: [
-                  {
-                    name: 'my-container',
-                    resources: {
-                      requests: {
-                        cpu: '200m',
-                        memory: '600Mi',
-                      },
-                      limits: {
-                        cpu: '2',
-                        memory: '4Gi',
-                      },
+          body: {
+            spec: {
+              template: {
+                spec: {
+                  containers: [
+                    {
+                      name: 'my-container',
+                      resources: { limits: { cpu: '2', memory: '4Gi' }, requests: { cpu: '200m', memory: '600Mi' } },
                     },
-                  },
-                ],
+                  ],
+                },
               },
             },
           },
+          name: 'my-sts',
+          namespace: 'my-namespace',
         },
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        { headers: { 'Content-Type': 'application/strategic-merge-patch+json' } },
+        setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
       )
     })
 
@@ -321,13 +314,13 @@ describe('StatefulSet tests', () => {
         },
       }
 
-      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
-      mockCoreApi.listNamespacedPod.mockResolvedValue({ body: mockPodList } as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue(mockStatefulSet as any)
+      mockCoreApi.listNamespacedPod.mockResolvedValue(mockPodList as any)
 
       await k8s.deleteStatefulSetPods('my-sts', 'my-namespace', mockAppsApi, mockCoreApi, mockDebugger)
 
-      expect(mockCoreApi.deleteNamespacedPod).toHaveBeenCalledWith('pod-1', 'my-namespace')
-      expect(mockCoreApi.deleteNamespacedPod).toHaveBeenCalledWith('pod-2', 'my-namespace')
+      expect(mockCoreApi.deleteNamespacedPod).toHaveBeenCalledWith({ name: 'pod-1', namespace: 'my-namespace' })
+      expect(mockCoreApi.deleteNamespacedPod).toHaveBeenCalledWith({ name: 'pod-2', namespace: 'my-namespace' })
     })
 
     it('should log an error if no pods are found', async () => {
@@ -340,8 +333,8 @@ describe('StatefulSet tests', () => {
         },
       }
 
-      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue({ body: mockStatefulSet } as any)
-      mockCoreApi.listNamespacedPod.mockResolvedValue({ body: mockPodList } as any)
+      mockAppsApi.readNamespacedStatefulSet.mockResolvedValue(mockStatefulSet as any)
+      mockCoreApi.listNamespacedPod.mockResolvedValue(mockPodList as any)
 
       await k8s.deleteStatefulSetPods('my-sts', 'my-namespace', mockAppsApi, mockCoreApi, mockDebugger)
       const debug = jest.spyOn(mockDebugger, 'error')

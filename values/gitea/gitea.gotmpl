@@ -28,23 +28,12 @@ podDns:
 
 resources: {{- $g.resources.gitea | toYaml | nindent 2 }}
 
-securityContext:
-  allowPrivilegeEscalation: false
-  capabilities:
-    drop:
-      - ALL
-  privileged: false
-  readOnlyRootFilesystem: true
-  runAsGroup: 1000
-  runAsNonRoot: true
-  runAsUser: 1000
-
 image:
   {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
-  {{- with $g | get "image.gitea.tag" "1.23.7" }}
+  {{- with $g | get "image.gitea.tag" "1.23.8" }}
   tag: {{ . }}
   {{- end }}
   pullPolicy: {{ $g | get "image.gitea.pullPolicy" "IfNotPresent" }}
@@ -187,6 +176,10 @@ postgresql:
   enabled: false
 postgresql-ha:
   enabled: false
+redis-cluster:
+  enabled: false
+redis:
+  enabled: true
 
 extraContainerVolumeMounts:
   - name: backup
@@ -212,11 +205,19 @@ extraVolumes:
 
 podSecurityContext:
   fsGroup: 1000
-
-containerSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000
   runAsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  capabilities:
+    drop:
+      - ALL
+  allowPrivilegeEscalation: false
+  privileged: false
+  readOnlyRootFilesystem: true
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
