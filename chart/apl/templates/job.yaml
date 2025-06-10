@@ -1,6 +1,16 @@
-{{- $kms := .Values.kms | default dict }}
-{{- $imageName := .Values.imageName | default "linode/apl-core" }}
-{{- $version := .Values.otomi.version | default .Chart.AppVersion }}
+{{- $v := .Values }}
+{{- $kms := $v.kms | default dict }}
+{{- $version := $v.otomi.version | default .Chart.AppVersion }}
+{{- $imageRepo := "linode/apl-core" }}
+{{- $useORCS := $v.otomi.useORCS | default false }}
+{{ $useDevContainerRegistry := $v.core.useDevContainerRegistry | default false }}
+
+{{- $imageRegistry := ternary
+    (ternary "mirror.registry.linodelke.net/ghrc" "ghcr.io" $useORCS)
+    (ternary "mirror.registry.linodelke.net/docker" "docker.io" $useORCS)
+    $useDevContainerRegistry
+}}
+
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -30,11 +40,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: install
-          {{- if .Values.otomi.useORCS }}
-          image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
-          {{- else }}
-          image: "{{ $imageName }}:{{ $version }}"
-          {{- end }}
+          image: "{{- $imageRegistry }}/{{- $imageRepo }}:{{ $version }}"
           imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }}
           securityContext:
             allowPrivilegeEscalation: false
