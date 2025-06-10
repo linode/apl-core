@@ -3118,7 +3118,6 @@ properties:
       useORCS:
         type: boolean
         description: Defines if the OCI Registry Cache Service (ORCS) is used to cache images from the public registry.
-        default: false
   ingress:
     properties:
       platformClass:
