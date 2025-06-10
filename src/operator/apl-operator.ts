@@ -73,16 +73,16 @@ export class AplOperator {
         await this.aplOps.validateValues()
         this.d.info(`[${trigger}] Validation process completed`)
       }
-      if (applyTeamsOnly) {
-        await this.aplOps.applyAsAppsTeams()
-      } else {
-        await this.aplOps.apply()
-      }
       try {
         await ensureTeamGitOpsDirectories(env.ENV_DIR)
         await commit(false, {} as HelmArguments) // Pass empty object to clear any stale parsed args
       } catch (e) {
         this.d.error(`Failed to ensure team GitOps directories: ${e}`)
+      }
+      if (applyTeamsOnly) {
+        await this.aplOps.applyAsAppsTeams()
+      } else {
+        await this.aplOps.apply()
       }
       this.d.info(`[${trigger}] Apply process completed`)
 
