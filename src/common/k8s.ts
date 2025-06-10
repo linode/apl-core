@@ -1,5 +1,14 @@
-import { AppsV1Api, BatchV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
-import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
+import {
+  AppsV1Api,
+  BatchV1Api,
+  CoreV1Api,
+  CustomObjectsApi,
+  KubeConfig,
+  PatchStrategy,
+  setHeaderOptions,
+  V1ResourceRequirements,
+  V1Secret,
+} from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
@@ -316,8 +325,7 @@ export async function createGenericSecret(
     type: 'Opaque',
   }
 
-  const response = await coreV1Api.createNamespacedSecret(namespace, secret)
-  return response.body
+  return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
 }
 
 export function b64enc(value: string): string {
@@ -330,7 +338,7 @@ export async function getPodsOfStatefulSet(
   namespace: string,
   coreApi: CoreV1Api,
 ) {
-  const { body: statefulSet } = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
+  const statefulSet = await appsApi.readNamespacedStatefulSet({ name: statefulSetName, namespace })
 
   if (!statefulSet.spec?.selector?.matchLabels) {
     throw new Error(`StatefulSet ${statefulSetName} does not have matchLabels`)
@@ -340,15 +348,10 @@ export async function getPodsOfStatefulSet(
     .map(([key, value]) => `${key}=${value}`)
     .join(',')
 
-  const { body: podList } = await coreApi.listNamespacedPod(
+  return await coreApi.listNamespacedPod({
     namespace,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
     labelSelector,
-  )
-  return podList
+  })
 }
 
 export async function patchContainerResourcesOfSts(
@@ -403,7 +406,7 @@ export async function patchStatefulSetResources(
   d: OtomiDebugger,
 ) {
   try {
-    const patch = {
+    const body = {
       spec: {
         template: {
           spec: {
@@ -419,15 +422,12 @@ export async function patchStatefulSetResources(
     }
 
     await appsApi.patchNamespacedStatefulSet(
-      statefulSetName,
-      namespace,
-      patch,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      { headers: { 'Content-Type': 'application/strategic-merge-patch+json' } },
+      {
+        name: statefulSetName,
+        namespace,
+        body,
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
     )
   } catch (error) {
     d.error(`Failed to patch StatefulSet ${statefulSetName}:`, error)
@@ -452,7 +452,7 @@ export async function deleteStatefulSetPods(
     // Delete each pod
     for (const pod of pods.items) {
       if (pod.metadata?.name) {
-        await coreApi.deleteNamespacedPod(pod.metadata.name, namespace)
+        await coreApi.deleteNamespacedPod({ name: pod.metadata.name, namespace })
       }
     }
   } catch (error) {

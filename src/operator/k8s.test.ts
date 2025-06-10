@@ -31,7 +31,7 @@ describe('updateApplyState', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    mockCoreV1Api = new CoreV1Api() as jest.Mocked<CoreV1Api>
+    mockCoreV1Api = new CoreV1Api({} as any) as jest.Mocked<CoreV1Api>
   })
 
   const testState: ApplyState = {
@@ -54,22 +54,25 @@ describe('updateApplyState', () => {
       },
     }
 
-    mockCoreV1Api.readNamespacedConfigMap.mockResolvedValue({
-      body: existingConfigMap,
-    })
+    mockCoreV1Api.readNamespacedConfigMap.mockResolvedValue(existingConfigMap)
 
     await updateApplyState(testState, testNamespace, testConfigMapName)
 
-    expect(mockCoreV1Api.readNamespacedConfigMap).toHaveBeenCalledWith(testConfigMapName, testNamespace)
+    expect(mockCoreV1Api.readNamespacedConfigMap).toHaveBeenCalledWith({
+      name: 'test-configmap',
+      namespace: 'test-namespace',
+    })
 
-    expect(mockCoreV1Api.replaceNamespacedConfigMap).toHaveBeenCalledWith(testConfigMapName, testNamespace, {
-      metadata: {
-        name: testConfigMapName,
+    expect(mockCoreV1Api.replaceNamespacedConfigMap).toHaveBeenCalledWith({
+      body: {
+        data: {
+          someOtherData: 'value',
+          state: '{"commitHash":"abc123","status":"succeeded","timestamp":"2025-05-15T10:00:00Z","trigger":"test"}',
+        },
+        metadata: { name: 'test-configmap' },
       },
-      data: {
-        someOtherData: 'value',
-        state: JSON.stringify(testState),
-      },
+      name: 'test-configmap',
+      namespace: 'test-namespace',
     })
   })
 
@@ -81,15 +84,19 @@ describe('updateApplyState', () => {
 
     await updateApplyState(testState, testNamespace, testConfigMapName)
 
-    expect(mockCoreV1Api.readNamespacedConfigMap).toHaveBeenCalledWith(testConfigMapName, testNamespace)
+    expect(mockCoreV1Api.readNamespacedConfigMap).toHaveBeenCalledWith({
+      name: 'test-configmap',
+      namespace: 'test-namespace',
+    })
 
-    expect(mockCoreV1Api.createNamespacedConfigMap).toHaveBeenCalledWith(testNamespace, {
-      metadata: {
-        name: testConfigMapName,
+    expect(mockCoreV1Api.createNamespacedConfigMap).toHaveBeenCalledWith({
+      body: {
+        data: {
+          state: '{"commitHash":"abc123","status":"succeeded","timestamp":"2025-05-15T10:00:00Z","trigger":"test"}',
+        },
+        metadata: { name: 'test-configmap' },
       },
-      data: {
-        state: JSON.stringify(testState),
-      },
+      namespace: 'test-namespace',
     })
   })
 
@@ -106,13 +113,15 @@ describe('updateApplyState', () => {
 
     await updateApplyState(testState, testNamespace, testConfigMapName)
 
-    expect(mockCoreV1Api.replaceNamespacedConfigMap).toHaveBeenCalledWith(testConfigMapName, testNamespace, {
-      metadata: {
-        name: testConfigMapName,
+    expect(mockCoreV1Api.replaceNamespacedConfigMap).toHaveBeenCalledWith({
+      body: {
+        body: { metadata: { name: 'test-configmap' } },
+        data: {
+          state: '{"commitHash":"abc123","status":"succeeded","timestamp":"2025-05-15T10:00:00Z","trigger":"test"}',
+        },
       },
-      data: {
-        state: JSON.stringify(testState),
-      },
+      name: 'test-configmap',
+      namespace: 'test-namespace',
     })
   })
 
