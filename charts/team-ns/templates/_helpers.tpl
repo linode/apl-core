@@ -41,9 +41,9 @@ otomi.io/team: {{ .Values.teamId }}
 
 {{- define "service.domain" -}}
 {{- $v := .dot.Values }}
-{{- $svc := (hasKey .s "hasPrefix" | ternary (printf "%s-%s" $v.teamId (.s.svc | default .s.name)) (.s.svc | default .s.name)) -}}
+{{- $teamSuffix := (and .isKnativeService (printf "team-%s" $v.teamId)) | default $v.teamId }}
 {{- $shared := (and .s.isCore (eq $v.teamId "admin") (hasKey .s "isShared")) | default false -}}
-{{- $host := ($shared | ternary .s.name (printf "%s-%s" .s.name $v.teamId )) -}}
+{{- $host := ($shared | ternary .s.name (printf "%s-%s" .s.name $teamSuffix )) -}}
 {{- $domain := (index .s "domain" | default (printf "%s.%s" $host $v.domain)) -}}
 {{- print $domain -}}
 {{- end -}}
