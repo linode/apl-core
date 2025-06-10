@@ -29,7 +29,11 @@ spec:
           type: RuntimeDefault
       containers:
         - name: destroy
+          {{- if .Values.otomi.useORCS }}
+          image: "mirror.registry.linodelke.net/docker/linode/apl-core:{{ $version }}"
+          {{- else }}
           image: linode/apl-core:{{ $version }}
+          {{- end }}
           imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
           securityContext:
             allowPrivilegeEscalation: false
