@@ -6,13 +6,13 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 6.7.3
+    version: 8.0.9
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
     version: v1.17.1
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
-    version: 0.23.0
+    version: 0.24.0
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
     version: 8.7.8
@@ -34,20 +34,20 @@ dependencies:
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
-    version: 1.26.0
+    version: 1.26.1
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.26.0
+    version: 1.26.1
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.26.0
+    version: 1.26.1
     repository: https://istio-release.storage.googleapis.com/charts
   - name: jaeger-operator
     version: 2.46.0
     repository: https://jaegertracing.github.io/helm-charts
   - name: keycloak
-    version: 24.5.7
+    version: 24.7.1
     repository: https://charts.bitnami.com/bitnami
   - name: kiali-operator
     version: 1.86.1
