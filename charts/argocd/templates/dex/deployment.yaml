@@ -9,7 +9,7 @@ metadata:
     {{- end }}
   {{- end }}
   name: {{ template "argo-cd.dex.fullname" . }}
-  namespace: {{ .Release.Namespace | quote }}
+  namespace: {{ include  "argo-cd.namespace" . }}
   labels:
     {{- include "argo-cd.labels" (dict "context" . "component" .Values.dex.name "name" .Values.dex.name) | nindent 4 }}
 spec:
@@ -26,6 +26,9 @@ spec:
     metadata:
       annotations:
         checksum/cmd-params: {{ include (print $.Template.BasePath "/argocd-configs/argocd-cmd-params-cm.yaml") . | sha256sum }}
+        {{- if (index .Values.configs.cm "dex.config") }}
+        checksum/cm: {{ include (print $.Template.BasePath "/argocd-configs/argocd-cm.yaml") . | sha256sum }}
+        {{- end }}
         {{- if .Values.dex.certificateSecret.enabled }}
         checksum/dex-server-tls: {{ include (print $.Template.BasePath "/argocd-configs/argocd-dex-server-tls-secret.yaml") . | sha256sum }}
         {{- end }}
@@ -40,6 +43,9 @@ spec:
           {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- with .Values.dex.runtimeClassName | default .Values.global.runtimeClassName }}
+      runtimeClassName: {{ . }}
+      {{- end }}
       {{- with .Values.dex.imagePullSecrets | default .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -59,14 +65,19 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.dex.terminationGracePeriodSeconds }}
       {{- end }}
       serviceAccountName: {{ template "argo-cd.dex.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.dex.automountServiceAccountToken }}
       containers:
       - name: {{ .Values.dex.name }}
         image: {{ .Values.dex.image.repository }}:{{ .Values.dex.image.tag }}
         imagePullPolicy: {{ default .Values.global.image.imagePullPolicy .Values.dex.image.imagePullPolicy }}
         command:
         - /shared/argocd-dex
-        - --logformat={{ default .Values.global.logging.format .Values.dex.logFormat }}
-        - --loglevel={{ default .Values.global.logging.level .Values.dex.logLevel }}
+        {{- with .Values.dex.logLevel }}
+        - --loglevel={{ . }}
+        {{- end }}
+        {{- with .Values.dex.logFormat }}
+        - --logformat={{ . }}
+        {{- end }}
         args:
         - rundex
         {{- with .Values.dex.extraArgs }}
@@ -76,6 +87,24 @@ spec:
           {{- with (concat .Values.global.env .Values.dex.env) }}
             {{- toYaml . | nindent 10 }}
           {{- end }}
+          - name: ARGOCD_DEX_SERVER_LOGFORMAT
+            valueFrom:
+              configMapKeyRef:
+                key: dexserver.log.format
+                name: argocd-cmd-params-cm
+                optional: true
+          - name: ARGOCD_DEX_SERVER_LOGLEVEL
+            valueFrom:
+              configMapKeyRef:
+                key: dexserver.log.level
+                name: argocd-cmd-params-cm
+                optional: true
+          - name: ARGOCD_LOG_FORMAT_TIMESTAMP
+            valueFrom:
+              configMapKeyRef:
+                name: argocd-cmd-params-cm
+                key: log.format.timestamp
+                optional: true
           - name: ARGOCD_DEX_SERVER_DISABLE_TLS
             valueFrom:
               configMapKeyRef:
@@ -187,9 +216,19 @@ spec:
       {{- end }}
       volumes:
       - name: static-files
+        {{- if .Values.dex.emptyDir.sizeLimit }}
+        emptyDir:
+          sizeLimit: {{ .Values.dex.emptyDir.sizeLimit }}
+        {{- else }}
         emptyDir: {}
+        {{- end }}
       - name: dexconfig
+        {{- if .Values.dex.emptyDir.sizeLimit }}
+        emptyDir:
+          sizeLimit: {{ .Values.dex.emptyDir.sizeLimit }}
+        {{- else }}
         emptyDir: {}
+        {{- end }}
       - name: argocd-dex-server-tls
         secret:
           secretName: argocd-dex-server-tls
