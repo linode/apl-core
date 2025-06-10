@@ -7,7 +7,6 @@
 {{- $harborSecretName := ($harborDomain | replace "." "-") }}
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
-{{- $tag := $h | get "image.tag" }}
 {{/*The cloudNativeDb operator is responsible for creating the secret*/}}
 
 externalURL: {{ $externalUrl }}
@@ -25,8 +24,6 @@ updateStrategy:
 core:
   secretName: harbor-token-service-ca
   priorityClassName: otomi-critical
-  image:
-    tag: {{ $tag }}
   resources: {{- $h.resources.core | toYaml | nindent 4 }}
   secret: {{ $h | get "core.secret" nil | quote }}
   # secretName: {{ $harborSecretName }}
@@ -44,8 +41,6 @@ database:
 
 exporter:
   priorityClassName: otomi-critical
-  image:
-    tag: {{ $tag }}
 
 expose:
   tls:
@@ -54,8 +49,6 @@ expose:
 
 jobservice:
   priorityClassName: otomi-critical
-  image:
-    tag: {{ $tag }}
   jobLoggers:
     - stdout
   resources: {{- $h.resources.jobservice | toYaml | nindent 4 }}
@@ -139,15 +132,11 @@ persistence:
 
 portal:
   priorityClassName: otomi-critical
-  image:
-    tag: {{ $tag }}
   resources: {{- $h.resources.portal | toYaml | nindent 4 }}
 
 redis:
   internal:
     priorityClassName: otomi-critical
-    image:
-      tag: {{ $tag }}
     resources: {{- $h.resources.redis | toYaml | nindent 6 }}
 
 registry:
@@ -155,12 +144,8 @@ registry:
   secret: {{ $h | get "registry.secret" nil | quote }}
 
   registry:
-    image:
-      tag: {{ $tag }}
     resources: {{- $h.resources.registry | toYaml | nindent 6 }}
   controller:
-    image:
-      tag: {{ $tag }}
     resources: {{- $h.resources.registryController | toYaml | nindent 6 }}
   relativeurls: false
   credentials:
@@ -170,8 +155,6 @@ registry:
 
 trivy:
   priorityClassName: otomi-critical
-  image:
-    tag: {{ $tag }}
   resources: 
     {{- $h.resources.trivy | toYaml  | nindent 4 }}
   automountServiceAccountToken: true
