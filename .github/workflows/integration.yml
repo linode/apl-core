@@ -9,7 +9,7 @@ on:
       kubernetes_versions:
         description: 'Kubernetes version'
         type: string
-        default: "['1.31']"
+        default: "['1.33']"
       install_profile:
         description: 'APL installation profile'
         type: string
@@ -51,7 +51,7 @@ on:
           - "['1.31']"
           - "['1.32']"
           - "['1.33']"
-        default: "['1.32']"
+        default: "['1.33']"
       install_profile:
         description: APL installation profile
         default: minimal-with-team
@@ -231,12 +231,12 @@ jobs:
 
             allReady=$(echo "$rawOutput" | jq -r 'map(.nodes | .status == "ready") | all')
             echo "All nodes ready: $allReady"
-            
+
             if [ "$allReady" == "true" ]; then
               echo "Cluster is ready"
               break
             fi
-            
+
             sleep 30
           done
       - name: Save kubectl config with auth token
