@@ -13,7 +13,13 @@ import { ProcessOutputTrimmed } from 'src/common/zx-enhance'
 import { Argv, CommandModule } from 'yargs'
 import { $, cd } from 'zx'
 import { applyAsApps } from './apply-as-apps'
-import { cloneOtomiChartsInGitea, commit, printWelcomeMessage, retryIsOAuth2ProxyRunning } from './commit'
+import {
+  cloneOtomiChartsInGitea,
+  commit,
+  createInitialCredentialSecret,
+  printWelcomeMessage,
+  retryIsOAuth2ProxyRunning,
+} from './commit'
 import { upgrade } from './upgrade'
 
 const cmdName = getFilename(__filename)
@@ -114,6 +120,7 @@ const applyAll = async () => {
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
       await cloneOtomiChartsInGitea()
+      await createInitialCredentialSecret()
       await retryIsOAuth2ProxyRunning()
       await printWelcomeMessage()
     }

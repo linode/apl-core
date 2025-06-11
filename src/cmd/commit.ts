@@ -1,5 +1,7 @@
 import { CoreV1Api } from '@kubernetes/client-node'
 import retry from 'async-retry'
+import { existsSync } from 'fs'
+import { rm } from 'fs/promises'
 import { bootstrapGit, setIdentity } from 'src/common/bootstrap'
 import { prepareEnvironment } from 'src/common/cli'
 import { encrypt } from 'src/common/crypt'
@@ -14,8 +16,6 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
-import { existsSync } from 'fs'
-import { rm } from 'fs/promises'
 
 const cmdName = getFilename(__filename)
 
@@ -190,24 +190,29 @@ export async function isOAuth2ProxyAvailable(coreV1Api: CoreV1Api): Promise<void
   d.info('OAuth2proxy is available, continuing...')
 }
 
-async function createCredentialsSecret(secretName: string, username: string, password: string): Promise<void> {
-  const secretData = { username, password }
-  await createGenericSecret(k8s.core(), secretName, 'keycloak', secretData)
+export async function createInitialCredentialSecret(): Promise<void> {
+  const values = (await hfValues()) as Record<string, any>
+  const { domainSuffix } = values.cluster
+  const { hasExternalIDP } = values.otomi
+
+  const defaultPlatformAdminEmail = `platform-admin@${domainSuffix}`
+  const platformAdmin = values.users.find((user: any) => user.email === defaultPlatformAdminEmail)
+  if (platformAdmin && !hasExternalIDP) {
+    const { email, initialPassword }: { email: string; initialPassword: string } = platformAdmin
+    const secretData = { email, initialPassword }
+    await createGenericSecret(k8s.core(), 'platform-admin-initial-credentials', 'keycloak', secretData)
+  } else {
+    const { adminUsername, adminPassword }: { adminUsername: string; adminPassword: string } = values.apps.keycloak
+    const secretData = { adminUsername, adminPassword }
+    await createGenericSecret(k8s.core(), 'root-credentials', 'keycloak', secretData)
+  }
 }
 
 export const printWelcomeMessage = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
   const values = (await hfValues()) as Record<string, any>
-  const { adminUsername, adminPassword }: { adminUsername: string; adminPassword: string } = values.apps.keycloak
-  await createCredentialsSecret('root-credentials', adminUsername, adminPassword)
   const { hasExternalIDP } = values.otomi
   const { domainSuffix } = values.cluster
-  const defaultPlatformAdminEmail = `platform-admin@${domainSuffix}`
-  const platformAdmin = values.users.find((user: any) => user.email === defaultPlatformAdminEmail)
-  if (platformAdmin && !hasExternalIDP) {
-    const { email, initialPassword }: { email: string; initialPassword: string } = platformAdmin
-    await createCredentialsSecret('platform-admin-initial-credentials', email, initialPassword)
-  }
   const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
   const message = `
   ########################################################################################################################################
