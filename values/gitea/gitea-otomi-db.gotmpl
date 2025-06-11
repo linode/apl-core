@@ -8,6 +8,8 @@
 name: gitea-db
 storage:
   size: {{ $gdb.size }}
+walStorage:
+  size: {{ $gdb.walStorageSize }}
 instances: {{ $gdb.replicas }}
 
 {{- if $gdb.imageName }}
