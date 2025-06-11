@@ -928,7 +928,7 @@ definitions:
         type: string
       domain:
         description: A custom service domain name (max 64 bytes).
-        maxLength: 64
+        maxLength: 128
         $ref: '#/definitions/wordCharacterPattern'
       forwardPath:
         default: false
