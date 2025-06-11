@@ -117,9 +117,6 @@ otomi: {}
 #   # IDP group id used to identify team admin
 #   teamAdminGroupID: ''
 
-## Otomi installation job configuration
-core: {}
-
 ## Cleanup job configuration
 cleanup:
   # Enable the cleanup job that removes cluster-admin ClusterRoleBinding after installation
