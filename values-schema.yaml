@@ -3354,6 +3354,8 @@ properties:
         properties:
           size:
             type: string
+          walStorageSize:
+            type: string
           resources:
             $ref: '#/definitions/resources'
           replicas:
@@ -3374,6 +3376,8 @@ properties:
         properties:
           size:
             type: string
+          walStorageSize:
+            type: string
           resources:
             $ref: '#/definitions/resources'
           replicas:
@@ -3393,6 +3397,8 @@ properties:
         title: gitea
         properties:
           size:
+            type: string
+          walStorageSize:
             type: string
           resources:
             $ref: '#/definitions/resources'
