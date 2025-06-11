@@ -24,6 +24,13 @@ interface Arguments extends HelmArguments, DroneArgs {
   message?: string
 }
 
+interface InitialData {
+  domainSuffix: string
+  username: string
+  password: string
+  secretName: string
+}
+
 const commitAndPush = async (values: Record<string, any>, branch: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
@@ -190,30 +197,39 @@ export async function isOAuth2ProxyAvailable(coreV1Api: CoreV1Api): Promise<void
   d.info('OAuth2proxy is available, continuing...')
 }
 
-export async function createInitialCredentialSecret(): Promise<void> {
+export async function initialSetupData(): Promise<InitialData> {
   const values = (await hfValues()) as Record<string, any>
   const { domainSuffix } = values.cluster
   const { hasExternalIDP } = values.otomi
 
   const defaultPlatformAdminEmail = `platform-admin@${domainSuffix}`
   const platformAdmin = values.users.find((user: any) => user.email === defaultPlatformAdminEmail)
+  const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
+
   if (platformAdmin && !hasExternalIDP) {
-    const { email, initialPassword }: { email: string; initialPassword: string } = platformAdmin
-    const secretData = { email, initialPassword }
-    await createGenericSecret(k8s.core(), 'platform-admin-initial-credentials', 'keycloak', secretData)
+    return {
+      domainSuffix,
+      username: platformAdmin.email,
+      password: platformAdmin.initialPassword,
+      secretName,
+    }
   } else {
-    const { adminUsername, adminPassword }: { adminUsername: string; adminPassword: string } = values.apps.keycloak
-    const secretData = { adminUsername, adminPassword }
-    await createGenericSecret(k8s.core(), 'root-credentials', 'keycloak', secretData)
+    return {
+      domainSuffix,
+      username: values.apps.keycloak.adminUsername,
+      password: values.apps.keycloak.adminPassword,
+      secretName,
+    }
   }
 }
 
-export const printWelcomeMessage = async (): Promise<void> => {
+export async function createCredentialsSecret(secretName: string, username: string, password: string): Promise<void> {
+  const secretData = { username, password }
+  await createGenericSecret(k8s.core(), secretName, 'keycloak', secretData)
+}
+
+export const printWelcomeMessage = async (secretName: string, domainSuffix: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
-  const values = (await hfValues()) as Record<string, any>
-  const { hasExternalIDP } = values.otomi
-  const { domainSuffix } = values.cluster
-  const secretName = hasExternalIDP ? 'root-credentials' : 'platform-admin-initial-credentials'
   const message = `
   ########################################################################################################################################
   #

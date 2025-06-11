@@ -16,7 +16,8 @@ import { applyAsApps } from './apply-as-apps'
 import {
   cloneOtomiChartsInGitea,
   commit,
-  createInitialCredentialSecret,
+  createCredentialsSecret,
+  initialSetupData,
   printWelcomeMessage,
   retryIsOAuth2ProxyRunning,
 } from './commit'
@@ -120,9 +121,10 @@ const applyAll = async () => {
         { streams: { stdout: d.stream.log, stderr: d.stream.error } },
       )
       await cloneOtomiChartsInGitea()
-      await createInitialCredentialSecret()
+      const initialData = await initialSetupData()
+      await createCredentialsSecret(initialData.secretName, initialData.username, initialData.password)
       await retryIsOAuth2ProxyRunning()
-      await printWelcomeMessage()
+      await printWelcomeMessage(initialData.secretName, initialData.domainSuffix)
     }
   }
   await setDeploymentState({ status: 'deployed', version })
