@@ -37,6 +37,12 @@ jest.mock('../common/debug', () => ({
 jest.mock('../common/k8s', () => ({
   waitTillGitRepoAvailable: jest.fn().mockResolvedValue(undefined),
 }))
+jest.mock('../common/utils', () => ({
+  ensureTeamGitOpsDirectories: jest.fn().mockResolvedValue(undefined),
+}))
+jest.mock('../cmd/commit', () => ({
+  commit: jest.fn().mockResolvedValue(undefined),
+}))
 
 jest.mock('./k8s', () => ({
   updateApplyState: jest.fn().mockResolvedValue(undefined),
