@@ -19,6 +19,7 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { k8s } from '../common/k8s'
+import { ApiException } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 
@@ -449,7 +450,7 @@ const checkExists = async (func: () => Promise<any>): Promise<boolean> => {
     await func()
     return true
   } catch (error) {
-    if (error.response && error.response.statusCode === 404) {
+    if (error instanceof ApiException && error.code === 404) {
       return false
     } else {
       throw error
@@ -458,12 +459,19 @@ const checkExists = async (func: () => Promise<any>): Promise<boolean> => {
 }
 
 async function namespaceExists(name: string): Promise<boolean> {
-  return await checkExists(async () => await k8s.core().readNamespace(name))
+  return await checkExists(async () => await k8s.core().readNamespace({ name }))
 }
 
 async function appExists(name: string): Promise<boolean> {
   return await checkExists(
-    async () => await k8s.custom().getNamespacedCustomObject('argoproj.io', 'v1alpha1', 'argocd', 'applications', name),
+    async () =>
+      await k8s.custom().getNamespacedCustomObject({
+        group: 'argoproj.io',
+        version: 'v1alpha1',
+        namespace: 'argocd',
+        plural: 'applications',
+        name,
+      }),
   )
 }
 
@@ -493,53 +501,56 @@ async function createPostMigrationJob(name: string, script: string): Promise<voi
   if (parsedArgs?.dryRun || parsedArgs?.local) {
     return
   }
-  await k8s.batch().createNamespacedJob('maintenance', {
-    apiVersion: 'batch/v1',
-    kind: 'Job',
-    metadata: {
-      name,
-      namespace: 'maintenance',
-    },
-    spec: {
-      template: {
-        metadata: {
-          annotations: {
-            'sidecar.istio.io/inject': 'false',
-          },
-        },
-        spec: {
-          serviceAccountName: 'default',
-          containers: [
-            {
-              image: 'bitnami/kubectl:1.32.4',
-              name: 'kubectl',
-              command: ['/bin/bash', '-euo', 'pipefail', '-c', script],
-              resources: {
-                limits: {
-                  cpu: '250m',
-                  memory: '256Mi',
-                },
-                requests: {
-                  cpu: '100m',
-                  memory: '128Mi',
-                },
-              },
-              securityContext: {
-                runAsNonRoot: true,
-                runAsUser: 65535,
-                runAsGroup: 65535,
-                allowPrivilegeEscalation: false,
-                capabilities: {
-                  drop: ['ALL'],
-                },
-              },
+  await k8s.batch().createNamespacedJob({
+    namespace: 'maintenance',
+    body: {
+      apiVersion: 'batch/v1',
+      kind: 'Job',
+      metadata: {
+        name,
+        namespace: 'maintenance',
+      },
+      spec: {
+        template: {
+          metadata: {
+            annotations: {
+              'sidecar.istio.io/inject': 'false',
             },
-          ],
-          restartPolicy: 'Never',
-          securityContext: {
-            fsGroup: 65535,
-            seccompProfile: {
-              type: 'RuntimeDefault',
+          },
+          spec: {
+            serviceAccountName: 'default',
+            containers: [
+              {
+                image: 'bitnami/kubectl:1.32.4',
+                name: 'kubectl',
+                command: ['/bin/bash', '-euo', 'pipefail', '-c', script],
+                resources: {
+                  limits: {
+                    cpu: '250m',
+                    memory: '256Mi',
+                  },
+                  requests: {
+                    cpu: '100m',
+                    memory: '128Mi',
+                  },
+                },
+                securityContext: {
+                  runAsNonRoot: true,
+                  runAsUser: 65535,
+                  runAsGroup: 65535,
+                  allowPrivilegeEscalation: false,
+                  capabilities: {
+                    drop: ['ALL'],
+                  },
+                },
+              },
+            ],
+            restartPolicy: 'Never',
+            securityContext: {
+              fsGroup: 65535,
+              seccompProfile: {
+                type: 'RuntimeDefault',
+              },
             },
           },
         },
@@ -592,7 +603,11 @@ export async function installIstioHelmCharts(): Promise<void> {
       },
       { streams: { stdout: d.stream.log, stderr: d.stream.error } },
     )
-    if (await checkExists(async () => await k8s.batch().readNamespacedJob('istio-operator-uninstall', 'maintenance'))) {
+    if (
+      await checkExists(
+        async () => await k8s.batch().readNamespacedJob({ name: 'istio-operator-uninstall', namespace: 'maintenance' }),
+      )
+    ) {
       d.info('Istio Operator uninstall job pending.')
     } else {
       d.info('Scheduling post-migration job for Istio Operator uninstall')

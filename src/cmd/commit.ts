@@ -11,7 +11,7 @@ import { hfValues } from 'src/common/hf'
 import { createGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
 import { getFilename } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
-import { HelmArguments, getParsedArgs, setParsedArgs } from 'src/common/yargs'
+import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { Arguments as DroneArgs } from './gen-drone'
@@ -101,9 +101,9 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   d.log('Successfully pushed the updated values')
 }
 
-export const commit = async (initialInstall: boolean): Promise<void> => {
+export const commit = async (initialInstall: boolean, overrideArgs?: HelmArguments): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commit`)
-  await validateValues()
+  await validateValues(overrideArgs)
   d.info('Preparing values')
   const values = (await hfValues()) as Record<string, any>
   const { branch, remote, username, email } = getRepo(values)
@@ -181,7 +181,10 @@ export async function retryIsOAuth2ProxyRunning() {
 export async function isOAuth2ProxyAvailable(coreV1Api: CoreV1Api): Promise<void> {
   const d = terminal(`cmd:${cmdName}:isOAuth2ProxyRunning`)
   d.info('Checking if OAuth2Proxy is available, waiting...')
-  const { body: oauth2ProxyEndpoint } = await coreV1Api.readNamespacedEndpoints('oauth2-proxy', 'istio-system')
+  const oauth2ProxyEndpoint = await coreV1Api.readNamespacedEndpoints({
+    name: 'oauth2-proxy',
+    namespace: 'istio-system',
+  })
   if (!oauth2ProxyEndpoint) {
     throw new Error('OAuth2Proxy endpoint not found, waiting...')
   }
@@ -258,6 +261,6 @@ export const module = {
   handler: async (argv: Arguments): Promise<void> => {
     setParsedArgs(argv)
     await prepareEnvironment({ skipKubeContextCheck: true })
-    await commit(true)
+    await commit(true, argv)
   },
 }
