@@ -3,6 +3,10 @@ import { waitTillGitRepoAvailable } from '../common/k8s'
 import { GitRepository } from './git-repository'
 import { AplOperations } from './apl-operations'
 import { updateApplyState } from './k8s'
+import { ensureTeamGitOpsDirectories } from '../common/utils'
+import { env } from '../common/envalid'
+import { commit } from '../cmd/commit'
+import { HelmArguments } from '../common/yargs'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
@@ -68,6 +72,12 @@ export class AplOperator {
         this.d.info(`[${trigger}] Starting validation process`)
         await this.aplOps.validateValues()
         this.d.info(`[${trigger}] Validation process completed`)
+      }
+      try {
+        await ensureTeamGitOpsDirectories(env.ENV_DIR)
+        await commit(false, {} as HelmArguments) // Pass empty object to clear any stale parsed args
+      } catch (e) {
+        this.d.error(`Failed to ensure team GitOps directories: ${e}`)
       }
       if (applyTeamsOnly) {
         await this.aplOps.applyAsAppsTeams()
