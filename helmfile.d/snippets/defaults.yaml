@@ -1226,6 +1226,7 @@ environments:
           keycloak:
             imageName: null
             size: 5Gi
+            walStorageSize: 5Gi
             replicas: 2
             recovery: {}
             externalClusters: []
@@ -1239,6 +1240,7 @@ environments:
           harbor:
             imageName: null
             size: 5Gi
+            walStorageSize: 5Gi
             replicas: 2
             coreDatabase: registry
             recovery: {}
@@ -1253,6 +1255,7 @@ environments:
           gitea:
             imageName: null
             size: 5Gi
+            walStorageSize: 5Gi
             replicas: 2
             recovery: {}
             externalClusters: []
