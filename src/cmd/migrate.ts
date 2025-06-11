@@ -449,7 +449,7 @@ const checkExists = async (func: () => Promise<any>): Promise<boolean> => {
     await func()
     return true
   } catch (error) {
-    if (error.response && error.response.statusCode === 404) {
+    if (error.code === 404) {
       return false
     } else {
       throw error
