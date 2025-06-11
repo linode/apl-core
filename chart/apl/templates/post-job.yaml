@@ -1,4 +1,5 @@
 {{- $kms := .Values.kms | default dict }}
+{{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 apiVersion: batch/v1
 kind: Job
