@@ -31,7 +31,7 @@ spec:
       containers:
         - name: install
           {{- if .Values.otomi.useORCS }}
-          image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
+          image: "mirror.registry.linodelke.net/docker/apl-core:{{ $version }}"
           {{- else }}
           image: "{{ $imageName }}:{{ $version }}"
           {{- end }}
