@@ -58,7 +58,6 @@ async function main(): Promise<void> {
   try {
     d.info('Starting APL Operator')
 
-    const config = loadConfig()
     const repoPath = env.ENV_DIR
     // Only delete contents of the directory
     if (fs.existsSync(repoPath)) {
@@ -76,6 +75,7 @@ async function main(): Promise<void> {
     if (!fs.existsSync(repoPath)) {
       fs.mkdirSync(repoPath, { recursive: true })
     }
+    const config = loadConfig()
 
     const operator = new AplOperator(config)
 
