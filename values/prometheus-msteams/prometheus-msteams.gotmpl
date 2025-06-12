@@ -1,6 +1,9 @@
 {{- $v := .Values }}
 replicaCount: 1
 image:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/prometheusmsteams/prometheus-msteams"
+  {{- end }}
   repository: quay.io/prometheusmsteams/prometheus-msteams
   tag: v1.3.3
 {{- with .Values.otomi | get "globalPullSecret" nil }}

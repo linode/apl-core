@@ -8,6 +8,15 @@ image:
   pullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+  repo: "{{- $v.otomi.linodeLkeImageRepository }}/quay/kiali/kiali-operator"
+{{- else }}
+  repo: quay.io/kiali/kiali-operator
+{{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+allowAdHocKialiImage: true
+{{- end }}
 
 cr:
   create: true
@@ -22,6 +31,9 @@ cr:
         issuer_uri: {{ $v._derived.oidcBaseUrl }}
         username_claim: email
     deployment:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+      image_name: "{{- $v.otomi.linodeLkeImageRepository }}/quay/kiali/kiali"
+    {{- end }}
       ingress:
         enabled: false
       namespace: kiali
