@@ -81,9 +81,20 @@ extraVolumeMounts:
 
 extraInitContainers:
   - name: wait-for-keycloak
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
+    {{- else }}
     image: curlimages/curl:latest
+    {{- end }}
     command: ["/bin/sh","-c"]
     args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+initContainers:
+  waitForRedis:
+    image:
+      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/alpine"
+{{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
@@ -91,6 +102,10 @@ imagePullSecrets:
 {{- end }}
 
 redis:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  global:
+    imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  {{- end }}
   enabled: true
   architecture: {{ $r | get "architecture" }}
   auth:
@@ -129,3 +144,8 @@ redis:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/oauth2-proxy/oauth2-proxy"
+{{- end }}

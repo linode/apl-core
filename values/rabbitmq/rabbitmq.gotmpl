@@ -15,9 +15,12 @@ msgTopologyOperator:
   watchAllNamespaces: false
   watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
-{{- with $v.otomi | get "globalPullSecret" nil }}
 global:
+  storageClass: ""
+{{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global
 {{- end }}
-
+{{- if $v.otomi.linodeLkeImageRepository }}
+  imageRegistry: "{{$v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}
