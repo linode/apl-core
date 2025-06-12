@@ -1,6 +1,11 @@
 {{- $v := .Values }}
 {{- $t:= $v.apps.thanos }}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+image: 
+  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}
+
 ## @section Thanos Query parameters
 query:
   enabled: true

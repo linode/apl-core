@@ -1,3 +1,5 @@
+{{- $v := .Values }}
+
 resources:
   - apiVersion: postgresql.cnpg.io/v1
     kind: ClusterImageCatalog
@@ -6,6 +8,6 @@ resources:
     spec:
       images:
         - major: 15
-          image: ghcr.io/cloudnative-pg/postgresql:15.13
+          image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/cloudnative-pg/postgresql:15.13"
         - major: 17
-          image: ghcr.io/cloudnative-pg/postgresql:17.5
+          image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/ghcr{{- else }}ghcr.io{{- end }}/cloudnative-pg/postgresql:17.5"
