@@ -31,7 +31,11 @@ spec:
           type: RuntimeDefault
       containers:
         - name: cleanup
+          {{- if .Values.otomi.useORCS }}
+          image: "mirror.registry.linodelke.net/docker/{{ .Values.cleanup.image.repository | default "bitnami/kubectl" }}:{{ .Values.cleanup.image.tag | default "1.33" }}"
+          {{- else }}
           image: {{ .Values.cleanup.image.repository | default "bitnami/kubectl" }}:{{ .Values.cleanup.image.tag | default "1.33" }}
+          {{- end }}
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
