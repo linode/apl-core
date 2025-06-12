@@ -34,8 +34,22 @@ defaultRules:
     {{- end }}
 prometheusOperator:
   resources: {{- $p.resources.prometheusOperator | toYaml | nindent 4 }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+  thanosImage:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+  {{- end }}
   admissionWebhooks:
     enabled: true
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    deployment:
+      image:
+        registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    patch:
+      image:
+        registry: "{{- $v.otomi.linodeLkeImageRepository }}/k8s"
+    {{- end }}
     certManager:
       enabled: true
       issuerRef:
@@ -44,6 +58,10 @@ prometheusOperator:
   priorityClassName: otomi-critical
   prometheusConfigReloader:
     resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}    
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
 commonLabels:
   prometheus: system
 crds:
@@ -71,6 +89,9 @@ prometheus:
     scrapeInterval: {{ $p.scrapeInterval }}
     podAntiAffinity: hard
     image:
+      {{- if $v.otomi.linodeLkeImageRepository }}
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      {{- end }}
       {{- with $g | get "image.prometheus.tag" nil }}
       tag: {{ . }}
       {{- end }}
@@ -176,6 +197,9 @@ alertmanager:
       labels:
         prometheus: system
     image:
+      {{- if $v.otomi.linodeLkeImageRepository }}
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      {{- end }}
        {{- with $a | get "image.tag" nil }}
       tag: {{ . }}
       {{- end }}
@@ -193,6 +217,9 @@ grafana:
   defaultDashboardsTimezone: browser
   assertNoLeakedSecrets: false
   image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    {{- end }}
     {{- with $g | get "image.tag" nil }}
     tag: {{ . }}
     {{- end }}
@@ -200,6 +227,10 @@ grafana:
   resources: {{- $g.resources.grafana | toYaml | nindent 4 }}
   sidecar:
     resources: {{- $g.resources.sidecar | toYaml | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
     dashboards:
       enabled: true
       label: release
@@ -313,6 +344,9 @@ kube-state-metrics:
       additionalLabels:
         prometheus: system
   image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/k8s"
+    {{- end }}
     {{- with $p | get "image.kube-state-metrics.tag" nil }}
     tag: {{  . }}
     {{- end }}
@@ -332,6 +366,9 @@ prometheus-node-exporter:
       additionalLabels:
         prometheus: system
   image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
     {{- with $p | get "image.node-exporter.tag" nil }}
     tag: {{ . }}
     {{- end }}

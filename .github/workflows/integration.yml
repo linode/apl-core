@@ -92,6 +92,10 @@ on:
           - 'true'
           - 'false'
         default: 'true'
+      useORCS:
+        description: 'Use OCI Registry Cache Service (ORCS) for container images'
+        type: boolean
+        default: false
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -273,6 +277,9 @@ jobs:
           # If a pipeline installs APL from the semver tag then pull container image from DockerHub
           [[ ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]] && exit 0
 
+          # If useORCS is true, then pull image DockerHub
+          [[ '${{ inputs.useORCS }}' == 'true' ]] && exit 0
+
           # Pull image from cache registry
           cat << EOF > values-container-registry.yaml
           imageName: "${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}"
@@ -334,6 +341,7 @@ jobs:
             --set otomi.hasExternalDNS=true \
             --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set otomi.adminPassword=$adminPassword \
+            --set otomi.useORCS=${{ inputs.useORCS }} \
             $kms"
 
           helm install $install_args &
