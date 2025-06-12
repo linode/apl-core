@@ -15,3 +15,9 @@ serviceMonitor:
   enabled: true
   additionalLabels:
     prometheus: system
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+  repository: "docker/falcosecurity/falco-exporter"
+{{- end }}

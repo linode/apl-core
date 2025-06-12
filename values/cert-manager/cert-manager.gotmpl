@@ -8,6 +8,11 @@ global:
   {{- end }}
   priorityClassName: otomi-critical
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-controller"
+{{- end }}
+
 prometheus:
   servicemonitor:
     enabled: true
@@ -22,10 +27,27 @@ startupapicheck:
   jobAnnotations:
     sidecar.istio.io/inject: "false"  
   resources: {{- toYaml $cm.resources.startupapicheck | nindent 4 }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-startupapicheck"
+{{- end }}
 
 cainjector:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-cainjector"
+  {{- end }}
   resources: {{- toYaml $cm.resources.cainjector | nindent 6 }}
 webhook:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-webhook"
+  {{- end }}
   resources: {{- toYaml $cm.resources.webhook | nindent 6 }}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+acmesolver:
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/jetstack/cert-manager-acmesolver"
+{{- end }}
 

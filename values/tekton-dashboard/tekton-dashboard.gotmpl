@@ -23,3 +23,8 @@ args:
   - --namespaces={{- tpl $joinTpl (dict "list" $targets "sep" ",") }}
   - --stream-logs=true
   - --external-logs=
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard"
+{{- end }}
