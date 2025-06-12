@@ -1,5 +1,5 @@
 import { terminal } from '../common/debug'
-import { CoreV1Api, KubeConfig } from '@kubernetes/client-node'
+import { ApiException, CoreV1Api, KubeConfig } from '@kubernetes/client-node'
 
 export type ApplyStatus = 'succeeded' | 'failed' | 'in-progress' | 'unknown'
 
@@ -52,7 +52,7 @@ export async function updateApplyState(
 
       await k8sClient.replaceNamespacedConfigMap({ name: configMapName, namespace, body: existingConfigMap })
     } catch (error) {
-      if ((error as any).response?.statusCode === 404) {
+      if (error instanceof ApiException && error.code === 404) {
         await k8sClient.createNamespacedConfigMap({
           namespace,
           body: {
