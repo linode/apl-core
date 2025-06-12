@@ -1,11 +1,11 @@
 {{- $v := .Values }}
-{{- $c := $v.apps }}
-{{- $k := $v.apps.keycloak }}
+{{- $apps := $v.apps }}
+{{- $k := $apps.keycloak }}
 {{- $o := $v | get "oidc" dict }}
-{{- $a := $v.apps | get "alertmanager" }}
-{{- $g := $v.apps | get "grafana" }}
-{{- $p := $v.apps | get "prometheus" }}
-{{- $t := $v.apps | get "thanos" }}
+{{- $a := $apps | get "alertmanager" }}
+{{- $g := $apps | get "grafana" }}
+{{- $p := $apps | get "prometheus" }}
+
 {{- $hasKeycloak := $k.enabled }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $alertmanagerDomain := printf "alertmanager.%s" $domain }}
@@ -13,7 +13,6 @@
 {{- $grafanaDomain := printf "grafana.%s" $domain }}
 {{- $slackTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/slack.gotmpl") $v | toString }}
 {{- $opsgenieTpl := tpl (readFile "../../helmfile.d/snippets/alertmanager/opsgenie.gotmpl") $v | toString }}
-# {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrlBackchannel "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
 {{- $grafanaIni := tpl (readFile "../../helmfile.d/snippets/grafana.gotmpl") (dict "keycloakBase" $v._derived.oidcBaseUrl "untrustedCA" $v._derived.untrustedCA "keycloak" ($k | get "idp")) | toString }}
 {{- $hasServices := false }}
 {{- range $teamId, $team := $v.teamConfig }}
@@ -35,8 +34,22 @@ defaultRules:
     {{- end }}
 prometheusOperator:
   resources: {{- $p.resources.prometheusOperator | toYaml | nindent 4 }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+  thanosImage:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+  {{- end }}
   admissionWebhooks:
     enabled: true
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    deployment:
+      image:
+        registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    patch:
+      image:
+        registry: "{{- $v.otomi.linodeLkeImageRepository }}/k8s"
+    {{- end }}
     certManager:
       enabled: true
       issuerRef:
@@ -45,6 +58,10 @@ prometheusOperator:
   priorityClassName: otomi-critical
   prometheusConfigReloader:
     resources: {{- $p.resources.prometheusConfigReloader | toYaml | nindent 6 }}    
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
 commonLabels:
   prometheus: system
 crds:
@@ -52,11 +69,11 @@ crds:
 prometheus:
   enabled: {{ $p.enabled }}
   thanosService:
-    enabled: {{ $t.enabled }}
+    enabled: {{ $apps.thanos.enabled }}
   thanosServiceMonitor:
-    enabled: {{ $t.enabled }}
+    enabled: {{ $apps.thanos.enabled }}
   prometheusSpec:
-    {{- if $t.enabled }}
+    {{- if $apps.thanos.enabled }}
     thanos:
       resources: {{- $p.resources.thanosSidecar | toYaml | nindent 8 }}
       objectStorageConfig:
@@ -72,6 +89,9 @@ prometheus:
     scrapeInterval: {{ $p.scrapeInterval }}
     podAntiAffinity: hard
     image:
+      {{- if $v.otomi.linodeLkeImageRepository }}
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      {{- end }}
       {{- with $g | get "image.prometheus.tag" nil }}
       tag: {{ . }}
       {{- end }}
@@ -100,7 +120,7 @@ prometheus:
     externalLabels:
       cluster: "{{ $v.cluster.domainSuffix }}"
     replicaExternalLabelName: __replica__
-    {{- if $t.enabled }}
+    {{- if $apps.thanos.enabled }}
     retention: 6h
     {{- else }}
     retention: {{ $p | get "retention" }}
@@ -114,7 +134,7 @@ prometheus:
               storage: {{ $p | get "storageSize" }}
     enableAdminAPI: true
     externalUrl: https://{{ $prometheusDomain }}
-    {{- if $c.tempo.enabled }}
+    {{- if $apps.tempo.enabled }}
     enableRemoteWriteReceiver: true
     {{- end }}
     {{- if $hasServices }}
@@ -177,6 +197,9 @@ alertmanager:
       labels:
         prometheus: system
     image:
+      {{- if $v.otomi.linodeLkeImageRepository }}
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+      {{- end }}
        {{- with $a | get "image.tag" nil }}
       tag: {{ . }}
       {{- end }}
@@ -194,6 +217,9 @@ grafana:
   defaultDashboardsTimezone: browser
   assertNoLeakedSecrets: false
   image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+    {{- end }}
     {{- with $g | get "image.tag" nil }}
     tag: {{ . }}
     {{- end }}
@@ -201,11 +227,15 @@ grafana:
   resources: {{- $g.resources.grafana | toYaml | nindent 4 }}
   sidecar:
     resources: {{- $g.resources.sidecar | toYaml | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image:
+      registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
     dashboards:
       enabled: true
       label: release
       labelValue: grafana-dashboards
-    {{- if $t.enabled }}  
+    {{- if $apps.thanos.enabled }}  
     datasources:
       isDefaultDatasource: false
     {{- end }}
@@ -217,8 +247,9 @@ grafana:
     enabled: false  
   plugins:
     - grafana-piechart-panel
+  {{- if or $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}
   additionalDataSources:
-    {{- if $c.loki.enabled }}
+    {{- if $apps.loki.enabled }}
     - name: Loki
       editable: false
       uid: loki
@@ -228,8 +259,9 @@ grafana:
       basicAuth: true
       basicAuthUser: otomi-admin
       secureJsonData:
-        basicAuthPassword: {{ $v.apps.loki.adminPassword }}
-    {{- if $t.enabled }}
+        basicAuthPassword: {{ $v.apps.loki.adminPassword | quote }}
+    {{- end }}
+    {{- if $apps.thanos.enabled }}
     - name: Thanos Query
       access: proxy
       isDefault: true
@@ -241,15 +273,16 @@ grafana:
       jsonData:
         prometheusType: Thanos
         timeInterval: "60s"
-    {{- end }}
-    {{- if $c.tempo.enabled }}
-      jsonData:
+      {{- if $apps.tempo.enabled }}
         derivedFields:
           - datasourceName: Tempo
             matcherRegex: "traceID=00-([^\\-]+)-"
             name: TraceID
             url: "$${__value.raw}"
             datasourceUid: tempo
+      {{- end }}
+    {{- end }}
+    {{- if $apps.tempo.enabled }}
     - name: Tempo
       type: tempo
       uid: tempo
@@ -291,7 +324,7 @@ grafana:
           datasourceUid: 'loki'
     {{- end }}
     {{- end }}
-  adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword }}
+  adminPassword: {{ $g | get "adminPassword" $v.otomi.adminPassword | quote }}
   grafana.ini: {{- $grafanaIni | nindent 4 }}
     server:
       root_url: https://{{ $grafanaDomain }}
@@ -311,6 +344,9 @@ kube-state-metrics:
       additionalLabels:
         prometheus: system
   image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/k8s"
+    {{- end }}
     {{- with $p | get "image.kube-state-metrics.tag" nil }}
     tag: {{  . }}
     {{- end }}
@@ -330,6 +366,9 @@ prometheus-node-exporter:
       additionalLabels:
         prometheus: system
   image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+    {{- end }}
     {{- with $p | get "image.node-exporter.tag" nil }}
     tag: {{ . }}
     {{- end }}

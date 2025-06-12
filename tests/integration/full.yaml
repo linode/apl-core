@@ -24,7 +24,7 @@ apps:
   kiali:
     enabled: true
   knative:
-    enabled: false
+    enabled: true
   kured:
     enabled: true
   loki:
@@ -47,6 +47,12 @@ apps:
     enabled: true
   velero:
     enabled: false
+  kyverno:
+    enabled: true
+  fabric8:
+    enabled: true
+  thanos:
+    enabled: true
 teamConfig:
   demo:
     settings:
@@ -80,7 +86,6 @@ teamConfig:
         ownHost: true
         paths: []
         port: 80
-        type: public
     secrets:
       - entries:
           - HELLO

@@ -11,7 +11,7 @@
 {{- define "ingress" -}}
 {{- $ := . }}
 {{- $v := .dot.Values }}
-{{- $istioSvc := print "istio-ingressgateway-" .type }}
+{{- $istioSvc := print ($v.ingressGatewayPrefix | default "istio-ingressgateway") "-" .type }}
 {{- range $ingress := $v.ingress.classes }}
   {{- $routes := dict }}
   {{- $names := list }}
@@ -19,10 +19,11 @@
   {{- $secrets := dict }}
   {{- range $s := $.services }}
     # service {{ $s.name }}, domain: {{ $s.domain }}
+    {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
     {{- $paths := list }}
     {{- $ingressClassName := dig "ingressClassName" $v.ingress.platformClass.className $s }}
     {{- if eq $ingressClassName $ingress.className }}
-      {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot) }}
+      {{- $domain := include "service.domain" (dict "s" $s "dot" $.dot "isKnativeService" $isKnativeService) }}
       {{- if and $s.hasCert (hasKey $s "certName") }}{{ $_ := set $secrets $domain $s.certName }}{{ end }}
       {{- if $s.useCname }}{{ $_ := set $secrets $s.cname.domain $s.cname.tlsSecretName }}{{ end }}
         {{- $svcPaths := (hasKey $s "paths" | ternary $s.paths (list "/" )) }}

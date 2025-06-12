@@ -1,14 +1,15 @@
-/* eslint-disable no-loop-func */
-/* eslint-disable no-await-in-loop */
 import $RefParser, { JSONSchema } from '@apidevtools/json-schema-ref-parser'
 import cleanDeep, { CleanOptions } from 'clean-deep'
+import { createHash } from 'crypto'
 import { existsSync, pathExists, readFileSync } from 'fs-extra'
-import { readFile, readdir } from 'fs/promises'
+import { readdir, readFile, writeFile } from 'fs/promises'
+import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
-import { resolve } from 'path'
+import { dirname, join, resolve } from 'path'
 import { $, ProcessOutput } from 'zx'
+import { terminal } from './debug'
 import { env } from './envalid'
 
 const packagePath = process.cwd()
@@ -145,12 +146,12 @@ export const extract = (
       if (typeof childObj !== 'object') return {}
       const obj: JSONSchema = extract(childObj, leaf, mapValue)
       if ('extractedValue' in obj) return { [key]: obj.extractedValue }
-      // eslint-disable-next-line no-nested-ternary
-      return schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
-        ? obj === '{}'
-          ? undefined
-          : obj
-        : { [key]: obj }
+      const specialCondition = schemaKeywords.includes(key) || !Object.keys(obj).length || !Number.isNaN(Number(key))
+      if (specialCondition) {
+        // @ts-ignore
+        return obj === '{}' ? undefined : obj
+      }
+      return { [key]: obj }
     })
     .reduce((accumulator, extractedValue) => {
       return typeof extractedValue !== 'object'
@@ -221,4 +222,56 @@ export const getSchemaSecretsPaths = async (teams: string[]): Promise<string[]> 
 
   cleanSecretPaths.push('users')
   return cleanSecretPaths
+}
+
+async function ensureKeepFile(keepFilePath: string, deps = { writeFile }): Promise<void> {
+  const dirPath = dirname(keepFilePath)
+  if (!(await pathExists(dirPath))) {
+    await $`mkdir -p ${dirname(keepFilePath)}`
+  }
+  if (existsSync(keepFilePath)) return
+  // create the .keep file
+  await deps.writeFile(keepFilePath, '')
+}
+
+export async function ensureTeamGitOpsDirectories(envDir: string, deps = { writeFile, glob }) {
+  const dirs = await deps.glob(`${envDir}/env/teams/*`)
+  const gitOpsDirs = ['sealedsecrets', 'workloadValues']
+
+  const keepFilePaths: string[] = []
+  for (const teamDir of dirs) {
+    for (const gitOpsDir of gitOpsDirs) {
+      keepFilePaths.push(join(teamDir, gitOpsDir, '.gitkeep'))
+    }
+  }
+
+  await Promise.allSettled(
+    keepFilePaths.map(async (keepFilePath) => {
+      await ensureKeepFile(keepFilePath, deps)
+      if (!(await pathExists(dirname(keepFilePath)))) {
+        await $`mkdir -p ${dirname(keepFilePath)}`
+      }
+    }),
+  )
+  return keepFilePaths
+}
+
+function hashContent(content: Buffer): string {
+  return createHash('sha256').update(content).digest('hex')
+}
+
+export async function hasFileDifference(filePathOne: string, filePathTwo: string): Promise<boolean> {
+  const d = terminal(`common:utils:hasFileDifference`)
+  try {
+    const fileOneContent = await readFile(filePathOne)
+    const fileTwoContent = await readFile(filePathTwo)
+
+    const fileOneHash = hashContent(fileOneContent)
+    const fileTwoHash = hashContent(fileTwoContent)
+
+    return fileOneHash !== fileTwoHash
+  } catch (err) {
+    d.error(`Error reading files: ${err}`)
+    return true // If there's an error, assume files are different
+  }
 }

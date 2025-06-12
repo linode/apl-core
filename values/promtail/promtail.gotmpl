@@ -21,11 +21,6 @@ containerSecurityContext:
       - ALL
   allowPrivilegeEscalation: false
 
-serviceMonitor:
-  enabled: true
-  labels:
-    prometheus: system
-
 podAnnotations:
   sidecar.istio.io/inject: "false"
 
@@ -59,3 +54,10 @@ imagePullSecrets:
   - name: otomi-pullsecret-global
 {{- end }}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  registry: "{{ $v.otomi.linodeLkeImageRepository }}/docker"
+sidecar:
+    image:
+      registry: "{{ $v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}

@@ -3,13 +3,14 @@
 {{- range $s := $v.services }}
   {{- $isKnativeService := dig "ksvc" "predeployed" false $s }}
   {{- $type := $s.type | default "public" }}
+  {{- $gatewayName := printf "%s-%s.istio-system.svc.cluster.local" ($v.ingressGatewayPrefix | default "istio-ingressgateway") $type }}
   {{- $hasAuth := $s.auth | default false }}
   {{- $hasTlsPass := $s.tlsPass | default false }}
   {{- $ns := index $s "namespace" | default $.Release.Namespace }}
   {{- if and (not (eq $type "cluster")) (not (and $isKnativeService (not $v.apps.knative.enabled))) }}
     {{- $name := $s.svc | default $s.name }}
     {{- $svc := (hasKey $s "hasPrefix" | ternary (printf "%s-%s" $v.teamId $name) $name) }}
-    {{- $domain := include "service.domain" (dict "s" $s "dot" $ "vs" true) }}
+    {{- $domain := include "service.domain" (dict "s" $s "dot" $ "isKnativeService" $isKnativeService) }}
     {{- $knativeServiceDomain := printf "%s.%s" $s.name $v.domain }}
     {{- if not (and $isKnativeService (eq $knativeServiceDomain $domain)) }}
       {{- $vsName := include "flatten-name" (printf "%s%s" $domain (hasKey $s "paths" | ternary (printf "-%s" (include "helm-toolkit.utils.joinListWithSep" (dict "list" $s.paths "sep" "|"))) "")) }}
@@ -55,10 +56,11 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /logout-otomi
+            prefix: /platform-logout
       redirect:
-        authority: {{ $v.authDomain }}
-        uri: {{ $v.sso.logoutUri }}
+        authority: {{ $v.authDomain | quote }}
+        uri: {{ $v.sso.logoutUri | quote }}
+        redirectCode: 302
     -
         {{- with $s.paths | default (list "/") }}
       match:
@@ -79,7 +81,7 @@ spec:
       {{- if $isKnativeService }}
       route:
         - destination:
-            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            host: {{ $gatewayName }}
       {{- else }}
       route:
         - destination:
@@ -115,7 +117,7 @@ spec:
         {{- with (dig "trafficControl" "enabled" nil $s) }}
         - destination:
             {{- if $isKnativeService }}
-            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            host: {{ $gatewayName }}
             {{- else }}
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
             {{- end }}
@@ -155,7 +157,7 @@ metadata:
   labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   {{- if $isKnativeService }}
-  host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+  host: {{ $gatewayName }}
   {{- else }}
   host: {{ $svc }}.{{ $ns }}.svc.cluster.local
   {{- end }}
@@ -203,10 +205,11 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /logout-otomi
+            prefix: /platform-logout
       redirect:
-        authority: "{{ $v.authDomain }}"
-        uri: "{{ $v.sso.logoutUri }}"
+        authority: {{ $v.authDomain | quote }}
+        uri: {{ $v.sso.logoutUri | quote }}
+        redirectCode: 302
     -
         {{- with $s.paths | default (list "/") }}
       match:
@@ -227,7 +230,7 @@ spec:
         {{- if $isKnativeService }}
       route:
         - destination:
-            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            host: {{ $gatewayName }}
         {{- else }}
       route:
         - destination:
@@ -264,7 +267,7 @@ spec:
         {{- with (dig "trafficControl" "enabled" nil $s) }}
         - destination:
             {{- if $isKnativeService }}
-            host: istio-ingressgateway-{{ $type }}.istio-system.svc.cluster.local
+            host: {{ $gatewayName }}
             {{- else }}
             host: {{ $svc }}.{{ $ns }}.svc.cluster.local
             {{- end }}

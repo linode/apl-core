@@ -48,20 +48,6 @@ subjects:
   name: sa-team-{{ $v.teamId }}
   namespace: {{ $ns }}
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: ingress-update-team-{{ $v.teamId }}
-  labels: {{- include "team-ns.chart-labels" . | nindent 4 }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: ingress-update
-subjects:
-- kind: ServiceAccount
-  name: sa-team-{{ $v.teamId }}
-  namespace: {{ $ns }}
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -220,18 +206,6 @@ rules:
   resources: ["secrets"]
   verbs: ["get", "watch", "list", "delete", "create", "update"]
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-template-pipeline-watcher
-rules:
-  - apiGroups: ["tekton.dev"]
-    resources: ["pipelines"]
-    verbs: ["watch", "list", "get"]
-  - apiGroups: ["triggers.tekton.dev"]
-    resources: ["triggertemplates"]
-    verbs: ["watch", "list", "get"]
----
 # RoleBinding for the above Role in team namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -248,15 +222,25 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+kind: Role
 metadata:
-  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-template-pipeline-binding
+  name: tekton-triggers-secrets-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tekton-triggers-secrets-team-{{ $v.teamId }}
+  namespace: team-{{ $v.teamId }}
 subjects:
   - kind: ServiceAccount
-    namespace: apl-gitea-operator
-    name: apl-gitea-operator
+    name: tekton-triggers-team-{{ $v.teamId }}
+    namespace: team-{{ $v.teamId }}
 roleRef:
-  kind: ClusterRole
-  name: apl-gitea-operator-team-{{ $v.teamId }}-trigger-template-pipeline-watcher
   apiGroup: rbac.authorization.k8s.io
----
+  kind: Role
+  name: tekton-triggers-secrets-team-{{ $v.teamId }}

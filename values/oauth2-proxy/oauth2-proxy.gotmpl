@@ -9,7 +9,7 @@
 
 config:
   clientID: {{ $k.idp.clientID  }}
-  clientSecret: {{ $k.idp.clientSecret }}
+  clientSecret: {{ $k.idp.clientSecret | quote }}
   cookieSecret: {{ $oauth2 | get "config.cookieSecret" (randAlpha 16) }}
 
 replicaCount: 2
@@ -23,8 +23,7 @@ resources: {{- $oauth2.resources | toYaml | nindent 2 }}
 {{- range $teamId, $team := $v.teamConfig }}
   {{- if hasKey $team "services" }}
     {{- range $s := $team.services }}
-      {{- $type := $s.type | default "auth" }}
-      {{- if and (hasKey $s "domain") (not (eq $type "public")) }}
+      {{- if (hasKey $s "domain")}}
         {{- if and (not (has $s.domain $domains)) (not (contains $v.cluster.domainSuffix $s.domain)) }}
           {{- $domains = append $domains $s.domain }}
         {{- end }}
@@ -82,9 +81,20 @@ extraVolumeMounts:
 
 extraInitContainers:
   - name: wait-for-keycloak
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:latest"
+    {{- else }}
     image: curlimages/curl:latest
+    {{- end }}
     command: ["/bin/sh","-c"]
     args: ["while [ $(curl -sw '%{http_code}' {{ $v._derived.oidcBaseUrl }} -o /dev/null) -ne 200 ]; do sleep 2; echo 'Waiting for Keycloak OIDC Issuer URL'; done"]
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+initContainers:
+  waitForRedis:
+    image:
+      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/alpine"
+{{- end }}
 
 {{- with .Values.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
@@ -92,10 +102,14 @@ imagePullSecrets:
 {{- end }}
 
 redis:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  global:
+    imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  {{- end }}
   enabled: true
   architecture: {{ $r | get "architecture" }}
   auth:
-    password: {{ $r | get "password" }}
+    password: {{ $r | get "password" | quote }}
 
   sentinel:
     persistence:
@@ -130,3 +144,8 @@ redis:
   imagePullSecrets:
     - name: otomi-pullsecret-global
   {{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/oauth2-proxy/oauth2-proxy"
+{{- end }}

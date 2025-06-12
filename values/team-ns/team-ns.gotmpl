@@ -6,16 +6,24 @@
 {{- $teamServices := ($team | get "services" list) }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
 {{- $keycloakRealm := printf "https://%s/realms/otomi" $v._derived.keycloakDomain }}
+{{- $logoutRedirectParam := printf "%s/protocol/openid-connect/logout?post_logout_redirect_uri=https://%s&client_id=%s" $keycloakRealm $v._derived.consoleDomain $a.keycloak.idp.clientID }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+linodeLkeImageRepository: "{{- $v.otomi.linodeLkeImageRepository }}"
+{{- end }}
+buildStorageClassName: {{ $v._derived.buildStorageClassName }}
 
 {{- $coreTeamServices := list }}
 {{- range $s := $v.teamApps }}
-  {{- if and ($a | get $s.name | get "enabled" true) (hasKey $s "ingress") $v.otomi.isMultitenant }}
+  {{- if and (hasKey $s "ingress") $v.otomi.isMultitenant }}
     {{- range $ing := $s.ingress }}
       {{- $svc := merge $ing (dict "isCore" true "name" $s.name "ownHost" ($s | get "ownHost" false)) }}
       {{- $coreTeamServices = append $coreTeamServices $svc }}
     {{- end }}
   {{- end }}
 {{- end }}
+
+
 
 {{- $teamResourceQuotas := dict }}
 {{- range $team | get "settings.resourceQuota" list }}
@@ -54,9 +62,13 @@ teamIds: {{- toYaml (keys $v.teamConfig) | nindent 2 }}
 tracingEnabled: {{ $a.istio.tracing.enabled }}
 services: {{- concat $coreTeamServices $teamServices | toYaml | nindent 2 }}
 resourceQuota: {{- $teamResourceQuotas | toYaml | nindent 2 }}
+ingressGatewayPrefix: {{ $v._derived.ingressGatewayPrefix }}
+ingressPublicGatewayName: {{ $v._derived.ingressPublicGatewayName }}
+defaultIngressGatewayLabel: {{ $v._derived.defaultIngressGatewayLabel }}
+canaryIngressGatewayLabel: {{ $v._derived.canaryIngressGatewayLabel | quote }}
 
 gitOps:
-  adminPassword: {{ $a.gitea.adminPassword }}
+  adminPassword: {{ $a.gitea.adminPassword | quote }}
   adminUsername: {{ $a.gitea.adminUsername }}
   globalUrl: "https://{{ $v._derived.giteaDomain }}"
   teamRepoUrl:  "https://{{ $v._derived.giteaDomain }}/otomi/team-{{ $teamId }}-argocd.git"
@@ -70,8 +82,8 @@ authDomain: {{ $v._derived.authDomain }}
 harborDomain: {{ $v._derived.harborDomain }}
 
 sso:
-  masterRealm: {{ printf "%s/realms/otomi" $v._derived.keycloakDomain }}
-  logoutUri: "/oauth2/sign_out?rd={{ $keycloakRealm }}/protocol/openid-connect/logout?redirect_uri=https://{{ $v._derived.consoleDomain }}"
+  masterRealm: {{ $keycloakRealm }}
+  logoutUri: "/oauth2/sign_out?rd={{ $logoutRedirectParam | urlquery }}"
   issuer: "{{ $keycloakRealm }}"
   jwksUri: "{{ $keycloakRealm }}/protocol/openid-connect/certs"
   clientId: {{ $a.keycloak.idp.clientID }}

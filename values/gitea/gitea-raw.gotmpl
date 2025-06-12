@@ -1,4 +1,5 @@
 {{- $v := .Values }}
+{{- $g := $v.apps.gitea }}
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
 {{- $giteaBackupConfig := $v.platformBackups.gitea }}
@@ -22,7 +23,14 @@ resources:
     name: gitea-db-secret
   data:
     username: "{{ "gitea" | b64enc }}"
-    password: "{{ $v.apps.gitea.postgresqlPassword | b64enc }}"
+    password: "{{ $g.postgresqlPassword | b64enc }}"
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: gitea-admin-secret
+  data:
+    username: "{{ $g.adminUsername | b64enc }}"
+    password: "{{ $g.adminPassword | b64enc }}"
 # DB / app backup resources
 {{- if eq $obj.type "minioLocal" }}
 - apiVersion: v1
@@ -65,9 +73,12 @@ resources:
   metadata:
     name: gitea-backup-operator
   rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get"]
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "watch", "list"]
+    verbs: ["get", "list"]
   - apiGroups: [""]
     resources: ["pods/exec"]
     verbs: ["create"]
@@ -98,13 +109,13 @@ resources:
           spec:
             serviceAccountName: gitea-backup
             containers:
-              - image: bitnami/kubectl:1.31
+              - image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/docker/{{- end }}bitnami/kubectl:1.31"
                 name: kubectl
                 command:
                   - /bin/sh
                   - -ec
                   - >-
-                    kubectl exec gitea-0 -- /bin/sh -ec "
+                    kubectl exec deployments/gitea -- /bin/sh -ec "
                     echo 'Verifying Rclone...' &&
                     ( test ! -f '/backup/.bin/rclone' || echo '{{ $rcloneBinSha512 }}  /backup/.bin/rclone' | sha512sum -c - || rm '/backup/.bin/rclone' ) &&
                     if [ ! -f '/backup/.bin/rclone' ]; then

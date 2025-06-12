@@ -4,13 +4,13 @@ FROM ubuntu:20.04 AS builder
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETARCH
 # https://github.com/kubernetes/kubernetes/releases
-ARG KUBECTL_VERSION=1.31.1
+ARG KUBECTL_VERSION=1.33.0
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.16.2
+ARG HELM_VERSION=3.18.1
 # https://github.com/databus23/helm-diff/releases
-ARG HELM_DIFF_VERSION=3.9.11
+ARG HELM_DIFF_VERSION=3.11.0
 # https://github.com/jkroepke/helm-secrets/releases
-ARG HELM_SECRETS_VERSION=4.6.2
+ARG HELM_SECRETS_VERSION=4.6.5
 # https://github.com/mozilla/sops/releases
 ARG SOPS_VERSION=3.9.1
 # https://github.com/FiloSottile/age/releases
@@ -18,9 +18,9 @@ ARG AGE_VERSION=1.2.0
 # https://github.com/noqcks/gucci/releases
 ARG GUCCI_VERSION=1.6.13
 # https://github.com/helmfile/helmfile/releases
-ARG HELMFILE_VERSION=0.168.0
+ARG HELMFILE_VERSION=1.0.0
 # https://nodejs.org/en/download/
-ARG NODE_VERSION=20
+ARG NODE_VERSION=22
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
 WORKDIR /

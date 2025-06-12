@@ -1,0 +1,82 @@
+name: Patch Release Candidate
+
+on:
+  push:
+    branches:
+      - rc/*
+    tags-ignore:
+      - '*'
+
+jobs:
+  patch_rc:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Analze commits since last rc release
+        id: analyze_commits
+        run: |
+
+          CURRENT_VERSION=$(jq '.version' package.json -r)
+          echo "Current version: $CURRENT_VERSION"
+          LATEST_TAG=$(git tag -l "v${CURRENT_VERSION%.*}*" | sort -V | tail -n 1)
+          echo "Latest tag: $LATEST_TAG"
+
+          echo "Commits since last rc release:"
+          git -P log --pretty=format:"%s" "${LATEST_TAG}..HEAD"
+          COMMITS=$(git log --pretty=format:"%s" "${LATEST_TAG}..HEAD")
+
+          if [[ $COMMITS == *"feat:"* || $COMMITS == *"fix:"* ]]; then
+            echo "RC_RELEASE=true" >> $GITHUB_ENV
+          else
+            echo "No feat/fix commits found. Skipping release."
+            echo "RC_RELEASE=false" >> $GITHUB_ENV
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: ${{ env.RC_RELEASE == 'true' }}
+        run: |
+          npm install standard-version
+
+      - name: Release new RC version
+        if: ${{ env.RC_RELEASE == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+        run: |
+          echo "Detected "feat"/"fix"/"chore: trigger" commits. Running standard-version..."
+          git config --global user.email $BOT_EMAIL
+          git config --global user.name $BOT_USERNAME
+          npm run release -- --prerelease rc --skip.changelog 
+
+          git push --follow-tags
+          TAG="v$(jq '.version' package.json -r)"
+          gh release create "$TAG" --title="Release: $TAG" --notes="Automated release for $TAG" --latest=false -p
+
+      - name: Prepare chart
+        if: ${{ env.RC_RELEASE == 'true' }}
+        id: prepare_chart
+        env:
+          BOT_EMAIL: ${{ vars.BOT_EMAIL }}
+          BOT_USERNAME: ${{ vars.BOT_USERNAME }}
+        run: |
+          ci/scripts/prepare_chart_for_release.sh
+
+      - name: Create and publish otomi chart release
+        if: ${{ github.event.inputs.dry_run == 'false' }} && ${{ env.RC_RELEASE == 'true' }}
+        id: chart_release
+        uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: chart
+          skip_existing: true
+          mark_as_latest: false
+        env:
+          CR_TOKEN: '${{ secrets.BOT_TOKEN }}'

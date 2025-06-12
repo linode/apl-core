@@ -1,14 +1,19 @@
-/* eslint-disable no-loop-func */
-/* eslint-disable no-await-in-loop */
-import { AppsV1Api, CoreV1Api, CustomObjectsApi, KubeConfig, V1Secret } from '@kubernetes/client-node'
-import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
+import {
+  AppsV1Api,
+  BatchV1Api,
+  CoreV1Api,
+  CustomObjectsApi,
+  KubeConfig,
+  PatchStrategy,
+  setHeaderOptions,
+  V1ResourceRequirements,
+  V1Secret,
+} from '@kubernetes/client-node'
 import retry, { Options } from 'async-retry'
 import { AnyAaaaRecord, AnyARecord } from 'dns'
 import { resolveAny } from 'dns/promises'
 import { access, mkdir, writeFile } from 'fs/promises'
-import { Agent } from 'https'
 import { isEmpty, isEqual, map, mapValues } from 'lodash'
-import fetch, { RequestInit } from 'node-fetch'
 import { dirname, join } from 'path'
 import { parse, stringify } from 'yaml'
 import { $, cd, sleep } from 'zx'
@@ -25,6 +30,7 @@ export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
 let kc: KubeConfig
 let coreClient: CoreV1Api
 let appClient: AppsV1Api
+let batchClient: BatchV1Api
 let customClient: CustomObjectsApi
 export const k8s = {
   kc: (): KubeConfig => {
@@ -42,6 +48,11 @@ export const k8s = {
     if (appClient) return appClient
     appClient = k8s.kc().makeApiClient(AppsV1Api)
     return appClient
+  },
+  batch: (): BatchV1Api => {
+    if (batchClient) return batchClient
+    batchClient = k8s.kc().makeApiClient(BatchV1Api)
+    return batchClient
   },
   custom: (): CustomObjectsApi => {
     if (customClient) return customClient
@@ -241,22 +252,21 @@ type WaitTillAvailableOptions = Options & {
   password?: string
 }
 
-export const waitTillGitRepoAvailable = async (repoUrl): Promise<void> => {
-  const retryOptions: Options = {
-    retries: 20,
-    maxTimeout: 30000,
-  }
+export const waitTillGitRepoAvailable = async (repoUrl: string): Promise<void> => {
   const d = terminal('common:k8s:waitTillGitRepoAvailable')
-  await retry(async (bail) => {
-    try {
-      cd(env.ENV_DIR)
-      // the ls-remote exist with zero even if repo is empty
-      await $`git ls-remote ${repoUrl}`
-    } catch (e) {
-      d.warn(`The values repository is not yet reachable. Retrying in ${retryOptions.maxTimeout} ms`)
-      throw e
-    }
-  }, retryOptions)
+  await retry(
+    async () => {
+      try {
+        cd(env.ENV_DIR)
+        // the ls-remote exists with zero even if repo is empty
+        await $`git ls-remote ${repoUrl}`
+      } catch (e) {
+        d.warn(`The values repository is not yet reachable. Retrying in ${env.MIN_TIMEOUT} ms`)
+        throw e
+      }
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
 }
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
@@ -267,12 +277,11 @@ export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOpt
     maxTimeout: 30000,
   }
 
-  const globalSkipSsl = !env.NODE_TLS_REJECT_UNAUTHORIZED
-  let rejectUnauthorized = !globalSkipSsl
-  if (opts!.skipSsl !== undefined) rejectUnauthorized = !options.skipSsl
+  // NOTE: Native fetch does not allow a custom 'agent' or direct 'timeout'.
+  // If you need special TLS handling, rely on environment variables
+  // like NODE_TLS_REJECT_UNAUTHORIZED or NODE_EXTRA_CA_CERTS.
   const fetchOptions: RequestInit = {
     redirect: 'follow',
-    agent: new Agent({ rejectUnauthorized }),
   }
   if (options.username && options.password) {
     fetchOptions.headers = {
@@ -316,8 +325,7 @@ export async function createGenericSecret(
     type: 'Opaque',
   }
 
-  const response = await coreV1Api.createNamespacedSecret(namespace, secret)
-  return response.body
+  return await coreV1Api.createNamespacedSecret({ namespace, body: secret })
 }
 
 export function b64enc(value: string): string {
@@ -330,7 +338,7 @@ export async function getPodsOfStatefulSet(
   namespace: string,
   coreApi: CoreV1Api,
 ) {
-  const { body: statefulSet } = await appsApi.readNamespacedStatefulSet(statefulSetName, namespace)
+  const statefulSet = await appsApi.readNamespacedStatefulSet({ name: statefulSetName, namespace })
 
   if (!statefulSet.spec?.selector?.matchLabels) {
     throw new Error(`StatefulSet ${statefulSetName} does not have matchLabels`)
@@ -340,15 +348,10 @@ export async function getPodsOfStatefulSet(
     .map(([key, value]) => `${key}=${value}`)
     .join(',')
 
-  const { body: podList } = await coreApi.listNamespacedPod(
+  return await coreApi.listNamespacedPod({
     namespace,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
     labelSelector,
-  )
-  return podList
+  })
 }
 
 export async function patchContainerResourcesOfSts(
@@ -403,7 +406,7 @@ export async function patchStatefulSetResources(
   d: OtomiDebugger,
 ) {
   try {
-    const patch = {
+    const body = {
       spec: {
         template: {
           spec: {
@@ -419,15 +422,12 @@ export async function patchStatefulSetResources(
     }
 
     await appsApi.patchNamespacedStatefulSet(
-      statefulSetName,
-      namespace,
-      patch,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      { headers: { 'Content-Type': 'application/strategic-merge-patch+json' } },
+      {
+        name: statefulSetName,
+        namespace,
+        body,
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
     )
   } catch (error) {
     d.error(`Failed to patch StatefulSet ${statefulSetName}:`, error)
@@ -452,7 +452,7 @@ export async function deleteStatefulSetPods(
     // Delete each pod
     for (const pod of pods.items) {
       if (pod.metadata?.name) {
-        await coreApi.deleteNamespacedPod(pod.metadata.name, namespace)
+        await coreApi.deleteNamespacedPod({ name: pod.metadata.name, namespace })
       }
     }
   } catch (error) {

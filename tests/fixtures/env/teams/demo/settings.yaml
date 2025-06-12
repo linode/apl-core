@@ -5,17 +5,13 @@ metadata:
         apl.io/teamId: demo
 spec:
     alerts:
-        email:
-            critical: admins@yourdoma.in
-            nonCritical: admins@yourdoma.in
+        groupInterval: 5m
         receivers:
             - slack
         repeatInterval: 3h
         slack:
             channel: aaaaa
             channelCrit: aaaaa
-            url: https://slack.con
-        groupInterval: 5m
     managedMonitoring:
         alertmanager: true
         grafana: true
@@ -30,14 +26,14 @@ spec:
         - name: services.loadbalancers
           value: '0'
     selfService:
-        access:
-            - shell
-            - downloadCertificateAuthority
         apps: []
         policies:
             - edit policies
         service:
             - ingress
-        team:
-            - alerts
-    password: somesecretvalue
+        teamMembers:
+            createServices: false
+            downloadDockerLogin: false
+            downloadKubeconfig: false
+            editSecurityPolicies: false
+            useCloudShell: false

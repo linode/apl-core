@@ -6,13 +6,13 @@ version: 0.1.0
 dependencies:
   - name: argo-cd
     alias: argocd
-    version: 6.7.3
+    version: 8.0.9
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
     version: v1.17.1
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
-    version: 0.23.0
+    version: 0.24.0
     repository: https://cloudnative-pg.github.io/charts
   - name: external-dns
     version: 8.7.8
@@ -24,22 +24,36 @@ dependencies:
     version: 0.9.7
     repository: https://falcosecurity.github.io/charts
   - name: gitea
-    version: 5.0.0
+    version: 11.0.1
     repository: https://dl.gitea.io/charts
   - name: harbor
     version: 1.16.2
     repository: https://helm.goharbor.io
   - name: ingress-nginx
-    version: 4.11.5
+    version: 4.11.6
     repository: https://kubernetes.github.io/ingress-nginx
+  - name: base
+    alias: istio-base
+    version: 1.26.1
+    repository: https://istio-release.storage.googleapis.com/charts
+  - name: gateway
+    alias: istio-gateway
+    version: 1.26.1
+    repository: https://istio-release.storage.googleapis.com/charts
+  - name: istiod
+    version: 1.26.1
+    repository: https://istio-release.storage.googleapis.com/charts
   - name: jaeger-operator
     version: 2.46.0
     repository: https://jaegertracing.github.io/helm-charts
+  - name: keycloak
+    version: 24.7.1
+    repository: https://charts.bitnami.com/bitnami
   - name: kiali-operator
-    version: 1.86.1
+    version: 2.10.0
     repository: https://kiali.org/helm-charts
   - name: knative-operator
-    version: 0.1.0
+    version: v1.18.1
     repository: https://knative.github.io/operator
   - name: kube-prometheus-stack
     version: 65.2.0

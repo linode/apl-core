@@ -27,7 +27,7 @@
 {{- $keycloakBaseUrl := printf "https://keycloak.%s" $domainSuffix }}
 {{- $oidcBaseUrl := printf "%s/realms/otomi" $keycloakBaseUrl }}
 {{- $oidcWellKnownUrl := printf "%s/.well-known/openid-configuration" $oidcBaseUrl }}
-{{- $oidcBaseUrlBackchannel := "http://keycloak-http.keycloak/realms/otomi" }}
+{{- $oidcBaseUrlBackchannel := "http://keycloak.keycloak/realms/otomi" }}
 {{- $oidcWellKnownBackchannel := printf "%s/.well-known/openid-configuration" $oidcBaseUrlBackchannel }}
 {{- $tlsSecretName := "otomi-cert-manager-wildcard-cert" }}
 {{- if eq $cm.issuer "externally-managed-tls-secret" }}
@@ -35,6 +35,38 @@
 {{- else if eq $cm.issuer "byo-wildcard-cert" }}
   {{- $tlsSecretName = "otomi-byo-wildcard-cert" }}
 {{- end -}}
+
+# Istio component variables
+
+# During initial install of APL, legacyRevision is set to "operator". In that particular case, the
+# default revision should be an empty string. In later upgrades this can take any other value.
+# It only serves as a reference and does not necessarily have to correspond with the version number.
+{{- $istioCanaryRevision := "1-26-0" }}
+{{- $istioLegacyRevision := $a.istio | get "legacyRevision" "" }}
+{{- $istioDefaultRevision := ternary "" $istioCanaryRevision (eq $istioLegacyRevision "operator") }}
+
+# The following variables are used as reference for other components (ingress, gateway etc).
+{{- $ingressGatewayPrefix := "istio-ingressgateway" }}
+{{- $defaultIngressGatewayLabel := "ingressgateway-public" }}
+{{- $canaryIngressGatewayLabel := "" }}
+{{- $egressGatewayName := "istio-egressgateway" }}
+{{- $egressGatewayLabel := "egressgateway" }}
+{{- if $istioDefaultRevision }}
+{{- $ingressGatewayPrefix = print "istio-ingressgateway-" $istioDefaultRevision }}
+{{- $defaultIngressGatewayLabel = printf "ingressgateway-%s-public" $istioDefaultRevision }}
+{{- $egressGatewayName = print "istio-egressgateway-" $istioDefaultRevision }}
+{{- $egressGatewayLabel = print "egressgateway-" $istioDefaultRevision }}
+{{- end }}
+{{- if and $istioCanaryRevision (ne $istioDefaultRevision $istioCanaryRevision) }}
+{{- $canaryIngressGatewayLabel = printf "ingressgateway-%s-public" $istioCanaryRevision }}
+{{- end }}
+{{- $ingressPublicGatewayName := print $ingressGatewayPrefix "-public" }}
+
+# The following variables are referred to by the Helm chart.
+{{- $istioIngressPublicReleaseName := printf "istio-ingressgateway-%s-public" $istioCanaryRevision }}
+{{- $istioIngressPublicReleaseLabel := printf "ingressgateway-%s-public" $istioCanaryRevision }}
+{{- $istioEgressReleaseName := print "istio-egressgateway-" $istioCanaryRevision }}
+{{- $istioEgressReleaseLabel := print "egressgateway-" $istioCanaryRevision }}
 
 {{- if and (not (env "CI")) (not (env "VALUES_INPUT")) (hasKey $v.cluster "k8sContext") }}
 helmDefaults:
@@ -44,6 +76,7 @@ environments:
   default:
     values:
       - _derived: # < introduced to hold compound logic in meaningful prop names for easier consumption
+          buildStorageClassName: {{ if eq $v.cluster.provider "linode" }}"linode-block-storage"{{ else }}""{{ end }} 
           caCert: |
             {{- if eq $issuer "letsencrypt" }}
             -----BEGIN CERTIFICATE-----
@@ -160,6 +193,12 @@ environments:
           keycloakDomain: {{ printf "keycloak.%s" $domainSuffix }}
           harborDomain: {{ printf "harbor.%s" $domainSuffix }}
           tlsSecretName: {{ $tlsSecretName }}
+          ingressGatewayPrefix: {{ $ingressGatewayPrefix }}
+          ingressPublicGatewayName: {{ $ingressPublicGatewayName }}
+          defaultIngressGatewayLabel: {{ $defaultIngressGatewayLabel }}
+          canaryIngressGatewayLabel: {{ $canaryIngressGatewayLabel | quote }}
+          egressGatewayName: {{ $egressGatewayName }}
+          egressGatewayLabel: {{ $egressGatewayLabel }}
         apps:
           argocd:
             enabled: true
@@ -182,20 +221,27 @@ environments:
           external-dns:
             enabled: {{ $v.otomi.hasExternalDNS }}
           harbor:
-            adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword }}
+            adminPassword: {{ $a | get "harbor.adminPassword" $v.otomi.adminPassword | quote }}
             registry:
               credentials:
-                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword }}
+                password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword | quote }}
           gitea:
             enabled: true
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
-            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword }}
+            adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword | quote }}
           ingress-nginx:
             enabled: true
           istio:
             enabled: true
+            defaultRevision: {{ $istioDefaultRevision | quote }}
+            release:
+              revision: {{ $istioCanaryRevision | quote }}
+              ingressPublicName: {{ $istioIngressPublicReleaseName }}
+              ingressPublicLabel: {{ $istioIngressPublicReleaseLabel }}
+              egressName: {{ $istioEgressReleaseName }}
+              egressLabel: {{ $istioEgressReleaseLabel }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
           minio:
@@ -213,5 +259,6 @@ environments:
           {{- end }}
         otomi:
           version: {{ $otomiTag }}
+          linodeLkeImageRepository: {{ if $v.otomi.useORCS }}mirror.registry.linodelke.net{{ end }}
         versions: {{- $versions | toYaml | nindent 10 }}
       - ../core.yaml

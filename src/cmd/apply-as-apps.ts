@@ -1,4 +1,3 @@
-import { V1ResourceRequirements } from '@kubernetes/client-node/dist/gen/model/v1ResourceRequirements'
 import { mkdirSync, rmdirSync } from 'fs'
 import { pathExists } from 'fs-extra'
 import { writeFile } from 'fs/promises'
@@ -8,9 +7,11 @@ import { hf } from 'src/common/hf'
 import { isResourcePresent, k8s, patchContainerResourcesOfSts } from 'src/common/k8s'
 import { getFilename, loadYaml } from 'src/common/utils'
 import { getImageTag, objectToYaml } from 'src/common/values'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { appPatches, genericPatch } from 'src/applicationPatches.json'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
+import { V1ResourceRequirements } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -44,11 +45,13 @@ const getAppName = (release: HelmRelease): string => {
 }
 
 const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>, otomiVersion) => {
+  const name = getAppName(release)
+  const patch = appPatches[name] || genericPatch
   return {
     apiVersion: 'argoproj.io/v1alpha1',
     kind: 'Application',
     metadata: {
-      name: getAppName(release),
+      name,
       labels: {
         'otomi.io/app': 'managed',
       },
@@ -66,18 +69,6 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
         },
         syncOptions: ['ServerSideApply=true'],
       },
-      ignoreDifferences: [
-        {
-          group: 'admissionregistration.k8s.io',
-          kind: 'ValidatingWebhookConfiguration',
-          jqPathExpressions: ['.webhooks[]?.clientConfig.caBundle'],
-        },
-        {
-          group: 'admissionregistration.k8s.io',
-          kind: 'MutatingWebhookConfiguration',
-          jqPathExpressions: ['.webhooks[]?.clientConfig.caBundle'],
-        },
-      ],
       project: 'default',
       source: {
         path: release.chart.replace('../', ''),
@@ -92,6 +83,7 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
         server: 'https://kubernetes.default.svc',
         namespace: release.namespace,
       },
+      ...patch,
     },
   }
 }
@@ -168,6 +160,7 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
 
   await patchArgocdResources(release, values)
 }
+
 export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   const helmfileSource = argv.file?.toString() || 'helmfile.d/'
   d.info(`Parsing helm releases defined in ${helmfileSource}`)

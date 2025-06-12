@@ -1,8 +1,15 @@
 {{- $v := .Values }}
 replicaCount: 1
 image:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/prometheusmsteams/prometheus-msteams"
+  {{- end }}
   repository: quay.io/prometheusmsteams/prometheus-msteams
   tag: v1.3.3
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+  pullSecrets:
+    - otomi-pullsecret-global
+{{- end }}
 connectors:
 - high_priority_channel: {{ $v.alerts.msteams.highPrio }}
 - low_priority_channel: {{ $v.alerts.msteams.lowPrio }}
@@ -28,8 +35,3 @@ resources:
     cpu: 1m
     memory: 8Mi
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
-image:
-  pullSecrets:
-    - otomi-pullsecret-global
-{{- end }}

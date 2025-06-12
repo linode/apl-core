@@ -33,10 +33,12 @@
     ".secrets*": "shellscript",
     "CODE_OF_CONDUCT": "markdown",
     "CONTRIBUTING": "markdown",
+    "CODEOWNERS": "plaintext",
     "_*.tpl": "helm",
     "aliases": "shellscript",
     "bin/hooks/*": "shellscript",
     "helmfile-*.yaml": "helm",
+    "helmfile-*.yaml.gotmpl": "helm",
     "helmfile.yaml": "helm",
     "otomi": "shellscript"
   },

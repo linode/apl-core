@@ -7,10 +7,20 @@
 name: harbor-otomi-db
 storage:
   size: {{ $hdb.size }}
+walStorage:
+  size: {{ $hdb.walStorageSize }}
 instances: {{ $hdb.replicas }}
 
-{{- with $hdb.imageName }}
-imageName: {{ . }}
+{{- if $hdb.imageName }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+imageName: {{ regexReplaceAll "^ghcr\\.io" $hdb.imageName (printf "%s/ghcr" $v.otomi.linodeLkeImageRepository) }}
+  {{- else }}
+imageName: {{ $hdb.imageName }}
+  {{- end }}
+{{- else if $v.otomi.linodeLkeImageRepository }}
+imageName: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/cloudnative-pg/postgresql:15.13
+{{- else }}
+imageName: ghcr.io/cloudnative-pg/postgresql:15.13
 {{- end }}
 
 postgresql:

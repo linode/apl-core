@@ -1,4 +1,7 @@
 import * as utils from './utils'
+import * as fsUtils from 'fs/promises'
+import { readFile } from 'fs/promises'
+import * as debugTools from './debug'
 
 describe('Flatten objects', () => {
   it('should be flattened', () => {
@@ -32,5 +35,60 @@ describe('semverCompare', () => {
   })
   it('should indicate version to be lower', () => {
     expect(utils.semverCompare('0.1.1', '1.1.3')).toEqual(-1)
+  })
+})
+
+describe('ensureTeamGitopsDirectories', () => {
+  it('should create .gitkeep files in all team directories', async () => {
+    const envDir = '/values'
+    const deps: any = {
+      writeFile: jest.fn(),
+      glob: jest.fn().mockResolvedValue(['/values/env/teams/team1', '/values/env/teams/team2']),
+    }
+    const result = await utils.ensureTeamGitOpsDirectories(envDir, deps)
+    expect(deps.glob).toHaveBeenCalledWith(`${envDir}/env/teams/*`)
+    expect(result).toEqual([
+      '/values/env/teams/team1/sealedsecrets/.gitkeep',
+      '/values/env/teams/team1/workloadValues/.gitkeep',
+      '/values/env/teams/team2/sealedsecrets/.gitkeep',
+      '/values/env/teams/team2/workloadValues/.gitkeep',
+    ])
+  })
+})
+
+jest.mock('fs/promises', () => ({
+  readFile: jest.fn(),
+}))
+describe('hasFileDifference', () => {
+  jest.mock('crypto')
+  jest.isMockFunction(fsUtils.readFile)
+  const debug = jest.spyOn(debugTools, 'terminal')
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns false when file hashes are equal', async () => {
+    ;(readFile as jest.Mock).mockResolvedValue('content-A')
+
+    const result = await utils.hasFileDifference('fileA.txt', 'fileB.txt')
+
+    expect(result).toBe(false)
+  })
+
+  it('returns true when file hashes differ', async () => {
+    ;(readFile as jest.Mock).mockResolvedValueOnce('content-A')
+    ;(readFile as jest.Mock).mockResolvedValueOnce('content-B')
+
+    const result = await utils.hasFileDifference('fileA.txt', 'fileB.txt')
+
+    expect(result).toBe(true)
+  })
+
+  it('returns true and logs an error if readFile throws', async () => {
+    ;(readFile as jest.Mock).mockRejectedValueOnce(new Error('Failed to read file'))
+    const result = await utils.hasFileDifference('fileA.txt', 'fileB.txt')
+
+    expect(result).toBe(true)
+    expect(debug).toHaveBeenCalled()
   })
 })

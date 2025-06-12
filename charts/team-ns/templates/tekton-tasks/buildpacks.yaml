@@ -1,3 +1,4 @@
+{{- $v := .Values }}
 {{- $t := .Values.teamApps.tekton }}
 apiVersion: tekton.dev/v1
 kind: Task
@@ -6,6 +7,8 @@ metadata:
   labels:
     app.kubernetes.io/version: "0.6"
   annotations:
+    # Use ArgoCD sync wave annotation to ensure tasks are created first
+    argocd.argoproj.io/sync-wave: "-5"
     tekton.dev/categories: Image Build
     tekton.dev/pipelines.minVersion: "0.17.0"
     tekton.dev/tags: image-build
@@ -91,7 +94,11 @@ spec:
   steps:
     - name: prepare
       computeResources: {}
+      {{- if $v.linodeLkeImageRepository }}
+      image: "{{- $v.linodeLkeImageRepository }}/docker/bash:5.1.4@sha256:b208215a4655538be652b2769d82e576bc4d0a2bb132144c060efc5be8c3f5d6"
+      {{- else }}
       image: docker.io/library/bash:5.1.4@sha256:b208215a4655538be652b2769d82e576bc4d0a2bb132144c060efc5be8c3f5d6
+      {{- end }}
       args:
         - "--env-vars"
         - "$(params.ENV_VARS[*])"
@@ -183,7 +190,11 @@ spec:
           type: RuntimeDefault
     - name: results
       computeResources: {}
+      {{- if $v.linodeLkeImageRepository }}
+      image: "{{- $v.linodeLkeImageRepository }}/docker/bash:5.1.4@sha256:b208215a4655538be652b2769d82e576bc4d0a2bb132144c060efc5be8c3f5d6"
+      {{- else }}
       image: docker.io/library/bash:5.1.4@sha256:b208215a4655538be652b2769d82e576bc4d0a2bb132144c060efc5be8c3f5d6
+      {{- end }}
       script: |
         #!/usr/bin/env bash
         set -e

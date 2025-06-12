@@ -1,0 +1,25 @@
+{{- $v := .Values }}
+{{- $o := $v.apps | get "apl-operator" }}
+{{- $version := $v.otomi.version }}
+{{- $isSemver := regexMatch "^[0-9.]+" $version }}
+{{- $g := $v.apps.gitea }}
+{{- $kms := $v | get "kms" dict }}
+
+image:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
+  {{- end }}
+  tag: {{ $version }}
+  pullPolicy: {{ $isSemver | ternary "IfNotPresent" "Always" }}
+
+{{- with $v.otomi | get "globalPullSecret" nil }}
+imagePullSecrets:
+  - name: otomi-pullsecret-global
+{{- end }}
+
+resources: {{- toYaml $o.resources.operator | nindent 2 }}
+
+kms: {{- $kms | toYaml | nindent 2 }}
+
+gitPassword: {{ $g.adminPassword | quote }}
+gitUsername: {{ $g.adminUsername | quote }}

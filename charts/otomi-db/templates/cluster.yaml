@@ -13,6 +13,9 @@ spec:
   {{- with .Values.imageName }}
   imageName: {{ . }}
   {{- end }}
+  {{- with .Values.priorityClassName }}
+  priorityClassName: {{ . }}
+  {{- end }}
   storage:
     {{- with .Values.storage.storageClass }}
     storageClass: {{ . }}
@@ -35,6 +38,12 @@ spec:
   {{- toYaml . | nindent 2 }}
   {{- end }}
 {{- if .Values.backup.enabled }}
+  env:
+    # Barman object storage compatibility (https://github.com/EnterpriseDB/barman/issues/1086)
+    - name: AWS_REQUEST_CHECKSUM_CALCULATION
+      value: WHEN_REQUIRED
+    - name: AWS_RESPONSE_CHECKSUM_VALIDATION
+      value: WHEN_REQUIRED
   {{- if eq .Values.backup.type "minioLocal" }}
   backup:
     retentionPolicy: {{ .Values.backup.retentionPolicy }}

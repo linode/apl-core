@@ -1,0 +1,77 @@
+{{- $v := .Values }}
+{{- $k := $v | get "apps.keycloak" }}
+{{- $consoleLoginVersion := $v.versions.consoleLogin}}
+{{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+global:
+  security:
+    allowInsecureImages: true
+{{- end }}
+
+auth:
+  adminUser: {{ $k.adminUsername | quote }}
+  existingSecret: keycloak-initial-admin
+  passwordSecretKey: password
+service:
+  ports:
+    http: 8080
+
+enableServiceLinks: false
+customCaExistingSecret: custom-ca
+production: true
+proxy: edge
+resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
+priorityClassName: otomi-critical
+
+image:
+{{- with .Values.otomi | get "globalPullSecret" nil }}
+  pullSecrets:
+    - name: otomi-pullsecret-global
+{{- end }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+  registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  repository: bitnami/keycloak
+{{- end }}
+  # Override default from 26.2.0, as it has an issue during upgrade (to be fixed in 26.2.1)
+  # see https://github.com/keycloak/keycloak/issues/38937
+  tag: 26.1.5-debian-12-r1
+
+initContainers:
+  # Akamai branding init container
+  - name: init-container-theme-copy
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-console:{{ printf "%s%s" ($isSemver | ternary "v" "") $consoleLoginVersion }}"
+    {{- else }}
+    image: docker.io/linode/apl-console:{{ printf "%s%s" ($isSemver | ternary "v" "") $consoleLoginVersion }}
+    {{- end }}
+    resources: {{ $k.resources.keycloak | toYaml | nindent 6 }}
+    command:
+      - sh
+    args:
+      - -c
+      - |
+        echo "Copying theme..."
+        cp -Rv /app/APL.jar /opt/bitnami/keycloak/providers/
+    volumeMounts:
+      - name: empty-dir  # Mounted by Keycloak pod
+        mountPath: /opt/bitnami/keycloak/providers
+        subPath: app-providers-dir
+
+# Use CNPG platform database
+postgresql:
+  enabled: false
+externalDatabase:
+  host: keycloak-db-rw.keycloak.svc.cluster.local
+  port: 5432
+  existingSecret: keycloak-db-app
+  existingSecretUserKey: username
+  existingSecretDatabaseKey: dbname
+  existingSecretPasswordKey: password
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+keycloakConfigCli:
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+    repository: bitnami/keycloak-config-cli
+{{- end }}

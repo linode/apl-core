@@ -5,9 +5,13 @@
 
 kms: {{- $kms | toYaml | nindent 2 }}
 
-giteaPassword: {{ $g.adminPassword }}
-otomiVersion: {{ $v.otomi.version }}
-
+giteaPassword: {{ $g.adminPassword | quote }}
+core:
+  image:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/linode/apl-core"
+    {{- end }}
+    tag: {{ $v.otomi.version }}
 cloneUnsecure: true
 
 

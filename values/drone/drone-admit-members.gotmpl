@@ -13,7 +13,7 @@ resources:
     cpu: 20m
     memory: 40Mi
 
-sharedSecret: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" }}
+sharedSecret: {{ $d | get "sharedSecret" "1234567890abcdef1234567890abcdef" | quote }}
 github:
   token: {{ $d.githubAdmins.token }}
   org: {{ $d.githubAdmins.org }}
