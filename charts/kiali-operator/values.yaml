@@ -2,13 +2,14 @@ nameOverride: ""
 fullnameOverride: ""
 
 image: # see: https://quay.io/repository/kiali/kiali-operator?tab=tags
-  repo: ${HELM_IMAGE_REPO} # quay.io/kiali/kiali-operator
-  tag: ${HELM_IMAGE_TAG} # version string like v1.39.0 or a digest hash
+  repo: quay.io/kiali/kiali-operator # quay.io/kiali/kiali-operator
+  tag: v2.10.0 # version string like v1.39.0 or a digest hash
   digest: "" # use "sha256" if tag is a sha256 hash (do NOT prefix this value with a "@")
   pullPolicy: Always
   pullSecrets: []
 
 # Deployment options for the operator pod.
+extraLabels: {}
 nodeSelector: {}
 podAnnotations: {}
 podLabels: {}
@@ -39,19 +40,10 @@ debug:
 watchNamespace: ""
 
 # Set to true if you want the operator to be able to create cluster roles. This is necessary
-# if you want to support Kiali CRs with spec.deployment.accessible_namespaces of '**'.
+# if you want to support Kiali CRs with spec.deployment.cluster_wide_access=true.
 # Setting this to "true" requires allowAllAccessibleNamespaces to be "true" also.
-# Note that this will be overriden to "true" if cr.create is true and cr.spec.deployment.accessible_namespaces is ['**'].
+# Note that this will be overriden to "true" if cr.create is true and cr.spec.deployment.cluster_wide_access=true.
 clusterRoleCreator: true
-
-# Set to a list of secrets in the cluster that the operator will be allowed to read. This is necessary if you want to
-# support Kiali CRs with spec.kiali_feature_flags.certificates_information_indicators.enabled=true.
-# The secrets in this list will be the only ones allowed to be specified in any Kiali CR (in the setting
-# spec.kiali_feature_flags.certificates_information_indicators.secrets).
-# If you set this to an empty list, the operator will not be given permission to read any additional secrets
-# found in the cluster, and thus will only support a value of "false" in the Kiali CR setting
-# spec.kiali_feature_flags.certificates_information_indicators.enabled.
-secretReader: ['cacerts', 'istio-ca-secret']
 
 # Set to true if you want to allow the operator to only be able to install Kiali in view-only-mode.
 # The purpose for this setting is to allow you to restrict the permissions given to the operator itself.
@@ -83,21 +75,11 @@ allowAdHocOSSMConsoleImage: false
 allowSecurityContextOverride: false
 
 # allowAllAccessibleNamespaces tells the operator to allow a user to be able to configure Kiali
-# to access all namespaces in the cluster via spec.deployment.accessible_namespaces=['**'].
-# If this is false, the user must specify an explicit list of namespaces in the Kiali CR.
+# to access all namespaces in the cluster via spec.deployment.cluster_wide_access=true.
+# If this is false, the user must specify an explicit set of namespaces in the Kiali CR via spec.deployment.discovery_selectors.
 # Setting this to "true" requires clusterRoleCreator to be "true" also.
-# Note that this will be overriden to "true" if cr.create is true and cr.spec.deployment.accessible_namespaces is ['**'].
+# Note that this will be overriden to "true" if cr.create is true and cr.spec.deployment.cluster_wide_access=true.
 allowAllAccessibleNamespaces: true
-
-# accessibleNamespacesLabel restricts the namespaces that a user can add to the Kiali CR spec.deployment.accessible_namespaces.
-# This value is either an empty string (which disables this feature) or a label name with an optional label value
-# (e.g. "mylabel" or "mylabel=myvalue"). Only namespaces that have that label will be permitted in
-# spec.deployment.accessible_namespaces. Any namespace not labeled properly but specified in accessible_namespaces will cause
-# the operator to abort the Kiali installation.
-# If just a label name (but no label value) is specified, the label value the operator will look for is the value of
-# the Kiali CR's spec.istio_namespace. In other words, the operator will look for the named label whose value must be the name
-# of the Istio control plane namespace (which is typically, but not necessarily, "istio-system").
-accessibleNamespacesLabel: ""
 
 # watchesFile: If specified, this determines what watches file will be used to configure the operator. There are four different
 # files that can be selected: (a) `watches-os.yaml`, (b) `watches-os-ns.yaml`, (c) `watches-k8s.yaml` or (d) `watches-k8s-ns.yaml`.
@@ -107,8 +89,7 @@ accessibleNamespacesLabel: ""
 # the default behavior and is not necessary if your Kiali CRs will have `spec.deployment.cluster_wide_access` set to `true`.
 watchesFile: ""
 
-# For what a Kiali CR spec can look like, see:
-# https://github.com/kiali/kiali-operator/blob/master/deploy/kiali/kiali_cr.yaml
+# For what a Kiali CR spec can look like, see: https://kiali.io/docs/configuration/kialis.kiali.io/
 cr:
   create: false
   name: kiali
@@ -122,5 +103,4 @@ cr:
 
   spec:
     deployment:
-      accessible_namespaces:
-      - '**'
+      cluster_wide_access: true
