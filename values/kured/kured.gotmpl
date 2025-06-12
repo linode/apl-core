@@ -19,3 +19,8 @@ image:
   pullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr/kubereboot/kured"
+{{- end }}

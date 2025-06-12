@@ -23,7 +23,11 @@ cleanUpCRDs: false
 
 initContainers:
   - name: velero-plugin-for-aws
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/velero/velero-plugin-for-aws:v1.8.2"
+    {{- else }}
     image: velero/velero-plugin-for-aws:v1.8.2
+    {{- end }}
     imagePullPolicy: IfNotPresent
     resources:
       requests:
@@ -37,7 +41,11 @@ initContainers:
         name: plugins
 {{- if eq $v.cluster.provider "linode" }}
   - name: velero-plugin-for-linode
-    image: displague/velero-plugin-linode:v0.0.1
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/velero/velero-plugin-linode:v0.0.1"
+    {{- else }}
+    image: velero/velero-plugin-linode:v0.0.1
+    {{- end }}
     imagePullPolicy: IfNotPresent
     resources:
       requests:
@@ -110,6 +118,10 @@ credentials:
 {{- end }}
 
 kubectl:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image: 
+      repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/bitnami/kubectl"
+  {{- end }}
   # Resource requests/limits to specify for the upgrade/cleanup job.
   resources:
     requests:
