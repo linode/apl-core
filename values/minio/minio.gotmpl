@@ -5,6 +5,11 @@
 {{- $rootCASecretName := "root-ca" }}
 {{- $bucketNames := list "cnpg" "gitea" "harbor" "loki" "tempo" "velero" "thanos" "kubeflow-pipelines" -}}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+global:
+  imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}
+
 mode: standalone
 auth:
   rootUser: otomi-admin

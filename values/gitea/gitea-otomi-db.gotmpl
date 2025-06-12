@@ -12,8 +12,16 @@ walStorage:
   size: {{ $gdb.walStorageSize }}
 instances: {{ $gdb.replicas }}
 
-{{- with $gdb.imageName }}
-imageName: {{ . }}
+{{- if $gdb.imageName }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+imageName: {{ regexReplaceAll "^ghcr\\.io" $gdb.imageName (printf "%s/ghcr" $v.otomi.linodeLkeImageRepository) }}
+  {{- else }}
+imageName: {{ $gdb.imageName }}
+  {{- end }}
+{{- else if $v.otomi.linodeLkeImageRepository }}
+imageName: {{ $v.otomi.linodeLkeImageRepository }}/ghcr/cloudnative-pg/postgresql:15.13
+{{- else }}
+imageName: ghcr.io/cloudnative-pg/postgresql:15.13
 {{- end }}
 
 postgresql:
