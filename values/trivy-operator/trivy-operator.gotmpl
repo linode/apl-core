@@ -2,6 +2,12 @@
 {{- $t := $v.apps.trivy }}
 {{- $joinTpl := readFile "../../helmfile.d/utils/joinListWithSep.gotmpl" }}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+global:
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}
+
 {{ $targets := list }}
   {{- range $id, $_ := $v.teamConfig }}
     {{- $targets = append $targets (print "team-" $id) }}
