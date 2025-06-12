@@ -2,6 +2,11 @@
 {{- $t:= $v.apps.tempo }}
 {{- $obj := $v.obj.provider }}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+global:
+  image:
+    registry:  "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+{{- end }}
 
 fullnameOverride: tempo
 
