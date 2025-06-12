@@ -28,6 +28,9 @@ cr:
         issuer_uri: {{ $v._derived.oidcBaseUrl }}
         username_claim: email
     deployment:
+    {{- if $v.otomi.linodeLkeImageRepository }}
+      image_name: "{{- $v.otomi.linodeLkeImageRepository }}/quay/kiali/kiali"
+    {{- end }}
       pod_annotations:
         sidecar.istio.io/inject: "true"
       ingress_enabled: false
