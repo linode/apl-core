@@ -18,7 +18,8 @@ import { v4 as uuidv4 } from 'uuid'
 import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
-import { k8s } from '../common/k8s'
+import { getDeploymentState, k8s } from '../common/k8s'
+import { getCurrentVersion } from '../common/values'
 import { ApiException } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
@@ -618,6 +619,149 @@ export async function installIstioHelmCharts(): Promise<void> {
   }
 }
 
+export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
+  const d = terminal('detectAndRestartOutdatedIstioSidecars')
+  const parsedArgs = getParsedArgs()
+
+  try {
+    // Check if this is actually an upgrade scenario
+    const deploymentState = await getDeploymentState()
+    const currentVersion = await getCurrentVersion()
+    const prevVersion = deploymentState.version ?? currentVersion
+
+    // If no upgrade detected, skip sidecar check
+    if (currentVersion === prevVersion) {
+      d.debug('No version upgrade detected, skipping Istio sidecar check')
+      return
+    }
+
+    d.info(`Version upgrade detected: ${prevVersion} -> ${currentVersion}, checking Istio sidecars`)
+
+    // Get expected Istio version from chart
+    const istiodChart = await loadYaml(`${rootDir}/charts/istiod/Chart.yaml`)
+    const expectedVersion = istiodChart?.appVersion
+
+    if (!expectedVersion) {
+      d.warn('Could not determine expected Istio version from chart')
+      return
+    }
+
+    d.debug(`Expected Istio sidecar image version: ${expectedVersion}`)
+
+    // Query all pods to find those with Istio sidecars
+    const podsResponse = await k8s.core().listPodForAllNamespaces()
+    const pods = podsResponse.items
+
+    const restartedDeployments = new Set<string>()
+
+    for (const pod of pods) {
+      if (!pod.spec?.containers && !pod.spec?.initContainers) continue
+
+      // Check regular containers
+      const containers = pod.spec.containers || []
+      for (const container of containers) {
+        if (container.image?.includes('istio/proxyv2') || container.image?.includes('istio/proxy')) {
+          if (!container.image.endsWith(`:${expectedVersion}`)) {
+            d.info(
+              `Outdated Istio sidecar found in pod ${pod.metadata?.namespace}/${pod.metadata?.name}: ${container.image} (expected: ${expectedVersion})`,
+            )
+            await restartPodDeployment(pod, d, parsedArgs, restartedDeployments)
+          }
+        }
+      }
+
+      // Check init containers
+      const initContainers = pod.spec.initContainers || []
+      for (const container of initContainers) {
+        if (container.image?.includes('istio/proxyv2') || container.image?.includes('istio/proxy')) {
+          if (!container.image.endsWith(`:${expectedVersion}`)) {
+            d.info(
+              `Outdated Istio init container found in pod ${pod.metadata?.namespace}/${pod.metadata?.name}: ${container.image} (expected: ${expectedVersion})`,
+            )
+            await restartPodDeployment(pod, d, parsedArgs, restartedDeployments)
+          }
+        }
+      }
+    }
+
+    if (restartedDeployments.size > 0) {
+      d.info(`Restarted ${restartedDeployments.size} deployments with outdated Istio sidecars`)
+    } else {
+      d.debug('All Istio sidecars are up to date')
+    }
+  } catch (error) {
+    d.error('Error detecting and restarting outdated Istio sidecars:', error)
+  }
+}
+
+async function restartPodDeployment(
+  pod: any,
+  d: any,
+  parsedArgs: any,
+  restartedDeployments: Set<string>,
+): Promise<void> {
+  if (!pod.metadata?.ownerReferences) return
+
+  for (const ownerRef of pod.metadata.ownerReferences) {
+    // Handle StatefulSet directly
+    if (ownerRef.kind === 'StatefulSet' && ownerRef.name && pod.metadata?.namespace) {
+      try {
+        const workloadKey = `${pod.metadata.namespace}/${ownerRef.name}`
+
+        // Only restart each StatefulSet once
+        if (!restartedDeployments.has(workloadKey)) {
+          restartedDeployments.add(workloadKey)
+
+          if (!parsedArgs?.dryRun && !parsedArgs?.local) {
+            d.info(`Restarting StatefulSet ${ownerRef.name} in namespace ${pod.metadata.namespace}`)
+            await $`kubectl rollout restart statefulset/${ownerRef.name} -n ${pod.metadata.namespace}`
+            d.info(`Successfully restarted StatefulSet ${ownerRef.name}`)
+          } else {
+            d.info(`Dry run mode - would restart StatefulSet ${ownerRef.name} in namespace ${pod.metadata.namespace}`)
+          }
+        }
+      } catch (error) {
+        d.warn(`Could not restart StatefulSet for pod ${pod.metadata?.namespace}/${pod.metadata?.name}:`, error)
+      }
+    }
+    // Handle Deployment via ReplicaSet
+    else if (ownerRef.kind === 'ReplicaSet' && ownerRef.name && pod.metadata?.namespace) {
+      try {
+        // Get the ReplicaSet to find its Deployment owner
+        const replicaSet = await k8s.app().readNamespacedReplicaSet({
+          name: ownerRef.name,
+          namespace: pod.metadata.namespace,
+        })
+
+        if (replicaSet.metadata?.ownerReferences) {
+          for (const rsOwnerRef of replicaSet.metadata.ownerReferences) {
+            if (rsOwnerRef.kind === 'Deployment' && rsOwnerRef.name) {
+              const workloadKey = `${pod.metadata.namespace}/${rsOwnerRef.name}`
+
+              // Only restart each deployment once
+              if (!restartedDeployments.has(workloadKey)) {
+                restartedDeployments.add(workloadKey)
+
+                if (!parsedArgs?.dryRun && !parsedArgs?.local) {
+                  d.info(`Restarting deployment ${rsOwnerRef.name} in namespace ${pod.metadata.namespace}`)
+                  await $`kubectl rollout restart deployment/${rsOwnerRef.name} -n ${pod.metadata.namespace}`
+                  d.info(`Successfully restarted deployment ${rsOwnerRef.name}`)
+                } else {
+                  d.info(
+                    `Dry run mode - would restart deployment ${rsOwnerRef.name} in namespace ${pod.metadata.namespace}`,
+                  )
+                }
+              }
+            }
+          }
+        }
+      } catch (error) {
+        d.warn(`Could not restart deployment for pod ${pod.metadata?.namespace}/${pod.metadata?.name}:`, error)
+      }
+    }
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -883,6 +1027,14 @@ export const migrate = async (): Promise<boolean> => {
     d.log('Detected the old values file structure')
     await migrateLegacyValues(env.ENV_DIR)
   }
+
+  // Check for outdated Istio sidecars and restart deployments if needed
+  try {
+    await detectAndRestartOutdatedIstioSidecars()
+  } catch (error) {
+    d.warn('Failed to check and restart outdated Istio sidecars:', error)
+  }
+
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
   const prevVersion: number = versions?.spec?.specVersion
