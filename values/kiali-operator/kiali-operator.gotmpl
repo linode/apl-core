@@ -8,6 +8,7 @@ image:
   pullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
+
 {{- if $v.otomi.linodeLkeImageRepository }}
   repo: "{{- $v.otomi.linodeLkeImageRepository }}/quay/kiali/kiali-operator"
 {{- else }}
