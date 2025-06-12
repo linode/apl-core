@@ -19,6 +19,7 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { k8s } from '../common/k8s'
+import { ApiException } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 
@@ -449,7 +450,7 @@ const checkExists = async (func: () => Promise<any>): Promise<boolean> => {
     await func()
     return true
   } catch (error) {
-    if (error.response && error.response.statusCode === 404) {
+    if (error instanceof ApiException && error.code === 404) {
       return false
     } else {
       throw error
