@@ -46,7 +46,11 @@ resources:
           limits:
             cpu: 50m
             memory: 64M
+        {{- if $v.otomi.linodeLkeImageRepository }}
+        image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/hashicorp/http-echo"
+        {{- else }}
         image: hashicorp/http-echo
+        {{- end }}
         imagePullPolicy: IfNotPresent
         readinessProbe:
           httpGet:
@@ -85,7 +89,11 @@ resources:
           limits:
             cpu: 50m
             memory: 64M
+        {{- if $v.otomi.linodeLkeImageRepository }}
+        image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/hashicorp/http-echo"
+        {{- else }}
         image: hashicorp/http-echo
+        {{- end }}
         imagePullPolicy: IfNotPresent
         readinessProbe:
           httpGet:
@@ -115,7 +123,11 @@ resources:
           limits:
             cpu: 50m
             memory: 64M
+        {{- if $v.otomi.linodeLkeImageRepository }}
+        image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:7.80.0"
+        {{- else }}
         image: curlimages/curl:7.80.0
+        {{- end }}
         imagePullPolicy: IfNotPresent
 {{- end }} {{/* range clients */}}
 {{- end }} {{/* range */}}
@@ -150,7 +162,11 @@ resources:
           limits:
             cpu: 50m
             memory: 64M
+        {{- if $v.otomi.linodeLkeImageRepository }}
+        image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/hashicorp/http-echo"
+        {{- else }}
         image: hashicorp/http-echo
+        {{- end }}
         imagePullPolicy: IfNotPresent
         readinessProbe:
           httpGet:
@@ -181,7 +197,11 @@ resources:
           limits:
             cpu: 50m
             memory: 64M
+        {{- if $v.otomi.linodeLkeImageRepository }}
+        image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/curlimages/curl:7.80.0"
+        {{- else }}
         image: curlimages/curl:7.80.0
+        {{- end }}
         imagePullPolicy: IfNotPresent
 
 
