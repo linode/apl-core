@@ -1,17 +1,43 @@
-
-webhook:
-  resources: {}
-
-operator:
-  resources: {}
-
-
-webhook:
-  image:
-    repo: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
-    tag: v1.15.6
-
-operator:
-  image:
-    repo: gcr.io/knative-releases/knative.dev/operator/cmd/operator
-    tag: v1.15.6
+knative_operator:
+  knative_operator:
+    image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
+    tag: v1.18.1
+    affinity: {}
+    tolerations: []
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 1000m
+        memory: 1000Mi
+  operator_webhook:
+    image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
+    tag: v1.18.1
+    affinity:
+      # To avoid node becoming SPOF, spread our replicas to different nodes.
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: operator-webhook
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+    tolerations: []
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 500m
+        memory: 500Mi
+  kubernetes_min_version: v1.25.0
