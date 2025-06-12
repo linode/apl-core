@@ -8,6 +8,8 @@ manager:
 {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     repository: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr/open-telemetry/opentelemetry-operator/opentelemetry-operator"
+  collectorImage:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/otel/opentelemetry-collector-contrib"
 {{- end }}
   resources: {{- $o.resources.manager | toYaml | nindent 4 }}
   serviceMonitor:

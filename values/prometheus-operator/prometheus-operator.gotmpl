@@ -37,6 +37,8 @@ prometheusOperator:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
+  thanosImage:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}/quay"
   {{- end }}
   admissionWebhooks:
     enabled: true
