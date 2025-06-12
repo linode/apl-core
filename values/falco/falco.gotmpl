@@ -1,6 +1,12 @@
 {{- $v := .Values }}
 {{- $f:= $v.apps.falco }}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+  repository: "docker/falcosecurity/falco-no-driver"
+{{- end }}
+
 falco:
   syscall_event_drops:
     actions:
@@ -20,6 +26,11 @@ tolerations:
     operator: Exists
     effect: NoSchedule
 falcoctl:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+    repository: "docker/falcosecurity/falcoctl"
+  {{- end }}
   artifact:
     install:
       resources: {{- $f.resources.falcoCtlInstall | toYaml  | nindent 8 }}
