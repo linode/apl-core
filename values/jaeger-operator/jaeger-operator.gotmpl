@@ -6,7 +6,7 @@ jaeger:
   namespace: jaeger
   spec:
     allInOne:
-      image: jaegertracing/all-in-one:{{ $version }}
+      image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/docker/{{- end }}jaegertracing/all-in-one:{{ $version }}"
       options:
         query:
           base-path: /jaeger
@@ -32,4 +32,9 @@ securityContext:
 {{- with $v.otomi | get "globalPullSecret" nil }}
 imagePullSecrets:
   - name: otomi-pullsecret-global
+{{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/jaegertracing/jaeger-operator"
 {{- end }}

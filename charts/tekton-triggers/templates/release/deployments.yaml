@@ -35,7 +35,7 @@ spec:
       serviceAccountName: tekton-triggers-controller
       containers:
         - name: tekton-triggers-controller
-          image: "gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/controller:v0.25.0@sha256:cf9aa3895eb475e491173576927a8c066c7f537630306233b39985509bec186c"
+          image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
           args: ["-logtostderr", "-stderrthreshold", "INFO", "-el-image", "gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink:v0.25.0@sha256:a029b639f5a69913002f944e63bb113d05e289fc1c885257665dd0d116315c9c", "-el-port", "8080", "-el-security-context=true", "-el-events", "disable", "-el-readtimeout", "5", "-el-writetimeout", "40", "-el-idletimeout", "120", "-el-timeouthandler", "30", "-el-httpclient-readtimeout", "30", "-el-httpclient-keep-alive", "30", "-el-httpclient-tlshandshaketimeout", "10", "-el-httpclient-responseheadertimeout", "10", "-el-httpclient-expectcontinuetimeout", "1", "-period-seconds", "10", "-failure-threshold", "3"]
           env:
             - name: SYSTEM_NAMESPACE
@@ -106,7 +106,7 @@ spec:
         - name: webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: "gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/webhook:v0.25.0@sha256:954347e26c030162ac7c823fb617989fc68a276b7ba061fd3c71f265a555af91"
+          image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:

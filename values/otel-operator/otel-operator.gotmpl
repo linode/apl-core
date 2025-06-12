@@ -5,6 +5,12 @@ replicaCount: {{ $o.operator.replicaCount }}
 nameOverride: otel-operator
 imagePullSecrets: []
 manager:
+{{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr/open-telemetry/opentelemetry-operator/opentelemetry-operator"
+  collectorImage:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/otel/opentelemetry-collector-contrib"
+{{- end }}
   resources: {{- $o.resources.manager | toYaml | nindent 4 }}
   serviceMonitor:
     enabled: true
@@ -13,3 +19,7 @@ manager:
   podAnnotations: {}
 kubeRBACProxy:
   resources: {{- $o.resources.kubeRBACProxy | toYaml | nindent 4 }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/brancz/kube-rbac-proxy"
+{{- end }}
