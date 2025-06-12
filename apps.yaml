@@ -187,7 +187,7 @@ appsInfo:
     integration: The SSO login page for APL is served by Keycloak. Keycloak is used as an identity broker or provider for all APL integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of APL and is always enabled.
   kiali:
     title: Kiali Operator
-    appVersion: 1.86.1
+    appVersion: 2.10.0
     repo: https://github.com/kiali/kiali
     maintainers: Kiali
     relatedLinks:
@@ -199,7 +199,7 @@ appsInfo:
     integration: Kiali can be activated to gain observability insights on its network traffic. Kiali runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
   knative:
     title: Knative Operator
-    appVersion: 1.9.4
+    appVersion: 1.18.1
     repo: https://github.com/knative/serving
     maintainers: Knative
     relatedLinks:
