@@ -2,6 +2,10 @@
 {{- $a := $v.apps.argocd }}
 {{- $k := $v.apps.keycloak }}
 global:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/argoproj/argocd"
+  {{- end }}
   domain: argocd.{{ $v.cluster.domainSuffix }}
   {{- with $v.otomi | get "nodeSelector" nil }}
   nodeSelector:
@@ -40,7 +44,10 @@ notifications:
 
 redis:
   resources: {{- $a.resources.redis | toYaml | nindent 4 }}
-
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  image:
+    repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/redis"
+  {{- end }}
 repoServer:
   autoscaling:
     enabled: {{ $a.autoscaling.repoServer.enabled }}

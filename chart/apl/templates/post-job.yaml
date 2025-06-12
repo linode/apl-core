@@ -1,4 +1,5 @@
 {{- $kms := .Values.kms | default dict }}
+{{- $imageName := .Values.imageName | default "linode/apl-core" }}
 {{- $version := .Values.otomi.version | default .Chart.AppVersion }}
 apiVersion: batch/v1
 kind: Job
@@ -29,7 +30,11 @@ spec:
           type: RuntimeDefault
       containers:
         - name: destroy
-          image: linode/apl-core:{{ $version }}
+          {{- if .Values.otomi.useORCS }}
+          image: "mirror.registry.linodelke.net/docker/{{ $imageName }}:{{ $version }}"
+          {{- else }}
+          image: "{{ $imageName }}:{{ $version }}"
+          {{- end }}
           imagePullPolicy: {{ ternary "IfNotPresent" "Always" (regexMatch "^v\\d" $version) }} 
           securityContext:
             allowPrivilegeEscalation: false
