@@ -1,0 +1,13 @@
+{{- if .Values.alternateReportStorage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.alternateReportStorage.volumeName }}
+  namespace: trivy-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.alternateReportStorage.storage }}
+{{- end }}
