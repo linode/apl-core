@@ -1,5 +1,5 @@
 import { ApplyState, updateApplyState } from './k8s'
-import { CoreV1Api } from '@kubernetes/client-node'
+import { CoreV1Api, ApiException } from '@kubernetes/client-node'
 
 jest.mock('@kubernetes/client-node', () => {
   const mocks = {
@@ -8,12 +8,28 @@ jest.mock('@kubernetes/client-node', () => {
     createNamespacedConfigMap: jest.fn(),
   }
 
+  // Mock ApiException constructor that creates objects that pass instanceof checks
+  class MockApiException extends Error {
+    code: number
+    body: any
+    headers: any
+
+    constructor(code: number, message: string, body: any, headers: any) {
+      super(message)
+      this.code = code
+      this.body = body
+      this.headers = headers
+      this.name = 'ApiException'
+    }
+  }
+
   return {
     KubeConfig: jest.fn().mockImplementation(() => ({
       loadFromDefault: jest.fn(),
       makeApiClient: jest.fn().mockImplementation(() => mocks),
     })),
     CoreV1Api: jest.fn().mockImplementation(() => mocks),
+    ApiException: MockApiException,
     mocks,
   }
 })
@@ -77,10 +93,7 @@ describe('updateApplyState', () => {
   })
 
   test('should create new configmap when it does not exist', async () => {
-    const notFoundError = new Error('Not found')
-    ;(notFoundError as any).response = { statusCode: 404 }
-
-    mockCoreV1Api.readNamespacedConfigMap.mockRejectedValue(notFoundError)
+    mockCoreV1Api.readNamespacedConfigMap.mockRejectedValue(new ApiException(404, 'Not Found', {}, {}))
 
     await updateApplyState(testState, testNamespace, testConfigMapName)
 
