@@ -4,6 +4,16 @@
 knative_operator:
   knative_operator:
     resources: {{- $k.resources.operator | toYaml | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/operator/cmd/operator"
+    {{- else }}
+    image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
+    {{- end }}
 
   operator_webhook:
     resources: {{- $k.resources.operatorWebhook | toYaml | nindent 6 }}
+    {{- if $v.otomi.linodeLkeImageRepository }}
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/operator/cmd/webhook"
+    {{- else }}
+    image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
+    {{- end }}

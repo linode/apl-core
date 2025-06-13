@@ -1310,6 +1310,7 @@ environments:
           isMultitenant: true
           nodeSelector: {}
           isPreInstalled: false
+          useORCS: false
         users: []
         e2e:
           enabled: false
