@@ -372,3 +372,6 @@ changes:
       - databases.keycloak.imageName
       - databases.gitea.imageName
       - databases.harbor.imageName
+  - version: 43
+    deletions:
+      - 'apps.harbor.resources.chartmuseum'
