@@ -14,5 +14,6 @@ spec:
                 tempo: my-clusterid-tempo
                 thanos: my-clusterid-thanos
                 velero: my-clusterid-velero
+                kubeflow-pipelines: my-clusterid-kubeflow-pipelines
             region: nl-ams-1
         type: linode
