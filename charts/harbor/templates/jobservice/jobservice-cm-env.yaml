@@ -15,6 +15,8 @@ data:
   JOBSERVICE_WEBHOOK_JOB_MAX_RETRY: "{{ .Values.jobservice.notification.webhook_job_max_retry }}"
   JOBSERVICE_WEBHOOK_JOB_HTTP_CLIENT_TIMEOUT: "{{ .Values.jobservice.notification.webhook_job_http_client_timeout }}"
 
+  LOG_LEVEL: "{{ .Values.logLevel }}"
+  
   {{- if has "jobservice" .Values.proxy.components }}
   HTTP_PROXY: "{{ .Values.proxy.httpProxy }}"
   HTTPS_PROXY: "{{ .Values.proxy.httpsProxy }}"
