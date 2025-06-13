@@ -9,7 +9,6 @@ knative_operator:
     {{- else }}
     image: gcr.io/knative-releases/knative.dev/operator/cmd/operator
     {{- end }}
-    tag: v1.15.6
 
   operator_webhook:
     resources: {{- $k.resources.operatorWebhook | toYaml | nindent 6 }}
@@ -18,4 +17,3 @@ knative_operator:
     {{- else }}
     image: gcr.io/knative-releases/knative.dev/operator/cmd/webhook
     {{- end }}
-    tag: v1.15.6
