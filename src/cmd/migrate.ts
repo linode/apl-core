@@ -648,14 +648,20 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
 
     d.debug(`Expected Istio sidecar image version: ${expectedVersion}`)
 
-    // Query all pods to find those with Istio sidecars
-    const podsResponse = await k8s.core().listPodForAllNamespaces()
+    // Query pods with Istio sidecar label selector for efficiency
+    const podsResponse = await k8s.core().listPodForAllNamespaces({
+      labelSelector: 'security.istio.io/tlsMode=istio',
+    })
     const pods = podsResponse.items
+
+    d.debug(`Found ${pods.length} pods with Istio sidecars`)
 
     const restartedDeployments = new Set<string>()
 
     for (const pod of pods) {
       if (!pod.spec?.containers && !pod.spec?.initContainers) continue
+
+      let hasOutdatedSidecar = false
 
       // Check regular containers
       const containers = pod.spec.containers || []
@@ -663,9 +669,9 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
         if (container.image?.includes('istio/proxyv2') || container.image?.includes('istio/proxy')) {
           if (!container.image.endsWith(`:${expectedVersion}`)) {
             d.info(
-              `Outdated Istio sidecar found in pod ${pod.metadata?.namespace}/${pod.metadata?.name}: ${container.image} (expected: ${expectedVersion})`,
+              `Outdated Istio sidecar found in pod ${pod.metadata?.namespace}/${pod.metadata?.name}: ${container.image} (expected version: ${expectedVersion})`,
             )
-            await restartPodDeployment(pod, d, parsedArgs, restartedDeployments)
+            hasOutdatedSidecar = true
           }
         }
       }
@@ -676,11 +682,16 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
         if (container.image?.includes('istio/proxyv2') || container.image?.includes('istio/proxy')) {
           if (!container.image.endsWith(`:${expectedVersion}`)) {
             d.info(
-              `Outdated Istio init container found in pod ${pod.metadata?.namespace}/${pod.metadata?.name}: ${container.image} (expected: ${expectedVersion})`,
+              `Outdated Istio init container found in pod ${pod.metadata?.namespace}/${pod.metadata?.name}: ${container.image} (expected version: ${expectedVersion})`,
             )
-            await restartPodDeployment(pod, d, parsedArgs, restartedDeployments)
+            hasOutdatedSidecar = true
           }
         }
+      }
+
+      // Only restart if we found outdated sidecars in this pod
+      if (hasOutdatedSidecar) {
+        await restartPodDeployment(pod, d, parsedArgs, restartedDeployments)
       }
     }
 
@@ -1028,7 +1039,6 @@ export const migrate = async (): Promise<boolean> => {
     await migrateLegacyValues(env.ENV_DIR)
   }
 
-  // Check for outdated Istio sidecars and restart deployments if needed
   try {
     await detectAndRestartOutdatedIstioSidecars()
   } catch (error) {
