@@ -85,11 +85,11 @@ RUN curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/
   chmod +x kubectl
 
 # cnpg kubectl plugin
-RUN curl -LO "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CNPG_VERSION}/kubectl-cnpg_${CNPG_VERSION}_linux_${TARGETARCH}.tar.gz" && \
-  tar -zxvf kubectl-cnpg_${CNPG_VERSION}_linux_${TARGETARCH}.tar.gz && \
-  mv kubectl-cnpg kubectl-cnpg && \
+RUN CNPG_ARCH=$(if [ "${TARGETARCH}" = "amd64" ]; then echo "x86_64"; else echo "${TARGETARCH}"; fi) && \
+  curl -LO "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CNPG_VERSION}/kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz" && \
+  tar -zxvf kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz && \
   chmod +x kubectl-cnpg && \
-  rm kubectl-cnpg_${CNPG_VERSION}_linux_${TARGETARCH}.tar.gz
+  rm kubectl-cnpg_${CNPG_VERSION}_linux_${CNPG_ARCH}.tar.gz
 
 # sops
 ADD https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64 sops
