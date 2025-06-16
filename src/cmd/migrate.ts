@@ -1100,12 +1100,6 @@ export const migrate = async (): Promise<boolean> => {
     await migrateLegacyValues(env.ENV_DIR)
   }
 
-  try {
-    await detectAndRestartOutdatedIstioSidecars(k8s.core())
-  } catch (error) {
-    d.warn('Failed to check and restart outdated Istio sidecars:', error)
-  }
-
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
   const prevVersion: number = versions?.spec?.specVersion
@@ -1127,6 +1121,13 @@ export const migrate = async (): Promise<boolean> => {
     d.log(`Migration changes: ${JSON.stringify(diffedValues, null, 2)}`)
     return true
   }
+
+  try {
+    await detectAndRestartOutdatedIstioSidecars(k8s.core())
+  } catch (error) {
+    d.warn('Failed to check and restart outdated Istio sidecars:', error)
+  }
+
   d.log('No changes detected, skipping')
   return false
 }
