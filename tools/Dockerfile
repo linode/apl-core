@@ -21,6 +21,8 @@ ARG GUCCI_VERSION=1.6.13
 ARG HELMFILE_VERSION=1.0.0
 # https://nodejs.org/en/download/
 ARG NODE_VERSION=22
+# https://github.com/cloudnative-pg/cloudnative-pg/releases
+ARG CNPG_VERSION=1.26.0
 
 ARG HELM_FILE_NAME=helm-v${HELM_VERSION}-linux-${TARGETARCH}.tar.gz
 WORKDIR /
@@ -81,6 +83,13 @@ RUN curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/
   curl -LO "https://dl.k8s.io/release/v$KUBECTL_VERSION/bin/linux/$TARGETARCH/kubectl.sha256" && \
   echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check && \
   chmod +x kubectl
+
+# cnpg kubectl plugin
+RUN curl -LO "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v${CNPG_VERSION}/kubectl-cnpg_${CNPG_VERSION}_linux_${TARGETARCH}.tar.gz" && \
+  tar -zxvf kubectl-cnpg_${CNPG_VERSION}_linux_${TARGETARCH}.tar.gz && \
+  mv kubectl-cnpg kubectl-cnpg && \
+  chmod +x kubectl-cnpg && \
+  rm kubectl-cnpg_${CNPG_VERSION}_linux_${TARGETARCH}.tar.gz
 
 # sops
 ADD https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64 sops
