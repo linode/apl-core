@@ -53,7 +53,7 @@
     "@semantic-release/git": "^10.0.1",
     "@types/async-retry": "1.4.9",
     "@types/debug": "4.1.12",
-    "@types/express": "5.0.2",
+    "@types/express": "5.0.3",
     "@types/ignore-walk": "4.0.3",
     "@types/jest": "^29.5.14",
     "@types/js-yaml": "4.0.9",
