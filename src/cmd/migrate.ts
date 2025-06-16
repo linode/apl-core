@@ -7,7 +7,7 @@ import { cloneDeep, each, get, isObject, isUndefined, mapKeys, mapValues, omit, 
 import { basename, dirname, join } from 'path'
 import { prepareEnvironment } from 'src/common/cli'
 import { decrypt, encrypt } from 'src/common/crypt'
-import { logLevelString, terminal } from 'src/common/debug'
+import { logLevelString, OtomiDebugger, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS, hfValues } from 'src/common/hf'
 import { getFileMap, getTeamNames, saveResourceGroupToFiles, saveValues } from 'src/common/repo'
@@ -20,7 +20,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { getDeploymentState, k8s } from '../common/k8s'
 import { getCurrentVersion } from '../common/values'
-import { ApiException } from '@kubernetes/client-node'
+import { ApiException, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 
@@ -619,6 +619,34 @@ export async function installIstioHelmCharts(): Promise<void> {
   }
 }
 
+function getWorkloadKeyFromPod(pod: V1Pod): string | null {
+  if (!pod.metadata?.ownerReferences || !pod.metadata?.namespace) return null
+
+  for (const ownerRef of pod.metadata.ownerReferences) {
+    // Direct workload owners
+    if ((ownerRef.kind === 'StatefulSet' || ownerRef.kind === 'Cluster') && ownerRef.name) {
+      return `${pod.metadata.namespace}/${ownerRef.name}`
+    }
+    // For Deployments via ReplicaSet, extract deployment name from ReplicaSet name
+    // ReplicaSet names follow pattern: <deployment-name>-<hash> where hash is 8-10 alphanumeric chars
+    if (ownerRef.kind === 'ReplicaSet' && ownerRef.name) {
+      const deploymentName = getDeploymentNameFromReplicaSet(ownerRef.name)
+      if (deploymentName) {
+        return `${pod.metadata.namespace}/${deploymentName}`
+      }
+    }
+  }
+
+  return null
+}
+
+function getDeploymentNameFromReplicaSet(replicaSetName: string): string | null {
+  // ReplicaSet names follow pattern: <deployment-name>-<hash>
+  // Hash is typically 8-10 characters of lowercase alphanumeric
+  const match = replicaSetName.match(/^(.+)-[a-z0-9]{8,10}$/)
+  return match ? match[1] : null
+}
+
 export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
   const d = terminal('detectAndRestartOutdatedIstioSidecars')
   const parsedArgs = getParsedArgs()
@@ -630,7 +658,7 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
     const prevVersion = deploymentState.version ?? currentVersion
 
     // If no upgrade detected, skip sidecar check
-    if (currentVersion === prevVersion) {
+    if (currentVersion !== prevVersion) {
       d.debug('No version upgrade detected, skipping Istio sidecar check')
       return
     }
@@ -648,7 +676,7 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
 
     d.debug(`Expected Istio sidecar image version: ${expectedVersion}`)
 
-    // Query pods with Istio sidecar label selector for efficiency
+    // Get pods with Istio sidecar label selector
     const podsResponse = await k8s.core().listPodForAllNamespaces({
       labelSelector: 'security.istio.io/tlsMode=istio',
     })
@@ -659,116 +687,145 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
     const restartedDeployments = new Set<string>()
 
     for (const pod of pods) {
-      if (!pod.spec?.containers && !pod.spec?.initContainers) continue
+      if (!pod.spec?.containers && !pod.spec?.initContainers) {
+        continue
+      }
+
+      // If this pod's workload was already restarted, skip it
+      const workloadKey = getWorkloadKeyFromPod(pod)
+      if (workloadKey && restartedDeployments.has(workloadKey)) {
+        continue
+      }
 
       let hasOutdatedSidecar = false
 
-      // Check regular containers
-      const containers = pod.spec.containers || []
-      for (const container of containers) {
+      const allContainers = [...(pod.spec.containers || []), ...(pod.spec.initContainers || [])]
+      for (const container of allContainers) {
         if (container.image?.includes('istio/proxyv2') || container.image?.includes('istio/proxy')) {
           if (!container.image.endsWith(`:${expectedVersion}`)) {
             d.info(
               `Outdated Istio sidecar found in pod ${pod.metadata?.namespace}/${pod.metadata?.name}: ${container.image} (expected version: ${expectedVersion})`,
             )
             hasOutdatedSidecar = true
+            break
           }
         }
       }
 
-      // Check init containers
-      const initContainers = pod.spec.initContainers || []
-      for (const container of initContainers) {
-        if (container.image?.includes('istio/proxyv2') || container.image?.includes('istio/proxy')) {
-          if (!container.image.endsWith(`:${expectedVersion}`)) {
-            d.info(
-              `Outdated Istio init container found in pod ${pod.metadata?.namespace}/${pod.metadata?.name}: ${container.image} (expected version: ${expectedVersion})`,
-            )
-            hasOutdatedSidecar = true
-          }
-        }
-      }
-
-      // Only restart if we found outdated sidecars in this pod
       if (hasOutdatedSidecar) {
         await restartPodDeployment(pod, d, parsedArgs, restartedDeployments)
+      } else {
+        const istioImages = allContainers
+          .filter((c) => c.image?.includes('istio/proxyv2') || c.image?.includes('istio/proxy'))
+          .map((c) => c.image)
+          .join(', ')
+        d.info(`Pod ${pod.metadata?.namespace}/${pod.metadata?.name} has up-to-date Istio sidecars: ${istioImages}`)
       }
     }
 
     if (restartedDeployments.size > 0) {
       d.info(`Restarted ${restartedDeployments.size} deployments with outdated Istio sidecars`)
     } else {
-      d.debug('All Istio sidecars are up to date')
+      d.info('All Istio sidecars are up to date')
     }
   } catch (error) {
     d.error('Error detecting and restarting outdated Istio sidecars:', error)
   }
 }
 
-async function restartPodDeployment(
-  pod: any,
+async function restartStatefulSet(
+  ownerRef: V1OwnerReference,
+  namespace: string,
+  parsedArgs: any,
+  restartedDeployments: Set<string>,
   d: any,
+): Promise<void> {
+  const workloadKey = `${namespace}/${ownerRef.name}`
+
+  if (restartedDeployments.has(workloadKey)) return
+  restartedDeployments.add(workloadKey)
+
+  if (!parsedArgs?.dryRun && !parsedArgs?.local) {
+    d.info(`Restarting StatefulSet ${ownerRef.name} in namespace ${namespace}`)
+    await $`kubectl rollout restart statefulset/${ownerRef.name} -n ${namespace}`
+    d.info(`Successfully restarted StatefulSet ${ownerRef.name}`)
+  } else {
+    d.info(`Dry run mode - would restart StatefulSet ${ownerRef.name} in namespace ${namespace}`)
+  }
+}
+
+async function restartCluster(
+  ownerRef: V1OwnerReference,
+  namespace: string,
+  parsedArgs: any,
+  restartedDeployments: Set<string>,
+  d: any,
+): Promise<void> {
+  const workloadKey = `${namespace}/${ownerRef.name}`
+
+  if (restartedDeployments.has(workloadKey)) return
+  restartedDeployments.add(workloadKey)
+
+  if (!parsedArgs?.dryRun && !parsedArgs?.local) {
+    d.info(`Restarting CloudNativePG Cluster ${ownerRef.name} in namespace ${namespace}`)
+    await $`kubectl cnpg restart ${ownerRef.name} -n ${namespace}`
+    d.info(`Successfully initiated rolling restart for Cluster ${ownerRef.name}`)
+  } else {
+    d.info(`Dry run mode - would restart CloudNativePG Cluster ${ownerRef.name} in namespace ${namespace}`)
+  }
+}
+
+async function restartDeployment(
+  ownerRef: V1OwnerReference,
+  namespace: string,
+  parsedArgs: any,
+  restartedDeployments: Set<string>,
+  d: any,
+): Promise<void> {
+  const deploymentName = getDeploymentNameFromReplicaSet(ownerRef.name)
+
+  if (!deploymentName) {
+    d.info(`Could not extract deployment name from ReplicaSet ${ownerRef.name}, skipping restart`)
+  }
+  const workloadKey = `${namespace}/${deploymentName}`
+
+  if (restartedDeployments.has(workloadKey)) return
+  restartedDeployments.add(workloadKey)
+
+  if (!parsedArgs?.dryRun && !parsedArgs?.local) {
+    d.info(`Restarting deployment ${deploymentName} in namespace ${namespace}`)
+    await $`kubectl rollout restart deployment/${deploymentName} -n ${namespace}`
+    d.info(`Successfully restarted deployment ${deploymentName}`)
+  } else {
+    d.info(`Dry run mode - would restart deployment ${deploymentName} in namespace ${namespace}`)
+  }
+}
+
+async function restartPodDeployment(
+  pod: V1Pod,
+  d: OtomiDebugger,
   parsedArgs: any,
   restartedDeployments: Set<string>,
 ): Promise<void> {
-  if (!pod.metadata?.ownerReferences) return
+  if (!pod.metadata?.ownerReferences || !pod.metadata?.namespace) return
 
   for (const ownerRef of pod.metadata.ownerReferences) {
-    // Handle StatefulSet directly
-    if (ownerRef.kind === 'StatefulSet' && ownerRef.name && pod.metadata?.namespace) {
-      try {
-        const workloadKey = `${pod.metadata.namespace}/${ownerRef.name}`
+    if (!ownerRef.name) continue
 
-        // Only restart each StatefulSet once
-        if (!restartedDeployments.has(workloadKey)) {
-          restartedDeployments.add(workloadKey)
-
-          if (!parsedArgs?.dryRun && !parsedArgs?.local) {
-            d.info(`Restarting StatefulSet ${ownerRef.name} in namespace ${pod.metadata.namespace}`)
-            await $`kubectl rollout restart statefulset/${ownerRef.name} -n ${pod.metadata.namespace}`
-            d.info(`Successfully restarted StatefulSet ${ownerRef.name}`)
-          } else {
-            d.info(`Dry run mode - would restart StatefulSet ${ownerRef.name} in namespace ${pod.metadata.namespace}`)
-          }
-        }
-      } catch (error) {
-        d.warn(`Could not restart StatefulSet for pod ${pod.metadata?.namespace}/${pod.metadata?.name}:`, error)
+    try {
+      switch (ownerRef.kind) {
+        case 'StatefulSet':
+          await restartStatefulSet(ownerRef, pod.metadata.namespace, parsedArgs, restartedDeployments, d)
+          break
+        case 'Cluster':
+          await restartCluster(ownerRef, pod.metadata.namespace, parsedArgs, restartedDeployments, d)
+          break
+        case 'ReplicaSet':
+          await restartDeployment(ownerRef, pod.metadata.namespace, parsedArgs, restartedDeployments, d)
+          break
       }
-    }
-    // Handle Deployment via ReplicaSet
-    else if (ownerRef.kind === 'ReplicaSet' && ownerRef.name && pod.metadata?.namespace) {
-      try {
-        // Get the ReplicaSet to find its Deployment owner
-        const replicaSet = await k8s.app().readNamespacedReplicaSet({
-          name: ownerRef.name,
-          namespace: pod.metadata.namespace,
-        })
-
-        if (replicaSet.metadata?.ownerReferences) {
-          for (const rsOwnerRef of replicaSet.metadata.ownerReferences) {
-            if (rsOwnerRef.kind === 'Deployment' && rsOwnerRef.name) {
-              const workloadKey = `${pod.metadata.namespace}/${rsOwnerRef.name}`
-
-              // Only restart each deployment once
-              if (!restartedDeployments.has(workloadKey)) {
-                restartedDeployments.add(workloadKey)
-
-                if (!parsedArgs?.dryRun && !parsedArgs?.local) {
-                  d.info(`Restarting deployment ${rsOwnerRef.name} in namespace ${pod.metadata.namespace}`)
-                  await $`kubectl rollout restart deployment/${rsOwnerRef.name} -n ${pod.metadata.namespace}`
-                  d.info(`Successfully restarted deployment ${rsOwnerRef.name}`)
-                } else {
-                  d.info(
-                    `Dry run mode - would restart deployment ${rsOwnerRef.name} in namespace ${pod.metadata.namespace}`,
-                  )
-                }
-              }
-            }
-          }
-        }
-      } catch (error) {
-        d.warn(`Could not restart deployment for pod ${pod.metadata?.namespace}/${pod.metadata?.name}:`, error)
-      }
+    } catch (error) {
+      d.warn(`Could not restart ${ownerRef.kind} for pod ${pod.metadata.namespace}/${pod.metadata.name}:`, error)
     }
   }
 }
