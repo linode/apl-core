@@ -64,7 +64,7 @@ The following changes have been made compared to the stable chart:
 | Config                                  | Description                                                                 | Default                   |
 | ------                                  | -----------                                                                 | -------                   |
 | `image.repository`                      | Image repository                                                            | `ghcr.io/kubereboot/kured`|
-| `image.tag`                             | Image tag                                                                   | `1.13.1`                  |
+| `image.tag`                             | Image tag                                                                   | `1.13.2`                  |
 | `image.pullPolicy`                      | Image pull policy                                                           | `IfNotPresent`            |
 | `image.pullSecrets`                     | Image pull secrets                                                          | `[]`                      |
 | `updateStrategy`                        | Daemonset update strategy                                                   | `RollingUpdate`           |
@@ -73,6 +73,7 @@ The following changes have been made compared to the stable chart:
 | `dsAnnotations`                         | Annotations to apply to the kured DaemonSet                                 | `{}`                      |
 | `extraArgs`                             | Extra arguments to pass to `/usr/bin/kured`. See below.                     | `{}`                      |
 | `extraEnvVars`                          | Array of environment variables to pass to the daemonset.                    | `{}`                      |
+| `metricsPort`                           | Port to expose the metrics endpoint.                                        | `8080`                    |
 | `configuration.lockTtl`                 | cli-parameter `--lock-ttl`                                                  | `0`                       |
 | `configuration.lockReleaseDelay`        | cli-parameter `--lock-release-delay`                                        | `0`                       |
 | `configuration.alertFilterRegexp`       | cli-parameter `--alert-filter-regexp`                                       | `""`                      |
