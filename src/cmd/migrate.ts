@@ -20,7 +20,7 @@ import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { getDeploymentState, k8s } from '../common/k8s'
 import { getCurrentVersion } from '../common/values'
-import { ApiException, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
+import { ApiException, CoreV1Api, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 
@@ -619,7 +619,7 @@ export async function installIstioHelmCharts(): Promise<void> {
   }
 }
 
-function getWorkloadKeyFromPod(pod: V1Pod): string | null {
+export function getWorkloadKeyFromPod(pod: V1Pod): string | null {
   if (!pod.metadata?.ownerReferences || !pod.metadata?.namespace) return null
 
   for (const ownerRef of pod.metadata.ownerReferences) {
@@ -640,25 +640,28 @@ function getWorkloadKeyFromPod(pod: V1Pod): string | null {
   return null
 }
 
-function getDeploymentNameFromReplicaSet(replicaSetName: string): string | null {
+export function getDeploymentNameFromReplicaSet(replicaSetName: string): string | null {
   // ReplicaSet names follow pattern: <deployment-name>-<hash>
   // Hash is typically 8-10 characters of lowercase alphanumeric
   const match = replicaSetName.match(/^(.+)-[a-z0-9]{8,10}$/)
   return match ? match[1] : null
 }
 
-export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
+export async function detectAndRestartOutdatedIstioSidecars(
+  coreV1Api: CoreV1Api,
+  deps = { getDeploymentState, getCurrentVersion, loadYaml, getWorkloadKeyFromPod, restartPodOwner },
+): Promise<void> {
   const d = terminal('detectAndRestartOutdatedIstioSidecars')
   const parsedArgs = getParsedArgs()
 
   try {
     // Check if this is actually an upgrade scenario
-    const deploymentState = await getDeploymentState()
-    const currentVersion = await getCurrentVersion()
+    const deploymentState = await deps.getDeploymentState()
+    const currentVersion = await deps.getCurrentVersion()
     const prevVersion = deploymentState.version ?? currentVersion
 
     // If no upgrade detected, skip sidecar check
-    if (currentVersion !== prevVersion) {
+    if (currentVersion === prevVersion) {
       d.debug('No version upgrade detected, skipping Istio sidecar check')
       return
     }
@@ -666,7 +669,7 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
     d.info(`Version upgrade detected: ${prevVersion} -> ${currentVersion}, checking Istio sidecars`)
 
     // Get expected Istio version from chart
-    const istiodChart = await loadYaml(`${rootDir}/charts/istiod/Chart.yaml`)
+    const istiodChart = await deps.loadYaml(`${rootDir}/charts/istiod/Chart.yaml`)
     const expectedVersion = istiodChart?.appVersion
 
     if (!expectedVersion) {
@@ -677,7 +680,7 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
     d.debug(`Expected Istio sidecar image version: ${expectedVersion}`)
 
     // Get pods with Istio sidecar label selector
-    const podsResponse = await k8s.core().listPodForAllNamespaces({
+    const podsResponse = await coreV1Api.listPodForAllNamespaces({
       labelSelector: 'security.istio.io/tlsMode=istio',
     })
     const pods = podsResponse.items
@@ -692,7 +695,7 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
       }
 
       // If this pod's workload was already restarted, skip it
-      const workloadKey = getWorkloadKeyFromPod(pod)
+      const workloadKey = deps.getWorkloadKeyFromPod(pod)
       if (workloadKey && restartedDeployments.has(workloadKey)) {
         continue
       }
@@ -713,7 +716,7 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
       }
 
       if (hasOutdatedSidecar) {
-        await restartPodDeployment(pod, d, parsedArgs, restartedDeployments)
+        await deps.restartPodOwner(pod, d, parsedArgs, restartedDeployments)
       } else {
         const istioImages = allContainers
           .filter((c) => c.image?.includes('istio/proxyv2') || c.image?.includes('istio/proxy'))
@@ -733,7 +736,7 @@ export async function detectAndRestartOutdatedIstioSidecars(): Promise<void> {
   }
 }
 
-async function restartStatefulSet(
+export async function restartStatefulSet(
   ownerRef: V1OwnerReference,
   namespace: string,
   parsedArgs: any,
@@ -754,7 +757,7 @@ async function restartStatefulSet(
   }
 }
 
-async function restartCluster(
+export async function restartCluster(
   ownerRef: V1OwnerReference,
   namespace: string,
   parsedArgs: any,
@@ -775,7 +778,7 @@ async function restartCluster(
   }
 }
 
-async function restartDeployment(
+export async function restartDeployment(
   ownerRef: V1OwnerReference,
   namespace: string,
   parsedArgs: any,
@@ -786,6 +789,7 @@ async function restartDeployment(
 
   if (!deploymentName) {
     d.info(`Could not extract deployment name from ReplicaSet ${ownerRef.name}, skipping restart`)
+    return
   }
   const workloadKey = `${namespace}/${deploymentName}`
 
@@ -801,7 +805,7 @@ async function restartDeployment(
   }
 }
 
-async function restartPodDeployment(
+export async function restartPodOwner(
   pod: V1Pod,
   d: OtomiDebugger,
   parsedArgs: any,
@@ -1097,7 +1101,7 @@ export const migrate = async (): Promise<boolean> => {
   }
 
   try {
-    await detectAndRestartOutdatedIstioSidecars()
+    await detectAndRestartOutdatedIstioSidecars(k8s.core())
   } catch (error) {
     d.warn('Failed to check and restart outdated Istio sidecars:', error)
   }
