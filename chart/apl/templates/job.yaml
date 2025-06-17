@@ -50,8 +50,24 @@ spec:
           command: [bash, -c]
           args:
             - |
+              set -e
               kubectl create ns otomi &> /dev/null
               binzx/otomi validate-cluster && binzx/otomi bootstrap && binzx/otomi apply
+
+              {{- if .Values.cleanup.enabled }}
+              echo "Starting cleanup of cluster-admin ClusterRoleBinding..."
+
+              # Check if the ClusterRoleBinding exists
+              if kubectl get clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found; then
+                echo "Deleting ClusterRoleBinding: {{ include "apl.fullname" . }}"
+                kubectl delete clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found
+                echo "ClusterRoleBinding deleted successfully"
+              else
+                echo "ClusterRoleBinding {{ include "apl.fullname" . }} not found, nothing to clean up"
+              fi
+
+              echo "Cleanup completed successfully"
+              {{- end }}
           env:
             - name: VERBOSITY
               value: '1'
