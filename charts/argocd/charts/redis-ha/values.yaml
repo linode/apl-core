@@ -19,7 +19,7 @@ image:
   pullPolicy: IfNotPresent
 
 # -- Full name of the Redis HA Resources
-fullNameOverride: ""
+fullnameOverride: ""
 
 # -- Name override for Redis HA resources
 nameOverride: ""
@@ -127,7 +127,7 @@ haproxy:
     # -- HAProxy Image Repository
     repository: public.ecr.aws/docker/library/haproxy
     # -- HAProxy Image Tag
-    tag: 3.0.7-alpine
+    tag: 3.0.8-alpine
     # -- HAProxy Image PullPolicy
     pullPolicy: IfNotPresent
 
@@ -185,7 +185,7 @@ haproxy:
   serviceAccount:
     # -- Specifies whether a ServiceAccount should be created
     create: true
-    automountToken: false
+    automountToken: true
 
   ## Official HAProxy embedded prometheus metrics settings.
   ## Ref: https://github.com/haproxy/haproxy/tree/master/contrib/prometheus-exporter
@@ -418,15 +418,15 @@ redis:
     # -- Enable Startup Probe
     enabled: true
     # -- Initial delay in seconds for startup probe
-    initialDelaySeconds: 5
+    initialDelaySeconds: 30
     # -- Period in seconds after which startup probe will be repeated
-    periodSeconds: 10
+    periodSeconds: 15
     # -- Timeout seconds for startup probe
     timeoutSeconds: 15
     # -- Success threshold for startup probe
     successThreshold: 1
     # -- Failure threshold for startup probe
-    failureThreshold: 3
+    failureThreshold: 5
 
   # -- Array with commands to disable
   disableCommands:
