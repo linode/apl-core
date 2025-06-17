@@ -9,7 +9,7 @@ cluster: {}
   # domainSuffix: ''
 
   ## Set the name of your cluster
-  ## 
+  ##
   # name: 'dev'
 
   ## Set provider
@@ -29,11 +29,11 @@ otomi: {}
   ## Will be automatically generated if not filled-in
   # adminPassword: ''
 
-  ## Set hasExternalDNS to true when using an external DNS zone. 
+  ## Set hasExternalDNS to true when using an external DNS zone.
   ## Otherwise a '*.nip.io' domain will be created.
   # hasExternalDNS: false
 
-  ## Set hasExternalIDP to true,when you bring your own IDP such as Azure AD. 
+  ## Set hasExternalIDP to true,when you bring your own IDP such as Azure AD.
   ## When set to false Keycloak will become the IDP.
   ## When set to true, also fill in the 'oidc:' settings below.
   # hasExternalIDP: false
@@ -45,11 +45,11 @@ otomi: {}
 ## Optional configuration
 # apps:
 #   cert-manager:
-    ## Set issuer 
-    ## Use a custom-ca (for BYO CA or auto-generated CA) or letsencrypt. 
+    ## Set issuer
+    ## Use a custom-ca (for BYO CA or auto-generated CA) or letsencrypt.
     ## When using letsencrypt, also fill in 'dns'.
     # issuer: custom-ca
-    ## Set when using BYO CA. 
+    ## Set when using BYO CA.
     ## If not filled in, a CA will be auto generated
     # customRootCA:
     # customRootCAKey:
@@ -67,12 +67,12 @@ otomi: {}
 #       # credentials are optional for explicit access with an iam role
 #       # (if no metadata exists with implicit role access to manage dns)
 #       credentials:
-#         secretKey: '' 
+#         secretKey: ''
 #         accessKey: ''
 #       # region is always needed
 #       region: eu-central-1
 #       # optional ARN, may be set explicitly if no metadata can be accessed
-#       role: '' 
+#       role: ''
 #     azure:
 #       aadClientId: ''
 #       aadClientSecret: ''
@@ -117,26 +117,7 @@ otomi: {}
 #   # IDP group id used to identify team admin
 #   teamAdminGroupID: ''
 
-## Cleanup job configuration
+## Cleanup configuration
 cleanup:
-  # Enable the cleanup job that removes cluster-admin ClusterRoleBinding after installation
+  # Enable the cleanup command that removes cluster-admin ClusterRoleBinding after installation
   enabled: true
-  
-#  # Job configuration
-  backoffLimit: 3
-  ttlSecondsAfterFinished: 300
-  activeDeadlineSeconds: 180
-#
-#  # Container image configuration
-  image:
-    repository: bitnami/kubectl
-    tag: '1.33'
-#
-#  # Resource limits and requests
-  resources:
-    limits:
-      memory: 128Mi
-      cpu: 100m
-    requests:
-      memory: 64Mi
-      cpu: 50m
