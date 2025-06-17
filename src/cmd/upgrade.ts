@@ -1,15 +1,13 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable no-restricted-syntax */
 import { isEmpty } from 'lodash'
 import { prepareEnvironment } from 'src/common/cli'
 import { hfValues } from 'src/common/hf'
 import { getDeploymentState } from 'src/common/k8s'
-import { getFilename, loadYaml, rootDir, semverCompare } from 'src/common/utils'
+import { getFilename, loadYaml, rootDir } from 'src/common/utils'
 import { getCurrentVersion } from 'src/common/values'
 import { BasicArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
+import semver from 'semver'
 
 const cmdName = getFilename(__filename)
 
@@ -38,7 +36,10 @@ export type Upgrades = Array<Upgrade>
 
 // select upgrades after semver version, and always select upgrade with version "dev" for dev purposes
 export function filterUpgrades(version: string, upgrades: Upgrades): Upgrades {
-  return upgrades.filter((c) => c.version === 'dev' || semverCompare(version, c.version) === -1)
+  // Prereleases such as v1.0-rc1 are not a complete semantic version - changing these to v1.0.0-rc1
+  const prereleaseMatch = version.match(/^[0-9]+\.[0-9]+(-[a-zA-Z]+[0-9]+)$/)
+  const currentVersion = prereleaseMatch ? version.replace(prereleaseMatch[1], `.0${prereleaseMatch[1]}`) : version
+  return upgrades.filter((c) => c.version === 'dev' || semver.gt(c.version, currentVersion))
 }
 
 async function execute(d: typeof console, dryRun: boolean, operations: string[]) {
