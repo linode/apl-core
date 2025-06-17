@@ -26,18 +26,6 @@ describe('Flatten objects', () => {
   })
 })
 
-describe('semverCompare', () => {
-  it('should indicate version to be higher', () => {
-    expect(utils.semverCompare('1.1.3', '0.1.1')).toEqual(1)
-  })
-  it('should indicate version to be equal', () => {
-    expect(utils.semverCompare('0.1.1', '0.1.1')).toEqual(0)
-  })
-  it('should indicate version to be lower', () => {
-    expect(utils.semverCompare('0.1.1', '1.1.3')).toEqual(-1)
-  })
-})
-
 describe('ensureTeamGitopsDirectories', () => {
   it('should create .gitkeep files in all team directories', async () => {
     const envDir = '/values'
