@@ -26,6 +26,6 @@ describe('filterUpgrades RC version', () => {
     const inputData = [{ version: '2.0.0' }, { version: '2.1.0' }, { version: '2.2.0' }]
     const expectedData = [{ version: '2.1.0' }, { version: '2.2.0' }]
 
-    expect(upgrade.filterUpgrades('2.1-rc1', inputData)).toEqual(expectedData)
+    expect(upgrade.filterUpgrades('2.1-rc.1', inputData)).toEqual(expectedData)
   })
 })
