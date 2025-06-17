@@ -252,9 +252,21 @@ type WaitTillAvailableOptions = Options & {
   password?: string
 }
 
+// Track ongoing git repo availability checks
+const gitRepoChecks = new Map<string, Promise<void>>()
+
+// Prevents concurrent checks - Only one process will actually hit Gitea with git ls-remote
 export const waitTillGitRepoAvailable = async (repoUrl: string): Promise<void> => {
   const d = terminal('common:k8s:waitTillGitRepoAvailable')
-  await retry(
+
+  // Check if there's already an ongoing check for this repo
+  if (gitRepoChecks.has(repoUrl)) {
+    d.info(`Git repository check already in progress for ${repoUrl}, waiting for completion...`)
+    return gitRepoChecks.get(repoUrl)!
+  }
+
+  // Start a new check
+  const checkPromise = retry(
     async () => {
       try {
         cd(env.ENV_DIR)
@@ -267,6 +279,15 @@ export const waitTillGitRepoAvailable = async (repoUrl: string): Promise<void> =
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   )
+
+  // Store the promise and clean up when done
+  gitRepoChecks.set(repoUrl, checkPromise)
+
+  try {
+    await checkPromise
+  } finally {
+    gitRepoChecks.delete(repoUrl)
+  }
 }
 
 export const waitTillAvailable = async (url: string, opts?: WaitTillAvailableOptions): Promise<void> => {
