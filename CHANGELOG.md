@@ -2,6 +2,82 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.7.0](https://github.com/linode/apl-core/compare/v4.5.0...v4.7.0) (2025-06-17)
+
+
+### Features
+
+* add ensure git ops directories to apply-as-apps ([#2211](https://github.com/linode/apl-core/issues/2211)) ([a033abb](https://github.com/linode/apl-core/commit/a033abb7df45881e172c14bdde1f1a3e0b531a7a))
+* add post-install cleanup job ([#2207](https://github.com/linode/apl-core/issues/2207)) ([84fd5ab](https://github.com/linode/apl-core/commit/84fd5abce973aa81a14565e3242d9a1b36a6dcee))
+* APL-672 adding ORCS support ([#2203](https://github.com/linode/apl-core/issues/2203)) ([57b802d](https://github.com/linode/apl-core/commit/57b802d9d65b0af31a51dd50fb6b18aebfa81a6b))
+* compatibility k8s version v1.33 ([#2107](https://github.com/linode/apl-core/issues/2107)) ([29c92ce](https://github.com/linode/apl-core/commit/29c92ce2b934511c17165295cfe0419c46b93698))
+* deploy manifest using apl-operator instead of using Tekton ([#2151](https://github.com/linode/apl-core/issues/2151)) ([bb1623d](https://github.com/linode/apl-core/commit/bb1623d1f39fbc757ea1e046ed4a4892c0438006))
+* replace clusterrole for secrets with namespaced role and removed ingress update clusterrole ([#2163](https://github.com/linode/apl-core/issues/2163)) ([bc22632](https://github.com/linode/apl-core/commit/bc2263220cbcc0ade743bb483f9aa288ad36cb83))
+* upgrade Gitea to recent release ([#2085](https://github.com/linode/apl-core/issues/2085)) ([8267993](https://github.com/linode/apl-core/commit/8267993ca180d6efc5a3e6ce11c90c1b8bb0a004))
+* upgrade k8s/client-node and node 22 ([#2204](https://github.com/linode/apl-core/issues/2204)) ([b09b0f3](https://github.com/linode/apl-core/commit/b09b0f3057ab5bb3fcc7f830179ec576ffeafb8c))
+* upgrade Keycloak to recent release and deprovision operator ([#2078](https://github.com/linode/apl-core/issues/2078)) ([9e84b9f](https://github.com/linode/apl-core/commit/9e84b9f9a14be3fddf6c9ae5bfa35517d75dd4f7))
+
+
+### Bug Fixes
+
+* actually check for difference between files ([#2164](https://github.com/linode/apl-core/issues/2164)) ([eaf03aa](https://github.com/linode/apl-core/commit/eaf03aa2c2f90221994d41ea81bd380dac258e67))
+* added v1.33 to the supportedK8sVersions.json file ([#2159](https://github.com/linode/apl-core/issues/2159)) ([b6e761f](https://github.com/linode/apl-core/commit/b6e761fb745edc93f40481c2237b376a0a64852e))
+* adjust Gitea backup service account ([#2187](https://github.com/linode/apl-core/issues/2187)) ([18dc630](https://github.com/linode/apl-core/commit/18dc63016b1616334ebbd524e949d92fac0a416f))
+* annotate Gitea volume ([#2158](https://github.com/linode/apl-core/issues/2158)) ([3c2dc50](https://github.com/linode/apl-core/commit/3c2dc50633bd1ca9ae1548c7cc1a2f18f2581bc1))
+* APL-851 knative service url rendering ([#2214](https://github.com/linode/apl-core/issues/2214)) ([c0d37e6](https://github.com/linode/apl-core/commit/c0d37e69d37c689a5377b1071d886c4b880d8ff0))
+* barman compatibility with non-aws object storage ([#2221](https://github.com/linode/apl-core/issues/2221)) ([98e5ed7](https://github.com/linode/apl-core/commit/98e5ed7a7f0c6357073b917fe4ca5844b04d99ea))
+* create initial credential secret before the message shows up ([#2226](https://github.com/linode/apl-core/issues/2226)) ([5650905](https://github.com/linode/apl-core/commit/5650905d5918160ee63fb3fe8c65c5e1c3ad1ff3))
+* include ingress-nginx apps in values ([#2132](https://github.com/linode/apl-core/issues/2132)) ([6141f21](https://github.com/linode/apl-core/commit/6141f2151db2b3c46faea3eba8448896ce321375))
+* incompatibility between helm and helm-secrets ([#2215](https://github.com/linode/apl-core/issues/2215)) ([d5df084](https://github.com/linode/apl-core/commit/d5df084fb9b09c4ab270cd137f49eacc8e10e1ae))
+* knative-operator templating ([#2236](https://github.com/linode/apl-core/issues/2236)) ([826a394](https://github.com/linode/apl-core/commit/826a39421ef9d6b41601b6c10c411f7f71b7def2))
+* only run coverage report on changes in src ([#2202](https://github.com/linode/apl-core/issues/2202)) ([1e6cad4](https://github.com/linode/apl-core/commit/1e6cad4a76898d0a9803ebc61600c5892e092ef2))
+* perform cleanup after installation within job ([#2235](https://github.com/linode/apl-core/issues/2235)) ([658254e](https://github.com/linode/apl-core/commit/658254eb646d9f77ca44faa3a36ce0e9616c05d6))
+* pre-upgrade script, username, and installation order for Keycloak ([#2128](https://github.com/linode/apl-core/issues/2128)) ([219a594](https://github.com/linode/apl-core/commit/219a5949e360fe06198f67d07c50a8cfec9c6365))
+* prerelease versions in upgrade check ([#2246](https://github.com/linode/apl-core/issues/2246)) ([54fe687](https://github.com/linode/apl-core/commit/54fe6875e53897f4e7f56204946a54e371e84330))
+* quote sensitive values in Helm templates ([#2150](https://github.com/linode/apl-core/issues/2150)) ([214bd5d](https://github.com/linode/apl-core/commit/214bd5d54f86c9dd42dd5de808c39459ca97b7e4))
+* removed apl docs links from apps ([#2245](https://github.com/linode/apl-core/issues/2245)) ([c09c727](https://github.com/linode/apl-core/commit/c09c7273ef5d920ac671579a205a07537fcc9771))
+* restore istiod configuration  ([#2177](https://github.com/linode/apl-core/issues/2177)) ([82f7af7](https://github.com/linode/apl-core/commit/82f7af75a6722f6b073f2f0e209f191f1ea086cd))
+* sealed secrets sample file ([#2201](https://github.com/linode/apl-core/issues/2201)) ([78583dd](https://github.com/linode/apl-core/commit/78583dd8397227f21d4ef34611eb314ec5c769b9))
+* set default k8s version 1.32 ([#2156](https://github.com/linode/apl-core/issues/2156)) ([d12707a](https://github.com/linode/apl-core/commit/d12707af500f6e573e075c1873a39c1ab106698e))
+* set default k8s version to 1.33 for gh workflows ([#2220](https://github.com/linode/apl-core/issues/2220)) ([70a4a98](https://github.com/linode/apl-core/commit/70a4a989207d5845817c9ce4b7a97cad6ac111cd))
+* small fixes in go templates ([#2157](https://github.com/linode/apl-core/issues/2157)) ([9c818e8](https://github.com/linode/apl-core/commit/9c818e8ed52d735be3794352e980d3d1f0aec79c))
+* status code evaluation from k8s client ([#2225](https://github.com/linode/apl-core/issues/2225)) ([340f7b6](https://github.com/linode/apl-core/commit/340f7b6d1c0aa0f9f18575be4ff51fcf2888d70f))
+* team grafana password ([#2168](https://github.com/linode/apl-core/issues/2168)) ([44e5238](https://github.com/linode/apl-core/commit/44e523841e68c92c67783b969c4459552e4682d9))
+* update apply state ([#2231](https://github.com/linode/apl-core/issues/2231)) ([377ca60](https://github.com/linode/apl-core/commit/377ca608d0ca22db63a5dcc96496eca82afb213e))
+* use single-instance cache for Gitea ([#2208](https://github.com/linode/apl-core/issues/2208)) ([f6bdf74](https://github.com/linode/apl-core/commit/f6bdf74950fbf63f34b5faf17526ddc202d29296))
+
+
+### CI
+
+* install Cloud Firewall Controller for LKE cluster ([#2137](https://github.com/linode/apl-core/issues/2137)) ([9111015](https://github.com/linode/apl-core/commit/91110157b895f3740ba1ffccc7d7af1eb5b567b4))
+* read gitea-credentials from cluster ([#2171](https://github.com/linode/apl-core/issues/2171)) ([588a480](https://github.com/linode/apl-core/commit/588a480d680f01d61aebf6361cc1df44337711b6))
+* remove pre-commit hook ([#2186](https://github.com/linode/apl-core/issues/2186)) ([30fa367](https://github.com/linode/apl-core/commit/30fa3672aa404175745e207c507b0c9a3962f45c))
+* restart dev apl-operator after main branch update ([#2178](https://github.com/linode/apl-core/issues/2178)) ([29fb155](https://github.com/linode/apl-core/commit/29fb15534fbc3ed0ac4308ef1add42c733c2e373))
+
+
+### Others
+
+* add code owners ([#2141](https://github.com/linode/apl-core/issues/2141)) ([2dd59af](https://github.com/linode/apl-core/commit/2dd59af93c86d27b7482526e24790bad32930bab))
+* added .editorconfig ([#2209](https://github.com/linode/apl-core/issues/2209)) ([71de040](https://github.com/linode/apl-core/commit/71de040c5853d30bb84db25973d00fcd013cb3fd))
+* **chart-deps:** update harbor to version 1.17.1 ([#2190](https://github.com/linode/apl-core/issues/2190)) ([270b467](https://github.com/linode/apl-core/commit/270b467a6c7ca5e7315f810d9930d0a23c320368))
+* **chart-deps:** update ingress-nginx to version 4.11.6 ([#2165](https://github.com/linode/apl-core/issues/2165)) ([95156b3](https://github.com/linode/apl-core/commit/95156b3ea8db866a34ccde8f1a4e72e10c114144))
+* **chart-deps:** Upgrade Kiali Operator ([#2176](https://github.com/linode/apl-core/issues/2176)) ([8220f96](https://github.com/linode/apl-core/commit/8220f96542cb317e3b80a6990da56521551f6e2a))
+* **chart-deps:** upgrade Knative Operator to 1.18.1 ([#2181](https://github.com/linode/apl-core/issues/2181)) ([9ec688e](https://github.com/linode/apl-core/commit/9ec688eb0fa443d28836082179218408c0acf206))
+* **deps:** bump actions/checkout from 3 to 4 ([#2122](https://github.com/linode/apl-core/issues/2122)) ([7d9d239](https://github.com/linode/apl-core/commit/7d9d2392e7a4e17acf30fa818c260a7bb05215ef))
+* **deps:** update dependencies, replace ts-node with tsx, add new eslint file ([#2125](https://github.com/linode/apl-core/issues/2125)) ([29e22ab](https://github.com/linode/apl-core/commit/29e22ab2e4592df3ee9bc3a42bb6413157889ffa))
+* **deps:** upgrade argocd to v3.0.3 ([#2175](https://github.com/linode/apl-core/issues/2175)) ([f782fcb](https://github.com/linode/apl-core/commit/f782fcbc9e3cc6cc16307a6ab347a2c98f8e64e3))
+* follow db default version of platform ([#2197](https://github.com/linode/apl-core/issues/2197)) ([c924925](https://github.com/linode/apl-core/commit/c924925e1bf0eb50fb9a0ecc7444a532c282f30b))
+* Helmfile v1 compatibility [TOOLS][MINOR] ([#2136](https://github.com/linode/apl-core/issues/2136)) ([515ceca](https://github.com/linode/apl-core/commit/515ceca551882833d0a162225aa4f20455485e9d))
+* set versions to main ([#2127](https://github.com/linode/apl-core/issues/2127)) ([9c73f65](https://github.com/linode/apl-core/commit/9c73f65b969674199a5bdd3abcc8e0aa3e98d935))
+* update SECURITY.md ([f5d0464](https://github.com/linode/apl-core/commit/f5d04645e9953e65215c4eba81712ed2c25648bc))
+* update the displayed versions ([#2152](https://github.com/linode/apl-core/issues/2152)) ([4bac5c5](https://github.com/linode/apl-core/commit/4bac5c5a9e221613c5e195638050a6e1035b875e))
+* updated versions ([14683a1](https://github.com/linode/apl-core/commit/14683a1b93fd829e947b4e6770f9e67fa0fa26a9))
+* Upgrade CloudnativePG Operator ([#2183](https://github.com/linode/apl-core/issues/2183)) ([48369f4](https://github.com/linode/apl-core/commit/48369f4385826275d9976d2a27f9dcd0537d1a76))
+* upgrade Istio and deprovision istio operator ([#2155](https://github.com/linode/apl-core/issues/2155)) ([b8a1c94](https://github.com/linode/apl-core/commit/b8a1c945d93540da31e75fabeba0554956a75136))
+* Upgrade Keycloak to latest release ([#2174](https://github.com/linode/apl-core/issues/2174)) ([f5f68a0](https://github.com/linode/apl-core/commit/f5f68a05ca100dd9ba025ddeac232d4c0719dd9a))
+* Upgrade to Istio 1.26.1 ([#2210](https://github.com/linode/apl-core/issues/2210)) ([2d978ee](https://github.com/linode/apl-core/commit/2d978eefd81e4b6a8326c47c1d02d762173c3e94))
+* v4.6.0 changelog anf package*.json update [ci skip] ([#2182](https://github.com/linode/apl-core/issues/2182)) ([ca23641](https://github.com/linode/apl-core/commit/ca236411c8784548aac1006551a2cf04abb62d54))
+
 ## [4.6.0](https://github.com/linode/apl-core/compare/v4.5.0...v4.6.0) (2025-05-27)
 
 
