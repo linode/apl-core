@@ -56,36 +56,36 @@ const applyAll = async () => {
   const releases = await getHelmReleases()
   await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
-  const output: ProcessOutputTrimmed = await hf(
-    { fileOpts: 'helmfile.tpl/helmfile-init.yaml.gotmpl', args: 'template' },
-    { streams: { stderr: d.stream.error } },
-  )
-  if (output.exitCode > 0) {
-    throw new Error(output.stderr)
-  } else if (output.stderr.length > 0) {
-    d.error(output.stderr)
-  }
-  const templateOutput = output.stdout
-  writeFileSync(templateFile, templateOutput)
-
-  d.info('Deploying CRDs')
-  await $`kubectl apply -f charts/kube-prometheus-stack/crds --server-side`
-  await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
-  d.info('Deploying essential manifests')
-  await $`kubectl apply -f ${templateFile}`
-  d.info('Deploying charts containing label stage=prep')
-  await hf(
-    {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
-      fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
-      labelOpts: ['stage=prep'],
-      logLevel: logLevelString(),
-      args: hfArgs,
-    },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-  )
-
   if (initialInstall) {
+    const output: ProcessOutputTrimmed = await hf(
+      { fileOpts: 'helmfile.tpl/helmfile-init.yaml.gotmpl', args: 'template' },
+      { streams: { stderr: d.stream.error } },
+    )
+    if (output.exitCode > 0) {
+      throw new Error(output.stderr)
+    } else if (output.stderr.length > 0) {
+      d.error(output.stderr)
+    }
+    const templateOutput = output.stdout
+    writeFileSync(templateFile, templateOutput)
+
+    d.info('Deploying CRDs')
+    await $`kubectl apply -f charts/kube-prometheus-stack/crds --server-side`
+    await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
+    d.info('Deploying essential manifests')
+    await $`kubectl apply -f ${templateFile}`
+    d.info('Deploying charts containing label stage=prep')
+    await hf(
+      {
+        // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
+        fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
+        labelOpts: ['stage=prep'],
+        logLevel: logLevelString(),
+        args: hfArgs,
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // Only install the core apps
     await hf(
