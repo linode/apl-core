@@ -56,22 +56,22 @@ const applyAll = async () => {
   const releases = await getHelmReleases()
   await writeValuesToFile(`${env.ENV_DIR}/env/status.yaml`, { status: { otomi: state, helm: releases } }, true)
 
-  if (initialInstall) {
-    const output: ProcessOutputTrimmed = await hf(
-      { fileOpts: 'helmfile.tpl/helmfile-init.yaml.gotmpl', args: 'template' },
-      { streams: { stderr: d.stream.error } },
-    )
-    if (output.exitCode > 0) {
-      throw new Error(output.stderr)
-    } else if (output.stderr.length > 0) {
-      d.error(output.stderr)
-    }
-    const templateOutput = output.stdout
-    writeFileSync(templateFile, templateOutput)
+  const output: ProcessOutputTrimmed = await hf(
+    { fileOpts: 'helmfile.tpl/helmfile-init.yaml.gotmpl', args: 'template' },
+    { streams: { stderr: d.stream.error } },
+  )
+  if (output.exitCode > 0) {
+    throw new Error(output.stderr)
+  } else if (output.stderr.length > 0) {
+    d.error(output.stderr)
+  }
+  const templateOutput = output.stdout
+  writeFileSync(templateFile, templateOutput)
 
-    d.info('Deploying CRDs')
-    await $`kubectl apply -f charts/kube-prometheus-stack/crds --server-side`
-    await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
+  d.info('Deploying CRDs')
+  await $`kubectl apply -f charts/kube-prometheus-stack/crds --server-side`
+  await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
+  if (initialInstall) {
     d.info('Deploying essential manifests')
     await $`kubectl apply -f ${templateFile}`
     d.info('Deploying charts containing label stage=prep')
