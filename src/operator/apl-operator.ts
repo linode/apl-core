@@ -7,6 +7,8 @@ import { ensureTeamGitOpsDirectories } from '../common/utils'
 import { env } from '../common/envalid'
 import { commit } from '../cmd/commit'
 import { HelmArguments } from '../common/yargs'
+import { hfValues } from '../common/hf'
+import { writeValues } from '../common/values'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
@@ -75,9 +77,20 @@ export class AplOperator {
       }
       try {
         await ensureTeamGitOpsDirectories(env.ENV_DIR)
-        await commit(false, {} as HelmArguments) // Pass empty object to clear any stale parsed args
       } catch (e) {
         this.d.error(`Failed to ensure team GitOps directories: ${e}`)
+      }
+      try {
+        const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+        this.d.info('Write default values to env repo')
+        await writeValues(defaultValues)
+      } catch (e) {
+        this.d.error(`Failed to write default values: ${e}`)
+      }
+      try {
+        await commit(false, {} as HelmArguments) // Pass an empty object to clear any stale parsed args
+      } catch (e) {
+        this.d.error(`Failed to commit changes: ${e}`)
       }
       if (applyTeamsOnly) {
         await this.aplOps.applyAsAppsTeams()
