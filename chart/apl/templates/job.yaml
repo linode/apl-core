@@ -58,9 +58,9 @@ spec:
               echo "Starting cleanup of cluster-admin ClusterRoleBinding..."
 
               # Check if the ClusterRoleBinding exists
-              if kubectl get clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found; then
+              if kubectl get clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found &> /dev/null; then
                 echo "Deleting ClusterRoleBinding: {{ include "apl.fullname" . }}"
-                kubectl delete clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found
+                kubectl delete clusterrolebinding {{ include "apl.fullname" . }} --ignore-not-found &> /dev/null
                 echo "ClusterRoleBinding deleted successfully"
               else
                 echo "ClusterRoleBinding {{ include "apl.fullname" . }} not found, nothing to clean up"
