@@ -68,6 +68,13 @@ export class AplOperator {
     })
 
     try {
+      try {
+        const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+        this.d.info('Write default values to env repo')
+        await writeValues(defaultValues)
+      } catch (e) {
+        this.d.error(`Failed to write default values: ${e}`)
+      }
       if (trigger === ApplyTrigger.Poll) {
         await this.aplOps.migrate()
 
@@ -79,13 +86,6 @@ export class AplOperator {
         await ensureTeamGitOpsDirectories(env.ENV_DIR)
       } catch (e) {
         this.d.error(`Failed to ensure team GitOps directories: ${e}`)
-      }
-      try {
-        const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
-        this.d.info('Write default values to env repo')
-        await writeValues(defaultValues)
-      } catch (e) {
-        this.d.error(`Failed to write default values: ${e}`)
       }
       try {
         await commit(false, {} as HelmArguments) // Pass an empty object to clear any stale parsed args
