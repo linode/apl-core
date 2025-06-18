@@ -37,6 +37,12 @@ jest.mock('../common/debug', () => ({
 jest.mock('../common/k8s', () => ({
   waitTillGitRepoAvailable: jest.fn().mockResolvedValue(undefined),
 }))
+jest.mock('../common/hf', () => ({
+  hfValues: jest.fn().mockResolvedValue(undefined),
+}))
+jest.mock('../common/values', () => ({
+  writeValues: jest.fn().mockResolvedValue(undefined),
+}))
 jest.mock('../common/utils', () => ({
   ensureTeamGitOpsDirectories: jest.fn().mockResolvedValue(undefined),
 }))
@@ -180,7 +186,6 @@ describe('AplOperator', () => {
       expect(mockAplOps.apply).toHaveBeenCalled()
       expect(mockAplOps.migrate).toHaveBeenCalled()
       expect(mockAplOps.validateValues).toHaveBeenCalled()
-
       expect(updateApplyState).toHaveBeenCalledWith(
         expect.objectContaining({
           commitHash: 'abc123',
