@@ -7,6 +7,8 @@ import { ensureTeamGitOpsDirectories } from '../common/utils'
 import { env } from '../common/envalid'
 import { commit } from '../cmd/commit'
 import { HelmArguments } from '../common/yargs'
+import { hfValues } from '../common/hf'
+import { writeValues } from '../common/values'
 
 export interface AplOperatorConfig {
   gitRepo: GitRepository
@@ -66,6 +68,10 @@ export class AplOperator {
     })
 
     try {
+      const defaultValues = (await hfValues({ defaultValues: true })) as Record<string, any>
+      this.d.info('Write default values to env repo')
+      await writeValues(defaultValues)
+
       if (trigger === ApplyTrigger.Poll) {
         await this.aplOps.migrate()
 
@@ -73,12 +79,10 @@ export class AplOperator {
         await this.aplOps.validateValues()
         this.d.info(`[${trigger}] Validation process completed`)
       }
-      try {
-        await ensureTeamGitOpsDirectories(env.ENV_DIR)
-        await commit(false, {} as HelmArguments) // Pass empty object to clear any stale parsed args
-      } catch (e) {
-        this.d.error(`Failed to ensure team GitOps directories: ${e}`)
-      }
+      await ensureTeamGitOpsDirectories(env.ENV_DIR)
+
+      await commit(false, {} as HelmArguments) // Pass an empty object to clear any stale parsed args
+
       if (applyTeamsOnly) {
         await this.aplOps.applyAsAppsTeams()
       } else {
