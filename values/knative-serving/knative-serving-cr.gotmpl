@@ -6,6 +6,9 @@ metadata:
   name: knative-serving
   namespace: knative-serving
 spec:
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  registry: "{{ $v.otomi.linodeLkeImageRepository }}gcr/knative-releases"
+  {{- end }}
   version: "1.15"
   {{- if $v._derived.untrustedCA }}
   controller-custom-certs:
