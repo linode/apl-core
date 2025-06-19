@@ -73,19 +73,19 @@ const applyAll = async () => {
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
   d.info('Deploying essential manifests')
   await $`kubectl apply -f ${templateFile}`
-  d.info('Deploying charts containing label stage=prep')
-  await hf(
-    {
-      // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
-      fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
-      labelOpts: ['stage=prep'],
-      logLevel: logLevelString(),
-      args: hfArgs,
-    },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-  )
-
   if (initialInstall) {
+    d.info('Deploying charts containing label stage=prep')
+    await hf(
+      {
+        // 'fileOpts' limits the hf scope and avoids parse errors (we only have basic values at this stage):
+        fileOpts: 'helmfile.d/helmfile-02.init.yaml.gotmpl',
+        labelOpts: ['stage=prep'],
+        logLevel: logLevelString(),
+        args: hfArgs,
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+
     // When Otomi is installed for the very first time and ArgoCD is not yet there.
     // Only install the core apps
     await hf(
