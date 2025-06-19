@@ -64,8 +64,13 @@ export class GitRepository {
     try {
       await this.git.clone(this.repoUrl, this.repoPath)
 
-      const logs = await this.git.log({ maxCount: 1 })
-      this._lastRevision = logs.latest?.hash || ''
+      try {
+        const logs = await this.git.log({ maxCount: 1 })
+        this._lastRevision = logs.latest?.hash || ''
+      } catch (logError) {
+        this.d.warn('Repository appears to be empty, no commits found: ', logError)
+        this._lastRevision = ''
+      }
 
       this.d.info(`Repository cloned successfully, revision: ${this._lastRevision}`)
       return this._lastRevision
