@@ -61,6 +61,7 @@ describe('GitRepository', () => {
       const result = await gitRepository.hasCommits()
 
       expect(result).toBe(true)
+      expect('abc123').toBe(gitRepository.lastRevision)
       expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 1 })
     })
 
@@ -108,14 +109,12 @@ describe('GitRepository', () => {
         all: [],
       })
 
-      const result = await gitRepository.clone()
+      await gitRepository.clone()
 
-      expect(result).toBe('abc123')
       expect(mockGit.clone).toHaveBeenCalledWith(
         'https://testuser:testpass@github.com:443/testorg/testrepo.git',
         '/tmp/repo',
       )
-      expect(mockGit.log).toHaveBeenCalledWith({ maxCount: 1 })
     })
 
     test('should handle clone failure', async () => {
