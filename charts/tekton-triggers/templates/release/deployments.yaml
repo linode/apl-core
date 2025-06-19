@@ -106,7 +106,7 @@ spec:
         - name: webhook
           # This is the Go import path for the binary that is containerized
           # and substituted here.
-          image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
+          image: {{ .Values.webhook.image.repository }}:{{ .Values.webhook.image.tag }}
           env:
             - name: SYSTEM_NAMESPACE
               valueFrom:
