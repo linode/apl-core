@@ -14,22 +14,23 @@ bases:
 {{- $k := $a.keycloak }}
 
 releases:
-  - name: harbor-otomi-db
-    installed: {{ ($h | get "enabled") }}
-    namespace: harbor
-    labels:
-      pkg: harbor
-    <<: *otomiDb
-  - name: keycloak-otomi-db
-    installed: true
-    namespace: keycloak
-    labels:
-      pkg: keycloak
-    <<: *otomiDb
   - name: gitea-otomi-db
     installed: true
     namespace: gitea
     labels:
       pkg: gitea
       app: core
+    <<: *otomiDb
+  - name: keycloak-otomi-db
+    installed: true
+    namespace: keycloak
+    labels:
+      pkg: keycloak
+      app: core
+    <<: *otomiDb
+  - name: harbor-otomi-db
+    installed: {{ ($h | get "enabled") }}
+    namespace: harbor
+    labels:
+      pkg: harbor
     <<: *otomiDb
