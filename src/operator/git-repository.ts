@@ -30,14 +30,13 @@ export class GitRepository {
     this.git = simpleGit(this.repoPath)
   }
 
-  async hasCommits(): Promise<boolean> {
+  async setLastRevision(): Promise<void> {
     try {
       const logs = await this.git.log({ maxCount: 1 })
       const hasCommits = logs.latest !== undefined && logs.total > 0
       if (hasCommits) {
         this._lastRevision = logs.latest?.hash || ''
       }
-      return hasCommits
     } catch (error) {
       this.d.warn('Gitea has no commits yet:', error)
       throw error
@@ -54,7 +53,7 @@ export class GitRepository {
     const d = terminal('common:k8s:waitTillGitRepoAvailable')
     await retry(async () => {
       try {
-        await this.hasCommits()
+        await this.setLastRevision()
       } catch (e) {
         d.warn(`The values repository has no commits yet. Retrying in ${retryOptions.maxTimeout} ms`)
         throw e
