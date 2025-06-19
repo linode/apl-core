@@ -71,9 +71,9 @@ const applyAll = async () => {
   d.info('Deploying CRDs')
   await $`kubectl apply -f charts/kube-prometheus-stack/crds --server-side`
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
+  d.info('Deploying essential manifests')
+  await $`kubectl apply -f ${templateFile}`
   if (initialInstall) {
-    d.info('Deploying essential manifests')
-    await $`kubectl apply -f ${templateFile}`
     d.info('Deploying charts containing label stage=prep')
     await hf(
       {
