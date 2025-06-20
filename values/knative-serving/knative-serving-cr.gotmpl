@@ -7,11 +7,18 @@ metadata:
   namespace: knative-serving
 spec:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  registry: 
-    default: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/${NAME}"
+  registry:
     override:
       migrate: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate"
-      cleantup: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/pkg/cleanup/cmd/cleanup"
+      cleanup: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/pkg/cleanup/cmd/cleanup"
+      activator: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/activator"
+      autoscaler: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/autoscaler"
+      controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/controller"
+      webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/webhook"
+      autoscaler-hpa: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/autoscaler-hpa"
+      net-istio-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/controller"
+      net-istio-controller/webhook: "{{ $v.otomi.linodeLkeImageRepository }}gcr/knative-releases/knative.dev/net-istio/cmd/webhook"
+      queue-proxy: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/queue-proxy:"
   {{- end }}
   version: "1.15"
   {{- if $v._derived.untrustedCA }}
