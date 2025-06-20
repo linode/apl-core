@@ -30,10 +30,13 @@ export class GitRepository {
     this.git = simpleGit(this.repoPath)
   }
 
-  async hasCommits(): Promise<boolean> {
+  async setLastRevision(): Promise<void> {
     try {
       const logs = await this.git.log({ maxCount: 1 })
-      return logs.latest !== undefined && logs.total > 0
+      const hasCommits = logs.latest !== undefined && logs.total > 0
+      if (hasCommits) {
+        this._lastRevision = logs.latest?.hash || ''
+      }
     } catch (error) {
       this.d.warn('Gitea has no commits yet:', error)
       throw error
@@ -50,7 +53,7 @@ export class GitRepository {
     const d = terminal('common:k8s:waitTillGitRepoAvailable')
     await retry(async () => {
       try {
-        await this.hasCommits()
+        await this.setLastRevision()
       } catch (e) {
         d.warn(`The values repository has no commits yet. Retrying in ${retryOptions.maxTimeout} ms`)
         throw e
@@ -58,17 +61,12 @@ export class GitRepository {
     }, retryOptions)
   }
 
-  async clone(): Promise<string> {
+  async clone(): Promise<void> {
     this.d.info(`Cloning repository to ${this.repoPath}`)
 
     try {
       await this.git.clone(this.repoUrl, this.repoPath)
-
-      const logs = await this.git.log({ maxCount: 1 })
-      this._lastRevision = logs.latest?.hash || ''
-
-      this.d.info(`Repository cloned successfully, revision: ${this._lastRevision}`)
-      return this._lastRevision
+      this.d.info(`Repository cloned successfully`)
     } catch (error) {
       this.d.error('Failed to clone repository:', error)
       throw new OperatorError('Repository clone failed', error as Error)
