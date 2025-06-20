@@ -459,3 +459,41 @@ export async function deleteStatefulSetPods(
     d.error(`Failed to delete pods for StatefulSet ${statefulSetName}:`, error)
   }
 }
+
+export async function waitForArgoCDAppSync(appName: string): Promise<void> {
+  const d = terminal('runtime-upgrade:waitForArgoCDAppSync')
+  d.info(`Waiting for ArgoCD application '${appName}' to complete sync...`)
+
+  await retry(
+    async () => {
+      const result = await $`kubectl get application ${appName} -n argocd -o jsonpath='{.status.sync.status}'`
+      const syncStatus = result.stdout.trim()
+
+      if (syncStatus !== 'Synced') {
+        throw new Error(`Application ${appName} sync status is '${syncStatus}', expected 'Synced'`)
+      }
+
+      d.info(`Application '${appName}' sync completed`)
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
+}
+
+export async function waitForArgoCDAppHealthy(appName: string): Promise<void> {
+  const d = terminal('runtime-upgrade:waitForArgoCDAppHealthy')
+  d.info(`Waiting for ArgoCD application '${appName}' to be healthy...`)
+
+  await retry(
+    async () => {
+      const result = await $`kubectl get application ${appName} -n argocd -o jsonpath='{.status.health.status}'`
+      const healthStatus = result.stdout.trim()
+
+      if (healthStatus !== 'Healthy') {
+        throw new Error(`Application ${appName} health status is '${healthStatus}', expected 'Healthy'`)
+      }
+
+      d.info(`Application '${appName}' is healthy`)
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
+}
