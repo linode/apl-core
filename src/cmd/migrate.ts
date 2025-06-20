@@ -883,6 +883,7 @@ export const migrate = async (): Promise<boolean> => {
     d.log('Detected the old values file structure')
     await migrateLegacyValues(env.ENV_DIR)
   }
+
   const changes: Changes = (await loadYaml(`${rootDir}/values-changes.yaml`))?.changes
   const versions = await loadYaml(`${env.ENV_DIR}/env/settings/versions.yaml`, { noError: true })
   const prevVersion: number = versions?.spec?.specVersion
@@ -904,6 +905,7 @@ export const migrate = async (): Promise<boolean> => {
     d.log(`Migration changes: ${JSON.stringify(diffedValues, null, 2)}`)
     return true
   }
+
   d.log('No changes detected, skipping')
   return false
 }

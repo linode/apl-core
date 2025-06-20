@@ -22,6 +22,7 @@ import {
   retryIsOAuth2ProxyRunning,
 } from './commit'
 import { upgrade } from './upgrade'
+import { runtimeUpgrade } from '../common/runtime-upgrade'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
@@ -46,6 +47,7 @@ const applyAll = async () => {
   const hfArgs = initialInstall ? HF_DEFAULT_SYNC_ARGS : ['apply', '--sync-args', '--qps=20']
 
   await upgrade({ when: 'pre' })
+  await runtimeUpgrade({ when: 'pre' })
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
@@ -108,6 +110,7 @@ const applyAll = async () => {
   }
 
   await upgrade({ when: 'post' })
+  await runtimeUpgrade({ when: 'post' })
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(initialInstall)
     if (initialInstall) {
