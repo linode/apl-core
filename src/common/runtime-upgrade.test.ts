@@ -1,5 +1,5 @@
 import { runtimeUpgrade, filterRuntimeUpgrades } from './runtime-upgrade'
-import { getDeploymentState, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
+import { getDeploymentState, waitForArgoCDAppHealthy, waitForArgoCDAppSync, k8s } from './k8s'
 import { getCurrentVersion } from './values'
 import { RuntimeUpgrades } from './runtime-upgrades/runtime-upgrades'
 import { terminal } from './debug'
@@ -21,6 +21,11 @@ const mockGetCurrentVersion = getCurrentVersion as jest.MockedFunction<typeof ge
 const mockWaitForArgoCDAppSync = waitForArgoCDAppSync as jest.MockedFunction<typeof waitForArgoCDAppSync>
 const mockWaitForArgoCDAppHealthy = waitForArgoCDAppHealthy as jest.MockedFunction<typeof waitForArgoCDAppHealthy>
 const mockTerminal = terminal as jest.MockedFunction<typeof terminal>
+const mockK8s = k8s as jest.Mocked<typeof k8s>
+
+// Mock the custom API
+const mockCustomApi = { mockCustomApi: true }
+mockK8s.custom.mockReturnValue(mockCustomApi as any)
 
 describe('runtimeUpgrade', () => {
   let mockDebugger: { info: jest.Mock; error: jest.Mock }
@@ -162,8 +167,8 @@ describe('runtimeUpgrade', () => {
 
       await runtimeUpgrade({ when: 'post' })
 
-      expect(mockWaitForArgoCDAppSync).toHaveBeenCalledWith('istio-operator')
-      expect(mockWaitForArgoCDAppHealthy).toHaveBeenCalledWith('istio-operator')
+      expect(mockWaitForArgoCDAppSync).toHaveBeenCalledWith('istio-operator', mockCustomApi, mockDebugger)
+      expect(mockWaitForArgoCDAppHealthy).toHaveBeenCalledWith('istio-operator', mockCustomApi, mockDebugger)
       expect(mockAppPostOperation).toHaveBeenCalledWith({
         debug: mockDebugger,
       })
@@ -178,8 +183,8 @@ describe('runtimeUpgrade', () => {
 
       await runtimeUpgrade({ when: 'pre' })
 
-      expect(mockWaitForArgoCDAppSync).toHaveBeenCalledWith('argocd')
-      expect(mockWaitForArgoCDAppHealthy).toHaveBeenCalledWith('argocd')
+      expect(mockWaitForArgoCDAppSync).toHaveBeenCalledWith('argocd', mockCustomApi, mockDebugger)
+      expect(mockWaitForArgoCDAppHealthy).toHaveBeenCalledWith('argocd', mockCustomApi, mockDebugger)
       expect(mockAppPostOperation).not.toHaveBeenCalled()
     })
   })

@@ -1,4 +1,4 @@
-import { getDeploymentState, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
+import { getDeploymentState, k8s, waitForArgoCDAppHealthy, waitForArgoCDAppSync } from './k8s'
 import { isEmpty } from 'lodash'
 import { getCurrentVersion } from './values'
 import { RuntimeUpgradeContext, RuntimeUpgrades, runtimeUpgrades } from './runtime-upgrades/runtime-upgrades'
@@ -53,8 +53,8 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
         if (applicationOperation && typeof applicationOperation === 'function') {
           d.info(`Runtime upgrade operations detected for version ${upgrade.version}, application: ${applicationName}`)
           // Wait for the ArgoCD app to be synced and healthy before running the operation
-          await waitForArgoCDAppSync(applicationName)
-          await waitForArgoCDAppHealthy(applicationName)
+          await waitForArgoCDAppSync(applicationName, k8s.custom(), d)
+          await waitForArgoCDAppHealthy(applicationName, k8s.custom(), d)
           //execute the application-specific operation
           await applicationOperation(context)
         }

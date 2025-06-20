@@ -1,5 +1,5 @@
 import { CoreV1Api, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
-import { getDeploymentState } from '../k8s'
+import { getDeploymentState, k8s } from '../k8s'
 import { getCurrentVersion } from '../values'
 import { OtomiDebugger, terminal } from '../debug'
 import { getParsedArgs } from '../yargs'
@@ -125,7 +125,8 @@ export async function detectAndRestartOutdatedIstioSidecars(
       }
 
       if (hasOutdatedSidecar) {
-        await deps.restartPodOwner(pod, d, parsedArgs, restartedDeployments)
+        await deps.restartPodOwner(pod, d, parsedArgs)
+        restartedDeployments.add(workloadKey!)
       } else {
         const istioImages = allContainers
           .filter((c) => c.image?.includes('istio/proxyv2') || c.image?.includes('istio/proxy'))
@@ -149,17 +150,26 @@ export async function restartStatefulSet(
   ownerRef: V1OwnerReference,
   namespace: string,
   parsedArgs: any,
-  restartedDeployments: Set<string>,
   d: any,
 ): Promise<void> {
-  const workloadKey = `${namespace}/${ownerRef.name}`
-
-  if (restartedDeployments.has(workloadKey)) return
-  restartedDeployments.add(workloadKey)
-
   if (!parsedArgs?.dryRun && !parsedArgs?.local) {
     d.info(`Restarting StatefulSet ${ownerRef.name} in namespace ${namespace}`)
-    await $`kubectl rollout restart statefulset/${ownerRef.name} -n ${namespace}`
+    const appApi = k8s.app()
+    await appApi.patchNamespacedStatefulSet({
+      name: ownerRef.name,
+      namespace,
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+              },
+            },
+          },
+        },
+      },
+    })
     d.info(`Successfully restarted StatefulSet ${ownerRef.name}`)
   } else {
     d.info(`Dry run mode - would restart StatefulSet ${ownerRef.name} in namespace ${namespace}`)
@@ -170,14 +180,8 @@ export async function restartCluster(
   ownerRef: V1OwnerReference,
   namespace: string,
   parsedArgs: any,
-  restartedDeployments: Set<string>,
   d: any,
 ): Promise<void> {
-  const workloadKey = `${namespace}/${ownerRef.name}`
-
-  if (restartedDeployments.has(workloadKey)) return
-  restartedDeployments.add(workloadKey)
-
   if (!parsedArgs?.dryRun && !parsedArgs?.local) {
     d.info(`Restarting CloudNativePG Cluster ${ownerRef.name} in namespace ${namespace}`)
     await $`kubectl cnpg restart ${ownerRef.name} -n ${namespace}`
@@ -191,35 +195,42 @@ export async function restartDeployment(
   ownerRef: V1OwnerReference,
   namespace: string,
   parsedArgs: any,
-  restartedDeployments: Set<string>,
   d: any,
-): Promise<void> {
+): Promise<string | null> {
   const deploymentName = getDeploymentNameFromReplicaSet(ownerRef.name)
 
   if (!deploymentName) {
     d.info(`Could not extract deployment name from ReplicaSet ${ownerRef.name}, skipping restart`)
-    return
+    return null
   }
-  const workloadKey = `${namespace}/${deploymentName}`
-
-  if (restartedDeployments.has(workloadKey)) return
-  restartedDeployments.add(workloadKey)
 
   if (!parsedArgs?.dryRun && !parsedArgs?.local) {
     d.info(`Restarting deployment ${deploymentName} in namespace ${namespace}`)
-    await $`kubectl rollout restart deployment/${deploymentName} -n ${namespace}`
+    const appApi = k8s.app()
+    await appApi.patchNamespacedDeployment({
+      name: deploymentName,
+      namespace,
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+              },
+            },
+          },
+        },
+      },
+    })
     d.info(`Successfully restarted deployment ${deploymentName}`)
   } else {
     d.info(`Dry run mode - would restart deployment ${deploymentName} in namespace ${namespace}`)
   }
+
+  return deploymentName
 }
 
-export async function restartPodOwner(
-  pod: V1Pod,
-  d: OtomiDebugger,
-  parsedArgs: any,
-  restartedDeployments: Set<string>,
-): Promise<void> {
+export async function restartPodOwner(pod: V1Pod, d: OtomiDebugger, parsedArgs: any): Promise<void> {
   if (!pod.metadata?.ownerReferences || !pod.metadata?.namespace) return
 
   for (const ownerRef of pod.metadata.ownerReferences) {
@@ -228,13 +239,13 @@ export async function restartPodOwner(
     try {
       switch (ownerRef.kind) {
         case 'StatefulSet':
-          await restartStatefulSet(ownerRef, pod.metadata.namespace, parsedArgs, restartedDeployments, d)
+          await restartStatefulSet(ownerRef, pod.metadata.namespace, parsedArgs, d)
           break
         case 'Cluster':
-          await restartCluster(ownerRef, pod.metadata.namespace, parsedArgs, restartedDeployments, d)
+          await restartCluster(ownerRef, pod.metadata.namespace, parsedArgs, d)
           break
         case 'ReplicaSet':
-          await restartDeployment(ownerRef, pod.metadata.namespace, parsedArgs, restartedDeployments, d)
+          await restartDeployment(ownerRef, pod.metadata.namespace, parsedArgs, d)
           break
       }
     } catch (error) {

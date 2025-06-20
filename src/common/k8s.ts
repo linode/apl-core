@@ -460,38 +460,57 @@ export async function deleteStatefulSetPods(
   }
 }
 
-export async function waitForArgoCDAppSync(appName: string): Promise<void> {
-  const d = terminal('runtime-upgrade:waitForArgoCDAppSync')
+// Core logic functions that can be easily tested
+export async function checkArgoCDAppStatus(
+  appName: string,
+  customApi: CustomObjectsApi,
+  statusPath: 'sync' | 'health',
+  expectedValue: 'Synced' | 'Healthy',
+): Promise<string> {
+  const response = await customApi.getNamespacedCustomObject({
+    group: 'argoproj.io',
+    version: 'v1alpha1',
+    namespace: 'argocd',
+    plural: 'applications',
+    name: appName,
+  })
+
+  const application = response.body as any
+  const actualStatus = statusPath === 'sync' ? application?.status?.sync?.status : application?.status?.health?.status
+
+  if (actualStatus !== expectedValue) {
+    throw new Error(`Application ${appName} ${statusPath} status is '${actualStatus}', expected '${expectedValue}'`)
+  }
+
+  return actualStatus
+}
+
+export async function waitForArgoCDAppSync(
+  appName: string,
+  customApi: CustomObjectsApi,
+  d: OtomiDebugger,
+): Promise<void> {
   d.info(`Waiting for ArgoCD application '${appName}' to complete sync...`)
 
   await retry(
     async () => {
-      const result = await $`kubectl get application ${appName} -n argocd -o jsonpath='{.status.sync.status}'`
-      const syncStatus = result.stdout.trim()
-
-      if (syncStatus !== 'Synced') {
-        throw new Error(`Application ${appName} sync status is '${syncStatus}', expected 'Synced'`)
-      }
-
+      await checkArgoCDAppStatus(appName, customApi, 'sync', 'Synced')
       d.info(`Application '${appName}' sync completed`)
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   )
 }
 
-export async function waitForArgoCDAppHealthy(appName: string): Promise<void> {
-  const d = terminal('runtime-upgrade:waitForArgoCDAppHealthy')
+export async function waitForArgoCDAppHealthy(
+  appName: string,
+  customApi: CustomObjectsApi,
+  d: OtomiDebugger,
+): Promise<void> {
   d.info(`Waiting for ArgoCD application '${appName}' to be healthy...`)
 
   await retry(
     async () => {
-      const result = await $`kubectl get application ${appName} -n argocd -o jsonpath='{.status.health.status}'`
-      const healthStatus = result.stdout.trim()
-
-      if (healthStatus !== 'Healthy') {
-        throw new Error(`Application ${appName} health status is '${healthStatus}', expected 'Healthy'`)
-      }
-
+      await checkArgoCDAppStatus(appName, customApi, 'health', 'Healthy')
       d.info(`Application '${appName}' is healthy`)
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },

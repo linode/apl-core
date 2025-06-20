@@ -9,8 +9,10 @@ import {
   restartStatefulSet,
 } from './restart-istio-sidecars'
 import { $ } from 'zx'
+import { k8s } from '../k8s'
 
 jest.mock('zx')
+jest.mock('../k8s')
 
 describe('getIstioVersionFromPod', () => {
   const mockCoreApi = {
@@ -199,6 +201,7 @@ describe('restartStatefulSet', () => {
   let mockOwnerRef: V1OwnerReference
   let mockRestartedDeployments: Set<string>
   let mockD: any
+  let mockAppApi: any
 
   beforeEach(() => {
     mockOwnerRef = {
@@ -211,27 +214,42 @@ describe('restartStatefulSet', () => {
     mockD = {
       info: jest.fn(),
     }
+    mockAppApi = {
+      patchNamespacedStatefulSet: jest.fn().mockResolvedValue({}),
+    }
+    ;(k8s.app as jest.Mock).mockReturnValue(mockAppApi)
     jest.clearAllMocks()
   })
 
   it('should restart StatefulSet when not in dry run mode', async () => {
     const mockParsedArgs = { dryRun: false, local: false }
-    const mockExec = jest.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 })
-    ;($ as unknown as jest.Mock).mockImplementation(mockExec)
 
-    await restartStatefulSet(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    await restartStatefulSet(mockOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-statefulset')).toBe(true)
     expect(mockD.info).toHaveBeenCalledWith('Restarting StatefulSet test-statefulset in namespace test-namespace')
     expect(mockD.info).toHaveBeenCalledWith('Successfully restarted StatefulSet test-statefulset')
+    expect(mockAppApi.patchNamespacedStatefulSet).toHaveBeenCalledWith({
+      name: 'test-statefulset',
+      namespace: 'test-namespace',
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': expect.any(String),
+              },
+            },
+          },
+        },
+      },
+    })
   })
 
   it('should not restart StatefulSet in dry run mode', async () => {
     const mockParsedArgs = { dryRun: true, local: false }
 
-    await restartStatefulSet(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    await restartStatefulSet(mockOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-statefulset')).toBe(true)
     expect(mockD.info).toHaveBeenCalledWith(
       'Dry run mode - would restart StatefulSet test-statefulset in namespace test-namespace',
     )
@@ -240,22 +258,14 @@ describe('restartStatefulSet', () => {
   it('should not restart StatefulSet in local mode', async () => {
     const mockParsedArgs = { dryRun: false, local: true }
 
-    await restartStatefulSet(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    await restartStatefulSet(mockOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-statefulset')).toBe(true)
     expect(mockD.info).toHaveBeenCalledWith(
       'Dry run mode - would restart StatefulSet test-statefulset in namespace test-namespace',
     )
   })
 
-  it('should skip restart if StatefulSet already restarted', async () => {
-    const mockParsedArgs = { dryRun: false, local: false }
-    mockRestartedDeployments.add('test-namespace/test-statefulset')
-
-    await restartStatefulSet(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
-
-    expect(mockD.info).not.toHaveBeenCalled()
-  })
+  // This test is no longer relevant as duplicate checking moved to restartPodOwner
 })
 
 describe('restartCluster', () => {
@@ -282,9 +292,8 @@ describe('restartCluster', () => {
     const mockExec = jest.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 })
     ;($ as unknown as jest.Mock).mockImplementation(mockExec)
 
-    await restartCluster(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    await restartCluster(mockOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-cluster')).toBe(true)
     expect(mockD.info).toHaveBeenCalledWith('Restarting CloudNativePG Cluster test-cluster in namespace test-namespace')
     expect(mockD.info).toHaveBeenCalledWith('Successfully initiated rolling restart for Cluster test-cluster')
   })
@@ -292,9 +301,8 @@ describe('restartCluster', () => {
   it('should not restart Cluster in dry run mode', async () => {
     const mockParsedArgs = { dryRun: true, local: false }
 
-    await restartCluster(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    await restartCluster(mockOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-cluster')).toBe(true)
     expect(mockD.info).toHaveBeenCalledWith(
       'Dry run mode - would restart CloudNativePG Cluster test-cluster in namespace test-namespace',
     )
@@ -303,22 +311,14 @@ describe('restartCluster', () => {
   it('should not restart Cluster in local mode', async () => {
     const mockParsedArgs = { dryRun: false, local: true }
 
-    await restartCluster(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    await restartCluster(mockOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-cluster')).toBe(true)
     expect(mockD.info).toHaveBeenCalledWith(
       'Dry run mode - would restart CloudNativePG Cluster test-cluster in namespace test-namespace',
     )
   })
 
-  it('should skip restart if Cluster already restarted', async () => {
-    const mockParsedArgs = { dryRun: false, local: false }
-    mockRestartedDeployments.add('test-namespace/test-cluster')
-
-    await restartCluster(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
-
-    expect(mockD.info).not.toHaveBeenCalled()
-  })
+  // This test is no longer relevant as duplicate checking moved to restartPodOwner
 })
 
 describe('restartDeployment', () => {
@@ -342,22 +342,39 @@ describe('restartDeployment', () => {
 
   it('should restart Deployment when not in dry run mode', async () => {
     const mockParsedArgs = { dryRun: false, local: false }
-    const mockExec = jest.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 })
-    ;($ as unknown as jest.Mock).mockImplementation(mockExec)
+    const mockAppApi = {
+      patchNamespacedDeployment: jest.fn().mockResolvedValue({}),
+    }
+    ;(k8s.app as jest.Mock).mockReturnValue(mockAppApi)
 
-    await restartDeployment(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    const result = await restartDeployment(mockOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-deployment')).toBe(true)
+    expect(result).toBe('test-deployment')
     expect(mockD.info).toHaveBeenCalledWith('Restarting deployment test-deployment in namespace test-namespace')
     expect(mockD.info).toHaveBeenCalledWith('Successfully restarted deployment test-deployment')
+    expect(mockAppApi.patchNamespacedDeployment).toHaveBeenCalledWith({
+      name: 'test-deployment',
+      namespace: 'test-namespace',
+      body: {
+        spec: {
+          template: {
+            metadata: {
+              annotations: {
+                'kubectl.kubernetes.io/restartedAt': expect.any(String),
+              },
+            },
+          },
+        },
+      },
+    })
   })
 
   it('should not restart Deployment in dry run mode', async () => {
     const mockParsedArgs = { dryRun: true, local: false }
 
-    await restartDeployment(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    const result = await restartDeployment(mockOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-deployment')).toBe(true)
+    expect(result).toBe('test-deployment')
     expect(mockD.info).toHaveBeenCalledWith(
       'Dry run mode - would restart deployment test-deployment in namespace test-namespace',
     )
@@ -366,22 +383,15 @@ describe('restartDeployment', () => {
   it('should not restart Deployment in local mode', async () => {
     const mockParsedArgs = { dryRun: false, local: true }
 
-    await restartDeployment(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    const result = await restartDeployment(mockOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-deployment')).toBe(true)
+    expect(result).toBe('test-deployment')
     expect(mockD.info).toHaveBeenCalledWith(
       'Dry run mode - would restart deployment test-deployment in namespace test-namespace',
     )
   })
 
-  it('should skip restart if Deployment already restarted', async () => {
-    const mockParsedArgs = { dryRun: false, local: false }
-    mockRestartedDeployments.add('test-namespace/test-deployment')
-
-    await restartDeployment(mockOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
-
-    expect(mockD.info).not.toHaveBeenCalled()
-  })
+  // This test is no longer relevant as duplicate checking moved to restartPodOwner
 
   it('should handle invalid ReplicaSet name gracefully', async () => {
     const invalidOwnerRef: V1OwnerReference = {
@@ -392,12 +402,12 @@ describe('restartDeployment', () => {
     }
     const mockParsedArgs = { dryRun: false, local: false }
 
-    await restartDeployment(invalidOwnerRef, 'test-namespace', mockParsedArgs, mockRestartedDeployments, mockD)
+    const result = await restartDeployment(invalidOwnerRef, 'test-namespace', mockParsedArgs, mockD)
 
+    expect(result).toBeNull()
     expect(mockD.info).toHaveBeenCalledWith(
       'Could not extract deployment name from ReplicaSet invalid-name, skipping restart',
     )
-    expect(mockRestartedDeployments.size).toBe(0)
   })
 })
 
@@ -417,8 +427,10 @@ describe('restartPodOwner', () => {
 
   it('should restart StatefulSet owner', async () => {
     const mockParsedArgs = { dryRun: false, local: false }
-    const mockExec = jest.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 })
-    ;($ as unknown as jest.Mock).mockImplementation(mockExec)
+    const mockAppApi = {
+      patchNamespacedStatefulSet: jest.fn().mockResolvedValue({}),
+    }
+    ;(k8s.app as jest.Mock).mockReturnValue(mockAppApi)
 
     mockPod = {
       metadata: {
@@ -434,9 +446,9 @@ describe('restartPodOwner', () => {
       },
     }
 
-    await restartPodOwner(mockPod, mockD, mockParsedArgs, mockRestartedDeployments)
+    await restartPodOwner(mockPod, mockD, mockParsedArgs)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-statefulset')).toBe(true)
+    // Duplicate checking is now handled at the caller level
     expect(mockD.info).toHaveBeenCalledWith('Restarting StatefulSet test-statefulset in namespace test-namespace')
   })
 
@@ -459,16 +471,18 @@ describe('restartPodOwner', () => {
       },
     }
 
-    await restartPodOwner(mockPod, mockD, mockParsedArgs, mockRestartedDeployments)
+    await restartPodOwner(mockPod, mockD, mockParsedArgs)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-cluster')).toBe(true)
+    // Duplicate checking is now handled at the caller level
     expect(mockD.info).toHaveBeenCalledWith('Restarting CloudNativePG Cluster test-cluster in namespace test-namespace')
   })
 
   it('should restart Deployment via ReplicaSet owner', async () => {
     const mockParsedArgs = { dryRun: false, local: false }
-    const mockExec = jest.fn().mockResolvedValue({ stdout: '', stderr: '', exitCode: 0 })
-    ;($ as unknown as jest.Mock).mockImplementation(mockExec)
+    const mockAppApi = {
+      patchNamespacedDeployment: jest.fn().mockResolvedValue({}),
+    }
+    ;(k8s.app as jest.Mock).mockReturnValue(mockAppApi)
 
     mockPod = {
       metadata: {
@@ -484,9 +498,9 @@ describe('restartPodOwner', () => {
       },
     }
 
-    await restartPodOwner(mockPod, mockD, mockParsedArgs, mockRestartedDeployments)
+    await restartPodOwner(mockPod, mockD, mockParsedArgs)
 
-    expect(mockRestartedDeployments.has('test-namespace/test-deployment')).toBe(true)
+    // Duplicate checking is now handled at the caller level
     expect(mockD.info).toHaveBeenCalledWith('Restarting deployment test-deployment in namespace test-namespace')
   })
 
@@ -499,9 +513,9 @@ describe('restartPodOwner', () => {
       },
     }
 
-    await restartPodOwner(mockPod, mockD, mockParsedArgs, mockRestartedDeployments)
+    await restartPodOwner(mockPod, mockD, mockParsedArgs)
 
-    expect(mockRestartedDeployments.size).toBe(0)
+    // No restart attempted since deployment name extraction failed
     expect(mockD.info).not.toHaveBeenCalled()
   })
 
@@ -510,14 +524,19 @@ describe('restartPodOwner', () => {
 
     mockPod = {}
 
-    await restartPodOwner(mockPod, mockD, mockParsedArgs, mockRestartedDeployments)
+    await restartPodOwner(mockPod, mockD, mockParsedArgs)
 
-    expect(mockRestartedDeployments.size).toBe(0)
+    // No restart attempted since deployment name extraction failed
     expect(mockD.info).not.toHaveBeenCalled()
   })
 
   it('should handle multiple owner references', async () => {
     const mockParsedArgs = { dryRun: true, local: false }
+    const mockAppApi = {
+      patchNamespacedStatefulSet: jest.fn().mockResolvedValue({}),
+      patchNamespacedDeployment: jest.fn().mockResolvedValue({}),
+    }
+    ;(k8s.app as jest.Mock).mockReturnValue(mockAppApi)
 
     mockPod = {
       metadata: {
@@ -539,11 +558,11 @@ describe('restartPodOwner', () => {
       },
     }
 
-    await restartPodOwner(mockPod, mockD, mockParsedArgs, mockRestartedDeployments)
+    await restartPodOwner(mockPod, mockD, mockParsedArgs)
 
     // Should process both owner references
-    expect(mockRestartedDeployments.has('test-namespace/test-statefulset')).toBe(true)
-    expect(mockRestartedDeployments.has('test-namespace/test-deployment')).toBe(true)
+    // Duplicate checking is now handled at the caller level
+    // Duplicate checking is now handled at the caller level
     expect(mockD.info).toHaveBeenCalledWith(
       'Dry run mode - would restart StatefulSet test-statefulset in namespace test-namespace',
     )
@@ -554,8 +573,10 @@ describe('restartPodOwner', () => {
 
   it('should handle errors gracefully', async () => {
     const mockParsedArgs = { dryRun: false, local: false }
-    const mockExec = jest.fn().mockRejectedValue(new Error('kubectl command failed'))
-    ;($ as unknown as jest.Mock).mockImplementation(mockExec)
+    const mockAppApi = {
+      patchNamespacedStatefulSet: jest.fn().mockRejectedValue(new Error('API call failed')),
+    }
+    ;(k8s.app as jest.Mock).mockReturnValue(mockAppApi)
 
     mockPod = {
       metadata: {
@@ -572,7 +593,7 @@ describe('restartPodOwner', () => {
       },
     }
 
-    await restartPodOwner(mockPod, mockD, mockParsedArgs, mockRestartedDeployments)
+    await restartPodOwner(mockPod, mockD, mockParsedArgs)
 
     expect(mockD.warn).toHaveBeenCalledWith(
       'Could not restart StatefulSet for pod test-namespace/test-pod:',
