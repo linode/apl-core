@@ -44,7 +44,6 @@ export async function getIstioVersionFromPod(coreV1Api: CoreV1Api): Promise<stri
     if (istiodPod) {
       const discoveryContainer = istiodPod.spec?.containers?.find((c) => c.name === 'discovery')
       if (discoveryContainer?.image) {
-        // Extract version from image tag (e.g., "docker.io/istio/pilot:1.20.1" -> "1.20.1")
         const imageTag = discoveryContainer.image.split(':').pop()
         if (imageTag && imageTag !== 'latest') {
           return imageTag
@@ -52,7 +51,6 @@ export async function getIstioVersionFromPod(coreV1Api: CoreV1Api): Promise<stri
       }
     }
   } catch (error) {
-    // Let caller handle the error
     throw error
   }
 
@@ -61,7 +59,7 @@ export async function getIstioVersionFromPod(coreV1Api: CoreV1Api): Promise<stri
 
 export async function detectAndRestartOutdatedIstioSidecars(
   coreV1Api: CoreV1Api,
-  deps = { getDeploymentState, getCurrentVersion, getWorkloadKeyFromPod, restartPodOwner },
+  deps = { getDeploymentState, getCurrentVersion, getWorkloadKeyFromPod, restartPodOwner, getIstioVersionFromPod },
 ): Promise<void> {
   const d = terminal('detectAndRestartOutdatedIstioSidecars')
   const parsedArgs = getParsedArgs()
@@ -81,7 +79,7 @@ export async function detectAndRestartOutdatedIstioSidecars(
     d.info(`Version upgrade detected: ${prevVersion} -> ${currentVersion}, checking Istio sidecars`)
 
     // Get expected Istio version from running istiod pod
-    const expectedVersion = await getIstioVersionFromPod(coreV1Api)
+    const expectedVersion = await deps.getIstioVersionFromPod(coreV1Api)
 
     if (!expectedVersion) {
       d.error('Could not determine expected Istio version from running istiod pod. Cannot restart sidecars.')
