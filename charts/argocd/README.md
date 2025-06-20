@@ -732,6 +732,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | global.affinity.podAntiAffinity | string | `"soft"` | Default pod anti-affinity rules. Either: `none`, `soft` or `hard` |
 | global.certificateAnnotations | object | `{}` | Annotations for the all deployed Certificates |
 | global.deploymentAnnotations | object | `{}` | Annotations for the all deployed Deployments |
+| global.deploymentLabels | object | `{}` | Labels for the all deployed Deployments |
 | global.deploymentStrategy | object | `{}` | Deployment strategy for the all deployed Deployments |
 | global.domain | string | `"argocd.example.com"` | Default domain used by all components |
 | global.dualStack.ipFamilies | list | `[]` | IP families that should be supported and the order in which they should be applied to ClusterIP as well. Can be IPv4 and/or IPv6. |
@@ -798,6 +799,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | configs.params."controller.self.heal.timeout.seconds" | int | `5` | Specifies timeout between application self heal attempts |
 | configs.params."controller.status.processors" | int | `20` | Number of application status processors |
 | configs.params."controller.sync.timeout.seconds" | int | `0` | Specifies the timeout after which a sync would be terminated. 0 means no timeout |
+| configs.params."hydrator.enabled" | bool | `false` | Enable the hydrator feature (hydrator is in Alpha phase) |
 | configs.params."otlp.address" | string | `""` | Open-Telemetry collector address: (e.g. "otel-collector:4317") |
 | configs.params."reposerver.parallelism.limit" | int | `0` | Limit on number of concurrent manifests generate requests. Any value less the 1 means no limit. |
 | configs.params."server.basehref" | string | `"/"` | Value for base href in index.html. Used if Argo CD is running behind reverse proxy under subpath different from / |
@@ -851,6 +853,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | controller.containerPorts.metrics | int | `8082` | Metrics container port |
 | controller.containerSecurityContext | object | See [values.yaml] | Application controller container-level security context |
 | controller.deploymentAnnotations | object | `{}` | Annotations for the application controller Deployment |
+| controller.deploymentLabels | object | `{}` | Labels for the application controller Deployment |
 | controller.dnsConfig | object | `{}` | [DNS configuration] |
 | controller.dnsPolicy | string | `"ClusterFirst"` | Alternative DNS policy for application controller pods |
 | controller.dynamicClusterDistribution | bool | `false` | Enable dynamic cluster distribution (alpha) Ref: https://argo-cd.readthedocs.io/en/stable/operator-manual/dynamic-cluster-distribution |
@@ -949,6 +952,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | repoServer.containerPorts.server | int | `8081` | Repo server container port |
 | repoServer.containerSecurityContext | object | See [values.yaml] | Repo server container-level security context |
 | repoServer.deploymentAnnotations | object | `{}` | Annotations to be added to repo server Deployment |
+| repoServer.deploymentLabels | object | `{}` | Labels for the repo server Deployment |
 | repoServer.deploymentStrategy | object | `{}` | Deployment strategy to be added to the repo server Deployment |
 | repoServer.dnsConfig | object | `{}` | [DNS configuration] |
 | repoServer.dnsPolicy | string | `"ClusterFirst"` | Alternative DNS policy for Repo server pods |
@@ -1012,6 +1016,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | repoServer.service.labels | object | `{}` | Repo server service labels |
 | repoServer.service.port | int | `8081` | Repo server service port |
 | repoServer.service.portName | string | `"tcp-repo-server"` | Repo server service port name |
+| repoServer.service.trafficDistribution | string | `""` | Traffic distribution preference for the repo server service. If the field is not set, the implementation will apply its default routing strategy. |
 | repoServer.serviceAccount.annotations | object | `{}` | Annotations applied to created service account |
 | repoServer.serviceAccount.automountServiceAccountToken | bool | `true` | Automount API credentials for the Service Account |
 | repoServer.serviceAccount.create | bool | `true` | Create repo server service account |
@@ -1063,6 +1068,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | server.containerPorts.server | int | `8080` | Server container port |
 | server.containerSecurityContext | object | See [values.yaml] | Server container-level security context |
 | server.deploymentAnnotations | object | `{}` | Annotations to be added to server Deployment |
+| server.deploymentLabels | object | `{}` | Labels for the server Deployment |
 | server.deploymentStrategy | object | `{}` | Deployment strategy to be added to the server Deployment |
 | server.dnsConfig | object | `{}` | [DNS configuration] |
 | server.dnsPolicy | string | `"ClusterFirst"` | Alternative DNS policy for Server pods |
@@ -1207,6 +1213,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | dex.containerPorts.metrics | int | `5558` | Metrics container port |
 | dex.containerSecurityContext | object | See [values.yaml] | Dex container-level security context |
 | dex.deploymentAnnotations | object | `{}` | Annotations to be added to the Dex server Deployment |
+| dex.deploymentLabels | object | `{}` | Labels for the Dex server Deployment |
 | dex.deploymentStrategy | object | `{}` | Deployment strategy to be added to the Dex server Deployment |
 | dex.dnsConfig | object | `{}` | [DNS configuration] |
 | dex.dnsPolicy | string | `"ClusterFirst"` | Alternative DNS policy for Dex server pods |
@@ -1297,6 +1304,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | redis.containerPorts.redis | int | `6379` | Redis container port |
 | redis.containerSecurityContext | object | See [values.yaml] | Redis container-level security context |
 | redis.deploymentAnnotations | object | `{}` | Annotations to be added to the Redis server Deployment |
+| redis.deploymentLabels | object | `{}` | Labels for the Redis server Deployment |
 | redis.dnsConfig | object | `{}` | [DNS configuration] |
 | redis.dnsPolicy | string | `"ClusterFirst"` | Alternative DNS policy for Redis server pods |
 | redis.enabled | bool | `true` | Enable redis |
@@ -1307,7 +1315,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | redis.exporter.env | list | `[]` | Environment variables to pass to the Redis exporter |
 | redis.exporter.image.imagePullPolicy | string | `""` (defaults to global.image.imagePullPolicy) | Image pull policy for the redis-exporter |
 | redis.exporter.image.repository | string | `"ghcr.io/oliver006/redis_exporter"` | Repository to use for the redis-exporter |
-| redis.exporter.image.tag | string | `"v1.73.0"` | Tag to use for the redis-exporter |
+| redis.exporter.image.tag | string | `"v1.74.0"` | Tag to use for the redis-exporter |
 | redis.exporter.livenessProbe.enabled | bool | `false` | Enable Kubernetes liveness probe for Redis exporter |
 | redis.exporter.livenessProbe.failureThreshold | int | `5` | Minimum consecutive failures for the [probe] to be considered failed after having succeeded |
 | redis.exporter.livenessProbe.initialDelaySeconds | int | `30` | Number of seconds after the container has started before [probe] is initiated |
@@ -1324,7 +1332,7 @@ NOTE: Any values you put under `.Values.configs.cm` are passed to argocd-cm Conf
 | redis.extraArgs | list | `[]` | Additional command line arguments to pass to redis-server |
 | redis.extraContainers | list | `[]` | Additional containers to be added to the redis pod |
 | redis.image.imagePullPolicy | string | `""` (defaults to global.image.imagePullPolicy) | Redis image pull policy |
-| redis.image.repository | string | `"public.ecr.aws/docker/library/redis"` | Redis repository |
+| redis.image.repository | string | `"ecr-public.aws.com/docker/library/redis"` | Redis repository |
 | redis.image.tag | string | `"7.2.8-alpine"` | Redis tag |
 | redis.imagePullSecrets | list | `[]` (defaults to global.imagePullSecrets) | Secrets with credentials to pull images from a private registry |
 | redis.initContainers | list | `[]` | Init containers to add to the redis pod |
@@ -1406,11 +1414,12 @@ The main options are listed here:
 | redis-ha.haproxy.containerSecurityContext | object | See [values.yaml] | HAProxy container-level security context |
 | redis-ha.haproxy.enabled | bool | `true` | Enabled HAProxy LoadBalancing/Proxy |
 | redis-ha.haproxy.hardAntiAffinity | bool | `true` | Whether the haproxy pods should be forced to run on separate nodes. |
+| redis-ha.haproxy.image.repository | string | `"ecr-public.aws.com/docker/library/haproxy"` | HAProxy Image Repository |
 | redis-ha.haproxy.labels | object | `{"app.kubernetes.io/name":"argocd-redis-ha-haproxy"}` | Custom labels for the haproxy pod. This is relevant for Argo CD CLI. |
 | redis-ha.haproxy.metrics.enabled | bool | `true` | HAProxy enable prometheus metric scraping |
 | redis-ha.haproxy.tolerations | list | `[]` | [Tolerations] for use with node taints for haproxy pods. |
 | redis-ha.hardAntiAffinity | bool | `true` | Whether the Redis server pods should be forced to run on separate nodes. |
-| redis-ha.image.repository | string | `"public.ecr.aws/docker/library/redis"` | Redis repository |
+| redis-ha.image.repository | string | `"ecr-public.aws.com/docker/library/redis"` | Redis repository |
 | redis-ha.image.tag | string | `"7.2.8-alpine"` | Redis tag |
 | redis-ha.persistentVolume.enabled | bool | `false` | Configures persistence on Redis nodes |
 | redis-ha.redis.config | object | See [values.yaml] | Any valid redis config options in this section will be applied to each server (see `redis-ha` chart) |
@@ -1434,7 +1443,7 @@ If you want to use an existing Redis (eg. a managed service from a cloud provide
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| externalRedis.existingSecret | string | `""` | The name of an existing secret with Redis (must contain key `redis-password`) and Sentinel credentials. When it's set, the `externalRedis.password` parameter is ignored |
+| externalRedis.existingSecret | string | `""` | The name of an existing secret with Redis (must contain key `redis-password`. And should contain `redis-username` if username is not `default`) and Sentinel credentials. When it's set, the `externalRedis.username` and `externalRedis.password` parameters are ignored |
 | externalRedis.host | string | `""` | External Redis server host |
 | externalRedis.password | string | `""` | External Redis password |
 | externalRedis.port | int | `6379` | External Redis server port |
@@ -1494,6 +1503,7 @@ If you use an External Redis (See Option 3 above), this Job is not deployed.
 | applicationSet.containerPorts.webhook | int | `7000` | Webhook container port |
 | applicationSet.containerSecurityContext | object | See [values.yaml] | ApplicationSet controller container-level security context |
 | applicationSet.deploymentAnnotations | object | `{}` | Annotations to be added to ApplicationSet controller Deployment |
+| applicationSet.deploymentLabels | object | `{}` | Labels for the ApplicationSet controller Deployment |
 | applicationSet.deploymentStrategy | object | `{}` | Deployment strategy to be added to the ApplicationSet controller Deployment |
 | applicationSet.dnsConfig | object | `{}` | [DNS configuration] |
 | applicationSet.dnsPolicy | string | `"ClusterFirst"` | Alternative DNS policy for ApplicationSet controller pods |
@@ -1592,6 +1602,7 @@ If you use an External Redis (See Option 3 above), this Job is not deployed.
 | notifications.containerSecurityContext | object | See [values.yaml] | Notification controller container-level security Context |
 | notifications.context | object | `{}` | Define user-defined context |
 | notifications.deploymentAnnotations | object | `{}` | Annotations to be applied to the notifications controller Deployment |
+| notifications.deploymentLabels | object | `{}` | Labels for the notifications controller Deployment |
 | notifications.deploymentStrategy | object | `{"type":"Recreate"}` | Deployment strategy to be added to the notifications controller Deployment |
 | notifications.dnsConfig | object | `{}` | [DNS configuration] |
 | notifications.dnsPolicy | string | `"ClusterFirst"` | Alternative DNS policy for notifications controller Pods |
@@ -1677,6 +1688,7 @@ To read more about this component, please read [Argo CD Manifest Hydrator] and [
 | commitServer.automountServiceAccountToken | bool | `false` | Automount API credentials for the Service Account into the pod. |
 | commitServer.containerSecurityContext | object | See [values.yaml] | commit server container-level security context |
 | commitServer.deploymentAnnotations | object | `{}` | Annotations to be added to commit server Deployment |
+| commitServer.deploymentLabels | object | `{}` | Labels for the commit server Deployment |
 | commitServer.deploymentStrategy | object | `{}` | Deployment strategy to be added to the commit server Deployment |
 | commitServer.dnsConfig | object | `{}` | [DNS configuration] |
 | commitServer.dnsPolicy | string | `"ClusterFirst"` | Alternative DNS policy for commit server pods |
