@@ -187,7 +187,7 @@ async function main() {
             const dependencyChart = await loadYamlFile(dependencyFileName)
             const updatedAppVersion = dependencyChart?.appVersion
             if (updatedAppVersion) {
-              appInfo.appVersion = updatedAppVersion
+              appInfo.appVersion = updatedAppVersion.replace(/^v/, '')
               try {
                 await writeYamlFile(appsFile, apps)
                 await $`git add ${appsFile}`
