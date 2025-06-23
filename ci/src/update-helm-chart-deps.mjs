@@ -190,6 +190,7 @@ async function main() {
               appInfo.version = updatedAppVersion
               try {
                 await writeYamlFile(appsFile, apps)
+                await $`git add ${appsFile}`
               } catch (error) {
                 console.error(`Error updating app version for ${dependency.name}:`, error)
                 setPrDraft = true
