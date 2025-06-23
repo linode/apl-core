@@ -27,7 +27,7 @@ export type RuntimeUpgrades = Array<RuntimeUpgrade>
 export const runtimeUpgrades: RuntimeUpgrades = [
   // Example upgrade - can be removed when real upgrades are added
   {
-    version: 'dev',
+    version: 'example',
     pre: async (context: RuntimeUpgradeContext) => {
       context.debug.info('Example pre-upgrade operation for development')
       // Actual upgrade operations would go here
@@ -36,11 +36,23 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       context.debug.info('Example post-upgrade operation for development')
       // Actual upgrade operations would go here
     },
+    applications: {
+      'example-app': {
+        pre: async (context: RuntimeUpgradeContext) => {
+          context.debug.info('Example app pre-upgrade operation for development')
+          // Actual app-specific pre-upgrade operations would go here
+        },
+        post: async (context: RuntimeUpgradeContext) => {
+          context.debug.info('Example app post-upgrade operation for development')
+          // Actual app-specific post-upgrade operations would go here
+        },
+      },
+    },
   },
   {
     version: '4.8.0',
     applications: {
-      istiod: {
+      'istio-system-istiod': {
         post: async (context: RuntimeUpgradeContext) => {
           try {
             await detectAndRestartOutdatedIstioSidecars(k8s.core())

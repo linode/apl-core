@@ -467,7 +467,7 @@ export async function checkArgoCDAppStatus(
   statusPath: 'sync' | 'health',
   expectedValue: 'Synced' | 'Healthy',
 ): Promise<string> {
-  const response = await customApi.getNamespacedCustomObject({
+  const application = await customApi.getNamespacedCustomObject({
     group: 'argoproj.io',
     version: 'v1alpha1',
     namespace: 'argocd',
@@ -475,7 +475,6 @@ export async function checkArgoCDAppStatus(
     name: appName,
   })
 
-  const application = response.body as any
   const actualStatus = statusPath === 'sync' ? application?.status?.sync?.status : application?.status?.health?.status
 
   if (actualStatus !== expectedValue) {
@@ -494,8 +493,13 @@ export async function waitForArgoCDAppSync(
 
   await retry(
     async () => {
-      await checkArgoCDAppStatus(appName, customApi, 'sync', 'Synced')
-      d.info(`Application '${appName}' sync completed`)
+      try {
+        await checkArgoCDAppStatus(appName, customApi, 'sync', 'Synced')
+        d.info(`Application '${appName}' sync completed`)
+      } catch (error) {
+        d.warn(`Application '${appName}' is not synced yet: ${error.message}`)
+        throw error
+      }
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   )
@@ -510,8 +514,13 @@ export async function waitForArgoCDAppHealthy(
 
   await retry(
     async () => {
-      await checkArgoCDAppStatus(appName, customApi, 'health', 'Healthy')
-      d.info(`Application '${appName}' is healthy`)
+      try {
+        await checkArgoCDAppStatus(appName, customApi, 'health', 'Healthy')
+        d.info(`Application '${appName}' is healthy`)
+      } catch (error) {
+        d.warn(`Application '${appName}' is not healthy yet: ${error.message}`)
+        throw error
+      }
     },
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   )

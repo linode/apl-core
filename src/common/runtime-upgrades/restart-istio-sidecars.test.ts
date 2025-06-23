@@ -228,21 +228,24 @@ describe('restartStatefulSet', () => {
 
     expect(mockD.info).toHaveBeenCalledWith('Restarting StatefulSet test-statefulset in namespace test-namespace')
     expect(mockD.info).toHaveBeenCalledWith('Successfully restarted StatefulSet test-statefulset')
-    expect(mockAppApi.patchNamespacedStatefulSet).toHaveBeenCalledWith({
-      name: 'test-statefulset',
-      namespace: 'test-namespace',
-      body: {
-        spec: {
-          template: {
-            metadata: {
-              annotations: {
-                'kubectl.kubernetes.io/restartedAt': expect.any(String),
+    expect(mockAppApi.patchNamespacedStatefulSet).toHaveBeenCalledWith(
+      {
+        name: 'test-statefulset',
+        namespace: 'test-namespace',
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': expect.any(String),
+                },
               },
             },
           },
         },
       },
-    })
+      expect.any(Object),
+    )
   })
 
   it('should not restart StatefulSet in dry run mode', async () => {
@@ -352,21 +355,24 @@ describe('restartDeployment', () => {
     expect(result).toBe('test-deployment')
     expect(mockD.info).toHaveBeenCalledWith('Restarting deployment test-deployment in namespace test-namespace')
     expect(mockD.info).toHaveBeenCalledWith('Successfully restarted deployment test-deployment')
-    expect(mockAppApi.patchNamespacedDeployment).toHaveBeenCalledWith({
-      name: 'test-deployment',
-      namespace: 'test-namespace',
-      body: {
-        spec: {
-          template: {
-            metadata: {
-              annotations: {
-                'kubectl.kubernetes.io/restartedAt': expect.any(String),
+    expect(mockAppApi.patchNamespacedDeployment).toHaveBeenCalledWith(
+      {
+        name: 'test-deployment',
+        namespace: 'test-namespace',
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': expect.any(String),
+                },
               },
             },
           },
         },
       },
-    })
+      expect.any(Object),
+    )
   })
 
   it('should not restart Deployment in dry run mode', async () => {
@@ -619,33 +625,9 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
     jest.clearAllMocks()
   })
 
-  it('should skip if no version upgrade', async () => {
-    mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
-    mockDeps.getCurrentVersion.mockResolvedValue('1.2.3')
-    mockCoreApi.listPodForAllNamespaces.mockResolvedValue({} as any)
-
-    await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
-
-    expect(mockCoreApi.listPodForAllNamespaces).not.toHaveBeenCalled()
-    expect(mockDeps.getIstioVersionFromPod).not.toHaveBeenCalled()
-  })
-
-  it('should log error if expected Istio version is not found', async () => {
+  it('should restart pod owners with outdated sidecars using hard-coded version', async () => {
     mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
     mockDeps.getCurrentVersion.mockResolvedValue('2.0.0')
-    mockDeps.getIstioVersionFromPod.mockResolvedValue(null)
-    mockCoreApi.listPodForAllNamespaces.mockResolvedValue({} as any)
-
-    await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
-
-    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
-    expect(mockCoreApi.listPodForAllNamespaces).not.toHaveBeenCalled()
-  })
-
-  it('should restart pod owners with outdated sidecars', async () => {
-    mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
-    mockDeps.getCurrentVersion.mockResolvedValue('2.0.0')
-    mockDeps.getIstioVersionFromPod.mockResolvedValue('2.0.0')
     mockDeps.getWorkloadKeyFromPod.mockReturnValue('ns/deploy')
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
       items: [
@@ -654,7 +636,7 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
           spec: {
             containers: [
               {
-                image: 'istio/proxyv2:1.2.3',
+                image: 'istio/proxyv2:1.20.0',
                 name: '',
               },
             ],
@@ -666,14 +648,13 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
     expect(mockDeps.restartPodOwner).toHaveBeenCalledTimes(1)
   })
 
-  it('should not restart if sidecars are up to date', async () => {
+  it('should not restart if sidecars are up to date with hard-coded version', async () => {
     mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
     mockDeps.getCurrentVersion.mockResolvedValue('2.0.0')
-    mockDeps.getIstioVersionFromPod.mockResolvedValue('2.0.0')
     mockDeps.getWorkloadKeyFromPod.mockReturnValue('ns/deploy')
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
       items: [
@@ -682,7 +663,7 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
           spec: {
             containers: [
               {
-                image: 'istio/proxyv2:2.0.0',
+                image: 'istio/proxyv2:1.25.1',
                 name: '',
               },
             ],
@@ -694,19 +675,31 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
     expect(mockDeps.restartPodOwner).not.toHaveBeenCalled()
   })
 
-  it('should handle getIstioVersionFromPod throwing an error', async () => {
+  it('should handle empty pod list', async () => {
     mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
     mockDeps.getCurrentVersion.mockResolvedValue('2.0.0')
-    mockDeps.getIstioVersionFromPod.mockRejectedValue(new Error('API call failed'))
-    mockCoreApi.listPodForAllNamespaces.mockResolvedValue({} as any)
+    mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
+      items: [],
+    })
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
-    expect(mockCoreApi.listPodForAllNamespaces).not.toHaveBeenCalled()
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
+    expect(mockDeps.restartPodOwner).not.toHaveBeenCalled()
+  })
+
+  it('should handle API errors gracefully', async () => {
+    mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
+    mockDeps.getCurrentVersion.mockResolvedValue('2.0.0')
+    mockCoreApi.listPodForAllNamespaces.mockRejectedValue(new Error('API call failed'))
+
+    await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
+
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
+    expect(mockDeps.restartPodOwner).not.toHaveBeenCalled()
   })
 })

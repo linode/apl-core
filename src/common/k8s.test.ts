@@ -386,7 +386,7 @@ describe('ArgoCD Application Tests', () => {
           },
         },
       }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue({ body: mockApplication } as any)
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
 
       const result = await checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')
 
@@ -408,7 +408,7 @@ describe('ArgoCD Application Tests', () => {
           },
         },
       }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue({ body: mockApplication } as any)
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
 
       const result = await checkArgoCDAppStatus('test-app', mockCustomApi, 'health', 'Healthy')
 
@@ -423,7 +423,7 @@ describe('ArgoCD Application Tests', () => {
           },
         },
       }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue({ body: mockApplication } as any)
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
 
       await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow(
         "Application test-app sync status is 'OutOfSync', expected 'Synced'",
@@ -438,7 +438,7 @@ describe('ArgoCD Application Tests', () => {
           },
         },
       }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue({ body: mockApplication } as any)
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
 
       await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'health', 'Healthy')).rejects.toThrow(
         "Application test-app health status is 'Degraded', expected 'Healthy'",
@@ -449,7 +449,7 @@ describe('ArgoCD Application Tests', () => {
       const mockApplication = {
         status: {},
       }
-      mockCustomApi.getNamespacedCustomObject.mockResolvedValue({ body: mockApplication } as any)
+      mockCustomApi.getNamespacedCustomObject.mockResolvedValue(mockApplication as any)
 
       await expect(checkArgoCDAppStatus('test-app', mockCustomApi, 'sync', 'Synced')).rejects.toThrow(
         "Application test-app sync status is 'undefined', expected 'Synced'",

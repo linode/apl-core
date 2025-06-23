@@ -1,4 +1,4 @@
-import { CoreV1Api, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
+import { CoreV1Api, PatchStrategy, setHeaderOptions, V1OwnerReference, V1Pod } from '@kubernetes/client-node'
 import { getDeploymentState, k8s } from '../k8s'
 import { getCurrentVersion } from '../values'
 import { OtomiDebugger, terminal } from '../debug'
@@ -65,21 +65,9 @@ export async function detectAndRestartOutdatedIstioSidecars(
   const parsedArgs = getParsedArgs()
 
   try {
-    // Check if this is actually an upgrade scenario
-    const deploymentState = await deps.getDeploymentState()
-    const currentVersion = await deps.getCurrentVersion()
-    const prevVersion = deploymentState.version ?? currentVersion
-
-    // If no upgrade detected, skip sidecar check
-    if (currentVersion === prevVersion) {
-      d.debug('No version upgrade detected, skipping Istio sidecar check')
-      return
-    }
-
-    d.info(`Version upgrade detected: ${prevVersion} -> ${currentVersion}, checking Istio sidecars`)
-
     // Get expected Istio version from running istiod pod
-    const expectedVersion = await deps.getIstioVersionFromPod(coreV1Api)
+    // const expectedVersion = await deps.getIstioVersionFromPod(coreV1Api)
+    const expectedVersion = '1.25.1'
 
     if (!expectedVersion) {
       d.error('Could not determine expected Istio version from running istiod pod. Cannot restart sidecars.')
@@ -155,21 +143,24 @@ export async function restartStatefulSet(
   if (!parsedArgs?.dryRun && !parsedArgs?.local) {
     d.info(`Restarting StatefulSet ${ownerRef.name} in namespace ${namespace}`)
     const appApi = k8s.app()
-    await appApi.patchNamespacedStatefulSet({
-      name: ownerRef.name,
-      namespace,
-      body: {
-        spec: {
-          template: {
-            metadata: {
-              annotations: {
-                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+    await appApi.patchNamespacedStatefulSet(
+      {
+        name: ownerRef.name,
+        namespace,
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+                },
               },
             },
           },
         },
       },
-    })
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
     d.info(`Successfully restarted StatefulSet ${ownerRef.name}`)
   } else {
     d.info(`Dry run mode - would restart StatefulSet ${ownerRef.name} in namespace ${namespace}`)
@@ -207,21 +198,24 @@ export async function restartDeployment(
   if (!parsedArgs?.dryRun && !parsedArgs?.local) {
     d.info(`Restarting deployment ${deploymentName} in namespace ${namespace}`)
     const appApi = k8s.app()
-    await appApi.patchNamespacedDeployment({
-      name: deploymentName,
-      namespace,
-      body: {
-        spec: {
-          template: {
-            metadata: {
-              annotations: {
-                'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+    await appApi.patchNamespacedDeployment(
+      {
+        name: deploymentName,
+        namespace,
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+                },
               },
             },
           },
         },
       },
-    })
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
     d.info(`Successfully restarted deployment ${deploymentName}`)
   } else {
     d.info(`Dry run mode - would restart deployment ${deploymentName} in namespace ${namespace}`)
