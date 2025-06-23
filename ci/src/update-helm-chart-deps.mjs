@@ -7,7 +7,7 @@ import yaml from 'js-yaml'
 import semver from 'semver'
 import { $ } from 'zx'
 
-export function isVersionApplicable(currentVersion, version, allowedUpgradeType) {
+function isVersionApplicable(currentVersion, version, allowedUpgradeType) {
   if (semver.lte(version, currentVersion)) {
     return false // Ignore versions that are <= current version
   }
@@ -49,6 +49,7 @@ async function main() {
   // Path to the Chart.yaml file
   const chartFile = '../chart/chart-index/Chart.yaml'
   const chartsDir = '../charts'
+  const appsFile = '../apps.yaml'
 
   // Specify allowed upgrade types: 'minor', 'patch', or leave undefined for all
   const allowedUpgradeType = env.CI_UPDATE_TYPE
@@ -70,6 +71,17 @@ async function main() {
       process.exit(1)
     }
 
+    const apps = await loadYamlFile(appsFile)
+    const appsInfo = apps.appInfo
+    if (!Array.isArray(appsInfo) || appsInfo.length === 0) {
+      console.error('No app information found in apps.yaml')
+      process.exit(1)
+    }
+    // Mapping to look up apps info by chart
+    const chartApps = Object.fromEntries(
+      appsInfo.map(app => [app.chartName || app, app])
+    )
+
     for (const dependency of chart.dependencies) {
       const currentDependencyVersion = dependency.version
       if (dependencyNameFilter.length !== 0 && !dependencyNameFilter.includes(dependency.name)) {
@@ -80,8 +92,8 @@ async function main() {
       }
 
       console.log(`Pre-check for dependency ${dependency.name}`)
+      const dependencyFileName = `${chartsDir}/${dependency.alias || dependency.name}/Chart.yaml`
       try {
-        const dependencyFileName = `${chartsDir}/${dependency.alias || dependency.name}/Chart.yaml`
         const dependencyChart = await loadYamlFile(dependencyFileName)
         if (dependencyChart.version !== currentDependencyVersion) {
           console.error(`Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`)
@@ -93,6 +105,13 @@ async function main() {
         console.error(`Error checking dependency ${dependency.name}:`, error)
         dependencyErrors[dependency.name] = error
         continue
+      }
+
+      const appName = chartApps[dependency.name]
+      if (appName) {
+        console.log(`Chart ${dependency.name} assigned to app ${appName}`)
+      } else {
+        console.log(`No app found for ${dependency.name}`)
       }
 
       console.log(`Checking updates for dependency: ${dependency.name}`)
@@ -166,6 +185,25 @@ async function main() {
           await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
         }
 
+        // By default create a draft PR only if appName is not found for chart
+        let setPrDraft = Boolean(!appName)
+        if (appName) {
+          try {
+            const dependencyChart = await loadYamlFile(dependencyFileName)
+            const updatedAppVersion = dependencyChart?.appVersion
+            if (updatedAppVersion) {
+              appsInfo[appName].version = updatedAppVersion
+            } else {
+              console.info(`Updated app version not found in chart ${dependency.name}`)
+              setPrDraft = true
+            }
+          } catch (error) {
+            console.error(`Error checking dependency app version ${dependency.name}:`, error)
+            dependencyErrors[dependency.name] = error
+            setPrDraft = true
+          }
+        }
+
         if (ciCreateFeatureBranch) {
           await $`git add ${chartFile}`
           await $`git add ${chartsDir}`
@@ -178,7 +216,8 @@ async function main() {
         if (ciCreateGithubPr) {
           // Create a pull request
           const prBody = `This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`
-          await $`gh pr create --title ${commitMessage} --body "${prBody}" --base ${baseBranch} --head ${branchName}`
+          const draftArg = setPrDraft ? '--draft' : ''
+          await $`gh pr create --title ${commitMessage} --body ${prBody} --base ${baseBranch} --head ${branchName} ${draftArg}`
         }
       } catch (error) {
         console.error('Error updating dependencies:', error)
