@@ -28,7 +28,7 @@ async function loadYamlFile(fileName) {
 }
 
 async function writeYamlFile(fileName, data) {
-  const yamlContent = yaml.dump(data)
+  const yamlContent = yaml.dump(data, { lineWidth: 1000 })
   await fs.writeFile(fileName, yamlContent, 'utf8')
 }
 
