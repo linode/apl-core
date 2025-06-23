@@ -33,16 +33,22 @@ export function getDeploymentNameFromReplicaSet(replicaSetName: string): string 
   return match ? match[1] : null
 }
 
-export async function getIstioVersionFromPod(coreV1Api: CoreV1Api): Promise<string | null> {
+export async function getIstioVersionFromDeployment(): Promise<string | null> {
   try {
-    const istiodPodsResponse = await coreV1Api.listNamespacedPod({
+    const appApi = k8s.app()
+
+    // List all deployments in istio-system namespace to find istiod deployment
+    const deploymentsResponse = await appApi.listNamespacedDeployment({
       namespace: 'istio-system',
-      labelSelector: 'app=istiod',
     })
 
-    const istiodPod = istiodPodsResponse.items.find((pod) => pod.status?.phase === 'Running')
-    if (istiodPod) {
-      const discoveryContainer = istiodPod.spec?.containers?.find((c) => c.name === 'discovery')
+    // Find istiod deployment (name starts with 'istiod-' or exact match 'istiod')
+    const istiodDeployment = deploymentsResponse.items.find(
+      (deployment) => deployment.metadata?.name === 'istiod' || deployment.metadata?.name?.startsWith('istiod-'),
+    )
+
+    if (istiodDeployment) {
+      const discoveryContainer = istiodDeployment.spec?.template?.spec?.containers?.find((c) => c.name === 'discovery')
       if (discoveryContainer?.image) {
         const imageTag = discoveryContainer.image.split(':').pop()
         if (imageTag && imageTag !== 'latest') {
@@ -59,17 +65,23 @@ export async function getIstioVersionFromPod(coreV1Api: CoreV1Api): Promise<stri
 
 export async function detectAndRestartOutdatedIstioSidecars(
   coreV1Api: CoreV1Api,
-  deps = { getDeploymentState, getCurrentVersion, getWorkloadKeyFromPod, restartPodOwner, getIstioVersionFromPod },
+  deps = {
+    getDeploymentState,
+    getCurrentVersion,
+    getWorkloadKeyFromPod,
+    restartPodOwner,
+    getIstioVersionFromDeployment,
+  },
 ): Promise<void> {
   const d = terminal('detectAndRestartOutdatedIstioSidecars')
   const parsedArgs = getParsedArgs()
 
   try {
-    // Get expected Istio version from running istiod pod
-    const expectedVersion = await deps.getIstioVersionFromPod(coreV1Api)
+    // Get expected Istio version from istiod deployment
+    const expectedVersion = await deps.getIstioVersionFromDeployment()
 
     if (!expectedVersion) {
-      d.error('Could not determine expected Istio version from running istiod pod. Cannot restart sidecars.')
+      d.error('Could not determine expected Istio version from istiod deployment. Cannot restart sidecars.')
       return
     }
 

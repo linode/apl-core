@@ -2,7 +2,7 @@ import { CoreV1Api, V1OwnerReference } from '@kubernetes/client-node'
 import {
   detectAndRestartOutdatedIstioSidecars,
   getDeploymentNameFromReplicaSet,
-  getIstioVersionFromPod,
+  getIstioVersionFromDeployment,
   restartCluster,
   restartDeployment,
   restartPodOwner,
@@ -14,142 +14,199 @@ import { k8s } from '../k8s'
 jest.mock('zx')
 jest.mock('../k8s')
 
-describe('getIstioVersionFromPod', () => {
-  const mockCoreApi = {
-    listNamespacedPod: jest.fn(),
-  } as unknown as jest.Mocked<CoreV1Api>
+describe('getIstioVersionFromDeployment', () => {
+  const mockAppApi = {
+    listNamespacedDeployment: jest.fn(),
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(k8s.app as jest.Mock).mockReturnValue(mockAppApi)
   })
 
-  it('should extract version from istiod discovery container image', async () => {
-    mockCoreApi.listNamespacedPod.mockResolvedValue({
+  it('should extract version from istiod deployment discovery container image', async () => {
+    mockAppApi.listNamespacedDeployment.mockResolvedValue({
       items: [
         {
-          status: { phase: 'Running' },
+          metadata: { name: 'istiod-1-26-0' },
           spec: {
-            containers: [
-              {
-                name: 'discovery',
-                image: 'docker.io/istio/pilot:1.20.1',
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'discovery',
+                    image: 'docker.io/istio/pilot:1.26.0',
+                  },
+                ],
               },
-            ],
+            },
           },
         },
       ],
-    } as any)
+    })
 
-    const version = await getIstioVersionFromPod(mockCoreApi)
+    const version = await getIstioVersionFromDeployment()
 
-    expect(version).toBe('1.20.1')
-    expect(mockCoreApi.listNamespacedPod).toHaveBeenCalledWith({
+    expect(version).toBe('1.26.0')
+    expect(mockAppApi.listNamespacedDeployment).toHaveBeenCalledWith({
       namespace: 'istio-system',
-      labelSelector: 'app=istiod',
     })
   })
 
-  it('should return null when no running istiod pods found', async () => {
-    mockCoreApi.listNamespacedPod.mockResolvedValue({
+  it('should find deployment with exact name istiod', async () => {
+    mockAppApi.listNamespacedDeployment.mockResolvedValue({
       items: [
         {
-          status: { phase: 'Pending' },
+          metadata: { name: 'istiod' },
           spec: {
-            containers: [
-              {
-                name: 'discovery',
-                image: 'docker.io/istio/pilot:1.20.1',
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'discovery',
+                    image: 'docker.io/istio/pilot:1.25.1',
+                  },
+                ],
               },
-            ],
+            },
           },
         },
       ],
-    } as any)
+    })
 
-    const version = await getIstioVersionFromPod(mockCoreApi)
+    const version = await getIstioVersionFromDeployment()
+
+    expect(version).toBe('1.25.1')
+  })
+
+  it('should return null when no istiod deployment found', async () => {
+    mockAppApi.listNamespacedDeployment.mockResolvedValue({
+      items: [
+        {
+          metadata: { name: 'other-deployment' },
+          spec: {
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'discovery',
+                    image: 'docker.io/istio/pilot:1.20.1',
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ],
+    })
+
+    const version = await getIstioVersionFromDeployment()
 
     expect(version).toBeNull()
   })
 
   it('should return null when no discovery container found', async () => {
-    mockCoreApi.listNamespacedPod.mockResolvedValue({
+    mockAppApi.listNamespacedDeployment.mockResolvedValue({
       items: [
         {
-          status: { phase: 'Running' },
+          metadata: { name: 'istiod-1-26-0' },
           spec: {
-            containers: [
-              {
-                name: 'other-container',
-                image: 'docker.io/istio/pilot:1.20.1',
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'other-container',
+                    image: 'docker.io/istio/pilot:1.26.0',
+                  },
+                ],
               },
-            ],
+            },
           },
         },
       ],
-    } as any)
+    })
 
-    const version = await getIstioVersionFromPod(mockCoreApi)
+    const version = await getIstioVersionFromDeployment()
 
     expect(version).toBeNull()
   })
 
   it('should return null when image tag is latest', async () => {
-    mockCoreApi.listNamespacedPod.mockResolvedValue({
+    mockAppApi.listNamespacedDeployment.mockResolvedValue({
       items: [
         {
-          status: { phase: 'Running' },
+          metadata: { name: 'istiod-1-26-0' },
           spec: {
-            containers: [
-              {
-                name: 'discovery',
-                image: 'docker.io/istio/pilot:latest',
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'discovery',
+                    image: 'docker.io/istio/pilot:latest',
+                  },
+                ],
               },
-            ],
+            },
           },
         },
       ],
-    } as any)
+    })
 
-    const version = await getIstioVersionFromPod(mockCoreApi)
+    const version = await getIstioVersionFromDeployment()
 
     expect(version).toBeNull()
   })
 
   it('should handle different image formats', async () => {
-    mockCoreApi.listNamespacedPod.mockResolvedValue({
+    mockAppApi.listNamespacedDeployment.mockResolvedValue({
       items: [
         {
-          status: { phase: 'Running' },
+          metadata: { name: 'istiod-1-19-0' },
           spec: {
-            containers: [
-              {
-                name: 'discovery',
-                image: 'istio/pilot:1.19.0',
+            template: {
+              spec: {
+                containers: [
+                  {
+                    name: 'discovery',
+                    image: 'istio/pilot:1.19.0',
+                  },
+                ],
               },
-            ],
+            },
           },
         },
       ],
-    } as any)
+    })
 
-    const version = await getIstioVersionFromPod(mockCoreApi)
+    const version = await getIstioVersionFromDeployment()
 
     expect(version).toBe('1.19.0')
   })
 
   it('should throw error when API call fails', async () => {
     const error = new Error('API call failed')
-    mockCoreApi.listNamespacedPod.mockRejectedValue(error)
+    mockAppApi.listNamespacedDeployment.mockRejectedValue(error)
 
-    await expect(getIstioVersionFromPod(mockCoreApi)).rejects.toThrow('API call failed')
+    await expect(getIstioVersionFromDeployment()).rejects.toThrow('API call failed')
   })
 
-  it('should return null when no pods found', async () => {
-    mockCoreApi.listNamespacedPod.mockResolvedValue({
-      items: [],
-    } as any)
+  it('should return null when deployment has no containers', async () => {
+    mockAppApi.listNamespacedDeployment.mockResolvedValue({
+      items: [
+        {
+          metadata: { name: 'istiod-1-26-0' },
+          spec: {
+            template: {
+              spec: {
+                containers: [],
+              },
+            },
+          },
+        },
+      ],
+    })
 
-    const version = await getIstioVersionFromPod(mockCoreApi)
+    const version = await getIstioVersionFromDeployment()
 
     expect(version).toBeNull()
   })
@@ -618,7 +675,7 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
     getCurrentVersion: jest.fn(),
     getWorkloadKeyFromPod: jest.fn(),
     restartPodOwner: jest.fn(),
-    getIstioVersionFromPod: jest.fn(),
+    getIstioVersionFromDeployment: jest.fn(),
   }
 
   beforeEach(() => {
@@ -626,17 +683,17 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
   })
 
   it('should return early if expected Istio version is not found', async () => {
-    mockDeps.getIstioVersionFromPod.mockResolvedValue(null)
+    mockDeps.getIstioVersionFromDeployment.mockResolvedValue(null)
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockDeps.getIstioVersionFromDeployment).toHaveBeenCalled()
     expect(mockCoreApi.listPodForAllNamespaces).not.toHaveBeenCalled()
     expect(mockDeps.restartPodOwner).not.toHaveBeenCalled()
   })
 
   it('should restart pod owners with outdated sidecars', async () => {
-    mockDeps.getIstioVersionFromPod.mockResolvedValue('1.25.1')
+    mockDeps.getIstioVersionFromDeployment.mockResolvedValue('1.25.1')
     mockDeps.getWorkloadKeyFromPod.mockReturnValue('ns/deploy')
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
       items: [
@@ -657,7 +714,7 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockDeps.getIstioVersionFromDeployment).toHaveBeenCalled()
     expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalledWith({
       labelSelector: 'security.istio.io/tlsMode=istio',
     })
@@ -665,7 +722,7 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
   })
 
   it('should not restart if sidecars are up to date', async () => {
-    mockDeps.getIstioVersionFromPod.mockResolvedValue('1.25.1')
+    mockDeps.getIstioVersionFromDeployment.mockResolvedValue('1.25.1')
     mockDeps.getWorkloadKeyFromPod.mockReturnValue('ns/deploy')
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
       items: [
@@ -686,7 +743,7 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockDeps.getIstioVersionFromDeployment).toHaveBeenCalled()
     expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalledWith({
       labelSelector: 'security.istio.io/tlsMode=istio',
     })
@@ -694,14 +751,14 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
   })
 
   it('should handle empty pod list', async () => {
-    mockDeps.getIstioVersionFromPod.mockResolvedValue('1.25.1')
+    mockDeps.getIstioVersionFromDeployment.mockResolvedValue('1.25.1')
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
       items: [],
     })
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockDeps.getIstioVersionFromDeployment).toHaveBeenCalled()
     expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalledWith({
       labelSelector: 'security.istio.io/tlsMode=istio',
     })
@@ -709,12 +766,12 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
   })
 
   it('should handle API errors gracefully', async () => {
-    mockDeps.getIstioVersionFromPod.mockResolvedValue('1.25.1')
+    mockDeps.getIstioVersionFromDeployment.mockResolvedValue('1.25.1')
     mockCoreApi.listPodForAllNamespaces.mockRejectedValue(new Error('API call failed'))
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockDeps.getIstioVersionFromDeployment).toHaveBeenCalled()
     expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalledWith({
       labelSelector: 'security.istio.io/tlsMode=istio',
     })
