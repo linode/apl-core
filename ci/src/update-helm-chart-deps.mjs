@@ -22,6 +22,16 @@ export function isVersionApplicable(currentVersion, version, allowedUpgradeType)
   return true // Default: Allow all upgrades
 }
 
+async function loadYamlFile(fileName) {
+  const yamlContent = await fs.readFile(fileName, 'utf8')
+  return yaml.load(yamlContent)
+}
+
+async function writeYamlFile(fileName, data) {
+  const yamlContent = yaml.dump(data)
+  await fs.writeFile(fileName, yamlContent, 'utf8')
+}
+
 async function main() {
   config()
   const env = envalid.cleanEnv(process.env, {
@@ -51,8 +61,7 @@ async function main() {
 
   try {
     // Read the Chart.yaml file
-    const chartContent = await fs.readFile(chartFile, 'utf8')
-    const chart = yaml.load(chartContent)
+    const chart = loadYamlFile(chartFile)
     const dependencyErrors = {}
     const fixedChartVersions = {}
 
@@ -73,8 +82,7 @@ async function main() {
       console.log(`Pre-check for dependency ${dependency.name}`)
       try {
         const dependencyFileName = `${chartsDir}/${dependency.alias || dependency.name}/Chart.yaml`
-        const dependencyFile = await fs.readFile(dependencyFileName, 'utf8')
-        const dependencyChart = yaml.load(dependencyFile)
+        const dependencyChart = await loadYamlFile(dependencyFileName)
         if (dependencyChart.version !== currentDependencyVersion) {
           console.error(`Skipping update, indexed version of dependency ${dependency.name} is not consistent with chart version.`)
           dependencyErrors[dependency.name] = 'Indexed version of dependency is not consistent with chart version.'
@@ -143,8 +151,7 @@ async function main() {
         }
 
         // Write the updated Chart.yaml file
-        const updatedChart = yaml.dump(chart)
-        await fs.writeFile(chartFile, updatedChart, 'utf8')
+        await writeYamlFile(chartFile, chart)
         // Fetch and unpack the new chart version
         const tempDir = `./tmp/charts/${dependency.name}`
         await $`mkdir -p ${tempDir}`
@@ -203,8 +210,7 @@ async function main() {
         }
       }
       // Write the updated Chart.yaml file
-      const updatedChart = yaml.dump(chart)
-      await fs.writeFile(chartFile, updatedChart, 'utf8')
+      await writeYamlFile(chartFile, chart)
     }
   } catch (error) {
     console.error('Error updating dependencies:', error)
