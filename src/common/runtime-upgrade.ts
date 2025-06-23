@@ -18,12 +18,12 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
     return
   }
 
-  const version = await getCurrentVersion()
-  const prevVersion: string = deploymentState.version ?? version
+  const declaredVersion = await getCurrentVersion()
+  const deployedVersion: string = deploymentState.version ?? declaredVersion
 
-  d.info(`Current version of otomi: ${prevVersion}`)
+  d.info(`Current version of otomi: ${deployedVersion}`)
 
-  const filteredUpgrades = filterRuntimeUpgrades(prevVersion, runtimeUpgrades)
+  const filteredUpgrades = filterRuntimeUpgrades(deployedVersion, runtimeUpgrades)
 
   if (filteredUpgrades.length === 0) {
     d.info('No runtime upgrade operations detected, skipping')
@@ -63,9 +63,9 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
   }
 }
 
-export function filterRuntimeUpgrades(version: string, upgrades: RuntimeUpgrades): RuntimeUpgrades {
+export function filterRuntimeUpgrades(version: string, rUpgrades: RuntimeUpgrades): RuntimeUpgrades {
   // Prereleases such as v1.0-rc1 are not a complete semantic version - changing these to v1.0.0-rc1
   const prereleaseMatch = version.match(/^[0-9]+\.[0-9]+(-[a-zA-Z]+\.?[0-9]+)$/)
   const currentVersion = prereleaseMatch ? version.replace(prereleaseMatch[1], `.0${prereleaseMatch[1]}`) : version
-  return upgrades.filter((c) => c.version === 'dev' || semver.gt(c.version, currentVersion))
+  return rUpgrades.filter((rUpgrade) => rUpgrade.version === 'dev' || semver.gt(rUpgrade.version, currentVersion))
 }

@@ -66,8 +66,7 @@ export async function detectAndRestartOutdatedIstioSidecars(
 
   try {
     // Get expected Istio version from running istiod pod
-    // const expectedVersion = await deps.getIstioVersionFromPod(coreV1Api)
-    const expectedVersion = '1.25.1'
+    const expectedVersion = await deps.getIstioVersionFromPod(coreV1Api)
 
     if (!expectedVersion) {
       d.error('Could not determine expected Istio version from running istiod pod. Cannot restart sidecars.')
