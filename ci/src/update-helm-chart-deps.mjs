@@ -62,7 +62,7 @@ async function main() {
 
   try {
     // Read the Chart.yaml file
-    const chart = loadYamlFile(chartFile)
+    const chart = await loadYamlFile(chartFile)
     const dependencyErrors = {}
     const fixedChartVersions = {}
 
