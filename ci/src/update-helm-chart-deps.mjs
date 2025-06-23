@@ -72,14 +72,14 @@ async function main() {
     }
 
     const apps = await loadYamlFile(appsFile)
-    const appsInfo = apps.appInfo
-    if (!Array.isArray(appsInfo) || appsInfo.length === 0) {
+    const appsInfo = apps.appsInfo
+    if (!appsInfo || Object.keys(appsInfo).length === 0) {
       console.error('No app information found in apps.yaml')
       process.exit(1)
     }
-    // Mapping to look up apps info by chart
+    // Mapping to look up / update apps info by chart
     const chartApps = Object.fromEntries(
-      appsInfo.map(app => [app.chartName || app, app])
+      Object.entries(appsInfo).map(([appName, appInfo]) => [appInfo.chartName || appName, appInfo])
     )
 
     for (const dependency of chart.dependencies) {
@@ -105,13 +105,6 @@ async function main() {
         console.error(`Error checking dependency ${dependency.name}:`, error)
         dependencyErrors[dependency.name] = error
         continue
-      }
-
-      const appName = chartApps[dependency.name]
-      if (appName) {
-        console.log(`Chart ${dependency.name} assigned to app ${appName}`)
-      } else {
-        console.log(`No app found for ${dependency.name}`)
       }
 
       console.log(`Checking updates for dependency: ${dependency.name}`)
@@ -185,23 +178,32 @@ async function main() {
           await $`tar -xzvf ${tempDir}/${dependency.name}-${latestVersion}.tgz -C ${chartsDir}`
         }
 
-        // By default create a draft PR only if appName is not found for chart
-        let setPrDraft = Boolean(!appName)
-        if (appName) {
+        const appInfo = chartApps[dependency.name]
+        // By default create a draft PR only if appInfo is not found for chart
+        let setPrDraft = Boolean(!appInfo)
+        if (appInfo) {
+          console.log(`Chart ${dependency.name} assigned to app – looking up new version`)
           try {
             const dependencyChart = await loadYamlFile(dependencyFileName)
             const updatedAppVersion = dependencyChart?.appVersion
             if (updatedAppVersion) {
-              appsInfo[appName].version = updatedAppVersion
+              appInfo.version = updatedAppVersion
+              try {
+                await writeYamlFile(appsFile, apps)
+              } catch (error) {
+                console.error(`Error updating app version for ${dependency.name}:`, error)
+                setPrDraft = true
+              }
             } else {
               console.info(`Updated app version not found in chart ${dependency.name}`)
               setPrDraft = true
             }
           } catch (error) {
             console.error(`Error checking dependency app version ${dependency.name}:`, error)
-            dependencyErrors[dependency.name] = error
             setPrDraft = true
           }
+        } else {
+          console.log(`No app found for ${dependency.name}`)
         }
 
         if (ciCreateFeatureBranch) {
