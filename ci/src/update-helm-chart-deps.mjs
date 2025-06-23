@@ -65,14 +65,14 @@ async function main() {
     const dependencyErrors = {}
     const fixedChartVersions = {}
 
-    if (!chart.dependencies || !Array.isArray(chart.dependencies)) {
+    if (!Array.isArray(chart.dependencies) || chart.dependencies.length === 0) {
       console.error('No dependencies found in Chart.yaml')
       process.exit(1)
     }
 
     for (const dependency of chart.dependencies) {
       const currentDependencyVersion = dependency.version
-      if (dependencyNameFilter.length != 0 && !dependencyNameFilter.includes(dependency.name)) {
+      if (dependencyNameFilter.length !== 0 && !dependencyNameFilter.includes(dependency.name)) {
         console.log(
           `Skipping updates for dependency: ${dependency.name} due to dependencyNameFilter: ${dependencyNameFilter} `,
         )
