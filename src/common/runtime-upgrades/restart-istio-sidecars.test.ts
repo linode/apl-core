@@ -625,9 +625,18 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
     jest.clearAllMocks()
   })
 
-  it('should restart pod owners with outdated sidecars using hard-coded version', async () => {
-    mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
-    mockDeps.getCurrentVersion.mockResolvedValue('2.0.0')
+  it('should return early if expected Istio version is not found', async () => {
+    mockDeps.getIstioVersionFromPod.mockResolvedValue(null)
+
+    await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
+
+    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockCoreApi.listPodForAllNamespaces).not.toHaveBeenCalled()
+    expect(mockDeps.restartPodOwner).not.toHaveBeenCalled()
+  })
+
+  it('should restart pod owners with outdated sidecars', async () => {
+    mockDeps.getIstioVersionFromPod.mockResolvedValue('1.25.1')
     mockDeps.getWorkloadKeyFromPod.mockReturnValue('ns/deploy')
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
       items: [
@@ -648,13 +657,15 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
+    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalledWith({
+      labelSelector: 'security.istio.io/tlsMode=istio',
+    })
     expect(mockDeps.restartPodOwner).toHaveBeenCalledTimes(1)
   })
 
-  it('should not restart if sidecars are up to date with hard-coded version', async () => {
-    mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
-    mockDeps.getCurrentVersion.mockResolvedValue('2.0.0')
+  it('should not restart if sidecars are up to date', async () => {
+    mockDeps.getIstioVersionFromPod.mockResolvedValue('1.25.1')
     mockDeps.getWorkloadKeyFromPod.mockReturnValue('ns/deploy')
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
       items: [
@@ -675,31 +686,38 @@ describe('detectAndRestartOutdatedIstioSidecars', () => {
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
+    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalledWith({
+      labelSelector: 'security.istio.io/tlsMode=istio',
+    })
     expect(mockDeps.restartPodOwner).not.toHaveBeenCalled()
   })
 
   it('should handle empty pod list', async () => {
-    mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
-    mockDeps.getCurrentVersion.mockResolvedValue('2.0.0')
+    mockDeps.getIstioVersionFromPod.mockResolvedValue('1.25.1')
     mockCoreApi.listPodForAllNamespaces.mockResolvedValue({
       items: [],
     })
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
+    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalledWith({
+      labelSelector: 'security.istio.io/tlsMode=istio',
+    })
     expect(mockDeps.restartPodOwner).not.toHaveBeenCalled()
   })
 
   it('should handle API errors gracefully', async () => {
-    mockDeps.getDeploymentState.mockResolvedValue({ version: '1.2.3' })
-    mockDeps.getCurrentVersion.mockResolvedValue('2.0.0')
+    mockDeps.getIstioVersionFromPod.mockResolvedValue('1.25.1')
     mockCoreApi.listPodForAllNamespaces.mockRejectedValue(new Error('API call failed'))
 
     await detectAndRestartOutdatedIstioSidecars(mockCoreApi, mockDeps)
 
-    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalled()
+    expect(mockDeps.getIstioVersionFromPod).toHaveBeenCalledWith(mockCoreApi)
+    expect(mockCoreApi.listPodForAllNamespaces).toHaveBeenCalledWith({
+      labelSelector: 'security.istio.io/tlsMode=istio',
+    })
     expect(mockDeps.restartPodOwner).not.toHaveBeenCalled()
   })
 })
