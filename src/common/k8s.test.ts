@@ -464,3 +464,84 @@ describe('ArgoCD Application Tests', () => {
     })
   })
 })
+
+describe('restartOtomiApiDeployment', () => {
+  let mockAppApi: jest.Mocked<AppsV1Api>
+
+  beforeEach(() => {
+    mockAppApi = {
+      patchNamespacedDeployment: jest.fn(),
+    } as unknown as jest.Mocked<AppsV1Api>
+
+    jest.clearAllMocks()
+  })
+
+  it('should successfully restart otomi-api deployment', async () => {
+    mockAppApi.patchNamespacedDeployment.mockResolvedValue({} as any)
+
+    await k8s.restartOtomiApiDeployment(mockAppApi)
+
+    expect(mockAppApi.patchNamespacedDeployment).toHaveBeenCalledWith(
+      {
+        name: 'otomi-api',
+        namespace: 'otomi',
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': expect.any(String),
+                },
+              },
+            },
+          },
+        },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
+  })
+
+  it('should use valid ISO timestamp for restartedAt annotation', async () => {
+    mockAppApi.patchNamespacedDeployment.mockResolvedValue({} as any)
+
+    const startTime = new Date()
+    await k8s.restartOtomiApiDeployment(mockAppApi)
+    const endTime = new Date()
+
+    const call = mockAppApi.patchNamespacedDeployment.mock.calls[0]
+    const restartedAt = call[0].body.spec.template.metadata.annotations['kubectl.kubernetes.io/restartedAt']
+    const restartedAtTime = new Date(restartedAt)
+
+    expect(restartedAtTime).toBeInstanceOf(Date)
+    expect(restartedAtTime.getTime()).toBeGreaterThanOrEqual(startTime.getTime())
+    expect(restartedAtTime.getTime()).toBeLessThanOrEqual(endTime.getTime())
+  })
+
+  it('should throw error when API call fails', async () => {
+    const apiError = new Error('Deployment not found')
+    mockAppApi.patchNamespacedDeployment.mockRejectedValue(apiError)
+
+    await expect(k8s.restartOtomiApiDeployment(mockAppApi)).rejects.toThrow('Deployment not found')
+
+    expect(mockAppApi.patchNamespacedDeployment).toHaveBeenCalledTimes(1)
+  })
+
+  it('should use correct deployment name and namespace', async () => {
+    mockAppApi.patchNamespacedDeployment.mockResolvedValue({} as any)
+
+    await k8s.restartOtomiApiDeployment(mockAppApi)
+
+    const call = mockAppApi.patchNamespacedDeployment.mock.calls[0]
+    expect(call[0].name).toBe('otomi-api')
+    expect(call[0].namespace).toBe('otomi')
+  })
+
+  it('should use strategic merge patch headers', async () => {
+    mockAppApi.patchNamespacedDeployment.mockResolvedValue({} as any)
+
+    await k8s.restartOtomiApiDeployment(mockAppApi)
+
+    const call = mockAppApi.patchNamespacedDeployment.mock.calls[0]
+    expect(call[1]).toEqual(setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch))
+  })
+})
