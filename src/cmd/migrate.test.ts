@@ -1,14 +1,19 @@
 import { globSync } from 'glob'
 import { applyChanges, Changes, filterChanges, getBuildName, policiesMigration } from 'src/cmd/migrate'
-import stubs from 'src/test-stubs'
 import { env } from '../common/envalid'
 import { getFileMap } from '../common/repo'
+import { terminal } from '../common/debug'
 
+// Mock external dependencies at the top level - BEFORE imports
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'my-fixed-uuid'),
 }))
 
-const { terminal } = stubs
+jest.mock('../common/k8s')
+jest.mock('../common/values')
+jest.mock('../common/yargs')
+jest.mock('../common/utils')
+jest.mock('zx')
 
 describe('Upgrading values', () => {
   const oldVersion = 1
