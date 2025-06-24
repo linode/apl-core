@@ -525,3 +525,35 @@ export async function waitForArgoCDAppHealthy(
     { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
   )
 }
+
+export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void> {
+  const d = terminal('common:k8s:restartOtomiApiDeployment')
+
+  try {
+    d.info('Restarting otomi-api deployment')
+
+    await appApi.patchNamespacedDeployment(
+      {
+        name: 'otomi-api',
+        namespace: 'otomi',
+        body: {
+          spec: {
+            template: {
+              metadata: {
+                annotations: {
+                  'kubectl.kubernetes.io/restartedAt': new Date().toISOString(),
+                },
+              },
+            },
+          },
+        },
+      },
+      setHeaderOptions('Content-Type', PatchStrategy.StrategicMergePatch),
+    )
+
+    d.info('Successfully restarted otomi-api deployment')
+  } catch (error) {
+    d.error('Failed to restart otomi-api deployment:', error)
+    throw error
+  }
+}
