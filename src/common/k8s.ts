@@ -459,3 +459,69 @@ export async function deleteStatefulSetPods(
     d.error(`Failed to delete pods for StatefulSet ${statefulSetName}:`, error)
   }
 }
+
+// Core logic functions that can be easily tested
+export async function checkArgoCDAppStatus(
+  appName: string,
+  customApi: CustomObjectsApi,
+  statusPath: 'sync' | 'health',
+  expectedValue: 'Synced' | 'Healthy',
+): Promise<string> {
+  const application = await customApi.getNamespacedCustomObject({
+    group: 'argoproj.io',
+    version: 'v1alpha1',
+    namespace: 'argocd',
+    plural: 'applications',
+    name: appName,
+  })
+
+  const actualStatus = statusPath === 'sync' ? application?.status?.sync?.status : application?.status?.health?.status
+
+  if (actualStatus !== expectedValue) {
+    throw new Error(`Application ${appName} ${statusPath} status is '${actualStatus}', expected '${expectedValue}'`)
+  }
+
+  return actualStatus
+}
+
+export async function waitForArgoCDAppSync(
+  appName: string,
+  customApi: CustomObjectsApi,
+  d: OtomiDebugger,
+): Promise<void> {
+  d.info(`Waiting for ArgoCD application '${appName}' to complete sync...`)
+
+  await retry(
+    async () => {
+      try {
+        await checkArgoCDAppStatus(appName, customApi, 'sync', 'Synced')
+        d.info(`Application '${appName}' sync completed`)
+      } catch (error) {
+        d.warn(`Application '${appName}' is not synced yet: ${error.message}`)
+        throw error
+      }
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
+}
+
+export async function waitForArgoCDAppHealthy(
+  appName: string,
+  customApi: CustomObjectsApi,
+  d: OtomiDebugger,
+): Promise<void> {
+  d.info(`Waiting for ArgoCD application '${appName}' to be healthy...`)
+
+  await retry(
+    async () => {
+      try {
+        await checkArgoCDAppStatus(appName, customApi, 'health', 'Healthy')
+        d.info(`Application '${appName}' is healthy`)
+      } catch (error) {
+        d.warn(`Application '${appName}' is not healthy yet: ${error.message}`)
+        throw error
+      }
+    },
+    { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+  )
+}
