@@ -531,7 +531,8 @@ export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void
 
   try {
     d.info('Restarting otomi-api deployment')
-
+    // This is equivalent to the 'kubectl rollout restart' command/
+    // Read more at: https://kubernetes.io/docs/reference/labels-annotations-taints/#kubectl-k8s-io-restart-at
     await appApi.patchNamespacedDeployment(
       {
         name: 'otomi-api',
