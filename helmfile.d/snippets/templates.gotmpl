@@ -37,7 +37,7 @@ templates:
         args:
           - wait
           - --for=condition=Ready
-          - cluster/{{ .Release.Name | replace "-otomi-db" ""}}
+          - 'cluster/{{ .Release.Name | replace "-otomi-db" ""}}-db'
           - --timeout=600s
           - -n
           - '{{ .Release.Namespace }}'
