@@ -30,6 +30,17 @@ templates:
     chart: ../charts/otomi-db
     values:
       - ../values/{{ .Release.Name | replace "-otomi-db" ""}}/{{ .Release.Name}}.gotmpl
+    hooks:
+      - events: [postsync]
+        showlogs: true
+        command: kubectl
+        args:
+          - wait
+          - --for=condition=Ready
+          - cluster/{{ .Release.Name | replace "-otomi-db" ""}}
+          - --timeout=600s
+          - -n
+          - '{{ .Release.Namespace }}'
   raw: &raw
     chart: ../charts/raw
     values:
