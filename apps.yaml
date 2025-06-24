@@ -56,7 +56,7 @@ appsInfo:
     isDeprecated: true
     deprecationInfo:
       replacement: tekton
-      path: '/#/namespaces/otomi-pipelines/pipelineruns'
+      path: /#/namespaces/otomi-pipelines/pipelineruns
       message: Drone is deprecated for enhanced performance, maintainability, and integration.
       reasons:
         - To improve overall system performance
@@ -146,7 +146,7 @@ appsInfo:
     integration: APL integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.26.1
+    appVersion: 1.26.2
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
