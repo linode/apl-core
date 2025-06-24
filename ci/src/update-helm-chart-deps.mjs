@@ -219,8 +219,20 @@ async function main() {
         if (ciCreateGithubPr) {
           // Create a pull request
           const prBody = `This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`
-          const draftArg = setPrDraft ? '--draft' : ''
-          await $`gh pr create --title ${commitMessage} --body ${prBody} --base ${baseBranch} --head ${branchName} ${draftArg}`
+          const args = [
+            '--title',
+            commitMessage,
+            '--body',
+            prBody,
+            '--base',
+            baseBranch,
+            '--head',
+            branchName,
+          ]
+          if (setPrDraft) {
+            args.push('--draft')
+          }
+          await $`gh pr create ${args}`
         }
       } catch (error) {
         console.error('Error updating dependencies:', error)
