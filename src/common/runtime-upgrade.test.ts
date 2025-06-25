@@ -261,6 +261,11 @@ describe('filterRuntimeUpgrades', () => {
     expect(result).toEqual([{ version: '1.5.0' }, { version: '2.0.0' }])
   })
 
+  it('should not run with prereleases = version', () => {
+    const result = filterRuntimeUpgrades('2.0.0-rc.2', sampleUpgrades)
+    expect(result).toEqual([{ version: 'dev' }])
+  })
+
   it('should not modify valid semantic versions', () => {
     const result = filterRuntimeUpgrades('1.0.0', sampleUpgrades)
     expect(result).toEqual([{ version: '1.5.0' }, { version: '2.0.0' }, { version: 'dev' }])
