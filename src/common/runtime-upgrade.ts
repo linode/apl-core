@@ -64,8 +64,9 @@ export async function runtimeUpgrade({ when }: RuntimeUpgradeArgs): Promise<void
 }
 
 export function filterRuntimeUpgrades(version: string, rUpgrades: RuntimeUpgrades): RuntimeUpgrades {
-  // Prereleases such as v1.0-rc1 are not a complete semantic version - changing these to v1.0.0-rc1
-  const prereleaseMatch = version.match(/^[0-9]+\.[0-9]+(-[a-zA-Z]+\.?[0-9]+)$/)
-  const currentVersion = prereleaseMatch ? version.replace(prereleaseMatch[1], `.0${prereleaseMatch[1]}`) : version
+  const currentVersion = semver.coerce(version)
+  if (!currentVersion) {
+    throw new Error(`Unsupported version format: ${version}`)
+  }
   return rUpgrades.filter((rUpgrade) => rUpgrade.version === 'dev' || semver.gt(rUpgrade.version, currentVersion))
 }
