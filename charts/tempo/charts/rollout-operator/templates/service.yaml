@@ -1,0 +1,18 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rollout-operator.fullname" . }}
+  labels:
+    {{- include "rollout-operator.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 8001
+      targetPort: http-metrics
+      protocol: TCP
+      name: http-metrics
+  selector:
+    {{- include "rollout-operator.selectorLabels" . | nindent 4 }}
+{{- end -}}
