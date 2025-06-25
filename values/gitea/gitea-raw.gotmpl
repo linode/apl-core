@@ -18,14 +18,6 @@ resources:
 {{- end }}
 - apiVersion: v1
   kind: Secret
-  type: kubernetes.io/basic-auth
-  metadata:
-    name: gitea-db-secret
-  data:
-    username: "{{ "gitea" | b64enc }}"
-    password: "{{ $g.postgresqlPassword | b64enc }}"
-- apiVersion: v1
-  kind: Secret
   metadata:
     name: gitea-admin-secret
   data:
