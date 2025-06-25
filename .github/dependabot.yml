@@ -14,6 +14,14 @@ updates:
       prefix: 'chore(deps)'
     labels:
       - 'dependencies'
+      - 'dependabot'
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   # Docker
   - package-ecosystem: 'docker'
@@ -24,9 +32,17 @@ updates:
       prefix: 'chore(deps)'
     labels:
       - 'dependencies'
+      - 'dependabot'
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
     ignore:
       - dependency-name: 'node'
-        versions: ['>=21']
+        versions: ['>=23']
 
   # github-actions
   - package-ecosystem: 'github-actions'
@@ -37,3 +53,11 @@ updates:
       prefix: 'chore(deps)'
     labels:
       - 'dependencies'
+      - 'dependabot'
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
