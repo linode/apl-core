@@ -42,6 +42,7 @@ appsInfo:
     license: Apache 2.0
     about: CloudNative PostgreSQL is an open source operator designed to manage PostgreSQL workloads on any supported Kubernetes cluster running in private, public, hybrid, or multi-cloud environments.
     integration: CloudNativePG is used by APL to provide Postgresql database for various applications. In the values you can configure a storageprovider for backups. The backups can be enabled in settings.
+    chartName: cloudnative-pg
   drone:
     title: Drone
     appVersion: 2.7.3
@@ -153,6 +154,7 @@ appsInfo:
     license: Apache 2.0
     about: Istio is an open platform for providing a uniform way to integrate microservices, manage traffic flow across microservices, enforce policies and aggregate telemetry data. Istio's control plane provides an abstraction layer over the underlying cluster management platform.
     integration: APL has security best practices built in, and is designed for intrusion. Istio is used by APL as a service mesh to deliver mTLS enforcement for all traffic that is deemed compromisable, egress control to force teams to choose explicit egress endpoints, and advanced routing capabilities such as weight based load balancing (A/B or blue/green testing). Istio is part of the core of APL and can not be disabled.
+    chartName: istiod
   jaeger:
     title: Jaeger Operator
     dependencies: Open Telemetry (otel)
@@ -186,6 +188,7 @@ appsInfo:
     dependencies: Prometheus
     about: Kiali is a management console for Istio to manage, visualize, validate and troubleshoot the service mesh.
     integration: Kiali can be activated to gain observability insights on its network traffic. Kiali runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
+    chartName: kiali-operator
   knative:
     title: Knative Operator
     appVersion: 1.18.1
@@ -196,6 +199,7 @@ appsInfo:
     license: Apache 2.0
     about: Knative Serving builds on Kubernetes to support deploying and serving of applications and functions as serverless containers. Serving is easy to get started with and scales to support advanced scenarios.
     integration: Knative serving can be activated to deliver Container-as-a-Service (CaaS) functionality with a scale-to-zero option. It can be compared to Functions-as-a-service (FaaS) but is container oriented, and takes only one manifest to configure an auto scaling service based on a container image of choice. APL offers an on-the-fly Knative service deployment, making it very easy to deploy containerized services without the hassle of providing all the supporting resources involved with Helm charts. Istio Virtual Services are used to route traffic coming in for a public domain to its backing Knative Service, allowing it to set a custom domain.
+    chartName: knative-operator
   kyverno:
     title: Kyverno
     appVersion: 1.11.4
@@ -229,6 +233,7 @@ appsInfo:
     dependencies: Harbor
     about: Tekton Pipelines provides Kubernetes custom resources for declaring CI/CD-style pipelines.
     integration: APL uses Tekton to proivide pre-build pipelines using the git-clone, buildpacks and kaniko tasks to build images from source code and push the created images to Harbor.
+    chartName: tekton-pipelines
   loki:
     title: Loki
     appVersion: 2.9.10
@@ -317,6 +322,7 @@ appsInfo:
     dependencies: Prometheus, Grafana
     about: Trivy Operator continuously scans your Kubernetes cluster for security issues, and generates security reports as Kubernetes Custom Resources. It does it by watching Kubernetes for state changes and automatically triggering scans in response to changes.
     integration: APL installs and configures Trivy Operator to scan all resources deployed by a team and makes results visible in a Grafana dashboard.
+    chartName: trivy-operator
   otel:
     title: Open Telemetry Operator
     appVersion: 0.80.0
@@ -328,6 +334,7 @@ appsInfo:
     dependencies: Prometheus, Grafana, Loki, Tempo
     about: The OpenTelemetry Collector offers a vendor-agnostic implementation on how to receive, process and export telemetry data. In addition, it removes the need to run, operate and maintain multiple agents/collectors in order to support open-source telemetry data formats (e.g. Jaeger, Prometheus, etc.) to multiple open-source or commercial back-ends.
     integration: OpenTelemetry Collector is used to receive telementry data from Istio Envoy access logs and export this data to Tempo.
+    chartName: otel-operator
   velero:
     title: Velero
     appVersion: 1.9.0
