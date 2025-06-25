@@ -1,5 +1,5 @@
 import { OtomiDebugger } from '../debug'
-import { k8s } from '../k8s'
+import { k8s, restartOtomiApiDeployment } from '../k8s'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 
 export interface RuntimeUpgradeContext {
@@ -28,6 +28,15 @@ export const runtimeUpgrades: RuntimeUpgrades = [
   {
     version: '4.7.0',
     applications: {
+      'keycloak-keycloak': {
+        post: async (context: RuntimeUpgradeContext) => {
+          try {
+            await restartOtomiApiDeployment(k8s.app())
+          } catch (error) {
+            context.debug.error('Failed to check and restart outdated Istio sidecars:', error)
+          }
+        },
+      },
       'istio-system-istiod': {
         post: async (context: RuntimeUpgradeContext) => {
           try {
