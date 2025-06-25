@@ -33,7 +33,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
           try {
             await restartOtomiApiDeployment(k8s.app())
           } catch (error) {
-            context.debug.error('Failed to check and restart outdated Istio sidecars:', error)
+            context.debug.error('Failed to check and restart otomi-api:', error)
           }
         },
       },
