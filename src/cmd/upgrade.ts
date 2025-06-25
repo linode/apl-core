@@ -36,9 +36,10 @@ export type Upgrades = Array<Upgrade>
 
 // select upgrades after semver version, and always select upgrade with version "dev" for dev purposes
 export function filterUpgrades(version: string, upgrades: Upgrades): Upgrades {
-  // Prereleases such as v1.0-rc1 are not a complete semantic version - changing these to v1.0.0-rc1
-  const prereleaseMatch = version.match(/^[0-9]+\.[0-9]+(-[a-zA-Z]+\.?[0-9]+)$/)
-  const currentVersion = prereleaseMatch ? version.replace(prereleaseMatch[1], `.0${prereleaseMatch[1]}`) : version
+  const currentVersion = semver.coerce(version, { includePrerelease: true })
+  if (!currentVersion) {
+    throw new Error(`Unsupported version format: ${version}`)
+  }
   return upgrades.filter((c) => c.version === 'dev' || semver.gt(c.version, currentVersion))
 }
 
