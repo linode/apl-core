@@ -5,7 +5,7 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
-import { getDeploymentState, getHelmReleases, setDeploymentState } from 'src/common/k8s'
+import { getDeploymentState, getHelmReleases, k8s, restartOtomiApiDeployment, setDeploymentState } from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -46,8 +46,10 @@ const applyAll = async () => {
   const initialInstall = !argv.tekton
   const hfArgs = initialInstall ? HF_DEFAULT_SYNC_ARGS : ['apply', '--sync-args', '--qps=20']
 
-  await upgrade({ when: 'pre' })
-  await runtimeUpgrade({ when: 'pre' })
+  if (!initialInstall) {
+    await upgrade({ when: 'pre' })
+    await runtimeUpgrade({ when: 'pre' })
+  }
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
@@ -109,8 +111,10 @@ const applyAll = async () => {
     await applyAsApps(params)
   }
 
-  await upgrade({ when: 'post' })
-  await runtimeUpgrade({ when: 'post' })
+  if (!initialInstall) {
+    await upgrade({ when: 'post' })
+    await runtimeUpgrade({ when: 'post' })
+  }
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(initialInstall)
     if (initialInstall) {
@@ -127,6 +131,7 @@ const applyAll = async () => {
       const initialData = await initialSetupData()
       await createCredentialsSecret(initialData.secretName, initialData.username, initialData.password)
       await retryIsOAuth2ProxyRunning()
+      await restartOtomiApiDeployment(k8s.app())
       await printWelcomeMessage(initialData.secretName, initialData.domainSuffix)
     }
   }
