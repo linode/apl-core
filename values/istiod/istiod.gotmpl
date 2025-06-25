@@ -27,14 +27,8 @@ global:
     level: {{ $i | get "global.logging.level" "default:info" }}
   proxy:
     resources: {{- $i.resources.proxy | toYaml | nindent 6 }}
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio/proxyv2:1.26.0"
-    {{- end }}
   proxy_init:
     resources: {{- $i.resources.proxy | toYaml | nindent 6 }}
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio/proxyv2:1.26.0"
-    {{- end }}
   priorityClassName: otomi-critical
 
 meshConfig:
