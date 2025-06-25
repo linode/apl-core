@@ -8,6 +8,10 @@ import semver from 'semver'
 import { $ } from 'zx'
 
 export function isVersionApplicable(currentVersion, version, allowedUpgradeType) {
+  if (allowedUpgradeType === 'latest') {
+    // Consider all versions; the latest version is selected through sorting
+    return true
+  }
   if (semver.lte(version, currentVersion)) {
     return false // Ignore versions that are <= current version
   }
@@ -27,7 +31,7 @@ async function main() {
   const env = envalid.cleanEnv(process.env, {
     CI_UPDATE_TYPE: str({
       desc: 'Path to the YAML file to validate',
-      choices: ['patch', 'minor', 'major'],
+      choices: ['patch', 'minor', 'major', 'latest'],
       default: 'minor',
     }),
     CI_HELM_CHART_NAME_FILTER: json({ desc: 'A list of names in json format', default: [] }),
