@@ -46,8 +46,10 @@ const applyAll = async () => {
   const initialInstall = !argv.tekton
   const hfArgs = initialInstall ? HF_DEFAULT_SYNC_ARGS : ['apply', '--sync-args', '--qps=20']
 
-  await upgrade({ when: 'pre' })
-  await runtimeUpgrade({ when: 'pre' })
+  if (!initialInstall) {
+    await upgrade({ when: 'pre' })
+    await runtimeUpgrade({ when: 'pre' })
+  }
   d.info('Start apply all')
   d.info(`Deployment state: ${JSON.stringify(prevState)}`)
   const tag = await getImageTag()
@@ -109,8 +111,10 @@ const applyAll = async () => {
     await applyAsApps(params)
   }
 
-  await upgrade({ when: 'post' })
-  await runtimeUpgrade({ when: 'post' })
+  if (!initialInstall) {
+    await upgrade({ when: 'post' })
+    await runtimeUpgrade({ when: 'post' })
+  }
   if (!(env.isDev && env.DISABLE_SYNC)) {
     await commit(initialInstall)
     if (initialInstall) {
