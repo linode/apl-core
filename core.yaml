@@ -29,6 +29,8 @@ k8s:
     - name: gitea
     - name: apl-gitea-operator
       disableIstioInjection: true
+    - name: apl-operator
+      disableIstioInjection: true
     - name: grafana
       app: grafana
     - name: istio-system
@@ -75,11 +77,9 @@ k8s:
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: tekton-pipelines
-      app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: tekton-triggers
-      app: tekton
       disableIstioInjection: true
       disablePolicyChecks: true
     - name: otel
