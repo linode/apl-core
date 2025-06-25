@@ -28,12 +28,12 @@ global:
   proxy:
     resources: {{- $i.resources.proxy | toYaml | nindent 6 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio/proxyv2:1.26.0"
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio/proxyv2:1.26.1"
     {{- end }}
   proxy_init:
     resources: {{- $i.resources.proxy | toYaml | nindent 6 }}
     {{- if $v.otomi.linodeLkeImageRepository }}
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio/proxyv2:1.26.0"
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/istio/proxyv2:1.26.1"
     {{- end }}
   priorityClassName: otomi-critical
 
