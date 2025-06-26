@@ -2,6 +2,7 @@ import simpleGit, { SimpleGit } from 'simple-git'
 import { OtomiDebugger, terminal } from '../common/debug'
 import retry, { Options } from 'async-retry'
 import { OperatorError } from './errors'
+import { getErrorMessage } from './utils'
 
 export interface GitRepositoryConfig {
   username: string
@@ -38,7 +39,7 @@ export class GitRepository {
         this._lastRevision = logs.latest?.hash || ''
       }
     } catch (error) {
-      this.d.warn('Gitea has no commits yet:', error)
+      this.d.warn('Gitea has no commits yet:', getErrorMessage(error))
       throw error
     }
   }
@@ -68,7 +69,7 @@ export class GitRepository {
       await this.git.clone(this.repoUrl, this.repoPath)
       this.d.info(`Repository cloned successfully`)
     } catch (error) {
-      this.d.error('Failed to clone repository:', error)
+      this.d.error('Failed to clone repository:', getErrorMessage(error))
       throw new OperatorError('Repository clone failed', error as Error)
     }
   }
@@ -99,7 +100,7 @@ export class GitRepository {
       await this.git.pull()
       return this.getCurrentRevision()
     } catch (error) {
-      this.d.error('Failed to pull repository:', error)
+      this.d.error('Failed to pull repository:', getErrorMessage(error))
       throw new OperatorError('Repository pull failed', error as Error)
     }
   }
@@ -152,7 +153,7 @@ export class GitRepository {
         applyTeamsOnly: onlyTeamsChanged,
       }
     } catch (error) {
-      this.d.error('Failed to analyze repository changes:', error)
+      this.d.error('Failed to analyze repository changes:', getErrorMessage(error))
       throw new OperatorError('Repository sync and analysis failed', error as Error)
     }
   }
