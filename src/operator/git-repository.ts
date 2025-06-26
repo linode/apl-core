@@ -1,8 +1,9 @@
 import simpleGit, { SimpleGit } from 'simple-git'
 import { OtomiDebugger, terminal } from '../common/debug'
-import retry, { Options } from 'async-retry'
+import retry from 'async-retry'
 import { OperatorError } from './errors'
 import { getErrorMessage } from './utils'
+import { env } from '../common/envalid'
 
 export interface GitRepositoryConfig {
   username: string
@@ -44,22 +45,22 @@ export class GitRepository {
     }
   }
 
-  async waitForCommits(maxRetries = 30, interval = 10000): Promise<void> {
+  async waitForCommits(maxRetries = env.RETRIES, interval = env.MIN_TIMEOUT): Promise<void> {
     this.d.info(`Waiting for repository to have commits (max ${maxRetries} retries, ${interval}ms interval)`)
 
-    const retryOptions: Options = {
-      retries: 20,
-      maxTimeout: 30000,
-    }
     const d = terminal('common:k8s:waitTillGitRepoAvailable')
-    await retry(async () => {
-      try {
-        await this.setLastRevision()
-      } catch (e) {
-        d.warn(`The values repository has no commits yet. Retrying in ${retryOptions.maxTimeout} ms`)
-        throw e
-      }
-    }, retryOptions)
+    await retry(
+      async () => {
+        try {
+          await this.git.pull()
+          await this.setLastRevision()
+        } catch (e) {
+          d.warn(`The values repository has no commits yet. Retrying in ${env.MIN_TIMEOUT} ms`)
+          throw e
+        }
+      },
+      { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+    )
   }
 
   async clone(): Promise<void> {
