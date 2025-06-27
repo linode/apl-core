@@ -163,15 +163,19 @@ const apply = async (): Promise<void> => {
   }
   d.info('Start apply')
   const skipCleanup = argv.skipCleanup ? '--skip-cleanup' : ''
-  await hf(
-    {
-      fileOpts: argv.file,
-      labelOpts: argv.label,
-      logLevel: logLevelString(),
-      args: ['apply', '--include-needs', skipCleanup],
-    },
-    { streams: { stdout: d.stream.log, stderr: d.stream.error } },
-  )
+  if (argv.tekton) {
+    await applyAsApps(argv)
+  } else {
+    await hf(
+      {
+        fileOpts: argv.file,
+        labelOpts: argv.label,
+        logLevel: logLevelString(),
+        args: ['apply', '--include-needs', skipCleanup],
+      },
+      { streams: { stdout: d.stream.log, stderr: d.stream.error } },
+    )
+  }
 }
 
 export const module: CommandModule = {
