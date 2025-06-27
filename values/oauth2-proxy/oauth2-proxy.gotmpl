@@ -58,14 +58,21 @@ podAnnotations:
   sidecar.istio.io/inject: "false"
 
 extraVolumes:
-  - name: error-page
+  - name: custom-templates
     configMap:
-      name: oauth2-proxy-error-page
+      name: oauth2-proxy-custom-templates
+      items:
+        - key: redirect.html
+          path: sign_in.html
+        - key: redirect.html
+          path: error.html
+        - key: robots.txt
+          path: robots.txt
 
 extraVolumeMounts:
-  - name: error-page
-    mountPath: /etc/oauth2-proxy/error.html
-    subPath: error.html
+  - name: custom-templates
+    mountPath: /etc/oauth2-proxy
+    readOnly: true
 
 extraInitContainers:
   - name: wait-for-keycloak
