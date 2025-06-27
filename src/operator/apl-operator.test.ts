@@ -123,7 +123,7 @@ describe('AplOperator', () => {
       expect(waitTillGitRepoAvailable).toHaveBeenCalledWith(mockGitRepo.repoUrl)
       expect(mockGitRepo.clone).toHaveBeenCalled()
 
-      expect(mockErrorFn).toHaveBeenCalledWith('Failed to start APL operator:', error)
+      expect(mockErrorFn).toHaveBeenCalledWith('Failed to start APL operator:', 'Start failed')
     })
 
     test('should log error if poll or reconcile fails after start', async () => {
@@ -142,7 +142,7 @@ describe('AplOperator', () => {
 
       await aplOperator.start()
 
-      expect(mockErrorFn).toHaveBeenCalledWith('Error in polling or reconcile task:', expect.any(Error))
+      expect(mockErrorFn).toHaveBeenCalledWith('Error in polling or reconcile task:', 'Reconcile crashed')
     })
 
     test('should handle already running state', async () => {
@@ -255,7 +255,7 @@ describe('AplOperator', () => {
 
       expect((aplOperator as any).isApplying).toBe(false)
 
-      expect(mockErrorFn).toHaveBeenCalledWith('[poll] Apply process failed', error)
+      expect(mockErrorFn).toHaveBeenCalledWith('[poll] Apply process failed', 'Apply failed')
     })
   })
 
@@ -339,7 +339,7 @@ describe('AplOperator', () => {
 
       await pollPromise
 
-      expect(mockErrorFn).toHaveBeenCalledWith('Error during git polling cycle:', expect.any(Error))
+      expect(mockErrorFn).toHaveBeenCalledWith('Error during git polling cycle:', 'Pull failed')
     })
   })
 
@@ -390,7 +390,7 @@ describe('AplOperator', () => {
       await reconcilePromise
 
       expect(runApplyIfNotBusySpy).toHaveBeenCalled()
-      expect(mockErrorFn).toHaveBeenCalledWith('Error during reconciliation:', error)
+      expect(mockErrorFn).toHaveBeenCalledWith('Error during reconciliation:', 'Reconcile error')
       expect(mockInfoFn).toHaveBeenCalledWith('Reconciliation loop stopped')
     })
   })
