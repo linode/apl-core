@@ -6,6 +6,7 @@ import { module as bootstrapModule } from '../cmd/bootstrap'
 import { module as validateValuesModule } from '../cmd/validate-values'
 import { module as migrateModule } from '../cmd/migrate'
 import { OperatorError } from './errors'
+import { getErrorMessage } from './utils'
 
 export class AplOperations {
   private d: OtomiDebugger
@@ -26,7 +27,7 @@ export class AplOperations {
       await migrateModule.handler(args)
       this.d.info('Migration completed successfully')
     } catch (error) {
-      this.d.error('Migration failed:', error)
+      this.d.error('Migration failed:', getErrorMessage(error))
       throw new OperatorError('Migration process failed', error as Error)
     }
   }
@@ -38,7 +39,7 @@ export class AplOperations {
       await bootstrapModule.handler({} as HelmArguments)
       this.d.info('Bootstrap completed successfully')
     } catch (error) {
-      this.d.error('Bootstrap failed:', error)
+      this.d.error('Bootstrap failed:', getErrorMessage(error))
       throw new OperatorError('Bootstrap process failed', error as Error)
     }
   }
@@ -50,7 +51,7 @@ export class AplOperations {
       await validateValuesModule.handler({} as HelmArguments)
       this.d.info('Values validation completed successfully')
     } catch (error) {
-      this.d.error('Values validation failed:', error)
+      this.d.error('Values validation failed:', getErrorMessage(error))
       throw new OperatorError('Values validation failed', error as Error)
     }
   }
@@ -68,7 +69,7 @@ export class AplOperations {
       await applyModule.handler(args)
       this.d.info('Apply completed successfully')
     } catch (error) {
-      this.d.error('Apply failed:', error)
+      this.d.error('Apply failed:', getErrorMessage(error))
       throw new OperatorError('Apply operation failed', error as Error)
     }
   }
@@ -84,7 +85,7 @@ export class AplOperations {
       await applyAsAppsModule.handler(args)
       this.d.info('ApplyAsApps for teams completed successfully')
     } catch (error) {
-      this.d.error('ApplyAsApps for teams failed:', error)
+      this.d.error('ApplyAsApps for teams failed:', getErrorMessage(error))
       throw new OperatorError('ApplyAsApps for teams failed', error as Error)
     }
   }
