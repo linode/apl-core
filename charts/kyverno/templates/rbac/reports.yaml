@@ -7,12 +7,10 @@ metadata:
     {{- include "kyverno.rbac.labels.admin" . | nindent 4 }}
 rules:
   - apiGroups:
-      - kyverno.io
+      - reports.kyverno.io
     resources:
-      - admissionreports
-      - clusteradmissionreports
-      - backgroundscanreports
-      - clusterbackgroundscanreports
+      - ephemeralreports
+      - clusterephemeralreports
     verbs:
       - create
       - delete
@@ -30,12 +28,10 @@ metadata:
     {{- include "kyverno.rbac.labels.view" . | nindent 4 }}
 rules:
   - apiGroups:
-      - kyverno.io
+      - reports.kyverno.io
     resources:
-      - admissionreports
-      - clusteradmissionreports
-      - backgroundscanreports
-      - clusterbackgroundscanreports
+      - ephemeralreports
+      - clusterephemeralreports
     verbs:
       - get
       - list
