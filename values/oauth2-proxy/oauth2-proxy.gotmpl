@@ -99,6 +99,7 @@ sessionStorage:
   type: redis
   redis:
     clientType: {{ $r | get "architecture" }}
+    password: {{ $r | get "password" | quote }}
 
 redis:
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -107,6 +108,8 @@ redis:
   {{- end }}
   enabled: true
   architecture: {{ $r | get "architecture" }}
+  auth:
+    password: {{ $r | get "password" | quote }}
 
   sentinel:
     persistence:
