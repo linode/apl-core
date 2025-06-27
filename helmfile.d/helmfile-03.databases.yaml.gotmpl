@@ -14,6 +14,13 @@ bases:
 {{- $k := $a.keycloak }}
 
 releases:
+  - name: keycloak-otomi-db
+    installed: true
+    namespace: keycloak
+    labels:
+      pkg: keycloak
+      app: core
+    <<: *otomiDb
   - name: gitea-db-secret-artifacts
     installed: true
     namespace: gitea
@@ -28,13 +35,17 @@ releases:
       pkg: gitea
       app: core
     <<: *otomiDb
-  - name: keycloak-otomi-db
-    installed: true
-    namespace: keycloak
-    labels:
-      pkg: keycloak
-      app: core
-    <<: *otomiDb
+    hooks:
+      - events: [ postsync ]
+        showlogs: true
+        command: kubectl
+        args:
+          - wait
+          - --for=condition=Ready
+          - 'cluster/gitea-db'
+          - --timeout=600s
+          - -n
+          - gitea
   - name: harbor-otomi-db
     installed: {{ ($h | get "enabled") }}
     namespace: harbor

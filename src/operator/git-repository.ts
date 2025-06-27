@@ -55,11 +55,11 @@ export class GitRepository {
           await this.git.pull()
           await this.setLastRevision()
         } catch (e) {
-          d.warn(`The values repository has no commits yet. Retrying in ${env.MIN_TIMEOUT} ms`)
+          d.warn(`The values repository has no commits yet. Retrying in ${interval} ms`)
           throw e
         }
       },
-      { retries: env.RETRIES, randomize: env.RANDOM, minTimeout: env.MIN_TIMEOUT, factor: env.FACTOR },
+      { retries: maxRetries, randomize: env.RANDOM, minTimeout: interval, factor: env.FACTOR },
     )
   }
 
