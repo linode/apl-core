@@ -51,9 +51,6 @@ config:
     custom_templates_dir = "/etc/oauth2-proxy"
 
 replicaCount: 2
-podDisruptionBudget:
-  enabled: false
-  minAvailable: 1
 priorityClassName: otomi-critical
 resources: {{- $oauth2.resources | toYaml | nindent 2 }}
 
