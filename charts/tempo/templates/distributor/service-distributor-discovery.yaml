@@ -19,7 +19,7 @@ spec:
   clusterIP: None
   ports:
     - name: http-metrics
-      port: 3100
+      port: 3200
       targetPort: http-metrics
     {{- if .Values.traces.jaeger.thriftCompact.enabled }}
     - name: distributor-jaeger-thrift-compact
