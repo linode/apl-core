@@ -12,5 +12,5 @@ spec:
     version: main
     isMultitenant: true
     isPreInstalled: false
-    useORCS: true
+    useORCS: false
 
