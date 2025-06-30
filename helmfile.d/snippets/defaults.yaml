@@ -127,6 +127,13 @@ environments:
               limits:
                 cpu: "1"
                 memory: 1Gi
+            barmanPluginResources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+              limits:
+                cpu: 100m
+                memory: 200Mi
             _rawValues: {}
           drone:
             enabled: false
