@@ -8,12 +8,6 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  env:
-    # Barman object storage compatibility (https://github.com/EnterpriseDB/barman/issues/1086)
-    - name: AWS_REQUEST_CHECKSUM_CALCULATION
-      value: WHEN_REQUIRED
-    - name: AWS_RESPONSE_CHECKSUM_VALIDATION
-      value: WHEN_REQUIRED
   configuration:
     {{- if eq .Values.backup.type "minioLocal" }}
     destinationPath: {{ .Values.backup.minioLocal.destinationPath }}
@@ -41,4 +35,11 @@ spec:
     data:
       compression: gzip
   retentionPolicy: {{ .Values.backup.retentionPolicy }}
+  instanceSidecarConfiguration:
+    env:
+      # Barman object storage compatibility (https://github.com/EnterpriseDB/barman/issues/1086)
+      - name: AWS_REQUEST_CHECKSUM_CALCULATION
+        value: WHEN_REQUIRED
+      - name: AWS_RESPONSE_CHECKSUM_VALIDATION
+        value: WHEN_REQUIRED
 {{- end }}
