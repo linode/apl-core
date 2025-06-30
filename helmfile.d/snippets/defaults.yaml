@@ -181,6 +181,8 @@ environments:
                           gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink,
                           docker.io/bitnami/sealed-secrets-controller,
                           ghcr.io/cloudnative-pg/postgresql,
+                          ghcr.io/cloudnative-pg/plugin-barman-cloud,
+                          ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar,
                           jaegertracing/jaeger-operator
                         ) or (k8s.ns.name = "kube-system")
                           or (k8s.ns.name = "ingress")

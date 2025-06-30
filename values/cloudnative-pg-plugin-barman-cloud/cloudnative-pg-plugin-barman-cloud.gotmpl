@@ -1,0 +1,13 @@
+{{- $v := .Values }}
+
+{{- with $v.otomi.linodeLkeImageRepository }}
+image:
+  registry: {{ . }}
+  repository: ghcr/cloudnative-pg/plugin-barman-cloud
+
+sidecarImage:
+  registry: {{ . }}
+  repository: ghcr/cloudnative-pg/plugin-barman-cloud-sidecar
+{{- end }}
+
+priorityClassName: "otomi-critical"
