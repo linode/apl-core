@@ -15,4 +15,7 @@ spec:
   backupOwnerReference: {{ .Values.backup.backupOwnerReference }}
   cluster:
     name: {{ .Values.name }}
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
 {{- end }}
