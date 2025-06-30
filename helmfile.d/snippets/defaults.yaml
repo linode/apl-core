@@ -1246,6 +1246,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
           harbor:
             imageName: null
             size: 5Gi
@@ -1261,6 +1268,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
           gitea:
             imageName: null
             size: 5Gi
@@ -1275,6 +1289,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
         obj:
           provider:
             type: disabled

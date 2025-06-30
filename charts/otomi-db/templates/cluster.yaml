@@ -30,10 +30,10 @@ spec:
   monitoring:
     enablePodMonitor: {{ . }}
   {{- end }}
+  {{- with .Values.resources }}
   resources:
-    {{- with .Values.resources }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- end }}
   {{- with .Values.clusterAffinity }}
   {{- toYaml . | nindent 2 }}
   {{- end }}

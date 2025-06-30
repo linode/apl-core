@@ -42,4 +42,7 @@ spec:
         value: WHEN_REQUIRED
       - name: AWS_RESPONSE_CHECKSUM_VALIDATION
         value: WHEN_REQUIRED
+    {{- with .Values.backupSidecarResources }}
+    resources: {{- toYaml . | nindent 6 }}
+    {{- end }}
 {{- end }}
