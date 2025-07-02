@@ -43,6 +43,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          build-args: |
+            COMMIT_SHA=${{ env.COMMIT_SHA }}
           context: .
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
