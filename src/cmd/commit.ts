@@ -37,20 +37,21 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
   const argv = getParsedArgs()
   const rerunRequested = existsSync(`${env.ENV_DIR}/.rerun`)
   const message = isCi ? 'updated values [ci skip]' : argv.message || 'otomi commit'
+  const { password } = getRepo(values)
   cd(env.ENV_DIR)
   try {
     try {
-      await $`git rev-list HEAD --count`
+      await $`git rev-list HEAD --count`.quiet()
     } catch {
       d.log('Very first commit')
       // We need at least two commits in repo, so git diff in Tekton pipeline always works. This is why  the very first time we commit twice.
-      await $`git add README.md`
-      await $`git commit -m ${message} --no-verify`
+      await $`git add README.md`.quiet()
+      await $`git commit -m ${message} --no-verify`.quiet()
     }
     await $`git add -A`
     if (isCi && rerunRequested) {
       d.log('Committing changes and triggering pipeline run')
-      await $`git commit -m "[apl-trigger]" --no-verify --allow-empty`
+      await $`git commit -m "[apl-trigger]" --no-verify --allow-empty`.quiet()
     } else {
       // The below 'git status' command will always return at least single new line
       const filesChangedCount = (await $`git status --untracked-files=no --porcelain`).toString().split('\n').length - 1
@@ -58,10 +59,9 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
         d.log('Nothing to commit')
         return
       }
-      await $`git commit -m ${message} --no-verify`
+      await $`git commit -m ${message} --no-verify`.quiet()
     }
   } catch (e) {
-    const { password } = getRepo(values)
     d.log('commitAndPush error ', e?.message?.replace(password, '****'))
     return
   }
@@ -73,20 +73,21 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
         // Check if remote branch exists
         let remoteBranchExists = true
         try {
-          await $`git ls-remote --exit-code --heads origin ${branch}`
+          await $`git ls-remote --exit-code --heads origin ${branch}`.quiet()
         } catch (e) {
           remoteBranchExists = false
         }
+        await $`git checkout -B ${branch}`.quiet()
 
         if (remoteBranchExists) {
-          await $`git pull --rebase origin ${branch}`
+          await $`git pull --rebase origin ${branch}`.quiet()
         } else {
           d.log(`Remote branch '${branch}' does not exist. Skipping pull.`)
         }
-        await $`git push -u origin ${branch}`
+        await $`git push -u origin ${branch}`.quiet()
       } catch (e) {
         const errorMsg = 'Could not pull and push. Retrying...'
-        d.error(errorMsg)
+        d.error(errorMsg, e?.message?.replace(password, '****'))
         throw new Error(errorMsg)
       }
     },
