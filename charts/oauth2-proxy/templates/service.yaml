@@ -6,9 +6,9 @@ metadata:
 {{- include "oauth2-proxy.labels" . | indent 4 }}
   name: {{ template "oauth2-proxy.fullname" . }}
   namespace: {{ template "oauth2-proxy.namespace" $ }}
-{{- if .Values.service.annotations }}
+{{- with .Values.service.annotations }}
   annotations:
-{{ toYaml .Values.service.annotations | indent 4 }}
+{{ tpl ( toYaml . ) $ | indent 4 }}
 {{- end }}
 spec:
 {{- if (or (eq .Values.service.type "ClusterIP") (empty .Values.service.type)) }}
@@ -36,7 +36,7 @@ spec:
 {{- end }}
   ports:
     - port: {{ .Values.service.portNumber }}
-      targetPort: {{ .Values.httpScheme }}
+      targetPort: {{ .Values.service.targetPort | default .Values.httpScheme }}
       {{- if (and (eq .Values.service.type "NodePort") (not (empty .Values.service.nodePort))) }}
       nodePort: {{ .Values.service.nodePort }}
       {{- end }}

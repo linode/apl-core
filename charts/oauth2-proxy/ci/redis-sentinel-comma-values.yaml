@@ -1,0 +1,22 @@
+sessionStorage:
+  type: redis
+  redis:
+    clientType: sentinel
+    sentinel:
+      password: "foo"
+      masterName: "mymaster"
+      connectionUrls: "redis://oauth2-proxy-redis:26379,redis://oauth2-proxy-redis:26379"
+redis:
+  # provision an instance of the redis sub-chart
+  enabled: true
+  fullnameOverride: oauth2-proxy-redis
+  architecture: replication
+  sentinel:
+    enabled: true
+    masterSet: mymaster
+  global:
+    redis:
+      password: "foo"
+initContainers:
+  waitForRedis:
+    enabled: true
