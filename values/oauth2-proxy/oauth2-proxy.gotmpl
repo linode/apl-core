@@ -105,6 +105,13 @@ sessionStorage:
     clientType: {{ $r | get "architecture" }}
     password: {{ $r | get "password" | quote }}
 
+{{- if $v.otomi.linodeLkeImageRepository }}
+global:
+  security:
+    # Required for Redis
+    allowInsecureImages: true
+{{- end }}
+
 redis:
   {{- if $v.otomi.linodeLkeImageRepository }}
   global:
