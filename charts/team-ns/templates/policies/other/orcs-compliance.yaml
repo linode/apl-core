@@ -1,0 +1,141 @@
+{{- $v := .Values }}
+{{- $p := index $v.policies "orcs-compliance" }}
+{{- if and (get (index $v.apps "kyverno") "enabled") $p $v.otomi.useORCS }}
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: orcs-compliance
+  annotations:
+    policies.kyverno.io/title: ORCS Registry Compliance
+    policies.kyverno.io/category: supply-chain-security
+    policies.kyverno.io/severity: {{ $p.severity }}
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Enforces OCI Registry Cache Service (ORCS) compliance by ensuring all container images
+      are pulled through the designated ORCS registry for supply chain security and
+      vulnerability management. This policy validates that images use the approved registry
+      and can optionally redirect non-compliant images to the ORCS endpoint.
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  validationFailureAction: {{ $p.action }}
+  background: true
+  failurePolicy: Fail
+  rules:
+    # Validation rule: Ensure images come from ORCS-compliant registries
+    - name: validate-orcs-registry
+      match:
+        any:
+        - resources:
+            kinds:
+              - Pod
+      exclude:
+        any:
+        # Exclude system components and whitelisted apps
+        {{- if $p.whitelist }}
+        {{- range $app := $p.whitelist }}
+          - resources:
+              namespaces:
+                - {{ $app.namespace | default "knative-serving" }}
+              names:
+                - "{{ $app.name }}*"
+        {{- end }}
+        {{- end }}
+        # Default whitelist for knative-operator
+          - resources:
+              namespaces:
+                - knative-serving
+              names:
+                - "knative-*"
+          - resources:
+              namespaces:
+                - knative-operator
+      skipBackgroundRequests: false
+      validate:
+        message: >-
+          ORCS Compliance Violation: All container images must be pulled through the 
+          designated ORCS registry ({{ $v.otomi.linodeLkeImageRepository }}) for supply chain security.
+          Non-compliant image found: {{`{{ element }}`}}
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][].image
+            deny:
+              conditions:
+                all:
+                {{- if $v.otomi.linodeLkeImageRepository }}
+                # Require images to come from ORCS registry
+                - key: "{{`{{ element }}`}}"
+                  operator: NotEquals
+                  value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
+                {{- end }}
+                # Allow specific exemptions for critical system components
+                - key: "{{`{{ element }}`}}"
+                  operator: AnyNotIn
+                  value:
+                    # System components that may not be available via ORCS
+                    - "docker.io/istio/proxyv2*"
+                    - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                    {{- if $p.exemptions }}
+                    {{- range $exemption := $p.exemptions }}
+                    - "{{ $exemption }}"
+                    {{- end }}
+                    {{- end }}
+
+{{- if $p.mutate }}
+---
+# Mutation rule: Automatically redirect images to ORCS registry
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: orcs-compliance-mutate
+  annotations:
+    policies.kyverno.io/title: ORCS Registry Auto-Redirect
+    policies.kyverno.io/category: supply-chain-security
+    policies.kyverno.io/severity: {{ $p.severity }}
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Automatically mutates container images to use the ORCS registry endpoint
+      for improved supply chain security and caching performance.
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
+spec:
+  background: false
+  rules:
+    - name: redirect-to-orcs
+      match:
+        any:
+        - resources:
+            kinds:
+              - Pod
+      exclude:
+        any:
+        # Exclude already compliant images
+        - resources:
+            kinds:
+              - Pod
+          clusterRoles:
+            - system:serviceaccount:*
+      mutate:
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            patchesJson6902: |-
+              - path: "/spec/{{`{{ elementIndex0 }}`}}/{{`{{ elementIndex1 }}`}}/image"
+                op: replace
+                value: "{{ $v.otomi.linodeLkeImageRepository }}/{{`{{ regex_replace_all('^[^/]+/', element.image, '') }}`}}"
+            preconditions:
+              all:
+              # Only mutate images not already using ORCS
+              - key: "{{`{{ element.image }}`}}"
+                operator: NotEquals
+                value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
+              # Skip exempted images
+              - key: "{{`{{ element.image }}`}}"
+                operator: AnyNotIn
+                value:
+                  - "docker.io/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                  {{- if $p.exemptions }}
+                  {{- range $exemption := $p.exemptions }}
+                  - "{{ $exemption }}"
+                  {{- end }}
+                  {{- end }}
+{{- end }}
+{{- end }}
