@@ -26,6 +26,13 @@ jobs:
           tag=${GITHUB_REF##*/}
           echo "Creating tag: $tag"
           echo "TAG=$tag" >> $GITHUB_ENV
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            revision=$tag
+          else
+            revision=${{ env.COMMIT_SHA }}
+          fi
+          echo "Setting apps revision to: $revision"
+          echo "APPS_REVISION=$revision" >> $GITHUB_ENV
           git config --global user.email $BOT_EMAIL
           git config --global user.name $BOT_USERNAME
 
@@ -44,7 +51,7 @@ jobs:
         with:
           push: true
           build-args: |
-            COMMIT_SHA=${{ env.COMMIT_SHA }}
+            APPS_REVISION=${{ env.APPS_REVISION }}
           context: .
           tags: |
             ${{ env.CACHE_REGISTRY }}/${{ env.CACHE_REPO }}:${{ env.TAG }}
