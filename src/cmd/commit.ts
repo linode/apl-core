@@ -77,6 +77,8 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
         } catch (e) {
           remoteBranchExists = false
         }
+        // We're not always sure that we are on the correct branch,
+        // so we checkout the branch and create it if it does not exist
         await $`git checkout -B ${branch}`.quiet()
 
         if (remoteBranchExists) {
