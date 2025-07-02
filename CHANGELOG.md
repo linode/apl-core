@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.7.1](https://github.com/linode/apl-core/compare/v4.7.0...v4.7.1) (2025-07-02)
+
+
+### Features
+
+* apl-operator clean error messages ([#2290](https://github.com/linode/apl-core/issues/2290)) ([1cb6c7a](https://github.com/linode/apl-core/commit/1cb6c7a7741efaecf3d39e977d61cca5ac434432))
+
+
+### Bug Fixes
+
+* enhance commit and push operations with quiet mode and error han… ([#2304](https://github.com/linode/apl-core/issues/2304)) ([6f5e517](https://github.com/linode/apl-core/commit/6f5e517ee5c350fcc9cacfa86b83fb63639db9c5))
+* specify branch in git pull to ensure correct updates from origin ([#2301](https://github.com/linode/apl-core/issues/2301)) ([283f0d1](https://github.com/linode/apl-core/commit/283f0d14f3ef1c091a9bb0c06359f9b7f68d3a27))
+
 ## [4.7.0](https://github.com/linode/apl-core/compare/v4.5.0...v4.7.0) (2025-06-26)
 
 
