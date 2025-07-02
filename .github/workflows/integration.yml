@@ -95,7 +95,7 @@ on:
       useORCS:
         description: 'Use OCI Registry Cache Service (ORCS) for container images'
         type: boolean
-        default: false
+        default: true
 
 env:
   CACHE_REGISTRY: ghcr.io
