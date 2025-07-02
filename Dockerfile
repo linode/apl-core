@@ -6,14 +6,12 @@ RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
 ARG SKIP_TESTS='false'
-ARG COMMIT_SHA=''
 ENV NODE_ENV='test'
 ENV CI=true
 ENV ENV_DIR=$APP_HOME/env
 ENV VERBOSITY='2'
 ENV DISABLE_SYNC='1'
 ENV NODE_PATH='dist'
-ENV APPS_REVISION=$COMMIT_SHA
 
 COPY --chown=app . .
 
@@ -29,11 +27,13 @@ FROM ci AS clean
 RUN npm prune --production
 
 FROM linode/apl-tools:v2.10.0  AS prod
+ARG APPS_REVISION=''
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
 ENV VERBOSITY='0'
 ENV NODE_NO_WARNINGS='1'
 ENV NODE_PATH='dist'
+ENV APPS_REVISION=$APPS_REVISION
 
 RUN npm config set update-notifier false
 
