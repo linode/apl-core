@@ -75,8 +75,8 @@ dependencies:
     version: 11.10.13
     repository: https://charts.bitnami.com/bitnami
   - name: oauth2-proxy
-    version: 7.7.24
-    repository: https://charts.bitnami.com/bitnami
+    version: 7.12.18
+    repository: https://oauth2-proxy.github.io/manifests
   - name: opentelemetry-operator
     alias: otel-operator
     version: 0.33.0
