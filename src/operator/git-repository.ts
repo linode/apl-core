@@ -52,7 +52,7 @@ export class GitRepository {
     await retry(
       async () => {
         try {
-          await this.git.pull()
+          await this.git.pull('origin', 'main')
           await this.setLastRevision()
         } catch (e) {
           d.warn(`The values repository has no commits yet. Retrying in ${interval} ms`)
@@ -98,7 +98,7 @@ export class GitRepository {
 
   private async pull(): Promise<string> {
     try {
-      await this.git.pull()
+      await this.git.pull('origin', 'main')
       return this.getCurrentRevision()
     } catch (error) {
       this.d.error('Failed to pull repository:', getErrorMessage(error))
