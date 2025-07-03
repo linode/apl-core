@@ -1,6 +1,7 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "orcs-compliance" }}
-{{- if and (get (index $v.apps "kyverno") "enabled") $p $v.otomi.useORCS }}
+
+{{- if and (get (index $v.apps "kyverno") "enabled") $p $v.linodeLkeImageRepository }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -53,19 +54,19 @@ spec:
       skipBackgroundRequests: false
       validate:
         message: >-
-          ORCS Compliance Violation: All container images must be pulled through the 
-          designated ORCS registry ({{ $v.otomi.linodeLkeImageRepository }}) for supply chain security.
+          ORCS Compliance Violation: All container images must be pulled through the
+          designated ORCS registry ({{ $v.linodeLkeImageRepository }}) for supply chain security.
           Non-compliant image found: {{`{{ element }}`}}
         foreach:
           - list: request.object.spec.[ephemeralContainers, initContainers, containers][].image
             deny:
               conditions:
                 all:
-                {{- if $v.otomi.linodeLkeImageRepository }}
+                {{- if $v.linodeLkeImageRepository }}
                 # Require images to come from ORCS registry
                 - key: "{{`{{ element }}`}}"
                   operator: NotEquals
-                  value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
+                  value: "{{ $v.linodeLkeImageRepository }}/*"
                 {{- end }}
                 # Allow specific exemptions for critical system components
                 - key: "{{`{{ element }}`}}"
@@ -119,13 +120,13 @@ spec:
             patchesJson6902: |-
               - path: "/spec/{{`{{ elementIndex0 }}`}}/{{`{{ elementIndex1 }}`}}/image"
                 op: replace
-                value: "{{ $v.otomi.linodeLkeImageRepository }}/{{`{{ regex_replace_all('^[^/]+/', element.image, '') }}`}}"
+                value: "{{ $v.linodeLkeImageRepository }}/{{`{{ regex_replace_all('^[^/]+/', element.image, '') }}`}}"
             preconditions:
               all:
               # Only mutate images not already using ORCS
               - key: "{{`{{ element.image }}`}}"
                 operator: NotEquals
-                value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
+                value: "{{ $v.linodeLkeImageRepository }}/*"
               # Skip exempted images
               - key: "{{`{{ element.image }}`}}"
                 operator: AnyNotIn
