@@ -129,6 +129,15 @@ environments:
               allowed-image-repositories:
                   action: Audit
                   severity: medium
+              orcs-compliance:
+                  action: Audit
+                  severity: medium
+                  mutate: false
+                  whitelist:
+                      - namespace: knative-serving
+                        name: "knative-operator"
+                  exemptions:
+                      - "gcr.io/knative-releases/knative.dev/serving/cmd/*"
               disallow-capabilities:
                   action: Audit
                   customValues:
