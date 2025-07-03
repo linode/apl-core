@@ -92,6 +92,7 @@ resources:
           Enforces OCI Registry Cache Service (ORCS) compliance across all namespaces
           by ensuring all container images are pulled through the designated ORCS registry
           for supply chain security and vulnerability management.
+        pod-policies.kyverno.io/autogen-controllers: "none"
     spec:
       validationFailureAction: Audit
       background: true
@@ -111,10 +112,6 @@ resources:
               - "team-*"
         skipBackgroundRequests: false
         validate:
-          message: >-
-            ORCS Compliance Violation: All container images must be pulled through the
-            designated ORCS registry ({{ $v.otomi.linodeLkeImageRepository }}) for supply chain security.
-            Non-compliant image found: {{`{{ element }}`}}
           foreach:
           - list: request.object.spec.[ephemeralContainers, initContainers, containers][].image
             deny:
@@ -129,9 +126,4 @@ resources:
                   operator: AnyNotIn
                   value:
                   # System components that may not be available via ORCS
-                  - "docker.io/istio/proxyv2*"
-                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
-                  - "k8s.gcr.io/*"
-                  - "registry.k8s.io/*"
-                  - "quay.io/kyverno/*"
 {{- end }}
