@@ -1,6 +1,8 @@
 {{- $v := .Values -}}
-{{- with $v.otomi | get "nodeSelector" nil }}
+  {{- if or (with $v.otomi | get "nodeSelector" nil) ($v.otomi.linodeLkeImageRepository) }}
 resources:
+{{- end }}
+{{- with $v.otomi | get "nodeSelector" nil }}
   - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
     metadata:
