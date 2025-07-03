@@ -72,9 +72,9 @@ spec:
                 - key: "{{`{{ element }}`}}"
                   operator: AnyNotIn
                   value:
-                    # System components that may not be available via ORCS
                     - "docker.io/istio/proxyv2*"
-                    - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                    # Harbor registry (internal registry, already trusted)
+                    - "harbor.{{ $v.cluster.domainSuffix }}/*"
                     {{- if $p.exemptions }}
                     {{- range $exemption := $p.exemptions }}
                     - "{{ $exemption }}"
@@ -132,7 +132,8 @@ spec:
                 operator: AnyNotIn
                 value:
                   - "docker.io/istio/proxyv2*"
-                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                  # Harbor registry (internal registry, already trusted)
+                  - "harbor.{{ $v.cluster.domainSuffix }}/*"
                   {{- if $p.exemptions }}
                   {{- range $exemption := $p.exemptions }}
                   - "{{ $exemption }}"
