@@ -27,11 +27,13 @@ FROM ci AS clean
 RUN npm prune --production
 
 FROM linode/apl-tools:v2.10.0  AS prod
+ARG APPS_REVISION=''
 ENV APP_HOME=/home/app/stack
 ENV ENV_DIR=/home/app/stack/env
 ENV VERBOSITY='0'
 ENV NODE_NO_WARNINGS='1'
 ENV NODE_PATH='dist'
+ENV APPS_REVISION=$APPS_REVISION
 
 RUN npm config set update-notifier false
 
