@@ -25,7 +25,8 @@ imageName: ghcr.io/cloudnative-pg/postgresql:15.13
 
 postgresql:
   parameters:
-    max_connections: "32"
+    # Increased from 32 to 50 connections to align with other databases and keep memory low
+    max_connections: "50"
     shared_buffers: 64MB
     work_mem: 2MB
 
