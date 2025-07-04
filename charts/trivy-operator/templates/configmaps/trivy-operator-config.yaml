@@ -5,6 +5,9 @@ metadata:
   namespace: {{ include "trivy-operator.namespace" . }}
   labels: {{- include "trivy-operator.labels" . | nindent 4 }}
 data:
+  {{- if .Values.alternateReportStorage.enabled }}
+  trivy.reportDir: "{{ .Values.alternateReportStorage.mountPath }}"
+  {{- end }}
   OPERATOR_LOG_DEV_MODE: {{ .Values.operator.logDevMode | quote }}
   OPERATOR_SCAN_JOB_TTL: {{ .Values.operator.scanJobTTL | quote }}
   OPERATOR_SCAN_JOB_TIMEOUT: {{ .Values.operator.scanJobTimeout | quote }}
