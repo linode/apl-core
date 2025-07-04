@@ -38,6 +38,10 @@ database:
     username: harbor
     host: harbor-otomi-db-rw.harbor.svc.cluster.local
     existingSecret: harbor-otomi-db-app
+    # Database connection pool settings aligned with max_connections: 50 on database side
+    # Max open connections: 40 (leaving 10 for maintenance and background processes)
+    maxOpenConns: 40
+    maxIdleConns: 8
 
 exporter:
   priorityClassName: otomi-critical

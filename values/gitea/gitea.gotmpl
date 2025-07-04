@@ -57,6 +57,10 @@ gitea:
       HOST: gitea-db-rw.gitea.svc.cluster.local:5432
       NAME: gitea
       SCHEMA: public
+      # Database connection pool settings aligned with max_connections: 50 on database side
+      # Max open connections: 40 (leaving 10 for maintenance and background processes)
+      MAX_OPEN_CONNS: 40
+      MAX_IDLE_CONNS: 8
     admin:
       DISABLE_REGULAR_ORG_CREATION: false
     {{ with $v | get "smtp" nil }}

@@ -1230,13 +1230,16 @@ environments:
             replicas: 2
             recovery: {}
             externalClusters: []
+            # Increased memory from 192Mi to 512Mi to support 100 max_connections
+            # PostgreSQL memory calculation: 100 connections × ~2.5MB per connection = ~250MB
+            # Additional memory needed for PostgreSQL processes, buffers, and overhead
             resources:
               limits:
                 cpu: "200m"
-                memory: 192Mi
+                memory: 512Mi
               requests:
                 cpu: "200m"
-                memory: 192Mi
+                memory: 512Mi
           harbor:
             imageName: null
             size: 5Gi
@@ -1245,13 +1248,16 @@ environments:
             coreDatabase: registry
             recovery: {}
             externalClusters: []
+            # Increased memory from 192Mi to 320Mi to support 50 max_connections
+            # PostgreSQL memory calculation: 50 connections × ~2.5MB per connection = ~125MB
+            # Additional memory needed for PostgreSQL processes, buffers, and overhead
             resources:
               limits:
                 cpu: "200m"
-                memory: 192Mi
+                memory: 320Mi
               requests:
                 cpu: "200m"
-                memory: 192Mi
+                memory: 320Mi
           gitea:
             imageName: null
             size: 5Gi
@@ -1259,13 +1265,16 @@ environments:
             replicas: 2
             recovery: {}
             externalClusters: []
+            # Increased memory from 192Mi to 320Mi to support 50 max_connections
+            # PostgreSQL memory calculation: 50 connections × ~2.5MB per connection = ~125MB
+            # Additional memory needed for PostgreSQL processes, buffers, and overhead
             resources:
               limits:
                 cpu: "200m"
-                memory: 192Mi
+                memory: 320Mi
               requests:
                 cpu: "200m"
-                memory: 192Mi
+                memory: 320Mi
         obj:
           provider:
             type: disabled
