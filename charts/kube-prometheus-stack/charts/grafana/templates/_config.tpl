@@ -1,5 +1,3 @@
-
-{{/* vim: set filetype=mustache: */}}
 {{/*
  Generate config map data
  */}}
@@ -15,6 +13,8 @@ grafana.ini: |
   {{- if not (kindIs "map" $elemVal) }}
   {{- if kindIs "invalid" $elemVal }}
   {{ $elem }} =
+  {{- else if kindIs "slice" $elemVal }}
+  {{ $elem }} = {{ toJson $elemVal }}
   {{- else if kindIs "string" $elemVal }}
   {{ $elem }} = {{ tpl $elemVal $ }}
   {{- else }}
@@ -28,6 +28,8 @@ grafana.ini: |
   {{- range $elem, $elemVal := $value }}
   {{- if kindIs "invalid" $elemVal }}
   {{ $elem }} =
+  {{- else if kindIs "slice" $elemVal }}
+  {{ $elem }} = {{ toJson $elemVal }}
   {{- else if kindIs "string" $elemVal }}
   {{ $elem }} = {{ tpl $elemVal $ }}
   {{- else }}
@@ -83,7 +85,7 @@ download_dashboards.sh: |
 {{- range $provider, $dashboards := .Values.dashboards }}
   {{- range $key, $value := $dashboards }}
     {{- if (or (hasKey $value "gnetId") (hasKey $value "url")) }}
-  curl -skf \
+  curl {{ get $value "curlOptions" | default $.Values.defaultCurlOptions }} \
   --connect-timeout 60 \
   --max-time 60 \
     {{- if not $value.b64content }}

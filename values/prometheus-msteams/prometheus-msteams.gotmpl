@@ -2,10 +2,10 @@
 replicaCount: 1
 image:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  repository: "{{- $v.otomi.linodeLkeImageRepository }}/quay/prometheusmsteams/prometheus-msteams"
-  {{- end }}
+  repository: {{ $v.otomi.linodeLkeImageRepository }}/quay/prometheusmsteams/prometheus-msteams
+  {{- else }}
   repository: quay.io/prometheusmsteams/prometheus-msteams
-  tag: v1.3.3
+  {{- end }}
 {{- with .Values.otomi | get "globalPullSecret" nil }}
   pullSecrets:
     - otomi-pullsecret-global
@@ -14,18 +14,11 @@ connectors:
 - high_priority_channel: {{ $v.alerts.msteams.highPrio }}
 - low_priority_channel: {{ $v.alerts.msteams.lowPrio }}
 
-
-# container:
-#   additionalArgs:
-#     - -debug
-
-# customCardTemplate: ''
-# Enable metrics for prometheus operator
 metrics:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: system 
+      prometheus: system
 
 resources:
   limits:
@@ -34,4 +27,3 @@ resources:
   requests:
     cpu: 1m
     memory: 8Mi
-

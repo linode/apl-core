@@ -8,12 +8,11 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ include "grafana.name" . }}
     helm.sh/chart: {{ include "grafana.chart" . }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
-    {{- if has .Values.persistence.type $sts }}
+    {{- if (or (.Values.useStatefulSet) (and .Values.persistence.enabled (not .Values.persistence.existingClaim) (has .Values.persistence.type $sts)))}}
     kind: StatefulSet
     {{- else }}
     kind: Deployment

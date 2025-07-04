@@ -20,7 +20,7 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "grafana.selectorLabels" . | nindent 8 }}
+        {{- include "grafana.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -46,6 +46,9 @@ spec:
     spec:
       accessModes: {{ .Values.persistence.accessModes }}
       storageClassName: {{ .Values.persistence.storageClassName }}
+      {{- with .Values.persistence.volumeName }}
+      volumeName: {{ . | quote }}
+      {{- end }}
       resources:
         requests:
           storage: {{ .Values.persistence.size }}

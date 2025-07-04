@@ -21,7 +21,7 @@ import { DEPLOYMENT_PASSWORDS_SECRET, DEPLOYMENT_STATUS_CONFIGMAP } from './cons
 import { OtomiDebugger, terminal } from './debug'
 import { env } from './envalid'
 import { hfValues } from './hf'
-import { parser } from './yargs'
+import { getParsedArgs, parser } from './yargs'
 import { askYesNo } from './zx-enhance'
 
 export const secretId = `secret/otomi/${DEPLOYMENT_PASSWORDS_SECRET}`
@@ -557,4 +557,23 @@ export async function restartOtomiApiDeployment(appApi: AppsV1Api): Promise<void
     d.error('Failed to restart otomi-api deployment:', error)
     throw error
   }
+}
+
+export async function applyServerSide(
+  path: string,
+  forceConflicts: boolean = false,
+  dryRun: boolean = false,
+): Promise<void> {
+  const d = terminal('common:k8s:applyServerSide')
+  d.debug(`Applying files from ${path}`)
+  const kubectlArgs = ['-f', path]
+  if (dryRun) {
+    kubectlArgs.push('--dry-run=client')
+  } else {
+    kubectlArgs.push('--server-side')
+    if (forceConflicts) {
+      kubectlArgs.push('--force-conflicts')
+    }
+  }
+  await $`kubectl apply ${kubectlArgs}`
 }

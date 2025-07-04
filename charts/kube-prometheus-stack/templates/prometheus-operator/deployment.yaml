@@ -63,6 +63,8 @@ spec:
             - --kubelet-selector={{ .Values.prometheusOperator.kubeletService.selector }}
             {{- end }}
             {{- end }}
+            - --kubelet-endpoints={{ .Values.prometheusOperator.kubeletEndpointsEnabled }}
+            - --kubelet-endpointslice={{ .Values.prometheusOperator.kubeletEndpointSliceEnabled }}
             {{- if .Values.prometheusOperator.logFormat }}
             - --log-format={{ .Values.prometheusOperator.logFormat }}
             {{- end }}
@@ -141,6 +143,17 @@ spec:
             - --web.key-file=/cert/{{ if .Values.prometheusOperator.admissionWebhooks.certManager.enabled }}tls.key{{ else }}key{{ end }}
             - --web.listen-address=:{{ .Values.prometheusOperator.tls.internalPort }}
             - --web.tls-min-version={{ .Values.prometheusOperator.tls.tlsMinVersion }}
+            {{- else }}
+            - --web.enable-tls=false
+            - --web.listen-address=:8080
+            {{- end }}
+            {{- with .Values.prometheusOperator.extraArgs }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
+          {{- with .Values.prometheusOperator.lifecycle }}
+          lifecycle: {{ toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.prometheusOperator.tls.enabled }}
           ports:
             - containerPort: {{ .Values.prometheusOperator.tls.internalPort }}
               name: https
@@ -222,6 +235,9 @@ spec:
     {{- with .Values.prometheusOperator.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.prometheusOperator.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
     {{- end }}
     {{- with .Values.prometheusOperator.tolerations }}
       tolerations:
