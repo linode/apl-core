@@ -5,7 +5,14 @@ import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { env } from 'src/common/envalid'
 import { hf, HF_DEFAULT_SYNC_ARGS } from 'src/common/hf'
-import { getDeploymentState, getHelmReleases, k8s, restartOtomiApiDeployment, setDeploymentState } from 'src/common/k8s'
+import {
+  applyServerSide,
+  getDeploymentState,
+  getHelmReleases,
+  k8s,
+  restartOtomiApiDeployment,
+  setDeploymentState,
+} from 'src/common/k8s'
 import { getFilename, rootDir } from 'src/common/utils'
 import { getCurrentVersion, getImageTag, writeValuesToFile } from 'src/common/values'
 import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
@@ -73,7 +80,9 @@ const applyAll = async () => {
   writeFileSync(templateFile, templateOutput)
 
   d.info('Deploying CRDs')
-  await $`kubectl apply -f charts/kube-prometheus-stack/charts/crds/crds --server-side`
+  if (initialInstall) {
+    await applyServerSide('charts/kube-prometheus-stack/charts/crds/crds')
+  }
   await $`kubectl apply -f charts/tekton-triggers/crds --server-side`
   d.info('Deploying essential manifests')
   await $`kubectl apply -f ${templateFile}`
