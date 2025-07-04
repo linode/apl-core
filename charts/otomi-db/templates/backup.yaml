@@ -7,6 +7,8 @@ metadata:
   {{- with .Values.labels }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   suspend: {{ .Values.backup.suspend }}
   immediate: {{ .Values.backup.immediate }}
@@ -15,4 +17,7 @@ spec:
   backupOwnerReference: {{ .Values.backup.backupOwnerReference }}
   cluster:
     name: {{ .Values.name }}
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
 {{- end }}
