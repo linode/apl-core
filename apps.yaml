@@ -56,7 +56,7 @@ appsInfo:
     isDeprecated: true
     deprecationInfo:
       replacement: tekton
-      path: '/#/namespaces/otomi-pipelines/pipelineruns'
+      path: /#/namespaces/otomi-pipelines/pipelineruns
       message: Drone is deprecated for enhanced performance, maintainability, and integration.
       reasons:
         - To improve overall system performance
@@ -73,7 +73,7 @@ appsInfo:
         - To see new pipeline runs, open the Tekton dashboard.
   external-dns:
     title: External DNS
-    appVersion: 0.13.4
+    appVersion: 0.18.0
     repo: https://github.com/kubernetes-sigs/external-dns
     maintainers: Kubernetes SIGs
     relatedLinks:
