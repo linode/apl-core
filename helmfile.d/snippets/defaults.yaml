@@ -1232,14 +1232,14 @@ environments:
             externalClusters: []
             # Optimized memory based on actual workload: shared_buffers + work_mem * 2 * max_connections + overhead
             # Platform databases handle small datasets with low complexity queries (mainly PK lookups)
-            # Memory calculation: 32MB (shared_buffers) + 2MB * 2 * 100 + 120MB (overhead) = 552MB
+            # Memory calculation: 32MB (shared_buffers) + 2MB * 2 * 100 + 32MB (overhead) = 464MB
             resources:
               limits:
                 cpu: "200m"
-                memory: 576Mi
+                memory: 480Mi
               requests:
                 cpu: "200m"
-                memory: 576Mi
+                memory: 480Mi
           harbor:
             imageName: null
             size: 5Gi
@@ -1250,14 +1250,14 @@ environments:
             externalClusters: []
             # Optimized memory based on actual workload: shared_buffers + work_mem * 2 * max_connections + overhead
             # Platform databases handle small datasets with low complexity queries (mainly PK lookups)
-            # Memory calculation: 32MB (shared_buffers) + 2MB * 2 * 50 + 120MB (overhead) = 352MB
+            # Memory calculation: 32MB (shared_buffers) + 2MB * 2 * 50 + 32MB (overhead) = 264MB
             resources:
               limits:
                 cpu: "200m"
-                memory: 384Mi
+                memory: 288Mi
               requests:
                 cpu: "200m"
-                memory: 384Mi
+                memory: 288Mi
           gitea:
             imageName: null
             size: 5Gi
@@ -1267,14 +1267,14 @@ environments:
             externalClusters: []
             # Optimized memory based on actual workload: shared_buffers + work_mem * 2 * max_connections + overhead
             # Platform databases handle small datasets with low complexity queries (mainly PK lookups)
-            # Memory calculation: 32MB (shared_buffers) + 2MB * 2 * 50 + 120MB (overhead) = 352MB
+            # Memory calculation: 32MB (shared_buffers) + 2MB * 2 * 50 + 32MB (overhead) = 264MB
             resources:
               limits:
                 cpu: "200m"
-                memory: 384Mi
+                memory: 288Mi
               requests:
                 cpu: "200m"
-                memory: 384Mi
+                memory: 288Mi
         obj:
           provider:
             type: disabled
