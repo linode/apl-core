@@ -3328,6 +3328,15 @@ properties:
               type: object
               additionalProperties: true
             default: []
+          monitoring:
+            type: object
+            properties:
+              disabledRules:
+                type: array
+                items:
+                  type: string
+                default: []
+            default: {}
       harbor:
         title: Harbor
         properties:
@@ -3350,6 +3359,15 @@ properties:
               type: object
               additionalProperties: true
             default: []
+          monitoring:
+            type: object
+            properties:
+              disabledRules:
+                type: array
+                items:
+                  type: string
+                default: []
+            default: {}
       gitea:
         title: gitea
         properties:
@@ -3372,6 +3390,15 @@ properties:
               type: object
               additionalProperties: true
             default: []
+          monitoring:
+            type: object
+            properties:
+              disabledRules:
+                type: array
+                items:
+                  type: string
+                default: []
+            default: {}
   teamConfig:
     additionalProperties: false
     patternProperties:

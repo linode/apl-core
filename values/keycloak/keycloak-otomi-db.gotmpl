@@ -67,3 +67,9 @@ clusterSpec:
 {{- end }}
 
 resources: {{- toYaml $kdb.resources | nindent 2 }}
+# Prometheus monitoring configuration
+{{- if $v.apps.prometheus.enabled }}
+prometheusRules:
+  enabled: true
+  disabledRules: {{- toYaml $kdb.monitoring.disabledRules | nindent 4 }}
+{{- end }}
