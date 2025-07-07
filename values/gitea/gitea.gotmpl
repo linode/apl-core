@@ -78,7 +78,7 @@ gitea:
       {{/*Disabled so that when an user with the same username is created in gitea, it will not be linked to another account*/}}
       ACCOUNT_LINKING: disabled
       OPENID_CONNECT_SCOPES: openid email profile
-      USERNAME: email
+      USERNAME: nickname
     repository:
       DEFAULT_BRANCH: main
     service:
