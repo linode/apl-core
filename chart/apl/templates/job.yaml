@@ -50,8 +50,8 @@ spec:
           command: [bash, -c]
           args:
             - |
-              set -e
               kubectl create ns otomi &> /dev/null
+              set -e
               binzx/otomi validate-cluster && binzx/otomi bootstrap && binzx/otomi apply
 
               {{- if .Values.cleanup.enabled }}

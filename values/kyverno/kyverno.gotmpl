@@ -57,7 +57,7 @@ admissionController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
   container:
   {{- if $v.otomi.linodeLkeImageRepository }}
     image:
@@ -69,7 +69,7 @@ cleanupController:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/ghcr"
-  {{- end }}  
+  {{- end }}
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
   {{- end }}
@@ -93,7 +93,7 @@ backgroundController:
   serviceMonitor:
     enabled: true
     additionalLabels:
-      prometheus: systen
+      prometheus: system
 
 reportsController:
   {{- if $v.otomi.linodeLkeImageRepository }}
