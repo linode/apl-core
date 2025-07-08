@@ -69,5 +69,5 @@ resources: {{- toYaml $hdb.resources | nindent 2 }}
 {{- if $v.apps.prometheus.enabled }}
 prometheusRules:
   enabled: true
-  disabledRules: {{- toYaml $hdb.monitoring.disabledRules | nindent 4 }}
+  disabledRules: {{- toYaml (($hdb.monitoring).disabledRules | default list) | nindent 4 }}
 {{- end }}

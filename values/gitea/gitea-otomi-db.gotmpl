@@ -72,5 +72,5 @@ resources: {{- toYaml $gdb.resources | nindent 2 }}
 {{- if $v.apps.prometheus.enabled }}
 prometheusRules:
   enabled: true
-  disabledRules: {{- toYaml $gdb.monitoring.disabledRules | nindent 4 }}
+  disabledRules: {{- toYaml (($gdb.monitoring).disabledRules | default list) | nindent 4 }}
 {{- end }}
