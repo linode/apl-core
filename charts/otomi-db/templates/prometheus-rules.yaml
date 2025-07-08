@@ -13,7 +13,7 @@ spec:
     interval: 30s
     rules:
     {{- $context := dict "disabledRules" .Values.prometheusRules.disabledRules "namespace" .Release.Namespace "cluster" .Values.name }}
-    
+
     # High Availability Critical Alerts
     {{- $alert := "CNPGClusterHACritical" }}
     {{- if not (has $alert $context.disabledRules) }}
@@ -35,14 +35,14 @@ spec:
         runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterHACritical.md
       expr: |
         max by (job) (cnpg_pg_replication_streaming_replicas{namespace="{{ $context.namespace }}"} - cnpg_pg_replication_is_wal_receiver_up{namespace="{{ $context.namespace }}"}) < 1
-      for: 5m
+      for: 60m
       labels:
         severity: critical
         namespace: {{ $context.namespace }}
         cnpg_cluster: {{ $context.cluster }}
     {{- end }}
 
-    # High Availability Warning Alerts  
+    # High Availability Warning Alerts
     {{- $alert := "CNPGClusterHAWarning" -}}
     {{- if not (has $alert $context.disabledRules) }}
     - alert: {{ $alert }}
@@ -59,7 +59,7 @@ spec:
           instances. The replaced instance may need some time to catch-up with the cluster primary instance.
         runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterHAWarning.md
       expr: |
-        max by (job) (cnpg_pg_replication_streaming_replicas{namespace="{{ $context.namespace }}"} - cnpg_pg_replication_is_wal_receiver_up{namespace="{{ $context.namespace }}"}) == 1
+        max by (job) (cnpg_pg_replication_streaming_replicas{namespace="{{ $context.namespace }}"} - cnpg_pg_replication_is_wal_receiver_up{namespace="{{ $context.namespace }}"}) < 1
       for: 5m
       labels:
         severity: warning
