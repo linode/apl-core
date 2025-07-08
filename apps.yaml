@@ -56,7 +56,7 @@ appsInfo:
     isDeprecated: true
     deprecationInfo:
       replacement: tekton
-      path: '/#/namespaces/otomi-pipelines/pipelineruns'
+      path: /#/namespaces/otomi-pipelines/pipelineruns
       message: Drone is deprecated for enhanced performance, maintainability, and integration.
       reasons:
         - To improve overall system performance
@@ -202,7 +202,7 @@ appsInfo:
     chartName: knative-operator
   kyverno:
     title: Kyverno
-    appVersion: 1.11.4
+    appVersion: 1.14.4
     repo: https://github.com/kyverno/kyverno
     maintainers: Nirmata
     relatedLinks:
