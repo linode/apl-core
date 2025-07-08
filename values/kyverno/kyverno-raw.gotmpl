@@ -113,17 +113,22 @@ resources:
         skipBackgroundRequests: false
         validate:
           foreach:
-          - list: request.object.spec.[ephemeralContainers, initContainers, containers][].image
+          - list: request.object.spec.[containers, initContainers, ephemeralContainers][]
             deny:
               conditions:
                 all:
                 # Require images to come from ORCS registry
-                - key: "{{`{{ element }}`}}"
+                - key: "{{`{{ element.image }}`}}"
                   operator: NotEquals
                   value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
                 # Allow specific exemptions for critical system components
-                - key: "{{`{{ element }}`}}"
+                - key: "{{`{{ element.image }}`}}"
                   operator: AnyNotIn
                   value:
+                  - "docker.io/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                  - "k8s.gcr.io/*"
+                  - "registry.k8s.io/*"
+                  - "quay.io/kyverno/*"
                   # System components that may not be available via ORCS
 {{- end }}
