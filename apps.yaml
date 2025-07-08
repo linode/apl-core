@@ -56,7 +56,7 @@ appsInfo:
     isDeprecated: true
     deprecationInfo:
       replacement: tekton
-      path: '/#/namespaces/otomi-pipelines/pipelineruns'
+      path: /#/namespaces/otomi-pipelines/pipelineruns
       message: Drone is deprecated for enhanced performance, maintainability, and integration.
       reasons:
         - To improve overall system performance
@@ -136,7 +136,7 @@ appsInfo:
     integration: Httpbin is by default available for developers to use.
   ingress-nginx:
     title: Ingress-NGINX
-    appVersion: 1.11.6
+    appVersion: 1.13.0
     repo: https://github.com/kubernetes/ingress-nginx
     maintainers: NGINX
     relatedLinks:
