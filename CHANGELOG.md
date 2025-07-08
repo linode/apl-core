@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.7.2](https://github.com/linode/apl-core/compare/v4.7.1...v4.7.2) (2025-07-08)
+
+
+### Bug Fixes
+
+* reattempt on first installation failure ([#2310](https://github.com/linode/apl-core/issues/2310)) ([61f27f3](https://github.com/linode/apl-core/commit/61f27f347514e130bbfbac6d826b7961c32a387d))
+
+
+### Others
+
+* **chart-deps:** upgrade oauth2 proxy to 7.12.18 and fix session interruption ([#2288](https://github.com/linode/apl-core/issues/2288)) ([57e08a0](https://github.com/linode/apl-core/commit/57e08a0a14801e89ea2292abce8d081c164cd253))
+* update versions ([f504f64](https://github.com/linode/apl-core/commit/f504f649e4614eb3b8b1e5b46bcff31dc118f5d2))
+
 ### [4.7.1](https://github.com/linode/apl-core/compare/v4.7.0...v4.7.1) (2025-07-02)
 
 
