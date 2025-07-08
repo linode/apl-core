@@ -69,16 +69,13 @@ externalDatabase:
   existingSecretDatabaseKey: dbname
   existingSecretPasswordKey: password
 
-# Database connection pool configuration
-# Aligned with increased max_connections: 100 on the database side
-# Max pool size: 90 (leaving 10 connections for maintenance and other processes)
 extraEnv: |
   - name: KC_DB_POOL_INITIAL_SIZE
     value: "5"
   - name: KC_DB_POOL_MIN_SIZE
     value: "5"
   - name: KC_DB_POOL_MAX_SIZE
-    value: "90"
+    value: "32"
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 keycloakConfigCli:

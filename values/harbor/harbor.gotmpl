@@ -30,10 +30,8 @@ core:
   xsrfKey: {{ $h | get "core.xsrfKey" nil }}
 
 database:
-  # Database connection pool settings aligned with max_connections: 50 on database side
-  # Max open connections: 40 (leaving 10 for maintenance and background processes)
-  maxOpenConns: 40
-  maxIdleConns: 8
+  maxOpenConns: 32
+  maxIdleConns: 6
   type: external
   external:
     # erase default password value from the Harbor Helm chart

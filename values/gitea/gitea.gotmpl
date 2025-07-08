@@ -127,12 +127,10 @@ gitea:
         secretKeyRef:
           name: gitea-db-secret
           key: password
-    # Database connection pool settings aligned with max_connections: 50 on database side
-    # Max open connections: 40 (leaving 10 for maintenance and background processes)
     - name: GITEA__DATABASE__MAX_OPEN_CONNS
-      value: "40"
+      value: "32"
     - name: GITEA__DATABASE__MAX_IDLE_CONNS
-      value: "8"
+      value: "6"
 
 init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}

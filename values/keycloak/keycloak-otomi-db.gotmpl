@@ -28,9 +28,7 @@ imageName: ghcr.io/cloudnative-pg/postgresql:15.13
 
 postgresql:
   parameters:
-    # Increased from 32 to 100 connections to resolve Keycloak HTTP 500 errors
-    # Keycloak can create up to 100 simultaneous connections during peak load
-    max_connections: "100"
+    max_connections: "32"
     shared_buffers: 64MB
     work_mem: 2MB
 
