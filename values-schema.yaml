@@ -3335,8 +3335,6 @@ properties:
                 type: array
                 items:
                   type: string
-                default: []
-            default: {}
       harbor:
         title: Harbor
         properties:
@@ -3366,8 +3364,6 @@ properties:
                 type: array
                 items:
                   type: string
-                default: []
-            default: {}
       gitea:
         title: gitea
         properties:
@@ -3397,8 +3393,6 @@ properties:
                 type: array
                 items:
                   type: string
-                default: []
-            default: {}
   teamConfig:
     additionalProperties: false
     patternProperties:
