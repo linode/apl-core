@@ -43,34 +43,6 @@ appsInfo:
     about: CloudNative PostgreSQL is an open source operator designed to manage PostgreSQL workloads on any supported Kubernetes cluster running in private, public, hybrid, or multi-cloud environments.
     integration: CloudNativePG is used by APL to provide Postgresql database for various applications. In the values you can configure a storageprovider for backups. The backups can be enabled in settings.
     chartName: cloudnative-pg
-  drone:
-    title: Drone
-    appVersion: 2.7.3
-    repo: https://github.com/harness/drone
-    maintainers: Harness
-    relatedLinks:
-      - https://www.drone.io/
-    license: Apache 2.0
-    about: Drone is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
-    integration: APL uses Drone to deploy changes to the configuration (values) repository. Drone is installed and configured by default. When no external source control is configured (default), APL will use Gitea as Drone's git hosting dependency. Teams can use Drone for other purposes if desired, with the limitation that it can't be configured for multiple git services.
-    isDeprecated: true
-    deprecationInfo:
-      replacement: tekton
-      path: '/#/namespaces/otomi-pipelines/pipelineruns'
-      message: Drone is deprecated for enhanced performance, maintainability, and integration.
-      reasons:
-        - To improve overall system performance
-        - To enhance maintainability
-        - To offer better integration with other Kubernetes components and APL
-      replacementAdvantages:
-        - Superior performance
-        - Scalability
-        - Security
-        - CNCF support
-        - Easier pipeline configuration and management
-      options:
-        - To see previous pipeline runs, click 'I understand' and view them in the Drone dashboard.
-        - To see new pipeline runs, open the Tekton dashboard.
   external-dns:
     title: External DNS
     appVersion: 0.13.4

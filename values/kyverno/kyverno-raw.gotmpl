@@ -32,7 +32,6 @@ resources:
               - tekton-triggers
               - tekton-pipelines-resolvers
               - thanos
-              - otomi-pipelines
               - otomi-operator
               - maintenance
               - external-secrets
@@ -61,21 +60,5 @@ resources:
                 {{- range $key, $val := . }}
                 {{ $key }}: {{ $val }}
                 {{- end }}
-      - name: otomi-taskrun-node-selector
-        match:
-          any:
-          - resources:
-              kinds:
-              - TaskRun
-              namespaces:
-              - otomi-pipelines
-        mutate:
-          patchStrategicMerge:
-            spec:
-              podTemplate:
-                nodeSelector:
-                  {{- range $key, $val := . }}
-                  {{ $key }}: {{ $val }}
-                  {{- end }}
 {{- end }}
 app.kubernetes.io/instance: loki
