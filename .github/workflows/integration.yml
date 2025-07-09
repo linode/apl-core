@@ -338,7 +338,7 @@ jobs:
               --set apps.apl-console._rawValues.image.repository=linode/apl-console"
               --set apps.apl-keycloak-operator._rawValues.image.repository=linode/apl-tasks \
               --set apps.apl-gitea-operator._rawValues.image.repository=linode/apl-tasks \
-              --set apps.apl-harbor-operator._rawValues.image.repository=linode/apl-tasks \
+              --set apps.apl-harbor-operator._rawValues.image.repository=linode/apl-tasks"
           fi
 
           install_args="otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
