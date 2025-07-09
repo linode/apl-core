@@ -330,15 +330,15 @@ jobs:
 
           extra_orcs_flags=""
           if [[ '${{ inputs.useORCS }}' == 'true' ]]; then
-            extra_orcs_flags="\
-              --set apps.apl-operator._rawValues.image.repository=linode/apl-core \
-              --set apps.apl-api._rawValues.image.registry=docker.io \
-              --set apps.apl-api._rawValues.image.repository=linode/apl-api \
-              --set apps.apl-console._rawValues.image.registry=docker.io"
-              --set apps.apl-console._rawValues.image.repository=linode/apl-console"
-              --set apps.apl-keycloak-operator._rawValues.image.repository=linode/apl-tasks \
-              --set apps.apl-gitea-operator._rawValues.image.repository=linode/apl-tasks \
-              --set apps.apl-harbor-operator._rawValues.image.repository=linode/apl-tasks"
+          extra_orcs_flags="\
+          --set apps.apl-operator._rawValues.image.repository=linode/apl-core \
+          --set apps.apl-api._rawValues.image.registry=docker.io \
+          --set apps.apl-api._rawValues.image.repository=linode/apl-api \
+          --set apps.apl-console._rawValues.image.registry=docker.io \
+          --set apps.apl-console._rawValues.image.repository=linode/apl-console \
+          --set apps.apl-keycloak-operator._rawValues.image.repository=linode/apl-tasks \
+          --set apps.apl-gitea-operator._rawValues.image.repository=linode/apl-tasks \
+          --set apps.apl-harbor-operator._rawValues.image.repository=linode/apl-tasks"
           fi
 
           install_args="otomi chart/apl --wait --wait-for-jobs --timeout 90m0s \
