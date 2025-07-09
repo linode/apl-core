@@ -26,3 +26,9 @@ releases:
     installed: {{ $a | get "sealed-secrets.enabled" }}
     namespace: sealed-secrets
     <<: *default
+  - name: cert-manager
+    installed: true
+    namespace: cert-manager
+    labels:
+      pkg: cert-manager
+    <<: *default
