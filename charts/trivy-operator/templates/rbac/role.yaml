@@ -23,4 +23,5 @@ rules:
       - create
       - get
       - delete
+      - update
 {{- end }}

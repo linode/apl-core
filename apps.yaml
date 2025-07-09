@@ -56,7 +56,7 @@ appsInfo:
     isDeprecated: true
     deprecationInfo:
       replacement: tekton
-      path: '/#/namespaces/otomi-pipelines/pipelineruns'
+      path: /#/namespaces/otomi-pipelines/pipelineruns
       message: Drone is deprecated for enhanced performance, maintainability, and integration.
       reasons:
         - To improve overall system performance
@@ -313,7 +313,7 @@ appsInfo:
     integration: APL installs and configures Thanos using sidecars ans leverages the central object storage configuration.
   trivy:
     title: Trivy Operator
-    appVersion: 0.57.1
+    appVersion: 0.27.2
     repo: https://github.com/aquasecurity/trivy-operator
     maintainers: Aqua Security
     relatedLinks:
