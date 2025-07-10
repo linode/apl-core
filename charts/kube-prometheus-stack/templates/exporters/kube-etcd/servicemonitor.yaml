@@ -16,7 +16,11 @@ metadata:
 {{ include "kube-prometheus-stack.labels" . | indent 4 }}
 spec:
   jobLabel: {{ .Values.kubeEtcd.serviceMonitor.jobLabel }}
-  {{- include "servicemonitor.scrapeLimits" .Values.kubeEtcd.serviceMonitor | nindent 4 }}
+  {{- with .Values.kubeEtcd.serviceMonitor.targetLabels }}
+  targetLabels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- include "servicemonitor.scrapeLimits" .Values.kubeEtcd.serviceMonitor | nindent 2 }}
   selector:
     {{- if .Values.kubeEtcd.serviceMonitor.selector }}
     {{ tpl (toYaml .Values.kubeEtcd.serviceMonitor.selector | nindent 4) . }}
