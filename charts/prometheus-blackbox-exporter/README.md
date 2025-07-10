@@ -48,6 +48,25 @@ helm upgrade [RELEASE_NAME] [CHART] --install
 
 _See [helm upgrade](https://helm.sh/docs/helm/helm_upgrade/) for command documentation._
 
+### To 11.0.0
+
+This version removes support for the deprecated Kubernetes API `extensions/v1beta1`, `networking.k8s.io/v1beta1`, and `rbac.authorization.k8s.io/v1beta1`. and associated attributes.
+
+### To 10.0.0
+
+- `extraEnvFromSecret` got replaced with `extraEnvFrom`
+- `extraEnv` handling got changed to use k8s env definitions as list of maps
+
+### To 9.0.0
+
+This version remove pod security policy as it is deprecated.
+
+### To 8.0.0
+
+- The default image is set to `quay.io/prometheus/blackbox-exporter` instead `prom/blackbox-exporter`
+- `image.repository` is now split into `image.registry` and `image.repository`.
+  For the old behavior, set `image.registry` to an empty string and only use `image.repository`.
+
 ### To 7.0.0
 
 This version introduces the `securityContext` and `podSecurityContext` and removes `allowICMP`option.
