@@ -17,7 +17,7 @@ metadata:
   namespace: {{ template "oauth2-proxy.namespace" $ }}
 {{- with .Values.ingress.annotations }}
   annotations:
-{{ toYaml . | indent 4 }}
+{{ tpl ( toYaml . ) $ | indent 4 }}
 {{- end }}
 spec:
   {{- if and .Values.ingress.className ( eq "true" ( include "ingress.supportsIngressClassName" . ) ) }}
