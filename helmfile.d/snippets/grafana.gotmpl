@@ -1,13 +1,21 @@
+analytics:
+  check_for_updates: false
+  check_for_plugin_updates: false
+  feedback_links_enabled: false
 "auth.generic_oauth":
   tls_skip_verify_insecure: {{ .untrustedCA }}
   enabled: true
   name: OAuth
   org_role: Admin
   allow_sign_up: true
-  oauth_auto_login: true # false = so we can login with admin / bladibla
+  oauth_auto_login: true
   client_id: {{ .keycloak.clientID }}
   client_secret: {{ .keycloak.clientSecret | quote }}
-  scopes: openid
+  scopes: email profile openid
+  email_attribute_path: email
+  login_attribute_path: username
+  name_attribute_path: full_name
+  use_refresh_token: true
   auth_url: {{ printf "%s/protocol/openid-connect/auth" .keycloakBase }}
   token_url: {{ printf "%s/protocol/openid-connect/token" .keycloakBase }}
   api_url: {{ printf "%s/protocol/openid-connect/userinfo" .keycloakBase }}
