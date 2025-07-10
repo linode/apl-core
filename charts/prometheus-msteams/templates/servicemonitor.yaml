@@ -16,7 +16,7 @@ metadata:
     {{- end }}
 spec:
   endpoints:
-    - targetPort: {{ .Values.service.port }}
+    - targetPort: {{ .Values.container.port }}
       path: /metrics
       interval: {{ .Values.metrics.serviceMonitor.scrapeInterval }}
       {{- if .Values.metrics.serviceMonitor.honorLabels }}
