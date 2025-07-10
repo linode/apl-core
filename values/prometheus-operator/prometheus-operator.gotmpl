@@ -251,8 +251,6 @@ grafana:
       prometheus: system
   testFramework:
     enabled: false
-  plugins:
-    - grafana-piechart-panel
   {{- if or $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}
   additionalDataSources:
     {{- if $apps.loki.enabled }}
