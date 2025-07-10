@@ -1304,6 +1304,10 @@ environments:
         alerts:
           receivers:
             - none
+          policies:
+            orcsComplianceCluster:
+              validationFailureAction: Audit
+              whitelistedRegistries: []
         otomi:
           hasExternalDNS: false
           hasExternalIDP: false

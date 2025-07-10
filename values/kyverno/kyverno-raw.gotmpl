@@ -1,6 +1,6 @@
 {{- $v := .Values -}}
-{{- with $v.otomi | get "nodeSelector" nil }}
 resources:
+{{- with $v.otomi | get "nodeSelector" nil }}
   - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
     metadata:
@@ -61,4 +61,57 @@ resources:
                 {{ $key }}: {{ $val }}
                 {{- end }}
 {{- end }}
-app.kubernetes.io/instance: loki
+{{- if and $v.otomi.linodeLkeImageRepository (index $v.alerts.policies "orcsComplianceCluster") }}
+{{- $orcsPolicy := index $v.alerts.policies "orcsComplianceCluster" }}
+  - apiVersion: kyverno.io/v1
+    kind: ClusterPolicy
+    metadata:
+      name: orcs-compliance-cluster
+      annotations:
+        policies.kyverno.io/title: ORCS Registry Compliance (Cluster-wide)
+        policies.kyverno.io/category: supply-chain-security
+        policies.kyverno.io/severity: high
+        policies.kyverno.io/subject: Pod
+        policies.kyverno.io/description: >-
+          Enforces OCI Registry Cache Service (ORCS) compliance across all namespaces
+          by ensuring all container images are pulled through the designated ORCS registry
+          for supply chain security and vulnerability management.
+        pod-policies.kyverno.io/autogen-controllers: "none"
+    spec:
+      validationFailureAction: {{ $orcsPolicy.validationFailureAction }}
+      background: true
+      failurePolicy: Fail
+      rules:
+      - name: validate-orcs-registry-cluster
+        match:
+          any:
+          - resources:
+              kinds:
+              - Pod
+        exclude:
+          any:
+          # Exclude team namespaces (they have their own ORCS policies)
+          - resources:
+              namespaces:
+              - "team-*"
+        skipBackgroundRequests: false
+        validate:
+          foreach:
+          - list: request.object.spec.[containers, initContainers, ephemeralContainers][]
+            deny:
+              conditions:
+                all:
+                # Require images to come from ORCS registry
+                - key: "{{`{{ element.image }}`}}"
+                  operator: NotEquals
+                  value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
+                {{- if $orcsPolicy.whitelistedRegistries }}
+                # Allow specific exemptions for critical system components
+                - key: "{{`{{ element.image }}`}}"
+                  operator: AnyNotIn
+                  value:
+                  {{- range $orcsPolicy.whitelistedRegistries }}
+                  - "{{ . }}"
+                  {{- end }}
+                {{- end }}
+{{- end }}

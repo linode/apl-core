@@ -190,6 +190,10 @@ additionalPrometheusRules:
   - name: keycloak-db-backup
     {{- readFile "rules/keycloak-db-backup.yaml" | nindent 4 }}
   {{- end }}
+  {{- if $v.otomi.linodeLkeImageRepository }}
+  - name: orcs-compliance
+    {{- readFile "rules/orcs-compliance.yaml" | nindent 4 }}
+  {{- end }}
 alertmanager:
   enabled: {{ $a.enabled }}
   alertmanagerSpec:
