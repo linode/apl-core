@@ -1,0 +1,10 @@
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  annotations:
+    internal.kpt.dev/upstream-identifier: scheduling.k8s.io|PriorityClass|{{ .Release.Namespace }}|workflow-controller
+  labels:
+    application-crd-id: kubeflow-pipelines
+  name: workflow-controller
+value: 1000000
+---

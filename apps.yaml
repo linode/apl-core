@@ -181,6 +181,17 @@ appsInfo:
       - https://kyverno.io/docs/kyverno-policies/
     license: Apache 2.0
     about: Kyverno is a policy engine designed for Kubernetes. It can validate, mutate, and generate configurations using admission controls and background scans. Kyverno policies are Kubernetes resources and do not require learning a new language.
+  kubeflow-pipelines:
+    title: Kubeflow-Pipelines
+    appVersion: 2.4.0
+    repo: https://github.com/kubeflow/pipelines
+    maintainers: Kubeflow
+    relatedLinks:
+      - https://www.kubeflow.org/docs/components/pipelines/overview/
+      - https://kubeflow.org
+    license: Apache 2.0
+    about: Kubeflow pipelines are reusable end-to-end ML workflows built using the Kubeflow Pipelines SDK.
+    isAlpha: true
   kured:
     title: Kured
     appVersion: 1.13.1

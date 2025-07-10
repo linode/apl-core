@@ -40,3 +40,15 @@ releases:
     labels:
       pkg: trivy-operator
     <<: *default
+  - name: kubeflow-pipelines-artifacts
+    installed: {{ $a | get "kubeflow-pipelines.enabled" }}
+    namespace: kfp
+    labels:
+      pkg: kubeflow-pipelines
+    <<: *raw
+  - name: kubeflow-pipelines
+    installed: {{ $a | get "kubeflow-pipelines.enabled" }}
+    namespace: kfp
+    labels:
+      pkg: kubeflow-pipelines
+    <<: *default
