@@ -45,7 +45,7 @@ appsInfo:
     chartName: cloudnative-pg
   external-dns:
     title: External DNS
-    appVersion: 0.13.4
+    appVersion: 0.18.0
     repo: https://github.com/kubernetes-sigs/external-dns
     maintainers: Kubernetes SIGs
     relatedLinks:
