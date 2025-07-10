@@ -24,9 +24,9 @@ image:
     - otomi-pullsecret-global
   {{- end }}
   {{- if $v.otomi.linodeLkeImageRepository }}
-  repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/prom/blackbox-exporter"
+  registry: {{ $v.otomi.linodeLkeImageRepository }}
+  repository: quay/prometheus/blackbox-exporter
   {{- end }}
   pullPolicy: IfNotPresent
-
 
 pspEnabled: false

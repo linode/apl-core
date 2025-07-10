@@ -2,14 +2,19 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
- name: {{ template "app.name" . }}-config
+  name: {{ template "app.name" . }}-config
 data:
   connectors.yaml: |
     {{- with $.Values.connectors }}
     connectors:
 {{ toYaml . | indent 6 }}
     {{- end}}
-    {{- with $.Values.connectors_with_custom_templates }}
     connectors_with_custom_templates:
-{{ toYaml . | indent 6 }}
-    {{- end}}
+{{- range $index, $connectorWithCustomTemplate := .Values.connectorsWithCustomTemplates }}
+      - request_path: {{ $connectorWithCustomTemplate.request_path }}
+        template_file: /etc/template/custom_card_{{ $index }}.tmpl
+        webhook_url: {{ $connectorWithCustomTemplate.webhook_url }}
+{{- if hasKey $connectorWithCustomTemplate "escape_underscores" }}
+        escape_underscores: {{ $connectorWithCustomTemplate.escape_underscores }}
+{{- end }}
+{{- end }}
