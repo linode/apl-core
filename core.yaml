@@ -116,10 +116,6 @@ k8s:
       app: velero
       disablePolicyChecks: true
       disableIstioInjection: true
-    - name: otomi-pipelines
-      app: tekton
-      disableIstioInjection: true
-      disablePolicyChecks: true
 
 adminApps:
   - name: alertmanager
@@ -287,7 +283,7 @@ adminApps:
   - name: tekton
     tags: [buildpacks, ci, pipelines]
     ownHost: true
-    path: /#/namespaces/otomi-pipelines/pipelineruns
+    path: /#/namespaces/team-admin/pipelineruns
     ingress:
       - svc: tekton-dashboard
         namespace: tekton-pipelines
