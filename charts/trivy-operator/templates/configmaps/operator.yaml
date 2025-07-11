@@ -66,6 +66,7 @@ data:
   {{- end }}
   {{- if or .Values.operator.vulnerabilityScannerEnabled .Values.operator.exposedSecretScannerEnabled .Values.operator.scannerReportTTL }}
   vulnerabilityReports.scanner: {{ .Values.trivyOperator.vulnerabilityReportsPlugin | quote }}
+  vulnerabilityReports.scanJobsInSameNamespace: {{ .Values.trivyOperator.scanJobsInSameNamespace | quote }}
   {{- end }}
   {{- if .Values.operator.configAuditScannerEnabled }}
   configAuditReports.scanner: {{ .Values.trivyOperator.configAuditReportsPlugin | quote }}
