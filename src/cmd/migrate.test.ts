@@ -73,7 +73,7 @@ describe('Upgrading values', () => {
     }
     it('should apply changes to values', async () => {
       await applyChanges(mockChanges.slice(1), false, deps)
-      expect(deps.writeValues).toBeCalledWith(
+      expect(deps.writeValues).toHaveBeenCalledWith(
         {
           teamConfig: {
             teamA: {
@@ -88,7 +88,7 @@ describe('Upgrading values', () => {
         },
         true,
       )
-      expect(deps.rename).toBeCalledWith(`somefile.yaml`, `newloc.yaml`, false)
+      expect(deps.rename).toHaveBeenCalledWith(`somefile.yaml`, `newloc.yaml`, false)
     })
   })
 })
@@ -131,7 +131,7 @@ describe('Values migrations', () => {
   })
   it('should apply changes to team values', async () => {
     await applyChanges([valuesChanges], false, deps)
-    expect(deps.writeValues).toBeCalledWith(
+    expect(deps.writeValues).toHaveBeenCalledWith(
       {
         teamConfig: {
           teamA: {
@@ -435,7 +435,7 @@ describe('Network policies migrations', () => {
   it('should apply changes to services and create netpols ', async () => {
     await applyChanges(valuesChanges, false, deps)
     const expectedValues = getExpectedValues()
-    expect(deps.writeValues).toBeCalledWith(expectedValues, true)
+    expect(deps.writeValues).toHaveBeenCalledWith(expectedValues, true)
   }, 20000)
 })
 
@@ -584,7 +584,7 @@ describe('Build image name migration', () => {
   it('should apply changes to build values ', async () => {
     await applyChanges(valuesChanges, false, deps)
     const expectedValues = getExpectedValues()
-    expect(deps.writeValues).toBeCalledWith(expectedValues, true)
+    expect(deps.writeValues).toHaveBeenCalledWith(expectedValues, true)
   }, 20000)
 })
 
@@ -666,7 +666,7 @@ describe('teamSettingsMigration', () => {
     },
   })
 
-  // Set up the values and changes flag to trigger the teamSettingsMigration.
+  // Set up the values and changes a flag to trigger the teamSettingsMigration.
   const teamSettingValues: any = getTeamSettingsMockValues()
   const valuesChanges: Changes = [
     {
@@ -685,7 +685,7 @@ describe('teamSettingsMigration', () => {
   it('should migrate team settings correctly', async () => {
     await applyChanges(valuesChanges, false, deps)
     const expectedValues = getTeamSettingsExpectedValues()
-    expect(deps.writeValues).toBeCalledWith(expectedValues, true)
+    expect(deps.writeValues).toHaveBeenCalledWith(expectedValues, true)
   }, 20000)
 })
 
