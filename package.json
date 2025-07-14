@@ -91,6 +91,7 @@
     "prettier": "3.6.2",
     "semantic-release": "^24.2.6",
     "standard-version": "9.5.0",
+    "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "4.2.0",
     "tsx": "^4.20.3",
