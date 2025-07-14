@@ -294,7 +294,7 @@ jobs:
 
           helm install cloud-firewall-crd linode-cfw/cloud-firewall-crd \
             && kubectl wait --for condition=established --timeout=60s crd/cloudfirewalls.networking.linode.com \
-            && helm install cloud-firewall-ctrl linode-cfw/cloud-firewall-controller
+            && helm install cloud-firewall-ctrl linode-cfw/cloud-firewall-controller --set-json firewall='{"outbound":[],"inbound":[{"label":"allow-prometheus-node-export-tcp","action":"ACCEPT","description":"Prometheus Node Exporter","protocol":"TCP","ports":"9100","addresses":{"ipv4":["192.168.128.0/17"]}}]}'
       - name: APL install
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
