@@ -174,8 +174,8 @@ describe('Bootstrapping values', () => {
       }
       it('should create folders and files based on file entry in yaml', async () => {
         await handleFileEntry(deps)
-        expect(deps.mkdir).toBeCalledWith(`${env.ENV_DIR}/env/teams/workloads/demo`, { recursive: true })
-        expect(deps.writeFile).toBeCalledWith(
+        expect(deps.mkdir).toHaveBeenCalledWith(`${env.ENV_DIR}/env/teams/workloads/demo`, { recursive: true })
+        expect(deps.writeFile).toHaveBeenCalledWith(
           `${env.ENV_DIR}/env/teams/workloads/demo/values.yaml`,
           JSON.stringify(values),
         )
