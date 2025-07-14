@@ -210,8 +210,8 @@ describe('StatefulSet tests', () => {
         mockCoreApi,
         mockDebugger,
       )
-      expect(debugInfo).not.toBeCalled()
-      expect(debugError).toBeCalledTimes(2)
+      expect(debugInfo).not.toHaveBeenCalled()
+      expect(debugError).toHaveBeenCalledTimes(2)
     })
 
     it('should not patch resources if they already match', async () => {
@@ -244,7 +244,7 @@ describe('StatefulSet tests', () => {
         mockDebugger,
       )
 
-      expect(debug).toBeCalledTimes(1)
+      expect(debug).toHaveBeenCalledTimes(1)
     })
 
     it('should log an error if an exception occurs', async () => {
@@ -263,8 +263,8 @@ describe('StatefulSet tests', () => {
         mockDebugger,
       )
 
-      expect(debugInfo).not.toBeCalled()
-      expect(debugError).toBeCalledWith('Error patching StatefulSet argocd-application-controller:', error)
+      expect(debugInfo).not.toHaveBeenCalled()
+      expect(debugError).toHaveBeenCalledWith('Error patching StatefulSet argocd-application-controller:', error)
     })
   })
 
