@@ -4,17 +4,17 @@
 interceptors:
   resources: {}
   image:
-    repository: "gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/interceptors" 
+    repository: "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/interceptors"
     tag: "v0.25.0"
 
 controller:
   resources: {}
   image:
-    repository: "gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/controller" 
+    repository: "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/controller"
     tag: "v0.25.0"
 
 webhook:
   resources: {}
   image:
-    repository: "gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/webhook" 
+    repository: "ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/webhook"
     tag: "v0.25.0"
