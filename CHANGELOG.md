@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [4.7.3](https://github.com/linode/apl-core/compare/v4.7.2...v4.7.3) (2025-07-14)
+
+
+### Features
+
+* updating tekton registry ([#2339](https://github.com/linode/apl-core/issues/2339)) ([be17e0f](https://github.com/linode/apl-core/commit/be17e0f8bb4199ac558624fd16a749beb80e372e))
+
 ### [4.7.2](https://github.com/linode/apl-core/compare/v4.7.1...v4.7.2) (2025-07-08)
 
 
