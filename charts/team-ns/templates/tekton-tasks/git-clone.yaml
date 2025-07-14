@@ -109,7 +109,7 @@ spec:
     - name: gitInitImage
       description: The image providing the git-init binary that this Task runs.
       type: string
-      default: "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
+      default: "ghcr.io/tektoncd/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
     - name: userHome
       description: |
         Absolute path to the user's home directory.
