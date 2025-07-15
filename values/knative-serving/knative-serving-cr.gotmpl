@@ -12,7 +12,7 @@ spec:
     default: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/${NAME}:{{ $tag }}"
     override:
       migrate: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate:{{ $tag }}"
-      cleantup: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/pkg/cleanup/cmd/cleanup:{{ $tag }}"
+      cleanup: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/pkg/cleanup/cmd/cleanup:{{ $tag }}"
   {{- end }}
   version: "1.18"
   {{- if $v._derived.untrustedCA }}
