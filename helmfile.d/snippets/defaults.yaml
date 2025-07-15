@@ -1240,8 +1240,6 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
-            monitoring:
-              disabledRules: []
           harbor:
             imageName: null
             size: 5Gi
@@ -1260,8 +1258,6 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
-            monitoring:
-              disabledRules: []
           gitea:
             imageName: null
             size: 5Gi
@@ -1279,8 +1275,6 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
-            monitoring:
-              disabledRules: []
         obj:
           provider:
             type: disabled

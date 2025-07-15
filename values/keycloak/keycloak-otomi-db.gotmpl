@@ -71,5 +71,5 @@ resources: {{- toYaml $kdb.resources | nindent 2 }}
 {{- if $v.apps.prometheus.enabled }}
 prometheusRules:
   enabled: true
-  disabledRules: {{- toYaml $kdb.monitoring.disabledRules | nindent 4 }}
+  disabledRules: {{- toYaml $v.apps.prometheus.disabledRules | nindent 4 }}
 {{- end }}
