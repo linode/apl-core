@@ -67,10 +67,3 @@ clusterSpec:
 {{- end }}
 
 resources: {{- toYaml $gdb.resources | nindent 2 }}
-
-# Prometheus monitoring configuration
-{{- if $v.apps.prometheus.enabled }}
-prometheusRules:
-  enabled: true
-  disabledRules: {{- toYaml $v.apps.prometheus.disabledRules | nindent 4 }}
-{{- end }}

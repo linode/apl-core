@@ -15,22 +15,6 @@ resources: {}
 
 monitoring: true
 
-postgresql:
-  parameters:
-    max_connections: "32"
-    shared_buffers: 32MB
-    work_mem: 2MB
-
-# Prometheus monitoring configuration
-prometheusRules:
-  enabled: true
-  # List of alert rules to disable (by alert name)
-  disabledRules: []
-  # Example:
-  # disabledRules:
-  #   - "CNPGClusterHACritical"
-  #   - "CNPGClusterOffline"
-
 clusterAffinity:
   affinity:
     enablePodAntiAffinity: true
