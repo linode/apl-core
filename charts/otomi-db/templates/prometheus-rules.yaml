@@ -225,25 +225,4 @@ spec:
         namespace: {{ $context.namespace }}
         cnpg_cluster: {{ $context.cluster }}
     {{- end }}
-
-    # Zone Distribution Alert
-    {{- $alert := "CNPGClusterZoneSpreadWarning" -}}
-    {{- if not (has $alert $context.disabledRules) }}
-    - alert: {{ $alert }}
-      annotations:
-        summary: CNPG Cluster instances are not spread across availability zones!
-        description: |-
-          CloudNativePG Cluster "{{ "{{ $labels.job }}" }}" instances are not optimally distributed across
-          availability zones. This may reduce disaster recovery capabilities.
-
-          Consider reviewing zone distribution for better fault tolerance.
-        runbook_url: https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/docs/runbooks/CNPGClusterZoneSpreadWarning.md
-      expr: |
-        count by (job) (count by (job, topology_kubernetes_io_zone) (cnpg_pg_postmaster_start_time{namespace="{{ $context.namespace }}"})) < 2
-      for: 5m
-      labels:
-        severity: warning
-        namespace: {{ $context.namespace }}
-        cnpg_cluster: {{ $context.cluster }}
-    {{- end }}
 {{- end }}
