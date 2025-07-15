@@ -9,3 +9,9 @@ docker build . -f Dockerfile -t linode/apl-tools:<TAG>
 ```
 docker build . -f Dockerfile-db -t linode/apl-tools-db:<TAG>
 ```
+
+# Building linode/apl-tools-tty container image
+
+```
+docker build . -f Dockerfile-tty -t linode/apl-tools-tty:<TAG>
+```
