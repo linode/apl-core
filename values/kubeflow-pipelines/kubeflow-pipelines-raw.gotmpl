@@ -1,0 +1,29 @@
+{{- $v := .Values }}
+{{- $kfp := index $v.apps "kubeflow-pipelines" }}
+{{- $obj := $v.obj.provider }}
+resources:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app: kubeflow-pipelines
+      name: kfp-mysql-secret
+    data:
+      password: "{{ $kfp.rootPassword | b64enc }}"
+      username: "{{ "root" | b64enc }}"
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app: kubeflow-pipelines
+      name: mlpipeline-minio-artifact
+    data:
+      {{- if eq $obj.type "minioLocal" }}
+      accesskey: "{{ "otomi-admin" | b64enc }}"
+      secretkey: "{{ $v.otomi.adminPassword | b64enc }}"
+      {{- end }}
+      {{- if eq $obj.type "linode" }}
+      accesskey: "{{ $obj.linode.accessKeyId | b64enc }}"
+      secretkey: "{{ $obj.linode.secretAccessKey | b64enc }}"
+      {{- end }}
+  
