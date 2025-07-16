@@ -127,6 +127,13 @@ environments:
               limits:
                 cpu: "1"
                 memory: 1Gi
+            barmanPluginResources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+              limits:
+                cpu: 100m
+                memory: 200Mi
             _rawValues: {}
           drone:
             enabled: false
@@ -181,6 +188,8 @@ environments:
                           ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/eventlistenersink,
                           docker.io/bitnami/sealed-secrets-controller,
                           ghcr.io/cloudnative-pg/postgresql,
+                          ghcr.io/cloudnative-pg/plugin-barman-cloud,
+                          ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar,
                           jaegertracing/jaeger-operator
                         ) or (k8s.ns.name = "kube-system")
                           or (k8s.ns.name = "ingress")
@@ -1240,6 +1249,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
           harbor:
             imageName: null
             size: 5Gi
@@ -1258,6 +1274,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
           gitea:
             imageName: null
             size: 5Gi
@@ -1275,6 +1298,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
         obj:
           provider:
             type: disabled
