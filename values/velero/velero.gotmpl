@@ -42,9 +42,9 @@ initContainers:
 {{- if eq $v.cluster.provider "linode" }}
   - name: velero-plugin-for-linode
     {{- if $v.otomi.linodeLkeImageRepository }}
-    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/velero/velero-plugin-linode:v0.0.1"
+    image: "{{- $v.otomi.linodeLkeImageRepository }}/docker/linode/velero-plugin:v0.0.1"
     {{- else }}
-    image: velero/velero-plugin-linode:v0.0.1
+    image: linode/velero-plugin:v0.0.1
     {{- end }}
     imagePullPolicy: IfNotPresent
     resources:
@@ -71,7 +71,7 @@ configuration:
   - name: apl
     provider: aws
     default: true
-    bucket: velero  
+    bucket: velero
     config:
       s3Url: http://minio.minio.svc.cluster.local:9000
       publicUrl: http://minio.minio.svc.cluster.local:9000
@@ -83,7 +83,7 @@ configuration:
   - name: apl
     provider: aws
     default: true
-    bucket: {{ $obj.linode.buckets.velero }} 
+    bucket: {{ $obj.linode.buckets.velero }}
     config:
       s3Url: https://{{ $obj.linode.region }}.linodeobjects.com
       region: {{ $obj.linode.region }}
@@ -119,7 +119,7 @@ credentials:
 
 kubectl:
   {{- if $v.otomi.linodeLkeImageRepository }}
-  image: 
+  image:
       repository: "{{- $v.otomi.linodeLkeImageRepository }}/docker/bitnami/kubectl"
   {{- end }}
   # Resource requests/limits to specify for the upgrade/cleanup job.
@@ -130,7 +130,7 @@ kubectl:
     limits:
       cpu: 100m
       memory: 32Mi
-  labels: 
+  labels:
     # do not inject sidecar, so the kubectl k8s job can exit and return the completed status
     sidecar.istio.io/inject: "false"
 
