@@ -1683,6 +1683,8 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
+          barmanPluginResources:
+            $ref: '#/definitions/resources'
       drone:
         additionalProperties: false
         properties:
@@ -3215,6 +3217,8 @@ properties:
                 default: false
               resources:
                 $ref: '#/definitions/resources'
+              backupSidecarResources:
+                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3231,6 +3235,8 @@ properties:
                 default: false
               resources:
                 $ref: '#/definitions/resources'
+              backupSidecarResources:
+                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3246,6 +3252,8 @@ properties:
                 type: boolean
                 default: false
               resources:
+                $ref: '#/definitions/resources'
+              backupSidecarResources:
                 $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
