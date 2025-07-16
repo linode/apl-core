@@ -72,3 +72,10 @@ releases:
     chart: ../charts/raw
     values:
       - ../values/cloudnative-pg/cloudnative-pg-raw.gotmpl
+  - name: cloudnative-pg-plugin-barman-cloud
+    installed: true
+    namespace: cnpg-system
+    labels:
+      pkg: cloudnative-pg
+      app: core
+    <<: *default
