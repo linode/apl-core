@@ -13,4 +13,3 @@ spec:
     isMultitenant: true
     isPreInstalled: false
     useORCS: false
-
