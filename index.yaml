@@ -645,29 +645,6 @@ entries:
     urls:
     - https://github.com/linode/apl-core/releases/download/apl-3.0.0/apl-3.0.0.tgz
     version: 3.0.0
-  - apiVersion: v2
-    appVersion: v3.0.0-rc.1
-    created: "2024-09-19T08:35:56.097871522Z"
-    description: A Helm chart for installing APL in Kubernetes
-    digest: 48f4f8c9ef30bfba5e48eca418ce422bfe434d215f4b6e6dfa244d722d4cffe2
-    home: https://apl-docs.net/
-    icon: https://apl-docs.net/img/otomi-logo.svg
-    keywords:
-    - linode
-    - lke
-    - multi-tenancy
-    - continuous-delivery
-    - continuous-integration
-    - continuous-integration
-    - observability
-    - security
-    name: apl
-    sources:
-    - https://github.com/linode/apl-core
-    type: application
-    urls:
-    - https://github.com/linode/apl-core/releases/download/apl-3.0.0-rc.1/apl-3.0.0-rc.1.tgz
-    version: 3.0.0-rc.1
   otomi:
   - apiVersion: v2
     appVersion: v2.11.6
@@ -1996,32 +1973,6 @@ entries:
     - https://github.com/linode/apl-core/releases/download/otomi-0.5.51/otomi-0.5.51.tgz
     version: 0.5.51
   - apiVersion: v2
-    appVersion: v0.26.0
-    created: "2023-08-21T11:45:43.016605398Z"
-    description: A Helm chart for installing otomi in Kubernetes
-    digest: 63efc7b5c2cb02461b5ba6e952b924a6cca79c0dab7fc22bb9b36503504cb5e0
-    home: https://otomi.io/
-    icon: https://otomi.io/img/otomi-logo.svg
-    keywords:
-    - otomi
-    - otomi.io
-    - container-management
-    - cicd
-    - multi-tenancy
-    - continuous-delivery
-    - continuous-deployment
-    - continuous-integration
-    - observability
-    - metrics
-    - tracing
-    name: otomi
-    sources:
-    - https://github.com/linode/apl-core
-    type: application
-    urls:
-    - https://github.com/linode/apl-core/releases/download/otomi-0.5.50/otomi-0.5.50.tgz
-    version: 0.5.50
-  - apiVersion: v2
     appVersion: v0.24.1
     created: "2023-08-08T14:19:12.657726347Z"
     description: A Helm chart for installing otomi in Kubernetes
@@ -3009,58 +2960,6 @@ entries:
     urls:
     - https://github.com/linode/apl-core/releases/download/otomi-0.5.11/otomi-0.5.11.tgz
     version: 0.5.12
-  - apiVersion: v2
-    appVersion: v0.16.7
-    created: "2022-06-14T12:59:30.666441782Z"
-    description: A Helm chart for installing otomi in Kubernetes
-    digest: f01b2a5bbb7cbd72ffed2228f310d6ee4fdab28aad2183c8d13fdc35c13f16d8
-    home: https://otomi.io/
-    icon: https://otomi.io/img/otomi-logo.svg
-    keywords:
-    - otomi
-    - otomi.io
-    - container-management
-    - cicd
-    - multi-tenancy
-    - continuous-delivery
-    - continuous-deployment
-    - continuous-integration
-    - observability
-    - metrics
-    - tracing
-    name: otomi
-    sources:
-    - https://github.com/linode/apl-core
-    type: application
-    urls:
-    - https://github.com/linode/apl-core/releases/download/otomi-0.5.10/otomi-0.5.10.tgz
-    version: 0.5.10
-  - apiVersion: v2
-    appVersion: v0.16.7
-    created: "2022-06-13T10:19:19.587545499Z"
-    description: A Helm chart for installing otomi in Kubernetes
-    digest: 0e12eadc2a73b59014f264b8ec0da791bcfc16526b22042037fb88f283567b1a
-    home: https://otomi.io/
-    icon: https://otomi.io/img/otomi-logo.svg
-    keywords:
-    - otomi
-    - otomi.io
-    - container-management
-    - cicd
-    - multi-tenancy
-    - continuous-delivery
-    - continuous-deployment
-    - continuous-integration
-    - observability
-    - metrics
-    - tracing
-    name: otomi
-    sources:
-    - https://github.com/linode/apl-core
-    type: application
-    urls:
-    - https://github.com/linode/apl-core/releases/download/otomi-0.5.9/otomi-0.5.9.tgz
-    version: 0.5.9
   - apiVersion: v2
     appVersion: v0.16.6
     created: "2022-05-27T19:23:21.048918934Z"
