@@ -1,0 +1,170 @@
+#
+# Copyright The CloudNativePG Contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Default values for CloudNativePG.
+# This is a YAML-formatted file.
+# Please declare variables to be passed to your templates.
+
+replicaCount: 1
+
+image:
+  registry: ghcr.io
+  repository: cloudnative-pg/plugin-barman-cloud
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+sidecarImage:
+  registry: ghcr.io
+  repository: cloudnative-pg/plugin-barman-cloud-sidecar
+  # -- Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+namespaceOverride: ""
+
+hostNetwork: false
+dnsPolicy: ""
+
+# -- Update strategy for the operator.
+# ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+# For example:
+#  type: RollingUpdate
+#  rollingUpdate:
+#    maxSurge: 25%
+#    maxUnavailable: 25%
+#
+# WARNING: the RollingUpdate strategy is not supported by the operator yet so it can 
+# currently. only use the Recreate strategy.
+updateStrategy: {}
+
+crds:
+  # -- Specifies whether the CRDs should be created when installing the chart.
+  create: true
+
+# -- Additional arguments to be added to the operator's args list.
+additionalArgs: []
+
+# -- Array containing extra environment variables which can be templated.
+# For example:
+#  - name: RELEASE_NAME
+#    value: "{{ .Release.Name }}"
+#  - name: MY_VAR
+#    value: "mySpecialKey"
+additionalEnv: []
+
+serviceAccount:
+  # -- Specifies whether the service account should be created.
+  create: true
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template.
+  name: ""
+
+rbac:
+  # -- Specifies whether ClusterRole and ClusterRoleBinding should be created.
+  create: true
+  additional:
+    leaderElection:
+      # -- Specifies whether the leader election Role and RoleBinding should be created.
+      create: true
+    metricsAuth:
+      # -- Specifies whether the metrics auth ClusterRole and ClusterRoleBinding should be created.
+      create: true
+    metricsReader:
+      # -- Specifies whether the metrics reader ClusterRole should be created.
+      create: true
+    objectStore:
+      editor:
+        # -- Specifies whether the object store editor ClusterRole should be created.
+        create: true
+      viewer:
+        # -- Specifies whether the object store viewer ClusterRole should be created.
+        create: true
+
+# -- Annotations to be added to all other resources.
+commonAnnotations: {}
+# -- Annotations to be added to the pod.
+podAnnotations: {}
+# -- Labels to be added to the pod.
+podLabels: {}
+
+# -- Container Security Context.
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop:
+      - "ALL"
+
+# -- Security Context for the whole pod.
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+  # fsGroup: 2000
+
+# -- Priority indicates the importance of a Pod relative to other Pods.
+priorityClassName: ""
+
+service:
+  # -- DO NOT CHANGE THE SERVICE NAME as it is currently used to generate the certificate
+  # and can not be configured
+  name: barman-cloud
+  port: 9090
+  # -- Set the ip family policy to configure dual-stack see [Configure dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services)
+  ipFamilyPolicy: ""
+  # -- Sets the families that should be supported and the order in which they should be applied to ClusterIP as well. Can be IPv4 and/or IPv6.
+  ipFamilies: []
+
+resources: {}
+  # If you want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  #
+  # limits:
+  #   cpu: 100m
+  #   memory: 200Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 100Mi
+
+# -- Nodeselector for the operator to be installed.
+nodeSelector: {}
+
+# -- Topology Spread Constraints for the operator to be installed.
+topologySpreadConstraints: []
+
+# -- Tolerations for the operator to be installed.
+tolerations: []
+
+# -- Affinity for the operator to be installed.
+affinity: {}
+
+certificate:
+  # -- Specifies whether the client certificate should be created.
+  createClientCertificate: true
+  # -- Specifies whether the server certificate should be created.
+  createServerCertificate: true
+  # -- The name of the issuer to use for the certificates.
+  issuerName: selfsigned-issuer
+  # -- The duration of the certificates.
+  duration: 2160h
+  # -- The renew before time for the certificates.
+  renewBefore: 360h
