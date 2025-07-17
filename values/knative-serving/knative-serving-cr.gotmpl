@@ -9,9 +9,13 @@ metadata:
   namespace: knative-serving
 spec:
   {{- if $v.otomi.linodeLkeImageRepository }}
+  # Use private repository configuration when ORCS is enabled
+  # https://knative.dev/docs/install/operator/configuring-serving-cr/#private-repository-and-private-secrets
   registry:
     default: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/cmd/${NAME}:{{ $tag }}"
     override:
+      # Overriding paths for images not under "gcr.io/knative-releases/knative.dev/serving/cmd" otherwise the system
+      # will try to pull them from "mirrored.registry/knative-releases/knative.dev/serving/cmd" which does not exist.
       migrate: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate:{{ $tag }}"
       cleanup: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/pkg/cleanup/cmd/cleanup:{{ $tag }}"
       net-istio-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/controller:{{ $netIstioTag }}"
