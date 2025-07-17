@@ -1,0 +1,50 @@
+{{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+{{ template "chart.description" . }}
+
+{{ template "chart.badgesSection" . }}
+
+## Documentation
+
+You can find detailed Information and Screens about Features and Configurations in the [Documentation](https://kyverno.github.io/policy-reporter-docs).
+
+## Installation with Helm v3
+
+Installation via Helm Repository
+
+### Add the Helm repository
+```bash
+helm repo add policy-reporter https://kyverno.github.io/policy-reporter
+helm repo update
+```
+
+### Basic Installation
+
+The basic installation provides an Prometheus Metrics Endpoint and different REST APIs, for more details have a look at the [Documentation](https://kyverno.github.io/policy-reporter/guide/02-getting-started).
+
+```bash
+helm install policy-reporter policy-reporter/policy-reporter -n policy-reporter --create-namespace
+```
+
+## Policy Reporter UI
+
+You can use the Policy Reporter as standalone Application along with the optional UI SubChart.
+
+### Installation with Policy Reporter UI and Kyverno Plugin enabled
+
+```bash
+helm install policy-reporter policy-reporter/policy-reporter --set plugin.kyverno.enabled=true --set ui.enabled=true -n policy-reporter --create-namespace
+kubectl port-forward service/policy-reporter-ui 8082:8080 -n policy-reporter
+```
+Open `http://localhost:8082/` in your browser.
+
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

@@ -330,3 +330,11 @@ appsInfo:
     dependencies: None
     about: Velero is a tool to back up and restore Kubernetes cluster resources and persistent volumes.
     integration: When enabled, Velero can be used to automatically create backups of APL platform services. Based on the selected provider, APL installs required plug-ins. APL also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.
+  policy-reporter:
+    title: policy-reporter
+    appVersion: 3.3.1
+    repo: https://github.com/kyverno/policy-reporter
+    maintainers: Frank Jogeleit
+    license: Apache 2.0
+    dependencies: Kyverno
+    about: 'Policy Reporter watches for PolicyReport Resources. It creates Prometheus Metrics and can send rule validation events to different targets like Loki, Elasticsearch, Slack or Discord '

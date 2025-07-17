@@ -1,0 +1,33 @@
+logging:
+  api: {{ .Values.plugin.trivy.logging.api }}
+  server: {{ .Values.plugin.trivy.logging.server }}
+  encoding: {{ .Values.plugin.trivy.logging.encoding }}
+  logLevel: {{ .Values.plugin.trivy.logging.logLevel }}
+
+server:
+  basicAuth:
+    username: {{ .Values.basicAuth.username }}
+    password: {{ .Values.basicAuth.password }}
+    secretRef: {{ .Values.basicAuth.secretRef }}
+
+core:
+  host: {{ printf "http://%s:%d" (include "policyreporter.fullname" .) (.Values.service.port | int) }}
+  skipTLS: {{ .Values.plugin.trivy.policyReporter.skipTLS }}
+  certificate: {{ .Values.plugin.trivy.policyReporter.certificate }}
+  secretRef: {{ .Values.plugin.trivy.policyReporter.secretRef }}
+  basicAuth:
+    username: {{ .Values.basicAuth.username }}
+    password: {{ .Values.basicAuth.password }}
+
+trivy:
+  dbDir: /db
+  api:
+    disable: {{ .Values.plugin.trivy.cveawg.disable }}
+
+github:
+  token: {{ .Values.plugin.trivy.github.token | quote }}
+  disable: {{ .Values.plugin.trivy.github.disable }}
+
+{{- with .Values.plugin.trivy.extraConfig }}
+{{- toYaml . | nindent 0 }}
+{{- end }}

@@ -1,0 +1,16 @@
+ui:
+  enabled: true
+
+plugin:
+  kyverno:
+    enabled: true
+
+metrics:
+  enabled: true
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    labels:
+       release: prometheus-operator
+       prometheus: system

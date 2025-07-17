@@ -1,0 +1,30 @@
+{{- if .Values.service.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "policyreporter.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "policyreporter.labels" . | nindent 4 }}
+    {{- with .Values.service.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.annotations .Values.service.annotations }}
+  annotations:
+  {{- with .Values.annotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.port.name }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "policyreporter.selectorLabels" . | nindent 4 }}
+{{- end }}
