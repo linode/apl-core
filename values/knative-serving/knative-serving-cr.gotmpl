@@ -1,12 +1,13 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.knative -}}
+{{- $tag := "v1.18.1" -}}
+{{- $netIstioTag := "v1.18.0" -}}
 apiVersion: operator.knative.dev/v1beta1
 kind: KnativeServing
 metadata:
   name: knative-serving
   namespace: knative-serving
 spec:
-
   {{- if $v.otomi.linodeLkeImageRepository }}
   # Use private repository configuration when ORCS is enabled
   # https://knative.dev/docs/install/operator/configuring-serving-cr/#private-repository-and-private-secrets
@@ -71,7 +72,7 @@ spec:
     features:
       podspec-securitycontext: enabled
   ingress:
-    istio: 
+    istio:
       enabled: true
       knative-ingress-gateway:
         selector:
