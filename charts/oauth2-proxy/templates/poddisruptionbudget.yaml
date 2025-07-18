@@ -11,5 +11,6 @@ spec:
   selector:
     matchLabels:
       {{- include "oauth2-proxy.selectorLabels" . | indent 6 }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
 {{- end }}
