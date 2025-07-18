@@ -12,6 +12,7 @@ import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/co
 import { Argv, CommandModule } from 'yargs'
 import { $ } from 'zx'
 import { V1ResourceRequirements } from '@kubernetes/client-node'
+import { env } from '../common/envalid'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi'
@@ -44,7 +45,7 @@ const getAppName = (release: HelmRelease): string => {
   return `${release.namespace}-${release.name}`
 }
 
-const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>, otomiVersion) => {
+const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>, otomiVersion: string) => {
   const name = getAppName(release)
   const patch = appPatches[name] || genericPatch
   return {
@@ -72,8 +73,8 @@ const getArgocdAppManifest = (release: HelmRelease, values: Record<string, any>,
       project: 'default',
       source: {
         path: release.chart.replace('../', ''),
-        repoURL: 'https://github.com/linode/apl-core.git',
-        targetRevision: otomiVersion,
+        repoURL: env.APPS_REPO_URL,
+        targetRevision: env.APPS_REVISION || otomiVersion,
         helm: {
           releaseName: release.name,
           values: objectToYaml(values),
@@ -188,6 +189,12 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   await Promise.allSettled(
     releases.map(async (release: HelmRelease) => {
       try {
+        // Skip apl-operator when NODE_ENV is development
+        if (process.env.NODE_ENV === 'development' && release.name === 'apl-operator') {
+          d.info(`Skipping apl-operator application in development mode`)
+          return
+        }
+
         if (release.installed) await writeApplicationManifest(release, otomiVersion)
         else {
           await removeApplication(release)

@@ -178,6 +178,8 @@ additionalPrometheusRules:
     {{- readFile "rules/argocd.yaml" | nindent 4 }}
   - name: blackbox
     {{- readFile "rules/blackbox.yaml" | nindent 4 }}
+  - name: cloudnative-pg
+    {{- readFile "rules/cloudnative-pg.yaml" | nindent 4 }}
   {{ if $v.platformBackups.database.gitea.enabled }}
   - name: gitea-db-backup
     {{- readFile "rules/gitea-db-backup.yaml" | nindent 4 }}
@@ -247,8 +249,6 @@ grafana:
       prometheus: system
   testFramework:
     enabled: false
-  plugins:
-    - grafana-piechart-panel
   {{- if or $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}
   additionalDataSources:
     {{- if $apps.loki.enabled }}

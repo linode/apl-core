@@ -43,34 +43,6 @@ appsInfo:
     about: CloudNative PostgreSQL is an open source operator designed to manage PostgreSQL workloads on any supported Kubernetes cluster running in private, public, hybrid, or multi-cloud environments.
     integration: CloudNativePG is used by APL to provide Postgresql database for various applications. In the values you can configure a storageprovider for backups. The backups can be enabled in settings.
     chartName: cloudnative-pg
-  drone:
-    title: Drone
-    appVersion: 2.7.3
-    repo: https://github.com/harness/drone
-    maintainers: Harness
-    relatedLinks:
-      - https://www.drone.io/
-    license: Apache 2.0
-    about: Drone is a continuous delivery system built on container technology. Drone uses a simple YAML build file, to define and execute build pipelines inside Docker containers.
-    integration: APL uses Drone to deploy changes to the configuration (values) repository. Drone is installed and configured by default. When no external source control is configured (default), APL will use Gitea as Drone's git hosting dependency. Teams can use Drone for other purposes if desired, with the limitation that it can't be configured for multiple git services.
-    isDeprecated: true
-    deprecationInfo:
-      replacement: tekton
-      path: '/#/namespaces/otomi-pipelines/pipelineruns'
-      message: Drone is deprecated for enhanced performance, maintainability, and integration.
-      reasons:
-        - To improve overall system performance
-        - To enhance maintainability
-        - To offer better integration with other Kubernetes components and APL
-      replacementAdvantages:
-        - Superior performance
-        - Scalability
-        - Security
-        - CNCF support
-        - Easier pipeline configuration and management
-      options:
-        - To see previous pipeline runs, click 'I understand' and view them in the Drone dashboard.
-        - To see new pipeline runs, open the Tekton dashboard.
   external-dns:
     title: External DNS
     appVersion: 0.13.4
@@ -104,7 +76,7 @@ appsInfo:
     integration: APL uses Gitea as its default repository for APL configuration (values). Gitea can also be used by Teams to provide application code repositories. Access to Gitea is provided by the OIDC integration in APL. Members of the otomi-admin and team-admin group can seamlessly sign in to Gitea. When Argo CD is enabled, APL will automatically create a Gitops repository for each Team in Gitea.
   grafana:
     title: Grafana
-    appVersion: 11.2.2
+    appVersion: 12.0.2
     repo: https://github.com/grafana/grafana
     maintainers: Grafana Labs
     relatedLinks:
@@ -209,6 +181,17 @@ appsInfo:
       - https://kyverno.io/docs/kyverno-policies/
     license: Apache 2.0
     about: Kyverno is a policy engine designed for Kubernetes. It can validate, mutate, and generate configurations using admission controls and background scans. Kyverno policies are Kubernetes resources and do not require learning a new language.
+  kubeflow-pipelines:
+    title: Kubeflow-Pipelines
+    appVersion: 2.4.0
+    repo: https://github.com/kubeflow/pipelines
+    maintainers: Kubeflow
+    relatedLinks:
+      - https://www.kubeflow.org/docs/components/pipelines/overview/
+      - https://kubeflow.org
+    license: Apache 2.0
+    about: Kubeflow pipelines are reusable end-to-end ML workflows built using the Kubeflow Pipelines SDK.
+    isAlpha: true
   kured:
     title: Kured
     appVersion: 1.13.1
@@ -258,7 +241,7 @@ appsInfo:
     integration: APL installs Minio in a stand-alone setup. Optionally Minio Provisioning can be enabled to create buckets and policies for applications in APL capable of using object storage for data persistence.
   prometheus:
     title: Prometheus
-    appVersion: 2.54.1
+    appVersion: 3.4.2
     repo: https://github.com/prometheus/prometheus
     maintainers: Prometheus
     relatedLinks:
