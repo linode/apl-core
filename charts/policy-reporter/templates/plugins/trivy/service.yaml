@@ -1,0 +1,25 @@
+{{- if .Values.plugin.trivy.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "trivy-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "trivy-plugin.labels" . | nindent 4 }}
+    {{- with .Values.plugin.trivy.service.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.plugin.trivy.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.plugin.trivy.service.type }}
+  ports:
+    - port: {{ .Values.plugin.trivy.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "trivy-plugin.selectorLabels" . | nindent 4 }}
+{{- end }}

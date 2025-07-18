@@ -1,0 +1,494 @@
+{{- if .Values.target.crd -}}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: targetconfigs.policyreporter.kyverno.io
+spec:
+  group: policyreporter.kyverno.io
+  names:
+    kind: TargetConfig
+    listKind: TargetConfigList
+    plural: targetconfigs
+    shortNames:
+    - tcfg
+    singular: targetconfig
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: TargetConfig is the Schema for the targetconfigs API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: TargetConfigSpec defines the desired state of TargetConfig.
+            oneOf:
+            - required:
+              - s3
+            - required:
+              - webhook
+            - required:
+              - telegram
+            - required:
+              - slack
+            - required:
+              - elasticSearch
+            - required:
+              - gcs
+            - required:
+              - loki
+            - required:
+              - securityHub
+            - required:
+              - kinesis
+            - required:
+              - splunk
+            - required:
+              - teams
+            - required:
+              - jira
+            - required:
+              - alertManager
+            properties:
+              alertManager:
+                properties:
+                  certificate:
+                    type: string
+                  headers:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  host:
+                    type: string
+                  skipTLS:
+                    type: boolean
+                required:
+                - host
+                type: object
+              customFields:
+                additionalProperties:
+                  type: string
+                type: object
+              elasticSearch:
+                properties:
+                  apiKey:
+                    type: string
+                  certificate:
+                    type: string
+                  headers:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  host:
+                    type: string
+                  index:
+                    type: string
+                  password:
+                    type: string
+                  rotation:
+                    type: string
+                  skipTLS:
+                    type: boolean
+                  typelessApi:
+                    type: boolean
+                  username:
+                    type: string
+                required:
+                - host
+                - index
+                type: object
+              filter:
+                properties:
+                  namespaces:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                      selector:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  policies:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                      selector:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  reportLabels:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                      selector:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  severities:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                      selector:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  sources:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                      selector:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  status:
+                    properties:
+                      exclude:
+                        items:
+                          type: string
+                        type: array
+                      include:
+                        items:
+                          type: string
+                        type: array
+                      selector:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                type: object
+              gcs:
+                properties:
+                  bucket:
+                    type: string
+                  credentials:
+                    type: string
+                  prefix:
+                    type: string
+                required:
+                - bucket
+                - credentials
+                - prefix
+                type: object
+              jira:
+                properties:
+                  apiToken:
+                    type: string
+                  apiVersion:
+                    type: string
+                  certificate:
+                    type: string
+                  components:
+                    items:
+                      type: string
+                    type: array
+                  host:
+                    type: string
+                  issueType:
+                    type: string
+                  labels:
+                    items:
+                      type: string
+                    type: array
+                  password:
+                    type: string
+                  projectKey:
+                    type: string
+                  skipTLS:
+                    type: boolean
+                  summaryTemplate:
+                    type: string
+                  username:
+                    type: string
+                required:
+                - projectKey
+                type: object
+              kinesis:
+                properties:
+                  accessKeyId:
+                    type: string
+                  endpoint:
+                    type: string
+                  region:
+                    type: string
+                  secretAccessKey:
+                    type: string
+                  streamName:
+                    type: string
+                required:
+                - accessKeyId
+                - secretAccessKey
+                - streamName
+                type: object
+              loki:
+                properties:
+                  certificate:
+                    type: string
+                  headers:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  host:
+                    type: string
+                  password:
+                    type: string
+                  path:
+                    type: string
+                  skipTLS:
+                    type: boolean
+                  username:
+                    type: string
+                required:
+                - host
+                type: object
+              minimumSeverity:
+                type: string
+              mountedSecret:
+                type: string
+              name:
+                type: string
+              s3:
+                properties:
+                  accessKeyId:
+                    type: string
+                  bucket:
+                    type: string
+                  bucketKeyEnabled:
+                    type: boolean
+                  endpoint:
+                    type: string
+                  kmsKeyId:
+                    type: string
+                  pathStyle:
+                    type: boolean
+                  prefix:
+                    type: string
+                  region:
+                    type: string
+                  secretAccessKey:
+                    type: string
+                  serverSideEncryption:
+                    type: string
+                required:
+                - accessKeyId
+                - bucket
+                - secretAccessKey
+                type: object
+              secretRef:
+                type: string
+              securityHub:
+                properties:
+                  accessKeyId:
+                    type: string
+                  accountId:
+                    type: string
+                  companyName:
+                    type: string
+                  delayInSeconds:
+                    type: integer
+                  endpoint:
+                    type: string
+                  productName:
+                    type: string
+                  region:
+                    type: string
+                  secretAccessKey:
+                    type: string
+                  synchronize:
+                    type: boolean
+                required:
+                - accessKeyId
+                - accountId
+                - productName
+                - secretAccessKey
+                type: object
+              skipExistingOnStartup:
+                default: true
+                type: boolean
+              slack:
+                properties:
+                  certificate:
+                    type: string
+                  channel:
+                    type: string
+                  headers:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  keepalive:
+                    properties:
+                      interval:
+                        type: string
+                      params:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  skipTLS:
+                    type: boolean
+                  webhook:
+                    type: string
+                required:
+                - channel
+                - webhook
+                type: object
+              sources:
+                items:
+                  type: string
+                type: array
+              splunk:
+                properties:
+                  certificate:
+                    type: string
+                  headers:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  host:
+                    type: string
+                  skipTLS:
+                    type: boolean
+                  token:
+                    type: string
+                required:
+                - host
+                - token
+                type: object
+              teams:
+                properties:
+                  certificate:
+                    type: string
+                  headers:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  keepalive:
+                    properties:
+                      interval:
+                        type: string
+                      params:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  skipTLS:
+                    type: boolean
+                  webhook:
+                    type: string
+                required:
+                - webhook
+                type: object
+              telegram:
+                properties:
+                  certificate:
+                    type: string
+                  chatId:
+                    type: string
+                  headers:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  keepalive:
+                    properties:
+                      interval:
+                        type: string
+                      params:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  skipTLS:
+                    type: boolean
+                  token:
+                    type: string
+                  webhook:
+                    type: string
+                required:
+                - chatId
+                - token
+                - webhook
+                type: object
+              webhook:
+                properties:
+                  certificate:
+                    type: string
+                  headers:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  keepalive:
+                    properties:
+                      interval:
+                        type: string
+                      params:
+                        additionalProperties:
+                          type: string
+                        type: object
+                    type: object
+                  skipTLS:
+                    type: boolean
+                  webhook:
+                    type: string
+                required:
+                - webhook
+                type: object
+            type: object
+          status:
+            description: TargetConfigStatus defines the observed state of TargetConfig.
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+{{- end -}}

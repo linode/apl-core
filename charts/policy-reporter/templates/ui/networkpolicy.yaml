@@ -1,0 +1,53 @@
+{{- if .Values.ui.enabled -}}
+{{- if .Values.ui.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels: {{- include "ui.labels" . | nindent 4 }}
+  name: {{ include "ui.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+spec:
+  podSelector:
+    matchLabels: {{- include "ui.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    ports:
+    - protocol: TCP
+      port: {{ .Values.ui.service.port }}
+  {{- with .Values.ui.networkPolicy.ingress }}
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          {{- include "policyreporter.selectorLabels" . | nindent 10 }}
+    ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+  {{- if or .Values.plugin.kyverno.enabled }}
+  - to:
+    - podSelector:
+        matchLabels:
+          {{- include "kyverno-plugin.selectorLabels" . | nindent 10 }}
+    ports:
+    - protocol: TCP
+      port: {{ .Values.plugin.kyverno.service.port }}
+  {{- end }}
+  {{- if or .Values.plugin.trivy.enabled }}
+  - to:
+    - podSelector:
+        matchLabels:
+          {{- include "trivy-plugin.selectorLabels" . | nindent 10 }}
+    ports:
+    - protocol: TCP
+      port: {{ .Values.plugin.trivy.service.port }}
+  {{- end }}
+  {{- with .Values.networkPolicy.egress }}
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end }}

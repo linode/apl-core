@@ -1,0 +1,24 @@
+{{- if and .Values.rbac.enabled (gt (int .Values.replicaCount) 1) -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "policyreporter.labels" . | nindent 4 }}
+  name: {{ include "policyreporter.fullname" . }}-leaderelection
+  namespace: {{ include "policyreporter.namespace" . }}
+rules:
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - delete
+  - get
+  - patch
+  - update
+{{- end -}}

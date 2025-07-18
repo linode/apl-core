@@ -1,0 +1,117 @@
+{{- if .Values.plugin.kyverno.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "kyverno-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "kyverno-plugin.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.plugin.kyverno.replicaCount }}
+  revisionHistoryLimit: {{ .Values.plugin.kyverno.revisionHistoryLimit }}
+  {{- with .Values.plugin.kyverno.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "kyverno-plugin.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print .Template.BasePath "/plugins/kyverno/config-secret.yaml") . | sha256sum | quote }}
+        {{- with .Values.plugin.kyverno.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "kyverno-plugin.labels" . | nindent 8 }}
+        {{- with .Values.plugin.kyverno.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.plugin.kyverno.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.plugin.kyverno.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "kyverno-plugin.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.plugin.kyverno.serviceAccount.automount }}
+      {{- if .Values.plugin.kyverno.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.plugin.kyverno.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: policy-reporter-kyverno-plugin
+          {{- if .Values.plugin.kyverno.securityContext }}
+          securityContext:
+            {{- toYaml .Values.plugin.kyverno.securityContext | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.plugin.kyverno.image.registry }}/{{ .Values.plugin.kyverno.image.repository }}:{{ .Values.plugin.kyverno.image.tag }}"
+          imagePullPolicy: {{ .Values.plugin.kyverno.image.pullPolicy }}
+          args:
+            - run
+            - --config=/app/config.yaml
+            - --port={{ .Values.plugin.kyverno.server.port }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.plugin.kyverno.server.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /v1/policies
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /v1/policies
+              port: http
+          resources:
+            {{- toYaml .Values.plugin.kyverno.resources | nindent 12 }}
+          volumeMounts:
+          - name: config-file
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+            readOnly: true
+          {{- with .Values.plugin.kyverno.extraVolumes.volumeMounts }}
+          {{ toYaml . | nindent 10 | trim }}
+          {{- end }}
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          {{- if gt (int .Values.plugin.kyverno.replicaCount) 1 }}
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          {{- end }}
+          {{- with .Values.plugin.kyverno.envVars }}
+          {{- . | toYaml | trim | nindent 10 }}
+          {{- end }}
+      volumes:
+      - name: config-file
+        secret:
+          secretName: {{ include "kyverno-plugin.fullname" . }}-config
+          optional: true
+      {{- with .Values.plugin.kyverno.extraVolumes.volumes }}
+      {{ toYaml . | nindent 6 | trim }}
+      {{- end }}
+      {{- with .Values.plugin.kyverno.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.plugin.kyverno.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.plugin.kyverno.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.plugin.kyverno.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

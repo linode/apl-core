@@ -1,0 +1,61 @@
+{{- if .Values.plugin.trivy.enabled -}}
+{{- if .Values.plugin.trivy.ingress.enabled -}}
+{{- $fullName := include "trivy-plugin.fullname" . -}}
+{{- $svcPort := .Values.plugin.trivy.service.port -}}
+{{- if and .Values.plugin.trivy.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.plugin.trivy.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.plugin.trivy.ingress.annotations "kubernetes.io/ingress.class" .Values.plugin.trivy.ingress.className}}
+  {{- end }}
+{{- end }}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "trivy-plugin.labels" . | nindent 4 }}
+    {{- with .Values.plugin.trivy.ingress.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.plugin.trivy.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if and .Values.plugin.trivy.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.plugin.trivy.ingress.className }}
+  {{- end }}
+  {{- if .Values.plugin.trivy.ingress.tls }}
+  tls:
+    {{- toYaml .Values.plugin.trivy.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .Values.plugin.trivy.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ .pathType }}
+            {{- end }}
+            backend:
+              {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              service:
+                name: {{ $fullName }}
+                port:
+                  number: {{ $svcPort }}
+              {{- else }}
+              serviceName: {{ $fullName }}
+              servicePort: {{ $svcPort }}
+              {{- end }}
+          {{- end }}
+    {{- end }}
+{{- end }}
+{{- end }}

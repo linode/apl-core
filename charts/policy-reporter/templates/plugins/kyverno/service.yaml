@@ -1,0 +1,25 @@
+{{- if .Values.plugin.kyverno.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "kyverno-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "kyverno-plugin.labels" . | nindent 4 }}
+    {{- with .Values.plugin.kyverno.service.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.plugin.kyverno.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.plugin.kyverno.service.type }}
+  ports:
+    - port: {{ .Values.plugin.kyverno.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "kyverno-plugin.selectorLabels" . | nindent 4 }}
+{{- end }}
