@@ -2123,6 +2123,9 @@ properties:
       policy-reporter:
         additionalProperties: false
         properties:
+          enabled:
+            type: boolean
+            default: false
           _rawValues:
             $ref: '#/definitions/rawValues'
           resources:
@@ -2131,8 +2134,8 @@ properties:
             additionalProperties: false
             properties:
               enabled:
-              type: boolean
-              default: false
+                type: boolean
+                default: false
       kiali:
         additionalProperties: false
         properties:
