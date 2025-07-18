@@ -6,7 +6,6 @@ resources:
   - {{- $v.bootstrap | toYaml | nindent 4 }}
   {{- end }}
   {{- range $ns := $v.k8s.namespaces }}
-    {{- if or (not (hasKey $ns "app")) ($v.apps | get ($ns | get "app" "-dummy-") dict | get "enabled" false) }}
   - apiVersion: v1
     kind: Namespace
     metadata:
@@ -40,8 +39,8 @@ resources:
     imagePullSecrets:
       - name: otomi-pullsecret-global
       {{- end }}
-    {{- end }}
   {{- end }}
+
   {{- range $id, $team := omit $v.teamConfig "admin"}}
     {{- $ns := printf "team-%s" $id }}
   - apiVersion: v1
