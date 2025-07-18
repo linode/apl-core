@@ -282,15 +282,6 @@ adminApps:
         port: 80
         type: public
         auth: true
-  - name: policy-reporter
-    ownHost: true
-    isShared: true
-    ingress:
-      - svc: policy-reporter-ui
-        namespace: policy-reporter
-        port: 8080
-        type: public
-        auth: true
   - name: kured
     tags: [security]
   - name: tekton
