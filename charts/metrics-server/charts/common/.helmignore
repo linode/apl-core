@@ -19,6 +19,7 @@
 .project
 .idea/
 *.tmproj
+.vscode/
 # img folder
 img/
 # Changelog
