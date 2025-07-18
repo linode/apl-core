@@ -6,7 +6,6 @@ resources:
   - {{- $v.bootstrap | toYaml | nindent 4 }}
   {{- end }}
   {{- range $ns := $v.k8s.namespaces }}
-    {{- if or (not (hasKey $ns "app")) ($v.apps | get ($ns | get "app" "-dummy-") dict | get "enabled" false) }}
   - apiVersion: v1
     kind: Namespace
     metadata:
@@ -18,7 +17,6 @@ resources:
         istio.io/rev: {{ $v.apps.istio.defaultRevision }}
         {{- else }}
         istio-injection: enabled
-        {{- end }}
         {{- end }}
         {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
       {{- with $v.otomi | get "globalPullSecret" nil }}
