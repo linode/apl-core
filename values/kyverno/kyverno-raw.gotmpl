@@ -61,8 +61,7 @@ resources:
                 {{ $key }}: {{ $val }}
                 {{- end }}
 {{- end }}
-{{- if and $v.otomi.linodeLkeImageRepository (index $v.alerts.policies "orcsComplianceCluster") }}
-{{- $orcsPolicy := index $v.alerts.policies "orcsComplianceCluster" }}
+{{- if $v.otomi.linodeLkeImageRepository }}
   - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
     metadata:
@@ -78,7 +77,7 @@ resources:
           for supply chain security and vulnerability management.
         pod-policies.kyverno.io/autogen-controllers: "none"
     spec:
-      validationFailureAction: {{ $orcsPolicy.validationFailureAction }}
+      validationFailureAction: Audit
       background: true
       failurePolicy: Fail
       rules:
@@ -105,13 +104,14 @@ resources:
                 - key: "{{`{{ element.image }}`}}"
                   operator: NotEquals
                   value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
-                {{- if $orcsPolicy.whitelistedRegistries }}
                 # Allow specific exemptions for critical system components
                 - key: "{{`{{ element.image }}`}}"
                   operator: AnyNotIn
                   value:
-                  {{- range $orcsPolicy.whitelistedRegistries }}
-                  - "{{ . }}"
-                  {{- end }}
-                {{- end }}
+                  - "docker.io/istio/proxyv2*"
+                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                  - "k8s.gcr.io/*"
+                  - "registry.k8s.io/*"
+                  - "quay.io/kyverno/*"
+                  # System components that may not be available via ORCS
 {{- end }}

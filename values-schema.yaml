@@ -91,31 +91,6 @@ definitions:
       #   #   - critical
       #   #   - nonCritical
       #   type: object
-      policies:
-        title: Cluster Policies
-        description: Configure cluster-wide security policies.
-        type: object
-        additionalProperties: true
-        properties:
-          orcsComplianceCluster:
-            title: ORCS Registry Compliance (Cluster-wide)
-            description: Enforces OCI Registry Cache Service (ORCS) compliance across all namespaces except team-*.
-            type: object
-            additionalProperties: false
-            properties:
-              validationFailureAction:
-                title: Validation Failure Action
-                description: Action to take when validation fails.
-                type: string
-                enum:
-                  - Audit
-                  - Enforce
-              whitelistedRegistries:
-                title: Whitelisted Registries
-                description: List of container registries that are exempted from ORCS compliance.
-                type: array
-                items:
-                  type: string
 
   annotations:
     $ref: '#/definitions/labelsAnnotations'
