@@ -18,6 +18,7 @@ resources:
         {{- else }}
         istio-injection: enabled
         {{- end }}
+        {{- end }}
         {{- with $ns | get "labels" nil }}{{ toYaml . | nindent 8 }}{{ end }}
       {{- with $v.otomi | get "globalPullSecret" nil }}
   - apiVersion: v1
@@ -38,8 +39,8 @@ resources:
     imagePullSecrets:
       - name: otomi-pullsecret-global
       {{- end }}
-    {{- end }}
   {{- end }}
+
   {{- range $id, $team := omit $v.teamConfig "admin"}}
     {{- $ns := printf "team-%s" $id }}
   - apiVersion: v1
