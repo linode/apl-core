@@ -28,7 +28,7 @@ spec:
         - namespaceSelector:
             matchLabels:
               type: team
- 
+
 {{- else if eq .ruleType.ingress.mode "AllowOnly" }}
 ---
 apiVersion: networking.k8s.io/v1
