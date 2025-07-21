@@ -3,10 +3,15 @@
 {{- $consoleLoginVersion := $v.versions.consoleLogin}}
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- if or $v.otomi.linodeLkeImageRepository $k.storageClass }}
 global:
+  {{- if $v.otomi.linodeLkeImageRepository }}
   security:
     allowInsecureImages: true
+  {{- end }}
+  {{- if $k.storageClass }}
+  storageClass: {{ $k.storageClass | quote }}
+  {{- end }}
 {{- end }}
 
 auth:

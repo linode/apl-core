@@ -225,12 +225,27 @@ environments:
             registry:
               credentials:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword | quote }}
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "harbor.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
           gitea:
             enabled: true
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "gitea.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword | quote }}
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "keycloak.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
           ingress-nginx:
             enabled: true
           istio:
@@ -246,8 +261,19 @@ environments:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
           minio:
             enabled: {{ $a.minio.enabled }}
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "minio.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
+          rabbitmq:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "rabbitmq.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
           sealed-secrets:
             enabled: true
         oidc: {}

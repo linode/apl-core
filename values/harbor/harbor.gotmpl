@@ -16,6 +16,11 @@ logLevel: warning
 
 harborAdminPassword: {{ $h.adminPassword | quote }}
 nameOverride: harbor
+
+{{- if $h.storageClass }}
+global:
+  storageClass: {{ $h.storageClass | quote }}
+{{- end }}
 secretKey: {{ $h | get "secretKey" nil }}
 
 updateStrategy:

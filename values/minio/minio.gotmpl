@@ -58,6 +58,9 @@ extraVolumeMounts:
 persistence:
   enabled: {{ $m.persistence.enabled}}
   size: {{ $m.persistence.size }}
+  {{- if $m.storageClass }}
+  storageClass: {{ $m.storageClass | quote }}
+  {{- end }}
 resources: {{- $m.resources | toYaml | nindent 2 }}
 provisioning:
   enabled: {{ $m.provisioning.enabled }}

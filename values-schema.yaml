@@ -250,6 +250,13 @@ definitions:
         default: otomi
       provider:
         $ref: '#/definitions/provider'
+      defaultPlatformStorageClass:
+        type: string
+        description: Default storage class policy for APL platform components. Controls data retention behavior.
+        enum:
+          - Delete
+          - Retain
+        default: Delete
     required:
       - name
       - provider
