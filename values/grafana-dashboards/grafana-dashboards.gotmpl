@@ -3,6 +3,8 @@ folders:
   - k8s-admin
   - istio-admin
   - cloudnative-pg
+  {{- if $v.apps.kyverno.enabled }}
+  - policy-reporter
   {{- if $v.apps.falco.enabled }}
   - falco
   {{- end }}
