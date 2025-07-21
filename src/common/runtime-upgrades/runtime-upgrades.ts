@@ -1,8 +1,8 @@
+import { $ } from 'zx'
 import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
-import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { getParsedArgs } from '../yargs'
-import { $ } from 'zx'
+import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -63,24 +63,27 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       }
 
       try {
-      const exists = await $`kubectl get knativeserving knative-serving -n knative-serving`.then(() => true).catch(() => false)
-      if (!exists) {
-        context.debug.info('KnativeServing CR not found, skipping upgrade.')
-        return
-      }
-      for (const version of ['v1.16.0', 'v1.17.0', 'v1.18.0']) {
-        context.debug.info(`Patching to ${version}...`)
-        await $`kubectl patch knativeserving knative-serving -n knative-serving --type=merge -p {"spec":{"version":"${version}"}}`
-
-        context.debug.info(`Waiting for Ready status...`)
-        for (let i = 0; i < 60; i++) {
-          const status = await $`kubectl get knativeserving knative-serving -n knative-serving -o jsonpath="{.status.conditions[?(@.type=='Ready')].status}"`.quiet()
-          if (status.stdout.trim() === 'True') break
-          await new Promise(res => setTimeout(res, 5000))
-          if (i === 29) throw new Error(`Timeout waiting for KnativeServing to become Ready after ${version}`)
+        const exists = await $`kubectl get knativeserving knative-serving -n knative-serving`
+          .then(() => true)
+          .catch(() => false)
+        if (!exists) {
+          context.debug.info('KnativeServing CR not found, skipping upgrade.')
+          return
         }
-        context.debug.info(`Upgraded to ${version}.`)
-      }
+        for (const version of ['v1.16.0', 'v1.17.0', 'v1.18.0']) {
+          context.debug.info(`Patching to ${version}...`)
+          await $`kubectl patch knativeserving knative-serving -n knative-serving --type=merge -p {"spec":{"version":"${version}"}}`
+
+          context.debug.info(`Waiting for Ready status...`)
+          for (let i = 0; i < 60; i++) {
+            const status =
+              await $`kubectl get knativeserving knative-serving -n knative-serving -o jsonpath="{.status.conditions[?(@.type=='Ready')].status}"`.quiet()
+            if (status.stdout.trim() === 'True') break
+            await new Promise((res) => setTimeout(res, 5000))
+            if (i === 29) throw new Error(`Timeout waiting for KnativeServing to become Ready after ${version}`)
+          }
+          context.debug.info(`Upgraded to ${version}.`)
+        }
       } catch (err) {
         context.debug.error('KnativeServing upgrade failed:', err)
       }
