@@ -1,3 +1,4 @@
+import { ApiException } from '@kubernetes/client-node'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
@@ -19,7 +20,6 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { k8s } from '../common/k8s'
-import { ApiException } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 
@@ -618,6 +618,16 @@ export async function installIstioHelmCharts(): Promise<void> {
   }
 }
 
+const setDefaultPlatformStorageClass = async (values: Record<string, any>): Promise<void> => {
+  const clusterProvider = get(values, 'cluster.provider')
+  const existingStorageClass = get(values, 'cluster.defaultPlatformStorageClass')
+
+  // set defaultPlatformStorageClass to Retain to preserve existing data
+  if (clusterProvider === 'linode' && !existingStorageClass) {
+    set(values, 'cluster.defaultPlatformStorageClass', 'Retain')
+  }
+}
+
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   networkPoliciesMigration,
   teamSettingsMigration,
@@ -626,6 +636,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   policiesMigration,
   addAplOperator,
   installIstioHelmCharts,
+  setDefaultPlatformStorageClass,
 }
 
 /**

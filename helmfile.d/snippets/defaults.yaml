@@ -1427,6 +1427,7 @@ environments:
         cluster:
           provider: linode
           name: apl
+          defaultPlatformStorageClass: Delete
         dns:
           domainFilters: []
           zoneIdFilters: []
@@ -1452,4 +1453,4 @@ environments:
             version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 43
+          specVersion: 44
