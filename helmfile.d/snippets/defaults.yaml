@@ -127,6 +127,13 @@ environments:
               limits:
                 cpu: "1"
                 memory: 1Gi
+            barmanPluginResources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+              limits:
+                cpu: 100m
+                memory: 200Mi
             _rawValues: {}
           drone:
             enabled: false
@@ -181,6 +188,8 @@ environments:
                           ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/eventlistenersink,
                           docker.io/bitnami/sealed-secrets-controller,
                           ghcr.io/cloudnative-pg/postgresql,
+                          ghcr.io/cloudnative-pg/plugin-barman-cloud,
+                          ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar,
                           jaegertracing/jaeger-operator
                         ) or (k8s.ns.name = "kube-system")
                           or (k8s.ns.name = "ingress")
@@ -583,6 +592,101 @@ environments:
                 limits:
                   cpu: "1"
                   memory: 1Gi
+          kubeflow-pipelines:
+            enabled: false
+            resources:
+              cacheDeployer:
+                requests:
+                  cpu: 10m
+                  memory: 8Mi
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+              cacheServer:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              metadataEnvoy:
+                requests:
+                  cpu: 20m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              metadataGrpc:
+                requests:
+                  cpu: 20m
+                  memory: 8Mi
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+              metadataWriter:
+                requests:
+                  cpu: 20m
+                  memory: 128Mi
+                limits:
+                  cpu: 100m
+                  memory: 256Mi
+              mlPipeline:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              mlPipelinePersistenceagent:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
+              mlPipelineScheduledworkflow:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              mlPipelineUi:
+                requests:
+                  cpu: 20m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              mlPipelineViewer:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
+              mlPipelineVisualizationserver:
+                requests:
+                  cpu: 20m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              mysql:
+                requests:
+                  cpu: 100m
+                  memory: 512Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              workflowController:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+            _rawValues: {}
           kured:
             enabled: false
             resources:
@@ -1240,6 +1344,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
           harbor:
             imageName: null
             size: 5Gi
@@ -1258,6 +1369,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
           gitea:
             imageName: null
             size: 5Gi
@@ -1275,6 +1393,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
         obj:
           provider:
             type: disabled

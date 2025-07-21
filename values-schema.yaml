@@ -1683,6 +1683,8 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
+          barmanPluginResources:
+            $ref: '#/definitions/resources'
       drone:
         additionalProperties: false
         properties:
@@ -2166,6 +2168,46 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
+      kubeflow-pipelines:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            default: false
+            type: boolean
+          rootPassword:
+            type: string
+            x-secret: '{{ randAlphaNum 32 }}'
+          resources:
+            additionalProperties: false
+            properties:
+              cacheDeployer:
+                $ref: '#/definitions/resources'
+              cacheServer:
+                $ref: '#/definitions/resources'
+              metadataEnvoy:
+                $ref: '#/definitions/resources'
+              metadataGrpc:
+                $ref: '#/definitions/resources'
+              metadataWriter:
+                $ref: '#/definitions/resources'
+              mlPipeline:
+                $ref: '#/definitions/resources'
+              mlPipelinePersistenceagent:
+                $ref: '#/definitions/resources'
+              mlPipelineScheduledworkflow:
+                $ref: '#/definitions/resources'
+              mlPipelineUi:
+                $ref: '#/definitions/resources'
+              mlPipelineViewer:
+                $ref: '#/definitions/resources'
+              mlPipelineVisualizationserver:
+                $ref: '#/definitions/resources'
+              mysql:
+                $ref: '#/definitions/resources'
+              workflowController:
+                $ref: '#/definitions/resources'
       kured:
         additionalProperties: false
         properties:
@@ -3175,6 +3217,8 @@ properties:
                 default: false
               resources:
                 $ref: '#/definitions/resources'
+              backupSidecarResources:
+                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3191,6 +3235,8 @@ properties:
                 default: false
               resources:
                 $ref: '#/definitions/resources'
+              backupSidecarResources:
+                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3206,6 +3252,8 @@ properties:
                 type: boolean
                 default: false
               resources:
+                $ref: '#/definitions/resources'
+              backupSidecarResources:
                 $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
@@ -3293,6 +3341,10 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: gitea
+                  kubeflow-pipelines:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: kubeflow-pipelines
             required:
               - region
               - accessKeyId
