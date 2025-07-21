@@ -1,5 +1,6 @@
 {{- $v := .Values }}
 {{- $k := $v.apps.knative -}}
+{{- $knativeServingVersion := "1.18" -}}
 {{- $tag := "v1.18.1" -}}
 {{- $netIstioTag := "v1.18.0" -}}
 apiVersion: operator.knative.dev/v1beta1
@@ -21,7 +22,7 @@ spec:
       net-istio-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/controller:{{ $netIstioTag }}"
       net-istio-controller/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/webhook:{{ $netIstioTag }}"
   {{- end }}
-  version: "1.18"
+  version: {{ $knativeServingVersion }}
   {{- if $v._derived.untrustedCA }}
   controller-custom-certs:
     name: certs

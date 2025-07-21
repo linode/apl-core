@@ -61,6 +61,29 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       } catch (error) {
         context.debug.error('Failed to apply CRDs:', error)
       }
+
+      try {
+      const exists = await $`kubectl get knativeserving knative-serving -n knative-serving`.then(() => true).catch(() => false)
+      if (!exists) {
+        context.debug.info('KnativeServing CR not found, skipping upgrade.')
+        return
+      }
+      for (const version of ['v1.16.0', 'v1.17.0', 'v1.18.0']) {
+        context.debug.info(`Patching to ${version}...`)
+        await $`kubectl patch knativeserving knative-serving -n knative-serving --type=merge -p {"spec":{"version":"${version}"}}`
+
+        context.debug.info(`Waiting for Ready status...`)
+        for (let i = 0; i < 60; i++) {
+          const status = await $`kubectl get knativeserving knative-serving -n knative-serving -o jsonpath="{.status.conditions[?(@.type=='Ready')].status}"`.quiet()
+          if (status.stdout.trim() === 'True') break
+          await new Promise(res => setTimeout(res, 5000))
+          if (i === 29) throw new Error(`Timeout waiting for KnativeServing to become Ready after ${version}`)
+        }
+        context.debug.info(`Upgraded to ${version}.`)
+      }
+      } catch (err) {
+        context.debug.error('KnativeServing upgrade failed:', err)
+      }
     },
   },
 ]
