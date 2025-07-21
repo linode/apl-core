@@ -39,7 +39,7 @@ operations:
       - helm -n team-admin list | grep drone && helm -n team-admin uninstall drone || true
       # we need to patch ownership of all podmonitors which are now published by team-ns-* instead of prometheus-*
       - |
-        for id in {{ keys (omit .teamConfig "admin") | join " " }}; do
+        for id in {{ keys (omit .teamConfig "admin") | join " " }}; do 
           for p in `kubectl -n "team-$id" get podmonitor | tail -n +2 | awk '{print $1}'`; do
             kubectl -n "team-$id" annotate podmonitor/$p --overwrite "meta.helm.sh/release-name"=team-ns-$id
           done
@@ -93,6 +93,3 @@ operations:
   - version: 4.6.0
     pre:
       - upgrades/pre/upgrade-4-6-0.sh || true
-  - version: 4.8.0
-    pre:
-      - upgrades/pre/upgrade-4-8-0.sh || true
