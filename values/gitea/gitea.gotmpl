@@ -135,6 +135,60 @@ gitea:
 init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}
 
+networkPolicy:
+  enabled: true
+  allowExternal: true
+  extraIngress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              app: ingressgateway
+        - namespaceSelector:
+            matchLabels:
+              name: apl-gitea-operator
+        - namespaceSelector:
+            matchLabels:
+              name: apl-operator
+        - namespaceSelector:
+            matchLabels:
+              name: otomi
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: otomi-api
+        - namespaceSelector:
+            matchLabels:
+              type: team
+          podSelector:
+            matchLabels:
+              tekton.dev/task: git-clone
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: po-prometheus
+        # allow operator to manage cluster
+        - namespaceSelector:
+            matchLabels:
+              name: cnpg-system
+        # allow db replicas to communicate with each other
+        - namespaceSelector:
+            matchLabels:
+              name: {{ .Release.Namespace }}
+          podSelector:
+            matchLabels:
+              cnpg.io/cluster: gitea-db
+        # allow gitea to communicate with db
+        - namespaceSelector:
+            matchLabels:
+              name: {{ .Release.Namespace }}
+          podSelector:
+            matchLabels:
+              app: gitea
+
 deployment:
   env:
     - name: RCLONE_CONFIG_GITEA_TYPE
