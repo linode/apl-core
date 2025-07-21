@@ -145,7 +145,7 @@ networkPolicy:
               name: istio-system
           podSelector:
             matchLabels:
-              app: ingressgateway
+              app.kubernetes.io/instance: istio-ingressgateway-public
         - namespaceSelector:
             matchLabels:
               name: apl-gitea-operator
@@ -158,6 +158,7 @@ networkPolicy:
           podSelector:
             matchLabels:
               app.kubernetes.io/name: otomi-api
+        # Allow the team build feature to clone from git repo
         - namespaceSelector:
             matchLabels:
               type: team
