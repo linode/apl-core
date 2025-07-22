@@ -8,6 +8,7 @@
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 {{/*The cloudNativeDb operator is responsible for creating the secret*/}}
+{{- $provider := $v.cluster.provider }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -76,11 +77,17 @@ persistence:
     registry:
       # Use the existing PVC which must be created manually before bound,
       # and specify the 'subPath' if the PVC is shared with other components
+      {{- if eq $provider "linode" }}
+      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
       size: 10Gi
     jobservice:
+      {{- if eq $provider "linode" }}
+      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
@@ -88,6 +95,9 @@ persistence:
     # If external database is used, the following settings for database will
     # be ignored
     database:
+      {{- if eq $provider "linode" }}
+      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
@@ -95,11 +105,17 @@ persistence:
     # If external Redis is used, the following settings for Redis will
     # be ignored
     redis:
+      {{- if eq $provider "linode" }}
+      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
+      {{- if eq $provider "linode" }}
+      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce

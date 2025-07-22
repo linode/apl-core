@@ -12,6 +12,7 @@
 {{- else if eq $obj.type "linode" }}
 {{- $giteaBucketName = $obj.linode.buckets | get "gitea" nil }}
 {{- end }}
+{{- $provider := $v.cluster.provider }}
 
 nameOverride: gitea
 fullnameOverride: gitea
@@ -201,6 +202,9 @@ extraVolumes:
   - name: backup
 {{- if ne $v.cluster.provider "custom" }}
     persistentVolumeClaim:
+      {{- if eq $provider "linode" }}
+      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- end }}
       claimName: gitea-backup
 {{- else }}
     emptyDir: {}
