@@ -62,27 +62,62 @@ export const runtimeUpgrades: RuntimeUpgrades = [
         context.debug.error('Failed to apply CRDs:', error)
       }
 
+      const group = 'operator.knative.dev'
+      const version = 'v1beta1'
+      const plural = 'knativeservings'
+      const name = 'knative-serving'
+      const namespace = 'knative-serving'
+      const client = k8s.custom()
+
       try {
-        const exists = await $`kubectl get knativeserving knative-serving -n knative-serving`
-          .then(() => true)
-          .catch(() => false)
-        if (!exists) {
+        try {
+          await client.getNamespacedCustomObject({
+            group,
+            version,
+            namespace,
+            plural,
+            name,
+          })
+        } catch {
           context.debug.info('KnativeServing CR not found, skipping upgrade.')
           return
         }
-        for (const version of ['v1.16.0', 'v1.17.0', 'v1.18.0']) {
-          context.debug.info(`Patching to ${version}...`)
-          await $`kubectl patch knativeserving knative-serving -n knative-serving --type=merge -p {"spec":{"version":"${version}"}}`
 
-          context.debug.info(`Waiting for Ready status...`)
-          for (let i = 0; i < 60; i++) {
-            const status =
-              await $`kubectl get knativeserving knative-serving -n knative-serving -o jsonpath="{.status.conditions[?(@.type=='Ready')].status}"`.quiet()
-            if (status.stdout.trim() === 'True') break
-            await new Promise((res) => setTimeout(res, 5000))
-            if (i === 29) throw new Error(`Timeout waiting for KnativeServing to become Ready after ${version}`)
+        for (const targetVersion of ['1.16', '1.17', '1.18']) {
+          context.debug.info(`Patching KnativeServing to ${targetVersion}...`)
+        await client.patchNamespacedCustomObject({
+          group,
+          version,
+          namespace,
+          plural,
+          name,
+          body: [
+              { op: 'replace', path: '/spec/version', value: targetVersion }
+            ],
+        })
+
+        context.debug.info(`Waiting for Ready condition after ${targetVersion}...`)
+        let ready = false
+        for (let i = 0; i < 15; i++) {
+          await new Promise((res) => setTimeout(res, 5000))
+          try {
+            const res: any = await client.getNamespacedCustomObject({group, version, namespace, plural, name})
+            const conditions = res.status.conditions
+            const newVersion = (res.status.version || '').split('.').slice(0, 2).join('.')
+            const readyCond = conditions.find((c: any) => c.type === 'Ready')
+            if (readyCond?.status === 'True' && newVersion === targetVersion) {
+              ready = true
+              break
+            }
+          } catch {
           }
-          context.debug.info(`Upgraded to ${version}.`)
+        }
+
+        if (!ready) {
+          throw new Error(`Timeout waiting for KnativeServing to be Ready after upgrade to ${targetVersion}`)
+        }
+
+        context.debug.info(`Upgrade to ${targetVersion} completed.`)
         }
       } catch (err) {
         context.debug.error('KnativeServing upgrade failed:', err)
