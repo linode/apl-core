@@ -3,6 +3,7 @@ import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
 import { getParsedArgs } from '../yargs'
 import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
+import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -61,67 +62,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       } catch (error) {
         context.debug.error('Failed to apply CRDs:', error)
       }
-
-      const group = 'operator.knative.dev'
-      const version = 'v1beta1'
-      const plural = 'knativeservings'
-      const name = 'knative-serving'
-      const namespace = 'knative-serving'
-      const client = k8s.custom()
-
-      try {
-        try {
-          await client.getNamespacedCustomObject({
-            group,
-            version,
-            namespace,
-            plural,
-            name,
-          })
-        } catch {
-          context.debug.info('KnativeServing CR not found, skipping upgrade.')
-          return
-        }
-
-        for (const targetVersion of ['1.16', '1.17', '1.18']) {
-          context.debug.info(`Patching KnativeServing to ${targetVersion}...`)
-        await client.patchNamespacedCustomObject({
-          group,
-          version,
-          namespace,
-          plural,
-          name,
-          body: [
-              { op: 'replace', path: '/spec/version', value: targetVersion }
-            ],
-        })
-
-        context.debug.info(`Waiting for Ready condition after ${targetVersion}...`)
-        let ready = false
-        for (let i = 0; i < 15; i++) {
-          await new Promise((res) => setTimeout(res, 5000))
-          try {
-            const res: any = await client.getNamespacedCustomObject({group, version, namespace, plural, name})
-            const conditions = res.status.conditions
-            const newVersion = (res.status.version || '').split('.').slice(0, 2).join('.')
-            const readyCond = conditions.find((c: any) => c.type === 'Ready')
-            if (readyCond?.status === 'True' && newVersion === targetVersion) {
-              ready = true
-              break
-            }
-          } catch {
-          }
-        }
-
-        if (!ready) {
-          throw new Error(`Timeout waiting for KnativeServing to be Ready after upgrade to ${targetVersion}`)
-        }
-
-        context.debug.info(`Upgrade to ${targetVersion} completed.`)
-        }
-      } catch (err) {
-        context.debug.error('KnativeServing upgrade failed:', err)
-      }
+      await upgradeKnativeServing(context)
     },
   },
 ]
