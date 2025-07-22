@@ -252,11 +252,11 @@ definitions:
         $ref: '#/definitions/provider'
       defaultPlatformStorageClass:
         type: string
-        description: Default storage class policy for APL platform components. Controls data retention behavior.
+        description: Default storage class for platform components. Use linode-block-storage for Delete policy or linode-block-storage-retain for Retain policy.
         enum:
-          - Delete
-          - Retain
-        default: Delete
+          - linode-block-storage
+          - linode-block-storage-retain
+        default: linode-block-storage
     required:
       - name
       - provider

@@ -622,9 +622,9 @@ const setDefaultPlatformStorageClass = async (values: Record<string, any>): Prom
   const clusterProvider = get(values, 'cluster.provider')
   const existingStorageClass = get(values, 'cluster.defaultPlatformStorageClass')
 
-  // set defaultPlatformStorageClass to Retain to preserve existing data
+  // set defaultPlatformStorageClass to linode-block-storage-retain to preserve existing data
   if (clusterProvider === 'linode' && !existingStorageClass) {
-    set(values, 'cluster.defaultPlatformStorageClass', 'Retain')
+    set(values, 'cluster.defaultPlatformStorageClass', 'linode-block-storage-retain')
   }
 }
 
