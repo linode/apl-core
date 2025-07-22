@@ -22,7 +22,7 @@ spec:
       net-istio-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/controller:{{ $netIstioTag }}"
       net-istio-controller/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/webhook:{{ $netIstioTag }}"
   {{- end }}
-  version: {{ $knativeServingVersion }}
+  version: "{{ $knativeServingVersion }}"
   {{- if $v._derived.untrustedCA }}
   controller-custom-certs:
     name: certs
