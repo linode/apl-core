@@ -50,6 +50,14 @@ mlPipelineVisualizationserver:
 
 mysql:
   resources: {{- $kfp.resources.mysql | toYaml | nindent 4 }}
+  storage:
+    enabled: {{ $kfp | get "mysql.storage.enabled" true }}
+    size: {{ $kfp | get "mysql.storage.size" "20Gi" }}
+    {{- with $v.apps | get "kubeflow-pipelines.storageClass" }}
+    storageClass: {{ . }}
+    {{- end }}
+    accessModes:
+      - ReadWriteOnce
 
 workflowController:
   resources: {{- $kfp.resources.workflowController | toYaml | nindent 4 }}

@@ -38,6 +38,12 @@ mlPipelineVisualizationserver:
 
 mysql:
   resources: {}
+  storage:
+    enabled: true
+    size: 20Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
 
 workflowController:
   resources: {}

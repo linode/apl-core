@@ -79,6 +79,14 @@ loki:
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
+  {{- if not $useObjectStorage }}
+  persistence:
+    enabled: true
+    size: {{ $l.persistence.ingester.size }}
+    {{- with $v.apps.loki.storageClass }}
+    storageClass: {{ . }}
+    {{- end }}
+  {{- end }}
 
   autoscaling:
     enabled: {{ $l.autoscaling.ingester.enabled }}
@@ -102,6 +110,14 @@ gateway:
 
 querier:
   resources: {{- $l.resources.querier | toYaml | nindent 4 }}
+  {{- if not $useObjectStorage }}
+  persistence:
+    enabled: true
+    size: {{ $l.persistence.querier.size }}
+    {{- with $v._derived.apps.loki.storageClass }}
+    storageClass: {{ . }}
+    {{- end }}
+  {{- end }}
   autoscaling:
     enabled: {{ $l.autoscaling.querier.enabled }}
     minReplicas: {{ $l.autoscaling.querier.minReplicas }}

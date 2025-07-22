@@ -209,6 +209,11 @@ environments:
             {{- end }}
           {{- if eq $droneProvider "gitea" }}
           drone:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "drone.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
             sourceControl:
               gitea:
                 server: {{ $a | get "drone.sourceControl.gitea.server" $giteaUrl }}
@@ -237,6 +242,12 @@ environments:
             storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
             {{- end }}
             {{- end }}
+          grafana:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "grafana.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
@@ -248,6 +259,12 @@ environments:
             {{- end }}
           ingress-nginx:
             enabled: true
+          kubeflow-pipelines:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "kubeflow-pipelines.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
           istio:
             enabled: true
             defaultRevision: {{ $istioDefaultRevision | quote }}
@@ -257,12 +274,30 @@ environments:
               ingressPublicLabel: {{ $istioIngressPublicReleaseLabel }}
               egressName: {{ $istioEgressReleaseName }}
               egressLabel: {{ $istioEgressReleaseLabel }}
+          loki:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "loki.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
+          oauth2-proxy-redis:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "oauth2-proxy-redis.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
           minio:
             enabled: {{ $a.minio.enabled }}
             {{- if eq $provider "linode" }}
             {{- if not ($a | get "minio.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
+          prometheus:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "prometheus.storageClass" nil) }}
             storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
             {{- end }}
             {{- end }}
@@ -271,6 +306,24 @@ environments:
           rabbitmq:
             {{- if eq $provider "linode" }}
             {{- if not ($a | get "rabbitmq.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
+          tempo:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "tempo.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
+          thanos:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "thanos.storageClass" nil) }}
+            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
+            {{- end }}
+            {{- end }}
+          trivy:
+            {{- if eq $provider "linode" }}
+            {{- if not ($a | get "trivy.storageClass" nil) }}
             storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "Delete" }}
             {{- end }}
             {{- end }}

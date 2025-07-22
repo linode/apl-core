@@ -125,6 +125,9 @@ redis:
   sentinel:
     persistence:
       size: {{ $r.persistence.sentinel.size }}
+      {{- with $v.apps | get "oauth2-proxy-redis.storageClass" }}
+      storageClass: {{ . }}
+      {{- end }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
     resources: {{- $r.resources.sentinel | toYaml | nindent 6 }}
@@ -132,6 +135,9 @@ redis:
   master:
     persistence:
       size: {{ $r.persistence.master.size }}
+      {{- with $v.apps | get "oauth2-proxy-redis.storageClass" }}
+      storageClass: {{ . }}
+      {{- end }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
     priorityClassName: otomi-critical
@@ -140,6 +146,9 @@ redis:
   replica:
     persistence:
       size: {{ $r.persistence.replica.size }}
+      {{- with $v.apps | get "oauth2-proxy-redis.storageClass" }}
+      storageClass: {{ . }}
+      {{- end }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
     priorityClassName: otomi-critical
