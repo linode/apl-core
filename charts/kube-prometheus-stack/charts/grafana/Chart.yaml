@@ -32,4 +32,4 @@ sources:
 - https://github.com/grafana/grafana
 - https://github.com/grafana/helm-charts
 type: application
-version: 9.2.9
+version: 9.2.10
