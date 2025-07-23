@@ -1,8 +1,8 @@
 import { OtomiDebugger } from '../debug'
 import { applyServerSide, k8s, restartOtomiApiDeployment } from '../k8s'
-import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
 import { getParsedArgs } from '../yargs'
-import { $ } from 'zx'
+import { detectAndRestartOutdatedIstioSidecars } from './restart-istio-sidecars'
+import { upgradeKnativeServing } from './upgrade-knative-serving-cr'
 
 export interface RuntimeUpgradeContext {
   debug: OtomiDebugger
@@ -61,6 +61,7 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       } catch (error) {
         context.debug.error('Failed to apply CRDs:', error)
       }
+      await upgradeKnativeServing(context)
     },
   },
 ]
