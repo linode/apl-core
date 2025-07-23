@@ -4,17 +4,20 @@
 {{- $kdb := $v.databases.keycloak }}
 {{- $obj := $v.obj.provider }}
 {{- $b := $v.platformBackups.database.keycloak }}
-{{- $provider := $v.cluster.provider }}
 
 name: keycloak-db
 storage:
-  {{- if eq $provider "linode" }}
-  storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+  {{- if $kdb | get "storageClass" nil }}
+  storageClass: {{ $kdb.storageClass }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
   size: {{ $kdb.size }}
 walStorage:
-  {{- if eq $provider "linode" }}
-  storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+  {{- if $kdb | get "walStorageClass" nil }}
+  storageClass: {{ $kdb.walStorageClass }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
   size: {{ $kdb.walStorageSize }}
 instances: {{ $kdb.replicas }}

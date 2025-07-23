@@ -105,8 +105,10 @@ agent:
 
 persistence:
   enabled: true
-  {{- with $v.apps.drone.storageClass }}
-  storageClass: {{ . }}
+  {{- if $d | get "storageClass" nil }}
+  storageClass: {{ $d.storageClass }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
 metrics:
   prometheus:

@@ -4,17 +4,20 @@
 {{- $gdb := $v.databases.gitea }}
 {{- $obj := $v.obj.provider }}
 {{- $b := $v.platformBackups.database.gitea }}
-{{- $provider := $v.cluster.provider }}
 
 name: gitea-db
 storage:
-  {{- if eq $provider "linode" }}
-  storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+  {{- if $gdb | get "storageClass" nil }}
+  storageClass: {{ $gdb.storageClass }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
   size: {{ $gdb.size }}
 walStorage:
-  {{- if eq $provider "linode" }}
-  storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+  {{- if $gdb | get "walStorageClass" nil }}
+  storageClass: {{ $gdb.walStorageClass }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
   size: {{ $gdb.walStorageSize }}
 instances: {{ $gdb.replicas }}

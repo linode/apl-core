@@ -79,14 +79,6 @@ loki:
 
 ingester:
   resources: {{- $l.resources.ingester | toYaml | nindent 4 }}
-  {{- if not $useObjectStorage }}
-  persistence:
-    enabled: true
-    size: {{ $l.persistence.ingester.size }}
-    {{- with $v.apps.loki.storageClass }}
-    storageClass: {{ . }}
-    {{- end }}
-  {{- end }}
 
   autoscaling:
     enabled: {{ $l.autoscaling.ingester.enabled }}
@@ -94,6 +86,19 @@ ingester:
     maxReplicas: {{ $l.autoscaling.ingester.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $l.autoscaling.ingester.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.ingester.targetMemoryUtilizationPercentage }}
+
+  {{- if not $useObjectStorage }}
+  persistence:
+    enabled: true
+    claims:
+      - name: data
+        size: {{ $l | get "persistence.ingester.size" "10Gi" }}
+        {{- if $l | get "persistence.ingester.storageClass" nil }}
+        storageClass: {{ $l.persistence.ingester.storageClass }}
+        {{- else }}
+        storageClass: {{ $v.cluster.defaultStorageClass }}
+        {{- end }}
+  {{- end }}
 
 gateway:
   {{- if $v.otomi.linodeLkeImageRepository }}
@@ -110,20 +115,23 @@ gateway:
 
 querier:
   resources: {{- $l.resources.querier | toYaml | nindent 4 }}
-  {{- if not $useObjectStorage }}
-  persistence:
-    enabled: true
-    size: {{ $l.persistence.querier.size }}
-    {{- with $v._derived.apps.loki.storageClass }}
-    storageClass: {{ . }}
-    {{- end }}
-  {{- end }}
   autoscaling:
     enabled: {{ $l.autoscaling.querier.enabled }}
     minReplicas: {{ $l.autoscaling.querier.minReplicas }}
     maxReplicas: {{ $l.autoscaling.querier.maxReplicas }}
     targetCPUUtilizationPercentage: {{ $l.autoscaling.querier.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.querier.targetMemoryUtilizationPercentage }}
+
+  {{- if not $useObjectStorage }}
+  persistence:
+    enabled: true
+    size: {{ $l | get "persistence.querier.size" "10Gi" }}
+    {{- if $l | get "persistence.querier.storageClass" nil }}
+    storageClass: {{ $l.persistence.querier.storageClass }}
+    {{- else }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+    {{- end }}
+  {{- end }}
 
 distributor:
   resources: {{- $l.resources.distributor | toYaml | nindent 4 }}
@@ -177,3 +185,14 @@ queryFrontend:
 compactor:
   enabled: true
   resources: {{- $l.resources.compactor | toYaml | nindent 4 }}
+
+  {{- if not $useObjectStorage }}
+  persistence:
+    enabled: true
+    size: {{ $l | get "persistence.compactor.size" "10Gi" }}
+    {{- if $l | get "persistence.compactor.storageClass" nil }}
+    storageClass: {{ $l.persistence.compactor.storageClass }}
+    {{- else }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+    {{- end }}
+  {{- end }}

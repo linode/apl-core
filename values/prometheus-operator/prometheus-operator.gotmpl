@@ -129,8 +129,10 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          {{- with $v.apps.prometheus.storageClass }}
-          storageClassName: {{ . }}
+          {{- if $p | get "storageClass" nil }}
+          storageClassName: {{ $p.storageClass }}
+          {{- else }}
+          storageClassName: {{ $v.cluster.defaultStorageClass }}
           {{- end }}
           resources:
             requests:
@@ -250,15 +252,6 @@ grafana:
     enabled: {{ $p.enabled }}
     labels:
       prometheus: system
-  persistence:
-    enabled: {{ $g | get "persistence.enabled" false }}
-    {{- if $g | get "persistence.enabled" false }}
-    type: pvc
-    size: {{ $g | get "persistence.size" "10Gi" }}
-    {{- with $v._derived.apps.grafana.storageClass }}
-    storageClassName: {{ . }}
-    {{- end }}
-    {{- end }}
   testFramework:
     enabled: false
   {{- if or $apps.loki.enabled $apps.thanos.enabled $apps.tempo.enabled }}

@@ -54,8 +54,10 @@ resources:
     resources:
       requests:
         storage: 1Gi
-    {{- if eq $v.cluster.provider "linode" }}
-    storageClassName: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+    {{- if $g | get "backup.storageClass" nil }}
+    storageClassName: {{ $g.backup.storageClass }}
+    {{- else }}
+    storageClassName: {{ $v.cluster.defaultStorageClass }}
     {{- end }}
 {{- end }}
 {{- if $giteaBackupConfig.enabled }}

@@ -209,11 +209,6 @@ environments:
             {{- end }}
           {{- if eq $droneProvider "gitea" }}
           drone:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "drone.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
             sourceControl:
               gitea:
                 server: {{ $a | get "drone.sourceControl.gitea.server" $giteaUrl }}
@@ -230,41 +225,14 @@ environments:
             registry:
               credentials:
                 password: {{ $a | get "harbor.registry.credentials.password" $v.otomi.adminPassword | quote }}
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "harbor.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
           gitea:
             enabled: true
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "gitea.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
-          grafana:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "grafana.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
           keycloak:
             enabled: true
             address: {{ $keycloakBaseUrl }}
             adminPassword: {{ $a | get "keycloak.adminPassword" $v.otomi.adminPassword | quote }}
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "keycloak.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
           ingress-nginx:
             enabled: true
-          kubeflow-pipelines:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "kubeflow-pipelines.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
           istio:
             enabled: true
             defaultRevision: {{ $istioDefaultRevision | quote }}
@@ -274,59 +242,12 @@ environments:
               ingressPublicLabel: {{ $istioIngressPublicReleaseLabel }}
               egressName: {{ $istioEgressReleaseName }}
               egressLabel: {{ $istioEgressReleaseLabel }}
-          loki:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "loki.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
           metrics-server:
             enabled: {{ $a | get "metrics-server.enabled" (has $provider (list "custom" "linode")) }}
-          oauth2-proxy-redis:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "oauth2-proxy-redis.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
           minio:
             enabled: {{ $a.minio.enabled }}
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "minio.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
-          prometheus:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "prometheus.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
-          rabbitmq:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "rabbitmq.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
-          tempo:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "tempo.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
-          thanos:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "thanos.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
-          trivy:
-            {{- if eq $provider "linode" }}
-            {{- if not ($a | get "trivy.storageClass" nil) }}
-            storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
-            {{- end }}
-            {{- end }}
           sealed-secrets:
             enabled: true
         oidc: {}
@@ -335,6 +256,14 @@ environments:
           - {{- $v.ingress.platformClass | toYaml | nindent 12 }}
           {{- with $v.ingress.classes }}
           {{- . | toYaml | nindent 10 }}
+          {{- end }}
+        cluster:
+          {{- if $v.cluster | get "defaultStorageClass" nil }}
+          defaultStorageClass: {{ $v.cluster.defaultStorageClass }}
+          {{- else if eq $provider "linode" }}
+          defaultStorageClass: "linode-block-storage"
+          {{- else }}
+          defaultStorageClass: ""
           {{- end }}
         otomi:
           version: {{ $otomiTag }}

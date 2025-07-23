@@ -9,4 +9,4 @@ spec:
     k8sContext: linode-dev
     owner: akamai
     provider: linode
-    defaultPlatformStorageClass: linode-block-storage
+    defaultStorageClass: linode-block-storage

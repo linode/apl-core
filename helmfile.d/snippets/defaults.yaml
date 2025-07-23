@@ -1427,7 +1427,7 @@ environments:
         cluster:
           provider: linode
           name: apl
-          defaultPlatformStorageClass: linode-block-storage
+          defaultStorageClass: null
         dns:
           domainFilters: []
           zoneIdFilters: []

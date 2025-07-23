@@ -3,17 +3,20 @@
 {{- $cnpg := $v.apps.cnpg }}
 {{- $obj := $v.obj.provider }}
 {{- $b := $v.platformBackups.database.harbor }}
-{{- $provider := $v.cluster.provider }}
 
 name: harbor-otomi-db
 storage:
-  {{- if eq $provider "linode" }}
-  storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+  {{- if $hdb | get "storageClass" nil }}
+  storageClass: {{ $hdb.storageClass }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
   size: {{ $hdb.size }}
 walStorage:
-  {{- if eq $provider "linode" }}
-  storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+  {{- if $hdb | get "walStorageClass" nil }}
+  storageClass: {{ $hdb.walStorageClass }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
   size: {{ $hdb.walStorageSize }}
 instances: {{ $hdb.replicas }}

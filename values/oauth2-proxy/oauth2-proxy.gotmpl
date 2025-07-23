@@ -125,8 +125,10 @@ redis:
   sentinel:
     persistence:
       size: {{ $r.persistence.sentinel.size }}
-      {{- with $v.apps | get "oauth2-proxy-redis.storageClass" }}
-      storageClass: {{ . }}
+      {{- if $r | get "persistence.sentinel.storageClass" nil }}
+      storageClass: {{ $r.persistence.sentinel.storageClass }}
+      {{- else }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
       {{- end }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
@@ -135,8 +137,10 @@ redis:
   master:
     persistence:
       size: {{ $r.persistence.master.size }}
-      {{- with $v.apps | get "oauth2-proxy-redis.storageClass" }}
-      storageClass: {{ . }}
+      {{- if $r | get "persistence.master.storageClass" nil }}
+      storageClass: {{ $r.persistence.master.storageClass }}
+      {{- else }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
       {{- end }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
@@ -146,8 +150,10 @@ redis:
   replica:
     persistence:
       size: {{ $r.persistence.replica.size }}
-      {{- with $v.apps | get "oauth2-proxy-redis.storageClass" }}
-      storageClass: {{ . }}
+      {{- if $r | get "persistence.replica.storageClass" nil }}
+      storageClass: {{ $r.persistence.replica.storageClass }}
+      {{- else }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
       {{- end }}
     podAnnotations:
       sidecar.istio.io/inject: "false"

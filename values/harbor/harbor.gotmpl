@@ -8,7 +8,6 @@
 {{- $notarySecretName := ($notaryDomain | replace "." "-") }}
 {{- $externalUrl := printf "https://%s" $harborDomain }}
 {{/*The cloudNativeDb operator is responsible for creating the secret*/}}
-{{- $provider := $v.cluster.provider }}
 
 externalURL: {{ $externalUrl }}
 fullnameOverride: harbor
@@ -18,9 +17,13 @@ logLevel: warning
 harborAdminPassword: {{ $h.adminPassword | quote }}
 nameOverride: harbor
 
-{{- if $h.storageClass }}
+{{- if or $v.otomi.linodeLkeImageRepository ($h | get "storageClass" nil) (eq $v.cluster.provider "linode") }}
 global:
+  {{- if $h | get "storageClass" nil }}
   storageClass: {{ $h.storageClass | quote }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
+  {{- end }}
 {{- end }}
 secretKey: {{ $h | get "secretKey" nil }}
 
@@ -77,16 +80,20 @@ persistence:
     registry:
       # Use the existing PVC which must be created manually before bound,
       # and specify the 'subPath' if the PVC is shared with other components
-      {{- if eq $provider "linode" }}
-      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- if $h | get "persistence.registry.storageClass" nil }}
+      storageClass: {{ $h.persistence.registry.storageClass }}
+      {{- else }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
       {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
       size: 10Gi
     jobservice:
-      {{- if eq $provider "linode" }}
-      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- if $h | get "persistence.jobservice.storageClass" nil }}
+      storageClass: {{ $h.persistence.jobservice.storageClass }}
+      {{- else }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
       {{- end }}
       existingClaim: ''
       subPath: ''
@@ -95,8 +102,10 @@ persistence:
     # If external database is used, the following settings for database will
     # be ignored
     database:
-      {{- if eq $provider "linode" }}
-      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- if $h | get "persistence.database.storageClass" nil }}
+      storageClass: {{ $h.persistence.database.storageClass }}
+      {{- else }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
       {{- end }}
       existingClaim: ''
       subPath: ''
@@ -105,16 +114,20 @@ persistence:
     # If external Redis is used, the following settings for Redis will
     # be ignored
     redis:
-      {{- if eq $provider "linode" }}
-      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- if $h | get "persistence.redis.storageClass" nil }}
+      storageClass: {{ $h.persistence.redis.storageClass }}
+      {{- else }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
       {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
-      {{- if eq $provider "linode" }}
-      storageClass: {{ $v.cluster.defaultPlatformStorageClass | default "linode-block-storage" }}
+      {{- if $h | get "persistence.trivy.storageClass" nil }}
+      storageClass: {{ $h.persistence.trivy.storageClass }}
+      {{- else }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
       {{- end }}
       existingClaim: ''
       subPath: ''

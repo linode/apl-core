@@ -250,12 +250,9 @@ definitions:
         default: otomi
       provider:
         $ref: '#/definitions/provider'
-      defaultPlatformStorageClass:
+      defaultStorageClass:
         type: string
         description: Default storage class for platform components. Use linode-block-storage for Delete policy or linode-block-storage-retain for Retain policy.
-        enum:
-          - linode-block-storage
-          - linode-block-storage-retain
         default: linode-block-storage
     required:
       - name

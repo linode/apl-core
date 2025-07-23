@@ -58,8 +58,10 @@ extraVolumeMounts:
 persistence:
   enabled: {{ $m.persistence.enabled}}
   size: {{ $m.persistence.size }}
-  {{- if $m.storageClass }}
-  storageClass: {{ $m.storageClass | quote }}
+  {{- if $m | get "persistence.storageClass" nil }}
+  storageClass: {{ $m.persistence.storageClass }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   {{- end }}
 resources: {{- $m.resources | toYaml | nindent 2 }}
 provisioning:

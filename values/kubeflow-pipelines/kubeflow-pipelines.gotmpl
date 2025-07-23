@@ -53,8 +53,10 @@ mysql:
   storage:
     enabled: {{ $kfp | get "mysql.storage.enabled" true }}
     size: {{ $kfp | get "mysql.storage.size" "20Gi" }}
-    {{- with $v.apps | get "kubeflow-pipelines.storageClass" }}
-    storageClass: {{ . }}
+    {{- if $kfp | get "storageClass" nil }}
+    storageClass: {{ $kfp.storageClass }}
+    {{- else }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
     {{- end }}
     accessModes:
       - ReadWriteOnce

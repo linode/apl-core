@@ -3,14 +3,16 @@
 {{- $consoleLoginVersion := $v.versions.consoleLogin}}
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 
-{{- if or $v.otomi.linodeLkeImageRepository $k.storageClass }}
+{{- if or $v.otomi.linodeLkeImageRepository ($k | get "storageClass" nil) (eq $v.cluster.provider "linode") }}
 global:
   {{- if $v.otomi.linodeLkeImageRepository }}
   security:
     allowInsecureImages: true
   {{- end }}
-  {{- if $k.storageClass }}
+  {{- if $k | get "storageClass" nil }}
   storageClass: {{ $k.storageClass | quote }}
+  {{- else }}
+  storageClass: {{ $v.cluster.defaultStorageClass | quote }}
   {{- end }}
 {{- end }}
 
