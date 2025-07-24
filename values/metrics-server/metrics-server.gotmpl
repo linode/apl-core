@@ -2,9 +2,17 @@
 {{- $provider := $v.cluster.provider }}
 {{- $m := $v.apps | get "metrics-server" }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- if (or $v.otomi.linodeLkeImageRepository (.Values.otomi | get "globalPullSecret" nil)) }}
 global:
+  {{- if $v.otomi.linodeLkeImageRepository }}
   imageRegistry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
+  security:
+    allowInsecureImages: true
+  {{- end }}
+  {{- if .Values.otomi | get "globalPullSecret" nil }}
+  imagePullSecrets:
+    - otomi-pullsecret-global
+  {{- end }}
 {{- end }}
 
 extraArgs:
@@ -30,9 +38,3 @@ resources:
     cpu: 100m
     memory: 64Mi
   {{- end }}
-
-{{- with .Values.otomi | get "globalPullSecret" nil }}
-global:
-  imagePullSecrets:
-    - otomi-pullsecret-global
-{{- end }}

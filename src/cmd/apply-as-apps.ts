@@ -189,6 +189,12 @@ export const applyAsApps = async (argv: HelmArguments): Promise<void> => {
   await Promise.allSettled(
     releases.map(async (release: HelmRelease) => {
       try {
+        // Skip apl-operator when NODE_ENV is development
+        if (process.env.NODE_ENV === 'development' && release.name === 'apl-operator') {
+          d.info(`Skipping apl-operator application in development mode`)
+          return
+        }
+
         if (release.installed) await writeApplicationManifest(release, otomiVersion)
         else {
           await removeApplication(release)

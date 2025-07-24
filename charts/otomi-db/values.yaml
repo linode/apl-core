@@ -12,6 +12,7 @@ walStorage:
 priorityClassName: otomi-critical
 
 resources: {}
+backupSidecarResources: {}
 
 monitoring: true
 

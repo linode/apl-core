@@ -62,6 +62,10 @@ k8s:
       app: knative
       disablePolicyChecks: true
       disableIstioInjection: true
+    - name: kfp
+      app: kubeflow-pipelines
+      disablePolicyChecks: true
+      disableIstioInjection: true
     - name: kured
       app: kured
       disableIstioInjection: true
@@ -264,6 +268,16 @@ adminApps:
   - name: knative
     tags: [serverless, functions]
     deps: [istio]
+  - name: kubeflow-pipelines
+    tags: [ai, ml]
+    ownHost: true
+    isShared: true
+    ingress:
+      - svc: ml-pipeline-ui
+        namespace: kfp
+        port: 80
+        type: public
+        auth: true
   - name: kured
     tags: [security]
   - name: tekton
