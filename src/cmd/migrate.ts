@@ -618,7 +618,7 @@ export async function installIstioHelmCharts(): Promise<void> {
   }
 }
 
-const setDefaultPlatformStorageClass = async (values: Record<string, any>): Promise<void> => {
+const setDefaultStorageClass = async (values: Record<string, any>): Promise<void> => {
   const clusterProvider = get(values, 'cluster.provider')
   const existingStorageClass = get(values, 'cluster.defaultStorageClass')
 
@@ -636,7 +636,7 @@ const customMigrationFunctions: Record<string, CustomMigrationFunction> = {
   policiesMigration,
   addAplOperator,
   installIstioHelmCharts,
-  setDefaultPlatformStorageClass,
+  setDefaultStorageClass,
 }
 
 /**

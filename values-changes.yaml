@@ -380,4 +380,4 @@ changes:
       - otomi.useORCS: true
   - version: 45
     customFunctions:
-      - setDefaultPlatformStorageClass
+      - setDefaultStorageClass
