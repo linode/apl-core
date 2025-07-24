@@ -619,13 +619,7 @@ export async function installIstioHelmCharts(): Promise<void> {
 }
 
 const setDefaultStorageClass = async (values: Record<string, any>): Promise<void> => {
-  const clusterProvider = get(values, 'cluster.provider')
-  const existingStorageClass = get(values, 'cluster.defaultStorageClass')
-
-  // set defaultStorageClass to linode-block-storage-retain to preserve existing data
-  if (clusterProvider === 'linode' && !existingStorageClass) {
-    set(values, 'cluster.defaultStorageClass', 'linode-block-storage-retain')
-  }
+  set(values, 'cluster.defaultStorageClass', null)
 }
 
 const customMigrationFunctions: Record<string, CustomMigrationFunction> = {

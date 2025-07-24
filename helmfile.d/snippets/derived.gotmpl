@@ -257,14 +257,6 @@ environments:
           {{- with $v.ingress.classes }}
           {{- . | toYaml | nindent 10 }}
           {{- end }}
-        cluster:
-          {{- if $v.cluster | get "defaultStorageClass" nil }}
-          defaultStorageClass: {{ $v.cluster.defaultStorageClass }}
-          {{- else if eq $provider "linode" }}
-          defaultStorageClass: "linode-block-storage"
-          {{- else }}
-          defaultStorageClass: ""
-          {{- end }}
         otomi:
           version: {{ $otomiTag }}
           linodeLkeImageRepository: {{ if $v.otomi.useORCS }}mirror.registry.linodelke.net{{ end }}

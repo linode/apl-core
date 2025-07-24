@@ -252,8 +252,9 @@ definitions:
         $ref: '#/definitions/provider'
       defaultStorageClass:
         type: string
-        description: Default storage class for platform components. Use linode-block-storage for Delete policy or linode-block-storage-retain for Retain policy.
-        default: linode-block-storage
+        nullable: true
+        description: Default storage class for platform components. Use null for relying on the cluster's default storage class.
+        default: null
     required:
       - name
       - provider
