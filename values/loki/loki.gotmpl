@@ -113,11 +113,7 @@ querier:
   persistence:
     enabled: true
     size: {{ $l | get "persistence.querier.size" "10Gi" }}
-    {{- if $l | get "persistence.querier.storageClass" nil }}
-    storageClass: {{ $l.persistence.querier.storageClass }}
-    {{- else }}
     storageClass: {{ $v.cluster.defaultStorageClass }}
-    {{- end }}
   {{- end }}
 
 distributor:
@@ -177,9 +173,5 @@ compactor:
   persistence:
     enabled: true
     size: {{ $l | get "persistence.compactor.size" "10Gi" }}
-    {{- if $l | get "persistence.compactor.storageClass" nil }}
-    storageClass: {{ $l.persistence.compactor.storageClass }}
-    {{- else }}
     storageClass: {{ $v.cluster.defaultStorageClass }}
-    {{- end }}
   {{- end }}

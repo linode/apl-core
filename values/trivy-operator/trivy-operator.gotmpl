@@ -33,12 +33,7 @@ trivy:
   mode: Standalone
   resources: {{- $t.resources.trivy | toYaml | nindent 4 }}
   ignoreUnfixed: true
-  storageSize: {{ $t | get "storage.size" "1Gi" }}
-  {{- if $t | get "storageClass" nil }}
-  storageClassName: {{ $t.storageClass }}
-  {{- else }}
   storageClassName: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
 
 podSecurityContext:
   runAsUser: 1001

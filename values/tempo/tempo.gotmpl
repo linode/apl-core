@@ -23,11 +23,7 @@ ingester:
   persistence:
     enabled: true
     size: {{ $t.persistence.ingester.size }} # default to 10Gi
-    {{- if $t | get "persistence.ingester.storageClass" nil }}
-    storageClass: {{ $t.persistence.ingester.storageClass }}
-    {{- else }}
-    storageClass: {{ $v.cluster.defaultStorageClass }}
-    {{- end }}
+    storageClass: {{ $v.cluster.defaultStorageClass | default "null" }}
   {{- end }}
 
 distributor:

@@ -71,21 +71,13 @@ persistence:
     registry:
       # Use the existing PVC which must be created manually before bound,
       # and specify the 'subPath' if the PVC is shared with other components
-      {{- if $h | get "persistence.registry.storageClass" nil }}
-      storageClass: {{ $h.persistence.registry.storageClass }}
-      {{- else }}
       storageClass: {{ $v.cluster.defaultStorageClass }}
-      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
       size: 10Gi
     jobservice:
-      {{- if $h | get "persistence.jobservice.storageClass" nil }}
-      storageClass: {{ $h.persistence.jobservice.storageClass }}
-      {{- else }}
       storageClass: {{ $v.cluster.defaultStorageClass }}
-      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
@@ -93,11 +85,7 @@ persistence:
     # If external database is used, the following settings for database will
     # be ignored
     database:
-      {{- if $h | get "persistence.database.storageClass" nil }}
-      storageClass: {{ $h.persistence.database.storageClass }}
-      {{- else }}
       storageClass: {{ $v.cluster.defaultStorageClass }}
-      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
@@ -105,21 +93,13 @@ persistence:
     # If external Redis is used, the following settings for Redis will
     # be ignored
     redis:
-      {{- if $h | get "persistence.redis.storageClass" nil }}
-      storageClass: {{ $h.persistence.redis.storageClass }}
-      {{- else }}
       storageClass: {{ $v.cluster.defaultStorageClass }}
-      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce
       size: 1Gi
     trivy:
-      {{- if $h | get "persistence.trivy.storageClass" nil }}
-      storageClass: {{ $h.persistence.trivy.storageClass }}
-      {{- else }}
       storageClass: {{ $v.cluster.defaultStorageClass }}
-      {{- end }}
       existingClaim: ''
       subPath: ''
       accessMode: ReadWriteOnce

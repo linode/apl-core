@@ -7,18 +7,10 @@
 
 name: keycloak-db
 storage:
-  {{- if $kdb | get "storageClass" nil }}
-  storageClass: {{ $kdb.storageClass }}
-  {{- else }}
   storageClass: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
   size: {{ $kdb.size }}
 walStorage:
-  {{- if $kdb | get "walStorageClass" nil }}
-  storageClass: {{ $kdb.walStorageClass }}
-  {{- else }}
   storageClass: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
   size: {{ $kdb.walStorageSize }}
 instances: {{ $kdb.replicas }}
 

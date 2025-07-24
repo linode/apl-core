@@ -6,18 +6,10 @@
 
 name: harbor-otomi-db
 storage:
-  {{- if $hdb | get "storageClass" nil }}
-  storageClass: {{ $hdb.storageClass }}
-  {{- else }}
   storageClass: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
   size: {{ $hdb.size }}
 walStorage:
-  {{- if $hdb | get "walStorageClass" nil }}
-  storageClass: {{ $hdb.walStorageClass }}
-  {{- else }}
   storageClass: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
   size: {{ $hdb.walStorageSize }}
 instances: {{ $hdb.replicas }}
 

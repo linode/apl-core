@@ -105,11 +105,7 @@ agent:
 
 persistence:
   enabled: true
-  {{- if $d | get "storageClass" nil }}
-  storageClass: {{ $d.storageClass }}
-  {{- else }}
   storageClass: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
 metrics:
   prometheus:
     enabled: true

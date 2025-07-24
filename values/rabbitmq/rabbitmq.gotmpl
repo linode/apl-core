@@ -16,11 +16,7 @@ msgTopologyOperator:
   watchNamespaces: {{- $teamNamespaces | toYaml | nindent 4 }}
 
 global:
-  {{- if $r | get "storageClass" nil }}
-  storageClass: {{ $r.storageClass }}
-  {{- else }}
-  storageClass: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
+  storageClass: {{ $v.cluster.defaultStorageClass | default "" }}
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global

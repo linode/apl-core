@@ -54,9 +54,7 @@ resources:
     resources:
       requests:
         storage: 1Gi
-    {{- if $g | get "backup.storageClass" nil }}
-    storageClassName: {{ $g.backup.storageClass }}
-    {{- else if $v.cluster.defaultStorageClass }}
+    {{- if $v.cluster.defaultStorageClass }}
     storageClassName: {{ $v.cluster.defaultStorageClass }}
     {{- end }}
 {{- end }}

@@ -129,11 +129,7 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          {{- if $p | get "storageClass" nil }}
-          storageClassName: {{ $p.storageClass }}
-          {{- else }}
           storageClassName: {{ $v.cluster.defaultStorageClass }}
-          {{- end }}
           resources:
             requests:
               storage: {{ $p | get "storageSize" }}
