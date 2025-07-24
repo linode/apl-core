@@ -20,7 +20,7 @@ spec:
       migrate: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/pkg/apiextensions/storageversion/cmd/migrate:{{ $tag }}"
       cleanup: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/serving/pkg/cleanup/cmd/cleanup:{{ $tag }}"
       net-istio-controller/controller: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/controller:{{ $netIstioTag }}"
-      net-istio-controller/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/webhook:{{ $netIstioTag }}"
+      net-istio-webhook/webhook: "{{ $v.otomi.linodeLkeImageRepository }}/gcr/knative-releases/knative.dev/net-istio/cmd/webhook:{{ $netIstioTag }}"
   {{- end }}
   version: "{{ $knativeServingVersion }}"
   {{- if $v._derived.untrustedCA }}
