@@ -1,0 +1,149 @@
+{{- if .Values.plugin.trivy.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "trivy-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "trivy-plugin.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.plugin.trivy.replicaCount }}
+  revisionHistoryLimit: {{ .Values.plugin.trivy.revisionHistoryLimit }}
+  {{- with .Values.plugin.trivy.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "trivy-plugin.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print .Template.BasePath "/plugins/trivy/config-secret.yaml") . | sha256sum | quote }}
+        {{- with .Values.plugin.trivy.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "trivy-plugin.labels" . | nindent 8 }}
+        {{- with .Values.plugin.trivy.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.plugin.trivy.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.plugin.trivy.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "trivy-plugin.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.plugin.trivy.serviceAccount.automount }}
+      {{- if .Values.plugin.trivy.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.plugin.trivy.podSecurityContext | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: trivy-db
+          image: "{{ .Values.plugin.trivy.cli.image.registry }}/{{ .Values.plugin.trivy.cli.image.repository }}:{{ .Values.plugin.trivy.cli.image.tag }}"
+          args:
+          - --cache-dir
+          - /
+          - image
+          - --download-db-only
+          {{- range $key, $value := .Values.plugin.trivy.extraArgs }}
+          {{- if $value }}
+          - --{{ $key }}={{ $value }}
+          {{- end }}
+          {{- end }}
+          securityContext:
+          {{- if .Values.plugin.trivy.securityContext }}
+            {{- toYaml .Values.plugin.trivy.securityContext | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.plugin.trivy.resources | nindent 12 }}
+          env:
+          {{- with .Values.plugin.trivy.envVars }}
+          {{- . | toYaml | trim | nindent 10 }}
+          {{- end }}
+          volumeMounts:
+          - name: db
+            mountPath: /db
+          - name: tmp
+            mountPath: /tmp
+      containers:
+        - name: policy-reporter-trivy-plugin
+          {{- if .Values.plugin.trivy.securityContext }}
+          securityContext:
+            {{- toYaml .Values.plugin.trivy.securityContext | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.plugin.trivy.image.registry }}/{{ .Values.plugin.trivy.image.repository }}:{{ .Values.plugin.trivy.image.tag }}"
+          imagePullPolicy: {{ .Values.plugin.trivy.image.pullPolicy }}
+          args:
+            - run
+            - --config=/app/config.yaml
+            - --port={{ .Values.plugin.trivy.server.port }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.plugin.trivy.server.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.plugin.trivy.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.plugin.trivy.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.plugin.trivy.resources | nindent 12 }}
+          volumeMounts:
+          - name: config-file
+            mountPath: /app/config.yaml
+            subPath: config.yaml
+            readOnly: true
+          - name: db
+            mountPath: /db
+          {{- with .Values.plugin.trivy.extraVolumes.volumeMounts }}
+          {{ toYaml . | nindent 10 | trim }}
+          {{- end }}
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          {{- with .Values.plugin.trivy.envVars }}
+          {{- . | toYaml | trim | nindent 10 }}
+          {{- end }}
+      volumes:
+      - name: config-file
+        secret:
+          secretName: {{ include "trivy-plugin.fullname" . }}-config
+          optional: true
+      - name: db
+        {{- with .Values.plugin.trivy.dbVolume }}
+          {{- toYaml . | nindent 8 }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: tmp
+        {{- with .Values.plugin.trivy.tmpVolume }}
+          {{- toYaml . | nindent 8 }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      {{- with .Values.plugin.trivy.extraVolumes.volumes }}
+      {{ toYaml . | nindent 6 | trim }}
+      {{- end }}
+      {{- with .Values.plugin.trivy.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.plugin.trivy.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.plugin.trivy.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.plugin.trivy.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

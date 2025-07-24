@@ -1,0 +1,129 @@
+groups:
+  - name: orcs-compliance
+    rules:
+      - alert: ORCSPolicyViolationHigh
+        annotations:
+          description: >
+            High rate of ORCS compliance policy violations detected.
+            {{ $value }} policy violations in the last 5 minutes across
+            namespace {{ $labels.namespace }}. This indicates containers
+            are being deployed that don't comply with ORCS registry requirements.
+          summary: '[ORCS Compliance] High violation rate detected'
+          runbook_url: 'https://docs.example.com/runbooks/orcs-compliance'
+        expr: |
+          (
+            increase(kyverno_policy_results_total{policy_name="orcs-compliance", result="fail"}[5m]) > 5
+          ) or (
+            increase(kyverno_policy_results_total{policy_name="orcs-compliance-mutate", result="fail"}[5m]) > 5
+          )
+        for: 2m
+        labels:
+          severity: warning
+          component: orcs-compliance
+          team: platform
+
+      - alert: ORCSPolicyViolationCritical
+        annotations:
+          description: >
+            Critical rate of ORCS compliance policy violations detected.
+            {{ $value }} policy violations in the last 10 minutes across
+            namespace {{ $labels.namespace }}. This may indicate a systematic
+            bypass of ORCS compliance or misconfigured deployment pipelines.
+            Immediate attention required.
+          summary: '[ORCS Compliance] Critical violation rate - immediate action required'
+          runbook_url: 'https://docs.example.com/runbooks/orcs-compliance-critical'
+        expr: |
+          (
+            increase(kyverno_policy_results_total{policy_name="orcs-compliance", result="fail"}[10m]) > 20
+          ) or (
+            increase(kyverno_policy_results_total{policy_name="orcs-compliance-mutate", result="fail"}[10m]) > 20
+          )
+        for: 1m
+        labels:
+          severity: critical
+          component: orcs-compliance
+          team: platform
+
+      - alert: ORCSComplianceDown
+        annotations:
+          description: >
+            ORCS compliance policy has not reported any results for the past 30 minutes.
+            This could indicate that the Kyverno policy engine is not functioning
+            properly or policies are not being applied. Supply chain security
+            monitoring is compromised.
+          summary: '[ORCS Compliance] Policy monitoring down'
+          runbook_url: 'https://docs.example.com/runbooks/orcs-compliance-down'
+        expr: |
+          absent(kyverno_policy_results_total{policy_name=~"orcs-compliance.*"}) == 1
+        for: 30m
+        labels:
+          severity: critical
+          component: orcs-compliance
+          team: platform
+
+      - alert: ORCSNonCompliantNamespace
+        annotations:
+          description: >
+            Namespace {{ $labels.namespace }} has consistently high ORCS policy violations.
+            {{ $value }}% of deployments in this namespace are non-compliant with
+            ORCS registry requirements over the past hour. This namespace may need
+            policy exemption review or deployment pipeline fixes.
+          summary: '[ORCS Compliance] Namespace {{ $labels.namespace }} consistently non-compliant'
+          runbook_url: 'https://docs.example.com/runbooks/orcs-namespace-compliance'
+        expr: |
+          (
+            (
+              increase(kyverno_policy_results_total{policy_name="orcs-compliance", result="fail"}[1h])
+              /
+              (
+                increase(kyverno_policy_results_total{policy_name="orcs-compliance", result="fail"}[1h])
+                +
+                increase(kyverno_policy_results_total{policy_name="orcs-compliance", result="pass"}[1h])
+              )
+            ) * 100 > 80
+          )
+          and
+          (
+            increase(kyverno_policy_results_total{policy_name="orcs-compliance", result="fail"}[1h]) > 10
+          )
+        for: 15m
+        labels:
+          severity: warning
+          component: orcs-compliance
+          team: platform
+
+      - alert: ORCSPolicyExecutionLatencyHigh
+        annotations:
+          description: >
+            ORCS compliance policy execution latency is high.
+            Average execution time: {{ $value }}s. This may impact
+            deployment performance and indicates potential policy
+            optimization needs.
+          summary: '[ORCS Compliance] High policy execution latency'
+          runbook_url: 'https://docs.example.com/runbooks/orcs-latency'
+        expr: |
+          histogram_quantile(0.95, 
+            increase(kyverno_policy_execution_duration_seconds_bucket{policy_name=~"orcs-compliance.*"}[5m])
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+          component: orcs-compliance
+          team: platform
+
+      - alert: ORCSExemptionOveruse
+        annotations:
+          description: >
+            High number of ORCS policy exemptions being triggered.
+            {{ $value }} exemptions in the last hour may indicate
+            overly broad exemption rules or potential policy bypass attempts.
+            Review exemption configuration and usage patterns.
+          summary: '[ORCS Compliance] High exemption usage detected'
+          runbook_url: 'https://docs.example.com/runbooks/orcs-exemptions'
+        expr: |
+          increase(kyverno_policy_results_total{policy_name="orcs-compliance", result="skip"}[1h]) > 100
+        for: 5m
+        labels:
+          severity: info
+          component: orcs-compliance
+          team: platform

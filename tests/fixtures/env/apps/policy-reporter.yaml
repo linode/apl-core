@@ -1,0 +1,7 @@
+kind: AplApp
+metadata:
+    name: policy-reporter
+    labels: {}
+spec:
+    enabled: false
+    _rawValues: {}

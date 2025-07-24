@@ -1,0 +1,19 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.grafana.dashboards.enabled .Values.monitoring.grafana.dashboards.enable.overview .Values.monitoring.grafana.grafanaDashboard.enabled }}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  labels:
+    {{ .Values.monitoring.grafana.dashboards.label }}: {{ .Values.monitoring.grafana.dashboards.value | quote }}
+    {{- include "monitoring.labels" . | nindent 4 }}
+  name: {{ include "monitoring.fullname" . }}-overview-dashboard
+  namespace: {{ include "grafana.namespace" . }}
+spec:
+  allowCrossNamespaceImport: {{ .Values.monitoring.grafana.grafanaDashboard.allowCrossNamespaceImport }}
+  folder: {{ .Values.monitoring.grafana.grafanaDashboard.folder }}
+  instanceSelector:
+    matchLabels:
+      {{- toYaml .Values.monitoring.grafana.grafanaDashboard.matchLabels | nindent 6 }}
+  configMapRef:
+    name: {{ include "monitoring.fullname" . }}-overview-dashboard
+    key: policy-reporter-dashboard.json
+{{- end }}

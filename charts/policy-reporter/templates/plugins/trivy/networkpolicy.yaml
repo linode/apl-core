@@ -1,0 +1,31 @@
+{{- if .Values.plugin.trivy.enabled -}}
+{{- if .Values.plugin.trivy.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels: {{- include "trivy-plugin.labels" . | nindent 4 }}
+  name: {{ include "trivy-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+spec:
+  podSelector:
+    matchLabels: {{- include "trivy-plugin.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Ingress
+  - Egress
+  {{- with .Values.plugin.trivy.networkPolicy.ingress }}
+  ingress:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          {{- include "policyreporter.selectorLabels" . | nindent 10 }}
+    ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+  {{- with .Values.plugin.trivy.networkPolicy.egress }}
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end }}

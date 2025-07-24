@@ -1,0 +1,116 @@
+logging:
+  api: {{ .Values.ui.logging.api }}
+  server: {{ .Values.ui.logging.server }}
+  encoding: {{ .Values.ui.logging.encoding }}
+  logLevel: {{ .Values.ui.logging.logLevel }}
+
+server:
+  port: {{ .Values.ui.server.port }}
+  cors: {{ .Values.ui.server.cors }}
+  overwriteHost: {{ .Values.ui.server.overwriteHost }}
+  {{- with .Values.ui.server.sessions }}
+  sessions: 
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+
+ui:
+  displayMode: {{ .Values.ui.displayMode }}
+  banner: {{ .Values.ui.banner }}
+  logo:
+    path: {{ .Values.ui.logo.path }}
+    disabled: {{ .Values.ui.logo.disabled }}
+
+{{- $default := false -}}
+{{- range .Values.ui.clusters }}
+    {{- if eq .name $.Values.ui.name -}}
+      {{- $default = true -}}
+    {{- end -}}
+{{- end }}
+
+clusters:
+{{- if not $default }}
+  - name: {{ .Values.ui.name }}
+    secretRef: {{ include "ui.fullname" . }}-default-cluster
+{{- end }}
+{{- with .Values.ui.clusters }}
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+
+{{- with .Values.ui.customBoards }}
+customBoards:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+
+{{- with .Values.ui.boards }}
+boards:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+
+{{- $kyverno := false -}}
+{{- range .Values.ui.sources }}
+    {{- if eq .name "kyverno" -}}
+      {{- $kyverno = true -}}
+    {{- end -}}
+{{- end }}
+
+{{- $vpol := false -}}
+{{- range .Values.ui.sources }}
+    {{- if eq .name "KyvernoValidatingPolicy" -}}
+      {{- $vpol = true -}}
+    {{- end -}}
+{{- end }}
+
+{{- $trivy := false -}}
+{{- range .Values.ui.sources }}
+    {{- if eq .name "Trivy Vulnerability" -}}
+      {{- $trivy = true -}}
+    {{- end -}}
+{{- end }}
+
+sources:
+{{- if not $kyverno }}
+  - name: kyverno
+    type: result
+    exceptions: false
+    excludes:
+      results:
+      - warn
+      - error
+{{- end }}
+
+{{- if not $vpol }}
+  - name: KyvernoValidatingPolicy
+    type: result
+    exceptions: false
+    excludes:
+      results:
+      - warn
+      - error
+{{- end }}
+
+{{- if and (not $trivy) .Values.plugin.trivy.enabled }}
+  - name: Trivy Vulnerability
+    type: severity
+    exceptions: false
+    excludes:
+      results:
+      - pass
+      - skip
+{{- end }}
+{{- with .Values.ui.sources }}
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+
+{{- with .Values.ui.openIDConnect }}
+openIDConnect:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+
+{{- with .Values.ui.oauth }}
+oauth:
+  {{- toYaml . | nindent 4 }}
+{{- end }}
+
+{{- with .Values.ui.extraConfig }}
+{{- toYaml . | nindent 0 }}
+{{- end }}

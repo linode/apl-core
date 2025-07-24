@@ -1,0 +1,45 @@
+{{- if .Values.plugin.kyverno.enabled -}}
+{{- if .Values.plugin.kyverno.rbac.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    {{- include "kyverno-plugin.labels" . | nindent 4 }}
+  name: {{ include "kyverno-plugin.fullname" . }}
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - policies
+  - policies/status
+  - clusterpolicies
+  - clusterpolicies/status
+  verbs:
+  - get
+  - list
+{{- if .Values.plugin.kyverno.blockReports.enabled }}
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - '*'
+  resources:
+  - policyreports
+  - policyreports/status
+  - clusterpolicyreports
+  - clusterpolicyreports/status
+  verbs:
+  - get
+  - list
+  - create
+  - update
+  - delete
+{{- end }}
+{{- end }}
+{{- end }}
