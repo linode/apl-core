@@ -252,9 +252,8 @@ definitions:
         $ref: '#/definitions/provider'
       defaultStorageClass:
         type: string
-        nullable: true
-        description: Default storage class for platform components. Use null for relying on the cluster's default storage class.
-        default: null
+        description: Default storage class for platform components. Use '' for relying on the cluster's default storage class.
+        default: ''
     required:
       - name
       - provider
