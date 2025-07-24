@@ -111,7 +111,7 @@ spec:
       description: The image providing the git-init binary that this Task runs.
       type: string
       {{- if $v.linodeLkeImageRepository }}
-      default: "{{- $v.linodeLkeImageRepository }}/gcr/tektoncd/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
+      default: "{{- $v.linodeLkeImageRepository }}/ghcr/tektoncd/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
       {{- else }}
       default: "ghcr.io/tektoncd/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
       {{- end }}
