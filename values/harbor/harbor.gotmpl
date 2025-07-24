@@ -16,15 +16,6 @@ logLevel: warning
 
 harborAdminPassword: {{ $h.adminPassword | quote }}
 nameOverride: harbor
-
-{{- if or $v.otomi.linodeLkeImageRepository ($h | get "storageClass" nil) (eq $v.cluster.provider "linode") }}
-global:
-  {{- if $h | get "storageClass" nil }}
-  storageClass: {{ $h.storageClass | quote }}
-  {{- else }}
-  storageClass: {{ $v.cluster.defaultStorageClass }}
-  {{- end }}
-{{- end }}
 secretKey: {{ $h | get "secretKey" nil }}
 
 updateStrategy:

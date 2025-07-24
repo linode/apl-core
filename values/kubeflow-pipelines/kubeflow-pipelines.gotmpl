@@ -53,8 +53,8 @@ mysql:
   storage:
     enabled: {{ $kfp | get "mysql.storage.enabled" true }}
     size: {{ $kfp | get "mysql.storage.size" "20Gi" }}
-    {{- if $kfp | get "storageClass" nil }}
-    storageClass: {{ $kfp.storageClass }}
+    {{- if $kfp | get "mysql.storage.storageClass" nil }}
+    storageClass: {{ $kfp.mysql.storage.storageClass }}
     {{- else }}
     storageClass: {{ $v.cluster.defaultStorageClass }}
     {{- end }}

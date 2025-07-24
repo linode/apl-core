@@ -3,7 +3,7 @@
 {{- $consoleLoginVersion := $v.versions.consoleLogin}}
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 
-{{- if or $v.otomi.linodeLkeImageRepository ($k | get "storageClass" nil) (eq $v.cluster.provider "linode") }}
+{{- if or $v.otomi.linodeLkeImageRepository ($k | get "storageClass" nil) $v.cluster.defaultStorageClass }}
 global:
   {{- if $v.otomi.linodeLkeImageRepository }}
   security:

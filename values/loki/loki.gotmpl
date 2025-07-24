@@ -87,19 +87,6 @@ ingester:
     targetCPUUtilizationPercentage: {{ $l.autoscaling.ingester.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.ingester.targetMemoryUtilizationPercentage }}
 
-  {{- if not $useObjectStorage }}
-  persistence:
-    enabled: true
-    claims:
-      - name: data
-        size: {{ $l | get "persistence.ingester.size" "10Gi" }}
-        {{- if $l | get "persistence.ingester.storageClass" nil }}
-        storageClass: {{ $l.persistence.ingester.storageClass }}
-        {{- else }}
-        storageClass: {{ $v.cluster.defaultStorageClass }}
-        {{- end }}
-  {{- end }}
-
 gateway:
   {{- if $v.otomi.linodeLkeImageRepository }}
   image: 
