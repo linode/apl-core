@@ -376,8 +376,5 @@ changes:
     deletions:
       - 'apps.harbor.resources.chartmuseum'
   - version: 44
-    mutations:
-      - otomi.useORCS: true
-  - version: 45
     additions:
       - cluster.defaultStorageClass: ''
