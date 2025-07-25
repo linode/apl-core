@@ -250,6 +250,10 @@ definitions:
         default: otomi
       provider:
         $ref: '#/definitions/provider'
+      defaultStorageClass:
+        type: string
+        description: Default storage class for platform components. Use '' for relying on the cluster's default storage class.
+        default: ''
     required:
       - name
       - provider
@@ -2176,6 +2180,13 @@ properties:
           enabled:
             default: false
             type: boolean
+          persistence:
+            properties:
+              mysql:
+                properties:
+                  size:
+                    default: 20Gi
+                    $ref: '#/definitions/size'
           rootPassword:
             type: string
             x-secret: '{{ randAlphaNum 32 }}'
@@ -2342,15 +2353,20 @@ properties:
             x-secret: '{{ randAlphaNum 20 }}'
           persistence:
             properties:
-              querier:
-                properties:
-                  size:
-                    default: 20Gi
-                    $ref: '#/definitions/size'
               ingester:
                 properties:
                   size:
                     default: 20Gi
+                    $ref: '#/definitions/size'
+              querier:
+                properties:
+                  size:
+                    default: 10Gi
+                    $ref: '#/definitions/size'
+              compactor:
+                properties:
+                  size:
+                    default: 10Gi
                     $ref: '#/definitions/size'
           retention:
             additionalProperties: false

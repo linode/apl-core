@@ -33,6 +33,7 @@ trivy:
   mode: Standalone
   resources: {{- $t.resources.trivy | toYaml | nindent 4 }}
   ignoreUnfixed: true
+  storageClassName: {{ $v.cluster.defaultStorageClass }}
 
 podSecurityContext:
   runAsUser: 1001

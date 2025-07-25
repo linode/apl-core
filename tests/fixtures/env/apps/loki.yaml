@@ -41,6 +41,8 @@ spec:
             size: 20Gi
         querier:
             size: 10Gi
+        compactor:
+            size: 10Gi
     resources:
         compactor:
             limits:

@@ -6,8 +6,13 @@ metadata:
   name: mysql-pv-claim
 spec:
   accessModes:
-  - ReadWriteOnce
+  {{- range .Values.mysql.storage.accessModes }}
+  - {{ . }}
+  {{- end }}
+  {{- with .Values.mysql.storage.storageClass }}
+  storageClassName: {{ . }}
+  {{- end }}
   resources:
     requests:
-      storage: 20Gi
+      storage: {{ .Values.mysql.storage.size }}
 ---

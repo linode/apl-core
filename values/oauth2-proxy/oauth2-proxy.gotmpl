@@ -125,6 +125,7 @@ redis:
   sentinel:
     persistence:
       size: {{ $r.persistence.sentinel.size }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
     resources: {{- $r.resources.sentinel | toYaml | nindent 6 }}
@@ -132,6 +133,7 @@ redis:
   master:
     persistence:
       size: {{ $r.persistence.master.size }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
     priorityClassName: otomi-critical
@@ -140,6 +142,7 @@ redis:
   replica:
     persistence:
       size: {{ $r.persistence.replica.size }}
+      storageClass: {{ $v.cluster.defaultStorageClass }}
     podAnnotations:
       sidecar.istio.io/inject: "false"
     priorityClassName: otomi-critical

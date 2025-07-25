@@ -4,10 +4,13 @@
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
 {{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- if or $v.otomi.linodeLkeImageRepository $v.cluster.defaultStorageClass }}
 global:
+  {{- if $v.otomi.linodeLkeImageRepository }}
   security:
     allowInsecureImages: true
+  {{- end }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
 {{- end }}
 
 auth:

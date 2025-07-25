@@ -4,4 +4,7 @@ metadata:
     labels: {}
 spec:
     enabled: true
+    persistence:
+        mysql:
+            size: 20Gi
     _rawValues: {}

@@ -105,6 +105,7 @@ agent:
 
 persistence:
   enabled: true
+  storageClass: {{ $v.cluster.defaultStorageClass }}
 metrics:
   prometheus:
     enabled: true

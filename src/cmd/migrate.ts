@@ -1,3 +1,4 @@
+import { ApiException } from '@kubernetes/client-node'
 import { randomUUID } from 'crypto'
 import { diff } from 'deep-diff'
 import { copy, createFileSync, move, pathExists, renameSync, rm } from 'fs-extra'
@@ -19,7 +20,6 @@ import { parse } from 'yaml'
 import { Argv } from 'yargs'
 import { $, cd } from 'zx'
 import { k8s } from '../common/k8s'
-import { ApiException } from '@kubernetes/client-node'
 
 const cmdName = getFilename(__filename)
 

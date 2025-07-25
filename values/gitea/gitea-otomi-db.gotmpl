@@ -7,8 +7,10 @@
 
 name: gitea-db
 storage:
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   size: {{ $gdb.size }}
 walStorage:
+  storageClass: {{ $v.cluster.defaultStorageClass }}
   size: {{ $gdb.walStorageSize }}
 instances: {{ $gdb.replicas }}
 
