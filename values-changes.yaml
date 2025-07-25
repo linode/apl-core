@@ -375,6 +375,3 @@ changes:
   - version: 43
     deletions:
       - 'apps.harbor.resources.chartmuseum'
-  - versions: 44
-    mutations:
-      - otomi.useORCS: true
