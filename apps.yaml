@@ -140,7 +140,7 @@ appsInfo:
     integration: Jaeger can be activated to gain tracing insights on its network traffic. It runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
   keycloak:
     title: Keycloak Operator
-    appVersion: 26.2.4
+    appVersion: 26.3.2
     repo: https://github.com/keycloak/keycloak
     maintainers: Keycloak
     relatedLinks:
