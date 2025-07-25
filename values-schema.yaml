@@ -2180,6 +2180,13 @@ properties:
           enabled:
             default: false
             type: boolean
+          persistence:
+            properties:
+              mysql:
+                properties:
+                  size:
+                    default: 20Gi
+                    $ref: '#/definitions/size'
           rootPassword:
             type: string
             x-secret: '{{ randAlphaNum 32 }}'
@@ -2346,15 +2353,20 @@ properties:
             x-secret: '{{ randAlphaNum 20 }}'
           persistence:
             properties:
-              querier:
-                properties:
-                  size:
-                    default: 20Gi
-                    $ref: '#/definitions/size'
               ingester:
                 properties:
                   size:
                     default: 20Gi
+                    $ref: '#/definitions/size'
+              querier:
+                properties:
+                  size:
+                    default: 10Gi
+                    $ref: '#/definitions/size'
+              compactor:
+                properties:
+                  size:
+                    default: 10Gi
                     $ref: '#/definitions/size'
           retention:
             additionalProperties: false

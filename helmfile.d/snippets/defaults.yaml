@@ -594,6 +594,9 @@ environments:
                   memory: 1Gi
           kubeflow-pipelines:
             enabled: false
+            persistence:
+              mysql: 
+                size: 20Gi
             resources:
               cacheDeployer:
                 requests:
@@ -846,6 +849,8 @@ environments:
               ingester:
                 size: 20Gi
               querier:
+                size: 10Gi
+              compactor:
                 size: 10Gi
             autoscaling:
               ingester:
