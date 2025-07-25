@@ -83,7 +83,7 @@
     "github-release-from-changelog": "2.1.1",
     "globals": "^16.3.0",
     "husky": "9.1.7",
-    "jest": "^30.0.3",
+    "jest": "^30.0.4",
     "json-schema-to-typescript": "15.0.4",
     "json2ts": "0.0.7",
     "lint-staged": "16.1.2",
