@@ -283,7 +283,7 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
 
 global:
-  storageClass: ""
+  storageClass: {{ $v.cluster.defaultStorageClass | default "" }}
   hostAliases: []
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
