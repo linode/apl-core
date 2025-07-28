@@ -1,6 +1,18 @@
+{{ $v := .Values }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+image:
+  registry: "{{ $v.otomi.linodeLkeImageRepository }}/ghcr"
+ui:
+  image:
+    registry: "{{ $v.otomi.linodeLkeImageRepository }}/ghcr"
+plugin:
+  kyverno:
+    image:
+      registry: "{{ $v.otomi.linodeLkeImageRepository }}/ghcr"
+{{- end }}
 metrics:
   enabled: true
-
 monitoring:
   enabled: true
   serviceMonitor:
