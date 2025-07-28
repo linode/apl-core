@@ -109,6 +109,13 @@ querier:
     targetCPUUtilizationPercentage: {{ $l.autoscaling.querier.targetCPUUtilizationPercentage }}
     targetMemoryUtilizationPercentage: {{ $l.autoscaling.querier.targetMemoryUtilizationPercentage }}
 
+  {{- if not $useObjectStorage }}
+  persistence:
+    enabled: true
+    size: {{ $l | get "persistence.querier.size" "10Gi" }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+  {{- end }}
+
 distributor:
   resources: {{- $l.resources.distributor | toYaml | nindent 4 }}
   autoscaling:
@@ -161,3 +168,10 @@ queryFrontend:
 compactor:
   enabled: true
   resources: {{- $l.resources.compactor | toYaml | nindent 4 }}
+
+  {{- if not $useObjectStorage }}
+  persistence:
+    enabled: true
+    size: {{ $l | get "persistence.compactor.size" "10Gi" }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+  {{- end }}
