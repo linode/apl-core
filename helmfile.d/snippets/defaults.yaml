@@ -743,6 +743,8 @@ environments:
                 size: 20Gi
               querier:
                 size: 10Gi
+              compactor:
+                size: 10Gi
             autoscaling:
               ingester:
                 enabled: false
@@ -1302,6 +1304,7 @@ environments:
         cluster:
           provider: linode
           name: apl
+          defaultStorageClass: ''
         dns:
           domainFilters: []
           zoneIdFilters: []
@@ -1327,4 +1330,4 @@ environments:
             version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 43
+          specVersion: 44
