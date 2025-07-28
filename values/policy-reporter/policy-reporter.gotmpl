@@ -9,3 +9,10 @@ monitoring:
        prometheus: system
   grafana:
     namespace: grafana
+sourceFilters:
+  - selector:
+      source: KyvernoValidatingPolicy
+    uncontrolledOnly: false
+    disableClusterReports: false
+    kinds:
+      exclude: [ReplicaSet]
