@@ -35,6 +35,7 @@ compactor:
   retentionResolution1h: {{ $t.compactor.retentionResolution1h }}
   persistence:
     size: {{ $t.persistence.compactor.size }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
   resources: {{- $t.resources.compactor | toYaml | nindent 4 }}
 
 ## @section Thanos Store Gateway parameters
@@ -42,6 +43,7 @@ storegateway:
   enabled: true
   persistence:
     size: {{ $t.persistence.storegateway.size }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
   resources: {{- $t.resources.storegateway | toYaml | nindent 4 }}
 
 ## @section Thanos Receive parameters
