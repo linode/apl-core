@@ -54,6 +54,9 @@ resources:
     resources:
       requests:
         storage: 1Gi
+    {{- if $v.cluster.defaultStorageClass }}
+    storageClassName: {{ $v.cluster.defaultStorageClass }}
+    {{- end }}
 {{- end }}
 {{- if $giteaBackupConfig.enabled }}
 - apiVersion: v1
