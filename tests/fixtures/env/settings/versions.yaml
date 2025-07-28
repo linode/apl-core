@@ -3,4 +3,4 @@ metadata:
     name: versions
     labels: {}
 spec:
-    specVersion: 43
+    specVersion: 44
