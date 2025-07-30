@@ -165,6 +165,9 @@ configs:
     resource.customizations.ignoreDifferences.apiextensions.k8s.io_CustomResourceDefinition: |
         jqPathExpressions:
           - '.metadata.annotations'
+    resource.customizations.ignoreDifferences.admissionregistration.k8s.io_ValidatingWebhookConfiguration: |
+        jqPathExpressions:
+          - '.metadata.generation'
     oidc.config: |
       name: Otomi
       issuer: {{ $v._derived.oidcBaseUrl }}
