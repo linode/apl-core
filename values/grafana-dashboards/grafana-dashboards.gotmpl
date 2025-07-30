@@ -1,9 +1,10 @@
 {{- $v := .Values }}
+{{- $pr := $v.apps.policy-reporter }}
 folders:
   - k8s-admin
   - istio-admin
   - cloudnative-pg
-  {{- if $v.apps.kyverno.enabled }}
+  {{- if (and $v.apps.kyverno.enabled $pr.enabled)}}
   - policy-reporter
   {{- end }}
   {{- if $v.apps.falco.enabled }}
