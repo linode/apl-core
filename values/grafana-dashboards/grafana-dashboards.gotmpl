@@ -1,5 +1,5 @@
 {{- $v := .Values }}
-{{- $pr := $v.apps.policy-reporter }}
+{{- $pr := $v.apps | "policy-reporter" }}
 folders:
   - k8s-admin
   - istio-admin
