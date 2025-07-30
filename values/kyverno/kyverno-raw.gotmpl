@@ -1,6 +1,6 @@
 {{- $v := .Values -}}
-resources:
 {{- with $v.otomi | get "nodeSelector" nil }}
+resources:
   - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
     metadata:
@@ -62,6 +62,9 @@ resources:
                 {{- end }}
 {{- end }}
 {{- if $v.otomi.linodeLkeImageRepository }}
+{{- if not $v.otomi.nodeSelector }}
+resources:
+{{- end }}
   - apiVersion: kyverno.io/v1
     kind: ClusterPolicy
     metadata:
@@ -115,4 +118,5 @@ resources:
                   - "registry.k8s.io/*"
                   - "quay.io/kyverno/*"
                   # System components that may not be available via ORCS
+
 {{- end }}

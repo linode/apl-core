@@ -193,7 +193,7 @@ additionalPrometheusRules:
   - name: keycloak-db-backup
     {{- readFile "rules/keycloak-db-backup.yaml" | nindent 4 }}
   {{- end }}
-  {{- if $v.otomi.linodeLkeImageRepository }}
+  {{- if (and $v.apps.policy-reporter.enabled $v.otomi.linodeLkeImageRepository)}}
   - name: orcs-compliance
     {{- readFile "rules/orcs-compliance.yaml" | nindent 4 }}
   {{- end }}

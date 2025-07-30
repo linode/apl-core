@@ -116,4 +116,4 @@ dependencies:
     repository: https://vmware-tanzu.github.io/helm-charts/
   - name: policy-reporter
     version: 3.3.1
-    repository: https://github.com/kyverno/policy-reporter
+    repository: https://kyverno.github.io/policy-reporter
