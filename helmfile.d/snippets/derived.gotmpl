@@ -250,7 +250,6 @@ environments:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           sealed-secrets:
             enabled: true
-
         oidc: {}
         ingress:
           classes:
