@@ -114,3 +114,6 @@ dependencies:
   - name: velero
     version: 5.4.1
     repository: https://vmware-tanzu.github.io/helm-charts/
+  - name: policy-reporter
+    version: 3.3.1
+    repository: https://github.com/kyverno/policy-reporter

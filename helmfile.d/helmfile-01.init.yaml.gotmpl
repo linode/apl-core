@@ -23,7 +23,7 @@ releases:
       pkg: kyverno
     <<: *raw
   - name: policy-reporter
-    installed: {{ $a | get "kyverno.enabled" }}
+    installed: {{ $a | get "policy-reporter.enabled" }}
     namespace: policy-reporter
     <<: *default
   - name: sealed-secrets
