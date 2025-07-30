@@ -5,6 +5,7 @@
 {{- $a := $apps | get "alertmanager" }}
 {{- $g := $apps | get "grafana" }}
 {{- $p := $apps | get "prometheus" }}
+{{- $pr := $apps | get "policy-reporter" }}
 
 {{- $hasKeycloak := $k.enabled }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
@@ -193,10 +194,10 @@ additionalPrometheusRules:
   - name: keycloak-db-backup
     {{- readFile "rules/keycloak-db-backup.yaml" | nindent 4 }}
   {{- end }}
-{{- if (and $v.apps.policy-reporter.enabled $v.otomi.linodeLkeImageRepository) }}
+  {{- if (and $pr.enabled $v.otomi.linodeLkeImageRepository) }}
   - name: orcs-compliance
     {{- readFile "rules/orcs-compliance.yaml" | nindent 4 }}
-{{- end }}
+  {{- end }}
 alertmanager:
   enabled: {{ $a.enabled }}
   alertmanagerSpec:
