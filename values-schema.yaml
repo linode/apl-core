@@ -2124,7 +2124,16 @@ properties:
                 $ref: '#/definitions/resources'
               reportsController:
                 $ref: '#/definitions/resources'
-
+      policy-reporter:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
       kiali:
         additionalProperties: false
         properties:
