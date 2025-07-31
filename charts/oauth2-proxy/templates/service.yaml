@@ -59,3 +59,7 @@ spec:
     {{- end }}
   selector:
     {{- include "oauth2-proxy.selectorLabels" . | indent 4 }}
+{{- if .Values.service.ipDualStack.enabled }}
+  ipFamilies: {{ toYaml .Values.service.ipDualStack.ipFamilies | nindent 4 }}
+  ipFamilyPolicy: {{ .Values.service.ipDualStack.ipFamilyPolicy }}
+{{- end }}
