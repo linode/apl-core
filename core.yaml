@@ -116,6 +116,10 @@ k8s:
       app: velero
       disablePolicyChecks: true
       disableIstioInjection: true
+    - name: policy-reporter
+      app: policy-reporter
+      disablePolicyChecks: true
+      disableIstioInjection: true
 
 adminApps:
   - name: alertmanager
