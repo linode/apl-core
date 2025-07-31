@@ -1,0 +1,150 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "policyreporter.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "policyreporter.labels" . | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- with .Values.plugin.kyverno.updateStrategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "policyreporter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "policyreporter.selectorLabels" . | nindent 8 }}
+        {{- include "policyreporter.podLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.global.labels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/secret: {{ include (print .Template.BasePath "/config-secret.yaml") . | sha256sum | quote }}
+        {{- with .Values.annotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "policyreporter.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      {{- if .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: policy-reporter
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.securityContext }}
+          securityContext: {{- include "policyreporter.securityContext" . | nindent 12 }}
+          {{- end }}
+          args:
+            - --port={{ .Values.port.number }}
+            - --config=/app/config.yaml
+            - --dbfile=/sqlite/database.db
+            - --metrics-enabled={{ or .Values.metrics.enabled .Values.monitoring.enabled }}
+            - --rest-enabled={{ or .Values.rest.enabled .Values.ui.enabled }}
+            - --profile={{ .Values.profiling.enabled }}
+            - --lease-name={{ include "policyreporter.fullname" . }}
+            - --template-dir=/app/templates
+          ports:
+            - name: {{ .Values.port.name }}
+              containerPort: {{ .Values.port.number }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - name: sqlite
+            mountPath: /sqlite
+          - name: config-file
+            mountPath: /app/config.yaml
+            {{- if and .Values.existingTargetConfig.enabled .Values.existingTargetConfig.subPath }}
+            subPath: {{ .Values.existingTargetConfig.subPath }}
+            {{- else }}
+            subPath: config.yaml
+            {{- end }}
+            readOnly: true
+          - name: tmp
+            mountPath: /tmp
+          {{- with .Values.extraVolumes.volumeMounts }}
+          {{ toYaml . | nindent 10 | trim }}
+          {{- end }}
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          {{- if gt (int .Values.replicaCount) 1 }}
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          {{- end }}
+          {{- with .Values.envVars }}
+          {{- . | toYaml | trim | nindent 10 }}
+          {{- end }}
+      volumes:
+      - name: sqlite
+        {{- if .Values.sqliteVolume }}
+          {{- toYaml .Values.sqliteVolume | nindent 8 }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      - name: config-file
+        secret:
+          {{- if and .Values.existingTargetConfig.enabled .Values.existingTargetConfig.name }}
+          secretName: {{ .Values.existingTargetConfig.name }}
+          {{- else }}
+          secretName: {{ include "policyreporter.fullname" . }}-config
+          {{- end }}
+          optional: true
+      - name: tmp
+        {{- if .Values.tmpVolume }}
+          {{- toYaml .Values.tmpVolume | nindent 8 }}
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      {{- with .Values.extraVolumes.volumes }}
+      {{ toYaml . | nindent 6 | trim }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
