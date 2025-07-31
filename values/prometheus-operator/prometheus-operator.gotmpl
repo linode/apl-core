@@ -5,7 +5,7 @@
 {{- $a := $apps | get "alertmanager" }}
 {{- $g := $apps | get "grafana" }}
 {{- $p := $apps | get "prometheus" }}
-{{- $pr := $apps | get "policy-reporter" }}
+{{- $pr := index $v.apps "policy-reporter" }}
 
 {{- $hasKeycloak := $k.enabled }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
