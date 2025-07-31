@@ -378,4 +378,3 @@ changes:
   - version: 44
     additions:
       - cluster.defaultStorageClass: ''
-      - apps.policy-reporter.enabled: false
