@@ -1,0 +1,136 @@
+{{- if  .Values.emailReports.summary.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "policyreporter.fullname" . }}-summary-report
+  namespace: {{ include "policyreporter.namespace" . }}
+  labels:
+    {{- include "policyreporter.labels" . | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+    {{- toYaml .Values.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  schedule: {{ .Values.emailReports.summary.schedule | quote }}
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: {{ .Values.emailReports.summary.activeDeadlineSeconds }}
+      backoffLimit:  {{ .Values.emailReports.summary.backoffLimit }}
+      {{- if gt (.Values.emailReports.summary.ttlSecondsAfterFinished | toString | atoi) 0 }}
+      ttlSecondsAfterFinished: {{ .Values.emailReports.summary.ttlSecondsAfterFinished }}
+      {{- end }}
+      template:
+        metadata:
+          labels:
+            {{- include "policyreporter.selectorLabels" . | nindent 12 }}
+            {{- include "policyreporter.podLabels" . | nindent 12 }}
+            {{- with .Values.podLabels }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.global.labels }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          annotations:
+            checksum/secret: {{ include (print .Template.BasePath "/config-email-reports-secret.yaml") . | sha256sum | quote }}
+            {{- with .Values.annotations }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            {{- with .Values.podAnnotations }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          serviceAccountName: {{ include "policyreporter.serviceAccountName" . }}
+          automountServiceAccountToken: true
+          {{- if .Values.podSecurityContext }}
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          {{- end }}
+          restartPolicy: {{ .Values.emailReports.summary.restartPolicy }}
+          containers:
+            - name: policy-reporter
+              image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              {{- if .Values.securityContext }}
+              securityContext: {{ include "policyreporter.securityContext" . | nindent 16 }}
+              {{- end }}
+              command:
+                - /app/policyreporter
+                - send
+                - summary
+              args:
+                - --config=/app/config.yaml
+                - --template-dir=/app/templates
+              volumeMounts:
+              - name: config-file
+                mountPath: /app/config.yaml
+                subPath: config.yaml
+                readOnly: true
+              {{- with .Values.extraVolumes.volumeMounts }}
+              {{ toYaml . | nindent 14 | trim }}
+              {{- end }}
+              {{- if .Values.emailReports.smtp.secret }}
+              env:
+              - name: EMAIL_REPORTS_SMTP_HOST
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.emailReports.smtp.secret }}
+                    key: host
+                    optional: true
+              - name: EMAIL_REPORTS_SMTP_PORT
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.emailReports.smtp.secret }}
+                    key: port
+                    optional: true
+              - name: EMAIL_REPORTS_SMTP_USERNAME
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.emailReports.smtp.secret }}
+                    key: username
+                    optional: true
+              - name: EMAIL_REPORTS_SMTP_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.emailReports.smtp.secret }}
+                    key: password
+                    optional: true
+              - name: EMAIL_REPORTS_SMTP_FROM
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.emailReports.smtp.secret }}
+                    key: from
+                    optional: true
+              - name: EMAIL_REPORTS_SMTP_ENCRYPTION
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ .Values.emailReports.smtp.secret }}
+                    key: encryption
+                    optional: true
+              {{- end }}
+              resources:
+                {{- toYaml .Values.emailReports.resources | nindent 16 }}
+          volumes:
+          - name: config-file
+            secret:
+              secretName: {{ include "policyreporter.fullname" . }}-config-email-reports
+              optional: true
+          {{- with .Values.extraVolumes.volumes }}
+          {{ toYaml . | nindent 10 | trim }}
+          {{- end }}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+{{- end }}  
