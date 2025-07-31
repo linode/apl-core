@@ -595,7 +595,7 @@ environments:
           kubeflow-pipelines:
             enabled: false
             persistence:
-              mysql: 
+              mysql:
                 size: 20Gi
             resources:
               cacheDeployer:
@@ -733,6 +733,16 @@ environments:
                 limits:
                   cpu: "1"
                   memory: 512Mi
+            _rawValues: {}
+          policy-reporter:
+            enabled: false
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: "1"
+                memory: 512Mi
             _rawValues: {}
           tekton:
             resources:
