@@ -1,0 +1,58 @@
+{{- if and .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "monitoring.fullname" . }}
+  namespace: {{ include "monitoring.smNamespace" . }}
+  {{- if .Values.monitoring.annotations }}
+  annotations:
+    {{- toYaml .Values.monitoring.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "monitoring.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.serviceMonitor.labels }}
+        {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+        {{- include "policyreporter.selectorLabels" . | nindent 8 }}
+  {{- with .Values.monitoring.serviceMonitor.namespaceSelector }}
+  namespaceSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  endpoints:
+  - port: http
+    {{- if and .Values.basicAuth.username .Values.basicAuth.password }}
+    basicAuth:
+      password:
+        name: {{ include "monitoring.fullname" . }}-auth
+        key: password
+      username:
+        name: {{ include "monitoring.fullname" . }}-auth
+        key: username
+    {{- else if .Values.basicAuth.secretRef }}
+    basicAuth:
+      password:
+        name: {{ .Values.basicAuth.secretRef }}
+        key: password
+      username:
+        name: {{ .Values.basicAuth.secretRef }}
+        key: username
+    {{- end }}
+    honorLabels: {{ .Values.monitoring.serviceMonitor.honorLabels }}
+    {{- if .Values.monitoring.serviceMonitor.scrapeTimeout }}
+    scrapeTimeout: {{ .Values.monitoring.serviceMonitor.scrapeTimeout }}
+    {{- end }}
+    {{- if .Values.monitoring.serviceMonitor.interval }}
+    interval: {{ .Values.monitoring.serviceMonitor.interval }}
+    {{- end }}
+    {{- with .Values.monitoring.serviceMonitor.relabelings }}
+    relabelings:
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with .Values.monitoring.serviceMonitor.metricRelabelings }}
+    metricRelabelings:
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}
