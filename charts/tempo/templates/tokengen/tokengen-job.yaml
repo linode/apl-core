@@ -1,5 +1,4 @@
-{{- if .Values.enterprise.enabled -}}
-{{ if .Values.tokengenJob.enable }}
+{{- if and .Values.enterprise.enabled .Values.tokengenJob.enable -}}
 {{ $dict := dict "ctx" . "component" "tokengen-job" }}
 apiVersion: batch/v1
 kind: Job
@@ -26,20 +25,30 @@ spec:
         {{- end }}
       namespace: {{ .Release.Namespace | quote }}
     spec:
-      serviceAccountName: {{ template "tempo.serviceAccountName" . }}
+      serviceAccountName: {{ include "tempo.resourceName" (dict "ctx" . "component" "tokengen") }}
       {{- if .Values.tokengenJob.priorityClassName }}
       priorityClassName: {{ .Values.tokengenJob.priorityClassName }}
       {{- end }}
       securityContext:
         {{- toYaml .Values.tokengenJob.securityContext | nindent 8 }}
-      {{- include "tempo.tokengenJobImagePullSecrets" . | nindent 6 -}}
+      {{- if .Values.tempo.image.pullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.tempo.image.pullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
       {{- with .Values.tokengenJob.hostAliases }}
       hostAliases:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      initContainers:
+      {{- if .Values.tokengenJob.storeTokenInSecret }}
+      initContainers: 
+      {{- if .Values.tokengenJob.initContainers }}
         {{- toYaml .Values.tokengenJob.initContainers | nindent 8 }}
+        {{- end }}
+      {{ else }}
       containers:
+      {{- end }}
         - name: tokengen
           image: "{{ include "tempo.imageReference" $dict }}"
           imagePullPolicy: {{ .Values.tempo.image.pullPolicy }}
@@ -47,6 +56,7 @@ spec:
             - "-target=tokengen"
             - "-config.expand-env=true"
             - "-config.file=/conf/tempo.yaml"
+            - "-tokengen.token-file=/shared/admin-token"
             {{- range $key, $value := .Values.tokengenJob.extraArgs }}
             - "-{{ $key }}={{ $value }}"
             {{- end }}
@@ -57,6 +67,8 @@ spec:
               name: runtime-config
             - name: license
               mountPath: /license
+            - name: shared
+              mountPath: /shared
             {{- if .Values.tokengenJob.extraVolumeMounts }}
               {{ toYaml .Values.tokengenJob.extraVolumeMounts | nindent 12 }}
             {{- end }}
@@ -74,8 +86,30 @@ spec:
             {{- with .Values.tokengenJob.extraEnvFrom }}
               {{- toYaml . | nindent 12 }}
             {{- end }}
-          securityContext:
-            {{- toYaml .Values.tokengenJob.containerSecurityContext | nindent 12 }}
+      {{- if .Values.tokengenJob.storeTokenInSecret }}
+      containers:
+        - name: kubectl
+          image: {{ .Values.kubectlImage.repository }}:{{ .Values.kubectlImage.tag }}
+          imagePullPolicy: {{ .Values.kubectlImage.pullPolicy }}
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              if cat /shared/admin-token; then
+                echo "Admin token generated successfully and is readable"
+                # Create or update the secret with the admin token
+                kubectl create secret generic {{ .Values.tokengenJob.adminTokenSecret }} \
+                  --from-file=token=/shared/admin-token \
+                  --dry-run=client -o yaml | kubectl apply -f -
+                echo "Admin token secret created/updated successfully"
+              else
+                echo "Error: Admin token file not found or not readable at /shared/admin-token"
+                exit 1
+              fi
+          volumeMounts:
+            - name: shared
+              mountPath: /shared
+      {{- end }}
       restartPolicy: OnFailure
       volumes:
         - name: config
@@ -90,5 +124,6 @@ spec:
             secretName: {{ tpl .Values.license.secretName . }}
         - name: storage
           emptyDir: {}
-{{- end -}}
+        - name: shared
+          emptyDir: {}
 {{- end -}}
