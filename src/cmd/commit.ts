@@ -9,7 +9,7 @@ import { terminal } from 'src/common/debug'
 import { env, isCi } from 'src/common/envalid'
 import { hfValues } from 'src/common/hf'
 import { createGenericSecret, k8s, waitTillGitRepoAvailable } from 'src/common/k8s'
-import { getFilename } from 'src/common/utils'
+import { getFilename, loadYaml } from 'src/common/utils'
 import { getRepo } from 'src/common/values'
 import { getParsedArgs, HelmArguments, setParsedArgs } from 'src/common/yargs'
 import { Argv } from 'yargs'
@@ -18,6 +18,8 @@ import { Arguments as DroneArgs } from './gen-drone'
 import { validateValues } from './validate-values'
 
 const cmdName = getFilename(__filename)
+
+export const rootDir = process.cwd() === '/home/app/stack/env' ? '/home/app/stack' : process.cwd()
 
 interface Arguments extends HelmArguments, DroneArgs {
   m?: string
@@ -130,22 +132,24 @@ export const commit = async (initialInstall: boolean, overrideArgs?: HelmArgumen
 
 export const cloneOtomiChartsInGitea = async (): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:gitea-apl-charts`)
-  d.info('Checking if apl-charts already exists in Gitea')
+  const versions = await loadYaml(`${rootDir}/versions.yaml`, { noError: true })
+  const tag = versions?.aplCharts
+  d.info(`Checking if apl-charts tag '${tag}' already exists in Gitea`)
   const values = (await hfValues()) as Record<string, any>
   const { email, username, password } = getRepo(values)
   const workDir = '/tmp/apl-charts'
   const otomiChartsUrl = env.OTOMI_CHARTS_URL
   const giteaChartsUrl = `http://${username}:${password}@gitea-http.gitea.svc.cluster.local:3000/otomi/charts.git`
   try {
-    // Check if remote repository exists by verifying if output from git ls-remote is not empty
-    const repoExists = await $`git ls-remote ${giteaChartsUrl}`
-    if (repoExists.stdout.trim()) {
-      d.info('apl-charts repository already exists in Gitea. Skipping clone and initialization steps.')
+    // Check if the tag exists in the remote Gitea repository
+    const tagExists = await $`git ls-remote --tags ${giteaChartsUrl} refs/tags/${tag}`
+    if (tagExists.stdout.trim()) {
+      d.info(`Tag '${tag}' already exists in Gitea. Skipping clone and initialization steps.`)
       return
     }
-    d.info('Cloning apl-charts in Gitea')
-    await $`mkdir ${workDir}`
-    await $`git clone --depth 1 ${otomiChartsUrl} ${workDir}`
+    d.info(`Cloning apl-charts at tag '${tag}' from upstream`)
+    await $`mkdir -p ${workDir}`
+    await $`git clone --branch ${tag} --depth 1 ${otomiChartsUrl} ${workDir}`
     cd(workDir)
     await $`rm -rf .git`
     await $`rm -rf deployment`
@@ -158,14 +162,16 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await setIdentity(username, email)
     await $`git checkout -b main`
     await $`git add .`
-    await $`git commit -m "first commit"`
+    await $`git commit -m "first commit for tag ${tag}"`
+    await $`git tag ${tag}`
     await $`git remote add origin ${giteaChartsUrl}`
     await $`git config http.sslVerify false`
     await $`git push -u origin main`
+    await $`git push origin ${tag}`
   } catch (error) {
-    d.info('CloneOtomiChartsInGitea Error ', error?.message?.replace(password, '****'))
+    d.info('cloneOtomiChartsInGitea Error ', error?.message?.replace(password, '****'))
   }
-  d.info('Cloned apl-charts in Gitea')
+  d.info(`Cloned apl-charts at tag '${tag}' in Gitea`)
 }
 
 export async function retryIsOAuth2ProxyRunning() {
