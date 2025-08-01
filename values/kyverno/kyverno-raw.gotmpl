@@ -108,15 +108,5 @@ resources:
                 - key: "{{`{{ element.image }}`}}"
                   operator: NotEquals
                   value: "{{ $v.otomi.linodeLkeImageRepository }}/*"
-                # Allow specific exemptions for critical system components
-                - key: "{{`{{ element.image }}`}}"
-                  operator: AnyNotIn
-                  value:
-                  - "docker.io/istio/proxyv2*"
-                  - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
-                  - "k8s.gcr.io/*"
-                  - "registry.k8s.io/*"
-                  - "quay.io/kyverno/*"
-                  # System components that may not be available via ORCS
 
 {{- end }}
