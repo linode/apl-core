@@ -155,6 +155,15 @@ service:
   internalTrafficPolicy: ""
   # configure service target port
   targetPort: ""
+  # Configures the service to use IPv4/IPv6 dual-stack.
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/dual-stack/
+  ipDualStack:
+    enabled: false
+    ipFamilies: ["IPv6", "IPv4"]
+    ipFamilyPolicy: "PreferDualStack"
+  # Configure traffic distribution for the service
+  # Ref: https://kubernetes.io/docs/concepts/services-networking/service/#traffic-distribution
+  trafficDistribution: ""
 
 ## Create or use ServiceAccount
 serviceAccount:
@@ -297,8 +306,10 @@ enableServiceLinks: true
 
 ## PodDisruptionBudget settings
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
+## One of maxUnavailable and minAvailable must be set to null.
 podDisruptionBudget:
   enabled: true
+  maxUnavailable: null
   minAvailable: 1
 
 ## Horizontal Pod Autoscaling
