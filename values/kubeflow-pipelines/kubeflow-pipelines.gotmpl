@@ -50,6 +50,11 @@ mlPipelineVisualizationserver:
 
 mysql:
   resources: {{- $kfp.resources.mysql | toYaml | nindent 4 }}
+  storage:
+    size: {{ $kfp | get "persistence.mysql.size" "20Gi" }}
+    storageClass: {{ $v.cluster.defaultStorageClass }}
+    accessModes:
+      - ReadWriteOnce
 
 workflowController:
   resources: {{- $kfp.resources.workflowController | toYaml | nindent 4 }}

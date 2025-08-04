@@ -2,11 +2,15 @@
 {{- $k := $v | get "apps.keycloak" }}
 {{- $consoleLoginVersion := $v.versions.consoleLogin}}
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
+{{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- if or $v.otomi.linodeLkeImageRepository $v.cluster.defaultStorageClass }}
 global:
+  {{- if $v.otomi.linodeLkeImageRepository }}
   security:
     allowInsecureImages: true
+  {{- end }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
 {{- end }}
 
 auth:
@@ -24,14 +28,17 @@ proxy: edge
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
+
+{{- if or $v.otomi.linodeLkeImageRepository $globalPullSecret}}
 image:
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $globalPullSecret }}
   pullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
 {{- if $v.otomi.linodeLkeImageRepository }}
   registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   repository: bitnami/keycloak
+{{- end }}
 {{- end }}
 
 initContainers:
