@@ -228,6 +228,8 @@ async function main() {
             baseBranch,
             '--head',
             branchName,
+            '--label',
+            'chart-deps',
           ]
           if (setPrDraft) {
             args.push('--draft')
