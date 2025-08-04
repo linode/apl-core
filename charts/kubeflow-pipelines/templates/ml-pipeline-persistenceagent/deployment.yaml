@@ -1,3 +1,6 @@
+{{- $v := .Values }}
+{{- $kubeflowRegistry := default "ghcr.io/kubeflow" $v.global.kubeflowRegistry }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,7 +33,7 @@ spec:
           value: "2"
         - name: LOG_LEVEL
           value: info
-        image: ghcr.io/kubeflow/kfp-persistence-agent:{{ .Chart.AppVersion }}
+        image: {{ $kubeflowRegistry }}/kfp-persistence-agent:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false

@@ -1,3 +1,6 @@
+{{- $v := .Values }}
+{{- $kubeflowRegistry := default "ghcr.io/kubeflow" $v.global.kubeflowRegistry }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -31,7 +34,7 @@ spec:
             configMapKeyRef:
               key: cronScheduleTimezone
               name: pipeline-install-config
-        image: ghcr.io/kubeflow/kfp-scheduled-workflow-controller:{{ .Chart.AppVersion }}
+        image: {{ $kubeflowRegistry }}/kfp-scheduled-workflow-controller:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false

@@ -1,3 +1,6 @@
+{{- $v := .Values }}
+{{- $kubeflowRegistry := default "ghcr.io/kubeflow" $v.global.kubeflowRegistry }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,7 +28,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: ghcr.io/kubeflow/kfp-cache-deployer:{{ .Chart.AppVersion }}
+        image: {{ $kubeflowRegistry }}/kfp-cache-deployer:{{ .Chart.AppVersion }}
         imagePullPolicy: Always
         name: main
         {{- with .Values.cacheDeployer.resources }}

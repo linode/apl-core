@@ -1,3 +1,6 @@
+{{- $v := .Values }}
+{{- $kubeflowRegistry := default "ghcr.io/kubeflow" $v.global.kubeflowRegistry }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -40,7 +43,7 @@ spec:
               fieldPath: metadata.namespace
         - name: DISABLE_GKE_METADATA
           value: "true"
-        image: ghcr.io/kubeflow/kfp-frontend:{{ .Chart.AppVersion }}
+        image: {{ $kubeflowRegistry }}/kfp-frontend:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false

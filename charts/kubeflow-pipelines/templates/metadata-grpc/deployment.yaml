@@ -1,3 +1,6 @@
+{{- $v := .Values }}
+{{- $tfxOssPublicRegistry := default "gcr.io/tfx-oss-public" $v.global.tfxOssPublicRegistry }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -54,7 +57,7 @@ spec:
             configMapKeyRef:
               key: mysqlPort
               name: pipeline-install-config
-        image: gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
+        image: {{ $tfxOssPublicRegistry }}/ml_metadata_store_server:1.14.0
         securityContext:
           allowPrivilegeEscalation: false
           seccompProfile:

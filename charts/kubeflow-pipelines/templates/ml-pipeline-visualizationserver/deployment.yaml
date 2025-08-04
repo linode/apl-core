@@ -1,3 +1,6 @@
+{{- $v := .Values }}
+{{- $kubeflowRegistry := default "ghcr.io/kubeflow" $v.global.kubeflowRegistry }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +22,7 @@ spec:
         application-crd-id: kubeflow-pipelines
     spec:
       containers:
-      - image: ghcr.io/kubeflow/kfp-visualization-server:{{ .Chart.AppVersion }}
+      - image: {{ $kubeflowRegistry }}/kfp-visualization-server:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false
