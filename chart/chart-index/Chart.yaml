@@ -69,7 +69,7 @@ dependencies:
     version: 0.80.5
     repository: https://grafana.github.io/helm-charts
   - name: metrics-server
-    version: 6.8.0
+    version: 7.4.10
     repository: https://charts.bitnami.com/bitnami
   - name: minio
     version: 11.10.13
@@ -95,7 +95,7 @@ dependencies:
     version: 3.20.1
     repository: https://charts.bitnami.com/bitnami
   - name: sealed-secrets
-    version: 2.17.1
+    version: 2.17.3
     repository: https://bitnami-labs.github.io/sealed-secrets/
   - name: tekton-pipeline
     alias: tekton-pipelines
@@ -114,3 +114,6 @@ dependencies:
   - name: velero
     version: 5.4.1
     repository: https://vmware-tanzu.github.io/helm-charts/
+  - name: policy-reporter
+    version: 3.3.1
+    repository: https://kyverno.github.io/policy-reporter
