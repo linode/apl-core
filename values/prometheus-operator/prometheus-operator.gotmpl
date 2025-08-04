@@ -5,6 +5,7 @@
 {{- $a := $apps | get "alertmanager" }}
 {{- $g := $apps | get "grafana" }}
 {{- $p := $apps | get "prometheus" }}
+{{- $pr := index $v.apps "policy-reporter" }}
 
 {{- $hasKeycloak := $k.enabled }}
 {{- $domain := ($v.cluster | get "domainSuffix" nil) }}
@@ -129,7 +130,9 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: {{ $v.cluster.defaultStorageClass }}
+          {{- with $v.cluster.defaultStorageClass }}
+          storageClassName: {{ . }}
+          {{- end }}
           resources:
             requests:
               storage: {{ $p | get "storageSize" }}
@@ -192,6 +195,10 @@ additionalPrometheusRules:
   {{ if $v.platformBackups.database.keycloak.enabled }}
   - name: keycloak-db-backup
     {{- readFile "rules/keycloak-db-backup.yaml" | nindent 4 }}
+  {{- end }}
+  {{- if (and $pr.enabled $v.otomi.linodeLkeImageRepository) }}
+  - name: orcs-compliance
+    {{- readFile "rules/orcs-compliance.yaml" | nindent 4 }}
   {{- end }}
 alertmanager:
   enabled: {{ $a.enabled }}
