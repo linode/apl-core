@@ -1,6 +1,3 @@
-{{- $v := .Values }}
-{{- $mlPipelineRegistry := default "gcr.io/ml-pipeline" $v.global.mlPipelineRegistry }}
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,7 +22,7 @@ spec:
         - --configmap
         - workflow-controller-configmap
         - --executor-image
-        - {{ $mlPipelineRegistry }}/argoexec:v3.4.17-license-compliance
+        - {{ include "mlPipelineRegistry" . }}/argoexec:v3.4.17-license-compliance
         - --namespaced
         command:
         - workflow-controller
@@ -35,7 +32,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.name
-        image: {{ $mlPipelineRegistry }}/workflow-controller:v3.4.17-license-compliance
+        image: {{ include "mlPipelineRegistry" . }}/workflow-controller:v3.4.17-license-compliance
         livenessProbe:
           failureThreshold: 3
           httpGet:

@@ -1,6 +1,3 @@
-{{- $v := .Values }}
-{{- $kubeflowRegistry := default "ghcr.io/kubeflow" $v.global.kubeflowRegistry }}
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,7 +20,7 @@ spec:
         component: metadata-envoy
     spec:
       containers:
-      - image: {{ $kubeflowRegistry }}/kfp-metadata-envoy:{{ .Chart.AppVersion }}
+      - image: {{ include "kubeflowRegistry" . }}/kfp-metadata-envoy:{{ .Chart.AppVersion }}
         name: container
         {{- with .Values.metadataEnvoy.resources }}
         resources: {{- . | toYaml | nindent 12 }}

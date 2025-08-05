@@ -1,6 +1,3 @@
-{{- $v := .Values }}
-{{- $kubeflowRegistry := default "ghcr.io/kubeflow" $v.global.kubeflowRegistry }}
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,7 +26,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        image: {{ $kubeflowRegistry }}/kfp-viewer-crd-controller:{{ .Chart.AppVersion }}
+        image: {{ include "kubeflowRegistry" . }}/kfp-viewer-crd-controller:{{ .Chart.AppVersion }}
         imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
@@ -40,7 +37,7 @@ spec:
           runAsGroup: 0
           capabilities:
             drop:
-            - ALL
+            - ALL  
         name: ml-pipeline-viewer-crd
         {{- with .Values.mlPipelineViewer.resources }}
         resources: {{- . | toYaml | nindent 12 }}

@@ -1,3 +1,7 @@
+# Global registry override options for container images:
+# - Kubeflow: defaults to ghcr.io/kubeflow
+# - ML-Pipeline: defaults to gcr.io/ml-pipeline
+# - TensorFlow Extended (TFX): defaults to gcr.io/tfx-oss-public
 global:
   kubeflowRegistry:
   mlPipelineRegistry:

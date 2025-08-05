@@ -1,6 +1,3 @@
-{{- $v := .Values }}
-{{- $mlPipelineRegistry := default "gcr.io/ml-pipeline" $v.global.mlPipelineRegistry }}
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,7 +30,7 @@ spec:
             secretKeyRef:
               name: kfp-mysql-secret
               key: password
-        image: {{ $mlPipelineRegistry }}/mysql:8.0.26
+        image: {{ include "mlPipelineRegistry" . }}/mysql:8.0.26
         name: ml-pipeline-mysql
         ports:
         - containerPort: 3306
