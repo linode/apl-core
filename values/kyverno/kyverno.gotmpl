@@ -19,26 +19,6 @@ policyReportsCleanup:
     registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
 {{- end }}
 
-cleanupJobs:
-  admissionReports:
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    image:
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-    {{- end }}
-    resources:
-      limits:
-        cpu: 1
-        memory: 1Gi
-  clusterAdmissionReports:
-    {{- if $v.otomi.linodeLkeImageRepository }}
-    image:
-      registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
-    {{- end }}
-    resources:
-      limits:
-        cpu: 1
-        memory: 1Gi
-
 admissionController:
   {{- if eq $kv.mode "DevTest" }}
   replicas: 1
