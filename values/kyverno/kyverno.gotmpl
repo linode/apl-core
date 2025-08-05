@@ -1,6 +1,10 @@
 {{- $v := .Values -}}
 {{- $kv := $v.apps.kyverno -}}
 
+crds:
+  # Do not use Helm subchart, but statically-rendered CRDs
+  install: false
+
 {{- if $v.otomi.linodeLkeImageRepository }}
 test:
   image:
