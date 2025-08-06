@@ -242,7 +242,7 @@ export const copyBasicFiles = async (
   ])
   d.info('Copied bin files')
   await deps.mkdir(`${ENV_DIR}/.vscode`, { recursive: true })
-  await deps.copy(`${rootDir}/.values/.vscode`, `${ENV_DIR}/.vscode`)
+  await deps.copy(`${rootDir}/.values/.vscode`, `${ENV_DIR}/.vscode`, { recursive: true })
   d.info('Copied vscode folder')
 
   await deps.copySchema()
