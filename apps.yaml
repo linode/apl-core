@@ -66,13 +66,14 @@ appsInfo:
     integration: Falco can be enabled in APL for runtime intrusion detection. Macros have been configured to exclude all known platform violations so platform admins are only notified when user workloads are not compliant to the security rules. Alerts are automatically send using Alertmanager and the Falco Dashboard is added to Grafana.
     isDeprecated: true
     deprecationInfo:
-      replacement: null
-      message: Falco is deprecated for enhanced performance, maintainability, and integration.
+      message: Falco runtime security monitoring is being deprecated.
       reasons:
-        - To improve overall system performance
-        - To enhance maintainability and integration
+        - High resource consumption impacts cluster performance
+        - Complex rule management requires specialized security expertise
+        - Modern alternatives provide better integration with cloud security platforms
+        - Overlapping functionality with existing platform security controls
       options:
-        - Click 'I understand' to view the Falco dashboard.
+        - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
     appVersion: 1.23.8
@@ -117,13 +118,14 @@ appsInfo:
     integration: Httpbin is by default available for developers to use.
     isDeprecated: true
     deprecationInfo:
-      replacement: null
-      message: Httpbin is deprecated for enhanced performance, maintainability, and integration.
+      message: Httpbin testing service is being deprecated.
       reasons:
-        - To improve overall system performance
-        - To enhance maintainability and integration
+        - Limited testing capabilities compared to comprehensive API testing tools
+        - Security concerns with exposing HTTP testing endpoints in production environments
+        - Better alternatives available through CI/CD pipeline testing tools
+        - Minimal usage patterns observed across development teams
       options:
-        - Click 'I understand' to view the Httpbin dashboard.
+        - Click 'I understand' to continue using Httpbin service
   ingress-nginx:
     title: Ingress-NGINX
     appVersion: 1.11.6
@@ -158,13 +160,14 @@ appsInfo:
     integration: Jaeger can be activated to gain tracing insights on its network traffic. It runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
     isDeprecated: true
     deprecationInfo:
-      replacement: null
-      message: Jaeger is deprecated for enhanced performance, maintainability, and integration.
+      message: Jaeger distributed tracing is being deprecated.
       reasons:
-        - To improve overall system performance
-        - To enhance maintainability and integration
+        - Tempo provides better performance and reduced resource consumption
+        - OpenTelemetry offers standardized instrumentation across all telemetry signals
+        - Grafana native integration eliminates need for separate tracing UI
+        - Consolidated observability stack reduces operational complexity
       options:
-        - Click 'I understand' to view the Jaeger dashboard.
+        - Click 'I understand' to continue using Jaeger dashboard
   keycloak:
     title: Keycloak Operator
     appVersion: 26.2.4
@@ -190,13 +193,14 @@ appsInfo:
     chartName: kiali-operator
     isDeprecated: true
     deprecationInfo:
-      replacement: null
-      message: Kiali is deprecated for enhanced performance, maintainability, and integration.
+      message: Kiali service mesh visualization is being deprecated.
       reasons:
-        - To improve overall system performance
-        - To enhance maintainability and integration
+        - Grafana provides unified observability across metrics, logs, and traces
+        - Native Istio dashboards in Grafana offer better performance
+        - Eliminates need for separate service mesh visualization tool
+        - Reduces authentication complexity and improves user experience
       options:
-        - Click 'I understand' to view the Kiali dashboard.
+        - Click 'I understand' to continue using Kiali dashboard
   knative:
     title: Knative Operator
     appVersion: 1.18.1
