@@ -1,0 +1,54 @@
+{{- range .Values.networkPolicies }}
+{{- if .enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .name }}-platform-policy
+  namespace: {{ .namespace }}
+  labels:
+    {{- include "apl-network-policies.labels" $ | nindent 4 }}
+    app: {{ .name }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    {{- if or .disableEgress .egress }}
+    - Egress
+    {{- end }}
+  ingress:
+    {{- if .platformAccess }}
+    # Default platform access - allow from Istio system
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+    # Allow monitoring access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: po-prometheus
+    # Allow APL operator access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: apl-operator
+    {{- end }}
+    {{- if .ingress }}
+    {{- range .ingress }}
+    - {{ . | toYaml | nindent 2 }}
+    {{- end }}
+    {{- end }}
+  {{- if or .disableEgress .egress }}
+  egress:
+    {{- if .egress }}
+    {{- range .egress }}
+    - {{ . | toYaml | nindent 2 }}
+    {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

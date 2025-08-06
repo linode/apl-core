@@ -1,0 +1,14 @@
+apiVersion: v2
+name: apl-network-policies
+description: APL Platform Network Policies for secure application communication
+type: application
+version: 0.1.0
+appVersion: "1.0"
+keywords:
+  - network-policy
+  - security
+  - platform
+home: https://github.com/linode/apl-core
+maintainers:
+  - name: APL Team
+    url: https://github.com/linode/apl-core

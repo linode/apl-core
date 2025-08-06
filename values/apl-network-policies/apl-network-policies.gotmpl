@@ -1,0 +1,145 @@
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+# Network Policies Configuration - Array format
+networkPolicies:
+  # Gitea network policies
+  {{- if $a.gitea.enabled }}
+  - name: gitea
+    namespace: gitea
+    enabled: true
+    platformAccess: true
+    disableEgress: false
+    ingress:
+      # Allow access from Istio public ingress gateway
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: istio-system
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/instance: istio-ingressgateway-public
+      # Allow APL Gitea operator access
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: apl-gitea-operator
+      # Allow APL operator access  
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: apl-operator
+      # Allow Otomi API access
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: otomi
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/name: otomi-api
+      # Allow team build feature to clone from git repo
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                type: team
+            podSelector:
+              matchLabels:
+                tekton.dev/task: git-clone
+      # Allow monitoring access
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: monitoring
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/instance: po-prometheus
+      # Allow CNPG operator to manage cluster
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: cnpg-system
+      # Allow database replicas to communicate with each other
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: gitea
+            podSelector:
+              matchLabels:
+                cnpg.io/cluster: gitea-db
+      # Allow gitea to communicate with database
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: gitea
+            podSelector:
+              matchLabels:
+                app: gitea
+    egress: []
+  {{- end }}
+
+  # Keycloak network policies
+  {{- if $a.keycloak.enabled }}
+  - name: keycloak
+    namespace: keycloak
+    enabled: true
+    platformAccess: true
+    disableEgress: false
+    ingress:
+      # Allow access from Istio public ingress gateway
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: istio-system
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/instance: istio-ingressgateway-public
+      # Allow APL Keycloak operator access
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: apl-keycloak-operator
+    egress: []
+  {{- end }}
+
+  # ArgoCD network policies
+  {{- if $a.argocd.enabled }}
+  - name: argocd
+    namespace: argocd
+    enabled: true
+    platformAccess: true
+    disableEgress: false
+    ingress:
+      # Allow access from Istio public ingress gateway
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: istio-system
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/instance: istio-ingressgateway-public
+    egress: []
+  {{- end }}
+
+  # Harbor network policies
+  {{- if $a.harbor.enabled }}
+  - name: harbor
+    namespace: harbor
+    enabled: true
+    platformAccess: true
+    disableEgress: false
+    ingress:
+      # Allow access from Istio public ingress gateway
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: istio-system
+            podSelector:
+              matchLabels:
+                app.kubernetes.io/instance: istio-ingressgateway-public
+      # Allow APL Harbor operator access
+      - from:
+          - namespaceSelector:
+              matchLabels:
+                name: apl-harbor-operator
+    egress: []
+  {{- end }}

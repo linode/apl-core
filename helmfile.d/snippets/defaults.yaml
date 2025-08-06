@@ -1038,6 +1038,115 @@ environments:
                   cpu: "1"
                   memory: 1Gi
             _rawValues: {}
+          networkPolicies:
+            - name: gitea
+              namespace: gitea
+              platformAccess: true
+              disableEgress: false
+              ingress:
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: istio-system
+                      podSelector:
+                        matchLabels:
+                          app.kubernetes.io/instance: istio-ingressgateway-public
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: apl-gitea-operator
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: apl-operator
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: otomi
+                      podSelector:
+                        matchLabels:
+                          app.kubernetes.io/name: otomi-api
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          type: team
+                      podSelector:
+                        matchLabels:
+                          tekton.dev/task: git-clone
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: monitoring
+                      podSelector:
+                        matchLabels:
+                          app.kubernetes.io/instance: po-prometheus
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: cnpg-system
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: gitea
+                      podSelector:
+                        matchLabels:
+                          cnpg.io/cluster: gitea-db
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: gitea
+                      podSelector:
+                        matchLabels:
+                          app: gitea
+              egress: []
+            - name: keycloak
+              namespace: keycloak
+              platformAccess: true
+              disableEgress: false
+              ingress:
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: istio-system
+                      podSelector:
+                        matchLabels:
+                          app.kubernetes.io/instance: istio-ingressgateway-public
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: apl-keycloak-operator
+              egress: []
+            - name: argocd
+              namespace: argocd
+              platformAccess: true
+              disableEgress: false
+              ingress:
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: istio-system
+                      podSelector:
+                        matchLabels:
+                          app.kubernetes.io/instance: istio-ingressgateway-public
+              egress: []
+            - name: harbor
+              enabled: false
+              namespace: harbor
+              platformAccess: true
+              disableEgress: false
+              ingress:
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: istio-system
+                      podSelector:
+                        matchLabels:
+                          app.kubernetes.io/instance: istio-ingressgateway-public
+                - from:
+                    - namespaceSelector:
+                        matchLabels:
+                          name: apl-harbor-operator
+              egress: []
           promtail:
             enabled: false
             resources:
