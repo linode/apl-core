@@ -64,6 +64,13 @@ appsInfo:
     dependencies: None. Prometheus and Grafana are adviced
     about: Falco is an open source cloud native runtime security tool that makes it easy to consume kernel events, and enrich those events with information from Kubernetes. Falco has a rich set of security rules specifically built for Kubernetes and Linux. If a rule is violated in a system, Falco will send an alert notifying the user of the violation and its severity.
     integration: Falco can be enabled in APL for runtime intrusion detection. Macros have been configured to exclude all known platform violations so platform admins are only notified when user workloads are not compliant to the security rules. Alerts are automatically send using Alertmanager and the Falco Dashboard is added to Grafana.
+    isDeprecated: true
+    deprecationInfo:
+      message: Falco runtime security monitoring is being deprecated.
+      reasons:
+        - This security tool requires is not cloud agnostic.
+      options:
+        - Click 'I understand' to continue using Falco dashboard
   gitea:
     title: Gitea Self-hosted GIT
     appVersion: 1.23.8
@@ -106,6 +113,13 @@ appsInfo:
     license: ISC
     about: HTTP Request & Response Service
     integration: Httpbin is by default available for developers to use.
+    isDeprecated: true
+    deprecationInfo:
+      message: Httpbin testing service is being deprecated.
+      reasons:
+        - This diagnostic tool is not essential to deliver platform capabilities.
+      options:
+        - Click 'I understand' to continue using Httpbin service
   ingress-nginx:
     title: Ingress-NGINX
     appVersion: 1.11.6
@@ -138,6 +152,13 @@ appsInfo:
     license: Apache 2.0
     about: Jaeger is a distributed tracing platform. It can be used for monitoring microservices-based distributed systems. As on-the-ground microservice practitioners are quickly realizing, the majority of operational problems that arise when moving to a distributed architecture are ultimately grounded in networking and observability. It is simply an orders of magnitude larger problem to network and debug a set of intertwined distributed services versus a single monolithic application.
     integration: Jaeger can be activated to gain tracing insights on its network traffic. It runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
+    isDeprecated: true
+    deprecationInfo:
+      message: Jaeger distributed tracing is being deprecated.
+      reasons:
+        - This tracing tool duplicates functionality provided by Tempo.
+      options:
+        - Click 'I understand' to continue using Jaeger dashboard
   keycloak:
     title: Keycloak Operator
     appVersion: 26.3.1
@@ -161,6 +182,13 @@ appsInfo:
     about: Kiali is a management console for Istio to manage, visualize, validate and troubleshoot the service mesh.
     integration: Kiali can be activated to gain observability insights on its network traffic. Kiali runs in anonymous mode and each authenticated user is given the same authorization, allowing them to see everything.
     chartName: kiali-operator
+    isDeprecated: true
+    deprecationInfo:
+      message: Kiali service mesh visualization is being deprecated.
+      reasons:
+        - This diagnostic tool is not essential to deliver platform capabilities.
+      options:
+        - Click 'I understand' to continue using Kiali dashboard
   knative:
     title: Knative Operator
     appVersion: 1.18.1
@@ -332,7 +360,7 @@ appsInfo:
     integration: When enabled, Velero can be used to automatically create backups of APL platform services. Based on the selected provider, APL installs required plug-ins. APL also installs the Restic integration for Velero to back up and restore almost any type of Kubernetes volume.
   policy-reporter:
     title: policy-reporter
-    appVersion: 3.3.1
+    appVersion: 3.3.3
     repo: https://github.com/kyverno/policy-reporter
     maintainers: Frank Jogeleit
     license: Apache 2.0
