@@ -5,7 +5,7 @@ import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
 import { terminal } from './debug'
 import { cleanEnv, cliEnvSpec, env, isCli } from './envalid'
-import { hasFileDifference, readdirRecurse, rootDir } from './utils'
+import { hasFileDifference, readdirRecurse, rootDir, validateSecurePath } from './utils'
 import { BasicArguments } from './yargs'
 
 export interface Arguments extends BasicArguments {
@@ -20,7 +20,7 @@ enum CryptType {
   ROTATE = 'sops --input-type=yaml --output-type=yaml -i -r',
 }
 
-const preCrypt = async (path): Promise<void> => {
+const preCrypt = async (path: string): Promise<void> => {
   const d = terminal(`common:crypt:preCrypt`)
   d.debug('Checking prerequisites for the (de,en)crypt action')
   // we might have set GCLOUD_SERVICE_KEY in bootstrap so reparse env
@@ -33,16 +33,18 @@ const preCrypt = async (path): Promise<void> => {
     await writeFile(process.env.GOOGLE_APPLICATION_CREDENTIALS, JSON.stringify(lateEnv.GCLOUD_SERVICE_KEY))
   }
   if (isCli) {
-    const secretPath = `${path}/.secrets`
+    const validatedPath = validateSecurePath(path)
+    const secretPath = `${validatedPath}/.secrets`
     if (!existsSync(secretPath)) {
       d.warn(`Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env.`)
     }
   }
 }
 
-const getAllSecretFiles = async (path) => {
+const getAllSecretFiles = async (path: string) => {
   const d = terminal(`common:crypt:getAllSecretFiles`)
-  const files = (await readdirRecurse(`${path}/env`, { skipHidden: true })).filter(
+  const validatedPath = validateSecurePath(path)
+  const files = (await readdirRecurse(`${validatedPath}/env`, { skipHidden: true })).filter(
     (file) => file.endsWith('.yaml') && file.includes('/secrets.'),
   )
 
@@ -128,9 +130,10 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
   }
 }
 
-const matchTimestamps = async (path, file: string) => {
+const matchTimestamps = async (path: string, file: string) => {
   const d = terminal(`common:crypt:matchTimeStamps`)
-  const absFilePath = `${path}/${file}`
+  const validatedPath = validateSecurePath(path)
+  const absFilePath = `${validatedPath}/${file}`
   if (!existsSync(`${absFilePath}.dec`)) {
     d.debug(`Missing ${file}.dec, skipping...`)
     return
@@ -146,17 +149,18 @@ const matchTimestamps = async (path, file: string) => {
 
 export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
   const d = terminal(`common:crypt:decrypt`)
-  if (!existsSync(`${path}/.sops.yaml`)) {
+  const validatedPath = validateSecurePath(path)
+  if (!existsSync(`${validatedPath}/.sops.yaml`)) {
     d.info('Skipping decryption')
     return
   }
   d.info('Starting decryption')
 
   await runOnSecretFiles(
-    path,
+    validatedPath,
     {
       cmd: CryptType.DECRYPT,
-      post: async (f) => matchTimestamps(path, f),
+      post: async (f) => matchTimestamps(validatedPath, f),
     },
     files,
   )
@@ -166,13 +170,14 @@ export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
 
 export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
   const d = terminal(`common:crypt:encrypt`)
-  if (!existsSync(`${path}/.sops.yaml`)) {
+  const validatedPath = validateSecurePath(path)
+  if (!existsSync(`${validatedPath}/.sops.yaml`)) {
     d.info('Skipping encryption')
     return
   }
   d.info('Starting encryption')
   await runOnSecretFiles(
-    path,
+    validatedPath,
     {
       condition: async (file: string): Promise<boolean> => {
         if (!existsSync(file)) {
@@ -206,7 +211,7 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
         return false
       },
       cmd: CryptType.ENCRYPT,
-      post: async (f: string) => matchTimestamps(path, f),
+      post: async (f: string) => matchTimestamps(validatedPath, f),
     },
     files,
   )
