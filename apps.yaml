@@ -68,10 +68,7 @@ appsInfo:
     deprecationInfo:
       message: Falco runtime security monitoring is being deprecated.
       reasons:
-        - High resource consumption impacts cluster performance
-        - Complex rule management requires specialized security expertise
-        - Modern alternatives provide better integration with cloud security platforms
-        - Overlapping functionality with existing platform security controls
+        - Limited adoption of the platform and a high dependency on the cloud provider.
       options:
         - Click 'I understand' to continue using Falco dashboard
   gitea:
@@ -120,10 +117,7 @@ appsInfo:
     deprecationInfo:
       message: Httpbin testing service is being deprecated.
       reasons:
-        - Limited testing capabilities compared to comprehensive API testing tools
-        - Security concerns with exposing HTTP testing endpoints in production environments
-        - Better alternatives available through CI/CD pipeline testing tools
-        - Minimal usage patterns observed across development teams
+        - Limited diagnostic value and not essential for platform operations.
       options:
         - Click 'I understand' to continue using Httpbin service
   ingress-nginx:
@@ -162,10 +156,7 @@ appsInfo:
     deprecationInfo:
       message: Jaeger distributed tracing is being deprecated.
       reasons:
-        - Tempo provides better performance and reduced resource consumption
-        - OpenTelemetry offers standardized instrumentation across all telemetry signals
-        - Grafana native integration eliminates need for separate tracing UI
-        - Consolidated observability stack reduces operational complexity
+        - Duplicated functionality provided by Tempo with better performance.
       options:
         - Click 'I understand' to continue using Jaeger dashboard
   keycloak:
@@ -195,10 +186,7 @@ appsInfo:
     deprecationInfo:
       message: Kiali service mesh visualization is being deprecated.
       reasons:
-        - Grafana provides unified observability across metrics, logs, and traces
-        - Native Istio dashboards in Grafana offer better performance
-        - Eliminates need for separate service mesh visualization tool
-        - Reduces authentication complexity and improves user experience
+        - Limited diagnostic value and not essential for platform operations.
       options:
         - Click 'I understand' to continue using Kiali dashboard
   knative:
