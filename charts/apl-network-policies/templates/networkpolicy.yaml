@@ -1,5 +1,4 @@
 {{- range .Values.networkPolicies }}
-{{- if .enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -12,11 +11,15 @@ metadata:
 spec:
   podSelector: {}
   policyTypes:
+    {{- if .ingress }}
     - Ingress
+    {{- end }}
     {{- if or .disableEgress .egress }}
     - Egress
     {{- end }}
+  {{- if or .ingress .platformAccess }}
   ingress:
+  {{- end }}
     {{- if .platformAccess }}
     # Default platform access - allow from Istio system
     - from:
@@ -38,17 +41,12 @@ spec:
               name: apl-operator
     {{- end }}
     {{- if .ingress }}
-    {{- range .ingress }}
-    - {{ . | toYaml | nindent 2 }}
+    {{- .ingress | toYaml | nindent 4 }}
     {{- end }}
-    {{- end }}
-  {{- if or .disableEgress .egress }}
+  {{- if .egress }}
   egress:
     {{- if .egress }}
-    {{- range .egress }}
-    - {{ . | toYaml | nindent 2 }}
-    {{- end }}
+    {{- .egress | toYaml | nindent 4 }}
     {{- end }}
   {{- end }}
-{{- end }}
 {{- end }}

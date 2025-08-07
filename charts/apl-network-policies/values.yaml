@@ -1,167 +1,64 @@
 # Default configuration for APL Network Policies
+# Network policies are configured using the new array-based structure
 
-# Global settings
-global:
-  enabled: true
+# The actual network policies configuration comes from defaults.yaml
+# This values.yaml file contains only examples for reference
 
-# Platform application network policies
-apps:
-  # Gitea network policies
-  gitea:
-    enabled: true
-    namespace: gitea
-    # Standard platform access (always included when enabled)
-    platformAccess: true
-    # Egress control settings
-    disableEgress: false  # Set to true to block all egress traffic by default
-    allowEgressToNamespaces: []  # Allow egress to specific namespaces
-    allowEgressToPods: []        # Allow egress to specific pods
-    # Additional ingress rules specific to Gitea
-    extraIngress:
-      # Allow access from Istio public ingress gateway
-      - from:
-          - namespaceSelector:
-              matchLabels:
-                name: istio-system
-            podSelector:
-              matchLabels:
-                app.kubernetes.io/instance: istio-ingressgateway-public
-      # Allow APL Gitea operator access
-      - from:
-          - namespaceSelector:
-              matchLabels:
-                name: apl-gitea-operator
-      # Allow APL operator access  
-      - from:
-          - namespaceSelector:
-              matchLabels:
-                name: apl-operator
-      # Allow Otomi API access
-      - from:
-          - namespaceSelector:
-              matchLabels:
-                name: otomi
-            podSelector:
-              matchLabels:
-                app.kubernetes.io/name: otomi-api
-      # Allow team build feature to clone from git repo
-      - from:
-          - namespaceSelector:
-              matchLabels:
-                type: team
-            podSelector:
-              matchLabels:
-                tekton.dev/task: git-clone
-      # Allow monitoring access
-      - from:
-          - namespaceSelector:
-              matchLabels:
-                name: monitoring
-            podSelector:
-              matchLabels:
-                app.kubernetes.io/instance: po-prometheus
-      # Allow CNPG operator to manage cluster
-      - from:
-          - namespaceSelector:
-              matchLabels:
-                name: cnpg-system
-      # Allow database replicas to communicate with each other
-      - from:
-          - namespaceSelector:
-              matchLabels:
-                name: gitea
-            podSelector:
-              matchLabels:
-                cnpg.io/cluster: gitea-db
-      # Allow gitea to communicate with database
-      - from:
-          - namespaceSelector:
-              matchLabels:
-                name: gitea
-            podSelector:
-              matchLabels:
-                app: gitea
-    # Additional egress rules (optional)
-    # Example: Allow HTTPS outbound traffic
-    # extraEgress:
-    #   - to: []
-    #     ports:
-    #       - protocol: TCP
-    #         port: 443
-    extraEgress: []
+# Example network policies configuration (all commented out):
+# networkPolicies:
+#   # Example: Gitea network policy
+#   - name: gitea
+#     namespace: gitea
+#     enabled: true
+#     platformAccess: true    # Includes default platform ingress rules
+#     ingress:
+#       # Allow access from Istio public ingress gateway
+#       - from:
+#           - namespaceSelector:
+#               matchLabels:
+#                 name: istio-system
+#             podSelector:
+#               matchLabels:
+#                 app.kubernetes.io/instance: istio-ingressgateway-public
+#       # Allow APL Gitea operator access
+#       - from:
+#           - namespaceSelector:
+#               matchLabels:
+#                 name: apl-gitea-operator
+#       # Allow team build access for git clone
+#       - from:
+#           - namespaceSelector:
+#               matchLabels:
+#                 type: team
+#             podSelector:
+#               matchLabels:
+#                 tekton.dev/task: git-clone
+#     egress:
+#       # Example: Allow HTTPS outbound traffic
+#       - to: []
+#         ports:
+#           - protocol: TCP
+#             port: 443
+#       # Example: Allow DNS resolution
+#       - to:
+#           - namespaceSelector:
+#               matchLabels:
+#                 name: kube-system
+#         ports:
+#           - protocol: UDP
+#             port: 53
 
-  # Keycloak network policies  
-  keycloak:
-    enabled: false
-    namespace: keycloak
-    platformAccess: true
-    disableEgress: false
-    allowEgressToNamespaces: []
-    allowEgressToPods: []
-    extraIngress: []
-    extraEgress: []
-
-  # ArgoCD network policies
-  argocd:
-    enabled: false
-    namespace: argocd
-    platformAccess: true
-    disableEgress: false
-    allowEgressToNamespaces: []
-    allowEgressToPods: []
-    extraIngress: []
-    extraEgress: []
-
-  # Harbor network policies
-  harbor:
-    enabled: false
-    namespace: harbor
-    platformAccess: true
-    disableEgress: false
-    allowEgressToNamespaces: []
-    allowEgressToPods: []
-    extraIngress: []
-    extraEgress: []
-
-# Custom platform-wide network policies
-# These are user-configurable policies for additional platform services
-customPolicies: []
-  # Example:
-  # - name: custom-service-policy
-  #   namespace: my-namespace
-  #   podSelector:
-  #     matchLabels:
-  #       app: my-app
-  #   policyTypes:
-  #     - Ingress
-  #     - Egress
-  #   ingress:
-  #     - from:
-  #         - namespaceSelector:
-  #             matchLabels:
-  #               name: istio-system
-  #   egress:
-  #     - to: []
-
-# Default platform selectors that are commonly used
-# These are automatically applied when platformAccess: true
-defaultPlatformAccess:
-  ingress:
-    # Allow access from Istio system
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: istio-system
-    # Allow monitoring access
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: monitoring
-          podSelector:
-            matchLabels:
-              app.kubernetes.io/instance: po-prometheus
-    # Allow APL operator access
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              name: apl-operator
+# Network policy structure reference:
+#
+# Each network policy supports the following fields:
+# - name: string (required) - Name of the network policy
+# - namespace: string (required) - Target namespace
+# - enabled: boolean (optional, default: true) - Whether to create the policy
+# - platformAccess: boolean (optional, default: false) - Include standard platform ingress rules
+# - ingress: array (optional) - Additional ingress rules (array of Kubernetes NetworkPolicy ingress rules)
+# - egress: array (optional) - Additional egress rules (array of Kubernetes NetworkPolicy egress rules)
+#
+# When platformAccess: true, the following ingress rules are automatically added:
+# - Allow access from istio-system namespace
+# - Allow monitoring access from monitoring namespace
+# - Allow APL operator access from apl-operator namespace

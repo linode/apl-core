@@ -610,20 +610,12 @@ definitions:
       name:
         $ref: '#/definitions/idName'
         description: Name of the application/policy
-      enabled:
-        type: boolean
-        default: true
-        description: Enable this network policy (defaults to true when name is specified)
       namespace:
         $ref: '#/definitions/idName'
       platformAccess:
         type: boolean
         default: true
         description: Enable default platform access rules (Istio, monitoring, APL operator)
-      disableEgress:
-        type: boolean
-        default: false
-        description: Disable all egress traffic (creates deny-all egress policy)
       ingress:
         type: array
         items:
@@ -633,7 +625,7 @@ definitions:
       egress:
         type: array
         items:
-          type: object  
+          type: object
         default: []
         description: Custom egress rules (only applied if not empty)
     required:
