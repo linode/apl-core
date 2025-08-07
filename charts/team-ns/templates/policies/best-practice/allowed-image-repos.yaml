@@ -54,9 +54,19 @@ spec:
                   {{- with $v.linodeLkeImageRepository }}
                   - "{{ . }}/docker/istio/proxyv2*"
                   - "{{ . }}/ghcr/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                  - "{{ . }}/docker/grafana/grafana*"
+                  - "{{ . }}/quay/kiwigrid/k8s-sidecar*"
+                  - "{{ . }}/quay/prometheus/alertmanager*"
+                  - "{{ . }}/quay/prometheus-operator/prometheus-config-reloader*"
+                  - "{{ . }}/gcr/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard*"
                   {{- else }}
                   - "docker.io/istio/proxyv2*"
                   - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                  - "docker.io/grafana/grafana*"
+                  - "quay.io/kiwigrid/k8s-sidecar*"
+                  - "quay.io/prometheus/alertmanager*"
+                  - "quay.io/prometheus-operator/prometheus-config-reloader*"
+                  - "gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard*"
                   {{- end }}
             deny:
               conditions:
