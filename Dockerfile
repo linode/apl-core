@@ -8,15 +8,12 @@ WORKDIR $APP_HOME
 ARG SKIP_TESTS='false'
 ENV NODE_ENV='test'
 ENV CI=true
-ENV ENV_DIR=$APP_HOME/env
+ENV DIR=$APP_HOME/tests/fixtures
 ENV VERBOSITY='2'
 ENV DISABLE_SYNC='1'
 ENV NODE_PATH='dist'
 
 COPY --chown=app . .
-
-RUN npm config set update-notifier false
-RUN npm ci --ignore-scripts && npm run compile
 
 RUN set -e && \
     npm config set update-notifier false && \
@@ -26,12 +23,8 @@ RUN set -e && \
 # Run tests with the CI-specific script that has proper Jest flags
 RUN set -e && \
     if [ "$SKIP_TESTS" = 'false' ]; then \
-        echo "Setting up test environment..." && \
-        ln -s $APP_HOME/tests/fixtures env && \
         echo "Running CI tests..." && \
         npm run test:ci && \
-        echo "Cleaning up test environment..." && \
-        rm env && \
         echo "Tests completed successfully"; \
     else \
         echo "Skipping tests (SKIP_TESTS=true)"; \
