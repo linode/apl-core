@@ -247,7 +247,7 @@ environments:
           minio:
             enabled: {{ $a.minio.enabled }}
           prometheus:
-            enabled: true
+            enabled: {{ $a.prometheus.enabled }}
           prometheus-msteams:
             enabled: {{ and ($a | get "alertmanager.enabled" false) (or (has "msteams" ($v | get "alerts.receivers" list)) (has "msteams" ($v | get "home.receivers" list))) }}
           sealed-secrets:
