@@ -68,7 +68,7 @@ appsInfo:
     deprecationInfo:
       message: Falco runtime security monitoring is being deprecated.
       reasons:
-        - Limited adoption of the platform and a high dependency on the cloud provider.
+        - This security tool requires is not cloud agnostic.
       options:
         - Click 'I understand' to continue using Falco dashboard
   gitea:
@@ -117,7 +117,7 @@ appsInfo:
     deprecationInfo:
       message: Httpbin testing service is being deprecated.
       reasons:
-        - Limited diagnostic value and not essential for platform operations.
+        - This diagnostic tool is not essential to deliver platform capabilities.
       options:
         - Click 'I understand' to continue using Httpbin service
   ingress-nginx:
@@ -156,7 +156,7 @@ appsInfo:
     deprecationInfo:
       message: Jaeger distributed tracing is being deprecated.
       reasons:
-        - Duplicated functionality provided by Tempo with better performance.
+        - This tracing tool duplicates functionality provided by Tempo.
       options:
         - Click 'I understand' to continue using Jaeger dashboard
   keycloak:
@@ -186,7 +186,7 @@ appsInfo:
     deprecationInfo:
       message: Kiali service mesh visualization is being deprecated.
       reasons:
-        - Limited diagnostic value and not essential for platform operations.
+        - This diagnostic tool is not essential to deliver platform capabilities.
       options:
         - Click 'I understand' to continue using Kiali dashboard
   knative:
