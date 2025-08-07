@@ -40,6 +40,15 @@ spec:
         - resources:
             annotations:
               tekton.dev/tags: git
+        - resources:
+            labels:
+              app.kubernetes.io/instance: {{ $v.teamId }}-po-alertmanager
+        - resources:
+            labels:
+              app.kubernetes.io/instance: prometheus-{{ $v.teamId }}
+        - resources:
+            labels:
+              app.kubernetes.io/instance: tekton-dashboard-{{ $v.teamId }}
     preconditions:
       all:
       - key: "{{`{{request.operation || 'BACKGROUND'}}`}}"
