@@ -51,8 +51,13 @@ spec:
               - key: "{{`{{ element }}`}}"
                 operator: NotIn
                 value:
+                  {{- with $v.linodeLkeImageRepository }}
+                  - "{{ . }}/docker/istio/proxyv2*"
+                  - "{{ . }}/ghcr/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                  {{- else }}
                   - "docker.io/istio/proxyv2*"
                   - "ghcr.io/open-telemetry/opentelemetry-operator/autoinstrumentation-*"
+                  {{- end }}
             deny:
               conditions:
                 all:
