@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "allowed-image-repositories" }}
-{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+{{- if and $v.apps.kyverno.enabled $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -13,11 +13,11 @@ metadata:
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
       In addition to restricting the image registry from which images are pulled, in some cases
-      and environments it may be required to also restrict which image repositories are used, 
+      and environments it may be required to also restrict which image repositories are used,
       for example in some restricted Namespaces. This policy ensures that the only allowed
       image repositories present in a given Pod, across any container type, come from the
       designated list.
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}    
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   validationFailureAction: {{ $p.action }}
   background: true

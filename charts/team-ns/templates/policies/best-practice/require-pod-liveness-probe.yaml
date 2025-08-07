@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "require-liveness-probe" }}
-{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+{{- if and $v.apps.kyverno.enabled $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -17,7 +17,7 @@ metadata:
       lifecycle during deployments, restarts, and upgrades. For each Pod, a periodic
       `livenessProbe` is performed by the kubelet to determine if the Pod's containers
       are running or need to be restarted. This policy validates that all containers have a livenessProbe defined.
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   validationFailureAction: {{ $p.action }}
   background: true
