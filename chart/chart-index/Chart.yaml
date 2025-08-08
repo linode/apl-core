@@ -47,7 +47,7 @@ dependencies:
     version: 2.46.0
     repository: https://jaegertracing.github.io/helm-charts
   - name: keycloak
-    version: 24.7.1
+    version: 24.9.0
     repository: https://charts.bitnami.com/bitnami
   - name: kiali-operator
     version: 2.10.0
