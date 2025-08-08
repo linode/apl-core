@@ -54,7 +54,7 @@ spec:
             configMapKeyRef:
               key: mysqlPort
               name: pipeline-install-config
-        image: gcr.io/tfx-oss-public/ml_metadata_store_server:1.14.0
+        image: {{ include "tfxOssPublicRegistry" . }}/ml_metadata_store_server:1.14.0
         securityContext:
           allowPrivilegeEscalation: false
           seccompProfile:

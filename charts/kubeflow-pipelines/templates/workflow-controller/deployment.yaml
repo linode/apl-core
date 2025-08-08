@@ -22,7 +22,7 @@ spec:
         - --configmap
         - workflow-controller-configmap
         - --executor-image
-        - gcr.io/ml-pipeline/argoexec:v3.4.17-license-compliance
+        - {{ include "mlPipelineRegistry" . }}/argoexec:v3.4.17-license-compliance
         - --namespaced
         command:
         - workflow-controller
@@ -32,7 +32,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.name
-        image: gcr.io/ml-pipeline/workflow-controller:v3.4.17-license-compliance
+        image: {{ include "mlPipelineRegistry" . }}/workflow-controller:v3.4.17-license-compliance
         livenessProbe:
           failureThreshold: 3
           httpGet:

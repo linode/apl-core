@@ -19,7 +19,7 @@ spec:
         application-crd-id: kubeflow-pipelines
     spec:
       containers:
-      - image: ghcr.io/kubeflow/kfp-visualization-server:{{ .Chart.AppVersion }}
+      - image: {{ include "kubeflowRegistry" . }}/kfp-visualization-server:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false

@@ -40,7 +40,7 @@ spec:
               fieldPath: metadata.namespace
         - name: DISABLE_GKE_METADATA
           value: "true"
-        image: ghcr.io/kubeflow/kfp-frontend:{{ .Chart.AppVersion }}
+        image: {{ include "kubeflowRegistry" . }}/kfp-frontend:{{ .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false

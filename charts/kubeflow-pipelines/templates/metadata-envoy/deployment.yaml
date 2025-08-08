@@ -20,7 +20,7 @@ spec:
         component: metadata-envoy
     spec:
       containers:
-      - image: ghcr.io/kubeflow/kfp-metadata-envoy:{{ .Chart.AppVersion }}
+      - image: {{ include "kubeflowRegistry" . }}/kfp-metadata-envoy:{{ .Chart.AppVersion }}
         name: container
         {{- with .Values.metadataEnvoy.resources }}
         resources: {{- . | toYaml | nindent 12 }}
