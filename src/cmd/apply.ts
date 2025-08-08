@@ -1,5 +1,5 @@
 import retry, { Options } from 'async-retry'
-import { mkdirSync, rmdirSync, writeFileSync } from 'fs'
+import { mkdirSync, rmSync, writeFileSync } from 'fs'
 import { cloneDeep } from 'lodash'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -37,7 +37,7 @@ const templateFile = `${dir}deploy-template.yaml`
 
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
-  rmdirSync(dir, { recursive: true })
+  rmSync(dir, { recursive: true })
 }
 
 const setup = (): void => {
