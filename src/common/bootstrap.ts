@@ -1,4 +1,4 @@
-import { pathExists } from 'fs-extra'
+import { existsSync } from 'fs'
 import { decrypt } from 'src/common/crypt'
 import { terminal } from 'src/common/debug'
 import { env, isCli } from 'src/common/envalid'
@@ -24,7 +24,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
   const values = inValues ?? ((await hfValues()) as Record<string, any>)
   const { remote, branch, email, username, password } = getRepo(values)
   cd(env.ENV_DIR)
-  if (await pathExists(`${env.ENV_DIR}/.git`)) {
+  if (existsSync(`${env.ENV_DIR}/.git`)) {
     d.info(`Git repo was already bootstrapped, setting identity just in case`)
     await setIdentity(username, email)
     return
@@ -66,7 +66,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await writeValues(defaultValues)
   }
 
-  if (!(await pathExists(`${env.ENV_DIR}/.git`))) {
+  if (!existsSync(`${env.ENV_DIR}/.git`)) {
     d.info('Initializing values git repo.')
     await $`git init .`
   }
@@ -84,7 +84,7 @@ export const bootstrapGit = async (inValues?: Record<string, any>): Promise<void
     await $`git checkout -b ${branch}`.nothrow().quiet()
     await $`git remote add origin ${remote}`.nothrow().quiet()
   }
-  if (await pathExists(`${env.ENV_DIR}/.sops.yaml`)) {
+  if (existsSync(`${env.ENV_DIR}/.sops.yaml`)) {
     await $`git config --local diff.sopsdiffer.textconv "sops -d"`.nothrow().quiet()
   }
   d.log(`Done bootstrapping git`)
