@@ -1066,7 +1066,7 @@ environments:
                   cpu: 200m
                   memory: 128Mi
           prometheus:
-            enabled: false
+            enabled: true
             disabledRules:
               - InfoInhibitor
             remoteWrite:
