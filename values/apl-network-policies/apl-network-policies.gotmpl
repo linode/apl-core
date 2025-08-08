@@ -1,7 +1,6 @@
 {{- $v := .Values }}
 {{- $a := $v.apps }}
 
-networkPolicies:
-  {{- range $v.networkPolicies }}
-  - {{ . | toYaml | nindent 4 }}
-  {{- end }}
+# Simple per-app network policy configuration
+giteaNetworkPolicy:
+  enabled: {{ $a.gitea.networkPolicies.enabled | default false }}

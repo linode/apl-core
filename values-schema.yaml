@@ -604,33 +604,13 @@ definitions:
     nullable: true
     type: object
     title: Kubernetes secrets
-  networkPolicyConfig:
-    additionalProperties: false
+  appNetworkPolicyConfig:
+    type: object
     properties:
-      name:
-        $ref: '#/definitions/idName'
-        description: Name of the application/policy
-      namespace:
-        $ref: '#/definitions/idName'
-      platformAccess:
+      enabled:
         type: boolean
-        default: true
-        description: Enable default platform access rules (Istio, monitoring, APL operator)
-      ingress:
-        type: array
-        items:
-          type: object
-        default: []
-        description: Custom ingress rules (in addition to platformAccess rules)
-      egress:
-        type: array
-        items:
-          type: object
-        default: []
-        description: Custom egress rules (only applied if not empty)
-    required:
-      - name
-      - namespace
+        default: false
+        description: Enable network policies for this application with sensible defaults
   netpol:
     type: object
     properties:
@@ -1608,12 +1588,6 @@ properties:
             properties:
               alertmanger:
                 $ref: '#/definitions/resources'
-      networkPolicies:
-        type: array
-        description: Array of network policy configurations for platform applications
-        items:
-          $ref: '#/definitions/networkPolicyConfig'
-        default: []
       argocd:
         additionalProperties: false
         properties:
@@ -1926,6 +1900,8 @@ properties:
                 $ref: '#/definitions/resources'
               memcachedMetrics:
                 $ref: '#/definitions/resources'
+          networkPolicies:
+            $ref: '#/definitions/appNetworkPolicyConfig'
       grafana:
         additionalProperties: false
         properties:

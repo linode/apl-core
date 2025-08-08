@@ -1,64 +1,27 @@
 # Default configuration for APL Network Policies
-# Network policies are configured using the new array-based structure
+# Network policies are now configured using simple per-app boolean flags
 
 # The actual network policies configuration comes from defaults.yaml
 # This values.yaml file contains only examples for reference
 
-# Example network policies configuration (all commented out):
-# networkPolicies:
-#   # Example: Gitea network policy
-#   - name: gitea
-#     namespace: gitea
-#     enabled: true
-#     platformAccess: true    # Includes default platform ingress rules
-#     ingress:
-#       # Allow access from Istio public ingress gateway
-#       - from:
-#           - namespaceSelector:
-#               matchLabels:
-#                 name: istio-system
-#             podSelector:
-#               matchLabels:
-#                 app.kubernetes.io/instance: istio-ingressgateway-public
-#       # Allow APL Gitea operator access
-#       - from:
-#           - namespaceSelector:
-#               matchLabels:
-#                 name: apl-gitea-operator
-#       # Allow team build access for git clone
-#       - from:
-#           - namespaceSelector:
-#               matchLabels:
-#                 type: team
-#             podSelector:
-#               matchLabels:
-#                 tekton.dev/task: git-clone
-#     egress:
-#       # Example: Allow HTTPS outbound traffic
-#       - to: []
-#         ports:
-#           - protocol: TCP
-#             port: 443
-#       # Example: Allow DNS resolution
-#       - to:
-#           - namespaceSelector:
-#               matchLabels:
-#                 name: kube-system
-#         ports:
-#           - protocol: UDP
-#             port: 53
+# Example configuration (all commented out):
+# Simple on/off switch per application
+# giteaNetworkPolicy:
+#   enabled: true  # Enable network policies for Gitea with sensible defaults
 
-# Network policy structure reference:
-#
-# Each network policy supports the following fields:
-# - name: string (required) - Name of the network policy
-# - namespace: string (required) - Target namespace
-# - enabled: boolean (optional, default: true) - Whether to create the policy
-# - platformAccess: boolean (optional, default: false) - Include standard platform ingress rules
-# - ingress: array (optional) - Additional ingress rules (array of Kubernetes NetworkPolicy ingress rules)
-# - egress: array (optional) - Additional egress rules (array of Kubernetes NetworkPolicy egress rules)
-#
-# When platformAccess: true, the following ingress rules are automatically added:
-# - Allow access from istio-system namespace
-# - Allow monitoring access from monitoring namespace
-# - Allow APL operator access from apl-operator namespace
+# Network policy behavior when enabled:
+# 
+# For Gitea (giteaNetworkPolicy.enabled: true):
+# - Creates a NetworkPolicy in the gitea namespace
+# - Allows ingress from:
+#   * Istio public ingress gateway (for web access)
+#   * APL Gitea operator (for management)
+#   * APL operator (for core management)
+#   * APL API (for API access)
+#   * Team namespaces with git-clone tasks (for CI/CD)
+#   * Monitoring namespace (for metrics)
+#   * CNPG system (for database management)
+#   * Internal gitea namespace communication
+# 
+# The complex network policy rules are baked into the chart templates,
+# so users only need to toggle network policies on/off per application.
