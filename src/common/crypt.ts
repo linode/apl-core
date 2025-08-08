@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events'
-import { pathExists } from 'fs-extra'
+import { existsSync } from 'fs'
 import { readFile, stat, utimes, writeFile } from 'fs/promises'
 import { chunk } from 'lodash'
 import { $, cd, ProcessOutput } from 'zx'
@@ -34,7 +34,7 @@ const preCrypt = async (path): Promise<void> => {
   }
   if (isCli) {
     const secretPath = `${path}/.secrets`
-    if (!(await pathExists(secretPath))) {
+    if (!existsSync(secretPath)) {
       d.warn(`Expecting ${secretPath} to exist and hold credentials for SOPS. Not needed if already exists in env.`)
     }
   }
@@ -76,7 +76,7 @@ const processFileChunk = async (crypt: CR, files: string[]): Promise<(ProcessOut
 
         return result
       } catch (error) {
-        if (error.message.includes('Already encrypted') && (await pathExists(`${file}.dec`))) {
+        if (error.message.includes('Already encrypted') && existsSync(`${file}.dec`)) {
           const res = await $`helm secrets encrypt ${file}.dec`
           await writeFile(file, res.stdout)
           if (crypt.post) await crypt.post(file)
@@ -102,7 +102,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
     const suffix = crypt.cmd === CryptType.ENCRYPT ? '.dec' : ''
     let file = `${f}${suffix}`
     // first time encryption might not have a .dec companion, so test existence first
-    if (suffix && !(await pathExists(file))) file = f
+    if (suffix && !existsSync(file)) file = f
     const content = await readFile(file, 'utf-8')
     return !!content
   })
@@ -131,7 +131,7 @@ const runOnSecretFiles = async (path: string, crypt: CR, filesArgs: string[] = [
 const matchTimestamps = async (path, file: string) => {
   const d = terminal(`common:crypt:matchTimeStamps`)
   const absFilePath = `${path}/${file}`
-  if (!(await pathExists(`${absFilePath}.dec`))) {
+  if (!existsSync(`${absFilePath}.dec`)) {
     d.debug(`Missing ${file}.dec, skipping...`)
     return
   }
@@ -146,7 +146,7 @@ const matchTimestamps = async (path, file: string) => {
 
 export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
   const d = terminal(`common:crypt:decrypt`)
-  if (!(await pathExists(`${path}/.sops.yaml`))) {
+  if (!existsSync(`${path}/.sops.yaml`)) {
     d.info('Skipping decryption')
     return
   }
@@ -166,7 +166,7 @@ export const decrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
 
 export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<void> => {
   const d = terminal(`common:crypt:encrypt`)
-  if (!(await pathExists(`${path}/.sops.yaml`))) {
+  if (!existsSync(`${path}/.sops.yaml`)) {
     d.info('Skipping encryption')
     return
   }
@@ -175,7 +175,7 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
     path,
     {
       condition: async (file: string): Promise<boolean> => {
-        if (!(await pathExists(file))) {
+        if (!existsSync(file)) {
           d.warn(`${file} does not exist`)
           return false
         }
@@ -189,7 +189,7 @@ export const encrypt = async (path = env.ENV_DIR, ...files: string[]): Promise<v
           d.debug(`${file} is not yet encrypted or grep did not match`)
         }
         // Check if the decrypted version exists
-        const decExists = await pathExists(`${file}.dec`)
+        const decExists = existsSync(`${file}.dec`)
         if (!decExists) {
           d.debug(`Did not find decrypted ${file}.dec`)
           return true
