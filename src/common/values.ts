@@ -1,4 +1,4 @@
-import { pathExists } from 'fs-extra'
+import { existsSync } from 'fs'
 import { mkdir, unlink, writeFile } from 'fs/promises'
 import { cloneDeep, get, isEmpty, isEqual, merge, mergeWith, omit, pick, set } from 'lodash'
 import path from 'path'
@@ -48,7 +48,7 @@ export const getK8sVersion = (argv?: HelmArguments): string => {
  */
 export const getImageTag = async (envDir = env.ENV_DIR): Promise<string> => {
   if (process.env.OTOMI_TAG) return process.env.OTOMI_TAG
-  if (await pathExists(`${envDir}/env/settings/cluster.yaml`)) {
+  if (existsSync(`${envDir}/env/settings/cluster.yaml`)) {
     const values = await hfValues(undefined, envDir)
     return values!.otomi!.version
   }
@@ -133,14 +133,14 @@ export const writeValuesToFile = async (
   const cleanedMergeResult = removeBlankAttributes(mergeResult)
   if (((overwrite && isEmpty(cleanedValues)) || (!overwrite && isEmpty(cleanedMergeResult))) && isSecretsFile) {
     // get rid of empty secrets files as those are problematic
-    if (await pathExists(targetPath)) await unlink(targetPath)
-    if (await pathExists(`${targetPath}.dec`)) await unlink(`${targetPath}.dec`)
+    if (existsSync(targetPath)) await unlink(targetPath)
+    if (existsSync(`${targetPath}.dec`)) await unlink(`${targetPath}.dec`)
     return
   }
   const useValues = overwrite ? values : mergeResult
-  if (!(await pathExists(targetPath)) || overwrite) {
+  if (!existsSync(targetPath) || overwrite) {
     // create the non-suffixed file for encryption to not skip this later on
-    const notExists = !(await pathExists(targetPath))
+    const notExists = !existsSync(targetPath)
     if (notExists) {
       if (isSecretsFile) {
         await writeFile(targetPath, objectToYaml(useValues))
@@ -168,7 +168,7 @@ export const writeValuesToFile = async (
 export const writeValues = async (inValues: Record<string, any>, overwrite = false): Promise<void> => {
   const d = terminal('common:values:writeValues')
   d.debug('Writing values: ', inValues)
-  hasSops = await pathExists(`${env.ENV_DIR}/.sops.yaml`)
+  hasSops = existsSync(`${env.ENV_DIR}/.sops.yaml`)
   const values = inValues
   const teams = Object.keys(get(inValues, 'teamConfig', {}))
   const cleanSecretPaths = await getSchemaSecretsPaths(teams)
