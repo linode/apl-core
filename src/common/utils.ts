@@ -7,7 +7,7 @@ import { glob } from 'glob'
 import walk from 'ignore-walk'
 import { dump, load } from 'js-yaml'
 import { omit } from 'lodash'
-import { dirname, join, normalize, resolve } from 'path'
+import { dirname, join, resolve } from 'path'
 import { $, ProcessOutput } from 'zx'
 import { terminal } from './debug'
 import { env } from './envalid'
@@ -21,34 +21,6 @@ export const getFilename = (path: string): string => path.split('/').pop()?.spli
 
 export const asArray = (args: string | string[]): string[] => {
   return Array.isArray(args) ? args : [args]
-}
-
-/**
- * Validates and sanitizes a file path to prevent path traversal attacks.
- * Ensures the resolved path stays within allowed base directories.
- */
-export function validateSecurePath(inputPath: string, allowedBasePaths: string[] = [rootDir]): string {
-  if (!inputPath || inputPath.trim() === '') {
-    throw new Error('Invalid path: path must be a non-empty string')
-  }
-
-  // Normalize and resolve the path to handle ../ and other traversal attempts
-  const normalizedPath = normalize(inputPath)
-  const resolvedPath = resolve(normalizedPath)
-
-  // Check if the resolved path is within any of the allowed base directories
-  const isWithinAllowedPath = allowedBasePaths.some((basePath) => {
-    const resolvedBasePath = resolve(basePath)
-    return resolvedPath.startsWith(`${resolvedBasePath}/`) || resolvedPath === resolvedBasePath
-  })
-
-  if (!isWithinAllowedPath) {
-    throw new Error(
-      `Invalid path: '${inputPath}' resolves to '${resolvedPath}' which is outside allowed directories: ${allowedBasePaths.join(', ')}`,
-    )
-  }
-
-  return resolvedPath
 }
 
 export const removeBlankAttributes = (obj: Record<string, any>): Record<string, any> => {
