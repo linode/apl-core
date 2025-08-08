@@ -132,6 +132,8 @@ rules:
   - poolers
   - publications
   - scheduledbackups
+  - imagecatalogs
+  - clusterimagecatalogs
   - subscriptions
   verbs:
   - get
@@ -158,6 +160,8 @@ rules:
   - poolers
   - publications
   - scheduledbackups
+  - imagecatalogs
+  - clusterimagecatalogs
   - subscriptions
   verbs:
   - create
