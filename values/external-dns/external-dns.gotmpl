@@ -51,8 +51,19 @@ metrics:
     additionalLabels:
       prometheus: system
 
-{{- with .Values.otomi | get "globalPullSecret" nil }}
 global:
+{{- with .Values.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:
     - otomi-pullsecret-global
+{{- end }}
+
+{{- if $v.otomi.linodeLkeImageRepository }}
+  security:
+    allowInsecureImages: true
+image:
+  registry: "{{- $v.otomi.linodeLkeImageRepository }}"
+  repository: "docker/bitnami/external-dns"
+{{- else }}
+  security:
+    allowInsecureImages: false
 {{- end }}
