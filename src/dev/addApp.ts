@@ -1,6 +1,7 @@
 #!/usr/bin/env node --nolazy --import tsx
 
-import { createFileSync, mkdirpSync, writeFile } from 'fs-extra'
+import { mkdirSync, writeFileSync } from 'fs'
+import { writeFile } from 'fs/promises'
 import { set } from 'lodash'
 import { terminal } from 'src/common/debug'
 import { objectToYaml } from 'src/common/values'
@@ -119,16 +120,16 @@ const generateHelmChartValues = (projectDir: string, name: string): void => {
   const valuesFile = `${projectDir}/values/${name}/${name}.gotmpl`
   const artifactsFile = `${projectDir}/values/${name}/${name}-raw.gotmpl`
   const valuesDir = `values/${name}`
-  mkdirpSync(valuesDir)
-  createFileSync(artifactsFile)
+  mkdirSync(valuesDir, { recursive: true })
+  writeFileSync(artifactsFile, '')
   d.info(`Generated ${artifactsFile} file.`)
-  createFileSync(valuesFile)
+  writeFileSync(valuesFile, '')
   d.info(`Generated ${valuesFile} file.`)
 }
 
 const generateHelmChart = (projectDir: string, name: string): void => {
   const chartDir = `${projectDir}/charts/${name}`
-  mkdirpSync(chartDir)
+  mkdirSync(chartDir, { recursive: true })
   d.info(`Generated ${chartDir} dir.`)
 }
 
