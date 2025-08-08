@@ -1,4 +1,4 @@
-import { mkdirSync, rmSync, existsSync } from 'fs'
+import { mkdirSync, rmdirSync, existsSync } from 'fs'
 import { readFile, writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
@@ -156,7 +156,7 @@ const writeApplicationManifest = async (release: HelmRelease, otomiVersion: stri
   const valuesPath = `${valuesDir}/${appName}.yaml`
   let values = {}
 
-  if (await pathExists(valuesPath)) values = (await loadYaml(valuesPath)) || {}
+  if (existsSync(valuesPath)) values = (await loadYaml(valuesPath)) || {}
   const manifest = getArgocdAppManifest(release, values, otomiVersion)
   await writeFile(applicationPath, objectToYaml(manifest))
 
