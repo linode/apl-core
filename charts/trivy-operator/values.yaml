@@ -20,6 +20,21 @@ targetNamespaces: ""
 # mode, i.e. when the targetNamespaces values is a blank string.
 excludeNamespaces: ""
 
+# -- extraEnv is a list of extra environment variables for the trivy-operator.
+extraEnv: []
+
+# -- hostAliases for `deployment` (TrivyOperator) and `statefulset` (TrivyServer)
+
+hostAliases: []
+# - ip: "127.0.0.1"
+#   hostnames:
+#   - "foo.local"
+#   - "bar.local"
+# - ip: "10.1.2.3"
+#   hostnames:
+#   - "foo.remote"
+#   - "bar.remote"
+
 # -- targetWorkloads is a comma seperated list of Kubernetes workload resources
 # to be included in the vulnerability and config-audit scans
 # if left blank, all workload resources will be scanned
@@ -237,8 +252,10 @@ trivyOperator:
   configAuditReportsPlugin: "Trivy"
   # -- scanJobCompressLogs control whether scanjob output should be compressed or plain
   scanJobCompressLogs: true
+  # -- scanJobsInSameNamespace control whether to run vulnerability scan jobs in same namespace of workload
+  scanJobsInSameNamespace: false
   # -- scanJobAffinity affinity to be applied to the scanner pods and node-collector
-  scanJobAffinity: []
+  scanJobAffinity: {}
   # -- scanJobTolerations tolerations to be applied to the scanner pods so that they can run on nodes with matching taints
   scanJobTolerations: []
   # -- If you do want to specify tolerations, uncomment the following lines, adjust them as necessary, and remove the
@@ -340,7 +357,7 @@ trivy:
     # -- repository of the Trivy image
     repository: aquasec/trivy
     # -- tag version of the Trivy image
-    tag: 0.57.1
+    tag: 0.65.0
     # -- imagePullSecret is the secret name to be used when pulling trivy image from private registries example : reg-secret
     # It is the user responsibility to create the secret for the private registry in `trivy-operator` namespace
     imagePullSecret: ~
@@ -438,6 +455,15 @@ trivy:
   #   - CVE-1970-0001
   #   - CVE-1970-0002
 
+  # -- configFile can be used to tell Trivy to use specific options available only in the config file (e.g. Mirror registries).
+  configFile: ~
+  # configFile:
+  #   registry:
+  #     mirrors:
+  #       index.docker.io:
+  #       - mirror.with.bad.auth
+  #       - mirror.without.image
+
   # -- ignorePolicy can be used to tell Trivy to ignore vulnerabilities by a policy
   # If multiple policies would match, then the most specific one has precedence over the others.
   # See https://aquasecurity.github.io/trivy/latest/docs/configuration/filtering/#by-open-policy-agent for more details.
@@ -505,7 +531,7 @@ trivy:
   # Keys must be at least one of the following: trivy.githubToken, trivy.serverToken, trivy.serverCustomHeaders
   # Overrides trivy.gitHubToken, trivy.serverToken, trivy.serverCustomHeaders values.
   # Note: The secret has to be named "trivy-operator-trivy-config".
-  # existingSecret: true
+  existingSecret: false
 
   # -- serverTokenHeader is the name of the HTTP header used to send the authentication
   # token to Trivy server. Only application in ClientServer mode when
@@ -636,7 +662,7 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 # -- securityContext security context
 securityContext:
@@ -659,16 +685,17 @@ volumes:
     emptyDir: {}
 
 resources: {}
-  # -- We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+# -- We usually recommend not to specify default resources and to leave this as a conscious
+# choice for the user. This also increases chances charts run on environments with little
+# resources, such as Minikube. If you do want to specify resources, uncomment the following
+# lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+# limits:
+#   cpu: 100m
+#   memory: 128Mi
+# requests:
+#   cpu: 100m
+#   memory: 128Mi
+
 # -- nodeSelector set the operator nodeSelector
 nodeSelector: {}
 
@@ -681,7 +708,7 @@ affinity: {}
 # -- priorityClassName set the operator priorityClassName
 priorityClassName: ""
 
-  # -- automountServiceAccountToken the flag to enable automount for service account token
+# -- automountServiceAccountToken the flag to enable automount for service account token
 automountServiceAccountToken: true
 
 policiesBundle:
@@ -691,7 +718,7 @@ policiesBundle:
   repository: aquasec/trivy-checks
   # -- tag version of the policies bundle
   tag: 1
-   # -- registryUser is the user for the registry
+  # -- registryUser is the user for the registry
   registryUser: ~
   # -- registryPassword is the password for the registry
   registryPassword: ~
@@ -702,7 +729,6 @@ policiesBundle:
   existingSecret: false
   # -- insecure is the flag to enable insecure connection to the policy bundle registry
   insecure: false
-
 
 nodeCollector:
   # -- useNodeSelector determine if to use nodeSelector (by auto detecting node name) with node-collector scan job
@@ -779,3 +805,14 @@ nodeCollector:
     - name: etc-cni-netd
       hostPath:
         path: /etc/cni/net.d/
+# -- alternateReportStorage is the flag to enable alternate storage for all trivy reports (crds) in the form json files inside of a persistent volume
+alternateReportStorage:
+  enabled: false
+  mountPath: "/mnt/data/trivy-operator"
+  volumeName: "trivy-operator-pvc"
+  storage: "10Gi"
+  # -- storageClassName for the PVC (optional, uses cluster default if not specified)
+  storageClassName: ""
+  podSecurityContext:
+    runAsUser: 10000
+    fsGroup: 10000

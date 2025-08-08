@@ -1,0 +1,16 @@
+{{- if .Values.alternateReportStorage.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.alternateReportStorage.volumeName }}
+  namespace: {{ .Release.namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.alternateReportStorage.storageClassName }}
+  storageClassName: {{ .Values.alternateReportStorage.storageClassName }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.alternateReportStorage.storage }}
+{{- end }}
