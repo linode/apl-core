@@ -1,4 +1,4 @@
-import { mkdirSync, rmSync, existsSync } from 'fs'
+import { mkdirSync, rmdirSync, existsSync } from 'fs'
 import { readFile, writeFile } from 'fs/promises'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
