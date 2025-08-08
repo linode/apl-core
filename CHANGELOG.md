@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [4.9.0](https://github.com/linode/apl-core/compare/v4.8.0...v4.9.0) (2025-08-06)
+
+
+### Features
+
+* default platform storage class ([#2376](https://github.com/linode/apl-core/issues/2376)) ([2f661f9](https://github.com/linode/apl-core/commit/2f661f956dd6f6d9d6f65d27b17532cff247bebf))
+
+
+### Bug Fixes
+
+* prometheus-operator storageclass ([#2410](https://github.com/linode/apl-core/issues/2410)) ([6c08492](https://github.com/linode/apl-core/commit/6c0849239c16b71bf7d3f964f71e15afe9343d86))
+
 ## [4.8.0](https://github.com/linode/apl-core/compare/v4.5.0...v4.8.0) (2025-07-31)
 
 
