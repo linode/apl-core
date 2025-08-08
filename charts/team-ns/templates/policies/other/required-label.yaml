@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "require-labels" }}
-{{- if and (get (index $v.apps "kyverno") "enabled") $p $p.customValues }}
+{{- if and $v.apps.kyverno.enabled $p $p.customValues }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -14,7 +14,7 @@ metadata:
     policies.kyverno.io/description: >-
       Define and use labels that identify your application or Deployment, for example `otomi.io/app`.
       This policy validates that labels are specified with some value, as this is required for using network policies.
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}       
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   validationFailureAction: {{ $p.action }}
   background: true

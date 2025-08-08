@@ -1,14 +1,27 @@
 {{- if .Values.cleanupController.enabled -}}
 {{- if not .Values.templating.debug -}}
+{{- $automountSAToken := .Values.cleanupController.rbac.serviceAccount.automountServiceAccountToken -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "kyverno.cleanup-controller.name" . }}
   namespace: {{ template "kyverno.namespace" . }}
+  {{- if .Values.webhooksCleanup.autoDeleteWebhooks.enabled }}
+  {{- if not .Values.templating.enabled }}
+  finalizers:
+  - kyverno.io/policywebhooks
+  - kyverno.io/ttlwebhooks
+  {{- end }}
+  {{- end }}
   labels:
     {{- include "kyverno.cleanup-controller.labels" . | nindent 4 }}
+  {{- with .Values.cleanupController.annotations }}
+  annotations:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
 spec:
   replicas: {{ template "kyverno.deployment.replicas" .Values.cleanupController.replicas }}
+  revisionHistoryLimit: {{ .Values.cleanupController.revisionHistoryLimit }}
   {{- with .Values.cleanupController.updateStrategy }}
   strategy:
     {{- toYaml . | nindent 4 }}
@@ -27,19 +40,19 @@ spec:
       annotations: {{ tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
     spec:
-      {{- with .Values.cleanupController.imagePullSecrets }}
-      imagePullSecrets: 
-        {{- tpl (toYaml .) $ | nindent 8 }}
+      {{- with .Values.cleanupController.imagePullSecrets | default .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- tpl (include "kyverno.sortedImagePullSecrets" .) $ | nindent 8 }}
       {{- end }}
       {{- with .Values.cleanupController.podSecurityContext }}
       securityContext:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
-      {{- with .Values.cleanupController.nodeSelector }}
+      {{- with .Values.cleanupController.nodeSelector | default .Values.global.nodeSelector }}
       nodeSelector:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
-      {{- with .Values.cleanupController.tolerations }}
+      {{- with .Values.cleanupController.tolerations | default .Values.global.tolerations}}
       tolerations:
         {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
@@ -55,6 +68,10 @@ spec:
       {{- end }}
       {{- with .Values.cleanupController.dnsPolicy }}
       dnsPolicy: {{ . }}
+      {{- end }}
+      {{- with .Values.cleanupController.dnsConfig }}
+      dnsConfig:
+        {{- tpl (toYaml .) $ | nindent 8 }}
       {{- end }}
       {{- if or .Values.cleanupController.antiAffinity.enabled .Values.cleanupController.podAffinity .Values.cleanupController.nodeAffinity }}
       affinity:
@@ -74,21 +91,33 @@ spec:
         {{- end }}
       {{- end }}
       serviceAccountName: {{ template "kyverno.cleanup-controller.serviceAccountName" . }}
+      automountServiceAccountToken: {{ $automountSAToken }}
       containers:
         - name: controller
-          image: {{ include "kyverno.cleanup-controller.image" (dict "globalRegistry" ((.Values.global).image).registry "image" .Values.cleanupController.image "defaultTag" .Chart.AppVersion) | quote }}
+          image: {{ include "kyverno.cleanup-controller.image" (dict "globalRegistry" .Values.global.image.registry "image" .Values.cleanupController.image "defaultTag" .Chart.AppVersion) | quote }}
           imagePullPolicy: {{ .Values.cleanupController.image.pullPolicy }}
           ports:
-          - containerPort: 9443
+          - containerPort: {{ .Values.cleanupController.server.port }}
             name: https
             protocol: TCP
-          - containerPort: 8000
+          - containerPort: {{ .Values.cleanupController.metering.port }}
             name: metrics
             protocol: TCP
+          {{ if .Values.cleanupController.profiling.enabled }}
+          - containerPort: {{ .Values.cleanupController.profiling.port }}
+            name: profiling-port
+            protocol: TCP
+          {{- end }}
           args:
             - --caSecretName={{ template "kyverno.cleanup-controller.name" . }}.{{ template "kyverno.namespace" . }}.svc.kyverno-tls-ca
             - --tlsSecretName={{ template "kyverno.cleanup-controller.name" . }}.{{ template "kyverno.namespace" . }}.svc.kyverno-tls-pair
             - --servicePort={{ .Values.cleanupController.service.port }}
+            - --cleanupServerPort={{ .Values.cleanupController.server.port }}
+            - --webhookServerPort={{ .Values.cleanupController.webhookServer.port }}
+            - --resyncPeriod={{ .Values.cleanupController.resyncPeriod | default .Values.global.resyncPeriod }}
+            {{- if .Values.webhooksCleanup.autoDeleteWebhooks.enabled }}
+            - --autoDeleteWebhooks
+            {{- end }}
             {{- if .Values.cleanupController.tracing.enabled }}
             - --enableTracing
             - --tracingAddress={{ .Values.cleanupController.tracing.address }}
@@ -108,16 +137,22 @@ spec:
             - --transportCreds={{ . }}
             {{- end }}
             {{- end }}
-            {{- include "kyverno.features.flags" (pick (mergeOverwrite .Values.features .Values.cleanupController.featuresOverride)
+            {{- include "kyverno.features.flags" (pick (mergeOverwrite (deepCopy .Values.features) .Values.cleanupController.featuresOverride)
               "deferredLoading"
               "dumpPayload"
+              "globalContext"
               "logging"
               "ttlController"
+              "protectManagedResources"
             ) | nindent 12 }}
             {{- range $key, $value := .Values.cleanupController.extraArgs }}
             {{- if $value }}
             - --{{ $key }}={{ $value }}
             {{- end }}
+            {{- end }}
+            {{ if .Values.cleanupController.profiling.enabled }}
+            - --profile=true
+            - --profilePort={{ .Values.cleanupController.profiling.port }}
             {{- end }}
           env:
           - name: KYVERNO_DEPLOYMENT
@@ -132,13 +167,15 @@ spec:
                 fieldPath: metadata.name
           - name: KYVERNO_SERVICEACCOUNT_NAME
             value: {{ template "kyverno.cleanup-controller.serviceAccountName" . }}
+          - name: KYVERNO_ROLE_NAME
+            value: {{ template "kyverno.cleanup-controller.roleName" . }}
           - name: KYVERNO_NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
           - name: KYVERNO_SVC
             value: {{ template "kyverno.cleanup-controller.name" . }}
-          {{- with .Values.cleanupController.extraEnvVars }}
+          {{- with (concat .Values.global.extraEnvVars .Values.cleanupController.extraEnvVars) }}
           {{- toYaml . | nindent 10 }}
           {{- end }}
           {{- with .Values.cleanupController.resources }}
@@ -161,5 +198,32 @@ spec:
           readinessProbe:
             {{- tpl (toYaml .) $ | nindent 12 }}
           {{- end }}
+          {{- if not $automountSAToken }}
+          volumeMounts:
+            - name: serviceaccount-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+          {{- end }}
+      {{- if not $automountSAToken }}
+      volumes:
+        - name: serviceaccount-token
+          projected:
+            defaultMode: 0444
+            sources:
+              - serviceAccountToken:
+                  expirationSeconds: 3607
+                  path: token
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
+              - downwardAPI:
+                  items:
+                    - path: namespace
+                      fieldRef:
+                        apiVersion: v1
+                        fieldPath: metadata.namespace
+      {{- end }}
 {{- end -}}
 {{- end -}}

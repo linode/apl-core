@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "restrict-volume-types" }}
-{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+{{- if and $v.apps.kyverno.enabled $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -46,6 +46,6 @@ spec:
               operator: AnyNotIn
               value:
               - name
-              - ''  
+              - ''
               {{- $p.customValues | toYaml | nindent 14 }}
 {{- end }}

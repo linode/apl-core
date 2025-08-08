@@ -124,6 +124,7 @@ const processCrdWrapper = async (argv: BasicArguments) => {
     ignore: [
       // Templates can usually not be processed directly
       '**/templates/crds/**',
+      '**/crds/templates/**',
       // These also come statically with the chart
       'kube-prometheus-stack/charts/crds/templates/**',
     ],

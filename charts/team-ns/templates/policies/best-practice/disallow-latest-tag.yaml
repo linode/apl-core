@@ -1,6 +1,6 @@
 {{- $v := .Values }}
 {{- $p := index $v.policies "disallow-latest-tag" }}
-{{- if and (get (index $v.apps "kyverno") "enabled") $p }}
+{{- if and $v.apps.kyverno.enabled $p }}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -16,8 +16,8 @@ metadata:
       The ':latest' tag is mutable and can lead to unexpected errors if the
       image changes. A best practice is to use an immutable tag that maps to
       a specific version of an application Pod. This policy validates that the image
-      specifies a tag and that it is not called `latest`. 
-  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}  
+      specifies a tag and that it is not called `latest`.
+  labels: {{- include "team-ns.chart-labels" $ | nindent 4 }}
 spec:
   validationFailureAction: {{ $p.action }}
   background: true
