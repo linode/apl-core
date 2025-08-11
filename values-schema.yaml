@@ -250,6 +250,10 @@ definitions:
         default: otomi
       provider:
         $ref: '#/definitions/provider'
+      defaultStorageClass:
+        type: string
+        description: Default storage class for platform components. Use '' for relying on the cluster's default storage class.
+        default: ''
     required:
       - name
       - provider
@@ -1683,6 +1687,8 @@ properties:
             $ref: '#/definitions/rawValues'
           resources:
             $ref: '#/definitions/resources'
+          barmanPluginResources:
+            $ref: '#/definitions/resources'
       drone:
         additionalProperties: false
         properties:
@@ -2118,7 +2124,16 @@ properties:
                 $ref: '#/definitions/resources'
               reportsController:
                 $ref: '#/definitions/resources'
-
+      policy-reporter:
+        additionalProperties: false
+        properties:
+          enabled:
+            type: boolean
+            default: false
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          resources:
+            $ref: '#/definitions/resources'
       kiali:
         additionalProperties: false
         properties:
@@ -2166,6 +2181,53 @@ properties:
                 default: 1
                 type: integer
                 minimum: 1
+      kubeflow-pipelines:
+        additionalProperties: false
+        properties:
+          _rawValues:
+            $ref: '#/definitions/rawValues'
+          enabled:
+            default: false
+            type: boolean
+          persistence:
+            properties:
+              mysql:
+                properties:
+                  size:
+                    default: 20Gi
+                    $ref: '#/definitions/size'
+          rootPassword:
+            type: string
+            x-secret: '{{ randAlphaNum 32 }}'
+          resources:
+            additionalProperties: false
+            properties:
+              cacheDeployer:
+                $ref: '#/definitions/resources'
+              cacheServer:
+                $ref: '#/definitions/resources'
+              metadataEnvoy:
+                $ref: '#/definitions/resources'
+              metadataGrpc:
+                $ref: '#/definitions/resources'
+              metadataWriter:
+                $ref: '#/definitions/resources'
+              mlPipeline:
+                $ref: '#/definitions/resources'
+              mlPipelinePersistenceagent:
+                $ref: '#/definitions/resources'
+              mlPipelineScheduledworkflow:
+                $ref: '#/definitions/resources'
+              mlPipelineUi:
+                $ref: '#/definitions/resources'
+              mlPipelineViewer:
+                $ref: '#/definitions/resources'
+              mlPipelineVisualizationserver:
+                $ref: '#/definitions/resources'
+              mysql:
+                $ref: '#/definitions/resources'
+              workflowController:
+                $ref: '#/definitions/resources'
       kured:
         additionalProperties: false
         properties:
@@ -2300,15 +2362,20 @@ properties:
             x-secret: '{{ randAlphaNum 20 }}'
           persistence:
             properties:
-              querier:
-                properties:
-                  size:
-                    default: 20Gi
-                    $ref: '#/definitions/size'
               ingester:
                 properties:
                   size:
                     default: 20Gi
+                    $ref: '#/definitions/size'
+              querier:
+                properties:
+                  size:
+                    default: 10Gi
+                    $ref: '#/definitions/size'
+              compactor:
+                properties:
+                  size:
+                    default: 10Gi
                     $ref: '#/definitions/size'
           retention:
             additionalProperties: false
@@ -3175,6 +3242,8 @@ properties:
                 default: false
               resources:
                 $ref: '#/definitions/resources'
+              backupSidecarResources:
+                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3191,6 +3260,8 @@ properties:
                 default: false
               resources:
                 $ref: '#/definitions/resources'
+              backupSidecarResources:
+                $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
               schedule:
@@ -3206,6 +3277,8 @@ properties:
                 type: boolean
                 default: false
               resources:
+                $ref: '#/definitions/resources'
+              backupSidecarResources:
                 $ref: '#/definitions/resources'
               retentionPolicy:
                 $ref: '#/definitions/backupRetentionPolicy'
@@ -3293,6 +3366,10 @@ properties:
                     type: string
                     $ref: '#/definitions/wordCharacterPattern'
                     default: gitea
+                  kubeflow-pipelines:
+                    type: string
+                    $ref: '#/definitions/wordCharacterPattern'
+                    default: kubeflow-pipelines
             required:
               - region
               - accessKeyId

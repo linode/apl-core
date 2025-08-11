@@ -10,14 +10,18 @@
                  {{- else -}}808080{{- end -}}",
   "summary": "{{- if eq .CommonAnnotations.summary "" -}}
                   {{- if eq .CommonAnnotations.message "" -}}
-                    {{- .CommonLabels.alertname -}}
+                    {{- if eq .CommonLabels.alertname "" -}}
+                      Prometheus Alert
+                    {{- else -}}
+                      {{- .CommonLabels.alertname -}}
+                    {{- end -}}
                   {{- else -}}
                     {{- .CommonAnnotations.message -}}
                   {{- end -}}
               {{- else -}}
                   {{- .CommonAnnotations.summary -}}
               {{- end -}}",
-  "title": "Prometheus Alert ({{ .Status }})",
+  "title": "Prometheus Alert ({{ .Status | title }})",
   "sections": [ {{$externalUrl := .ExternalURL}}
   {{- range $index, $alert := .Alerts }}{{- if $index }},{{- end }}
     {
@@ -25,8 +29,10 @@
       "facts": [
         {{- range $key, $value := $alert.Annotations }}
         {
-          "name": "{{ $key }}",
-          "value": "{{ $value }}"
+          {{- if ne $key "description" -}}
+            "name": "{{ $key }}",
+            "value": "{{ $value }}"
+          {{- end -}}
         },
         {{- end -}}
         {{$c := counter}}{{ range $key, $value := $alert.Labels }}{{if call $c}},{{ end }}

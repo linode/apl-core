@@ -6,7 +6,7 @@ ARG TARGETARCH
 # https://github.com/kubernetes/kubernetes/releases
 ARG KUBECTL_VERSION=1.33.0
 # https://github.com/helm/helm/tags
-ARG HELM_VERSION=3.18.1
+ARG HELM_VERSION=3.18.4
 # https://github.com/databus23/helm-diff/releases
 ARG HELM_DIFF_VERSION=3.11.0
 # https://github.com/jkroepke/helm-secrets/releases

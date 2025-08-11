@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard
+  repository: ghcr.io/tektoncd/github.com/tektoncd/dashboard/cmd/dashboard
   pullPolicy: IfNotPresent
   tag: "v0.40.1"
 

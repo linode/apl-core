@@ -127,6 +127,13 @@ environments:
               limits:
                 cpu: "1"
                 memory: 1Gi
+            barmanPluginResources:
+              requests:
+                cpu: 100m
+                memory: 100Mi
+              limits:
+                cpu: 100m
+                memory: 200Mi
             _rawValues: {}
           drone:
             enabled: false
@@ -176,11 +183,13 @@ environments:
                           docker.io/linode/apl-api,
                           docker.io/drone/drone-runner-kube,
                           docker.io/grafana/promtail,
-                          gcr.io/tekton-releases/github.com/tektoncd/dashboard/cmd/dashboard,
+                          ghcr.io/tektoncd/github.com/tektoncd/dashboard/cmd/dashboard,
                           quay.io/argoprojlabs/argocd-image-updater,
-                          gcr.io/tekton-releases/github.com/tektoncd/triggers/cmd/eventlistenersink,
+                          ghcr.io/tektoncd/github.com/tektoncd/triggers/cmd/eventlistenersink,
                           docker.io/bitnami/sealed-secrets-controller,
                           ghcr.io/cloudnative-pg/postgresql,
+                          ghcr.io/cloudnative-pg/plugin-barman-cloud,
+                          ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar,
                           jaegertracing/jaeger-operator
                         ) or (k8s.ns.name = "kube-system")
                           or (k8s.ns.name = "ingress")
@@ -583,6 +592,104 @@ environments:
                 limits:
                   cpu: "1"
                   memory: 1Gi
+          kubeflow-pipelines:
+            enabled: false
+            persistence:
+              mysql:
+                size: 20Gi
+            resources:
+              cacheDeployer:
+                requests:
+                  cpu: 10m
+                  memory: 8Mi
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+              cacheServer:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+              metadataEnvoy:
+                requests:
+                  cpu: 20m
+                  memory: 64Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              metadataGrpc:
+                requests:
+                  cpu: 20m
+                  memory: 8Mi
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+              metadataWriter:
+                requests:
+                  cpu: 20m
+                  memory: 128Mi
+                limits:
+                  cpu: 100m
+                  memory: 256Mi
+              mlPipeline:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              mlPipelinePersistenceagent:
+                requests:
+                  cpu: 20m
+                  memory: 16Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
+              mlPipelineScheduledworkflow:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+              mlPipelineUi:
+                requests:
+                  cpu: 20m
+                  memory: 128Mi
+                limits:
+                  cpu: 500m
+                  memory: 256Mi
+              mlPipelineViewer:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 200m
+                  memory: 128Mi
+              mlPipelineVisualizationserver:
+                requests:
+                  cpu: 20m
+                  memory: 128Mi
+                limits:
+                  cpu: 200m
+                  memory: 256Mi
+              mysql:
+                requests:
+                  cpu: 100m
+                  memory: 512Mi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              workflowController:
+                requests:
+                  cpu: 20m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+            _rawValues: {}
           kured:
             enabled: false
             resources:
@@ -626,6 +733,16 @@ environments:
                 limits:
                   cpu: "1"
                   memory: 512Mi
+            _rawValues: {}
+          policy-reporter:
+            enabled: false
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: "1"
+                memory: 512Mi
             _rawValues: {}
           tekton:
             resources:
@@ -742,6 +859,8 @@ environments:
               ingester:
                 size: 20Gi
               querier:
+                size: 10Gi
+              compactor:
                 size: 10Gi
             autoscaling:
               ingester:
@@ -947,7 +1066,7 @@ environments:
                   cpu: 200m
                   memory: 128Mi
           prometheus:
-            enabled: false
+            enabled: true
             disabledRules:
               - InfoInhibitor
             remoteWrite:
@@ -1230,6 +1349,9 @@ environments:
             replicas: 2
             recovery: {}
             externalClusters: []
+            # Optimized memory based on actual workload: shared_buffers + work_mem * 2 * max_connections + overhead
+            # Platform databases handle small datasets with low complexity queries (mainly PK lookups)
+            # Memory calculation: 32MB (shared_buffers) + 2MB * 2 * 32 + 32MB (overhead) = 192Mi
             resources:
               limits:
                 cpu: "200m"
@@ -1237,6 +1359,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
           harbor:
             imageName: null
             size: 5Gi
@@ -1245,6 +1374,9 @@ environments:
             coreDatabase: registry
             recovery: {}
             externalClusters: []
+            # Optimized memory based on actual workload: shared_buffers + work_mem * 2 * max_connections + overhead
+            # Platform databases handle small datasets with low complexity queries (mainly PK lookups)
+            # Memory calculation: 32MB (shared_buffers) + 2MB * 2 * 32 + 32MB (overhead) = 192Mi
             resources:
               limits:
                 cpu: "200m"
@@ -1252,6 +1384,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
           gitea:
             imageName: null
             size: 5Gi
@@ -1259,6 +1398,9 @@ environments:
             replicas: 2
             recovery: {}
             externalClusters: []
+            # Optimized memory based on actual workload: shared_buffers + work_mem * 2 * max_connections + overhead
+            # Platform databases handle small datasets with low complexity queries (mainly PK lookups)
+            # Memory calculation: 32MB (shared_buffers) + 2MB * 2 * 32 + 32MB (overhead) = 192Mi
             resources:
               limits:
                 cpu: "200m"
@@ -1266,6 +1408,13 @@ environments:
               requests:
                 cpu: "200m"
                 memory: 192Mi
+            backupSidecarResources:
+              limits:
+                cpu: "300m"
+                memory: 128Mi
+              requests:
+                cpu: "50m"
+                memory: 48Mi
         obj:
           provider:
             type: disabled
@@ -1293,6 +1442,7 @@ environments:
         cluster:
           provider: linode
           name: apl
+          defaultStorageClass: ''
         dns:
           domainFilters: []
           zoneIdFilters: []
@@ -1310,7 +1460,7 @@ environments:
           isMultitenant: true
           nodeSelector: {}
           isPreInstalled: false
-          useORCS: false
+          useORCS: true
         users: []
         e2e:
           enabled: false
@@ -1318,4 +1468,4 @@ environments:
             version: main
         # TODO: update this when schema version changes
         versions:
-          specVersion: 43
+          specVersion: 44

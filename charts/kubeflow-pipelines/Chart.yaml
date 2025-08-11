@@ -1,0 +1,7 @@
+apiVersion: v2
+name: kubeflow-pipelines
+description: App Platform fast path to use Kubeflow pipelines
+type: application
+version: 1.0.0
+appVersion: "2.4.0"
+icon: https://linode.github.io/apl-charts/icons/kubeflow.png

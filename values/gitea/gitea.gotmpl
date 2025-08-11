@@ -127,6 +127,10 @@ gitea:
         secretKeyRef:
           name: gitea-db-secret
           key: password
+    - name: GITEA__DATABASE__MAX_OPEN_CONNS
+      value: "32"
+    - name: GITEA__DATABASE__MAX_IDLE_CONNS
+      value: "6"
 
 init:
   resources: {{- $g.resources.init | toYaml | nindent 4 }}
@@ -224,7 +228,7 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
 
 global:
-  storageClass: ""
+  storageClass: {{ $v.cluster.defaultStorageClass | default "" }}
   hostAliases: []
 {{- with $v.otomi | get "globalPullSecret" nil }}
   imagePullSecrets:

@@ -1,4 +1,5 @@
-{{- $t := .Values.teamApps.tekton }}
+{{- $v := .Values}}
+{{- $t := $v.teamApps.tekton }}
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -109,7 +110,11 @@ spec:
     - name: gitInitImage
       description: The image providing the git-init binary that this Task runs.
       type: string
-      default: "gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
+      {{- if $v.linodeLkeImageRepository }}
+      default: "{{- $v.linodeLkeImageRepository }}/ghcr/tektoncd/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
+      {{- else }}
+      default: "ghcr.io/tektoncd/github.com/tektoncd/pipeline/cmd/git-init:v0.40.2"
+      {{- end }}
     - name: userHome
       description: |
         Absolute path to the user's home directory.

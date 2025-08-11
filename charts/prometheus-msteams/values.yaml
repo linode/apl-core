@@ -3,22 +3,24 @@ replicaCount: 1
 
 image:
   repository: quay.io/prometheusmsteams/prometheus-msteams
-  tag: v1.3.3
+  tag: v1.5.2
   pullPolicy: Always
 
-extraEnvs:
+imagePullSecrets: []
+
+extraEnvs: {}
 
 container:
   port: 2000
   additionalArgs: []
 
-resources:
-  limits:
-    cpu: 10m
-    memory: 32Mi
-  requests:
-    cpu: 1m
-    memory: 8Mi
+resources: {}
+#  limits:
+#    cpu: 10m
+#    memory: 32Mi
+#  requests:
+#    cpu: 1m
+#    memory: 8Mi
 
 service:
   type: ClusterIP
@@ -30,21 +32,60 @@ tolerations: []
 
 affinity: {}
 
+containerSecurityContext: {}
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsNonRoot: true
+
+priorityClassName: ""
+
+# Custom labels for pod assignment
+podLabels: {}
+
 metrics:
   serviceMonitor:
     enabled: false
     additionalLabels: {}
     scrapeInterval: 30s
 
-connectors: {}
-connectors_with_custom_templates: {}
-
-
 ## Specify the custom message card template for MS teams
+customCardTemplate: ""
 # customCardTemplate: |
 #   {{ define "teams.card" }}
-#   {
-#     
-#   }
+#   {...}
 #   {{ end }}
 
+templateFile: /etc/template/card.tmpl
+
+extraConfigmapMounts: []
+# extraConfigmapMounts:
+#   - name: customConfigMap
+#     configMap:
+#       name: customConfigMapName
+
+## Additional Volume mounts
+extraVolumeMounts: []
+# extraVolumeMounts:
+#   - name: volume-name
+#     mountPath: /etc/custom_path
+
+connectors: []
+
+# ref: https://github.com/prometheus-msteams/prometheus-msteams#customise-messages-per-ms-teams-channel
+connectorsWithCustomTemplates: []
+# - request_path: /alert2
+#   template_file: |
+#     {{ define "teams.card" }}
+#     {...}
+#     {{ end }}
+#   webhook_url: <webhook>
+#   escape_underscores: true
+
+# Env from existing secrets or configmaps (in same namespace), will passed through to contains 'envFrom'
+envFrom: {}
+# envFrom:
+#   - secretRef:
+#       name: my-prometheus-msteams-env-secret
+#   - configMapRef:
+#       name: my-prometheus-msteams-env-cm

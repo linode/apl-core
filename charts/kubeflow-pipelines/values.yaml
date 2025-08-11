@@ -1,0 +1,49 @@
+objectStorage:
+  endpoint: ""
+  region: ""
+  bucket: ""
+
+cacheDeployer:
+  resources: {}
+
+cacheServer:
+  resources: {}
+
+metadataEnvoy:
+  resources: {}
+
+metadataGrpc:
+  resources: {}
+
+metadataWriter:
+  resources: {}
+
+mlPipeline:
+  resources: {}
+
+mlPipelinePersistenceagent: 
+  resources: {}
+
+mlPipelineScheduledworkflow:
+  resources: {}
+
+mlPipelineUi:
+  resources: {}
+
+mlPipelineViewer:
+  resources: {}
+
+mlPipelineVisualizationserver:
+  resources: {}
+
+mysql:
+  resources: {}
+  storage:
+    enabled: true
+    size: 20Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+
+workflowController:
+  resources: {}

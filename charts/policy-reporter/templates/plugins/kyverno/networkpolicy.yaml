@@ -1,0 +1,24 @@
+{{- if .Values.plugin.kyverno.enabled -}}
+{{- if .Values.plugin.kyverno.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  labels: {{- include "kyverno-plugin.labels" . | nindent 4 }}
+  name: {{ include "kyverno-plugin.fullname" . }}
+  namespace: {{ include "policyreporter.namespace" . }}
+spec:
+  podSelector:
+    matchLabels: {{- include "kyverno-plugin.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Ingress
+  - Egress
+  {{- with .Values.plugin.kyverno.networkPolicy.ingress }}
+  ingress:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with .Values.plugin.kyverno.networkPolicy.egress }}
+  egress:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end }}

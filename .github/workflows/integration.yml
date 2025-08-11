@@ -92,10 +92,10 @@ on:
           - 'true'
           - 'false'
         default: 'true'
-      useORCS:
-        description: 'Use OCI Registry Cache Service (ORCS) for container images'
+      disableORCS:
+        description: 'Check the box if you dont want to pull from ORCS'
         type: boolean
-        default: true
+        default: false
 
 env:
   CACHE_REGISTRY: ghcr.io
@@ -233,7 +233,7 @@ jobs:
           while :; do
             rawOutput=$(linode-cli lke pools-list ${{ env.LINODE_CLUSTER_ID }} --json)
 
-            allReady=$(echo "$rawOutput" | jq -r 'map(.nodes | .status == "ready") | all')
+            allReady=$(echo "$rawOutput" | jq -r 'map(.nodes[] | .status == "ready") | all')
             echo "All nodes ready: $allReady"
 
             if [ "$allReady" == "true" ]; then
@@ -277,8 +277,8 @@ jobs:
           # If a pipeline installs APL from the semver tag then pull container image from DockerHub
           [[ ${GITHUB_REF##*/} =~ ^v[0-9].+$ ]] && exit 0
 
-          # If useORCS is true, then pull image DockerHub
-          [[ '${{ inputs.useORCS }}' == 'true' ]] && exit 0
+          # If "disableORCS" is false, then pull image from DockerHub
+          [[ '${{ inputs.disableORCS }}' == 'false' ]] && exit 0
 
           # Pull image from cache registry
           cat << EOF > values-container-registry.yaml
@@ -294,7 +294,7 @@ jobs:
 
           helm install cloud-firewall-crd linode-cfw/cloud-firewall-crd \
             && kubectl wait --for condition=established --timeout=60s crd/cloudfirewalls.networking.linode.com \
-            && helm install cloud-firewall-ctrl linode-cfw/cloud-firewall-controller
+            && helm install cloud-firewall-ctrl linode-cfw/cloud-firewall-controller --set-json firewall='{"outbound":[],"inbound":[{"label":"allow-prometheus-node-export-tcp","action":"ACCEPT","description":"Prometheus Node Exporter","protocol":"TCP","ports":"9100","addresses":{"ipv4":["192.168.128.0/17"]}}]}'
       - name: APL install
         if: ${{ inputs.install_profile != 'no-apl' }}
         env:
@@ -312,6 +312,7 @@ jobs:
           [[ '${{ inputs.certificate }}' == 'letsencrypt_staging' ]] && echo "$LETSENCRYPT_STAGING" >> values.yaml
           [[ '${{ inputs.certificate }}' == 'letsencrypt_production' ]] && echo "$LETSENCRYPT_PRODUCTION" >> values.yaml
           [[ '${{ inputs.kms }}' == 'age' ]] && kms="--set kms.sops.provider=age"
+          [[ '${{ inputs.disableORCS }}' == 'true' ]] && disableORCS="--set otomi.useORCS=false"
 
           if [[ '${{ inputs.is_pre_installed }}' == 'true' ]]; then
             cat <<EOF >> values.yaml
@@ -341,8 +342,7 @@ jobs:
             --set otomi.hasExternalDNS=true \
             --set cluster.domainSuffix=${{ env.DOMAIN }} \
             --set otomi.adminPassword=$adminPassword \
-            --set otomi.useORCS=${{ inputs.useORCS }} \
-            $kms"
+            $disableORCS $kms"
 
           helm install $install_args &
           HELM_PID=$!

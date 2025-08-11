@@ -1,8 +1,7 @@
 apiVersion: v2
 name: apl
 description: A Helm chart for installing APL in Kubernetes
-home: https://apl-docs.net/
-icon: https://apl-docs.net/img/otomi-logo.svg
+home: https://techdocs.akamai.com/app-platform/docs/welcome
 type: application
 version: 0.0.0-chart-version
 appVersion: APP_VERSION_PLACEHOLDER

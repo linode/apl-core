@@ -30,57 +30,21 @@ spec:
   monitoring:
     enablePodMonitor: {{ . }}
   {{- end }}
+  {{- with .Values.resources }}
   resources:
-    {{- with .Values.resources }}
     {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- end }}
   {{- with .Values.clusterAffinity }}
   {{- toYaml . | nindent 2 }}
   {{- end }}
-{{- if .Values.backup.enabled }}
-  env:
-    # Barman object storage compatibility (https://github.com/EnterpriseDB/barman/issues/1086)
-    - name: AWS_REQUEST_CHECKSUM_CALCULATION
-      value: WHEN_REQUIRED
-    - name: AWS_RESPONSE_CHECKSUM_VALIDATION
-      value: WHEN_REQUIRED
-  {{- if eq .Values.backup.type "minioLocal" }}
-  backup:
-    retentionPolicy: {{ .Values.backup.retentionPolicy }}
-    barmanObjectStore:
-      destinationPath: {{ .Values.backup.minioLocal.destinationPath }}
-      endpointURL: "http://minio.minio.svc.cluster.local:9000"
-      s3Credentials:
-        accessKeyId:
-          name: minio-creds
-          key: MINIO_ACCESS_KEY
-        secretAccessKey:
-          name: minio-creds
-          key: MINIO_SECRET_KEY
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
+
+  {{- if .Values.backup.enabled }}
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: {{ .Values.name }}
   {{- end }}
-  {{- if eq .Values.backup.type "linode" }}
-  backup:
-    retentionPolicy: {{ .Values.backup.retentionPolicy }}
-    barmanObjectStore:
-      destinationPath: {{ .Values.backup.linode.destinationPath }}
-      endpointURL: {{ .Values.backup.linode.endpointURL }}
-      s3Credentials:
-        accessKeyId:
-          name: linode-creds
-          key: S3_STORAGE_ACCOUNT
-        secretAccessKey:
-          name: linode-creds
-          key: S3_STORAGE_KEY
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
-  {{- end }}
-{{- end }}
 
   {{- with .Values.clusterSpec }}
   {{- toYaml . | nindent 2 }}

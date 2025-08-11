@@ -7,9 +7,6 @@ metadata:
     chart: {{ template "app.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  {{- if .Values.annotations }}
-  annotations: {{ toYaml .Values.annotations | nindent 4 }}
-  {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -21,15 +18,20 @@ spec:
       labels:
         app: {{ template "app.name" . }}
         release: {{ .Release.Name }}
-    {{- if .Values.podAnnotations }}
+{{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+{{- end }}
       annotations:
-    {{ toYaml .Values.podAnnotations | indent 8 }}
-    {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configMapConfig.yaml") . | sha256sum }}
+        checksum/msteams-card-templates: {{ include (print $.Template.BasePath "/configMapTemplate.yaml") . | sha256sum }}
+{{- if .Values.podAnnotations }}
+{{ toYaml .Values.podAnnotations | indent 8 }}
+{{- end }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+{{ toYaml .Values.imagePullSecrets | indent 8 }}
+      {{- end}}
       volumes:
         - name: config-volume
           configMap:
@@ -37,23 +39,37 @@ spec:
         - name: card-template-volume
           configMap:
             name: {{ template "app.name" . }}-card-template
+      {{- if .Values.extraConfigmapMounts }}
+      {{ toYaml .Values.extraConfigmapMounts | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+{{- if .Values.containerSecurityContext }}
+          securityContext:
+{{ toYaml .Values.containerSecurityContext | indent 12 }}
+{{- end }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             {{- range $key, $value := $.Values.extraEnvs }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
+          {{- if .Values.envFrom }}
+          envFrom:
+            {{- toYaml .Values.envFrom | nindent 12 }}
+          {{- end }}
           volumeMounts:
             - name: config-volume
               mountPath: /etc/config
             - name: card-template-volume
               mountPath: /etc/template
+          {{- if .Values.extraVolumeMounts }}
+          {{ toYaml .Values.extraVolumeMounts | nindent 12 }}
+          {{- end }}
           args:
             - -config-file=/etc/config/connectors.yaml
-            - -template-file=/etc/template/card.tmpl
+            - -template-file={{ .Values.templateFile }}
           {{- with .Values.container.additionalArgs }}
 {{ toYaml . | indent 12 }}
           {{- end}}
@@ -75,6 +91,10 @@ spec:
             periodSeconds: 20
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.podSecurityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+    {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -86,4 +106,7 @@ spec:
     {{- with .Values.tolerations }}
       tolerations:
 {{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
     {{- end }}

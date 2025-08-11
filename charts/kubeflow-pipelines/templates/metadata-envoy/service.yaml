@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: metadata-envoy
+    application-crd-id: kubeflow-pipelines
+  name: metadata-envoy-service
+spec:
+  ports:
+  - name: md-envoy
+    port: 9090
+    protocol: TCP
+  selector:
+    application-crd-id: kubeflow-pipelines
+    component: metadata-envoy
+  type: ClusterIP
+---

@@ -12,6 +12,7 @@ walStorage:
 priorityClassName: otomi-critical
 
 resources: {}
+backupSidecarResources: {}
 
 monitoring: true
 
@@ -27,7 +28,7 @@ clusterSpec:
 backup:
   enabled: false
   suspend: false
-  immediate: true
+  immediate: false
   target: primary
   schedule: "0 0 * * *"
   backupOwnerReference: none

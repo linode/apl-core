@@ -2,11 +2,15 @@
 {{- $k := $v | get "apps.keycloak" }}
 {{- $consoleLoginVersion := $v.versions.consoleLogin}}
 {{- $isSemver := regexMatch "^[0-9.]+" $consoleLoginVersion }}
+{{- $globalPullSecret := $v.otomi | get "globalPullSecret" nil }}
 
-{{- if $v.otomi.linodeLkeImageRepository }}
+{{- if or $v.otomi.linodeLkeImageRepository $v.cluster.defaultStorageClass }}
 global:
+  {{- if $v.otomi.linodeLkeImageRepository }}
   security:
     allowInsecureImages: true
+  {{- end }}
+  storageClass: {{ $v.cluster.defaultStorageClass }}
 {{- end }}
 
 auth:
@@ -24,8 +28,10 @@ proxy: edge
 resources: {{ $k.resources.keycloak | toYaml | nindent 2 }}
 priorityClassName: otomi-critical
 
+
+{{- if or $v.otomi.linodeLkeImageRepository $globalPullSecret}}
 image:
-{{- with .Values.otomi | get "globalPullSecret" nil }}
+{{- with $globalPullSecret }}
   pullSecrets:
     - name: otomi-pullsecret-global
 {{- end }}
@@ -33,9 +39,7 @@ image:
   registry: "{{- $v.otomi.linodeLkeImageRepository }}/docker"
   repository: bitnami/keycloak
 {{- end }}
-  # Override default from 26.2.0, as it has an issue during upgrade (to be fixed in 26.2.1)
-  # see https://github.com/keycloak/keycloak/issues/38937
-  tag: 26.1.5-debian-12-r1
+{{- end }}
 
 initContainers:
   # Akamai branding init container
@@ -68,6 +72,14 @@ externalDatabase:
   existingSecretUserKey: username
   existingSecretDatabaseKey: dbname
   existingSecretPasswordKey: password
+
+extraEnv: |
+  - name: KC_DB_POOL_INITIAL_SIZE
+    value: "5"
+  - name: KC_DB_POOL_MIN_SIZE
+    value: "5"
+  - name: KC_DB_POOL_MAX_SIZE
+    value: "32"
 
 {{- if $v.otomi.linodeLkeImageRepository }}
 keycloakConfigCli:

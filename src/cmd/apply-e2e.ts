@@ -1,16 +1,16 @@
-import { mkdirSync, rmdirSync } from 'fs'
+import { mkdirSync, rmSync } from 'fs'
 import { cleanupHandler, prepareEnvironment } from 'src/common/cli'
 import { logLevelString, terminal } from 'src/common/debug'
 import { hf } from 'src/common/hf'
 import { getFilename, rootDir } from 'src/common/utils'
-import { HelmArguments, getParsedArgs, helmOptions, setParsedArgs } from 'src/common/yargs'
+import { getParsedArgs, HelmArguments, helmOptions, setParsedArgs } from 'src/common/yargs'
 import { Argv, CommandModule } from 'yargs'
 
 const cmdName = getFilename(__filename)
 const dir = '/tmp/otomi/'
 const cleanup = (argv: HelmArguments): void => {
   if (argv.skipCleanup) return
-  rmdirSync(dir, { recursive: true })
+  rmSync(dir, { recursive: true })
 }
 
 const setup = (): void => {

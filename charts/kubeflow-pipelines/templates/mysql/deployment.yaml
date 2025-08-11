@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {{- include "kfp.labels" . | nindent 4 }}
+    app: ml-pipeline-mysql
+    application-crd-id: kubeflow-pipelines
+  name: ml-pipeline-mysql
+spec:
+  selector:
+    matchLabels:
+      app: ml-pipeline-mysql
+      application-crd-id: kubeflow-pipelines
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels: {{- include "kfp.labels" . | nindent 8 }}
+        app: ml-pipeline-mysql
+        application-crd-id: kubeflow-pipelines
+    spec:
+      containers:
+      - args:
+        - --datadir
+        - /var/lib/mysql
+        - --default-authentication-plugin=mysql_native_password
+        - --disable-log-bin
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kfp-mysql-secret
+              key: password
+        image: gcr.io/ml-pipeline/mysql:8.0.26
+        name: ml-pipeline-mysql
+        ports:
+        - containerPort: 3306
+          name: kfp-mysql
+        {{- with .Values.mysql.resources }}
+        resources: {{- . | toYaml | nindent 12 }}
+        {{- end }}
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-persistent-storage
+      serviceAccountName: ml-pipeline-mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+---
