@@ -6,12 +6,12 @@
 
 # Example configuration (all commented out):
 # Simple on/off switch per application
-# giteaNetworkPolicy:
-#   enabled: true  # Enable network policies for Gitea with sensible defaults
+# netpols:
+#   gitea: true  # Enable network policies for Gitea with sensible defaults
 
 # Network policy behavior when enabled:
-# 
-# For Gitea (giteaNetworkPolicy.enabled: true):
+#
+# For Gitea (netpols.gitea: true):
 # - Creates a NetworkPolicy in the gitea namespace
 # - Allows ingress from:
 #   * Istio public ingress gateway (for web access)
@@ -22,6 +22,6 @@
 #   * Monitoring namespace (for metrics)
 #   * CNPG system (for database management)
 #   * Internal gitea namespace communication
-# 
+#
 # The complex network policy rules are baked into the chart templates,
 # so users only need to toggle network policies on/off per application.

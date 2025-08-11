@@ -1,4 +1,4 @@
-{{- if .Values.giteaNetworkPolicy.enabled }}
+{{- if .Values.netpols.gitea }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

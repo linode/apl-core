@@ -2,5 +2,5 @@
 {{- $a := $v.apps }}
 
 # Simple per-app network policy configuration
-giteaNetworkPolicy:
-  enabled: {{ $a.gitea.networkPolicies.enabled | default false }}
+netpols:
+  gitea: {{ $a.gitea.networkPolicies.enabled}}
