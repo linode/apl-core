@@ -1175,10 +1175,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/workload'
-      projects:
-        type: array
-        items:
-          $ref: '#/definitions/project'
       policies:
         type: object
       builds:
@@ -1262,15 +1258,6 @@ definitions:
     type: string
     # At least one non whitespace character
     pattern: ^[^\s]+$
-  project:
-    type: object
-    description: A single project can represent application's build, workload and service.
-    properties:
-      name:
-        description: Name of the project
-        $ref: '#/definitions/idName'
-    required:
-      - name
   policies:
     type: object
   build:
