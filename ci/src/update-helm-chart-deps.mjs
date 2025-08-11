@@ -200,8 +200,7 @@ async function main() {
         }
 
         const appInfo = chartApps[dependency.name]
-        // By default create a draft PR only if appInfo is not found for chart
-        let setPrDraft = Boolean(!appInfo)
+        let appsVersionSet = false
         if (appInfo) {
           console.log(`Chart ${dependency.name} assigned to app – looking up new version`)
           try {
@@ -212,17 +211,15 @@ async function main() {
               try {
                 await writeYamlFile(appsFile, apps)
                 await $`git add ${appsFile}`
+                appsVersionSet = true
               } catch (error) {
                 console.error(`Error updating app version for ${dependency.name}:`, error)
-                setPrDraft = true
               }
             } else {
               console.info(`Updated app version not found in chart ${dependency.name}`)
-              setPrDraft = true
             }
           } catch (error) {
             console.error(`Error checking dependency app version ${dependency.name}:`, error)
-            setPrDraft = true
           }
         } else {
           console.log(`No app found for ${dependency.name}`)
@@ -239,22 +236,23 @@ async function main() {
         }
         if (ciCreateGithubPr) {
           // Create a pull request
-          const prBody = `This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`
+          const prBody = [`This PR updates the dependency **${dependency.name}** to version **${latestVersion}**.`]
+          if (!appsVersionSet) {
+            prBody.push('TODO: Update app version in apps.yaml.')
+          }
           const args = [
             '--title',
             commitMessage,
             '--body',
-            prBody,
+            prBody.join('\n'),
             '--base',
             baseBranch,
             '--head',
             branchName,
+            '--draft',
             '--label',
             'chart-deps',
           ]
-          if (setPrDraft) {
-            args.push('--draft')
-          }
           await $`gh pr create ${args}`
         }
       } catch (error) {
