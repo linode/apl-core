@@ -1435,6 +1435,7 @@ environments:
               retentionPolicy: 7d
               schedule: 0 0 * * *
               pathSuffix: keycloak
+          useCnpgPlugin: false
           gitea:
             enabled: false
             retentionPolicy: 7d

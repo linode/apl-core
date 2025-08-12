@@ -1,4 +1,4 @@
-{{- if .Values.backup.enabled }}
+{{- if and .Values.backup.enabled .Values.backup.usePlugin }}
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:

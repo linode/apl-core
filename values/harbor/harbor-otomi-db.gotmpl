@@ -31,23 +31,21 @@ postgresql:
     shared_buffers: 64MB
     work_mem: 2MB
 
-{{- if eq $obj.type "minioLocal" "linode" }}
-{{- if $b.enabled }}
+{{- if and $b.enabled (eq $obj.type "minioLocal" "linode") }}
 backup:
   enabled: {{ $b.enabled }}
   schedule: {{ $b.schedule | quote }}
   retentionPolicy: {{ $b.retentionPolicy }}
   type:  {{ $obj.type }}
-{{- if eq $obj.type "minioLocal" }}
+  {{- if eq $obj.type "minioLocal" }}
   minioLocal:
     destinationPath: "s3://cnpg/{{ $b.pathSuffix }}"
-{{- end }}
-{{- if eq $obj.type "linode" }}
+  {{- else if eq $obj.type "linode" }}
   linode:
     destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/{{ $b.pathSuffix }}"
     endpointURL: https://{{ $obj.linode.region }}.linodeobjects.com
-{{- end }}
-{{- end }}
+  {{- end }}
+  usePlugin: {{ $v.platformBackups.useCnpgPlugin }}
 {{- end }}
 
 clusterSpec:
