@@ -1,0 +1,6 @@
+{{- $v := .Values }}
+{{- $a := $v.apps }}
+
+# Simple per-app network policy configuration
+netpols:
+  gitea: {{ $a.gitea.networkPolicies.enabled}}
