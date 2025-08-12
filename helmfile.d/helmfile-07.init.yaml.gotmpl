@@ -38,3 +38,10 @@ releases:
     labels:
       pkg: minio
     <<: *raw
+  - name: apl-network-policies
+    installed: true
+    namespace: apl-operator
+    labels:
+      pkg: platform
+    <<: *default
+
