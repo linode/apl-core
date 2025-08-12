@@ -1,0 +1,79 @@
+{{- if .Values.netpols.gitea }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gitea-platform-policy
+  namespace: gitea
+  labels:
+    {{- include "apl-network-policies.labels" . | nindent 4 }}
+    app: gitea
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow access from Istio public ingress gateway
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: istio-ingressgateway-public
+    # Allow APL Gitea operator access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: apl-gitea-operator
+    # Allow APL operator access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: apl-operator
+    # Allow APL API access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: otomi
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: otomi-api
+    # Allow team build access for git clone
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              type: team
+          podSelector:
+            matchLabels:
+              tekton.dev/task: git-clone
+    # Allow monitoring access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/instance: po-prometheus
+    # Allow CNPG system access
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: cnpg-system
+    # Allow database access within gitea namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: gitea
+          podSelector:
+            matchLabels:
+              cnpg.io/cluster: gitea-db
+    # Allow internal gitea app communication
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: gitea
+          podSelector:
+            matchLabels:
+              app: gitea
+{{- end }}
