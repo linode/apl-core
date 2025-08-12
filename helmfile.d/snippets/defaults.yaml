@@ -305,6 +305,8 @@ environments:
           gitea:
             adminUsername: otomi-admin
             _rawValues: {}
+            networkPolicies:
+              enabled: true
             resources:
               gitea:
                 limits:
