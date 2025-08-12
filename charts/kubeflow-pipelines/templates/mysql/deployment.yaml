@@ -30,7 +30,7 @@ spec:
             secretKeyRef:
               name: kfp-mysql-secret
               key: password
-        image: gcr.io/ml-pipeline/mysql:8.0.26
+        image: {{ include "mlPipelineRegistry" . }}/mysql:8.0.26
         name: ml-pipeline-mysql
         ports:
         - containerPort: 3306
