@@ -29,3 +29,15 @@ app.kubernetes.io/name: {{ include "kfp.fullname" . }}
 app.kubernetes.io/owner: {{ .Release.Namespace }}
 otomi.io/app: {{ include "kfp.fullname" . }}
 {{- end }}
+
+{{- define "kubeflowRegistry" -}}
+{{- default "ghcr.io/kubeflow" .Values.global.kubeflowRegistry }}
+{{- end }}
+
+{{- define "tfxOssPublicRegistry" -}}
+{{- default "gcr.io/tfx-oss-public" .Values.global.tfxOssPublicRegistry }}
+{{- end }}
+
+{{- define "mlPipelineRegistry" -}}
+{{- default "gcr.io/ml-pipeline" .Values.global.mlPipelineRegistry }}
+{{- end }}
