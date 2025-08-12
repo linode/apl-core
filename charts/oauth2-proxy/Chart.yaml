@@ -4,15 +4,15 @@ annotations:
       description: Updated the Redis chart to the latest version
       links:
         - name: Github PR
-          url: https://github.com/oauth2-proxy/manifests/pull/316
+          url: https://github.com/oauth2-proxy/manifests/pull/334
 apiVersion: v2
-appVersion: 7.9.0
+appVersion: 7.11.0
 dependencies:
 - alias: redis
   condition: redis.enabled
   name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 21.2.3
+  version: 22.0.1
 description: A reverse proxy that provides authentication with Google, Github or other
   providers
 home: https://oauth2-proxy.github.io/oauth2-proxy/
@@ -36,4 +36,4 @@ name: oauth2-proxy
 sources:
 - https://github.com/oauth2-proxy/oauth2-proxy
 - https://github.com/oauth2-proxy/manifests
-version: 7.12.18
+version: 7.17.1
