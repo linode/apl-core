@@ -50,7 +50,7 @@ dependencies:
     version: 24.7.1
     repository: https://charts.bitnami.com/bitnami
   - name: kiali-operator
-    version: 2.10.0
+    version: 2.14.0
     repository: https://kiali.org/helm-charts
   - name: knative-operator
     version: v1.18.1
