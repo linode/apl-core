@@ -132,7 +132,7 @@ appsInfo:
     integration: APL integrated ingress-nginx into an advanced ingress architecture.
   istio:
     title: Istio
-    appVersion: 1.26.1
+    appVersion: 1.27.0
     repo: https://github.com/istio/istio
     maintainers: Istio
     relatedLinks:
@@ -171,7 +171,7 @@ appsInfo:
     integration: The SSO login page for APL is served by Keycloak. Keycloak is used as an identity broker or provider for all APL integrated applications. By default Keycloak is configured as an Identity Broker. Keycloak is part of the core of APL and is always enabled.
   kiali:
     title: Kiali Operator
-    appVersion: 2.10.0
+    appVersion: 2.14.0
     repo: https://github.com/kiali/kiali
     maintainers: Kiali
     relatedLinks:
