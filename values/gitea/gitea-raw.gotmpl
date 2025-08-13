@@ -3,9 +3,13 @@
 {{- $otomiAdmin := "otomi-admin" }}
 {{- $obj := $v.obj.provider }}
 {{- $giteaBackupConfig := $v.platformBackups.gitea }}
-{{- $rcloneVersion := "1.69.0" }}
-{{- $rcloneZipSha512 := "35ee43f2c52599f80fcd753f7fef3fd8ad7ddcc4d22025ab67cbcfb9cf516bb819a303f3fe9d79b38593c392fd6c4748cdbc24c87ba2a93fd42c6ebfef0908b0" }}
-{{- $rcloneBinSha512 := "cb5de4f3d5a5f03791c19fe25304eac874fa1a5db30867c1b7919bc9a99f1fb30d709b1ad16a18f5ef878952282f376b97001ba48578f2006d8a400a130ee542" }}
+{{- $rcloneVersion := "1.70.3" }}
+{{- $rcloneZipSha512 := "e4cc635d3cd9027472a778d03b09686291bd9b2790cf21847064878cfb70891af68ffe148e072ce43a803e461f9a03aa31df953fbfcb68593138dfe42fc2f20d" }}
+{{- $rcloneBinSha512 := "67448344853d4ecc736ecd62d2ae5f06f0b8de28c82163a302d93d1f156b6a03aa2956bce044dbff5ea84e9399d96f8c728718737c963000abc0866cfb138fc3" }}
+{{- $kubectlImage := "rancher/kubectl:1.32.7" }}
+{{- if $v.otomi.linodeLkeImageRepository }}
+{{- $kubectlImage := print $v.otomi.linodeLkeImageRepository "/docker/" $kubectlImage }}
+{{- end }}
 
 resources:
 {{- if $v._derived.untrustedCA }}
@@ -104,7 +108,7 @@ resources:
           spec:
             serviceAccountName: gitea-backup
             containers:
-              - image: "{{- if $v.otomi.linodeLkeImageRepository }}{{- $v.otomi.linodeLkeImageRepository }}/docker/{{- end }}bitnami/kubectl:1.31"
+              - image: {{ $kubectlImage }}
                 name: kubectl
                 command:
                   - /bin/sh
