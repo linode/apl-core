@@ -64,4 +64,14 @@ export const runtimeUpgrades: RuntimeUpgrades = [
       await upgradeKnativeServing(context)
     },
   },
+  {
+    version: '4.10.0',
+    applications: {
+      'istio-system-istiod': {
+        post: async () => {
+          await detectAndRestartOutdatedIstioSidecars(k8s.core())
+        },
+      },
+    },
+  },
 ]
