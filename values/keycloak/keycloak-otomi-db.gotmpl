@@ -48,7 +48,7 @@ backup:
     destinationPath: "s3://{{ $obj.linode.buckets.cnpg }}/{{ $b.pathSuffix }}"
     endpointURL: https://{{ $obj.linode.region }}.linodeobjects.com
   {{- end }}
-  usePlugin: {{ $v.platformBackups.useCnpgPlugin }}
+  usePlugin: {{ $cnpg.useBackupPlugin }}
 {{- end }}
 
 clusterSpec:

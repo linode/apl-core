@@ -1683,6 +1683,10 @@ properties:
             $ref: '#/definitions/resources'
           barmanPluginResources:
             $ref: '#/definitions/resources'
+          useBackupPlugin:
+            type: boolean
+            default: false
+            description: Use CNPG plugin for platform database backups
       drone:
         additionalProperties: false
         properties:
@@ -3284,10 +3288,6 @@ properties:
                 type: string
                 pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])$'
                 default: keycloak
-      useCnpgPlugin:
-        type: boolean
-        default: false
-        description: Use CNPG plugin for platform database backups
       persistentVolumes:
         type: object
         description: Create backups of persistent volumes
