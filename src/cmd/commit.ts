@@ -166,8 +166,8 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`git tag ${tag}`
     await $`git remote add origin ${giteaChartsUrl}`
     await $`git config http.sslVerify false`
-    await $`git push -u origin heads/main`.quiet()
-    await $`git push origin tags/${tag}`.quiet()
+    await $`git push -u origin refs/heads/main`.quiet()
+    await $`git push origin refs/tags/${tag}`.quiet()
   } catch (error) {
     d.info('cloneOtomiChartsInGitea Error ', error?.message?.replace(password, '****'))
   }
