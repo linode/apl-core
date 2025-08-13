@@ -4,11 +4,11 @@
 {{- $obj := $v.obj.provider }}
 {{- $giteaBackupConfig := $v.platformBackups.gitea }}
 {{- $rcloneVersion := "1.70.3" }}
-{{- $rcloneZipSha512 := "e4cc635d3cd9027472a778d03b09686291bd9b2790cf21847064878cfb70891af68ffe148e072ce43a803e461f9a03aa31df953fbfcb68593138dfe42fc2f20d" }}
-{{- $rcloneBinSha512 := "67448344853d4ecc736ecd62d2ae5f06f0b8de28c82163a302d93d1f156b6a03aa2956bce044dbff5ea84e9399d96f8c728718737c963000abc0866cfb138fc3" }}
-{{- $kubectlImage := "rancher/kubectl:1.32.7" }}
+{{- $rcloneZipSha512 := "472165c3989671f4163242c67cdb9da4c3d3e4548cd1222015f552d6d2fda1cbd616b133ec45e78d8efb088368e18cc314bfeea764e253b6a5d6a693d67a11ef" }}
+{{- $rcloneBinSha512 := "b98a32f87cc1d0ac292829d12de45d1e827fd0a3f480d4b5a5242f1af0ecbc48e6ef6901c98f22289c77571adb4ee79e09af28750f031e8b038f55eeea40f910" }}
+{{- $kubectlImage := "bitnami/kubectl:1.32" }}
 {{- if $v.otomi.linodeLkeImageRepository }}
-{{- $kubectlImage := print $v.otomi.linodeLkeImageRepository "/docker/" $kubectlImage }}
+{{- $kubectlImage = print $v.otomi.linodeLkeImageRepository "/docker/" $kubectlImage }}
 {{- end }}
 
 resources:
