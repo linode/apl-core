@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { terminal } from 'src/common/debug'
 import { getFilename } from 'src/common/utils'
 import { BasicArguments } from 'src/common/yargs'
