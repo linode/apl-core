@@ -134,6 +134,7 @@ environments:
               limits:
                 cpu: 100m
                 memory: 200Mi
+            useBackupPlugin: false
             _rawValues: {}
           drone:
             enabled: false
