@@ -183,7 +183,7 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     }
     d.info(`Cloning apl-charts at tag '${tag}' from upstream`)
     await $`mkdir -p ${workDir}`
-    await $`git clone --branch ${tag} --depth 1 ${otomiChartsUrl} ${workDir}`
+    await $`git clone --branch ${tag} --depth 1 ${otomiChartsUrl} ${workDir}`.quiet()
     cd(workDir)
     await $`rm -rf .git`
     await $`rm -rf deployment`
@@ -194,14 +194,14 @@ export const cloneOtomiChartsInGitea = async (): Promise<void> => {
     await $`rm -f LICENSE`
     await $`git init`
     await setIdentity(username, email)
-    await $`git checkout -b main`
     await $`git add .`
     await $`git commit -m "first commit for tag ${tag}"`
+    await $`git branch -M main`
     await $`git tag ${tag}`
     await $`git remote add origin ${giteaChartsUrl}`
     await $`git config http.sslVerify false`
-    await $`git push -u origin main`
-    await $`git push origin ${tag}`
+    await $`git push -u origin refs/heads/main`.quiet()
+    await $`git push origin refs/tags/${tag}`.quiet()
   } catch (error) {
     d.info('cloneOtomiChartsInGitea Error ', error?.message?.replace(password, '****'))
   }
