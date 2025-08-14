@@ -1689,6 +1689,10 @@ properties:
             $ref: '#/definitions/resources'
           barmanPluginResources:
             $ref: '#/definitions/resources'
+          useBackupPlugin:
+            type: boolean
+            default: false
+            description: Use CNPG plugin for platform database backups
       drone:
         additionalProperties: false
         properties:
