@@ -38,3 +38,4 @@ backup:
     destinationPath: ""
   linode:
     destinationPath: ""
+  usePlugin: false
