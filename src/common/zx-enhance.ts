@@ -41,7 +41,7 @@ export const ask = async (query: string, options?: AskType, deps = { getParsedAr
   let answer = ''
   let tries = 0
   let matches = false
-  /* eslint-disable no-await-in-loop */
+
   do {
     answer = await deps.question(`${query}\n> `, { choices })
     matches = await matchingFn(answer)
@@ -49,7 +49,7 @@ export const ask = async (query: string, options?: AskType, deps = { getParsedAr
     if (answer?.length === 0 && defaultAnswer.length > 0) return defaultAnswer
     if (tries >= maxRetries) throw new Error(`Max retries for: ${chalk.italic(query)}`)
   } while (answer.length <= 0 || !matches)
-  /* eslint-enable no-await-in-loop */
+
   return answer
 }
 

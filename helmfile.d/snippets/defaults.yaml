@@ -134,6 +134,7 @@ environments:
               limits:
                 cpu: 100m
                 memory: 200Mi
+            useBackupPlugin: false
             _rawValues: {}
           drone:
             enabled: false
@@ -305,6 +306,8 @@ environments:
           gitea:
             adminUsername: otomi-admin
             _rawValues: {}
+            networkPolicies:
+              enabled: true
             resources:
               gitea:
                 limits:

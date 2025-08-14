@@ -9,7 +9,7 @@ dependencies:
     version: 8.0.9
     repository: https://argoproj.github.io/argo-helm
   - name: cert-manager
-    version: v1.17.1
+    version: v1.18.2
     repository: https://charts.jetstack.io
   - name: cloudnative-pg
     version: 0.24.0
@@ -34,14 +34,14 @@ dependencies:
     repository: https://kubernetes.github.io/ingress-nginx
   - name: base
     alias: istio-base
-    version: 1.26.1
+    version: 1.26.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: gateway
     alias: istio-gateway
-    version: 1.26.1
+    version: 1.26.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: istiod
-    version: 1.26.1
+    version: 1.26.3
     repository: https://istio-release.storage.googleapis.com/charts
   - name: jaeger-operator
     version: 2.46.0
