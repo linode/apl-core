@@ -33,6 +33,30 @@ interface InitialData {
   secretName: string
 }
 
+const isConflictError = (error: any): boolean => {
+  const errorMsg = error?.message?.toLowerCase() || ''
+  return (
+    errorMsg.includes('failed to merge') ||
+    errorMsg.includes('resolve your current index first') ||
+    errorMsg.includes('you need to resolve') ||
+    errorMsg.includes('merge conflict')
+  )
+}
+
+const cleanupGitState = async (d: any): Promise<void> => {
+  try {
+    cd(env.ENV_DIR)
+    // Try to abort any ongoing merge or rebase
+    await $`git merge --abort`.nothrow().quiet()
+    await $`git rebase --abort`.nothrow().quiet()
+    // Reset to the commit before our failed commit to discard local changes
+    await $`git reset --hard HEAD~1`.quiet()
+    d.info('Git state cleaned up after conflict - local commit discarded, reconciliation will retry')
+  } catch (cleanupError) {
+    d.warn('Error during git cleanup:', cleanupError?.message)
+  }
+}
+
 const commitAndPush = async (values: Record<string, any>, branch: string): Promise<void> => {
   const d = terminal(`cmd:${cmdName}:commitAndPush`)
   d.info('Committing values')
@@ -76,7 +100,7 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
         let remoteBranchExists = true
         try {
           await $`git ls-remote --exit-code --heads origin ${branch}`.quiet()
-        } catch (e) {
+        } catch {
           remoteBranchExists = false
         }
         // We're not always sure that we are on the correct branch,
@@ -89,9 +113,19 @@ const commitAndPush = async (values: Record<string, any>, branch: string): Promi
           d.log(`Remote branch '${branch}' does not exist. Skipping pull.`)
         }
         await $`git push -u origin ${branch}`.quiet()
-      } catch (e) {
+      } catch (pullPushError) {
+        // Check if this is a merge conflict - if so, skip the commit
+        if (isConflictError(pullPushError)) {
+          d.warn(
+            'Merge conflict detected during pull/push. Cleaning up and skipping commit - reconciliation will retry.',
+          )
+          await cleanupGitState(d)
+          return // Exit successfully, letting reconciliation handle the retry
+        }
+
+        // For other errors, continue with retry logic
         const errorMsg = 'Could not pull and push. Retrying...'
-        d.error(errorMsg, e?.message?.replace(password, '****'))
+        d.error(errorMsg, pullPushError?.message?.replace(password, '****'))
         throw new Error(errorMsg)
       }
     },
