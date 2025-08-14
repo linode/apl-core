@@ -17,7 +17,6 @@ export class DebugStream extends Writable {
     this.output = output
   }
 
-  // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/explicit-module-boundary-types
   _write(chunk: any, encoding: any, callback: (error?: Error | null) => void): void {
     const data = chunk.toString().trim()
     if (data.length > 0) this.output(data)
@@ -59,7 +58,7 @@ export const terminal = (namespace: string): OtomiDebugger => {
     }
     return cons
   }
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+
   const noop = () => {}
   const base = (...args: any[]) => createDebugger(`${namespace}`).call(undefined, ...args)
   const log = (...args: any[]) => createDebugger(`${namespace}:log`).call(undefined, ...args)
@@ -114,7 +113,7 @@ let logLevelVar = Number.NEGATIVE_INFINITY
  * - Environment variable: TRACE  [(un)set]
  * @returns highest loglevel
  */
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+
 export const logLevel = (argv?: any): number => {
   let logLevelNum = Number(logLevels[argv?.logLevel?.toUpperCase() ?? 'INFO'])
   const verbosity = Number(argv?.verbose ?? 0)
